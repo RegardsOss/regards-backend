@@ -1,17 +1,14 @@
 package fr.cnes.regards.framework.utils.parser.builder;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.utils.parser.rule.IRule;
+import fr.cnes.regards.framework.utils.parser.rule.OrRule;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.core.builders.QueryTreeBuilder;
-import org.apache.lucene.queryparser.flexible.core.nodes.AndQueryNode;
 import org.apache.lucene.queryparser.flexible.core.nodes.OrQueryNode;
 import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
 import org.apache.lucene.queryparser.flexible.messages.MessageImpl;
 
-import fr.cnes.regards.framework.utils.parser.rule.AndRule;
-import fr.cnes.regards.framework.utils.parser.rule.IRule;
-import fr.cnes.regards.framework.utils.parser.rule.OrRule;
+import java.util.List;
 
 public class OrQueryNodeBuilder implements IRuleBuilder {
 

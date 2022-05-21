@@ -18,19 +18,17 @@ package fr.cnes.regards.modules.model.dao;
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import java.util.Set;
-
-import javax.persistence.criteria.Predicate;
-
-import org.springframework.data.jpa.domain.Specification;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import org.springframework.data.jpa.domain.Specification;
+
+import javax.persistence.criteria.Predicate;
+import java.util.Set;
 
 /**
  * JPA Repository to manage {@link AttributeModel} entities.
+ *
  * @author Sébastien Binda
  */
 public final class AttributeModelSpecifications {
@@ -40,6 +38,7 @@ public final class AttributeModelSpecifications {
 
     /**
      * Filter on the given attributes
+     *
      * @param type
      * @param fragmentName
      * @return {@link Specification}

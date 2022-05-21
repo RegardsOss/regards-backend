@@ -5,7 +5,9 @@ import java.util.Objects;
 public class DumpParameters {
 
     private boolean isActiveModule;
+
     private String cronTrigger;
+
     private String dumpLocation;
 
     public boolean isActiveModule() {
@@ -44,7 +46,9 @@ public class DumpParameters {
             return false;
         }
         DumpParameters that = (DumpParameters) o;
-        return isActiveModule == that.isActiveModule && Objects.equals(cronTrigger, that.cronTrigger) && Objects.equals(dumpLocation, that.dumpLocation);
+        return isActiveModule == that.isActiveModule && Objects.equals(cronTrigger, that.cronTrigger) && Objects.equals(
+            dumpLocation,
+            that.dumpLocation);
     }
 
     @Override

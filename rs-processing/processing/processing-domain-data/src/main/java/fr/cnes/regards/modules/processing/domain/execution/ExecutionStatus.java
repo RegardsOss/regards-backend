@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.execution;
 
 import io.vavr.collection.List;
@@ -28,31 +28,48 @@ import io.vavr.collection.Seq;
  */
 public enum ExecutionStatus {
 
-    /** Final state, ended correctly */
+    /**
+     * Final state, ended correctly
+     */
     SUCCESS,
 
-    /** Final state, explicitly failed. */
+    /**
+     * Final state, explicitly failed.
+     */
     FAILURE,
 
-    /** Final state, has been cancelled by user or admin. */
+    /**
+     * Final state, has been cancelled by user or admin.
+     */
     CANCELLED,
 
-    /** Final state, did not provide any feedback after some time. */
+    /**
+     * Final state, did not provide any feedback after some time.
+     */
     TIMED_OUT,
 
     CLEANUP(List.of(SUCCESS)),
 
-    /** Execution is paused */
+    /**
+     * Execution is paused
+     */
     PENDING(List.of(CLEANUP, SUCCESS, FAILURE, TIMED_OUT, CANCELLED)),
 
-    /** Launched. */
+    /**
+     * Launched.
+     */
     RUNNING(List.of(PENDING, CLEANUP, SUCCESS, FAILURE, TIMED_OUT, CANCELLED)),
 
-    /** Execution is being prepared (copying input files to working directory, etc.). */
+    /**
+     * Execution is being prepared (copying input files to working directory, etc.).
+     */
     PREPARE(List.of(RUNNING)),
 
-    /** Initial state, registered but not yet launched. */
-    REGISTERED(List.of(PREPARE, RUNNING, CANCELLED)),;
+    /**
+     * Initial state, registered but not yet launched.
+     */
+    REGISTERED(List.of(PREPARE, RUNNING, CANCELLED)),
+    ;
 
     public static final ExecutionStatus[] CACHED_VALUES = values();
 

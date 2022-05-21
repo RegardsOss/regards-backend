@@ -18,26 +18,19 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.StringJoiner;
-
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
-
-import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import java.util.*;
 
 /**
  * REST feature request response information
  *
- * @author Marc SORDI
- *
  * @param <ID> String or {@link FeatureUniformResourceName} according to the context
+ * @author Marc SORDI
  */
 public class RequestInfo<ID> {
 

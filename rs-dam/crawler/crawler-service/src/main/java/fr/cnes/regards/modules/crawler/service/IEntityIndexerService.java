@@ -46,8 +46,10 @@ public interface IEntityIndexerService {
      * @param forceAssociatedEntitiesUpdate if true, force associated entities update (usually data objects for dataset)
      * @throws ModuleException
      */
-    default void updateEntityIntoEs(String tenant, UniformResourceName ipId, OffsetDateTime updateDate,
-            boolean forceAssociatedEntitiesUpdate) throws ModuleException {
+    default void updateEntityIntoEs(String tenant,
+                                    UniformResourceName ipId,
+                                    OffsetDateTime updateDate,
+                                    boolean forceAssociatedEntitiesUpdate) throws ModuleException {
         this.updateEntityIntoEs(tenant, ipId, null, updateDate, forceAssociatedEntitiesUpdate, null);
     }
 
@@ -71,8 +73,12 @@ public interface IEntityIndexerService {
      * @param dsiId                         {@link DatasourceIngestion} id
      * @throws ModuleException
      */
-    void updateEntityIntoEs(String tenant, UniformResourceName ipId, OffsetDateTime lastUpdateDate,
-            OffsetDateTime updateDate, boolean forceAssociatedEntitiesUpdate, String dsiId) throws ModuleException;
+    void updateEntityIntoEs(String tenant,
+                            UniformResourceName ipId,
+                            OffsetDateTime lastUpdateDate,
+                            OffsetDateTime updateDate,
+                            boolean forceAssociatedEntitiesUpdate,
+                            String dsiId) throws ModuleException;
 
     /**
      * Transactional method updating a set of datasets
@@ -81,11 +87,15 @@ public interface IEntityIndexerService {
      * @param datasets
      * @param lastUpdateDate         Take into account only more recent lastUpdateDate than provided
      * @param updateDate
-     *@param forceDataObjectsUpdate true to force all associated data objects update
+     * @param forceDataObjectsUpdate true to force all associated data objects update
      * @param dsiId                  datasetIngestion id   @throws ModuleException
      */
-    void updateDatasets(String tenant, Collection<Dataset> datasets, OffsetDateTime lastUpdateDate,
-            OffsetDateTime updateDate, boolean forceDataObjectsUpdate, String dsiId) throws ModuleException;
+    void updateDatasets(String tenant,
+                        Collection<Dataset> datasets,
+                        OffsetDateTime lastUpdateDate,
+                        OffsetDateTime updateDate,
+                        boolean forceDataObjectsUpdate,
+                        String dsiId) throws ModuleException;
 
     /**
      * Force update of all {@link Dataset}s
@@ -108,30 +118,36 @@ public interface IEntityIndexerService {
     /**
      * Create given data objects into Elasticsearch
      *
-     * @param tenant       concerned tenant
-     * @param datasourceId id of data source from where data objects come
-     * @param now          update date (usually now)
-     * @param objects      objects to save
+     * @param tenant                concerned tenant
+     * @param datasourceId          id of data source from where data objects come
+     * @param now                   update date (usually now)
+     * @param objects               objects to save
      * @param datasourceIngestionId
      * @return bulk save result
      * @throws ModuleException
      */
-    BulkSaveResult createDataObjects(String tenant, Long datasourceId, OffsetDateTime now, List<DataObject> objects,
-            String datasourceIngestionId) throws ModuleException;
+    BulkSaveResult createDataObjects(String tenant,
+                                     Long datasourceId,
+                                     OffsetDateTime now,
+                                     List<DataObject> objects,
+                                     String datasourceIngestionId) throws ModuleException;
 
     /**
      * Merge given data objects into Elasticsearch
      *
-     * @param tenant       concerned tenant
-     * @param datasourceId id of data source from where data objects come
-     * @param now          update date (usually now)
-     * @param objects      objects to save
+     * @param tenant                concerned tenant
+     * @param datasourceId          id of data source from where data objects come
+     * @param now                   update date (usually now)
+     * @param objects               objects to save
      * @param datasourceIngestionId
      * @return bulk save result
      * @throws ModuleException
      */
-    BulkSaveResult mergeDataObjects(String tenant, Long datasourceId, OffsetDateTime now, List<DataObject> objects,
-            String datasourceIngestionId) throws ModuleException;
+    BulkSaveResult mergeDataObjects(String tenant,
+                                    Long datasourceId,
+                                    OffsetDateTime now,
+                                    List<DataObject> objects,
+                                    String datasourceIngestionId) throws ModuleException;
 
     /**
      * Delete given data object from Elasticsearch
@@ -163,6 +179,7 @@ public interface IEntityIndexerService {
 
     /**
      * Delete index and recreate entities
+     *
      * @param tenant
      */
     void deleteIndexNRecreateEntities(String tenant) throws ModuleException;

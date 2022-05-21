@@ -39,7 +39,10 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.PolygonCriterion;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
@@ -78,8 +81,13 @@ public class GeoQueryOnPointsTest extends AbstractOnPointsTest {
         boolean repositoryOK = true;
         try {
             gson = new GsonBuilder().registerTypeAdapterFactory(new ItemAdapterFactory())
-                    .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter().nullSafe()).create();
-            repository = new EsRepository(gson, null, "localhost", 9200, 0,
+                                    .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter().nullSafe())
+                                    .create();
+            repository = new EsRepository(gson,
+                                          null,
+                                          "localhost",
+                                          9200,
+                                          0,
                                           new JsoniterDeserializeIIndexableStrategy(new IIndexableJsoniterConfig()),
                                           new AggregationBuilderFacetTypeVisitor(100, 5),
                                           new AttrDescToJsonMapping(AttrDescToJsonMapping.RangeAliasStrategy.GTELTE));
@@ -130,19 +138,25 @@ public class GeoQueryOnPointsTest extends AbstractOnPointsTest {
 
     @Test
     public void testSimplePolygonQuery() {
-        PolygonCriterion criterion = (PolygonCriterion) ICriterion
-                .intersectsPolygon(simplePolygon(0, 0, 45, 0, 45, 45));
+        PolygonCriterion criterion = (PolygonCriterion) ICriterion.intersectsPolygon(simplePolygon(0,
+                                                                                                   0,
+                                                                                                   45,
+                                                                                                   0,
+                                                                                                   45,
+                                                                                                   45));
         QueryBuilderCriterionVisitor visitor = new QueryBuilderCriterionVisitor();
         QueryBuilder builder = visitor.visitPolygonCriterion(criterion);
         Assert.assertEquals("{\n" + "  \"geo_shape\" : {\n" + "    \"wgs84\" : {\n" + "      \"shape\" : {\n"
-                + "        \"type\" : \"Polygon\",\n"
-                + "        \"coordinates\" : [\n" + "          [\n" + "            [\n" + "              0.0,\n"
-                + "              0.0\n" + "            ],\n" + "            [\n" + "              45.0,\n"
-                + "              0.0\n" + "            ],\n" + "            [\n" + "              45.0,\n"
-                + "              45.0\n" + "            ],\n" + "            [\n" + "              0.0,\n"
-                + "              0.0\n" + "            ]\n" + "          ]\n" + "        ]\n" + "      },\n"
-                + "      \"relation\" : \"intersects\"\n" + "    },\n" + "    \"ignore_unmapped\" : false,\n"
-                + "    \"boost\" : 1.0\n" + "  }\n" + "}", builder.toString());
+                                + "        \"type\" : \"Polygon\",\n" + "        \"coordinates\" : [\n"
+                                + "          [\n" + "            [\n" + "              0.0,\n" + "              0.0\n"
+                                + "            ],\n" + "            [\n" + "              45.0,\n"
+                                + "              0.0\n" + "            ],\n" + "            [\n"
+                                + "              45.0,\n" + "              45.0\n" + "            ],\n"
+                                + "            [\n" + "              0.0,\n" + "              0.0\n" + "            ]\n"
+                                + "          ]\n" + "        ]\n" + "      },\n"
+                                + "      \"relation\" : \"intersects\"\n" + "    },\n"
+                                + "    \"ignore_unmapped\" : false,\n" + "    \"boost\" : 1.0\n" + "  }\n" + "}",
+                            builder.toString());
     }
 
     private double[] point(double... lonLats) {
@@ -163,8 +177,14 @@ public class GeoQueryOnPointsTest extends AbstractOnPointsTest {
 
     @Test
     public void testPolygonAroundNorthPoleQuery() {
-        PolygonCriterion criterion = (PolygonCriterion) ICriterion
-                .intersectsPolygon(simplePolygon(0, 80, 90, 80, 180, 80, -90, 80));
+        PolygonCriterion criterion = (PolygonCriterion) ICriterion.intersectsPolygon(simplePolygon(0,
+                                                                                                   80,
+                                                                                                   90,
+                                                                                                   80,
+                                                                                                   180,
+                                                                                                   80,
+                                                                                                   -90,
+                                                                                                   80));
         QueryBuilderCriterionVisitor visitor = new QueryBuilderCriterionVisitor();
         QueryBuilder builder = visitor.visitPolygonCriterion(criterion);
         System.out.println(builder.toString());
@@ -172,26 +192,41 @@ public class GeoQueryOnPointsTest extends AbstractOnPointsTest {
 
     @Test
     public void testPolygonOnDateMeridianQuery1() {
-        PolygonCriterion criterion = (PolygonCriterion) ICriterion
-                .intersectsPolygon(simplePolygon(170, 20, -170, 20, -170, 60, 170, 60));
+        PolygonCriterion criterion = (PolygonCriterion) ICriterion.intersectsPolygon(simplePolygon(170,
+                                                                                                   20,
+                                                                                                   -170,
+                                                                                                   20,
+                                                                                                   -170,
+                                                                                                   60,
+                                                                                                   170,
+                                                                                                   60));
         QueryBuilderCriterionVisitor visitor = new QueryBuilderCriterionVisitor();
         QueryBuilder builder = visitor.visitPolygonCriterion(criterion);
         Assert.assertEquals("{\n" + "  \"geo_shape\" : {\n" + "    \"wgs84\" : {\n" + "      \"shape\" : {\n"
-                + "        \"type\" : \"Polygon\",\n"
-                + "        \"coordinates\" : [\n" + "          [\n" + "            [\n" + "              170.0,\n"
-                + "              20.0\n" + "            ],\n" + "            [\n" + "              -170.0,\n"
-                + "              20.0\n" + "            ],\n" + "            [\n" + "              -170.0,\n"
-                + "              60.0\n" + "            ],\n" + "            [\n" + "              170.0,\n"
-                + "              60.0\n" + "            ],\n" + "            [\n" + "              170.0,\n"
-                + "              20.0\n" + "            ]\n" + "          ]\n" + "        ]\n" + "      },\n"
-                + "      \"relation\" : \"intersects\"\n" + "    },\n" + "    \"ignore_unmapped\" : false,\n"
-                + "    \"boost\" : 1.0\n" + "  }\n" + "}", builder.toString());
+                                + "        \"type\" : \"Polygon\",\n" + "        \"coordinates\" : [\n"
+                                + "          [\n" + "            [\n" + "              170.0,\n"
+                                + "              20.0\n" + "            ],\n" + "            [\n"
+                                + "              -170.0,\n" + "              20.0\n" + "            ],\n"
+                                + "            [\n" + "              -170.0,\n" + "              60.0\n"
+                                + "            ],\n" + "            [\n" + "              170.0,\n"
+                                + "              60.0\n" + "            ],\n" + "            [\n"
+                                + "              170.0,\n" + "              20.0\n" + "            ]\n"
+                                + "          ]\n" + "        ]\n" + "      },\n"
+                                + "      \"relation\" : \"intersects\"\n" + "    },\n"
+                                + "    \"ignore_unmapped\" : false,\n" + "    \"boost\" : 1.0\n" + "  }\n" + "}",
+                            builder.toString());
     }
 
     @Test
     public void testPolygonOnDateMeridian() {
-        PolygonCriterion criterion = (PolygonCriterion) ICriterion
-                .intersectsPolygon(simplePolygon(170, 19, -170, 19, -170, 60, 170, 60));
+        PolygonCriterion criterion = (PolygonCriterion) ICriterion.intersectsPolygon(simplePolygon(170,
+                                                                                                   19,
+                                                                                                   -170,
+                                                                                                   19,
+                                                                                                   -170,
+                                                                                                   60,
+                                                                                                   170,
+                                                                                                   60));
 
         List<PointItem> result = repository.search(searchKey, 1000, criterion).getContent();
         Assert.assertEquals(1, result.size());
@@ -201,18 +236,33 @@ public class GeoQueryOnPointsTest extends AbstractOnPointsTest {
     @Test
 
     public void testPolygonOnDateMeridianQuery2() {
-        PolygonCriterion criterion = (PolygonCriterion) ICriterion
-                .intersectsPolygon(simplePolygon(170, 60, 170, -20, -170, -20, -170, 60));
+        PolygonCriterion criterion = (PolygonCriterion) ICriterion.intersectsPolygon(simplePolygon(170,
+                                                                                                   60,
+                                                                                                   170,
+                                                                                                   -20,
+                                                                                                   -170,
+                                                                                                   -20,
+                                                                                                   -170,
+                                                                                                   60));
 
         List<PointItem> result = repository.search(searchKey, 1000, criterion).getContent();
         Assert.assertEquals(3, result.size());
-        Assert.assertTrue(result.stream().map(r->r.getDocId()).collect(Collectors.toList()).containsAll(Arrays.asList("EAST_POLE", "WEST_POLE", "P1")));
+        Assert.assertTrue(result.stream()
+                                .map(r -> r.getDocId())
+                                .collect(Collectors.toList())
+                                .containsAll(Arrays.asList("EAST_POLE", "WEST_POLE", "P1")));
     }
 
     @Test
     public void testPolygonBetweenTwoMeridiansQuery() {
-        PolygonCriterion criterion = (PolygonCriterion) ICriterion
-                .intersectsPolygon(simplePolygon(0, 90, 170, 0, 0, -90, -170, 0));
+        PolygonCriterion criterion = (PolygonCriterion) ICriterion.intersectsPolygon(simplePolygon(0,
+                                                                                                   90,
+                                                                                                   170,
+                                                                                                   0,
+                                                                                                   0,
+                                                                                                   -90,
+                                                                                                   -170,
+                                                                                                   0));
         //                    .intersectsPolygon(simplePolygon(170, 80, 170, 0, 170, -80, -170, -80, -170, 0, -170, 80));
 
         QueryBuilderCriterionVisitor visitor = new QueryBuilderCriterionVisitor();
@@ -232,13 +282,13 @@ public class GeoQueryOnPointsTest extends AbstractOnPointsTest {
 
         result = repository.search(searchKey, 1000, criterion).getContent();
         Assert.assertEquals(6, result.size());
-        Assert.assertTrue(result.stream().map(r->r.getDocId()).collect(Collectors.toList()).contains("NORTH_POLE"));
+        Assert.assertTrue(result.stream().map(r -> r.getDocId()).collect(Collectors.toList()).contains("NORTH_POLE"));
 
         criterion = (CircleCriterion) ICriterion.intersectsCircle(point(0, 90), "20050km");
 
         result = repository.search(searchKey, 1000, criterion).getContent();
         Assert.assertEquals(7, result.size());
-        Assert.assertTrue(result.stream().map(r->r.getDocId()).collect(Collectors.toList()).contains("NORTH_POLE"));
+        Assert.assertTrue(result.stream().map(r -> r.getDocId()).collect(Collectors.toList()).contains("NORTH_POLE"));
     }
 
     @Test
@@ -267,13 +317,16 @@ public class GeoQueryOnPointsTest extends AbstractOnPointsTest {
 
         result = repository.search(searchKey, 1000, criterion).getContent();
         Assert.assertEquals(6, result.size());
-        Assert.assertTrue(result.stream().map(r->r.getDocId()).collect(Collectors.toList()).contains("SOUTH_POLE"));
+        Assert.assertTrue(result.stream().map(r -> r.getDocId()).collect(Collectors.toList()).contains("SOUTH_POLE"));
 
         criterion = (CircleCriterion) ICriterion.intersectsCircle(point(0, -90), "20050km");
 
         result = repository.search(searchKey, 1000, criterion).getContent();
         Assert.assertEquals(7, result.size());
-        Assert.assertTrue(result.stream().map(r->r.getDocId()).collect(Collectors.toList()).containsAll(Arrays.asList("NORTH_POLE", "SOUTH_POLE")));
+        Assert.assertTrue(result.stream()
+                                .map(r -> r.getDocId())
+                                .collect(Collectors.toList())
+                                .containsAll(Arrays.asList("NORTH_POLE", "SOUTH_POLE")));
     }
 
     @Test
@@ -296,7 +349,10 @@ public class GeoQueryOnPointsTest extends AbstractOnPointsTest {
 
         List<PointItem> result = repository.search(searchKey, 1000, criterion).getContent();
         Assert.assertEquals(2, result.size());
-        Assert.assertTrue(result.stream().map(r->r.getDocId()).collect(Collectors.toList()).containsAll(Arrays.asList("WEST_POLE", "EAST_POLE")));
+        Assert.assertTrue(result.stream()
+                                .map(r -> r.getDocId())
+                                .collect(Collectors.toList())
+                                .containsAll(Arrays.asList("WEST_POLE", "EAST_POLE")));
     }
 
     @Test
@@ -305,13 +361,19 @@ public class GeoQueryOnPointsTest extends AbstractOnPointsTest {
 
         List<PointItem> result = repository.search(searchKey, 1000, criterion).getContent();
         Assert.assertEquals(2, result.size());
-        Assert.assertTrue(result.stream().map(r->r.getDocId()).collect(Collectors.toList()).containsAll(Arrays.asList("WEST_POLE", "EAST_POLE")));
+        Assert.assertTrue(result.stream()
+                                .map(r -> r.getDocId())
+                                .collect(Collectors.toList())
+                                .containsAll(Arrays.asList("WEST_POLE", "EAST_POLE")));
 
         criterion = (CircleCriterion) ICriterion.intersectsCircle(point(-180, 0), "2229.85km");
 
         result = repository.search(searchKey, 1000, criterion).getContent();
         Assert.assertEquals(3, result.size());
-        Assert.assertTrue(result.stream().map(r->r.getDocId()).collect(Collectors.toList()).containsAll(Arrays.asList("WEST_POLE", "EAST_POLE", "P1")));
+        Assert.assertTrue(result.stream()
+                                .map(r -> r.getDocId())
+                                .collect(Collectors.toList())
+                                .containsAll(Arrays.asList("WEST_POLE", "EAST_POLE", "P1")));
 
         Integer d = 2211_170;
         criterion = (CircleCriterion) ICriterion.intersectsCircle(point(-180, 0), d.toString());
@@ -320,7 +382,10 @@ public class GeoQueryOnPointsTest extends AbstractOnPointsTest {
 
         result = repository.search(searchKey, 1000, criterion).getContent();
         Assert.assertEquals(2, result.size());
-        Assert.assertTrue(result.stream().map(r->r.getDocId()).collect(Collectors.toList()).containsAll(Arrays.asList("WEST_POLE", "EAST_POLE")));
+        Assert.assertTrue(result.stream()
+                                .map(r -> r.getDocId())
+                                .collect(Collectors.toList())
+                                .containsAll(Arrays.asList("WEST_POLE", "EAST_POLE")));
     }
 
     @Test
@@ -338,7 +403,8 @@ public class GeoQueryOnPointsTest extends AbstractOnPointsTest {
         Assert.assertEquals(1, result.size());
         Assert.assertEquals("P1", result.get(0).getDocId());
         System.out.printf("Error near equator : %d m (radius : %d m)\n",
-                          (int) GeoHelper.getDistanceOnEarth(point(180, 20), point(180, 21)) - d1, d1);
+                          (int) GeoHelper.getDistanceOnEarth(point(180, 20), point(180, 21)) - d1,
+                          d1);
 
         Integer d2 = 111_694;
         criterion = criterion = (CircleCriterion) ICriterion.intersectsCircle(point(0, 89), d2.toString());
@@ -348,7 +414,8 @@ public class GeoQueryOnPointsTest extends AbstractOnPointsTest {
         Assert.assertEquals(1, result.size());
         Assert.assertEquals("NORTH_POLE", result.get(0).getDocId());
         System.out.printf("Error near pole : %d m (radius : %d m)\n",
-                          (int) GeoHelper.getDistanceOnEarth(point(0, 89), point(0, 90)) - d2, d2);
+                          (int) GeoHelper.getDistanceOnEarth(point(0, 89), point(0, 90)) - d2,
+                          d2);
 
         Integer d3 = 11_120;
         criterion = criterion = (CircleCriterion) ICriterion.intersectsCircle(point(180.0, 20.1), d3.toString());
@@ -358,7 +425,8 @@ public class GeoQueryOnPointsTest extends AbstractOnPointsTest {
         Assert.assertEquals(1, result.size());
         Assert.assertEquals("P1", result.get(0).getDocId());
         System.out.printf("Error near equator : %d m (radius : %d m)\n",
-                          (int) GeoHelper.getDistanceOnEarth(point(180.0, 20.1), point(180, 20)) - d3, d3);
+                          (int) GeoHelper.getDistanceOnEarth(point(180.0, 20.1), point(180, 20)) - d3,
+                          d3);
 
     }
 

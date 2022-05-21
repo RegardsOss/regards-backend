@@ -73,30 +73,49 @@ public class OrderService implements IOrderService {
      * Format for generated order label
      */
     private static final String ORDER_GENERATED_LABEL_FORMAT = "Order of %s";
+
     /**
      * Date formatter for order generated label
      */
-    private static final DateTimeFormatter ORDER_GENERATED_LABEL_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/MM/dd 'at' HH:mm:ss");
+    private static final DateTimeFormatter ORDER_GENERATED_LABEL_DATE_FORMAT = DateTimeFormatter.ofPattern(
+        "yyyy/MM/dd 'at' HH:mm:ss");
 
     private IOrderService self;
 
     private final IOrderRepository orderRepository;
+
     private final IBasketService basketService;
+
     private final IOrderCreationService orderCreationService;
+
     private final IOrderRetryService orderRetryService;
+
     private final IOrderDataFileService dataFileService;
+
     private final IJobInfoService jobInfoService;
+
     private final IOrderJobService orderJobService;
+
     private final ITenantResolver tenantResolver;
+
     private final IRuntimeTenantResolver runtimeTenantResolver;
+
     private final IOrderSettingsService orderSettingsService;
+
     private final OrderHelperService orderHelperService;
 
-    public OrderService(IOrderRepository orderRepository, IBasketService basketService, IOrderCreationService orderCreationService, IOrderRetryService orderRetryService,
-                        IOrderDataFileService dataFileService, IJobInfoService jobInfoService, IOrderJobService orderJobService, ITenantResolver tenantResolver,
-                        IRuntimeTenantResolver runtimeTenantResolver, IOrderSettingsService orderSettingsService, OrderHelperService orderHelperService,
-                        IOrderService orderService
-    ) {
+    public OrderService(IOrderRepository orderRepository,
+                        IBasketService basketService,
+                        IOrderCreationService orderCreationService,
+                        IOrderRetryService orderRetryService,
+                        IOrderDataFileService dataFileService,
+                        IJobInfoService jobInfoService,
+                        IOrderJobService orderJobService,
+                        ITenantResolver tenantResolver,
+                        IRuntimeTenantResolver runtimeTenantResolver,
+                        IOrderSettingsService orderSettingsService,
+                        OrderHelperService orderHelperService,
+                        IOrderService orderService) {
         this.basketService = basketService;
         this.orderRepository = orderRepository;
         this.orderCreationService = orderCreationService;
@@ -152,7 +171,9 @@ public class OrderService implements IOrderService {
         if (excludeStatuses.length == 0) {
             return orderRepository.findAllByOwnerOrderByCreationDateDesc(user, pageRequest);
         } else {
-            return orderRepository.findAllByOwnerAndStatusNotInOrderByCreationDateDesc(user, excludeStatuses, pageRequest);
+            return orderRepository.findAllByOwnerAndStatusNotInOrderByCreationDateDesc(user,
+                                                                                       excludeStatuses,
+                                                                                       pageRequest);
         }
     }
 
@@ -177,17 +198,20 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public Order createOrder(Basket basket, String label, String url, int subOrderDuration) throws EntityInvalidException {
+    public Order createOrder(Basket basket, String label, String url, int subOrderDuration)
+        throws EntityInvalidException {
         return createOrder(basket, label, url, subOrderDuration, basket.getOwner());
     }
 
-    private Order createOrder(Basket basket, String label, String url, int subOrderDuration, String user) throws EntityInvalidException {
+    private Order createOrder(Basket basket, String label, String url, int subOrderDuration, String user)
+        throws EntityInvalidException {
 
         LOGGER.info("Generate and / or check label is unique for owner before creating back");
         // generate label when none is provided
         String orderLabel = label;
         if (Strings.isNullOrEmpty(orderLabel)) {
-            orderLabel = String.format(ORDER_GENERATED_LABEL_FORMAT, ORDER_GENERATED_LABEL_DATE_FORMAT.format(OffsetDateTime.now()));
+            orderLabel = String.format(ORDER_GENERATED_LABEL_FORMAT,
+                                       ORDER_GENERATED_LABEL_DATE_FORMAT.format(OffsetDateTime.now()));
         }
         // check length (>0 is already checked above)
         if (orderLabel.length() > Order.LABEL_FIELD_LENGTH) {
@@ -216,8 +240,11 @@ public class OrderService implements IOrderService {
             LOGGER.info("Basket saved with owner : {}", newBasket.getOwner());
 
             // Asynchronous operation
-            orderCreationService.asyncCompleteOrderCreation(newBasket, order.getId(), subOrderDuration,
-                                                            orderHelperService.getRole(user), runtimeTenantResolver.getTenant());
+            orderCreationService.asyncCompleteOrderCreation(newBasket,
+                                                            order.getId(),
+                                                            subOrderDuration,
+                                                            orderHelperService.getRole(user),
+                                                            runtimeTenantResolver.getTenant());
             return order;
         } finally {
             CorrelationIdUtils.clearCorrelationId();
@@ -244,13 +271,17 @@ public class OrderService implements IOrderService {
             CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + order.getId());
 
             // Ask for all jobInfos abortion
-            order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream()).map(FilesTask::getJobInfo).forEach(jobInfo -> {
-                if (jobInfo != null) {
-                    // Set log correlation id
-                    CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + order.getId());
-                    jobInfoService.stopJob(jobInfo.getId());
-                }
-            });
+            order.getDatasetTasks()
+                 .stream()
+                 .flatMap(dsTask -> dsTask.getReliantTasks().stream())
+                 .map(FilesTask::getJobInfo)
+                 .forEach(jobInfo -> {
+                     if (jobInfo != null) {
+                         // Set log correlation id
+                         CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + order.getId());
+                         jobInfoService.stopJob(jobInfo.getId());
+                     }
+                 });
             order.setStatus(OrderStatus.PAUSED);
             orderRepository.save(order);
         } finally {
@@ -269,16 +300,17 @@ public class OrderService implements IOrderService {
             CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + order.getId());
 
             // Passes all ABORTED jobInfo to PENDING
-            order.getDatasetTasks().stream()
-                    .flatMap(dsTask -> dsTask.getReliantTasks().stream())
-                    .map(FilesTask::getJobInfo)
-                    .filter(jobInfo -> jobInfo.getStatus().getStatus() == JobStatus.ABORTED)
-                    .forEach(jobInfo -> {
-                        // Set log correlation id
-                        CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + order.getId());
-                        jobInfo.updateStatus(JobStatus.PENDING);
-                        jobInfoService.save(jobInfo);
-                    });
+            order.getDatasetTasks()
+                 .stream()
+                 .flatMap(dsTask -> dsTask.getReliantTasks().stream())
+                 .map(FilesTask::getJobInfo)
+                 .filter(jobInfo -> jobInfo.getStatus().getStatus() == JobStatus.ABORTED)
+                 .forEach(jobInfo -> {
+                     // Set log correlation id
+                     CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + order.getId());
+                     jobInfo.updateStatus(JobStatus.PENDING);
+                     jobInfoService.save(jobInfo);
+                 });
             order.setStatus(OrderStatus.RUNNING);
             orderRepository.save(order);
             // Don't forget to manage user order jobs again (PENDING -> QUEUED)
@@ -335,7 +367,11 @@ public class OrderService implements IOrderService {
 
         Basket newBasket = basketService.duplicate(oldBasket.getId(), BASKET_RESTART_OWNER_PREFIX + oldOrderId);
 
-        return createOrder(newBasket, label, successUrl, orderSettingsService.getUserOrderParameters().getSubOrderDuration(), oldOrderOwner);
+        return createOrder(newBasket,
+                           label,
+                           successUrl,
+                           orderSettingsService.getUserOrderParameters().getSubOrderDuration(),
+                           oldOrderOwner);
     }
 
     @Override
@@ -351,7 +387,10 @@ public class OrderService implements IOrderService {
             // Set log correlation id
             CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + order.getId());
 
-            orderRetryService.asyncCompleteRetry(order.getId(), orderOwnerRole, orderSettingsService.getUserOrderParameters().getSubOrderDuration(), runtimeTenantResolver.getTenant());
+            orderRetryService.asyncCompleteRetry(order.getId(),
+                                                 orderOwnerRole,
+                                                 orderSettingsService.getUserOrderParameters().getSubOrderDuration(),
+                                                 runtimeTenantResolver.getTenant());
         } finally {
             CorrelationIdUtils.clearCorrelationId();
         }
@@ -376,9 +415,11 @@ public class OrderService implements IOrderService {
 
     @Override
     public void writeAllOrdersInCsv(BufferedWriter writer, OrderStatus status, OffsetDateTime from, OffsetDateTime to)
-            throws IOException {
-        List<Order> orders = orderRepository.findAll(OrderSpecifications.search(status, from, to), Sort.by(Sort.Direction.ASC, "id"));
-        writer.append("ORDER_ID;CREATION_DATE;EXPIRATION_DATE;OWNER;STATUS;STATUS_DATE;PERCENT_COMPLETE;FILES_IN_ERROR;FILES_SIZE;FILES_COUNT");
+        throws IOException {
+        List<Order> orders = orderRepository.findAll(OrderSpecifications.search(status, from, to),
+                                                     Sort.by(Sort.Direction.ASC, "id"));
+        writer.append(
+            "ORDER_ID;CREATION_DATE;EXPIRATION_DATE;OWNER;STATUS;STATUS_DATE;PERCENT_COMPLETE;FILES_IN_ERROR;FILES_SIZE;FILES_COUNT");
         writer.newLine();
         for (Order order : orders) {
             writer.append(order.getId().toString()).append(';');
@@ -392,7 +433,9 @@ public class OrderService implements IOrderService {
             writer.append(OffsetDateTimeAdapter.format(order.getStatusDate())).append(';');
             writer.append(Integer.toString(order.getPercentCompleted())).append(';');
             writer.append(Integer.toString(order.getFilesInErrorCount())).append(';');
-            writer.append(String.valueOf(order.getDatasetTasks().stream().mapToLong(dt -> dt.getFilesSize()).sum())).append(';');;
+            writer.append(String.valueOf(order.getDatasetTasks().stream().mapToLong(dt -> dt.getFilesSize()).sum()))
+                  .append(';');
+            ;
             writer.append(String.valueOf(order.getDatasetTasks().stream().mapToLong(dt -> dt.getFilesCount()).sum()));
             writer.newLine();
         }
@@ -432,7 +475,10 @@ public class OrderService implements IOrderService {
                     }
                     break;
                 case DELETE:
-                    if (!Arrays.asList(OrderStatus.DONE, OrderStatus.DONE_WITH_WARNING, OrderStatus.PAUSED, OrderStatus.FAILED).contains(order.getStatus())) {
+                    if (!Arrays.asList(OrderStatus.DONE,
+                                       OrderStatus.DONE_WITH_WARNING,
+                                       OrderStatus.PAUSED,
+                                       OrderStatus.FAILED).contains(order.getStatus())) {
                         message = "ORDER_MUST_BE_DONE_OR_DONE_WITH_WARNING_OR_PAUSED_OR_FAILED";
                     }
                     break;
@@ -444,7 +490,8 @@ public class OrderService implements IOrderService {
                     }
                     break;
                 case RESTART:
-                    if (!Arrays.asList(OrderStatus.DONE, OrderStatus.DONE_WITH_WARNING, OrderStatus.FAILED).contains(order.getStatus())) {
+                    if (!Arrays.asList(OrderStatus.DONE, OrderStatus.DONE_WITH_WARNING, OrderStatus.FAILED)
+                               .contains(order.getStatus())) {
                         message = "ORDER_MUST_BE_DONE_OR_DONE_WITH_WARNING_OR_FAILED";
                     }
                     break;
@@ -468,13 +515,10 @@ public class OrderService implements IOrderService {
     @AllArgsConstructor
     public enum Action {
 
-        PAUSE(CannotPauseOrderException.class),
-        RESUME(CannotResumeOrderException.class),
-        DELETE(CannotDeleteOrderException.class),
-        REMOVE(CannotRemoveOrderException.class),
-        RESTART(CannotRestartOrderException.class),
-        RETRY(CannotRetryOrderException.class),
-        DOWNLOAD(NotYetAvailableException.class);
+        PAUSE(CannotPauseOrderException.class), RESUME(CannotResumeOrderException.class), DELETE(
+            CannotDeleteOrderException.class), REMOVE(CannotRemoveOrderException.class), RESTART(
+            CannotRestartOrderException.class), RETRY(CannotRetryOrderException.class), DOWNLOAD(
+            NotYetAvailableException.class);
 
         private final Class<? extends ModuleException> exceptionClass;
 

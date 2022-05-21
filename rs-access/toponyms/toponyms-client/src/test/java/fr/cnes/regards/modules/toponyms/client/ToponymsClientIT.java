@@ -41,9 +41,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 /**
- *
  * @author Sébastien Binda
- *
  */
 public class ToponymsClientIT extends AbstractRegardsWebIT {
 
@@ -74,10 +72,9 @@ public class ToponymsClientIT extends AbstractRegardsWebIT {
 
     @Before
     public void init() {
-        client = FeignClientBuilder.build(
-                                          new TokenClientProvider<>(IToponymsClient.class,
-                                                  "http://" + serverAddress + ":" + getPort(), feignSecurityManager),
-                                          gson);
+        client = FeignClientBuilder.build(new TokenClientProvider<>(IToponymsClient.class,
+                                                                    "http://" + serverAddress + ":" + getPort(),
+                                                                    feignSecurityManager), gson);
         runtimeTenantResolver.forceTenant("instance");
         FeignSecurityManager.asSystem();
     }
@@ -127,8 +124,9 @@ public class ToponymsClientIT extends AbstractRegardsWebIT {
     @Test
     public void createNotVisibleToponym() {
         String polygon = "{\"type\": \"Feature\", \"properties\": {\"test\" : 42}, \"geometry\": { \"type\": \"Polygon\", \"coordinates\": [[ [100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0] ]] }}";
-        ResponseEntity<EntityModel<ToponymDTO>> result = client
-                .createNotVisibleToponym(new ToponymGeoJson(polygon, "test_user", "test_project"));
+        ResponseEntity<EntityModel<ToponymDTO>> result = client.createNotVisibleToponym(new ToponymGeoJson(polygon,
+                                                                                                           "test_user",
+                                                                                                           "test_project"));
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.CREATED));
         Assert.assertNotNull(result.getBody());
         Assert.assertNotNull(result.getBody().getContent());

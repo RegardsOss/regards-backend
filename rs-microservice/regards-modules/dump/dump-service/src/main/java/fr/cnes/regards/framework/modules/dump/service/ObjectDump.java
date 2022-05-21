@@ -20,13 +20,14 @@
 
 package fr.cnes.regards.framework.modules.dump.service;
 
+import org.springframework.util.Assert;
+
 import java.time.OffsetDateTime;
 import java.util.Objects;
 
-import org.springframework.util.Assert;
-
 /**
  * POJO used to dump data
+ *
  * @author Iliana Ghazali
  * @author Sylvain VISSIERE-GUERINET
  */
@@ -70,7 +71,7 @@ public class ObjectDump implements Comparable<ObjectDump> {
     @Override
     public String toString() {
         return "ObjectDump{" + "creationDate=" + creationDate + ", jsonContent=" + jsonContent + ", jsonName='"
-                + jsonName + '\'' + ", aipId='" + dumpId + '\'' + '}';
+            + jsonName + '\'' + ", aipId='" + dumpId + '\'' + '}';
     }
 
     @Override
@@ -83,7 +84,7 @@ public class ObjectDump implements Comparable<ObjectDump> {
         }
         ObjectDump objectDump = (ObjectDump) o;
         return this.creationDate.equals(objectDump.creationDate) && this.jsonName.equals(objectDump.jsonName)
-                && this.dumpId.equals(dumpId);
+            && this.dumpId.equals(dumpId);
     }
 
     @Override

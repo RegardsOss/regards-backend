@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.dam.domain.dataaccess.accessright;
  * Access level on a dataset and all its data or one of its subset
  *
  * @author Sylvain Vissiere-Guerinet
- *
  */
 public enum AccessLevel {
     /**

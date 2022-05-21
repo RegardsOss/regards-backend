@@ -18,6 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain;
 
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +30,6 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-
-import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 
 /**
  * Module-common handler for AMQP events.
@@ -65,12 +64,15 @@ public class IngestProcessingChainEventHandler implements ApplicationListener<Ap
         for (final String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             try {
-                LOGGER.debug("Trying to initialize {} for tenant {}", IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                LOGGER.debug("Trying to initialize {} for tenant {}",
+                             IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                              tenant);
                 ingestProcessingService.initDefaultServiceConfiguration();
             } catch (ModuleException e) {
-                LOGGER.error("Error initializing ingest configuration for tenant {}. Error : {}", tenant,
-                             e.getMessage(), e);
+                LOGGER.error("Error initializing ingest configuration for tenant {}. Error : {}",
+                             tenant,
+                             e.getMessage(),
+                             e);
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
@@ -88,7 +90,9 @@ public class IngestProcessingChainEventHandler implements ApplicationListener<Ap
                         event.getTenant());
         } catch (ModuleException e) {
             LOGGER.error("Error during default ingest chain initialization for tenant {}. error : {}",
-                         event.getTenant(), e.getMessage(), e);
+                         event.getTenant(),
+                         e.getMessage(),
+                         e);
         } finally {
             runtimeTenantResolver.clearTenant();
         }

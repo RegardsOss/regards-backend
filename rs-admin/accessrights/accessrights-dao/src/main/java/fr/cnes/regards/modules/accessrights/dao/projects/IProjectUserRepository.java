@@ -41,7 +41,8 @@ import java.util.stream.Collectors;
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
  */
-public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>, JpaSpecificationExecutor<ProjectUser> {
+public interface IProjectUserRepository
+    extends JpaRepository<ProjectUser, Long>, JpaSpecificationExecutor<ProjectUser> {
 
     /**
      * Find the single {@link ProjectUser} with passed <code>email</code>.<br>
@@ -60,10 +61,8 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
      * Find all {@link ProjectUser}s with passed <code>status</code>.<br>
      * Custom query auto-implemented by JPA thanks to the method naming convention.
      *
-     * @param status
-     *            The {@link ProjectUser}'s <code>status</code>
-     * @param pageable
-     *            the pagination information
+     * @param status   The {@link ProjectUser}'s <code>status</code>
+     * @param pageable the pagination information
      * @return The {@link List} of {@link ProjectUser}s with passed <code>status</code>
      */
     default Page<ProjectUser> findByStatus(UserStatus status, Pageable pageable) {
@@ -79,7 +78,6 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
     @EntityGraph(value = "graph.user.metadata", type = EntityGraph.EntityGraphType.LOAD)
     List<ProjectUser> findAllByIdIn(Collection<Long> ids, Sort sort);
 
-
     @Query(value = "select pu.id from ProjectUser pu where pu.status=:status")
     Page<Long> findIdPageByStatus(@Param("status") UserStatus status, Pageable pageable);
 
@@ -87,8 +85,7 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
      * Find all {@link ProjectUser}s where <code>email</code> is in passed collection.<br>
      * Custom query auto-implemented by JPA thanks to the method naming convention.
      *
-     * @param pEmail
-     *            The {@link Collection} of <code>email</code>
+     * @param pEmail The {@link Collection} of <code>email</code>
      * @return The {@link List} of found {@link ProjectUser}s
      */
     @EntityGraph(value = "graph.user.metadata", type = EntityGraph.EntityGraphType.LOAD)
@@ -98,8 +95,7 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
      * Find all project users whose role name equals param.<br>
      * Custom query auto-implemented by JPA thanks to the method naming convention.
      *
-     * @param pName
-     *            The role name
+     * @param pName The role name
      * @return all project users with this role
      */
     @EntityGraph(value = "graph.user.metadata", type = EntityGraph.EntityGraphType.LOAD)
@@ -109,10 +105,8 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
      * Find all project users whose role name equals param.<br>
      * Custom query auto-implemented by JPA thanks to the method naming convention.
      *
-     * @param names
-     *            a set of role name
-     * @param pageable
-     *            the pagination information
+     * @param names    a set of role name
+     * @param pageable the pagination information
      * @return all project users with this role
      */
     default Page<ProjectUser> findByRoleNameIn(Set<String> names, Pageable pageable) {
@@ -127,8 +121,7 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
     /**
      * Find all project users Custom query auto-implemented by JPA thanks to the method naming convention.
      *
-     * @param pageable
-     *            the pagination information
+     * @param pageable the pagination information
      * @return all project users with this role
      */
     @Override
@@ -153,12 +146,14 @@ public interface IProjectUserRepository extends JpaRepository<ProjectUser, Long>
     @EntityGraph(value = "graph.user.metadata", type = EntityGraph.EntityGraphType.LOAD)
     Page<ProjectUser> findAll(Specification<ProjectUser> spec, Pageable pageable);
 
-
-    @Query(nativeQuery = true, value = "SELECT access_group, count(*) FROM {h-schema}ta_project_user_access_group GROUP BY access_group")
+    @Query(nativeQuery = true,
+        value = "SELECT access_group, count(*) FROM {h-schema}ta_project_user_access_group GROUP BY access_group")
     List<Object[]> getCountByAccessGroup();
 
     default Map<String, Long> getUserCountByAccessGroup() {
-        return getCountByAccessGroup().stream().collect(Collectors.toMap(count -> (String) count[0], count -> ((BigInteger) count[1]).longValue()));
+        return getCountByAccessGroup().stream()
+                                      .collect(Collectors.toMap(count -> (String) count[0],
+                                                                count -> ((BigInteger) count[1]).longValue()));
     }
 
 }

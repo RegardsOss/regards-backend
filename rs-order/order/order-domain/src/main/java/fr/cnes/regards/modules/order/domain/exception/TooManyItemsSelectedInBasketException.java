@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  * @author Iliana Ghazali
  */
 public class TooManyItemsSelectedInBasketException extends ModuleException {
+
     public TooManyItemsSelectedInBasketException(String msg) {
         super(msg);
     }

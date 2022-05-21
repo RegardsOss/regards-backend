@@ -43,6 +43,7 @@ import java.util.*;
 
 /**
  * Test updating multiple schema. Just run migration tools
+ *
  * @author Marc Sordi
  */
 @RunWith(SpringRunner.class)
@@ -81,8 +82,15 @@ public class MultipleSchemaUpdateIT {
 
     @Before
     public void setup() throws PropertyVetoException, IOException {
-        dataSource = DataSourceHelper.createHikariDataSource("testperson", url, driver, userName, password, 5, 20,
-                                                             "SELECT 1", "public");
+        dataSource = DataSourceHelper.createHikariDataSource("testperson",
+                                                             url,
+                                                             driver,
+                                                             userName,
+                                                             password,
+                                                             5,
+                                                             20,
+                                                             "SELECT 1",
+                                                             "public");
 
         // Set hibernate properties
         hibernateProperties = new HashMap<>();
@@ -109,7 +117,8 @@ public class MultipleSchemaUpdateIT {
     public void testWithHbm2ddl() {
 
         Hbm2ddlDatasourceSchemaHelper schemaHelper = new Hbm2ddlDatasourceSchemaHelper(hibernateProperties,
-                Entity.class, null);
+                                                                                       Entity.class,
+                                                                                       null);
 
         schemaHelper.migrate(dataSource, Person.class.getPackage().getName(), "hbm2ddl1");
         schemaHelper.migrate(dataSource, Person.class.getPackage().getName(), "hbm2ddl2");
@@ -118,22 +127,24 @@ public class MultipleSchemaUpdateIT {
     @Test
     public void testWithFlyway() {
 
-        FlywayDatasourceSchemaHelper migrationHelper = new FlywayDatasourceSchemaHelper(hibernateProperties, applicationContext);
+        FlywayDatasourceSchemaHelper migrationHelper = new FlywayDatasourceSchemaHelper(hibernateProperties,
+                                                                                        applicationContext);
 
         String moduleName = "module0";
-        ReflectionTestUtils.invokeMethod(migrationHelper, "migrateModule",dataSource, "flyway1", moduleName);
-        ReflectionTestUtils.invokeMethod(migrationHelper, "migrateModule",dataSource, "flyway2", moduleName);
-        ReflectionTestUtils.invokeMethod(migrationHelper, "migrateModule",dataSource, "flyway3", moduleName);
+        ReflectionTestUtils.invokeMethod(migrationHelper, "migrateModule", dataSource, "flyway1", moduleName);
+        ReflectionTestUtils.invokeMethod(migrationHelper, "migrateModule", dataSource, "flyway2", moduleName);
+        ReflectionTestUtils.invokeMethod(migrationHelper, "migrateModule", dataSource, "flyway3", moduleName);
 
         moduleName = "module1";
-        ReflectionTestUtils.invokeMethod(migrationHelper, "migrateModule",dataSource, "flyway1", moduleName);
-        ReflectionTestUtils.invokeMethod(migrationHelper, "migrateModule",dataSource, "flyway2", moduleName);
-        ReflectionTestUtils.invokeMethod(migrationHelper, "migrateModule",dataSource, "flyway3", moduleName);
+        ReflectionTestUtils.invokeMethod(migrationHelper, "migrateModule", dataSource, "flyway1", moduleName);
+        ReflectionTestUtils.invokeMethod(migrationHelper, "migrateModule", dataSource, "flyway2", moduleName);
+        ReflectionTestUtils.invokeMethod(migrationHelper, "migrateModule", dataSource, "flyway3", moduleName);
     }
 
     @Test
     public void testScanModuleScripts() {
-        FlywayDatasourceSchemaHelper migrationHelper = new FlywayDatasourceSchemaHelper(hibernateProperties, applicationContext);
+        FlywayDatasourceSchemaHelper migrationHelper = new FlywayDatasourceSchemaHelper(hibernateProperties,
+                                                                                        applicationContext);
         migrationHelper.migrateSchema(dataSource, "scan");
     }
 

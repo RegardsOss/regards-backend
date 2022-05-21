@@ -22,10 +22,11 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
-import java.util.ArrayList;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Implementation of {@link ISessionAgentClient}
@@ -70,8 +71,8 @@ public class SessionAgentClient implements ISessionAgentClient {
         List<StepPropertyUpdateRequestEvent> stepList = new ArrayList<>();
 
         // create events
-        stepPropertyList.forEach(stepProperty -> stepList
-                .add(new StepPropertyUpdateRequestEvent(stepProperty, StepPropertyEventTypeEnum.VALUE)));
+        stepPropertyList.forEach(stepProperty -> stepList.add(new StepPropertyUpdateRequestEvent(stepProperty,
+                                                                                                 StepPropertyEventTypeEnum.VALUE)));
 
         // Publish events
         publisher.publish(stepList);

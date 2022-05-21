@@ -18,15 +18,14 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service.workflow.state;
 
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Service;
 
 /**
  * Class managing the workflow of an account by applying the right transitions according to its status.<br>
@@ -49,8 +48,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
     /**
      * Constructor
      *
-     * @param pAccountStateProvider
-     *            the state factory
+     * @param pAccountStateProvider the state factory
      */
     public AccountWorkflowManager(final AccountStateProvider pAccountStateProvider) {
         super();
@@ -98,7 +96,7 @@ public class AccountWorkflowManager implements IAccountTransitions {
      */
     @Override
     public void requestUnlockAccount(final Account pAccount, final String pOriginUrl, final String pRequestLink)
-            throws EntityOperationForbiddenException {
+        throws EntityOperationForbiddenException {
         accountStateProvider.getState(pAccount).requestUnlockAccount(pAccount, pOriginUrl, pRequestLink);
     }
 

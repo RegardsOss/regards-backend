@@ -24,7 +24,7 @@ import java.util.List;
 
 /**
  * Class AbstractRunnableCompression
- *
+ * <p>
  * Cette classe permet de rendre asynchrone la compression.
  */
 public abstract class AbstractRunnableCompression implements ICompression {
@@ -32,6 +32,7 @@ public abstract class AbstractRunnableCompression implements ICompression {
     /**
      * Méthode permettant de lancer la compression de manière synchrone ou asychrone en précisant l'encodage de la
      * compression
+     *
      * @return CompressManager
      * @parameter fileList : Liste des fichiers a compresser
      * @parameter compressedFile : Nom du fichier archive sans extension
@@ -40,8 +41,12 @@ public abstract class AbstractRunnableCompression implements ICompression {
      * @parameter charset : Type d'encodage
      */
     @Override
-    public CompressManager compress(List<File> fileList, File compressedFile, File rootDirectory, boolean flatArchive,
-            boolean runInThread, Charset charset) throws CompressionException {
+    public CompressManager compress(List<File> fileList,
+                                    File compressedFile,
+                                    File rootDirectory,
+                                    boolean flatArchive,
+                                    boolean runInThread,
+                                    Charset charset) throws CompressionException {
         if (runInThread) {
             return runThreadCompress(fileList, compressedFile, rootDirectory, flatArchive, charset);
         } else {
@@ -51,6 +56,7 @@ public abstract class AbstractRunnableCompression implements ICompression {
 
     /**
      * Méthode permettant de lancer la compression de manière synchrone ou asychrone.
+     *
      * @return CompressManager
      * @parameter fileList : Liste des fichiers a compresser
      * @parameter compressedFile : Nom du fichier archive sans extension
@@ -59,8 +65,11 @@ public abstract class AbstractRunnableCompression implements ICompression {
      * @parameter charset : Type d'encodage
      */
     @Override
-    public CompressManager compress(List<File> fileList, File compressedFile, File rootDirectory, boolean flatArchive,
-            boolean runInThread) throws CompressionException {
+    public CompressManager compress(List<File> fileList,
+                                    File compressedFile,
+                                    File rootDirectory,
+                                    boolean flatArchive,
+                                    boolean runInThread) throws CompressionException {
         if (runInThread) {
             return runThreadCompress(fileList, compressedFile, rootDirectory, flatArchive, null);
         } else {
@@ -71,6 +80,7 @@ public abstract class AbstractRunnableCompression implements ICompression {
 
     /**
      * Methode permettant de lancer la compression de manière asynchrone dans un thread.
+     *
      * @return CompressManager
      * @parameter fileList : Liste des fichiers a compresser
      * @parameter compressedFile : Nom du fichier archive sans extension
@@ -78,11 +88,18 @@ public abstract class AbstractRunnableCompression implements ICompression {
      * @parameter flatArchive : Archivage a plat ou non
      * @parameter charset : Type d'encodage
      */
-    private CompressManager runThreadCompress(List<File> fileList, File compressedFile, File rootDirectory,
-            boolean flatArchive, Charset charset) throws CompressionException {
+    private CompressManager runThreadCompress(List<File> fileList,
+                                              File compressedFile,
+                                              File rootDirectory,
+                                              boolean flatArchive,
+                                              Charset charset) throws CompressionException {
 
-        CompressionRunImpl impl = new CompressionRunImpl(this, fileList, compressedFile, rootDirectory, flatArchive,
-                charset);
+        CompressionRunImpl impl = new CompressionRunImpl(this,
+                                                         fileList,
+                                                         compressedFile,
+                                                         rootDirectory,
+                                                         flatArchive,
+                                                         charset);
         Thread thread = new Thread(impl);
         thread.start();
 
@@ -91,6 +108,7 @@ public abstract class AbstractRunnableCompression implements ICompression {
 
     /**
      * Méthode permettant de lancer la compression de manière synchrone
+     *
      * @parameter fileList : Liste des fichiers a compresser
      * @parameter compressedFile : Nom du fichier archive sans extension
      * @parameter rootDirectory : Répertoire root des fichiers a archiver
@@ -98,15 +116,24 @@ public abstract class AbstractRunnableCompression implements ICompression {
      * @parameter charset : Type d'encodage
      * @parameter compressManager : Gestionnaire de compression
      */
-    public void compress(List<File> fileList, File compressedFile, File rootDirectory, boolean flatArchive,
-            Charset charset, CompressManager compressManager) throws CompressionException {
+    public void compress(List<File> fileList,
+                         File compressedFile,
+                         File rootDirectory,
+                         boolean flatArchive,
+                         Charset charset,
+                         CompressManager compressManager) throws CompressionException {
         runCompress(fileList, compressedFile, rootDirectory, flatArchive, charset, compressManager);
     }
 
     /**
      * Méthode permettant de réaliser la compression
+     *
      * @return CompressManager
      */
-    protected abstract CompressManager runCompress(List<File> fileList, File compressedFile, File rootDirectory,
-            boolean flatArchive, Charset charset, CompressManager compressManager) throws CompressionException;
+    protected abstract CompressManager runCompress(List<File> fileList,
+                                                   File compressedFile,
+                                                   File rootDirectory,
+                                                   boolean flatArchive,
+                                                   Charset charset,
+                                                   CompressManager compressManager) throws CompressionException;
 }

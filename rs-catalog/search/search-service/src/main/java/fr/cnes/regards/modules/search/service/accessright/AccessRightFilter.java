@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link IAccessRightFilter}.
+ *
  * @author Xavier-Alexandre Brochard
  */
 @Service
@@ -49,17 +50,20 @@ public class AccessRightFilter implements IAccessRightFilter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessRightFilter.class);
 
-    private static final String CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP =
-            "Cannot set access right filter because user %s does not have any access group";
+    private static final String CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP = "Cannot set access right filter because user %s does not have any access group";
 
     private final IAccessGroupCache cache;
+
     private final IRuntimeTenantResolver runtimeTenantResolver;
+
     private final IProjectUsersClient projectUserClient;
+
     private final IAuthenticationResolver authResolver;
 
-    public AccessRightFilter(final IAuthenticationResolver authResolver, IAccessGroupCache pCache, IRuntimeTenantResolver pRuntimeTenantResolver,
-            IProjectUsersClient pProjectUserClient
-    ) {
+    public AccessRightFilter(final IAuthenticationResolver authResolver,
+                             IAccessGroupCache pCache,
+                             IRuntimeTenantResolver pRuntimeTenantResolver,
+                             IProjectUsersClient pProjectUserClient) {
         this.authResolver = authResolver;
         this.cache = pCache;
         this.runtimeTenantResolver = pRuntimeTenantResolver;
@@ -81,7 +85,7 @@ public class AccessRightFilter implements IAccessRightFilter {
 
         // For default ROLE, avoid feign request
         if (role.equals(DefaultRole.ADMIN.toString()) || role.equals(DefaultRole.PROJECT_ADMIN.toString())
-                || role.equals(DefaultRole.INSTANCE_ADMIN.toString())) {
+            || role.equals(DefaultRole.INSTANCE_ADMIN.toString())) {
             return true;
         }
 
@@ -112,7 +116,9 @@ public class AccessRightFilter implements IAccessRightFilter {
             List<ICriterion> searchCriterion = new ArrayList<>();
 
             // Add security filter
-            ICriterion groupCriterion = ICriterion.in(StaticProperties.GROUPS, StringMatchType.KEYWORD,accessGroupNames);
+            ICriterion groupCriterion = ICriterion.in(StaticProperties.GROUPS,
+                                                      StringMatchType.KEYWORD,
+                                                      accessGroupNames);
             searchCriterion.add(groupCriterion);
 
             // Add user criterion (theorically, userCriterion should not be null at this point but...)
@@ -143,9 +149,12 @@ public class AccessRightFilter implements IAccessRightFilter {
     }
 
     private Set<AccessGroup> getAccessGroups() throws AccessRightFilterException {
-        Set<AccessGroup> accessGroups = new HashSet<>(cache.getAccessGroups(authResolver.getUser(), runtimeTenantResolver.getTenant()));
+        Set<AccessGroup> accessGroups = new HashSet<>(cache.getAccessGroups(authResolver.getUser(),
+                                                                            runtimeTenantResolver.getTenant()));
         if (accessGroups.isEmpty()) {
-            String errorMessage = String.format(CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP, authResolver.getUser());
+            String errorMessage = String.format(
+                CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP,
+                authResolver.getUser());
             LOGGER.error(errorMessage);
             throw new AccessRightFilterException(errorMessage);
         }

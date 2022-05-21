@@ -33,7 +33,9 @@ public class GetResponseAndStream implements AsyncResponseTransformer<GetObjectR
     @Override
     public void onStream(SdkPublisher<ByteBuffer> publisher) {
         Flux<ByteBuffer> bbFlux = Flux.from(preventClose(publisher))
-                .doOnNext(bb -> LOG.debug("Read bytebuffer of {} size={}b", response, bb.remaining()));
+                                      .doOnNext(bb -> LOG.debug("Read bytebuffer of {} size={}b",
+                                                                response,
+                                                                bb.remaining()));
         future.complete(new ResponseAndStream(response, bbFlux));
     }
 

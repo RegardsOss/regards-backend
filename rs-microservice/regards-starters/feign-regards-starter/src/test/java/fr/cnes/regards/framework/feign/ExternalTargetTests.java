@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.framework.feign;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.http.HttpHeaders;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author rmechali
@@ -36,16 +36,19 @@ public class ExternalTargetTests {
 
     /**
      * Asserts header is present and has expected value in header map
-     * @param headers headers map
-     * @param headerName name of the header to test
+     *
+     * @param headers             headers map
+     * @param headerName          name of the header to test
      * @param expectedHeaderValue expected header value
      */
-    private void assertHeaderIn(Map<String, Collection<String>> headers, String headerName,
-            String expectedHeaderValue) {
+    private void assertHeaderIn(Map<String, Collection<String>> headers,
+                                String headerName,
+                                String expectedHeaderValue) {
         Collection<String> headerValue = headers.get(headerName);
         Assert.assertNotNull("There should be " + headerName + " header", headerValue);
         Assert.assertEquals("Header" + headerName + " should be one element length", 1, headerValue.size());
-        Assert.assertEquals("Header" + headerName + " value should be correctly set", expectedHeaderValue,
+        Assert.assertEquals("Header" + headerName + " value should be correctly set",
+                            expectedHeaderValue,
                             headerValue.iterator().next());
     }
 
@@ -56,7 +59,8 @@ public class ExternalTargetTests {
     public void testStandardHeaders() {
         //noinspection unchecked
         ExternalTarget<String> target = new ExternalTarget<>(String.class,
-                "http://my.domain.com:5156/myFolder?name=46&views=35", null);
+                                                             "http://my.domain.com:5156/myFolder?name=46&views=35",
+                                                             null);
         Map<String, Collection<String>> headers = target.getHeaders();
         assertHeaderIn(headers, HttpHeaders.USER_AGENT, "regards");
         assertHeaderIn(headers, HttpHeaders.HOST, "my.domain.com:5156");
@@ -77,7 +81,8 @@ public class ExternalTargetTests {
         customHeaders.put("Custom", "Something");
 
         ExternalTarget<String> target = new ExternalTarget<>(String.class,
-                "http://my.domain.com:5157/myFolder?name=46&views=35", customHeaders);
+                                                             "http://my.domain.com:5157/myFolder?name=46&views=35",
+                                                             customHeaders);
         Map<String, Collection<String>> headers = target.getHeaders();
         assertHeaderIn(headers, HttpHeaders.USER_AGENT, "regards");
         assertHeaderIn(headers, HttpHeaders.HOST, "my.domain.com:5157");
@@ -88,8 +93,9 @@ public class ExternalTargetTests {
         customHeaders.put(HttpHeaders.USER_AGENT, "COUCOUCMOI");
         customHeaders.put(HttpHeaders.HOST, "CCHEZVOUS");
 
-        target = new ExternalTarget<>(String.class, "http://my.domain.com:5157/myFolder?name=46&views=35",
-                customHeaders);
+        target = new ExternalTarget<>(String.class,
+                                      "http://my.domain.com:5157/myFolder?name=46&views=35",
+                                      customHeaders);
         headers = target.getHeaders();
         assertHeaderIn(headers, HttpHeaders.USER_AGENT, "COUCOUCMOI");
         assertHeaderIn(headers, HttpHeaders.HOST, "CCHEZVOUS");

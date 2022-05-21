@@ -29,13 +29,14 @@ import java.io.*;
 
 /**
  * Intercept OpenAPI to reformat API documentation properly with GSON serialization
+ *
  * @author Marc SORDI
  */
 public class OpenApiFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
+        throws IOException, ServletException {
         ByteResponseWrapper byteResponseWrapper = new ByteResponseWrapper((HttpServletResponse) response);
         ByteRequestWrapper byteRequestWrapper = new ByteRequestWrapper((HttpServletRequest) request);
         chain.doFilter(byteRequestWrapper, byteResponseWrapper);

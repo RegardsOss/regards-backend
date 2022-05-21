@@ -18,6 +18,14 @@
  */
 package fr.cnes.regards.framework.modules.jobs.domain;
 
+import com.google.gson.reflect.TypeToken;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobWorkspaceException;
+import fr.cnes.regards.framework.modules.jobs.domain.function.CheckedSupplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.file.Path;
@@ -26,18 +34,9 @@ import java.util.Observable;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.gson.reflect.TypeToken;
-
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobWorkspaceException;
-import fr.cnes.regards.framework.modules.jobs.domain.function.CheckedSupplier;
-
 /**
  * Abstract job, all jobs must inherit this class
+ *
  * @param <R> result type
  * @author oroussel
  * @author Léo Mieulet
@@ -64,6 +63,7 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
 
     /**
      * Set the result if necessary
+     *
      * @param result the result
      */
     protected void setResult(R result) {
@@ -98,6 +98,7 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
 
     /**
      * Reject a job because workspace has thrown an IOException
+     *
      * @param e thrown exception while setting workspace
      */
     protected void handleWorkspaceException(IOException e) throws JobWorkspaceException {
@@ -107,6 +108,7 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
 
     /**
      * Reject a job because <b>a parameter is missing</b>
+     *
      * @param parameterName missing parameter name
      * @throws JobParameterMissingException the related exception
      */
@@ -116,8 +118,9 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
 
     /**
      * Reject a job because <b>a parameter is invalid</b>
+     *
      * @param parameterName related parameter
-     * @param reason reason for invalidity
+     * @param reason        reason for invalidity
      * @throws JobParameterInvalidException the related exception
      */
     protected void handleInvalidParameter(String parameterName, String reason) throws JobParameterInvalidException {
@@ -126,8 +129,9 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
 
     /**
      * Reject a job because <b>a parameter is invalid</b>
+     *
      * @param parameterName related parameter
-     * @param reason reason for invalidity
+     * @param reason        reason for invalidity
      * @throws JobParameterInvalidException the related exception
      */
     protected void handleInvalidParameter(String parameterName, Exception reason) throws JobParameterInvalidException {
@@ -136,28 +140,30 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
 
     /**
      * Get a required non null parameter value
-     * @param parameters map of parameters
+     *
+     * @param parameters    map of parameters
      * @param parameterName parameter name to retrieve
-     * @param type to return (may be guessed for simple type, use {@link TypeToken#getType()} instead)
+     * @param type          to return (may be guessed for simple type, use {@link TypeToken#getType()} instead)
      * @return the parameter value
      * @throws JobParameterMissingException if parameter does not exist
      * @throws JobParameterInvalidException if parameter value is null
      */
     protected <T> T getValue(Map<String, JobParameter> parameters, String parameterName, Type type)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         return IJob.getValue(parameters, parameterName, type);
     }
 
     protected <T> T getValue(Map<String, JobParameter> parameters, String parameterName)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         return IJob.getValue(parameters, parameterName, null);
     }
 
     /**
      * Get parameter value as an Optional
-     * @param parameters map of parameters
+     *
+     * @param parameters    map of parameters
      * @param parameterName parameter name to retrieve
-     * @param type to return (may be guessed for simple type, use {@link TypeToken#getType()} instead)
+     * @param type          to return (may be guessed for simple type, use {@link TypeToken#getType()} instead)
      * @return an {@link java.util.Optional} parameter value
      */
     protected <T> Optional<T> getOptionalValue(Map<String, JobParameter> parameters, String parameterName, Type type) {

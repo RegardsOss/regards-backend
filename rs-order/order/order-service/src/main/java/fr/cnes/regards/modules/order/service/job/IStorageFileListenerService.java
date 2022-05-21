@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.order.service.job;
 
 /**
  * Service for subscribe to the StorageFileListener
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
 public interface IStorageFileListenerService {
 

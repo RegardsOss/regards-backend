@@ -41,14 +41,14 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
     private final IDynamicTenantSettingRepository dynamicTenantSettingRepository;
 
     public DynamicTenantSettingService(List<IDynamicTenantSettingCustomizer> dynamicTenantSettingCustomizerList,
-                                       IDynamicTenantSettingRepository dynamicTenantSettingRepository
-    ) {
+                                       IDynamicTenantSettingRepository dynamicTenantSettingRepository) {
         this.dynamicTenantSettingCustomizerList = dynamicTenantSettingCustomizerList;
         this.dynamicTenantSettingRepository = dynamicTenantSettingRepository;
     }
 
     @Override
-    public DynamicTenantSetting create(DynamicTenantSetting dynamicTenantSetting) throws EntityOperationForbiddenException, EntityInvalidException, EntityNotFoundException {
+    public DynamicTenantSetting create(DynamicTenantSetting dynamicTenantSetting)
+        throws EntityOperationForbiddenException, EntityInvalidException, EntityNotFoundException {
         dynamicTenantSetting.setId(null);
         IDynamicTenantSettingCustomizer customizer = getCustomizer(dynamicTenantSetting, false);
         DynamicTenantSetting savedDynamicTenantSetting = dynamicTenantSettingRepository.save(dynamicTenantSetting);
@@ -73,7 +73,8 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
     }
 
     @Override
-    public <T> DynamicTenantSetting update(String name, T value) throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
+    public <T> DynamicTenantSetting update(String name, T value)
+        throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
         DynamicTenantSetting dynamicTenantSetting = getDynamicTenantSetting(name);
         if (!Objects.equals(value, dynamicTenantSetting.getValue())) {
             dynamicTenantSetting.setValue(value);
@@ -93,7 +94,8 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
     }
 
     @Override
-    public DynamicTenantSetting reset(String name) throws EntityNotFoundException, EntityInvalidException, EntityOperationForbiddenException {
+    public DynamicTenantSetting reset(String name)
+        throws EntityNotFoundException, EntityInvalidException, EntityOperationForbiddenException {
         DynamicTenantSetting dynamicTenantSetting = getDynamicTenantSetting(name);
         if (!dynamicTenantSetting.getDefaultValue().equals(dynamicTenantSetting.getValue())) {
             dynamicTenantSetting.setValue(dynamicTenantSetting.getDefaultValue());
@@ -131,13 +133,17 @@ public class DynamicTenantSettingService implements IDynamicTenantSettingService
         return read(name).orElseThrow(() -> new EntityNotFoundException(name, DynamicTenantSetting.class));
     }
 
-    private IDynamicTenantSettingCustomizer getCustomizer(DynamicTenantSetting dynamicTenantSetting, boolean checkModification) throws EntityInvalidException, EntityOperationForbiddenException, EntityNotFoundException {
+    private IDynamicTenantSettingCustomizer getCustomizer(DynamicTenantSetting dynamicTenantSetting,
+                                                          boolean checkModification)
+        throws EntityInvalidException, EntityOperationForbiddenException, EntityNotFoundException {
 
-        IDynamicTenantSettingCustomizer settingCustomizer = dynamicTenantSettingCustomizerList
-                .stream()
-                .filter(customizer -> customizer.appliesTo(dynamicTenantSetting))
-                .findAny()
-                .orElseThrow(() -> new EntityNotFoundException(dynamicTenantSetting.getName(), IDynamicTenantSettingCustomizer.class));
+        IDynamicTenantSettingCustomizer settingCustomizer = dynamicTenantSettingCustomizerList.stream()
+                                                                                              .filter(customizer -> customizer.appliesTo(
+                                                                                                  dynamicTenantSetting))
+                                                                                              .findAny()
+                                                                                              .orElseThrow(() -> new EntityNotFoundException(
+                                                                                                  dynamicTenantSetting.getName(),
+                                                                                                  IDynamicTenantSettingCustomizer.class));
 
         if (checkModification && !settingCustomizer.canBeModified(dynamicTenantSetting)) {
             throw new EntityOperationForbiddenException("Tenant Setting Modification not allowed");

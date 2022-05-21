@@ -18,26 +18,23 @@
  */
 package fr.cnes.regards.modules.workermanager.dto.events.in;
 
-import fr.cnes.regards.framework.amqp.event.*;
-import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
+import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
+import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.workermanager.dto.events.out.WorkerRequestEvent;
-import org.springframework.amqp.core.MessageProperties;
-
-import javax.validation.constraints.NotNull;
 
 /**
  * Empty POJO to handle worker requests DLQ sent by manager with undefined body.
- *
+ * <p>
  * Channel is configured to root message from DLX exchange to the queue to listen for.
- *
+ * <p>
  * NOTE : declareDlq is set to false in the Event annotation to avoid creation of a dlq on the queue
  * which is already a DLQ. Is this param is set to true, interface with workers is broken as spring cloud stream
  * does not create a DLQ on the DLQ queues.
  *
  * @autor Sébastien Binda
  */
-@Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON,
-        declareDlq=false)
+@Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON, declareDlq = false)
 public class WorkerRequestDlqEvent extends WorkerRequestEvent {
 
 }

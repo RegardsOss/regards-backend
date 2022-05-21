@@ -18,20 +18,18 @@
  */
 package fr.cnes.regards.modules.dam.rest.entities.dto;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
-import org.springframework.util.MimeType;
-
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
+import org.springframework.util.MimeType;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 /**
  * Represents a data file reference.<br/>
  * This class is only used for API and transform to business POJO {@link DataFile} to be store in database.
  *
  * @author Marc Sordi
- *
  */
 public class DataFileReference {
 
@@ -105,6 +103,7 @@ public class DataFileReference {
 
     /**
      * Transform DTO in data file
+     *
      * @param dataType
      * @return {@link DataFile}
      */

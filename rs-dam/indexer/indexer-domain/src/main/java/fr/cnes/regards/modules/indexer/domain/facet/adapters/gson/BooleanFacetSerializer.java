@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.modules.indexer.domain.facet.adapters.gson;
 
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import fr.cnes.regards.modules.indexer.domain.facet.BooleanFacet;
+
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author oroussel
@@ -51,9 +51,13 @@ public class BooleanFacetSerializer implements JsonSerializer<BooleanFacet> {
         public AdaptedFacet(BooleanFacet facet) {
             super();
             attributeName = facet.getAttributeName();
-            values = facet.getValues().entrySet().stream()
-                    .map(entry -> new AdaptedFacetValue(entry.getKey(), entry.getValue(), facet.getAttributeName()))
-                    .collect(Collectors.toList());
+            values = facet.getValues()
+                          .entrySet()
+                          .stream()
+                          .map(entry -> new AdaptedFacetValue(entry.getKey(),
+                                                              entry.getValue(),
+                                                              facet.getAttributeName()))
+                          .collect(Collectors.toList());
             others = facet.getOthers();
         }
 

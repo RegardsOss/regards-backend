@@ -26,6 +26,7 @@ import java.util.Optional;
 /**
  * {@link ISubscriberContract} allows to subscribe to {@link ISubscribable} events. This interface represents the common
  * subscriber contract whether we are in a multitenant or an instance context.
+ *
  * @author Sylvain Vissière-Guérinet
  * @author Sébastien Binda
  * @author Marc Sordi
@@ -34,9 +35,10 @@ public interface ISubscriberContract {
 
     /**
      * Subscribe to this {@link ISubscribable} event
-     * @param <E> {@link ISubscribable} event
+     *
+     * @param <E>       {@link ISubscribable} event
      * @param eventType {@link ISubscribable} event
-     * @param receiver event {@link IHandler}
+     * @param receiver  event {@link IHandler}
      */
     <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver);
 
@@ -48,13 +50,16 @@ public interface ISubscriberContract {
      *     <li>The queue is bind to the exchange with UNICAST(routingKey=queueName) or BROADCAST</li>
      * </ul>
      *
-     * @param <E> {@link ISubscribable} event
-     * @param eventType {@link ISubscribable} event
-     * @param receiver event {@link IHandler}
-     * @param queueName Name of the queue to listen for
+     * @param <E>          {@link ISubscribable} event
+     * @param eventType    {@link ISubscribable} event
+     * @param receiver     event {@link IHandler}
+     * @param queueName    Name of the queue to listen for
      * @param exchangeName Name of the exchange to create and to bind to the newly subscribe queue.
      */
-    <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, String queueName, String exchangeName);
+    <E extends ISubscribable> void subscribeTo(Class<E> eventType,
+                                               IHandler<E> receiver,
+                                               String queueName,
+                                               String exchangeName);
 
     /**
      * Subscribe to the given queueName to listen for {@link ISubscribable} events<br/>
@@ -64,29 +69,35 @@ public interface ISubscriberContract {
      *     <li>The queue is bind to the exchange with UNICAST(routingKey=queueName) or BROADCAST</li>
      * </ul>
      *
-     * @param <E> {@link ISubscribable} event
-     * @param eventType {@link ISubscribable} event
-     * @param receiver event {@link IHandler}
-     * @param queueName Name of the queue to listen for
+     * @param <E>          {@link ISubscribable} event
+     * @param eventType    {@link ISubscribable} event
+     * @param receiver     event {@link IHandler}
+     * @param queueName    Name of the queue to listen for
      * @param exchangeName Name of the exchange to create and to bind to the newly subscribe queue.
      * @param purgeQueue
      */
-    <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, String queueName, String exchangeName, boolean purgeQueue);
+    <E extends ISubscribable> void subscribeTo(Class<E> eventType,
+                                               IHandler<E> receiver,
+                                               String queueName,
+                                               String exchangeName,
+                                               boolean purgeQueue);
 
     /**
      * Subscribe to this {@link ISubscribable} event
-     * @param <E> @link ISubscribable} event
-     * @param eventType {@link ISubscribable} event
-     * @param receiver event {@link IHandler}
+     *
+     * @param <E>        @link ISubscribable} event
+     * @param eventType  {@link ISubscribable} event
+     * @param receiver   event {@link IHandler}
      * @param purgeQueue true to purge queue if already exists. Useful in tests.
      */
     <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, boolean purgeQueue);
 
     /**
      * Unsubscribe from this {@link ISubscribable} event.
-     * @param <T> {@link ISubscribable} event
+     *
+     * @param <T>       {@link ISubscribable} event
      * @param eventType {@link ISubscribable} event
-     * @param fast When true, do not wait for proper rabbit consumer stop. Only for test
+     * @param fast      When true, do not wait for proper rabbit consumer stop. Only for test
      */
     <T extends ISubscribable> void unsubscribeFrom(Class<T> eventType, boolean fast);
 
@@ -99,6 +110,7 @@ public interface ISubscriberContract {
 
     /**
      * Purge all queues based on registered handlers
+     *
      * @param tenant
      */
     void purgeAllQueues(String tenant);
@@ -106,17 +118,20 @@ public interface ISubscriberContract {
     /**
      * Purge related queues (for all tenant virtual hosts). Useful for testing purpose before publishing events. Purge
      * can be done as well using {@link #subscribeTo(Class, IHandler, boolean)}
-     * @param eventType {@link ISubscribable} event type
+     *
+     * @param eventType   {@link ISubscribable} event type
      * @param handlerType {@link IHandler} type
-     * @param queueName optional queue name to purge. If not provided queue name to purge is defined by the Event/handler provided
+     * @param queueName   optional queue name to purge. If not provided queue name to purge is defined by the Event/handler provided
      */
-    <E extends ISubscribable> void purgeQueue(Class<E> eventType, Class<? extends IHandler<E>> handlerType,
-            Optional<String> queueName);
+    <E extends ISubscribable> void purgeQueue(Class<E> eventType,
+                                              Class<? extends IHandler<E>> handlerType,
+                                              Optional<String> queueName);
 
     /**
      * Purge related queues (for all tenant virtual hosts). Useful for testing purpose before publishing events. Purge
      * can be done as well using {@link #subscribeTo(Class, IHandler, boolean)}
-     * @param eventType {@link ISubscribable} event type
+     *
+     * @param eventType   {@link ISubscribable} event type
      * @param handlerType {@link IHandler} type
      */
     default <E extends ISubscribable> void purgeQueue(Class<E> eventType, Class<? extends IHandler<E>> handlerType) {

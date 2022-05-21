@@ -25,18 +25,28 @@ import java.time.OffsetDateTime;
 public class ProjectUserSearchParameters implements AbstractSearchParameters<ProjectUser> {
 
     private String email;
-    private String lastName;
-    private String firstName;
-    private String status;
-    private String origin;
-    private String role;
-    private OffsetDateTime createdBefore;
-    private OffsetDateTime createdAfter;
-    private OffsetDateTime lastConnectionBefore;
-    private OffsetDateTime lastConnectionAfter;
-    private Long quotaWarningCount;
-    private String accessGroup;
 
+    private String lastName;
+
+    private String firstName;
+
+    private String status;
+
+    private String origin;
+
+    private String role;
+
+    private OffsetDateTime createdBefore;
+
+    private OffsetDateTime createdAfter;
+
+    private OffsetDateTime lastConnectionBefore;
+
+    private OffsetDateTime lastConnectionAfter;
+
+    private Long quotaWarningCount;
+
+    private String accessGroup;
 
     public String getEmail() {
         return email;

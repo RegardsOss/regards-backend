@@ -56,7 +56,6 @@ import java.util.Optional;
  * Abstract class test to initialize SIP and AIP
  *
  * @author Sébastien Binda
- *
  */
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 public abstract class AbstractIngestRequestIT extends AbstractMultitenantServiceIT {
@@ -89,9 +88,15 @@ public abstract class AbstractIngestRequestIT extends AbstractMultitenantService
 
     protected void initSipAndAip(String checksum, String providerId) {
         SIP sip = SIP.build(EntityType.DATA, "providerId");
-        sipEntity = SIPEntity.build(getDefaultTenant(), IngestMetadata
-                .build("sessionOwner", "session", "ingestChain", Sets.newHashSet(), StorageMetadata.build("storage")),
-                                    sip, 1, SIPState.INGESTED);
+        sipEntity = SIPEntity.build(getDefaultTenant(),
+                                    IngestMetadata.build("sessionOwner",
+                                                         "session",
+                                                         "ingestChain",
+                                                         Sets.newHashSet(),
+                                                         StorageMetadata.build("storage")),
+                                    sip,
+                                    1,
+                                    SIPState.INGESTED);
         sipEntity.setChecksum(checksum);
         sipEntity.setLastUpdate(OffsetDateTime.now());
         sipEntity = sipRepo.save(sipEntity);
@@ -108,11 +113,9 @@ public abstract class AbstractIngestRequestIT extends AbstractMultitenantService
         return new FileReference(owner, meta, new FileLocation("somewhere", "file:///somewhere/file.name"));
     }
 
-
     @After
     public void doAfter() {
         ingestServiceTest.init();
     }
-
 
 }

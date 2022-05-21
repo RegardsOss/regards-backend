@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.indexer.domain.criterion;
 
 /**
  * Criterion that constraints nothing
+ *
  * @author oroussel
  */
 public final class EmptyCriterion implements ICriterion {

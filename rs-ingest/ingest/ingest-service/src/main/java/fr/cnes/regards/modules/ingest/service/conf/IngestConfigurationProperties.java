@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.service.conf;
 
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-
-import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 
 /**
  * Ingest configuration properties
  *
  * @author Marc SORDI
- *
+ * <p>
  * FIXME faire un set du AIP download template à partir du controller donnant accès aux AIPs
  */
 @Configuration

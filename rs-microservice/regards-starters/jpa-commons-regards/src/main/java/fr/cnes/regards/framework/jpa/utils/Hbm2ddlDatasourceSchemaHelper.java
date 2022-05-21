@@ -34,6 +34,7 @@ import java.util.Set;
 
 /**
  * Help to update datasource schema using hbm2ddl
+ *
  * @author Marc Sordi
  */
 public class Hbm2ddlDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper {
@@ -60,7 +61,8 @@ public class Hbm2ddlDatasourceSchemaHelper extends AbstractDataSourceSchemaHelpe
     private final Class<? extends Annotation> excludeAnnotation;
 
     public Hbm2ddlDatasourceSchemaHelper(Map<String, Object> hibernateProperties,
-            Class<? extends Annotation> includeAnnotation, Class<? extends Annotation> excludeAnnotation) {
+                                         Class<? extends Annotation> includeAnnotation,
+                                         Class<? extends Annotation> excludeAnnotation) {
         super(hibernateProperties);
         this.includeAnnotation = includeAnnotation;
         this.excludeAnnotation = excludeAnnotation;
@@ -68,9 +70,10 @@ public class Hbm2ddlDatasourceSchemaHelper extends AbstractDataSourceSchemaHelpe
 
     /**
      * Update datasource schema
-     * @param dataSource datasource to update
+     *
+     * @param dataSource        datasource to update
      * @param rootPackageToScan package to scan for JPA entities
-     * @param schema forced target database schema removing existing (if any) from properties
+     * @param schema            forced target database schema removing existing (if any) from properties
      */
     public void migrate(final DataSource dataSource, String rootPackageToScan, String schema) {
 
@@ -88,9 +91,10 @@ public class Hbm2ddlDatasourceSchemaHelper extends AbstractDataSourceSchemaHelpe
         final MetadataSources metadata = new MetadataSources(builder.build());
 
         Set<String> packagesToScan = DaoUtils.findPackagesForJpa(rootPackageToScan);
-        packagesToScan.stream().flatMap(
-                pPackage -> DaoUtils.scanPackageForJpa(pPackage, includeAnnotation, excludeAnnotation).stream())
-                .forEach(metadata::addAnnotatedClass);
+        packagesToScan.stream()
+                      .flatMap(pPackage -> DaoUtils.scanPackageForJpa(pPackage, includeAnnotation, excludeAnnotation)
+                                                   .stream())
+                      .forEach(metadata::addAnnotatedClass);
 
         final SchemaUpdate export = new SchemaUpdate();
 
@@ -115,6 +119,7 @@ public class Hbm2ddlDatasourceSchemaHelper extends AbstractDataSourceSchemaHelpe
 
     /**
      * Set an output file to export SQL script. Default : none.
+     *
      * @param pOutputFile SQL script output file
      */
     public void setOutputFile(String pOutputFile) {

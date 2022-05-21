@@ -18,23 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip.scheduler;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -46,13 +30,25 @@ import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.service.job.AIPUpdateRunnerJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Service to handle {@link AIPUpdateRunnerJob}s
  *
  * @author Léo Mieulet
  * @author Sébastien Binda
- *
  */
 @Service
 @MultitenantTransactional
@@ -75,8 +71,11 @@ public class AIPUpdateRequestScheduler {
     private Integer updateRequestIterationLimit;
 
     public AIPUpdateRequestScheduler(IAIPUpdateRequestRepository aipUpdateRequestRepository,
-            AIPUpdateRequestService aipUpdateRequestService, IAbstractRequestRepository abstractRequestRepository,
-            JobInfoService jobInfoService, @Value("${regards.ingest.aips.scan.iteration-limit:100}") Integer updateRequestIterationLimit) {
+                                     AIPUpdateRequestService aipUpdateRequestService,
+                                     IAbstractRequestRepository abstractRequestRepository,
+                                     JobInfoService jobInfoService,
+                                     @Value("${regards.ingest.aips.scan.iteration-limit:100}")
+                                     Integer updateRequestIterationLimit) {
         this.aipUpdateRequestRepository = aipUpdateRequestRepository;
         this.aipUpdateRequestService = aipUpdateRequestService;
         this.abstractRequestRepository = abstractRequestRepository;
@@ -109,11 +108,15 @@ public class AIPUpdateRequestScheduler {
             // Schedule deletion job
             Set<JobParameter> jobParameters = Sets.newHashSet();
             jobParameters.add(new JobParameter(AIPUpdateRunnerJob.UPDATE_REQUEST_IDS, requestIds));
-            jobInfo = new JobInfo(false, IngestJobPriority.UPDATE_AIP_RUNNER_PRIORITY, jobParameters,
-                    null, AIPUpdateRunnerJob.class.getName());
+            jobInfo = new JobInfo(false,
+                                  IngestJobPriority.UPDATE_AIP_RUNNER_PRIORITY,
+                                  jobParameters,
+                                  null,
+                                  AIPUpdateRunnerJob.class.getName());
             jobInfoService.createAsQueued(jobInfo);
             LOGGER.debug("[OAIS UPDATE SCHEDULER] 1 Job scheduled for {} AIPUpdateRequest(s) in {} ms",
-                         waitingRequests.getNumberOfElements(), System.currentTimeMillis() - start);
+                         waitingRequests.getNumberOfElements(),
+                         System.currentTimeMillis() - start);
         }
         return jobInfo;
     }

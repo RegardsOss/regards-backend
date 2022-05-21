@@ -31,6 +31,7 @@ import org.springframework.beans.factory.InitializingBean;
 /**
  * This class helps to configure virtual hosts at runtime listening to tenant events. The system uses the AMQP manager
  * virtual host no to be tenant dependent.
+ *
  * @author Marc Sordi
  */
 public class AmqpEventHandler implements InitializingBean {
@@ -50,8 +51,9 @@ public class AmqpEventHandler implements InitializingBean {
      */
     private final ISubscriber subscriber;
 
-    public AmqpEventHandler(IRabbitVirtualHostAdmin pVirtualHostAdmin, IInstanceSubscriber pInstanceSubscriber,
-            ISubscriber pSubscriber) {
+    public AmqpEventHandler(IRabbitVirtualHostAdmin pVirtualHostAdmin,
+                            IInstanceSubscriber pInstanceSubscriber,
+                            ISubscriber pSubscriber) {
         this.virtualHostAdmin = pVirtualHostAdmin;
         this.instanceSubscriber = pInstanceSubscriber;
         this.subscriber = pSubscriber;
@@ -69,6 +71,7 @@ public class AmqpEventHandler implements InitializingBean {
 
     /**
      * Handle tenant creation
+     *
      * @author Marc Sordi
      */
     private class TenantCreationHandler implements IHandler<TenantCreatedEvent> {
@@ -84,6 +87,7 @@ public class AmqpEventHandler implements InitializingBean {
 
     /**
      * Handle tenant deletion
+     *
      * @author Marc Sordi
      */
     private class TenantDeletionHandler implements IHandler<TenantDeletedEvent> {

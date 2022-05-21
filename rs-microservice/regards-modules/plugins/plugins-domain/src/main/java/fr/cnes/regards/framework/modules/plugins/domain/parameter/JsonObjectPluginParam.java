@@ -25,7 +25,6 @@ import com.google.gson.JsonObject;
  * Its value will be transformed to target parameter type in plugin engine using GSON deserialization.
  *
  * @author Marc SORDI
- *
  */
 public class JsonObjectPluginParam extends AbstractPluginParam<JsonObject> {
 

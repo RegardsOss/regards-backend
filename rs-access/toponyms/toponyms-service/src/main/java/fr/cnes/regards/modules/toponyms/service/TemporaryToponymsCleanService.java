@@ -3,8 +3,6 @@ package fr.cnes.regards.modules.toponyms.service;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.modules.toponyms.dao.ToponymsRepository;
 import fr.cnes.regards.modules.toponyms.domain.Toponym;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +12,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 /**
  * Service to delete out-dated not visible toponyms
@@ -45,8 +46,9 @@ public class TemporaryToponymsCleanService {
         Pageable page = PageRequest.of(0, pageSize, Sort.by("businessId"));
         Page<Toponym> toponymsToDelete;
         do {
-            toponymsToDelete = toponymsRepository
-                    .findByVisibleAndToponymMetadataExpirationDateBefore(false, startTime, page);
+            toponymsToDelete = toponymsRepository.findByVisibleAndToponymMetadataExpirationDateBefore(false,
+                                                                                                      startTime,
+                                                                                                      page);
             this.toponymsRepository.deleteInBatch(toponymsToDelete);
             nbDeleted += toponymsToDelete.getNumberOfElements();
         } while (toponymsToDelete.hasNext());

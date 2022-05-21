@@ -18,26 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import java.time.OffsetDateTime;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Order;
-import org.springframework.stereotype.Service;
-import org.springframework.validation.Errors;
-import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.Validator;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -52,12 +33,7 @@ import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCopyRequest;
-import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.FeatureFile;
-import fr.cnes.regards.modules.feature.dto.FeatureFileLocation;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
-import fr.cnes.regards.modules.feature.dto.RequestInfo;
+import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
@@ -65,6 +41,23 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.conf.FeatureConfigurationProperties;
 import fr.cnes.regards.modules.feature.service.job.FeatureCopyJob;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
+
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Feature copy service management
@@ -107,12 +100,14 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
         RequestInfo<FeatureUniformResourceName> requestInfo = new RequestInfo<>();
 
         copies.forEach(item -> validateFeatureCopyRequest(item, grantedRequests, requestInfo));
-        LOGGER.trace("------------->>> {} creation requests prepared in {} ms", grantedRequests.size(),
+        LOGGER.trace("------------->>> {} creation requests prepared in {} ms",
+                     grantedRequests.size(),
                      System.currentTimeMillis() - registrationStart);
 
         // Save a list of validated FeatureCreationRequest from a list of FeatureCreationRequestEvent
         featureCopyRequestRepo.saveAll(grantedRequests);
-        LOGGER.trace("------------->>> {} creation requests registered in {} ms", grantedRequests.size(),
+        LOGGER.trace("------------->>> {} creation requests registered in {} ms",
+                     grantedRequests.size(),
                      System.currentTimeMillis() - registrationStart);
 
         return requestInfo;
@@ -120,11 +115,13 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
 
     /**
      * Validate a {@link FeatureCopyRequest}
-     * @param item to validate
+     *
+     * @param item            to validate
      * @param grantedRequests list of validated requests
      */
-    private void validateFeatureCopyRequest(FeatureCopyRequest item, List<FeatureCopyRequest> grantedRequests,
-            RequestInfo<FeatureUniformResourceName> requestInfo) {
+    private void validateFeatureCopyRequest(FeatureCopyRequest item,
+                                            List<FeatureCopyRequest> grantedRequests,
+                                            RequestInfo<FeatureUniformResourceName> requestInfo) {
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), FeatureCopyRequest.class.getName());
         validator.validate(item, errors);
@@ -132,14 +129,22 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
             LOGGER.debug("Error during founded FeatureCopyRequest validation {}", errors.toString());
             requestInfo.addDeniedRequest(item.getUrn(), ErrorTranslator.getErrors(errors));
             // Publish DENIED request (do not persist it in DB)
-            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.FILE_COPY, item.getRequestId(),
-                                                        item.getRequestOwner(), null, null, RequestState.DENIED,
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.FILE_COPY,
+                                                        item.getRequestId(),
+                                                        item.getRequestOwner(),
+                                                        null,
+                                                        null,
+                                                        RequestState.DENIED,
                                                         ErrorTranslator.getErrors(errors)));
             return;
         }
         // Publish GRANTED request
-        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.FILE_COPY, item.getRequestId(),
-                                                    item.getRequestOwner(), null, item.getUrn(), RequestState.GRANTED,
+        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.FILE_COPY,
+                                                    item.getRequestId(),
+                                                    item.getRequestOwner(),
+                                                    null,
+                                                    item.getUrn(),
+                                                    RequestState.GRANTED,
                                                     null));
 
         grantedRequests.add(item);
@@ -153,13 +158,14 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
         // Shedule job
         Set<JobParameter> jobParameters = Sets.newHashSet();
 
-        List<FeatureCopyRequest> requestsToSchedule = this.featureCopyRequestRepo
-                .findByStepAndRequestDateLessThanEqual(FeatureRequestStep.LOCAL_DELAYED, OffsetDateTime.now(),
-                                                       PageRequest.of(0, properties.getMaxBulkSize(), Sort
-                                                               .by(Order.asc("priority"), Order.asc("requestDate"))))
-                .getContent();
-        Set<Long> requestIds = requestsToSchedule.stream().map(AbstractFeatureRequest::getId)
-                .collect(Collectors.toSet());
+        List<FeatureCopyRequest> requestsToSchedule = this.featureCopyRequestRepo.findByStepAndRequestDateLessThanEqual(
+                                                              FeatureRequestStep.LOCAL_DELAYED,
+                                                              OffsetDateTime.now(),
+                                                              PageRequest.of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))))
+                                                                                 .getContent();
+        Set<Long> requestIds = requestsToSchedule.stream()
+                                                 .map(AbstractFeatureRequest::getId)
+                                                 .collect(Collectors.toSet());
         if (!requestsToSchedule.isEmpty()) {
 
             featureCopyRequestRepo.updateStep(FeatureRequestStep.LOCAL_SCHEDULED, requestIds);
@@ -167,11 +173,15 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
             jobParameters.add(new JobParameter(FeatureCopyJob.IDS_PARAMETER, requestIds));
 
             // the job priority will be set according the priority of the first request to schedule
-            JobInfo jobInfo = new JobInfo(false, requestsToSchedule.get(0).getPriority().getPriorityLevel(),
-                    jobParameters, authResolver.getUser(), FeatureCopyJob.class.getName());
+            JobInfo jobInfo = new JobInfo(false,
+                                          requestsToSchedule.get(0).getPriority().getPriorityLevel(),
+                                          jobParameters,
+                                          authResolver.getUser(),
+                                          FeatureCopyJob.class.getName());
             jobInfoService.createAsQueued(jobInfo);
 
-            LOGGER.trace("------------->>> {} copy requests scheduled in {} ms", requestsToSchedule.size(),
+            LOGGER.trace("------------->>> {} copy requests scheduled in {} ms",
+                         requestsToSchedule.size(),
                          System.currentTimeMillis() - scheduleStart);
 
             return requestIds.size();
@@ -187,9 +197,15 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
 
         Set<FeatureCopyRequest> successCopyRequest = new HashSet<>();
         // map of FeatureEntity by urn
-        Map<FeatureUniformResourceName, FeatureEntity> entitiesToUpdate = this.featureRepo
-                .findCompleteByUrnIn(requests.stream().map(FeatureCopyRequest::getUrn).collect(Collectors.toList())).stream()
-                .collect(Collectors.toMap(FeatureEntity::getUrn, Function.identity()));
+        Map<FeatureUniformResourceName, FeatureEntity> entitiesToUpdate = this.featureRepo.findCompleteByUrnIn(requests.stream()
+                                                                                                                       .map(
+                                                                                                                           FeatureCopyRequest::getUrn)
+                                                                                                                       .collect(
+                                                                                                                           Collectors.toList()))
+                                                                                          .stream()
+                                                                                          .collect(Collectors.toMap(
+                                                                                              FeatureEntity::getUrn,
+                                                                                              Function.identity()));
         for (FeatureCopyRequest request : requests) {
             if (entitiesToUpdate.get(request.getUrn()) != null) {
                 updateFeature(entitiesToUpdate.get(request.getUrn()).getFeature(), request, successCopyRequest);
@@ -205,25 +221,33 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
         doOnTerminated(successCopyRequest);
 
         // update those with a error status
-        this.featureCopyRequestRepo.saveAll(requests.stream().filter(request -> !successCopyRequest.contains(request))
-                .collect(Collectors.toList()));
+        this.featureCopyRequestRepo.saveAll(requests.stream()
+                                                    .filter(request -> !successCopyRequest.contains(request))
+                                                    .collect(Collectors.toList()));
         // Successful requests are deleted now!
         this.featureCopyRequestRepo.deleteInBatch(successCopyRequest);
 
-        LOGGER.trace("------------->>> {} copy request treated in {} ms", successCopyRequest.size(),
+        LOGGER.trace("------------->>> {} copy request treated in {} ms",
+                     successCopyRequest.size(),
                      System.currentTimeMillis() - processStart);
     }
 
     /**
      * Add the copied file to the files of the {@link Feature}
-     * @param feature to update
-     * @param request contain location of copied file
+     *
+     * @param feature            to update
+     * @param request            contain location of copied file
      * @param successCopyRequest list of succeded requests
      */
-    private void updateFeature(Feature feature, FeatureCopyRequest request,
-            Set<FeatureCopyRequest> successCopyRequest) {
-        Optional<FeatureFile> fileToUpdate = feature.getFiles().stream()
-                .filter(file -> file.getAttributes().getChecksum().equals(request.getChecksum())).findFirst();
+    private void updateFeature(Feature feature,
+                               FeatureCopyRequest request,
+                               Set<FeatureCopyRequest> successCopyRequest) {
+        Optional<FeatureFile> fileToUpdate = feature.getFiles()
+                                                    .stream()
+                                                    .filter(file -> file.getAttributes()
+                                                                        .getChecksum()
+                                                                        .equals(request.getChecksum()))
+                                                    .findFirst();
         if (fileToUpdate.isPresent()) {
             successCopyRequest.add(request);
             fileToUpdate.get().getLocations().add(FeatureFileLocation.build(request.getStorage()));
@@ -254,13 +278,14 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
 
     @Override
     public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
-        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null)
-                && (selection.getFilters().getState() != RequestState.ERROR))) {
+        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null) && (
+            selection.getFilters().getState() != RequestState.ERROR))) {
             return RequestsInfo.build(0L);
         } else {
             selection.getFilters().withState(RequestState.ERROR);
-            return RequestsInfo.build(featureCopyRequestRepo
-                    .count(FeatureCopyRequestSpecification.searchAllByFilters(selection, PageRequest.of(0, 1))));
+            return RequestsInfo.build(featureCopyRequestRepo.count(FeatureCopyRequestSpecification.searchAllByFilters(
+                selection,
+                PageRequest.of(0, 1))));
         }
     }
 

@@ -125,25 +125,19 @@ public class BasketDatasetSelectionDto implements Comparable<BasketDatasetSelect
         dto.setDatasetIpid(basketDatasetSelection.getDatasetIpid());
         dto.setDatasetLabel(basketDatasetSelection.getDatasetLabel());
         dto.setObjectsCount(basketDatasetSelection.getObjectsCount());
-        dto.setFilesCount(
-            DataTypeSelection.ALL.getFileTypes().stream()
-                .mapToLong(ft -> basketDatasetSelection.getFileTypeCount(ft.name()))
-                .sum()
-        );
-        dto.setFilesSize(
-            DataTypeSelection.ALL.getFileTypes().stream()
-                .mapToLong(ft -> basketDatasetSelection.getFileTypeSize(ft.name()))
-                .sum());
-        dto.setItemsSelections(
-            basketDatasetSelection.getItemsSelections().stream()
-                .map(BasketDatedItemsSelectionDto::makeBasketDatedItemsSelectionDto)
-                .collect(
-                    TreeSet::new,
-                    Set::add,
-                    TreeSet::addAll
-                )
-        );
-        dto.setQuota(basketDatasetSelection.getFileTypeCount(DataType.RAWDATA.name()+"_!ref"));
+        dto.setFilesCount(DataTypeSelection.ALL.getFileTypes()
+                                               .stream()
+                                               .mapToLong(ft -> basketDatasetSelection.getFileTypeCount(ft.name()))
+                                               .sum());
+        dto.setFilesSize(DataTypeSelection.ALL.getFileTypes()
+                                              .stream()
+                                              .mapToLong(ft -> basketDatasetSelection.getFileTypeSize(ft.name()))
+                                              .sum());
+        dto.setItemsSelections(basketDatasetSelection.getItemsSelections()
+                                                     .stream()
+                                                     .map(BasketDatedItemsSelectionDto::makeBasketDatedItemsSelectionDto)
+                                                     .collect(TreeSet::new, Set::add, TreeSet::addAll));
+        dto.setQuota(basketDatasetSelection.getFileTypeCount(DataType.RAWDATA.name() + "_!ref"));
         dto.setProcessDatasetDescription(basketDatasetSelection.getProcessDatasetDescription());
         return dto;
     }

@@ -18,19 +18,7 @@
  */
 package fr.cnes.regards.modules.dam.service.dataaccess;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -38,9 +26,20 @@ import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.dto.DatasetWithAccessRight;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.service.entities.IDatasetService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Optional;
 
 /**
  * Service to search for {@link Dataset}s associated with their {@link AccessRight}
+ *
  * @author Sébastien Binda
  */
 @Service
@@ -55,15 +54,16 @@ public class DatasetWithAccessRightService implements IDatasetWithAccessRightSer
 
     @Override
     public Page<DatasetWithAccessRight> search(String datasetLabelFilter, String accessGroupName, Pageable pageRequest)
-            throws ModuleException {
+        throws ModuleException {
 
         // Initialize set to keep datasets order by label
         LinkedHashSet<DatasetWithAccessRight> datasetsWithAR = Sets.newLinkedHashSet();
 
         // 1. Search for datasets
         // NOTE : New pageRequest to avoid Sort. Sort is forced in the JPA specification to sort by label
-        Page<Dataset> datasets = datasetService
-                .search(datasetLabelFilter, PageRequest.of(pageRequest.getPageNumber(), pageRequest.getPageSize()));
+        Page<Dataset> datasets = datasetService.search(datasetLabelFilter,
+                                                       PageRequest.of(pageRequest.getPageNumber(),
+                                                                      pageRequest.getPageSize()));
 
         // 2. For each dataset of the result page, retrieve the associated AccessRight
         for (Dataset ds : datasets.getContent()) {

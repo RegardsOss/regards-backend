@@ -40,8 +40,9 @@ import javax.mail.internet.MimeMessage;
 
 /**
  * Class JpaTenantConnectionConfiguration
- *
+ * <p>
  * Test configuration class
+ *
  * @author Sébastien Binda
  */
 @Configuration
@@ -80,6 +81,7 @@ public class AuthoritiesTestConfiguration {
 
     /**
      * Initialize a Mock for AMQP Publisher
+     *
      * @return IPublisher
      */
     @Bean
@@ -109,6 +111,7 @@ public class AuthoritiesTestConfiguration {
 
     /**
      * Initialize a Mock for AMQP Subsriber
+     *
      * @return ISubscriber
      */
     @Bean

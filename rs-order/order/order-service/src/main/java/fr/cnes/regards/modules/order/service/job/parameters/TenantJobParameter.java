@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 
 /**
  * User email specific job parameter, it contains the pair "user" : user email
+ *
  * @author oroussel
  */
 public class TenantJobParameter extends JobParameter {
@@ -44,6 +45,7 @@ public class TenantJobParameter extends JobParameter {
 
     /**
      * Check if given JobParameter is compatible with UserJobParameter ie same name
+     *
      * @param param
      * @return {@link Boolean}
      */

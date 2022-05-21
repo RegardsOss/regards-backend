@@ -20,13 +20,14 @@
 
 package fr.cnes.regards.modules.ingest.service.notification;
 
-import java.util.Set;
-
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.notifier.client.NotifierClient;
 
+import java.util.Set;
+
 /**
  * Interface of {@link AIPNotificationService}
+ *
  * @author Iliana Ghazali
  */
 
@@ -34,18 +35,21 @@ public interface IAIPNotificationService {
 
     /**
      * Send requests to {@link NotifierClient}
+     *
      * @param requestsToSend abstract requests to send for notification
      */
     void sendRequestsToNotifier(Set<AbstractRequest> requestsToSend);
 
     /**
      * Handle requests notified successfully
+     *
      * @param successRequests abstract requests in success
      */
     void handleNotificationSuccess(Set<AbstractRequest> successRequests);
 
     /**
      * Handle requests with notification errors
+     *
      * @param errorRequests abstract requests in error
      */
     void handleNotificationError(Set<AbstractRequest> errorRequests);

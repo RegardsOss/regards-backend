@@ -18,13 +18,6 @@
  */
 package fr.cnes.regards.modules.model.domain.attributes.restriction;
 
-import java.math.BigInteger;
-
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.validation.constraints.NotNull;
-
 import fr.cnes.regards.modules.model.domain.attributes.restriction.validator.CheckIntegerRange;
 import fr.cnes.regards.modules.model.domain.schema.IntegerRange;
 import fr.cnes.regards.modules.model.domain.schema.IntegerRange.Max;
@@ -32,8 +25,13 @@ import fr.cnes.regards.modules.model.domain.schema.IntegerRange.Min;
 import fr.cnes.regards.modules.model.domain.schema.Restriction;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 
+import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.validation.constraints.NotNull;
+import java.math.BigInteger;
+
 /**
- *
  * Manage date format restriction for attribute of type :
  * <ul>
  * <li>{@link PropertyType#INTEGER}</li>
@@ -42,7 +40,6 @@ import fr.cnes.regards.modules.model.dto.properties.PropertyType;
  * </ul>
  *
  * @author msordi
- *
  */
 @CheckIntegerRange
 @Entity
@@ -83,7 +80,7 @@ public class IntegerRangeRestriction extends AbstractRestriction {
     @Override
     public Boolean supports(PropertyType pPropertyType) {
         return PropertyType.INTEGER.equals(pPropertyType) || PropertyType.INTEGER_ARRAY.equals(pPropertyType)
-                || PropertyType.INTEGER_INTERVAL.equals(pPropertyType);
+            || PropertyType.INTEGER_INTERVAL.equals(pPropertyType);
     }
 
     public Integer getMin() {

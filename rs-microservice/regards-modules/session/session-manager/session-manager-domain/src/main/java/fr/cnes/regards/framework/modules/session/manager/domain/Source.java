@@ -19,23 +19,14 @@
 package fr.cnes.regards.framework.modules.session.manager.domain;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+
+import javax.persistence.*;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 /**
  * A source represent the current states of all related sessions
@@ -51,13 +42,13 @@ public class Source {
      */
     @Id
     @NotNull
-    @Column(name="name")
+    @Column(name = "name")
     private String name;
 
     /**
      * Number of sessions in the source
      */
-    @Column(name="nb_sessions")
+    @Column(name = "nb_sessions")
     @NotNull
     private long nbSessions = 0L;
 
@@ -65,7 +56,7 @@ public class Source {
      * Set of SourceStepAggregation associated to this source
      */
     @Valid
-    @OneToMany(fetch= FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "source_name", foreignKey = @ForeignKey(name = "fk_source_step_aggregation"))
     private Set<SourceStepAggregation> steps = new HashSet<>();
 
@@ -83,7 +74,7 @@ public class Source {
         this.name = name;
     }
 
-    public Source(){
+    public Source() {
     }
 
     public String getName() {
@@ -105,7 +96,7 @@ public class Source {
     public void setSteps(Set<SourceStepAggregation> pSteps) {
         // This method is used to prevent the override of the set that Hibernate is tracking
         this.steps.clear();
-        if(pSteps != null) {
+        if (pSteps != null) {
             this.steps.addAll(pSteps);
         }
     }
@@ -146,6 +137,6 @@ public class Source {
     @Override
     public String toString() {
         return "Source{" + "name='" + name + '\'' + ", nbSessions=" + nbSessions + ", steps=" + steps
-                + ", lastUpdateDate=" + lastUpdateDate + ", managerState=" + managerState + '}';
+            + ", lastUpdateDate=" + lastUpdateDate + ", managerState=" + managerState + '}';
     }
 }

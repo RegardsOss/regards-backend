@@ -18,24 +18,20 @@
  */
 package fr.cnes.regards.modules.authentication.rest;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.authentication.service.role.IBorrowRoleService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Controller handling the role borrowing feature
+ *
  * @author Sylvain Vissiere-Guerinet
  */
 @RestController
@@ -60,13 +56,14 @@ public class BorrowRoleController {
 
     /**
      * Allows to switch role
+     *
      * @return information to switch role
      */
     @ResponseBody
     @ResourceAccess(role = DefaultRole.PUBLIC, description = "endpoint allowing to switch role")
     @RequestMapping(method = RequestMethod.GET, path = PATH_BORROW_ROLE_TARGET)
     public ResponseEntity<DefaultOAuth2AccessToken> switchRole(@PathVariable("target_name") String targetRoleName)
-            throws EntityOperationForbiddenException, JwtException {
+        throws EntityOperationForbiddenException, JwtException {
         return new ResponseEntity<>(borrowRoleService.switchTo(targetRoleName), HttpStatus.OK);
 
     }

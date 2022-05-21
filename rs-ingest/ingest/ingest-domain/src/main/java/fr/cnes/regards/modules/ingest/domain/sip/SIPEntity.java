@@ -18,53 +18,39 @@
  */
 package fr.cnes.regards.modules.ingest.domain.sip;
 
-import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.UUID;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
-
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.AbstractOAISEntity;
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.UUID;
 
 /**
  * System POJO for storing SIP.
  *
  * @author Marc Sordi
- *
  */
 @Entity
-@Table(name = "t_sip",
-        indexes = { @Index(name = "idx_sip_id", columnList = "provider_id,sipId,checksum"),
-                @Index(name = "idx_sip_state", columnList = "state"),
-                @Index(name = "idx_sip_providerId", columnList = "provider_id"),
-                @Index(name = "idx_sip_creation_date", columnList = "creation_date"),
-                @Index(name = "idx_sip_version", columnList = "version"),
-                @Index(name = "idx_sip_session_owner", columnList = "session_owner"),
-                @Index(name = "idx_sip_session", columnList = "session_name") },
-        // PostgreSQL manage both single indexes and multiple ones
-        uniqueConstraints = { @UniqueConstraint(name = "uk_sip_sipId", columnNames = "sipId"),
-                @UniqueConstraint(name = "uk_sip_checksum", columnNames = "checksum") })
+@Table(name = "t_sip", indexes = { @Index(name = "idx_sip_id", columnList = "provider_id,sipId,checksum"),
+    @Index(name = "idx_sip_state", columnList = "state"),
+    @Index(name = "idx_sip_providerId", columnList = "provider_id"),
+    @Index(name = "idx_sip_creation_date", columnList = "creation_date"),
+    @Index(name = "idx_sip_version", columnList = "version"),
+    @Index(name = "idx_sip_session_owner", columnList = "session_owner"),
+    @Index(name = "idx_sip_session", columnList = "session_name") },
+    // PostgreSQL manage both single indexes and multiple ones
+    uniqueConstraints = { @UniqueConstraint(name = "uk_sip_sipId", columnNames = "sipId"),
+        @UniqueConstraint(name = "uk_sip_checksum", columnNames = "checksum") })
 // There cannot be any unique constraint on last because there will always be multiple value with false!!!!
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class SIPEntity extends AbstractOAISEntity {

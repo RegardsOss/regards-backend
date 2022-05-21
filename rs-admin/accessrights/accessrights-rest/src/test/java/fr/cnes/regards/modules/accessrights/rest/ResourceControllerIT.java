@@ -37,9 +37,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * Class ResourceControllerIT
- *
+ * <p>
  * Test class to check access to {@link ResourcesAccess} entities. Those entities are used to configure the authroized
  * access to microservices endpoints.
+ *
  * @author Sébastien Binda
  */
 @MultitenantTransactional
@@ -94,9 +95,11 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
         JWTService service = new JWTService();
         service.setSecret("!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!");
         publicToken = service.generateToken(getDefaultTenant(), getDefaultUserEmail(), DefaultRole.PUBLIC.toString());
-        projectAdminToken = service.generateToken(getDefaultTenant(), getDefaultUserEmail(),
+        projectAdminToken = service.generateToken(getDefaultTenant(),
+                                                  getDefaultUserEmail(),
                                                   DefaultRole.PROJECT_ADMIN.toString());
-        instanceAdminToken = service.generateToken(getDefaultTenant(), getDefaultUserEmail(),
+        instanceAdminToken = service.generateToken(getDefaultTenant(),
+                                                   getDefaultUserEmail(),
                                                    DefaultRole.INSTANCE_ADMIN.toString());
     }
 
@@ -106,7 +109,8 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Purpose("Check that the microservice allows to retrieve all resource endpoints configurations")
     public void getAllResourceAccessesAsPublicTest() {
-        performGet(ResourceController.TYPE_MAPPING, publicToken,
+        performGet(ResourceController.TYPE_MAPPING,
+                   publicToken,
                    customizer().expectStatusOk().expectIsArray(JSON_PATH_CONTENT).expectIsNotEmpty(JSON_PATH_CONTENT),
                    "Error retrieving endpoints");
     }
@@ -117,7 +121,8 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Purpose("Check that the microservice allows to retrieve all resource endpoints configurations")
     public void getAllResourceAccessesAsProjectAdminTest() {
-        performGet(ResourceController.TYPE_MAPPING, projectAdminToken,
+        performGet(ResourceController.TYPE_MAPPING,
+                   projectAdminToken,
                    customizer().expectStatusOk().expectIsArray(JSON_PATH_CONTENT).expectIsNotEmpty(JSON_PATH_CONTENT),
                    "Error retrieving endpoints");
     }
@@ -128,7 +133,8 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Purpose("Check that the microservice allows to retrieve all resource endpoints configurations for instance admin")
     public void getAllResourceAccessesAsInstanceAdminTest() {
-        performGet(ResourceController.TYPE_MAPPING, instanceAdminToken,
+        performGet(ResourceController.TYPE_MAPPING,
+                   instanceAdminToken,
                    customizer().expectStatusOk().expectIsArray(JSON_PATH_CONTENT).expectIsNotEmpty(JSON_PATH_CONTENT),
                    "Error retrieving endpoints");
     }
@@ -138,15 +144,21 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public void getResourceAccessTest() {
-        ResourcesAccess resource = new ResourcesAccess("description", DEFAULT_MICROSERVICE, CONFIGURED_ENDPOINT_URL,
-                DEFAULT_CONTROLLER, RequestMethod.GET, DefaultRole.ADMIN);
+        ResourcesAccess resource = new ResourcesAccess("description",
+                                                       DEFAULT_MICROSERVICE,
+                                                       CONFIGURED_ENDPOINT_URL,
+                                                       DEFAULT_CONTROLLER,
+                                                       RequestMethod.GET,
+                                                       DefaultRole.ADMIN);
         resourcesAccessRepository.save(resource);
         Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.toString()).get();
         adminRole.addPermission(resource);
         roleRepository.save(adminRole);
 
-        performGet(ResourceController.TYPE_MAPPING + ResourceController.RESOURCE_MAPPING, publicToken,
-                   customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT), "Error retrieving endpoints",
+        performGet(ResourceController.TYPE_MAPPING + ResourceController.RESOURCE_MAPPING,
+                   publicToken,
+                   customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT),
+                   "Error retrieving endpoints",
                    resource.getId());
     }
 

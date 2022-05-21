@@ -18,13 +18,10 @@
  */
 package fr.cnes.regards.framework.modules.session.agent.domain.events;
 
-import fr.cnes.regards.framework.amqp.event.Event;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
-import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.framework.amqp.event.WorkerMode;
+import fr.cnes.regards.framework.amqp.event.*;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
+
 import java.time.OffsetDateTime;
 
 /**
@@ -49,7 +46,6 @@ public class StepPropertyUpdateRequestEvent implements ISubscribable {
      * Step Property
      */
     private StepProperty stepProperty;
-
 
     public StepPropertyUpdateRequestEvent(StepProperty stepProperty, StepPropertyEventTypeEnum type) {
         this.stepProperty = stepProperty;
@@ -84,6 +80,6 @@ public class StepPropertyUpdateRequestEvent implements ISubscribable {
     @Override
     public String toString() {
         return "StepPropertyUpdateRequestEvent{" + "date=" + date + ", type=" + type + ", stepProperty=" + stepProperty
-                + '}';
+            + '}';
     }
 }

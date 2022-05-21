@@ -35,7 +35,8 @@ public class FileAlreadyExistException extends CompressionException {
 
     /**
      * Constructeur de copie permettant d'ajouter un message.
-     * @param pMessage Le message a ajouter
+     *
+     * @param pMessage   Le message a ajouter
      * @param pException L'exception a copier.
      */
     public FileAlreadyExistException(String pMessage, Throwable pException) {
@@ -45,6 +46,7 @@ public class FileAlreadyExistException extends CompressionException {
 
     /**
      * Constructeur.
+     *
      * @param pMessage Le message textuel a afficher, permettant d'ajouter de la semantique a l'erreur.
      */
     public FileAlreadyExistException(String pMessage) {
@@ -54,7 +56,8 @@ public class FileAlreadyExistException extends CompressionException {
 
     /**
      * Constructeur.
-     * @param pMessage Le message textuel a afficher, permettant d'ajouter de la semantique a l'erreur.
+     *
+     * @param pMessage  Le message textuel a afficher, permettant d'ajouter de la semantique a l'erreur.
      * @param pFileName Le fichier qui pose probleme.
      */
     public FileAlreadyExistException(String pMessage, File pFileName) {

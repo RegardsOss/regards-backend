@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.framework.jpa.utils;
 
+import fr.cnes.regards.framework.jpa.restriction.DatesRangeRestriction;
+import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
+import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMode;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -27,13 +30,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import fr.cnes.regards.framework.jpa.restriction.DatesRangeRestriction;
-import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
-import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMode;
-
 public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchParameters<T>> {
 
     protected List<Specification<T>> specifications = new ArrayList<>();
+
     protected R parameters;
 
     protected abstract void addSpecificationsFromParameters();
@@ -64,7 +64,8 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         if (StringUtils.isEmpty(value)) {
             return null;
         } else {
-            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(criteriaBuilder.upper(root.get(field)), value.toUpperCase());
+            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(criteriaBuilder.upper(root.get(field)),
+                                                                           value.toUpperCase());
         }
     }
 
@@ -96,7 +97,8 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         if (StringUtils.isEmpty(value)) {
             return null;
         } else {
-            return (root, query, criteriaBuilder) -> criteriaBuilder.like(criteriaBuilder.upper(root.get(field)), ("%" + value + "%").toUpperCase());
+            return (root, query, criteriaBuilder) -> criteriaBuilder.like(criteriaBuilder.upper(root.get(field)),
+                                                                          ("%" + value + "%").toUpperCase());
         }
     }
 

@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 /**
  * Microservice specific abstract entity event (@see CrawlerService) sent to AMQP indicating that the concerned entity has been
  * created/modified/deleted
+ *
  * @author oroussel
  * @author Sylvain Vissiere-Guerinet
  */

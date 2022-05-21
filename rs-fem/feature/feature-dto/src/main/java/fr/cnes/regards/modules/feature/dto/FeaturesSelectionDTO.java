@@ -18,17 +18,15 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
+import org.apache.commons.compress.utils.Lists;
+
 import java.time.OffsetDateTime;
 import java.util.List;
 
-import org.apache.commons.compress.utils.Lists;
-
 /**
- *
  * Parameters to define a selection of {@link FeatureEntityDto}
  *
  * @author Sébastien Binda
- *
  */
 public class FeaturesSelectionDTO {
 

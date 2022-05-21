@@ -18,8 +18,15 @@
  */
 package fr.cnes.regards.modules.opensearch.service.builder;
 
-import java.util.function.Function;
-
+import com.google.common.collect.ImmutableTable;
+import fr.cnes.regards.modules.dam.domain.entities.criterion.IFeatureCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
+import fr.cnes.regards.modules.opensearch.service.message.QueryParserMessages;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.core.builders.QueryTreeBuilder;
 import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
@@ -30,19 +37,11 @@ import org.apache.lucene.queryparser.flexible.standard.nodes.TermRangeQueryNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableTable;
-
-import fr.cnes.regards.modules.dam.domain.entities.criterion.IFeatureCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion;
-import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.model.dto.properties.PropertyType;
-import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
-import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
-import fr.cnes.regards.modules.opensearch.service.message.QueryParserMessages;
+import java.util.function.Function;
 
 /**
  * Builds a {@link RangeCriterion} from a {@link TermRangeQueryNode} object.
+ *
  * @author Xavier-Alexandre Brochard
  */
 public class TermRangeQueryNodeBuilder extends QueryTreeBuilder implements ICriterionQueryBuilder {
@@ -153,16 +152,19 @@ public class TermRangeQueryNodeBuilder extends QueryTreeBuilder implements ICrit
         try {
             attModel = attributeFinder.findByName(StringUtils.toString(rangeNode.getField()));
         } catch (OpenSearchUnknownParameter e) {
-            throw new QueryNodeException(
-                    new MessageImpl(QueryParserMessages.FIELD_TYPE_UNDETERMINATED, e.getMessage(), e));
+            throw new QueryNodeException(new MessageImpl(QueryParserMessages.FIELD_TYPE_UNDETERMINATED,
+                                                         e.getMessage(),
+                                                         e));
         }
 
         // Extract info for node
         TermRangeQueryNodeFacade wrapper = new TermRangeQueryNodeFacade(rangeNode, attModel);
 
         // Compute the type of range comparison: lower/greater than/equal or between
-        RangeComparison rangeComparison = getRangeComparison(wrapper.getField(), wrapper.getLowerBound(),
-                                                             wrapper.getUpperBound(), wrapper.isLowerInclusive(),
+        RangeComparison rangeComparison = getRangeComparison(wrapper.getField(),
+                                                             wrapper.getLowerBound(),
+                                                             wrapper.getUpperBound(),
+                                                             wrapper.isLowerInclusive(),
                                                              wrapper.isUpperInclusive());
 
         Function<TermRangeQueryNodeFacade, ICriterion> queryToCriterion = CRITERION_TABLE.get(attModel.getType(),
@@ -170,7 +172,7 @@ public class TermRangeQueryNodeBuilder extends QueryTreeBuilder implements ICrit
 
         if (queryToCriterion == null) {
             Message message = new MessageImpl(QueryParserMessages.UNSUPPORTED_ATTRIBUTE_TYPE_FOR_RANGE_QUERY,
-                    attModel.getType());
+                                              attModel.getType());
             LOGGER.error(message.getLocalizedMessage());
             throw new QueryNodeException(message);
         }
@@ -182,7 +184,8 @@ public class TermRangeQueryNodeBuilder extends QueryTreeBuilder implements ICrit
      * Return the range comparison type based on the lower/upper values and if they are inclusive/exclusive
      */
     private RangeComparison getRangeComparison(String pField, String pLowerText, String pUpperText, // NOSONAR
-            boolean pIsLowerInclusive, boolean pIsUpperInclusive) throws QueryNodeException {
+                                               boolean pIsLowerInclusive, boolean pIsUpperInclusive)
+        throws QueryNodeException {
         if (pLowerText.isEmpty() && pUpperText.isEmpty()) {
             throw new QueryNodeException(new MessageImpl(QueryParserMessages.RANGE_NUMERIC_CANNOT_BE_EMPTY, pField));
         } else if (pLowerText.isEmpty() && !pUpperText.isEmpty() && pIsUpperInclusive) {

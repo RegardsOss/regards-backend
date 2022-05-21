@@ -14,12 +14,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.handlers;
 
 import fr.cnes.regards.modules.processing.domain.events.IEventSender;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionResultEvent;
-
 
 /**
  * This interface defines a sender for {@link PExecutionResultEvent} messages.
@@ -27,7 +26,5 @@ import fr.cnes.regards.modules.processing.domain.events.PExecutionResultEvent;
  * @author gandrieu
  */
 public interface IExecutionResultEventSender extends IEventSender<PExecutionResultEvent> {
-
-
 
 }

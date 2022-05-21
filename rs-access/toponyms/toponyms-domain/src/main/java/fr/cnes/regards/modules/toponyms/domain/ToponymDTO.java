@@ -24,11 +24,9 @@ import org.geolatte.geom.Geometry;
 import javax.persistence.Embedded;
 
 /**
- *
  * DTO to transfer {@link Toponym} objects with {@link IGeometry} in place of {@link Geometry}
  *
  * @author Sébastien Binda
- *
  */
 public class ToponymDTO {
 
@@ -75,17 +73,24 @@ public class ToponymDTO {
 
     /**
      * Creates a new {@link ToponymDTO}
-     * @param businessId unique identifier
-     * @param labelEn English label
-     * @param labelFr French label
+     *
+     * @param businessId  unique identifier
+     * @param labelEn     English label
+     * @param labelFr     French label
      * @param geometry
-     * @param copyright owner
+     * @param copyright   owner
      * @param description
      * @param visible
      * @return
      */
-    public static ToponymDTO build(String businessId, String labelEn, String labelFr, IGeometry geometry,
-            String copyright, String description, boolean visible, ToponymMetadata toponymMetadata) {
+    public static ToponymDTO build(String businessId,
+                                   String labelEn,
+                                   String labelFr,
+                                   IGeometry geometry,
+                                   String copyright,
+                                   String description,
+                                   boolean visible,
+                                   ToponymMetadata toponymMetadata) {
         ToponymDTO dto = new ToponymDTO();
         dto.setBusinessId(businessId);
         dto.setLabelEn(labelEn);

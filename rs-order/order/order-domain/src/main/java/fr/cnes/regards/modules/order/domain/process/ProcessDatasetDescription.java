@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.order.domain.process;
 
 import java.util.Map;
@@ -23,6 +23,7 @@ import java.util.UUID;
 public class ProcessDatasetDescription {
 
     private final UUID processBusinessId;
+
     private final Map<String, String> parameters;
 
     public ProcessDatasetDescription(UUID processBusinessId, Map<String, String> parameters) {

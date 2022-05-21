@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.random.function;
 
 /**
  * @author sbinda
- *
  */
 public interface IPropertyGetter {
 

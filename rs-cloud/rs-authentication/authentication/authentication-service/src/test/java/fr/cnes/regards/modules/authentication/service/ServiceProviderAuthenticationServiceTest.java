@@ -39,16 +39,10 @@ public class ServiceProviderAuthenticationServiceTest {
 
     private static final String PROVIDER_NAME = "foo";
 
-    private static final ServiceProviderAuthenticationInfo.UserInfo PROVIDER_USER_INFO =
-        new ServiceProviderAuthenticationInfo.UserInfo.Builder()
-            .withEmail("email")
-            .withFirstname("firstname")
-            .withLastname("lastname")
-            .addMetadata("meta", "data")
-            .build();
+    private static final ServiceProviderAuthenticationInfo.UserInfo PROVIDER_USER_INFO = new ServiceProviderAuthenticationInfo.UserInfo.Builder().withEmail(
+        "email").withFirstname("firstname").withLastname("lastname").addMetadata("meta", "data").build();
 
-    private static final Map<String, String> PROVIDER_AUTH_INFO =
-        HashMap.of("token", "dummy");
+    private static final Map<String, String> PROVIDER_AUTH_INFO = HashMap.of("token", "dummy");
 
     @Mock
     private IServiceProviderRepository repository;
@@ -71,28 +65,21 @@ public class ServiceProviderAuthenticationServiceTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        doNothing()
-            .when(runtimeTenantResolver)
-            .forceTenant(anyString());
-        doReturn(TENANT)
-            .when(runtimeTenantResolver)
-            .getTenant();
+        doNothing().when(runtimeTenantResolver).forceTenant(anyString());
+        doReturn(TENANT).when(runtimeTenantResolver).getTenant();
 
-        service = spy(new ServiceProviderAuthenticationServiceImpl(
-            repository,
-            pluginService,
-            runtimeTenantResolver,
-            userAccountManager,
-            jwtService
-        ));
+        service = spy(new ServiceProviderAuthenticationServiceImpl(repository,
+                                                                   pluginService,
+                                                                   runtimeTenantResolver,
+                                                                   userAccountManager,
+                                                                   jwtService));
     }
 
     @Test
     public void authenticate_fails_when_getPlugin_fails() {
         RuntimeException expected = new RuntimeException("Expected");
 
-        doReturn(Try.failure(expected))
-            .when(service).getPlugin(PROVIDER_NAME);
+        doReturn(Try.failure(expected)).when(service).getPlugin(PROVIDER_NAME);
 
         Try<Authentication> token = service.authenticate(PROVIDER_NAME, new ServiceProviderAuthenticationParamsMock());
 
@@ -103,13 +90,27 @@ public class ServiceProviderAuthenticationServiceTest {
     @Test
     public void authenticate_fails_when_plugin_params_dont_match_authentication_call_params() {
         doReturn(Try.success(new IServiceProviderPlugin<ServiceProviderAuthenticationParamsMock, ServiceProviderAuthenticationInfoMock>() {
+
             @Override
             public Class<ServiceProviderAuthenticationParamsMock> getAuthenticationParamsType() {
                 return ServiceProviderAuthenticationParamsMock.class;
             }
-            @Override public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> authenticate(ServiceProviderAuthenticationParamsMock params) { return null; }
-            @Override public Try<Unit> deauthenticate(Map<String, Object> jwtClaims) { return null; }
-            @Override public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> verify(String token) { return null; }
+
+            @Override
+            public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> authenticate(
+                ServiceProviderAuthenticationParamsMock params) {
+                return null;
+            }
+
+            @Override
+            public Try<Unit> deauthenticate(Map<String, Object> jwtClaims) {
+                return null;
+            }
+
+            @Override
+            public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> verify(String token) {
+                return null;
+            }
         })).when(service).getPlugin(PROVIDER_NAME);
 
         Try<Authentication> token = service.authenticate(PROVIDER_NAME, new ServiceProviderAuthenticationParamsMock2());
@@ -123,16 +124,27 @@ public class ServiceProviderAuthenticationServiceTest {
         RuntimeException expected = new RuntimeException("Expected");
 
         doReturn(Try.success(new IServiceProviderPlugin<ServiceProviderAuthenticationParamsMock, ServiceProviderAuthenticationInfoMock>() {
+
             @Override
             public Class<ServiceProviderAuthenticationParamsMock> getAuthenticationParamsType() {
                 return ServiceProviderAuthenticationParamsMock.class;
             }
+
             @Override
-            public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> authenticate(ServiceProviderAuthenticationParamsMock params) {
+            public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> authenticate(
+                ServiceProviderAuthenticationParamsMock params) {
                 throw expected;
             }
-            @Override public Try<Unit> deauthenticate(Map<String, Object> jwtClaims) { return null; }
-            @Override public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> verify(String token) { return null; }
+
+            @Override
+            public Try<Unit> deauthenticate(Map<String, Object> jwtClaims) {
+                return null;
+            }
+
+            @Override
+            public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> verify(String token) {
+                return null;
+            }
         })).when(service).getPlugin(PROVIDER_NAME);
 
         Try<Authentication> token = service.authenticate(PROVIDER_NAME, new ServiceProviderAuthenticationParamsMock());
@@ -147,19 +159,30 @@ public class ServiceProviderAuthenticationServiceTest {
         ServiceProviderAuthenticationInfoMock ignored = null;
 
         doReturn(Try.success(new IServiceProviderPlugin<ServiceProviderAuthenticationParamsMock, ServiceProviderAuthenticationInfoMock>() {
+
             @Override
             public Class<ServiceProviderAuthenticationParamsMock> getAuthenticationParamsType() {
                 return ServiceProviderAuthenticationParamsMock.class;
             }
+
             @Override
-            public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> authenticate(ServiceProviderAuthenticationParamsMock params) {
+            public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> authenticate(
+                ServiceProviderAuthenticationParamsMock params) {
                 return Try.success(new ServiceProviderAuthenticationInfo<>(PROVIDER_USER_INFO, ignored));
             }
-            @Override public Try<Unit> deauthenticate(Map<String, Object> jwtClaims) { return null; }
-            @Override public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> verify(String token) { return null; }
+
+            @Override
+            public Try<Unit> deauthenticate(Map<String, Object> jwtClaims) {
+                return null;
+            }
+
+            @Override
+            public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> verify(String token) {
+                return null;
+            }
         })).when(service).getPlugin(PROVIDER_NAME);
-        when(userAccountManager.createUserWithAccountAndGroups(PROVIDER_USER_INFO, PROVIDER_NAME))
-            .thenReturn(Try.failure(expected));
+        when(userAccountManager.createUserWithAccountAndGroups(PROVIDER_USER_INFO,
+                                                               PROVIDER_NAME)).thenReturn(Try.failure(expected));
 
         Try<Authentication> token = service.authenticate(PROVIDER_NAME, new ServiceProviderAuthenticationParamsMock());
 
@@ -170,28 +193,41 @@ public class ServiceProviderAuthenticationServiceTest {
     @Test
     public void authenticate_succeeds_when_all_is_well() {
         doReturn(Try.success(new IServiceProviderPlugin<ServiceProviderAuthenticationParamsMock, ServiceProviderAuthenticationInfoMock>() {
+
             @Override
             public Class<ServiceProviderAuthenticationParamsMock> getAuthenticationParamsType() {
                 return ServiceProviderAuthenticationParamsMock.class;
             }
+
             @Override
-            public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> authenticate(ServiceProviderAuthenticationParamsMock params) {
-                ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock> authInfo =
-                    new ServiceProviderAuthenticationInfo<>(
-                        PROVIDER_USER_INFO,
-                        new ServiceProviderAuthenticationInfoMock()
-                    );
+            public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> authenticate(
+                ServiceProviderAuthenticationParamsMock params) {
+                ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock> authInfo = new ServiceProviderAuthenticationInfo<>(
+                    PROVIDER_USER_INFO,
+                    new ServiceProviderAuthenticationInfoMock());
                 return Try.success(authInfo);
             }
-            @Override public Try<Unit> deauthenticate(Map<String, Object> jwtClaims) { return null; }
-            @Override public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> verify(String token) { return null; }
+
+            @Override
+            public Try<Unit> deauthenticate(Map<String, Object> jwtClaims) {
+                return null;
+            }
+
+            @Override
+            public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> verify(String token) {
+                return null;
+            }
         })).when(service).getPlugin(PROVIDER_NAME);
-        when(userAccountManager.createUserWithAccountAndGroups(PROVIDER_USER_INFO, PROVIDER_NAME))
-            .thenReturn(Try.success(DefaultRole.REGISTERED_USER.toString()));
+        when(userAccountManager.createUserWithAccountAndGroups(PROVIDER_USER_INFO,
+                                                               PROVIDER_NAME)).thenReturn(Try.success(DefaultRole.REGISTERED_USER.toString()));
         OffsetDateTime expirationDate = OffsetDateTime.now();
         when(jwtService.getExpirationDate(any())).thenReturn(expirationDate);
-        when(jwtService.generateToken(eq(TENANT), anyString(), anyString(), anyString(), eq(expirationDate), any()))
-            .thenReturn("token");
+        when(jwtService.generateToken(eq(TENANT),
+                                      anyString(),
+                                      anyString(),
+                                      anyString(),
+                                      eq(expirationDate),
+                                      any())).thenReturn("token");
 
         Try<Authentication> token = service.authenticate(PROVIDER_NAME, new ServiceProviderAuthenticationParamsMock());
 
@@ -205,32 +241,28 @@ public class ServiceProviderAuthenticationServiceTest {
         ArgumentCaptor<OffsetDateTime> expirationDateArgumentCaptor = ArgumentCaptor.forClass(OffsetDateTime.class);
         //noinspection unchecked
         ArgumentCaptor<java.util.Map<String, Object>> metadataArgumentCaptor = ArgumentCaptor.forClass(java.util.Map.class);
-        verify(jwtService).generateToken(
-            tenantArgumentCaptor.capture(),
-            userArgumentCaptor.capture(),
-            emailArgumentCaptor.capture(),
-            roleArgumentCaptor.capture(),
-            expirationDateArgumentCaptor.capture(),
-            metadataArgumentCaptor.capture()
-        );
+        verify(jwtService).generateToken(tenantArgumentCaptor.capture(),
+                                         userArgumentCaptor.capture(),
+                                         emailArgumentCaptor.capture(),
+                                         roleArgumentCaptor.capture(),
+                                         expirationDateArgumentCaptor.capture(),
+                                         metadataArgumentCaptor.capture());
         assertThat(tenantArgumentCaptor.getValue()).isEqualTo(TENANT);
         assertThat(userArgumentCaptor.getValue()).isEqualTo(PROVIDER_USER_INFO.getEmail());
         assertThat(emailArgumentCaptor.getValue()).isEqualTo(PROVIDER_USER_INFO.getEmail());
         assertThat(roleArgumentCaptor.getValue()).isEqualTo(DefaultRole.REGISTERED_USER.toString());
-        assertThat(metadataArgumentCaptor.getValue())
-            .containsAllEntriesOf(PROVIDER_USER_INFO.getMetadata().toJavaMap());
+        assertThat(metadataArgumentCaptor.getValue()).containsAllEntriesOf(PROVIDER_USER_INFO.getMetadata()
+                                                                                             .toJavaMap());
 
         // ensure any authentication info returned by the plugin is stored into the token
-        assertThat(metadataArgumentCaptor.getValue())
-            .containsAllEntriesOf(PROVIDER_AUTH_INFO.toJavaMap());
+        assertThat(metadataArgumentCaptor.getValue()).containsAllEntriesOf(PROVIDER_AUTH_INFO.toJavaMap());
     }
 
     @Test
     public void deauthenticate_fails_when_getPlugin_fails() {
         RuntimeException expected = new RuntimeException("Expected");
 
-        doReturn(Try.failure(expected))
-            .when(service).getPlugin(PROVIDER_NAME);
+        doReturn(Try.failure(expected)).when(service).getPlugin(PROVIDER_NAME);
 
         Try<Unit> result = service.deauthenticate(PROVIDER_NAME);
 
@@ -243,13 +275,27 @@ public class ServiceProviderAuthenticationServiceTest {
         RuntimeException expected = new RuntimeException("Expected");
 
         doReturn(Try.success(new IServiceProviderPlugin<ServiceProviderAuthenticationParamsMock, ServiceProviderAuthenticationInfoMock>() {
-            @Override public Class<ServiceProviderAuthenticationParamsMock> getAuthenticationParamsType() { return null; }
-            @Override public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> authenticate(ServiceProviderAuthenticationParamsMock params) { return null; }
+
+            @Override
+            public Class<ServiceProviderAuthenticationParamsMock> getAuthenticationParamsType() {
+                return null;
+            }
+
+            @Override
+            public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> authenticate(
+                ServiceProviderAuthenticationParamsMock params) {
+                return null;
+            }
+
             @Override
             public Try<Unit> deauthenticate(Map<String, Object> jwtClaims) {
                 throw expected;
             }
-            @Override public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> verify(String token) { return null; }
+
+            @Override
+            public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> verify(String token) {
+                return null;
+            }
         })).when(service).getPlugin(PROVIDER_NAME);
         JWTAuthentication stubAuthentication = new JWTAuthentication(null);
         SecurityContextHolder.getContext().setAuthentication(stubAuthentication);
@@ -263,13 +309,27 @@ public class ServiceProviderAuthenticationServiceTest {
     @Test
     public void deauthenticate_succeeds_when_all_is_well() {
         doReturn(Try.success(new IServiceProviderPlugin<ServiceProviderAuthenticationParamsMock, ServiceProviderAuthenticationInfoMock>() {
-            @Override public Class<ServiceProviderAuthenticationParamsMock> getAuthenticationParamsType() { return null; }
-            @Override public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> authenticate(ServiceProviderAuthenticationParamsMock params) { return null; }
+
+            @Override
+            public Class<ServiceProviderAuthenticationParamsMock> getAuthenticationParamsType() {
+                return null;
+            }
+
+            @Override
+            public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> authenticate(
+                ServiceProviderAuthenticationParamsMock params) {
+                return null;
+            }
+
             @Override
             public Try<Unit> deauthenticate(Map<String, Object> jwtClaims) {
                 return Try.success(Unit.UNIT);
             }
-            @Override public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> verify(String token) { return null; }
+
+            @Override
+            public Try<ServiceProviderAuthenticationInfo<ServiceProviderAuthenticationInfoMock>> verify(String token) {
+                return null;
+            }
         })).when(service).getPlugin(PROVIDER_NAME);
 
         Try<Unit> result = service.deauthenticate(PROVIDER_NAME);
@@ -305,33 +365,41 @@ public class ServiceProviderAuthenticationServiceTest {
         String providerName_1 = UUID.randomUUID().toString();
         String providerName_2 = UUID.randomUUID().toString();
         String providerName_3 = UUID.randomUUID().toString();
-        when(repository.findAll())
-            .thenReturn(List.of(
-                new ServiceProvider(providerName_1, null, null,null),
-                new ServiceProvider(providerName_2, null, null,null),
-                new ServiceProvider(providerName_3, null, null,null)
-            ));
+        when(repository.findAll()).thenReturn(List.of(new ServiceProvider(providerName_1, null, null, null),
+                                                      new ServiceProvider(providerName_2, null, null, null),
+                                                      new ServiceProvider(providerName_3, null, null, null)));
 
         RuntimeException expected = new RuntimeException("Expected");
 
         // Mock plugin 1 verify method to fail
-        IServiceProviderPlugin<ServiceProviderAuthenticationParamsMock, ServiceProviderAuthenticationInfoMock> plugin_1 = mock(IServiceProviderPlugin.class);
+        IServiceProviderPlugin<ServiceProviderAuthenticationParamsMock, ServiceProviderAuthenticationInfoMock> plugin_1 = mock(
+            IServiceProviderPlugin.class);
         when(plugin_1.verify(anyString())).thenReturn(Try.failure(expected));
         doReturn(Try.success(plugin_1)).when(service).getPlugin(providerName_1);
 
         // Mock plugin 2 verify method to succeed
-        IServiceProviderPlugin<ServiceProviderAuthenticationParamsMock, ServiceProviderAuthenticationInfoMock> plugin_2 = mock(IServiceProviderPlugin.class);
-        when(plugin_2.verify(anyString())).thenReturn(Try.success(new ServiceProviderAuthenticationInfo<>(PROVIDER_USER_INFO, new ServiceProviderAuthenticationInfoMock())));
+        IServiceProviderPlugin<ServiceProviderAuthenticationParamsMock, ServiceProviderAuthenticationInfoMock> plugin_2 = mock(
+            IServiceProviderPlugin.class);
+        when(plugin_2.verify(anyString())).thenReturn(Try.success(new ServiceProviderAuthenticationInfo<>(
+            PROVIDER_USER_INFO,
+            new ServiceProviderAuthenticationInfoMock())));
         doReturn(Try.success(plugin_2)).when(service).getPlugin(providerName_2);
 
         // Mock plugin 3 which should never be called
-        IServiceProviderPlugin<ServiceProviderAuthenticationParamsMock, ServiceProviderAuthenticationInfoMock> plugin_3 = mock(IServiceProviderPlugin.class);
+        IServiceProviderPlugin<ServiceProviderAuthenticationParamsMock, ServiceProviderAuthenticationInfoMock> plugin_3 = mock(
+            IServiceProviderPlugin.class);
         doReturn(Try.success(plugin_3)).when(service).getPlugin(providerName_3);
 
-        when(userAccountManager.createUserWithAccountAndGroups(eq(PROVIDER_USER_INFO), any())).thenReturn(Try.success(DefaultRole.REGISTERED_USER.toString()));
+        when(userAccountManager.createUserWithAccountAndGroups(eq(PROVIDER_USER_INFO), any())).thenReturn(Try.success(
+            DefaultRole.REGISTERED_USER.toString()));
         OffsetDateTime expirationDate = OffsetDateTime.now();
         when(jwtService.getExpirationDate(any())).thenReturn(expirationDate);
-        when(jwtService.generateToken(eq(TENANT), anyString(), anyString(), anyString(), eq(expirationDate), any())).thenReturn("token");
+        when(jwtService.generateToken(eq(TENANT),
+                                      anyString(),
+                                      anyString(),
+                                      anyString(),
+                                      eq(expirationDate),
+                                      any())).thenReturn("token");
 
         Try<Authentication> token = service.verifyAndAuthenticate("token");
 
@@ -349,30 +417,31 @@ public class ServiceProviderAuthenticationServiceTest {
         ArgumentCaptor<OffsetDateTime> expirationDateArgumentCaptor = ArgumentCaptor.forClass(OffsetDateTime.class);
         //noinspection unchecked
         ArgumentCaptor<java.util.Map<String, Object>> metadataArgumentCaptor = ArgumentCaptor.forClass(java.util.Map.class);
-        verify(jwtService).generateToken(
-            tenantArgumentCaptor.capture(),
-            userArgumentCaptor.capture(),
-            emailArgumentCaptor.capture(),
-            roleArgumentCaptor.capture(),
-            expirationDateArgumentCaptor.capture(),
-            metadataArgumentCaptor.capture()
-        );
+        verify(jwtService).generateToken(tenantArgumentCaptor.capture(),
+                                         userArgumentCaptor.capture(),
+                                         emailArgumentCaptor.capture(),
+                                         roleArgumentCaptor.capture(),
+                                         expirationDateArgumentCaptor.capture(),
+                                         metadataArgumentCaptor.capture());
         assertThat(tenantArgumentCaptor.getValue()).isEqualTo(TENANT);
         assertThat(userArgumentCaptor.getValue()).isEqualTo(PROVIDER_USER_INFO.getEmail());
         assertThat(emailArgumentCaptor.getValue()).isEqualTo(PROVIDER_USER_INFO.getEmail());
         assertThat(roleArgumentCaptor.getValue()).isEqualTo(DefaultRole.REGISTERED_USER.toString());
-        assertThat(metadataArgumentCaptor.getValue())
-            .containsAllEntriesOf(PROVIDER_USER_INFO.getMetadata().toJavaMap());
+        assertThat(metadataArgumentCaptor.getValue()).containsAllEntriesOf(PROVIDER_USER_INFO.getMetadata()
+                                                                                             .toJavaMap());
 
         // ensure any authentication info returned by the plugin is stored into the token
-        assertThat(metadataArgumentCaptor.getValue())
-            .containsAllEntriesOf(PROVIDER_AUTH_INFO.toJavaMap());
+        assertThat(metadataArgumentCaptor.getValue()).containsAllEntriesOf(PROVIDER_AUTH_INFO.toJavaMap());
     }
 
     @GsonDiscriminator("mock_1")
-    private static class ServiceProviderAuthenticationParamsMock extends ServiceProviderAuthenticationParams {}
+    private static class ServiceProviderAuthenticationParamsMock extends ServiceProviderAuthenticationParams {
 
-    private static class ServiceProviderAuthenticationInfoMock extends ServiceProviderAuthenticationInfo.AuthenticationInfo {
+    }
+
+    private static class ServiceProviderAuthenticationInfoMock
+        extends ServiceProviderAuthenticationInfo.AuthenticationInfo {
+
         @Override
         public Map<String, String> getAuthenticationInfo() {
             return PROVIDER_AUTH_INFO;
@@ -380,5 +449,7 @@ public class ServiceProviderAuthenticationServiceTest {
     }
 
     @GsonDiscriminator("mock_2")
-    private static class ServiceProviderAuthenticationParamsMock2 extends ServiceProviderAuthenticationParams {}
+    private static class ServiceProviderAuthenticationParamsMock2 extends ServiceProviderAuthenticationParams {
+
+    }
 }

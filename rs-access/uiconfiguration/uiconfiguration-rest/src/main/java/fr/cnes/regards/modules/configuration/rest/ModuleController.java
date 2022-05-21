@@ -18,28 +18,6 @@
  */
 package fr.cnes.regards.modules.configuration.rest;
 
-import javax.validation.Valid;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.data.web.SortDefault;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -52,9 +30,25 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.configuration.domain.Module;
 import fr.cnes.regards.modules.configuration.domain.UILayout;
 import fr.cnes.regards.modules.configuration.service.IModuleService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.data.web.SortDefault;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 /**
  * REST controller for the microservice Access
+ *
  * @author Sébastien Binda
  */
 @RestController
@@ -75,6 +69,7 @@ public class ModuleController implements IResourceController<Module> {
 
     /**
      * Entry point to retrieve a modules for a given application id {@link Module}.
+     *
      * @param applicationId
      * @param moduleId
      * @return {@link UILayout}
@@ -84,7 +79,8 @@ public class ModuleController implements IResourceController<Module> {
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve an IHM module for given application", role = DefaultRole.PUBLIC)
     public HttpEntity<EntityModel<Module>> retrieveModule(@PathVariable("applicationId") String applicationId,
-            @PathVariable("moduleId") Long moduleId) throws EntityNotFoundException {
+                                                          @PathVariable("moduleId") Long moduleId)
+        throws EntityNotFoundException {
         Module module = service.retrieveModule(moduleId);
         EntityModel<Module> resource = toResource(module);
         return new ResponseEntity<>(resource, HttpStatus.OK);
@@ -93,6 +89,7 @@ public class ModuleController implements IResourceController<Module> {
     /**
      * Entry point to retrieve all modules for a given application id {@link Module}. Query parameter active
      * [true|false]
+     *
      * @param applicationId
      * @param onlyActive
      * @param type
@@ -104,11 +101,11 @@ public class ModuleController implements IResourceController<Module> {
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve IHM modules for given application", role = DefaultRole.PUBLIC)
     public HttpEntity<PagedModel<EntityModel<Module>>> retrieveModules(
-            @PathVariable("applicationId") String applicationId,
-            @RequestParam(value = "active", required = false) String onlyActive,
-            @RequestParam(value = "type", required = false) String type,
-            @SortDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<Module> assembler) {
+        @PathVariable("applicationId") String applicationId,
+        @RequestParam(value = "active", required = false) String onlyActive,
+        @RequestParam(value = "type", required = false) String type,
+        @SortDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        PagedResourcesAssembler<Module> assembler) {
         Boolean activeBool = (onlyActive != null) ? Boolean.parseBoolean(onlyActive) : null;
         Page<Module> modules = service.retrieveModules(applicationId, activeBool, type, pageable);
         PagedModel<EntityModel<Module>> resources = toPagedResources(modules, assembler);
@@ -117,6 +114,7 @@ public class ModuleController implements IResourceController<Module> {
 
     /**
      * Entry point to save a new ihm module.
+     *
      * @param applicationId
      * @param module
      * @return {@link Module}
@@ -125,9 +123,9 @@ public class ModuleController implements IResourceController<Module> {
     @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM module for given application",
-            role = DefaultRole.PROJECT_ADMIN)
+        role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<EntityModel<Module>> saveModule(@PathVariable("applicationId") String applicationId,
-            @Valid @RequestBody Module module) throws EntityInvalidException {
+                                                      @Valid @RequestBody Module module) throws EntityInvalidException {
 
         if (!module.getApplicationId().equals(applicationId)) {
             throw new EntityInvalidException("Invalid application identifier for new module");
@@ -137,6 +135,7 @@ public class ModuleController implements IResourceController<Module> {
 
     /**
      * Entry point to save a new ihm module.
+     *
      * @param applicationId
      * @param moduleId
      * @param module
@@ -146,9 +145,10 @@ public class ModuleController implements IResourceController<Module> {
     @RequestMapping(value = MODULE_ID_MAPPING, method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM module for given application",
-            role = DefaultRole.PROJECT_ADMIN)
+        role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<EntityModel<Module>> updateModule(@PathVariable("applicationId") String applicationId,
-            @PathVariable("moduleId") Long moduleId, @Valid @RequestBody Module module) throws EntityException {
+                                                        @PathVariable("moduleId") Long moduleId,
+                                                        @Valid @RequestBody Module module) throws EntityException {
         if (!module.getApplicationId().equals(applicationId)) {
             throw new EntityInvalidException("Invalid application identifier for module update");
         }
@@ -160,18 +160,20 @@ public class ModuleController implements IResourceController<Module> {
 
     /**
      * Entry point to delete an ihm module.
+     *
      * @param applicationId
      * @param moduleId
      * @return {@link Module}
      * @throws EntityNotFoundException
      */
     @RequestMapping(value = MODULE_ID_MAPPING, method = RequestMethod.DELETE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+        produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM module for given application",
-            role = DefaultRole.PROJECT_ADMIN)
+        role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<EntityModel<Void>> deleteModule(@PathVariable("applicationId") String applicationId,
-            @PathVariable("moduleId") Long moduleId) throws EntityNotFoundException {
+                                                      @PathVariable("moduleId") Long moduleId)
+        throws EntityNotFoundException {
         service.deleteModule(moduleId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -179,14 +181,23 @@ public class ModuleController implements IResourceController<Module> {
     @Override
     public EntityModel<Module> toResource(final Module pElement, final Object... pExtras) {
         final EntityModel<Module> resource = resourceService.toResource(pElement);
-        resourceService.addLink(resource, this.getClass(), "retrieveModule", LinkRels.SELF,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "retrieveModule",
+                                LinkRels.SELF,
                                 MethodParamFactory.build(String.class, pElement.getApplicationId()),
                                 MethodParamFactory.build(Long.class, pElement.getId()));
-        resourceService.addLink(resource, this.getClass(), "updateModule", LinkRels.UPDATE,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "updateModule",
+                                LinkRels.UPDATE,
                                 MethodParamFactory.build(String.class, pElement.getApplicationId()),
                                 MethodParamFactory.build(Long.class, pElement.getId()),
                                 MethodParamFactory.build(Module.class));
-        resourceService.addLink(resource, this.getClass(), "deleteModule", LinkRels.DELETE,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "deleteModule",
+                                LinkRels.DELETE,
                                 MethodParamFactory.build(String.class, pElement.getApplicationId()),
                                 MethodParamFactory.build(Long.class, pElement.getId()));
         return resource;

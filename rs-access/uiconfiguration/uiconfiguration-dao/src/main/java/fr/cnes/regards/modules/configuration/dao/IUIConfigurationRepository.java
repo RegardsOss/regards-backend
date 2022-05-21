@@ -1,21 +1,19 @@
 package fr.cnes.regards.modules.configuration.dao;
 
-import java.util.List;
-
+import fr.cnes.regards.modules.configuration.domain.UIConfiguration;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import fr.cnes.regards.modules.configuration.domain.UIConfiguration;
+import java.util.List;
 
 /**
-*
-* Class ILayoutRepository
-*
-* JPA Repository for Layout entities
-*
-* @author Sébastien Binda
-*/
-public interface IUIConfigurationRepository extends JpaRepository<UIConfiguration, Long>{
+ * Class ILayoutRepository
+ * <p>
+ * JPA Repository for Layout entities
+ *
+ * @author Sébastien Binda
+ */
+public interface IUIConfigurationRepository extends JpaRepository<UIConfiguration, Long> {
 
-	List<UIConfiguration> findByApplicationId(String applicationId);
+    List<UIConfiguration> findByApplicationId(String applicationId);
 
 }

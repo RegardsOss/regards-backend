@@ -60,7 +60,7 @@ import java.util.UUID;
  */
 @Component
 public class FileReferenceEventHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FileReferenceEvent> {
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FileReferenceEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceEventHandler.class);
 
@@ -133,16 +133,18 @@ public class FileReferenceEventHandler
     private void handleFileStored(FileReferenceEvent event) {
         Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
         if (request.isPresent()) {
-            Optional<FileReference> oFileRef = fileReferenceService
-                    .searchWithOwners(event.getLocation().getStorage(), event.getMetaInfo().getChecksum());
+            Optional<FileReference> oFileRef = fileReferenceService.searchWithOwners(event.getLocation().getStorage(),
+                                                                                     event.getMetaInfo().getChecksum());
             if (oFileRef.isPresent()) {
                 fileCopyRequestService.handleSuccess(request.get(), oFileRef.get());
                 LOGGER.debug("[STORE SUCCESS {}] New stored file is associated to a copy request {}",
-                             event.getChecksum(), request.get().getGroupId());
+                             event.getChecksum(),
+                             request.get().getGroupId());
             } else {
-                String errorCause = String
-                        .format("Error no file reference found for newly stored file %s at %s storage location",
-                                request.get().getStorage(), request.get().getMetaInfo().getChecksum());
+                String errorCause = String.format(
+                    "Error no file reference found for newly stored file %s at %s storage location",
+                    request.get().getStorage(),
+                    request.get().getMetaInfo().getChecksum());
                 LOGGER.error(errorCause);
                 fileCopyRequestService.handleError(request.get(), errorCause);
             }
@@ -157,7 +159,8 @@ public class FileReferenceEventHandler
     private void handleStoreError(FileReferenceEvent event) {
         Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
         if (request.isPresent()) {
-            LOGGER.error("[STORE ERROR {}] File is associated to a copy request {}", event.getChecksum(),
+            LOGGER.error("[STORE ERROR {}] File is associated to a copy request {}",
+                         event.getChecksum(),
                          request.get().getGroupId());
             fileCopyRequestService.handleError(request.get(), event.getMessage());
         }
@@ -184,8 +187,8 @@ public class FileReferenceEventHandler
     private Optional<FileReferenceMetaInfo> handleUpdateOnAvailableProcess(FileReferenceEvent event) {
         Optional<FileReferenceMetaInfo> fileRefMeta = Optional.ofNullable(event.getMetaInfo());
         if (updateActions != null) {
-            Optional<FileReference> fileReference = fileReferenceService
-                    .search(event.getOriginStorage(), event.getChecksum());
+            Optional<FileReference> fileReference = fileReferenceService.search(event.getOriginStorage(),
+                                                                                event.getChecksum());
             if (fileReference.isPresent()) {
                 FileReference fileRef = fileReference.get();
                 for (IUpdateFileReferenceOnAvailable action : updateActions) {
@@ -207,8 +210,9 @@ public class FileReferenceEventHandler
      * @param updateAction
      * @return updated {@link FileReference}
      */
-    private Optional<FileReference> updateFileReference(FileReference fileToUpdate, FileLocation fileToUpdateLocation,
-            IUpdateFileReferenceOnAvailable updateAction) {
+    private Optional<FileReference> updateFileReference(FileReference fileToUpdate,
+                                                        FileLocation fileToUpdateLocation,
+                                                        IUpdateFileReferenceOnAvailable updateAction) {
         FileReference updatedFile = null;
         // As update processes can change file checksum, save the original checksum retrieved first
         String checksum = fileToUpdate.getMetaInfo().getChecksum();
@@ -217,8 +221,10 @@ public class FileReferenceEventHandler
             updatedFile = updateAction.update(fileToUpdate, fileToUpdateLocation);
             if (updatedFile != null) {
                 // Retrieve fileReference associated to the updated file
-                Optional<FileReference> existingOne = fileReferenceService
-                        .search(updatedFile.getLocation().getStorage(), updatedFile.getMetaInfo().getChecksum());
+                Optional<FileReference> existingOne = fileReferenceService.search(updatedFile.getLocation()
+                                                                                             .getStorage(),
+                                                                                  updatedFile.getMetaInfo()
+                                                                                             .getChecksum());
                 // Check that updated fileReference does not match an other existing fileReference
                 if (!existingOne.isPresent() || (existingOne.get().getId().equals(fileToUpdate.getId()))) {
                     updatedFile = fileReferenceService.update(checksum, storage, fileToUpdate);
@@ -226,12 +232,14 @@ public class FileReferenceEventHandler
                 } else {
                     updatedFile = null;
                     LOGGER.warn("File reference update {} ignored. Cause, reference already exists for checksum {}.",
-                                updateAction.getClass().getName(), checksum);
+                                updateAction.getClass().getName(),
+                                checksum);
                 }
             }
         } catch (ModuleException e) {
             LOGGER.error("Error updating File Reference after availability for action  {}. Cause : {}",
-                         updateAction.getClass().getName(), e.getMessage());
+                         updateAction.getClass().getName(),
+                         e.getMessage());
             LOGGER.error(e.getMessage(), e);
         }
         return Optional.ofNullable(updatedFile);
@@ -245,7 +253,8 @@ public class FileReferenceEventHandler
     private void handleFileNotAvailable(FileReferenceEvent event) {
         Optional<FileCopyRequest> request = fileCopyRequestService.search(event);
         if (request.isPresent()) {
-            LOGGER.error("[AVAILABILITY ERROR {}] File is associated to a copy request {}", event.getChecksum(),
+            LOGGER.error("[AVAILABILITY ERROR {}] File is associated to a copy request {}",
+                         event.getChecksum(),
                          request.get().getGroupId());
             fileCopyRequestService.handleError(request.get(), event.getMessage());
         }
@@ -258,7 +267,7 @@ public class FileReferenceEventHandler
      * @param fileAvailableMetaInfo {@link FileReferenceMetaInfo} meta information of file to store
      */
     private void handleCopyProcess(FileReferenceEvent availableEvent,
-            Optional<FileReferenceMetaInfo> fileAvailableMetaInfo) {
+                                   Optional<FileReferenceMetaInfo> fileAvailableMetaInfo) {
         // Check if a copy request is associated to the available file. If any, create a new storage request for the available file
         // to the copy request destination location.
         Optional<FileCopyRequest> request = fileCopyRequestService.search(availableEvent);
@@ -266,23 +275,34 @@ public class FileReferenceEventHandler
             FileCopyRequest copyReq = request.get();
             FileReferenceMetaInfo fileMeta = fileAvailableMetaInfo.orElse(copyReq.getMetaInfo());
             LOGGER.trace("[AVAILABILITY SUCCESS {}] Available file is associated to a copy request {}",
-                         availableEvent.getChecksum(), request.get().getGroupId());
+                         availableEvent.getChecksum(),
+                         request.get().getGroupId());
             String storageGroupId = UUID.randomUUID().toString();
             // Notify storage request and create a new storage request associated to the copy request
             String sessionOwner = copyReq.getSessionOwner();
             String session = copyReq.getSession();
             sessionNotifier.incrementStoreRequests(sessionOwner, session);
-            FileStorageRequest r = fileStorageRequestService
-                    .createNewFileStorageRequest(availableEvent.getOwners(), fileMeta,
-                                                 availableEvent.getLocation().getUrl(), copyReq.getStorage(),
-                                                 Optional.ofNullable(copyReq.getStorageSubDirectory()), storageGroupId,
-                                                 Optional.empty(), Optional.empty(), sessionOwner, session);
+            FileStorageRequest r = fileStorageRequestService.createNewFileStorageRequest(availableEvent.getOwners(),
+                                                                                         fileMeta,
+                                                                                         availableEvent.getLocation()
+                                                                                                       .getUrl(),
+                                                                                         copyReq.getStorage(),
+                                                                                         Optional.ofNullable(copyReq.getStorageSubDirectory()),
+                                                                                         storageGroupId,
+                                                                                         Optional.empty(),
+                                                                                         Optional.empty(),
+                                                                                         sessionOwner,
+                                                                                         session);
             copyReq.setFileStorageGroupId(storageGroupId);
             fileCopyRequestService.update(copyReq);
             LOGGER.trace("[COPY REQUEST {}] Storage request is created for successfully restored file",
-                         copyReq.getMetaInfo().getChecksum(), copyReq.getGroupId());
+                         copyReq.getMetaInfo().getChecksum(),
+                         copyReq.getGroupId());
 
-            reqGrpService.granted(storageGroupId, FileRequestType.STORAGE, 1, true,
+            reqGrpService.granted(storageGroupId,
+                                  FileRequestType.STORAGE,
+                                  1,
+                                  true,
                                   fileStorageRequestService.getRequestExpirationDate());
         }
     }

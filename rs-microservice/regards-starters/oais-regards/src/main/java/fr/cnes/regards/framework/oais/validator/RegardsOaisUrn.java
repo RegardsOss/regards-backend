@@ -18,19 +18,15 @@
  */
 package fr.cnes.regards.framework.oais.validator;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
-
-import fr.cnes.regards.framework.urn.UniformResourceName;
+import java.lang.annotation.*;
 
 /**
  * Annotation allowing to Validate {@link UniformResourceName} thanks to {@link RegardsOaisUrnValidator}
+ *
  * @author Kevin Marchois
  */
 @Retention(RetentionPolicy.RUNTIME)

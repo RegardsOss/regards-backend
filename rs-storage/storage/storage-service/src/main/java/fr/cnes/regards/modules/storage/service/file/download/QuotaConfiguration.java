@@ -12,6 +12,7 @@ public class QuotaConfiguration {
     public static class QuotaManagerConfiguration {
 
         public static final String RATE_EXPIRATION_TICKING_SCHEDULER = "rateExpirationTickingScheduler";
+
         public static final String SYNC_TICKING_SCHEDULER = "syncTickingScheduler";
 
         @Qualifier(RATE_EXPIRATION_TICKING_SCHEDULER)

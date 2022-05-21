@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.hateoas;
 
 /**
  * Exception managing resource
+ *
  * @author CS
  */
 public class MethodException extends Exception {

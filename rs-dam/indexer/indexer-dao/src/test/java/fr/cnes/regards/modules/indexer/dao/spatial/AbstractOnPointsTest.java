@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.indexer.domain.IIndexable;
  * @author oroussel
  */
 public class AbstractOnPointsTest {
+
     protected static final String TYPE = "geo";
 
     protected enum GeometryType {
@@ -54,7 +55,7 @@ public class AbstractOnPointsTest {
         public void setName(String name) {
             this.name = name;
         }
-        
+
         @Override
         public String getDocId() {
             return name;
@@ -80,6 +81,7 @@ public class AbstractOnPointsTest {
     }
 
     protected static class Feature {
+
         private Geometry geometry;
 
         public Geometry getGeometry() {
@@ -108,7 +110,7 @@ public class AbstractOnPointsTest {
             super(id, new Point(coordinates));
         }
 
-        public PointItem(){
+        public PointItem() {
             super();
         }
     }
@@ -154,6 +156,5 @@ public class AbstractOnPointsTest {
             this.crs = crs;
         }
     }
-
 
 }

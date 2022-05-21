@@ -22,12 +22,8 @@ package fr.cnes.regards.modules.storage.domain.plugin;
  * Type of storage, nearline or online
  *
  * @author Sylvain Vissiere-Guerinet
- *
  */
 public enum StorageType {
 
-    NEARLINE,
-    ONLINE,
-    OFFLINE,
-    CACHE;
+    NEARLINE, ONLINE, OFFLINE, CACHE;
 }

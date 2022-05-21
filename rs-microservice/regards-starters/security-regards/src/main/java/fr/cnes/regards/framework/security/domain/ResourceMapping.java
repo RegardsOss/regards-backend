@@ -18,16 +18,16 @@
  */
 package fr.cnes.regards.framework.security.domain;
 
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import org.springframework.web.bind.annotation.RequestMethod;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.web.bind.annotation.RequestMethod;
-
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
-
 /**
  * Carries resource endpoint configuration
+ *
  * @author msordi
  */
 public class ResourceMapping {
@@ -64,13 +64,17 @@ public class ResourceMapping {
 
     /**
      * Constructor
+     *
      * @param pResourceAccess the resource access annotation
-     * @param pFullPath the URL path to access resource
-     * @param pMethod the called HTTP method
-     * @param pDefaultRole default role for resource access
+     * @param pFullPath       the URL path to access resource
+     * @param pMethod         the called HTTP method
+     * @param pDefaultRole    default role for resource access
      */
-    public ResourceMapping(final ResourceAccess pResourceAccess, final String pFullPath, final RequestMethod pMethod,
-            String pSimpleName, final RoleAuthority pDefaultRole) {
+    public ResourceMapping(final ResourceAccess pResourceAccess,
+                           final String pFullPath,
+                           final RequestMethod pMethod,
+                           String pSimpleName,
+                           final RoleAuthority pDefaultRole) {
         resourceAccess = pResourceAccess;
         fullPath = pFullPath;
         method = pMethod;
@@ -80,12 +84,15 @@ public class ResourceMapping {
 
     /**
      * Constructor
+     *
      * @param pResourceAccess the resource access annotation
-     * @param pFullPath the URL path to access resource
-     * @param pMethod the called HTTP method
+     * @param pFullPath       the URL path to access resource
+     * @param pMethod         the called HTTP method
      */
-    public ResourceMapping(final ResourceAccess pResourceAccess, final String pFullPath,
-            final String pControllerSimpleName, final RequestMethod pMethod) {
+    public ResourceMapping(final ResourceAccess pResourceAccess,
+                           final String pFullPath,
+                           final String pControllerSimpleName,
+                           final RequestMethod pMethod) {
         resourceAccess = pResourceAccess;
         fullPath = pFullPath;
         method = pMethod;
@@ -94,8 +101,9 @@ public class ResourceMapping {
 
     /**
      * Constructor
+     *
      * @param pFullPath the URL path to access resource
-     * @param pMethod the called HTTP method
+     * @param pMethod   the called HTTP method
      */
     public ResourceMapping(final String pFullPath, final String pControllerSimpleName, final RequestMethod pMethod) {
         this(null, pFullPath, pControllerSimpleName, pMethod);
@@ -103,6 +111,7 @@ public class ResourceMapping {
 
     /**
      * Compute resource identifier
+     *
      * @return a unique identifier for the resource access
      */
     public String getResourceMappingId() {

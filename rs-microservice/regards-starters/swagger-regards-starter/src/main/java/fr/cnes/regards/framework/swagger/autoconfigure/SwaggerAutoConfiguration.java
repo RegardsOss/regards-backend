@@ -45,6 +45,7 @@ import java.util.Set;
 
 /**
  * Auto configuration for swagger
+ *
  * @author msordi
  */
 @Configuration
@@ -89,16 +90,21 @@ public class SwaggerAutoConfiguration {
     @Bean
     public OpenAPI customOpenAPI(@Value("${springdoc.version}") String appVersion) {
         overrideSwaggerSchemaConverter();
-        return new OpenAPI()
-                .components(new Components().addSecuritySchemes(AUTHENTICATION_KEY, new SecurityScheme()
-                        .type(SecurityScheme.Type.OAUTH2)
-                        .flows(new OAuthFlows().password(new OAuthFlow().tokenUrl(String
-                                .format("%s%s/rs-authentication/oauth/token", regardsSwaggerHost, prefixPath))
-                                .scopes(getScopes())))))
-                .addSecurityItem(new SecurityRequirement().addList(AUTHENTICATION_KEY))
-                .info(new Info().title(properties.getApiTitle()).version(properties.getApiVersion())
-                        .description(properties.getApiDescription())
-                        .license(new License().name(properties.getApiLicense())));
+        return new OpenAPI().components(new Components().addSecuritySchemes(AUTHENTICATION_KEY,
+                                                                            new SecurityScheme().type(SecurityScheme.Type.OAUTH2)
+                                                                                                .flows(new OAuthFlows().password(
+                                                                                                    new OAuthFlow().tokenUrl(
+                                                                                                                       String.format(
+                                                                                                                           "%s%s/rs-authentication/oauth/token",
+                                                                                                                           regardsSwaggerHost,
+                                                                                                                           prefixPath))
+                                                                                                                   .scopes(
+                                                                                                                       getScopes())))))
+                            .addSecurityItem(new SecurityRequirement().addList(AUTHENTICATION_KEY))
+                            .info(new Info().title(properties.getApiTitle())
+                                            .version(properties.getApiVersion())
+                                            .description(properties.getApiDescription())
+                                            .license(new License().name(properties.getApiLicense())));
     }
 
     /**
@@ -110,11 +116,11 @@ public class SwaggerAutoConfiguration {
      * "content" section is not generated and content is unwrapped on the root object.
      *
      * @see <a href="https://stackoverflow.com/questions/72116316/openapi-scheme-generated-does-not-contains-content-of-entitymodel-spring-hateo">
-     *     swagger not compatible with gson
-     *     </a>
+     * swagger not compatible with gson
+     * </a>
      */
     private void overrideSwaggerSchemaConverter() {
-        ModelConverters.getInstance().addConverter(new ModelResolverCustom(Json.mapper()) );
+        ModelConverters.getInstance().addConverter(new ModelResolverCustom(Json.mapper()));
     }
 
     private Scopes getScopes() {

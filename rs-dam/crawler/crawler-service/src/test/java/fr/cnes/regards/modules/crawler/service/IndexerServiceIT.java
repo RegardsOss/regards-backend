@@ -18,13 +18,23 @@
  */
 package fr.cnes.regards.modules.crawler.service;
 
-import java.io.IOException;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-
+import com.google.common.collect.ImmutableSet;
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.crawler.test.CrawlerConfiguration;
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
+import fr.cnes.regards.modules.dam.domain.entities.Collection;
+import fr.cnes.regards.modules.indexer.dao.BulkSaveResult;
+import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.service.IIndexerService;
+import fr.cnes.regards.modules.indexer.service.ISearchService;
+import fr.cnes.regards.modules.indexer.service.Searches;
+import fr.cnes.regards.modules.model.domain.Model;
+import fr.cnes.regards.modules.model.dto.properties.*;
+import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFactory;
+import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFactoryEventHandler;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -40,41 +50,16 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.gson.Gson;
-
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.crawler.test.CrawlerConfiguration;
-import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
-import fr.cnes.regards.modules.dam.domain.entities.Collection;
-import fr.cnes.regards.modules.indexer.dao.BulkSaveResult;
-import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.service.IIndexerService;
-import fr.cnes.regards.modules.indexer.service.ISearchService;
-import fr.cnes.regards.modules.indexer.service.Searches;
-import fr.cnes.regards.modules.model.domain.Model;
-import fr.cnes.regards.modules.model.dto.properties.BooleanProperty;
-import fr.cnes.regards.modules.model.dto.properties.DateArrayProperty;
-import fr.cnes.regards.modules.model.dto.properties.DateIntervalProperty;
-import fr.cnes.regards.modules.model.dto.properties.DateProperty;
-import fr.cnes.regards.modules.model.dto.properties.DoubleArrayProperty;
-import fr.cnes.regards.modules.model.dto.properties.DoubleIntervalProperty;
-import fr.cnes.regards.modules.model.dto.properties.DoubleProperty;
-import fr.cnes.regards.modules.model.dto.properties.IProperty;
-import fr.cnes.regards.modules.model.dto.properties.IntegerArrayProperty;
-import fr.cnes.regards.modules.model.dto.properties.IntegerIntervalProperty;
-import fr.cnes.regards.modules.model.dto.properties.IntegerProperty;
-import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
-import fr.cnes.regards.modules.model.dto.properties.StringArrayProperty;
-import fr.cnes.regards.modules.model.dto.properties.StringProperty;
-import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFactory;
-import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFactoryEventHandler;
+import java.io.IOException;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { CrawlerConfiguration.class })
-@ActiveProfiles({"noscheduler","test"}) // Disable scheduling, this will activate IngesterService during all tests
+@ActiveProfiles({ "noscheduler", "test" }) // Disable scheduling, this will activate IngesterService during all tests
 @TestPropertySource(locations = { "classpath:test.properties" })
 public class IndexerServiceIT {
 
@@ -183,20 +168,19 @@ public class IndexerServiceIT {
 
         attributes.add(IProperty.buildString("string", "Esope reste et se repose"));
 
-        ObjectProperty fragment = IProperty
-                .buildObject("correspondance",
-                             IProperty.buildStringArray("stringArrayMusset",
-                                                        "Quand je mets à vos pieds un éternel hommage",
-                                                        "Voulez-vous qu'un instant je change de visage ?",
-                                                        "Vous avez capturé les sentiments d'un coeur",
-                                                        "Que pour vous adorer forma le créateur.",
-                                                        "Je vous chéris, amour, et ma plume en délire",
-                                                        "Couche sur le papier ce que je n'ose dire.",
-                                                        "Avec soin de mes vers lisez les premiers mots,",
-                                                        "Vous saurez quel remède apporter à mes maux."),
-                             IProperty.buildStringArray("stringArraySand",
-                                                        "Cette indigne faveur que votre esprit réclame",
-                                                        "Nuit à mes sentiments et répugne à mon âme"));
+        ObjectProperty fragment = IProperty.buildObject("correspondance",
+                                                        IProperty.buildStringArray("stringArrayMusset",
+                                                                                   "Quand je mets à vos pieds un éternel hommage",
+                                                                                   "Voulez-vous qu'un instant je change de visage ?",
+                                                                                   "Vous avez capturé les sentiments d'un coeur",
+                                                                                   "Que pour vous adorer forma le créateur.",
+                                                                                   "Je vous chéris, amour, et ma plume en délire",
+                                                                                   "Couche sur le papier ce que je n'ose dire.",
+                                                                                   "Avec soin de mes vers lisez les premiers mots,",
+                                                                                   "Vous saurez quel remède apporter à mes maux."),
+                                                        IProperty.buildStringArray("stringArraySand",
+                                                                                   "Cette indigne faveur que votre esprit réclame",
+                                                                                   "Nuit à mes sentiments et répugne à mon âme"));
         attributes.add(fragment);
 
         collection.setProperties(attributes);
@@ -207,10 +191,11 @@ public class IndexerServiceIT {
         indexerService.refresh(tenant);
 
         // Following lines are just to test Gson serialization/deserialization of all attribute types
-        final List<Collection> singleCollColl = searchService
-                .search(new SimpleSearchKey<>(EntityType.COLLECTION.toString(), Collection.class), 10,
-                        ICriterion.eq("feature.properties.int", 42))
-                .getContent();
+        final List<Collection> singleCollColl = searchService.search(new SimpleSearchKey<>(EntityType.COLLECTION.toString(),
+                                                                                           Collection.class),
+                                                                     10,
+                                                                     ICriterion.eq("feature.properties.int", 42))
+                                                             .getContent();
         Assert.assertEquals(1, singleCollColl.size());
     }
 

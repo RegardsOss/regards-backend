@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.framework.microservice.manager;
 
+import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
-
 /**
  * Microservice configuration wrapper
+ *
  * @author Marc Sordi
  */
 public class MicroserviceConfiguration {

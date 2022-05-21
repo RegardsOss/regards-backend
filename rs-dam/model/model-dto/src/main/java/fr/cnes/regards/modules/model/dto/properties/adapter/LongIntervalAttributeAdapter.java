@@ -18,19 +18,19 @@
  */
 package fr.cnes.regards.modules.model.dto.properties.adapter;
 
-import java.io.IOException;
-
 import com.google.common.collect.Range;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-
 import fr.cnes.regards.modules.model.dto.properties.AbstractProperty;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.LongIntervalProperty;
 
+import java.io.IOException;
+
 /**
  * AbstractIntervalAttributeTypeAdapter specialization to manage LongIntervalAttribute.<br/>
  * This adapter is taken into account by GSon if adapted class contains annotation @JsonAdapter.
+ *
  * @author oroussel
  */
 public class LongIntervalAttributeAdapter extends AbstractIntervalAttributeTypeAdapter<Long, LongIntervalProperty> {

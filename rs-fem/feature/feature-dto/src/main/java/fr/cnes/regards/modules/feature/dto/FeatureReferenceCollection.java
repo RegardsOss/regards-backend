@@ -18,20 +18,18 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
-import java.util.Set;
+import com.google.gson.JsonObject;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-
-import com.google.gson.JsonObject;
+import java.util.Set;
 
 /**
  * Feature collection representation based on GeoJson standard structure.
  *
  * @author Kevin Marchois
- *
  */
 public class FeatureReferenceCollection {
 
@@ -50,13 +48,15 @@ public class FeatureReferenceCollection {
 
     /**
      * Create a new {@link FeatureReferenceCollection} <br/>
-     * @param metadata {@link FeatureCreationSessionMetadata}
-     * @param factory extraction plugin id to create feature from specified parameters
+     *
+     * @param metadata   {@link FeatureCreationSessionMetadata}
+     * @param factory    extraction plugin id to create feature from specified parameters
      * @param parameters extraction parameters
      * @return a {@link FeatureReferenceCollection}
      */
-    public static FeatureReferenceCollection build(FeatureCreationSessionMetadata metadata, String factory,
-            Set<JsonObject> parameters) {
+    public static FeatureReferenceCollection build(FeatureCreationSessionMetadata metadata,
+                                                   String factory,
+                                                   Set<JsonObject> parameters) {
         FeatureReferenceCollection collection = new FeatureReferenceCollection();
         collection.setMetadata(metadata);
         collection.setFactory(factory);

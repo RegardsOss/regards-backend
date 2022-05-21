@@ -22,11 +22,12 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.session.commons.service.delete.ISessionDeleteService;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /**
  * Implementation of {@link ISessionDeleteService} to delete a session
@@ -44,7 +45,8 @@ public class SessionDeleteService implements ISessionDeleteService {
 
     @Override
     public void deleteSession(String source, String session) {
-        LOGGER.info("Event received to program the deletion of all products from session {} of source {}", session,
+        LOGGER.info("Event received to program the deletion of all products from session {} of source {}",
+                    session,
                     source);
         // Run a DeleteProductsJob
         try {

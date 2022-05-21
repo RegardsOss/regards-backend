@@ -18,25 +18,24 @@
  */
 package fr.cnes.regards.modules.dam.rest.entities;
 
-import java.time.OffsetDateTime;
-
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.dam.domain.entities.Collection;
+import fr.cnes.regards.modules.dam.rest.DamRestConfiguration;
 import org.junit.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.dam.domain.entities.Collection;
-import fr.cnes.regards.modules.dam.rest.DamRestConfiguration;
+import java.time.OffsetDateTime;
 
 /**
  * @author lmieulet
  * @author Sylvain Vissiere-Guerinet
  */
 @TestPropertySource(locations = { "classpath:test.properties" },
-        properties = { "spring.jpa.properties.hibernate.default_schema=dam_coll_test" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=dam_coll_test" })
 @ContextConfiguration(classes = { DamRestConfiguration.class })
 public class CollectionControllerIT extends AbstractCollectionControllerIT {
 
@@ -45,7 +44,7 @@ public class CollectionControllerIT extends AbstractCollectionControllerIT {
     @Test
     public void testGetAllCollections() {
         customizer.expectStatusOk()
-                .expect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
+                  .expect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
         performDefaultGet(CollectionController.TYPE_MAPPING, customizer, "Failed to fetch collection list");
     }
 
@@ -57,7 +56,9 @@ public class CollectionControllerIT extends AbstractCollectionControllerIT {
         Collection collection2 = new Collection(model1, null, "COL2", "collection2");
         collection2.setCreationDate(OffsetDateTime.now());
         customizer.expect(MockMvcResultMatchers.status().isCreated());
-        performDefaultPost(CollectionController.TYPE_MAPPING, collection2, customizer,
+        performDefaultPost(CollectionController.TYPE_MAPPING,
+                           collection2,
+                           customizer,
                            "Failed to create a new collection");
     }
 
@@ -66,14 +67,16 @@ public class CollectionControllerIT extends AbstractCollectionControllerIT {
     @Test
     public void testGetCollectionById() {
         customizer.expectStatusOk()
-                .expect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
-        performDefaultGet(CollectionController.TYPE_MAPPING + CollectionController.COLLECTION_MAPPING, customizer,
-                          "Failed to fetch a specific collection using its id", collection1.getId());
+                  .expect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
+        performDefaultGet(CollectionController.TYPE_MAPPING + CollectionController.COLLECTION_MAPPING,
+                          customizer,
+                          "Failed to fetch a specific collection using its id",
+                          collection1.getId());
     }
 
     @Requirement("REGARDS_DSL_DAM_COL_210")
     @Purpose("Le système doit permettre de mettre à jour les valeurs d’une collection via son IP_ID et d’archiver ces "
-            + "modifications dans son AIP au niveau du composant « Archival storage » si ce composant est déployé.")
+        + "modifications dans son AIP au niveau du composant « Archival storage » si ce composant est déployé.")
     @Test
     public void testUpdateCollection() {
         Collection collectionClone = new Collection(collection1.getModel(), "", "COL1", "collection1clone");
@@ -83,14 +86,18 @@ public class CollectionControllerIT extends AbstractCollectionControllerIT {
         collectionClone.setTags(collection1.getTags());
         collectionClone.setProviderId(collection1.getProviderId() + "new");
         customizer.expectStatusOk()
-                .expect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
+                  .expect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
 
-        performDefaultPut(CollectionController.TYPE_MAPPING + CollectionController.COLLECTION_MAPPING, collectionClone,
-                          customizer, "Failed to update a specific collection using its id", collection1.getId());
+        performDefaultPut(CollectionController.TYPE_MAPPING + CollectionController.COLLECTION_MAPPING,
+                          collectionClone,
+                          customizer,
+                          "Failed to update a specific collection using its id",
+                          collection1.getId());
     }
 
     @Requirement("REGARDS_DSL_DAM_COL_220")
-    @Purpose("Le système doit permettre d’associer/dissocier des collections à la collection courante lors de la mise à jour.")
+    @Purpose(
+        "Le système doit permettre d’associer/dissocier des collections à la collection courante lors de la mise à jour.")
     @Test
     public void testFullUpdate() {
         Collection collectionClone = new Collection(collection1.getModel(), "", "COL1", "collection1clone");
@@ -100,10 +107,13 @@ public class CollectionControllerIT extends AbstractCollectionControllerIT {
         collectionClone.setProviderId(collection1.getProviderId() + "new");
         collectionClone.setLabel("label");
         customizer.expectStatusOk()
-                .expect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
+                  .expect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
 
-        performDefaultPut(CollectionController.TYPE_MAPPING + CollectionController.COLLECTION_MAPPING, collectionClone,
-                          customizer, "Failed to update a specific collection using its id", collection1.getId());
+        performDefaultPut(CollectionController.TYPE_MAPPING + CollectionController.COLLECTION_MAPPING,
+                          collectionClone,
+                          customizer,
+                          "Failed to update a specific collection using its id",
+                          collection1.getId());
 
     }
 
@@ -112,7 +122,9 @@ public class CollectionControllerIT extends AbstractCollectionControllerIT {
     @Test
     public void testDeleteCollection() {
         customizer.expectStatusNoContent();
-        performDefaultDelete(CollectionController.TYPE_MAPPING + CollectionController.COLLECTION_MAPPING, customizer,
-                             "Failed to delete a specific collection using its id", collection1.getId());
+        performDefaultDelete(CollectionController.TYPE_MAPPING + CollectionController.COLLECTION_MAPPING,
+                             customizer,
+                             "Failed to delete a specific collection using its id",
+                             collection1.getId());
     }
 }

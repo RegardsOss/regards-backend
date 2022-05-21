@@ -32,7 +32,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 @Component
 public class RandomOffsetDateTimeBuilder
-        implements RandomGeneratorBuilder<RandomOffsetDateTimeBuilder.RandomOffsetDateTime> {
+    implements RandomGeneratorBuilder<RandomOffsetDateTimeBuilder.RandomOffsetDateTime> {
 
     @Override
     public String getFunctionName() {

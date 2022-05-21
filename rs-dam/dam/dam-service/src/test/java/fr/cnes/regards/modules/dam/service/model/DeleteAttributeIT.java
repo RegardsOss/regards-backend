@@ -18,11 +18,6 @@
  */
 package fr.cnes.regards.modules.dam.service.model;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -38,13 +33,18 @@ import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.service.IAttributeModelService;
 import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
 import fr.cnes.regards.modules.model.service.IModelService;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * Test attribute model deletion restrictions
+ *
  * @author Marc Sordi
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=deletion" },
-        locations = "classpath:es.properties")
+    locations = "classpath:es.properties")
 @MultitenantTransactional
 public class DeleteAttributeIT extends AbstractMultitenantServiceIT {
 
@@ -70,6 +70,7 @@ public class DeleteAttributeIT extends AbstractMultitenantServiceIT {
 
     /**
      * An attribute not linked to any model nor entity can be deleted
+     *
      * @throws ModuleException
      */
     @Test
@@ -79,6 +80,7 @@ public class DeleteAttributeIT extends AbstractMultitenantServiceIT {
 
     /**
      * An attribute linked to a non used model can be deleted
+     *
      * @throws ModuleException
      */
     @Test
@@ -91,6 +93,7 @@ public class DeleteAttributeIT extends AbstractMultitenantServiceIT {
 
     /**
      * An attribute linked to a used model cannot be deleted
+     *
      * @throws ModuleException
      */
     @Test(expected = EntityOperationForbiddenException.class)
@@ -107,6 +110,7 @@ public class DeleteAttributeIT extends AbstractMultitenantServiceIT {
 
     /**
      * An attribute linked to a datasource cannot be deleted
+     *
      * @throws ModuleException
      */
     @Test(expected = EntityOperationForbiddenException.class)

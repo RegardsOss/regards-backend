@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.framework.modules.plugins.domain.parameter;
 
-import java.util.Map;
-
 import com.google.gson.JsonElement;
+
+import java.util.Map;
 
 /**
  * JSON plugin parameter representation of {@link PluginParamType#MAP}.
  * Its value will be transformed to target parameter type in plugin engine using GSON deserialization.
  *
  * @author Marc SORDI
- *
  */
 public class JsonMapPluginParam extends AbstractPluginParam<Map<String, JsonElement>> {
 

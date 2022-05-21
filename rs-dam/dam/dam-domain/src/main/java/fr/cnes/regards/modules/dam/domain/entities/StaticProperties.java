@@ -22,11 +22,9 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- *
  * List all available static properties
  *
  * @author Marc Sordi
- *
  */
 public final class StaticProperties {
 
@@ -131,9 +129,14 @@ public final class StaticProperties {
     public static final String FEATURE_PROPERTIES_PATH = FEATURE_NS + FEATURE_PROPERTIES;
 
     // List of first level static properties
-    public static final List<String> FEATURES_STATICS = Arrays.asList(FEATURE_ID, FEATURE_PROVIDER_ID, FEATURE_LABEL,
-                                                                      FEATURE_MODEL, FEATURE_FILES, FEATURE_TAGS,
-                                                                      FEATURE_GEOMETRY, FEATURE_PROPERTIES);
+    public static final List<String> FEATURES_STATICS = Arrays.asList(FEATURE_ID,
+                                                                      FEATURE_PROVIDER_ID,
+                                                                      FEATURE_LABEL,
+                                                                      FEATURE_MODEL,
+                                                                      FEATURE_FILES,
+                                                                      FEATURE_TAGS,
+                                                                      FEATURE_GEOMETRY,
+                                                                      FEATURE_PROPERTIES);
 
     // ##########-DataObject-##########
 

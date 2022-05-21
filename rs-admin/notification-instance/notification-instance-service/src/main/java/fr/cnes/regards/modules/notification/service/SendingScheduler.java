@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
-import java.time.OffsetDateTime;
-
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.modules.notification.domain.Notification;
+import fr.cnes.regards.modules.notification.domain.NotificationToSendEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
@@ -28,9 +29,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
-import fr.cnes.regards.modules.notification.domain.Notification;
-import fr.cnes.regards.modules.notification.domain.NotificationToSendEvent;
+import java.time.OffsetDateTime;
 
 /**
  * Service responsible for scheduling the sending of notifications to their recipients.<br>
@@ -65,8 +64,9 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
      */
     @Scheduled(cron = "${regards.notification.cron.daily}")
     public void sendDaily() {
-        notificationService.retrieveNotificationsToSend(PageRequest.of(0, 10)).getContent()
-                .forEach(n -> sendNotification(n));
+        notificationService.retrieveNotificationsToSend(PageRequest.of(0, 10))
+                           .getContent()
+                           .forEach(n -> sendNotification(n));
     }
 
     private void sendNotification(Notification notification) {

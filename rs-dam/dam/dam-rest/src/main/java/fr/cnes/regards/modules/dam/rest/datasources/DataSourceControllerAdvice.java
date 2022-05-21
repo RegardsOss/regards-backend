@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.dam.rest.datasources;
 
+import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
+import fr.cnes.regards.modules.dam.rest.datasources.exception.AssociatedDatasetExistsException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -25,9 +27,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
-import fr.cnes.regards.modules.dam.rest.datasources.exception.AssociatedDatasetExistsException;
 
 /**
  * @author oroussel
@@ -37,8 +36,7 @@ import fr.cnes.regards.modules.dam.rest.datasources.exception.AssociatedDatasetE
 public class DataSourceControllerAdvice {
 
     @ExceptionHandler(AssociatedDatasetExistsException.class)
-    public ResponseEntity<ServerErrorResponse> handleAssociatedDatasetExistsException(
-            AssociatedDatasetExistsException e) {
+    public ResponseEntity<ServerErrorResponse> handleAssociatedDatasetExistsException(AssociatedDatasetExistsException e) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(e.getMessage(), e));
     }
 

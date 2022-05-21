@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.framework.modules.jpa.instance.autoconfigure.repository;
 
-import org.springframework.data.repository.CrudRepository;
-
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.modules.jpa.instance.autoconfigure.pojo.TestProject;
+import org.springframework.data.repository.CrudRepository;
 
 /**
  * Class ProjectRepository
- *
+ * <p>
  * JPA Project Repository
+ *
  * @author CS
  */
 @InstanceEntity

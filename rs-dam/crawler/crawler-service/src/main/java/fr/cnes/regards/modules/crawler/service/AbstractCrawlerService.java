@@ -22,6 +22,7 @@ import java.util.function.Supplier;
  * Abstract crawler service.
  * This service is intended to be specialized for Dataset (DatasetCrawlerService) and other entity than Dataset
  * (CrawlerService)
+ *
  * @author oroussel
  */
 public abstract class AbstractCrawlerService<T extends AbstractEntityEvent> implements DisposableBean {
@@ -97,8 +98,7 @@ public abstract class AbstractCrawlerService<T extends AbstractEntityEvent> impl
 
     @SuppressWarnings("unchecked")
     protected AbstractCrawlerService() {
-        this.entityClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass())
-                .getActualTypeArguments()[0];
+        this.entityClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
     }
 
     /**
@@ -154,6 +154,7 @@ public abstract class AbstractCrawlerService<T extends AbstractEntityEvent> impl
     /**
      * Try to do a transactional poll. If a poll is done but an exception occurs, the transaction is roll backed and the
      * event is still present into AMQP
+     *
      * @return true if a poll has been done, false otherwise
      */
     @MultitenantTransactional

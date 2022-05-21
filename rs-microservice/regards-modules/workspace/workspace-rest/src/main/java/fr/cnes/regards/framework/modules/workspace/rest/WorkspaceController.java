@@ -18,8 +18,13 @@
  */
 package fr.cnes.regards.framework.modules.workspace.rest;
 
-import java.io.IOException;
-
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.modules.workspace.domain.WorkspaceMonitoringInformation;
+import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpEntity;
@@ -30,16 +35,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.modules.workspace.domain.WorkspaceMonitoringInformation;
-import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
+import java.io.IOException;
 
 /**
  * REST controller allowing to get workspace monitoring information.
+ *
  * @author svissier
  */
 @RestController
@@ -75,7 +75,7 @@ public class WorkspaceController implements IResourceController<WorkspaceMonitor
 
     @Override
     public EntityModel<WorkspaceMonitoringInformation> toResource(WorkspaceMonitoringInformation element,
-            Object... extras) {
+                                                                  Object... extras) {
         EntityModel<WorkspaceMonitoringInformation> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "getMonitoringInformation", LinkRels.SELF);
         return resource;

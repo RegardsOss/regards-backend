@@ -30,10 +30,9 @@ import java.util.Set;
  * JPA Repository to handle access to {@link WorkerConfig} entities.
  *
  * @author Léo Mieulet
- *
  */
 public interface IWorkerConfigRepository
-        extends JpaRepository<WorkerConfig, Long>, JpaSpecificationExecutor<WorkerConfig> {
+    extends JpaRepository<WorkerConfig, Long>, JpaSpecificationExecutor<WorkerConfig> {
 
     Optional<WorkerConfig> findByWorkerType(String name);
 

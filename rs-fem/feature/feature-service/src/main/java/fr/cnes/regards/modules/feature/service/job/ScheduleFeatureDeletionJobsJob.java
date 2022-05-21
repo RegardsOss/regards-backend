@@ -18,20 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.service.job;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -41,11 +28,20 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import fr.cnes.regards.modules.feature.service.IFeatureService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Job to schedule one {@link PublishFeatureDeletionEventsJob} job for each page of {@link FeatureEntityDto} matching search parameters
- * @author Sébastien Binda
  *
+ * @author Sébastien Binda
  */
 public class ScheduleFeatureDeletionJobsJob extends AbstractJob<Void> {
 
@@ -68,7 +64,7 @@ public class ScheduleFeatureDeletionJobsJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         selection = getValue(parameters, SELECTION_PARAMETER);
         owner = getValue(parameters, OWNER_PARAMETER);
     }
@@ -96,7 +92,8 @@ public class ScheduleFeatureDeletionJobsJob extends AbstractJob<Void> {
                 }
                 // Scheduling page deletion job
                 schedulePageDeletion(ids);
-                logger.info("Scheduling job for {} feature deletion requests (remaining {}).", ids.size(),
+                logger.info("Scheduling job for {} feature deletion requests (remaining {}).",
+                            ids.size(),
                             totalElementCheck);
                 page = page.next();
             }

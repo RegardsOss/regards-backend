@@ -18,6 +18,12 @@
  */
 package scripts.uiconfiguration;
 
+import com.google.gson.Gson;
+import org.flywaydb.core.api.migration.BaseJavaMigration;
+import org.flywaydb.core.api.migration.Context;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -26,13 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-
-import org.flywaydb.core.api.migration.BaseJavaMigration;
-import org.flywaydb.core.api.migration.Context;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.gson.Gson;
 
 /**
  * Migrates modules configuration from previous REGARDS version into 1.3.0
@@ -66,7 +65,7 @@ public class V1_4_0__update extends BaseJavaMigration {
      * @return new configuration as string
      */
     public static String withParsedMap(String configuration,
-            Function<Map<String, Object>, Map<String, Object>> updater) {
+                                       Function<Map<String, Object>, Map<String, Object>> updater) {
         Gson gson = new Gson();
         Map<String, Object> configurationAsMap = gson.fromJson(configuration, Map.class);
         // Update configuration
@@ -119,6 +118,7 @@ public class V1_4_0__update extends BaseJavaMigration {
 
     /**
      * Migrates modules
+     *
      * @param context flyway context
      */
     public void migrateModules(Context context) throws Exception {
@@ -141,7 +141,7 @@ public class V1_4_0__update extends BaseJavaMigration {
                         LOG.info(String.format("Updating module %s (type %s)", id, type));
                         String sqlRequest = "UPDATE t_ui_module SET conf=? WHERE id=?";
                         try (PreparedStatement preparedStatement = context.getConnection()
-                                .prepareStatement(sqlRequest)) {
+                                                                          .prepareStatement(sqlRequest)) {
                             preparedStatement.setString(1, updatedConf);
                             preparedStatement.setInt(2, id);
                             preparedStatement.executeUpdate();
@@ -155,12 +155,13 @@ public class V1_4_0__update extends BaseJavaMigration {
 
     /**
      * Migrates UI settings
+     *
      * @param context flyway context
      */
     public void migrateUISettings(Context context) throws Exception {
         try (Statement select = context.getConnection().createStatement()) {
-            try (ResultSet rows = select
-                    .executeQuery("SELECT id, application_id, configuration FROM t_ui_configuration ORDER BY id")) {
+            try (ResultSet rows = select.executeQuery(
+                "SELECT id, application_id, configuration FROM t_ui_configuration ORDER BY id")) {
                 while (rows.next()) {
                     int id = rows.getInt(1);
                     String applicationId = rows.getString(2);
@@ -172,7 +173,7 @@ public class V1_4_0__update extends BaseJavaMigration {
 
                         String sqlRequest = "UPDATE t_ui_configuration SET configuration=? WHERE id=?";
                         try (PreparedStatement preparedStatement = context.getConnection()
-                                .prepareStatement(sqlRequest)) {
+                                                                          .prepareStatement(sqlRequest)) {
                             preparedStatement.setString(1, updatedConf);
                             preparedStatement.setInt(2, id);
                             preparedStatement.executeUpdate();

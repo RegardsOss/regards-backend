@@ -47,6 +47,7 @@ public class RabbitVhost {
 
     /**
      * Equals method
+     *
      * @return whether pOther is equals to this
      */
     @Override

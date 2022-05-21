@@ -21,9 +21,7 @@ package fr.cnes.regards.modules.feature.domain.request;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
 /**
- *
  * @author Sébastien Binda
- *
  */
 public interface IProviderIdByUrn {
 

@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
  * Event published when a tenant is deleted
+ *
  * @author Marc Sordi
  */
 @Event(target = Target.ALL)

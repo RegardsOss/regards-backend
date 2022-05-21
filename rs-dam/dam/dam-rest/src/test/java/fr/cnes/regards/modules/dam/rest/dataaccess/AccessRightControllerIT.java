@@ -27,19 +27,21 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
  * @author Léo Mieulet
  */
 @TestPropertySource(locations = { "classpath:test.properties" },
-        properties = { "spring.jpa.properties.hibernate.default_schema=dam_ag_rest" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=dam_ag_rest" })
 public class AccessRightControllerIT extends AbstractAccessRightControllerIT {
 
     @Test
     public void testRetrieveAccessRightsNoArgs() {
         performDefaultGet(AccessRightController.PATH_ACCESS_RIGHTS,
-                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT), ACCESS_RIGHTS_ERROR_MSG);
+                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT),
+                          ACCESS_RIGHTS_ERROR_MSG);
     }
 
     @Test
     public void testRetrieveDatasetWithAccessRights() {
         performDefaultGet(DatasetWithAccessRightController.ROOT_PATH + DatasetWithAccessRightController.GROUP_PATH,
-                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT), ACCESS_RIGHTS_ERROR_MSG,
+                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT),
+                          ACCESS_RIGHTS_ERROR_MSG,
                           ag1Name);
     }
 
@@ -47,35 +49,42 @@ public class AccessRightControllerIT extends AbstractAccessRightControllerIT {
     public void testRetrieveAccessRightsGroupArgs() {
         String sb = "?" + "accessgroup=" + ag1.getName();
         performDefaultGet(AccessRightController.PATH_ACCESS_RIGHTS + sb,
-                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT), ACCESS_RIGHTS_ERROR_MSG);
+                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT),
+                          ACCESS_RIGHTS_ERROR_MSG);
     }
 
     @Test
     public void testRetrieveAccessRightsDSArgs() {
         String sb = "?" + "dataset=" + ds1.getIpId();
         performDefaultGet(AccessRightController.PATH_ACCESS_RIGHTS + sb,
-                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT), ACCESS_RIGHTS_ERROR_MSG);
+                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT),
+                          ACCESS_RIGHTS_ERROR_MSG);
     }
 
     @Test
     public void testRetrieveAccessRightsFullArgs() {
         String sb = "?" + "dataset=" + ds1.getIpId() + "&accessgroup=" + ag1.getName();
         performDefaultGet(AccessRightController.PATH_ACCESS_RIGHTS + sb,
-                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT), ACCESS_RIGHTS_ERROR_MSG);
+                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT),
+                          ACCESS_RIGHTS_ERROR_MSG);
     }
 
     @Test
     public void testRetrieveAccessRight() {
         performDefaultGet(AccessRightController.PATH_ACCESS_RIGHTS + AccessRightController.PATH_ACCESS_RIGHTS_ID,
-                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT), ACCESS_RIGHTS_ERROR_MSG,
+                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT),
+                          ACCESS_RIGHTS_ERROR_MSG,
                           ar1.getId());
     }
 
     @Test
     public void testCreateAccessRight() {
         // Associated dataset must be updated
-        performDefaultPost(AccessRightController.PATH_ACCESS_RIGHTS, ar3, customizer().expectStatusCreated()
-                .expectIsNotEmpty(JSON_PATH_ROOT).expectValue("$.content.dataset.groups[1]", ag2.getName()),
+        performDefaultPost(AccessRightController.PATH_ACCESS_RIGHTS,
+                           ar3,
+                           customizer().expectStatusCreated()
+                                       .expectIsNotEmpty(JSON_PATH_ROOT)
+                                       .expectValue("$.content.dataset.groups[1]", ag2.getName()),
                            ACCESS_RIGHTS_ERROR_MSG);
     }
 
@@ -83,16 +92,19 @@ public class AccessRightControllerIT extends AbstractAccessRightControllerIT {
     public void testIsUserAuthorisedToAccessDataset() {
 
         performDefaultGet(AccessRightController.PATH_ACCESS_RIGHTS + AccessRightController.PATH_IS_DATASET_ACCESSIBLE,
-                          customizer().expectStatusOk().expect(MockMvcResultMatchers.content().string("true"))
-                                  .addParameter("dataset", ds1.getIpId().toString()).addParameter("user", email),
+                          customizer().expectStatusOk()
+                                      .expect(MockMvcResultMatchers.content().string("true"))
+                                      .addParameter("dataset", ds1.getIpId().toString())
+                                      .addParameter("user", email),
                           ACCESS_RIGHTS_ERROR_MSG);
 
         String notExistingUser = "not.existing" + email;
 
         performDefaultGet(AccessRightController.PATH_ACCESS_RIGHTS + AccessRightController.PATH_IS_DATASET_ACCESSIBLE,
-                          customizer().expectStatusOk().expect(MockMvcResultMatchers.content().string("false"))
-                                  .addParameter("dataset", ds1.getIpId().toString())
-                                  .addParameter("user", notExistingUser),
+                          customizer().expectStatusOk()
+                                      .expect(MockMvcResultMatchers.content().string("false"))
+                                      .addParameter("dataset", ds1.getIpId().toString())
+                                      .addParameter("user", notExistingUser),
                           ACCESS_RIGHTS_ERROR_MSG);
     }
 

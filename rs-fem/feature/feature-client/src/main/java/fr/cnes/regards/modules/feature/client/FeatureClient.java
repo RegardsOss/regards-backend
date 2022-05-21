@@ -18,28 +18,26 @@
  */
 package fr.cnes.regards.modules.feature.client;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.apache.commons.compress.utils.Lists;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureMetadata;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
-import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import org.apache.commons.compress.utils.Lists;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * BUS Message client for Fem
  *
  * @author Sébastien Binda
- *
  */
 @Component
 public class FeatureClient {
@@ -49,15 +47,17 @@ public class FeatureClient {
 
     /**
      * Sends {@link FeatureUpdateRequestEvent} to fem manager to handle {@link Feature}s update.
-     * @param features {@link Feature}s to patch
+     *
+     * @param features      {@link Feature}s to patch
      * @param priorityLevel
      * @return update request identifiers
      */
     public List<String> updateFeatures(String updateOwner, List<Feature> features, PriorityLevel priorityLevel) {
         List<FeatureUpdateRequestEvent> events = Lists.newArrayList();
         for (Feature feature : features) {
-            FeatureUpdateRequestEvent event = FeatureUpdateRequestEvent
-                    .build(updateOwner, FeatureMetadata.build(priorityLevel), feature);
+            FeatureUpdateRequestEvent event = FeatureUpdateRequestEvent.build(updateOwner,
+                                                                              FeatureMetadata.build(priorityLevel),
+                                                                              feature);
             events.add(event);
         }
         publisher.publish(events);
@@ -66,11 +66,13 @@ public class FeatureClient {
 
     /**
      * Sends {@link FeatureDeletionRequestEvent} to fem manager to handle {@link Feature}s deletion
-     * @param featureUrns Urn of {@link Feature}s to delete
+     *
+     * @param featureUrns   Urn of {@link Feature}s to delete
      * @param priorityLevel {@link PriorityLevel}
      */
-    public List<String> deleteFeatures(String deletionOwner, List<FeatureUniformResourceName> featureUrns,
-            PriorityLevel priorityLevel) {
+    public List<String> deleteFeatures(String deletionOwner,
+                                       List<FeatureUniformResourceName> featureUrns,
+                                       PriorityLevel priorityLevel) {
         List<FeatureDeletionRequestEvent> events = Lists.newArrayList();
         for (FeatureUniformResourceName urn : featureUrns) {
             FeatureDeletionRequestEvent event = FeatureDeletionRequestEvent.build(deletionOwner, urn, priorityLevel);
@@ -82,15 +84,18 @@ public class FeatureClient {
 
     /**
      * Sends {@link FeatureNotificationRequestEvent} to fem manager to handle {@link Feature}s notification.
-     * @param featureUrns Urn of {@link Feature}s to notify
+     *
+     * @param featureUrns   Urn of {@link Feature}s to notify
      * @param priorityLevel {@link PriorityLevel}
      */
-    public List<String> notifyFeatures(String notificationOwner, List<FeatureUniformResourceName> featureUrns,
-            PriorityLevel priorityLevel) {
+    public List<String> notifyFeatures(String notificationOwner,
+                                       List<FeatureUniformResourceName> featureUrns,
+                                       PriorityLevel priorityLevel) {
         List<FeatureNotificationRequestEvent> events = Lists.newArrayList();
         for (FeatureUniformResourceName urn : featureUrns) {
-            FeatureNotificationRequestEvent event = FeatureNotificationRequestEvent
-                    .build(notificationOwner, urn, priorityLevel);
+            FeatureNotificationRequestEvent event = FeatureNotificationRequestEvent.build(notificationOwner,
+                                                                                          urn,
+                                                                                          priorityLevel);
             events.add(event);
         }
         publisher.publish(events);

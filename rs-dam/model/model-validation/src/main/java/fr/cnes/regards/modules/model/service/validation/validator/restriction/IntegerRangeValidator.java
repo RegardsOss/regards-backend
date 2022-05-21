@@ -18,24 +18,21 @@
  */
 package fr.cnes.regards.modules.model.service.validation.validator.restriction;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.validation.Errors;
-
 import com.google.common.collect.Range;
-
 import fr.cnes.regards.modules.model.domain.attributes.restriction.IntegerRangeRestriction;
 import fr.cnes.regards.modules.model.dto.properties.IntegerArrayProperty;
 import fr.cnes.regards.modules.model.dto.properties.IntegerIntervalProperty;
 import fr.cnes.regards.modules.model.dto.properties.IntegerProperty;
 import fr.cnes.regards.modules.model.service.validation.validator.AbstractPropertyValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.validation.Errors;
 
 /**
  * Validate {@link IntegerProperty}, {@link IntegerArrayProperty} or {@link IntegerIntervalProperty} with a
  * {@link IntegerRangeRestriction}
  *
  * @author Marc Sordi
- *
  */
 public class IntegerRangeValidator extends AbstractPropertyValidator {
 
@@ -58,7 +55,7 @@ public class IntegerRangeValidator extends AbstractPropertyValidator {
     @Override
     public boolean supports(Class<?> clazz) {
         return clazz == IntegerProperty.class || clazz == IntegerArrayProperty.class
-                || clazz == IntegerIntervalProperty.class;
+            || clazz == IntegerIntervalProperty.class;
     }
 
     @Override
@@ -93,10 +90,8 @@ public class IntegerRangeValidator extends AbstractPropertyValidator {
     /**
      * Check value is in restriction range
      *
-     * @param pValue
-     *            value
-     * @param pErrors
-     *            errors
+     * @param pValue  value
+     * @param pErrors errors
      */
     private void checkRange(Integer pValue, Errors pErrors) {
         if (restriction.isMinExcluded()) {
@@ -121,7 +116,8 @@ public class IntegerRangeValidator extends AbstractPropertyValidator {
     }
 
     private void reject(Errors pErrors) {
-        pErrors.rejectValue(attributeKey, "error.integer.value.not.in.required.range",
+        pErrors.rejectValue(attributeKey,
+                            "error.integer.value.not.in.required.range",
                             "Value not constistent with restriction range.");
     }
 }

@@ -22,9 +22,8 @@ import fr.cnes.regards.framework.utils.metamodel.MetaAttribute;
 
 /**
  * Classe de gestion des attributs de type geographiques
- * 
- * @author Christophe Mertz
  *
+ * @author Christophe Mertz
  */
 public class GeoAttribute extends Attribute {
 

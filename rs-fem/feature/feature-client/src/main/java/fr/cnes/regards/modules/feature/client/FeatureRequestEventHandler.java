@@ -17,7 +17,7 @@ import java.util.List;
  */
 @Component
 public class FeatureRequestEventHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FeatureRequestEvent> {
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FeatureRequestEvent> {
 
     @Autowired
     private ISubscriber subscriber;
@@ -44,7 +44,8 @@ public class FeatureRequestEventHandler
         LOGGER.debug("[STORAGE RESPONSES HANDLER] Handling {} FileReferenceUpdateEventHandler...", messages.size());
         long start = System.currentTimeMillis();
         handle(messages);
-        LOGGER.debug("[STORAGE RESPONSES HANDLER] {} FileReferenceUpdateEventHandler handled in {} ms", messages.size(),
+        LOGGER.debug("[STORAGE RESPONSES HANDLER] {} FileReferenceUpdateEventHandler handled in {} ms",
+                     messages.size(),
                      System.currentTimeMillis() - start);
     }
 

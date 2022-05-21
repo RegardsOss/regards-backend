@@ -1,26 +1,24 @@
 package fr.cnes.regards.framework.oais;
 
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
+import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
+import fr.cnes.regards.framework.urn.DataType;
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
+import org.springframework.util.MimeType;
+
+import javax.persistence.Transient;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.Transient;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
-import org.springframework.util.MimeType;
-
-import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
-import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
-import fr.cnes.regards.framework.urn.DataType;
-
 /**
  * Information package<br/>
- *
+ * <p>
  * An {@link InformationPackageProperties} contains :
  * <ul>
  * <li>An array of {@link ContentInformation} to describe related physical files</li>
@@ -352,8 +350,9 @@ public class InformationPackageProperties {
     /**
      * Add provenance information event to the information package thanks to the given parameters (repeatable)
      */
-    public InformationPackageProperties withProvenanceInformationEvent(@Nullable String type, String comment,
-            OffsetDateTime date) {
+    public InformationPackageProperties withProvenanceInformationEvent(@Nullable String type,
+                                                                       String comment,
+                                                                       OffsetDateTime date) {
         pdi.withProvenanceInformationEvent(type, comment, date);
         return this;
     }
@@ -385,8 +384,9 @@ public class InformationPackageProperties {
     /**
      * Set the access right information to the information package thanks to the given parameters
      */
-    public InformationPackageProperties withAccessRightInformation(String licence, String dataRights,
-            @Nullable OffsetDateTime publicReleaseDate) {
+    public InformationPackageProperties withAccessRightInformation(String licence,
+                                                                   String dataRights,
+                                                                   @Nullable OffsetDateTime publicReleaseDate) {
         pdi.withAccessRightInformation(licence, dataRights, publicReleaseDate);
         return this;
     }
@@ -403,44 +403,57 @@ public class InformationPackageProperties {
      * Set <b>required</b> data object properties for a data object reference<br/>
      * Use this method to reference an external data object that will not be managed by archival storage (i.e. physical
      * file will not be stored by the system)<br/>
+     *
      * @param dataType {@link DataType}
      * @param filename filename
-     * @param url external url
-     * @param storage storage identifier not managed by storage service (to just reference the file and avoid manipulating it).
-     * An arbitrary character string may be appropriate!
+     * @param url      external url
+     * @param storage  storage identifier not managed by storage service (to just reference the file and avoid manipulating it).
+     *                 An arbitrary character string may be appropriate!
      */
-    public InformationPackageProperties withDataObjectReference(DataType dataType, String filename, String url,
-            String storage) {
+    public InformationPackageProperties withDataObjectReference(DataType dataType,
+                                                                String filename,
+                                                                String url,
+                                                                String storage) {
         getUnderConstruction().withDataObjectReference(dataType, filename, url, storage);
         return this;
     }
 
     /**
      * Set <b>required</b> data object properties<br/>
-     * @param dataType {@link DataType}
-     * @param filename filename
+     *
+     * @param dataType  {@link DataType}
+     * @param filename  filename
      * @param algorithm checksum algorithm
-     * @param checksum the checksum
-     * @param fileSize <b>optional</b> file size
+     * @param checksum  the checksum
+     * @param fileSize  <b>optional</b> file size
      * @param locations references to the physical file. Use {@link OAISDataObjectLocation} build methods to create location!
      */
-    public InformationPackageProperties withDataObject(DataType dataType, String filename, String algorithm,
-            String checksum, Long fileSize, OAISDataObjectLocation... locations) {
+    public InformationPackageProperties withDataObject(DataType dataType,
+                                                       String filename,
+                                                       String algorithm,
+                                                       String checksum,
+                                                       Long fileSize,
+                                                       OAISDataObjectLocation... locations) {
         getUnderConstruction().withDataObject(dataType, filename, algorithm, checksum, fileSize, locations);
         return this;
     }
 
     /**
      * Set <b>required</b> data object properties
-     * @param dataType {@link DataType}
-     * @param filePath reference to the physical file
-     * @param filename filename
+     *
+     * @param dataType  {@link DataType}
+     * @param filePath  reference to the physical file
+     * @param filename  filename
      * @param algorithm checksum algorithm
-     * @param checksum the checksum
-     * @param fileSize file size
+     * @param checksum  the checksum
+     * @param fileSize  file size
      */
-    public InformationPackageProperties withDataObject(DataType dataType, Path filePath, String filename,
-            String algorithm, String checksum, Long fileSize) {
+    public InformationPackageProperties withDataObject(DataType dataType,
+                                                       Path filePath,
+                                                       String filename,
+                                                       String algorithm,
+                                                       String checksum,
+                                                       Long fileSize) {
         getUnderConstruction().withDataObject(dataType, filePath, filename, algorithm, checksum, fileSize);
         return this;
     }
@@ -448,13 +461,16 @@ public class InformationPackageProperties {
     /**
      * Alias for {@link ContentInformation#withDataObject(DataType, Path, String, String, String, Long)} (no
      * file size)
-     * @param dataType {@link DataType}
-     * @param filePath reference to the physical file
+     *
+     * @param dataType  {@link DataType}
+     * @param filePath  reference to the physical file
      * @param algorithm checksum algorithm
-     * @param checksum the checksum
+     * @param checksum  the checksum
      */
-    public InformationPackageProperties withDataObject(DataType dataType, Path filePath, String algorithm,
-            String checksum) {
+    public InformationPackageProperties withDataObject(DataType dataType,
+                                                       Path filePath,
+                                                       String algorithm,
+                                                       String checksum) {
         getUnderConstruction().withDataObject(dataType, filePath, algorithm, checksum);
         return this;
     }
@@ -462,6 +478,7 @@ public class InformationPackageProperties {
     /**
      * Alias for {@link ContentInformation#withDataObject(DataType, Path, String, String, String, Long)} (no file
      * size and MD5 default checksum algorithm)
+     *
      * @param dataType {@link DataType}
      * @param filePath reference to the physical file
      * @param checksum the checksum
@@ -481,6 +498,7 @@ public class InformationPackageProperties {
 
     /**
      * Set syntax representation
+     *
      * @param mimeType MIME type
      */
     public InformationPackageProperties withSyntax(MimeType mimeType) {
@@ -490,6 +508,7 @@ public class InformationPackageProperties {
 
     /**
      * Set syntax representation
+     *
      * @param mimeType MIME type
      */
     public InformationPackageProperties withSyntaxAndDimension(MimeType mimeType, Double width, Double height) {
@@ -501,7 +520,9 @@ public class InformationPackageProperties {
      * Set the syntax and semantic to the information package thanks to the given parameters
      */
     public InformationPackageProperties withSyntaxAndSemantic(@Nullable String mimeName,
-            @Nullable String mimeDescription, MimeType mimeType, String semanticDescription) {
+                                                              @Nullable String mimeDescription,
+                                                              MimeType mimeType,
+                                                              String semanticDescription) {
         getUnderConstruction().withSyntaxAndSemantic(mimeName, mimeDescription, mimeType, semanticDescription);
         return this;
     }

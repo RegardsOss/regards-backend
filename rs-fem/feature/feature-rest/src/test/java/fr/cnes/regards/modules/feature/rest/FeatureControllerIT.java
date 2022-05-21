@@ -34,9 +34,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature",
-        "regards.amqp.enabled=true", "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
-        "spring.jpa.properties.hibernate.order_inserts=true" })
+@TestPropertySource(
+    properties = { "spring.jpa.properties.hibernate.default_schema=feature", "regards.amqp.enabled=true",
+        "spring.jpa.properties.hibernate.jdbc.batch_size=1024", "spring.jpa.properties.hibernate.order_inserts=true" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
 @ContextConfiguration(classes = { AbstractMultitenantServiceIT.ScanningConfiguration.class })
 public class FeatureControllerIT extends AbstractFeatureIT {
@@ -68,7 +68,7 @@ public class FeatureControllerIT extends AbstractFeatureIT {
         metadata.add(StorageMetadata.build("disk"));
         // we will mock validation plugin and consider the feature is valid
         Mockito.when(validationMock.validate(Mockito.any(), Mockito.any()))
-                .thenReturn(new MapBindingResult(new HashMap<>(), Feature.class.getName()));
+               .thenReturn(new MapBindingResult(new HashMap<>(), Feature.class.getName()));
         collection.setMetadata(FeatureSessionMetadata.build("owner", "session", PriorityLevel.NORMAL, metadata));
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
@@ -76,7 +76,9 @@ public class FeatureControllerIT extends AbstractFeatureIT {
 
         documentFeatureCollectionRequestBody(requestBuilderCustomizer, false);
 
-        performDefaultPost(FeatureController.PATH_FEATURES, collection, requestBuilderCustomizer,
+        performDefaultPost(FeatureController.PATH_FEATURES,
+                           collection,
+                           requestBuilderCustomizer,
                            FEATURE_CREATION_REQUEST_ERROR).andDo(MockMvcResultHandlers.print());
 
     }
@@ -104,7 +106,9 @@ public class FeatureControllerIT extends AbstractFeatureIT {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY);
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
 
-        performDefaultPost(FeatureController.PATH_FEATURES, collection, requestBuilderCustomizer,
+        performDefaultPost(FeatureController.PATH_FEATURES,
+                           collection,
+                           requestBuilderCustomizer,
                            FEATURE_CREATION_REQUEST_ERROR).andDo(MockMvcResultHandlers.print());
     }
 
@@ -120,12 +124,14 @@ public class FeatureControllerIT extends AbstractFeatureIT {
         collection.setRequestOwner("test");
         // we will mock validation plugin and consider the feature is valid
         Mockito.when(validationMock.validate(Mockito.any(), Mockito.any()))
-                .thenReturn(new MapBindingResult(new HashMap<>(), Feature.class.getName()));
+               .thenReturn(new MapBindingResult(new HashMap<>(), Feature.class.getName()));
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
         documentFeatureCollectionRequestBody(requestBuilderCustomizer, true);
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
 
-        performDefaultPatch(FeatureController.PATH_FEATURES, collection, requestBuilderCustomizer,
+        performDefaultPatch(FeatureController.PATH_FEATURES,
+                            collection,
+                            requestBuilderCustomizer,
                             FEATURE_UPDATE_REQUEST_ERROR).andDo(MockMvcResultHandlers.print());
     }
 
@@ -138,8 +144,11 @@ public class FeatureControllerIT extends AbstractFeatureIT {
         feature.setGeometry(IGeometry.point(IGeometry.position(10.0, 20.0)));
         feature.setUrn(null);
         feature.setId("MyId");
-        feature.setUrn(FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA, "tenant",
-                                                        UUID.randomUUID(), 1));
+        feature.setUrn(FeatureUniformResourceName.build(FeatureIdentifier.FEATURE,
+                                                        EntityType.DATA,
+                                                        "tenant",
+                                                        UUID.randomUUID(),
+                                                        1));
         FeatureUpdateCollection collection = new FeatureUpdateCollection();
         collection.add(feature);
         List<StorageMetadata> metadata = new ArrayList<StorageMetadata>();
@@ -149,7 +158,7 @@ public class FeatureControllerIT extends AbstractFeatureIT {
         collection.setRequestOwner("test");
         // we will mock validation plugin and consider the feature is valid
         Mockito.when(validationMock.validate(Mockito.any(), Mockito.any()))
-                .thenReturn(new MapBindingResult(new HashMap<>(), Feature.class.getName()));
+               .thenReturn(new MapBindingResult(new HashMap<>(), Feature.class.getName()));
         MapBindingResult errors = new MapBindingResult(new HashMap<>(), Feature.class.getName());
         errors.reject("error code");
         // we will mock validation plugin and consider the feature is unvalid
@@ -158,7 +167,9 @@ public class FeatureControllerIT extends AbstractFeatureIT {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY);
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
 
-        performDefaultPatch(FeatureController.PATH_FEATURES, collection, requestBuilderCustomizer,
+        performDefaultPatch(FeatureController.PATH_FEATURES,
+                            collection,
+                            requestBuilderCustomizer,
                             FEATURE_CREATION_REQUEST_ERROR).andDo(MockMvcResultHandlers.print());
 
     }
@@ -167,8 +178,11 @@ public class FeatureControllerIT extends AbstractFeatureIT {
     public void testCreateFeatureDeletionRequest() throws Exception {
 
         FeatureDeletionCollection collection = new FeatureDeletionCollection();
-        collection.addAll(Sets.newSet(FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA,
-                                                                       "tenant", UUID.randomUUID(), 1)));
+        collection.addAll(Sets.newSet(FeatureUniformResourceName.build(FeatureIdentifier.FEATURE,
+                                                                       EntityType.DATA,
+                                                                       "tenant",
+                                                                       UUID.randomUUID(),
+                                                                       1)));
         collection.setPriority(PriorityLevel.HIGH);
 
         MapBindingResult errors = new MapBindingResult(new HashMap<>(), FeatureDeletionRequest.class.getName());
@@ -178,12 +192,14 @@ public class FeatureControllerIT extends AbstractFeatureIT {
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         documentFeatureDeletionCollectionRequestBody(requestBuilderCustomizer);
 
-        performDefaultDelete(FeatureController.PATH_FEATURES, collection, requestBuilderCustomizer,
+        performDefaultDelete(FeatureController.PATH_FEATURES,
+                             collection,
+                             requestBuilderCustomizer,
                              FEATURE_CREATION_REQUEST_ERROR).andDo(MockMvcResultHandlers.print());
     }
 
     private void documentFeatureCollectionRequestBody(RequestBuilderCustomizer requestBuilderCustomizer,
-            boolean isUpdate) {
+                                                      boolean isUpdate) {
         ConstrainedFields fields = new ConstrainedFields(FeatureUpdateCollection.class);
 
         List<FieldDescriptor> lfd = new ArrayList<FieldDescriptor>();
@@ -220,9 +236,9 @@ public class FeatureControllerIT extends AbstractFeatureIT {
             lfd.add(fields.withPath("features[].files[].attributes.checksum", "Checksum"));
         }
 
-        requestBuilderCustomizer.document(PayloadDocumentation
-                .relaxedRequestFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
-                        .value("Feature Collection manipulation")), lfd.toArray(new FieldDescriptor[lfd.size()])));
+        requestBuilderCustomizer.document(PayloadDocumentation.relaxedRequestFields(Attributes.attributes(Attributes.key(
+                                                                                        RequestBuilderCustomizer.PARAM_TITLE).value("Feature Collection manipulation")),
+                                                                                    lfd.toArray(new FieldDescriptor[lfd.size()])));
     }
 
     private void documentFeatureDeletionCollectionRequestBody(RequestBuilderCustomizer requestBuilderCustomizer) {
@@ -233,8 +249,8 @@ public class FeatureControllerIT extends AbstractFeatureIT {
         lfd.add(fields.withPath("featuresUrns", "List of urns to delete"));
         lfd.add(fields.withPath("priority", "Priotity of the request"));
 
-        requestBuilderCustomizer.document(PayloadDocumentation
-                .relaxedRequestFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
-                        .value("Feature Collection manipulation")), lfd.toArray(new FieldDescriptor[lfd.size()])));
+        requestBuilderCustomizer.document(PayloadDocumentation.relaxedRequestFields(Attributes.attributes(Attributes.key(
+                                                                                        RequestBuilderCustomizer.PARAM_TITLE).value("Feature Collection manipulation")),
+                                                                                    lfd.toArray(new FieldDescriptor[lfd.size()])));
     }
 }

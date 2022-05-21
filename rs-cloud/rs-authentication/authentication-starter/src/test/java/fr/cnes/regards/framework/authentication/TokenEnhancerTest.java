@@ -18,9 +18,11 @@
  */
 package fr.cnes.regards.framework.authentication;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import fr.cnes.regards.framework.authentication.internal.CustomTokenEnhancer;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -30,16 +32,14 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 
-import fr.cnes.regards.framework.authentication.internal.CustomTokenEnhancer;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Class TokenEnhancerTest
- *
+ * <p>
  * Test utility adding specific REGARDS Claims in JWT token after authentication succeed by Oauth2 process
+ *
  * @author Sébastien Binda
  */
 public class TokenEnhancerTest {

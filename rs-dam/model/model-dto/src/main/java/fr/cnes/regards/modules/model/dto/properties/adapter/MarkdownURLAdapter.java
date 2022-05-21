@@ -18,19 +18,17 @@
  */
 package fr.cnes.regards.modules.model.dto.properties.adapter;
 
-import java.io.IOException;
-
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
-
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
 import fr.cnes.regards.modules.model.dto.properties.MarkdownURL;
 
+import java.io.IOException;
+
 /**
  * @author sbinda
- *
  */
 @GsonTypeAdapter(adapted = MarkdownURL.class)
 public class MarkdownURLAdapter extends TypeAdapter<MarkdownURL> {
@@ -46,7 +44,7 @@ public class MarkdownURLAdapter extends TypeAdapter<MarkdownURL> {
 
     @Override
     public MarkdownURL read(JsonReader in) throws IOException {
-        if(in.peek() == JsonToken.NULL) {
+        if (in.peek() == JsonToken.NULL) {
             // read the null anyway so that reader is not stuck
             in.nextNull();
             return MarkdownURL.build(null);

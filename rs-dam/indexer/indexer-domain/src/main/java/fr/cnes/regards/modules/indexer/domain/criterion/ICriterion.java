@@ -29,6 +29,7 @@ import java.util.stream.*;
 
 /**
  * Search criterion
+ *
  * @author oroussel
  */
 @Gsonable
@@ -141,8 +142,9 @@ public interface ICriterion {
         if (values.length == 0) {
             return new NotCriterion(all());
         }
-        return new OrCriterion(
-                IntStream.of(values).mapToObj(val -> new IntMatchCriterion(attName, val)).collect(Collectors.toList()));
+        return new OrCriterion(IntStream.of(values)
+                                        .mapToObj(val -> new IntMatchCriterion(attName, val))
+                                        .collect(Collectors.toList()));
     }
 
     static ICriterion in(String attName, StringMatchType matchType, Collection<String> values) {
@@ -154,9 +156,10 @@ public interface ICriterion {
 
     /**
      * Criterion to test if a string parameter has one of the provided values
-     * @param attName attribute name
+     *
+     * @param attName   attribute name
      * @param matchType string matching behavior
-     * @param texts text array to test
+     * @param texts     text array to test
      * @return criterion
      */
     static ICriterion in(String attName, StringMatchType matchType, String... texts) {
@@ -167,16 +170,18 @@ public interface ICriterion {
         if (values.length == 0) {
             return new NotCriterion(all());
         }
-        return new OrCriterion(LongStream.of(values).mapToObj(val -> new LongMatchCriterion(attName, val))
-                .collect(Collectors.toList()));
+        return new OrCriterion(LongStream.of(values)
+                                         .mapToObj(val -> new LongMatchCriterion(attName, val))
+                                         .collect(Collectors.toList()));
     }
 
     static ICriterion in(String attName, double[] values, double precision) {
         if (values.length == 0) {
             return new NotCriterion(all());
         }
-        return new OrCriterion(DoubleStream.of(values).mapToObj(val -> eq(attName, val, precision))
-                                       .collect(Collectors.toList()));
+        return new OrCriterion(DoubleStream.of(values)
+                                           .mapToObj(val -> eq(attName, val, precision))
+                                           .collect(Collectors.toList()));
     }
 
     static ICriterion eq(String attName, double value, double precision) {
@@ -201,8 +206,9 @@ public interface ICriterion {
     /**
      * Criterion to test if a parameter is exactly the provided text or if a String array parameter contains an element
      * which is exactly the provided text
-     * @param attName String or String array attribute
-     * @param text provided text
+     *
+     * @param attName   String or String array attribute
+     * @param text      provided text
      * @param matchType string matching behavior
      * @return criterion
      */
@@ -212,8 +218,9 @@ public interface ICriterion {
 
     /**
      * Criterion to test if a parameter is exactly the provided date
+     *
      * @param attName Date attribute
-     * @param date provided text
+     * @param date    provided text
      * @return criterion
      */
     static ICriterion eq(String attName, OffsetDateTime date) {
@@ -223,8 +230,9 @@ public interface ICriterion {
     /**
      * Criterion to test if a parameter starts with the provided text or if a String array parameter contains an element
      * that starts with the provided text
-     * @param attName String or String array attribute
-     * @param text provided text
+     *
+     * @param attName   String or String array attribute
+     * @param text      provided text
      * @param matchType string matching behavior
      * @return criterion
      */
@@ -235,8 +243,9 @@ public interface ICriterion {
     /**
      * Criterion to test if a parameter ends with the provided text or if a String array parameter contains an element
      * that ends with the provided text
-     * @param attName String or String array attribute
-     * @param text provided text
+     *
+     * @param attName   String or String array attribute
+     * @param text      provided text
      * @param matchType string matching behavior
      * @return criterion
      */
@@ -247,8 +256,9 @@ public interface ICriterion {
     /**
      * Criterion to test if a parameter contain the provided text or if a String array parameter contains an element
      * that contains the provided text
+     *
      * @param attName String or String array attribute
-     * @param text provided text
+     * @param text    provided text
      * @return criterion
      */
     static ICriterion contains(String attName, String text, StringMatchType matchType) {
@@ -258,8 +268,9 @@ public interface ICriterion {
     /**
      * Criterion to test if a parameter follows given regular expression or if a String array parameter contains an
      * element which follows given regular expression
-     * @param attName String or String array attribute
-     * @param regexp provided regular expression
+     *
+     * @param attName   String or String array attribute
+     * @param regexp    provided regular expression
      * @param matchType string matching behavior
      * @return criterion
      */
@@ -269,8 +280,9 @@ public interface ICriterion {
 
     /**
      * Criterion to test if an array parameter contains specified value
+     *
      * @param attName attribute name
-     * @param value value to search
+     * @param value   value to search
      * @return criterion
      */
     static ICriterion contains(String attName, int value) {
@@ -279,8 +291,9 @@ public interface ICriterion {
 
     /**
      * Criterion to test if an array parameter contains specified value
+     *
      * @param attName attribute name
-     * @param value value to search
+     * @param value   value to search
      * @return criterion
      */
     static ICriterion contains(String attName, long value) {
@@ -289,8 +302,9 @@ public interface ICriterion {
 
     /**
      * Criterion to test if a double array parameter contains specified double value specifying precision
-     * @param attName attribute name
-     * @param value value to search
+     *
+     * @param attName   attribute name
+     * @param value     value to search
      * @param precision wanted precision
      * @return criterion
      */
@@ -300,7 +314,8 @@ public interface ICriterion {
 
     /**
      * Criterion to test if a date array parameter contains a date between given lower and upper dates
-     * @param attName attribute name
+     *
+     * @param attName   attribute name
      * @param lowerDate inclusive lower bound
      * @param upperDate inclusive upper bound
      * @return criterion
@@ -311,9 +326,10 @@ public interface ICriterion {
 
     /**
      * Criterion to test if an int parameter has a value into given range
+     *
      * @param attName attribute name
-     * @param lower inclusive lower bound
-     * @param upper inclusive upper bound
+     * @param lower   inclusive lower bound
+     * @param upper   inclusive upper bound
      * @return criterion
      */
     static ICriterion between(String attName, int lower, int upper) {
@@ -322,9 +338,10 @@ public interface ICriterion {
 
     /**
      * Criterion to test if a long parameter has a value into given range
+     *
      * @param attName attribute name
-     * @param lower inclusive lower bound
-     * @param upper inclusive upper bound
+     * @param lower   inclusive lower bound
+     * @param upper   inclusive upper bound
      * @return criterion
      */
     static ICriterion between(String attName, long lower, long upper) {
@@ -333,9 +350,10 @@ public interface ICriterion {
 
     /**
      * Criterion to test if a date parameter is into given range period
+     *
      * @param attName attribute name
-     * @param lower inclusive lower bound
-     * @param upper inclusive upper bound
+     * @param lower   inclusive lower bound
+     * @param upper   inclusive upper bound
      * @return criterion
      */
     static ICriterion between(String attName, OffsetDateTime lower, OffsetDateTime upper) {
@@ -344,9 +362,10 @@ public interface ICriterion {
 
     /**
      * Criterion to test if a double parameter has a value into given range
+     *
      * @param attName attribute name
-     * @param lower inclusive lower bound
-     * @param upper inclusive upper bound
+     * @param lower   inclusive lower bound
+     * @param upper   inclusive upper bound
      * @return criterion
      */
     static ICriterion between(String attName, double lower, double upper) {
@@ -355,83 +374,102 @@ public interface ICriterion {
 
     /**
      * Criterion to test if an int parameter has a value into given range
-     * @param attName attribute name
-     * @param lower lower bound
+     *
+     * @param attName        attribute name
+     * @param lower          lower bound
      * @param lowerInclusive inclusive lower bound or not
-     * @param upper upper bound
+     * @param upper          upper bound
      * @param upperInclusive inclusive upper bound or not
      * @return criterion
      */
     static ICriterion between(String attName, int lower, boolean lowerInclusive, int upper, boolean upperInclusive) {
         RangeCriterion<Integer> crit = new RangeCriterion<>(attName);
-        crit.addValueComparison(new ValueComparison<>(
-                lowerInclusive ? ComparisonOperator.GREATER_OR_EQUAL : ComparisonOperator.GREATER, lower));
-        crit.addValueComparison(new ValueComparison<>(
-                upperInclusive ? ComparisonOperator.LESS_OR_EQUAL : ComparisonOperator.LESS, upper));
+        crit.addValueComparison(new ValueComparison<>(lowerInclusive ?
+                                                          ComparisonOperator.GREATER_OR_EQUAL :
+                                                          ComparisonOperator.GREATER, lower));
+        crit.addValueComparison(new ValueComparison<>(upperInclusive ?
+                                                          ComparisonOperator.LESS_OR_EQUAL :
+                                                          ComparisonOperator.LESS, upper));
         return crit;
     }
 
     /**
      * Criterion to test if a long parameter has a value into given range
-     * @param attName attribute name
-     * @param lower inclusive lower bound
+     *
+     * @param attName        attribute name
+     * @param lower          inclusive lower bound
      * @param lowerInclusive inclusive lower bound or not
-     * @param upper inclusive upper bound
+     * @param upper          inclusive upper bound
      * @param upperInclusive inclusive upper bound or not
      * @return criterion
      */
     static ICriterion between(String attName, long lower, boolean lowerInclusive, long upper, boolean upperInclusive) {
         RangeCriterion<Long> crit = new RangeCriterion<>(attName);
-        crit.addValueComparison(new ValueComparison<>(
-                lowerInclusive ? ComparisonOperator.GREATER_OR_EQUAL : ComparisonOperator.GREATER, lower));
-        crit.addValueComparison(new ValueComparison<>(
-                upperInclusive ? ComparisonOperator.LESS_OR_EQUAL : ComparisonOperator.LESS, upper));
+        crit.addValueComparison(new ValueComparison<>(lowerInclusive ?
+                                                          ComparisonOperator.GREATER_OR_EQUAL :
+                                                          ComparisonOperator.GREATER, lower));
+        crit.addValueComparison(new ValueComparison<>(upperInclusive ?
+                                                          ComparisonOperator.LESS_OR_EQUAL :
+                                                          ComparisonOperator.LESS, upper));
         return crit;
     }
 
     /**
      * Criterion to test if a date parameter is into given range period
-     * @param attName attribute name
-     * @param lower inclusive lower bound
+     *
+     * @param attName        attribute name
+     * @param lower          inclusive lower bound
      * @param lowerInclusive inclusive lower bound or not
-     * @param upper inclusive upper bound
+     * @param upper          inclusive upper bound
      * @param upperInclusive inclusive upper bound or not
      * @return criterion
      */
-    static ICriterion between(String attName, OffsetDateTime lower, boolean lowerInclusive, OffsetDateTime upper,
-            boolean upperInclusive) {
+    static ICriterion between(String attName,
+                              OffsetDateTime lower,
+                              boolean lowerInclusive,
+                              OffsetDateTime upper,
+                              boolean upperInclusive) {
         DateRangeCriterion crit = new DateRangeCriterion(attName);
-        crit.addValueComparison(new ValueComparison<>(
-                lowerInclusive ? ComparisonOperator.GREATER_OR_EQUAL : ComparisonOperator.GREATER, lower));
-        crit.addValueComparison(new ValueComparison<>(
-                upperInclusive ? ComparisonOperator.LESS_OR_EQUAL : ComparisonOperator.LESS, upper));
+        crit.addValueComparison(new ValueComparison<>(lowerInclusive ?
+                                                          ComparisonOperator.GREATER_OR_EQUAL :
+                                                          ComparisonOperator.GREATER, lower));
+        crit.addValueComparison(new ValueComparison<>(upperInclusive ?
+                                                          ComparisonOperator.LESS_OR_EQUAL :
+                                                          ComparisonOperator.LESS, upper));
         return crit;
     }
 
     /**
      * Criterion to test if a double parameter has a value into given range
-     * @param attName attribute name
-     * @param lower inclusive lower bound
+     *
+     * @param attName        attribute name
+     * @param lower          inclusive lower bound
      * @param lowerInclusive inclusive lower bound or not
-     * @param upper inclusive upper bound
+     * @param upper          inclusive upper bound
      * @param upperInclusive inclusive upper bound or not
      * @return criterion
      */
-    static ICriterion between(String attName, double lower, boolean lowerInclusive, double upper,
-            boolean upperInclusive) {
+    static ICriterion between(String attName,
+                              double lower,
+                              boolean lowerInclusive,
+                              double upper,
+                              boolean upperInclusive) {
         RangeCriterion<Double> crit = new RangeCriterion<>(attName);
-        crit.addValueComparison(new ValueComparison<>(
-                lowerInclusive ? ComparisonOperator.GREATER_OR_EQUAL : ComparisonOperator.GREATER, lower));
-        crit.addValueComparison(new ValueComparison<>(
-                upperInclusive ? ComparisonOperator.LESS_OR_EQUAL : ComparisonOperator.LESS, upper));
+        crit.addValueComparison(new ValueComparison<>(lowerInclusive ?
+                                                          ComparisonOperator.GREATER_OR_EQUAL :
+                                                          ComparisonOperator.GREATER, lower));
+        crit.addValueComparison(new ValueComparison<>(upperInclusive ?
+                                                          ComparisonOperator.LESS_OR_EQUAL :
+                                                          ComparisonOperator.LESS, upper));
         return crit;
     }
 
     /**
      * Criterion to test if a numeric value (int or double) is into (inclusive) given interval attribute name
-     * @param <T> extends {@link Number}
+     *
+     * @param <T>     extends {@link Number}
      * @param attName interval attribute name
-     * @param value value to test inclusion
+     * @param value   value to test inclusion
      * @return criterion
      */
     static <T extends Number & Comparable<T>> ICriterion into(String attName, T value) {
@@ -441,7 +479,8 @@ public interface ICriterion {
 
     /**
      * Criterion to test if given date range intersects given interval attribute name
-     * @param attName interval attribute name
+     *
+     * @param attName    interval attribute name
      * @param lowerBound lower bound
      * @param upperBound upper bound
      * @return criterion
@@ -453,8 +492,9 @@ public interface ICriterion {
 
     /**
      * Criterion to test if given number range intersects given interval attribute name
-     * @param <T> extends {@link Number}
-     * @param attName interval attribute name
+     *
+     * @param <T>        extends {@link Number}
+     * @param attName    interval attribute name
      * @param lowerBound lower bound
      * @param upperBound upper bound
      * @return criterion
@@ -466,6 +506,7 @@ public interface ICriterion {
 
     /**
      * Criterion to test the intersection with a circle giving center coordinates and radius.
+     *
      * @param center coordinates of center
      * @param radius radius eventually with unit (ie "100m" or "5km"), default to meters
      * @return criterion
@@ -476,6 +517,7 @@ public interface ICriterion {
 
     /**
      * Criterion to test the intersection with a polygon
+     *
      * @param coordinates coordinates of polygon
      * @return criterion
      */
@@ -485,8 +527,9 @@ public interface ICriterion {
 
     /**
      * Criterion to test the intersaction with a boundary box
+     *
      * @param bbox String bbox as "left,bottom,right,top" (or "minX, minY, maxX, maxY" or "minLon, minLat, maxLon,
-     * maxLat"), blanks are accepted
+     *             maxLat"), blanks are accepted
      * @return {@link ICriterion}
      * @throws InvalidGeometryException
      */
@@ -496,7 +539,8 @@ public interface ICriterion {
 
     /**
      * Criterion to test the intersection with a boundary box
-     * @return  {@link ICriterion}
+     *
+     * @return {@link ICriterion}
      */
     static ICriterion intersectsBbox(double left, double bottom, double right, double top) {
         return new BoundaryBoxCriterion(left, bottom, right, top);
@@ -504,6 +548,7 @@ public interface ICriterion {
 
     /**
      * Criterion to test if given attribute exists
+     *
      * @param attName attribute name
      * @return criterion
      */
@@ -513,8 +558,9 @@ public interface ICriterion {
 
     /**
      * Criterion to test if at least one of the parameters contains the provided text
+     *
      * @param attNames list of String
-     * @param text provided text
+     * @param text     provided text
      * @return criterion
      */
     static ICriterion multiMatch(Set<String> attNames, String text) {
@@ -523,8 +569,9 @@ public interface ICriterion {
 
     /**
      * Criterion to test if at least one of the parameters starts with the provided text
+     *
      * @param attNames list of String
-     * @param text provided text
+     * @param text     provided text
      * @return criterion
      */
     static ICriterion multiMatchStartWith(Set<String> attNames, String text) {

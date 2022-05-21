@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.modules.catalog.services.domain.dto;
 
-import java.util.Set;
-import java.util.function.Function;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.GetCatalogServicePluginAnnotation;
+
+import java.util.Set;
+import java.util.function.Function;
 
 /**
  * Adds the given applicationModes and the entityTypes to a {@link PluginConfiguration}
@@ -52,15 +51,17 @@ public class PluginConfigurationDto extends PluginConfiguration {
      * @param pluginConfiguration
      */
     public PluginConfigurationDto(PluginConfiguration pluginConfiguration) {
-        super(pluginConfiguration.getLabel(), pluginConfiguration.getParameters(),
-              pluginConfiguration.getPriorityOrder(), pluginConfiguration.getPluginId());
+        super(pluginConfiguration.getLabel(),
+              pluginConfiguration.getParameters(),
+              pluginConfiguration.getPriorityOrder(),
+              pluginConfiguration.getPluginId());
         setIsActive(pluginConfiguration.isActive());
         setPluginId(pluginConfiguration.getPluginId());
         setVersion(pluginConfiguration.getVersion());
         setIconUrl(pluginConfiguration.getIconUrl());
         setBusinessId(pluginConfiguration.getBusinessId());
-        applicationModes = Sets
-                .newHashSet(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(pluginConfiguration).applicationModes());
+        applicationModes = Sets.newHashSet(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(pluginConfiguration)
+                                                                                .applicationModes());
         entityTypes = Sets.newHashSet(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(pluginConfiguration).entityTypes());
     }
 

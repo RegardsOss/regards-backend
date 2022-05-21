@@ -65,7 +65,7 @@ public class InputOutputPreparationFilter implements GlobalFilter {
         HttpHeaders headersToAdd = new HttpHeaders();
 
         // Inject correlationId if not present in header
-        if(!headers.containsKey(CORRELATION_ID)) {
+        if (!headers.containsKey(CORRELATION_ID)) {
             String generatedCorrelationId = generateCorrelationId();
             headersToAdd.add(CORRELATION_ID, generatedCorrelationId);
         }
@@ -74,7 +74,7 @@ public class InputOutputPreparationFilter implements GlobalFilter {
         String xForwardedFor = headers.getFirst(X_FORWARDED_FOR);
         InetSocketAddress remoteInfo = Objects.requireNonNull(request.getRemoteAddress());
         String remoteAddr = remoteInfo.getAddress().getHostAddress();
-        if(xForwardedFor != null) {
+        if (xForwardedFor != null) {
             if (xForwardedFor.isEmpty() && !xForwardedFor.contains(remoteAddr)) {
                 xForwardedFor = xForwardedFor + COMMA + remoteAddr;
                 headersToAdd.add(X_FORWARDED_FOR, xForwardedFor);
@@ -93,7 +93,6 @@ public class InputOutputPreparationFilter implements GlobalFilter {
         return request.mutate().headers(headerAll -> headerAll.addAll(headersToAdd)).build();
     }
 
-
     private void logInput(ServerHttpRequest request) {
         HttpHeaders headers = request.getHeaders();
         String correlationId = headers.getFirst(CORRELATION_ID);
@@ -105,12 +104,16 @@ public class InputOutputPreparationFilter implements GlobalFilter {
         String requestMethod = Objects.requireNonNull(request.getMethod()).toString();
         String url = null;
         try {
-            url =  requestURI.toURL().toString();
+            url = requestURI.toURL().toString();
         } catch (MalformedURLException e) {
             LOGGER.error("Unable to get URL from request uri \"{}\"", requestURI);
         }
 
-        LOGGER.info(LogConstants.SECURITY_MARKER + LOG_PREFIX + "{}@{} from {}", correlationId, requestURI, requestMethod, remoteAddr);
+        LOGGER.info(LogConstants.SECURITY_MARKER + LOG_PREFIX + "{}@{} from {}",
+                    correlationId,
+                    requestURI,
+                    requestMethod,
+                    remoteAddr);
         MDC.put(ClassicConstants.REQUEST_REMOTE_HOST_MDC_KEY, remoteHost);
         MDC.put(ClassicConstants.REQUEST_REQUEST_URI, requestURI.toString());
         MDC.put(ClassicConstants.REQUEST_REQUEST_URL, url);
@@ -120,8 +123,15 @@ public class InputOutputPreparationFilter implements GlobalFilter {
         MDC.put(ClassicConstants.REQUEST_X_FORWARDED_FOR, xForwardedFor);
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(LOG_PREFIX + "Scheme: {}, Remote host: {}, Remote addr: {}, Remote port: {}, Remote user: {}, Header names: {}",
-                    correlationId, requestURI.getScheme(), remoteHost, remoteAddr, remoteInfo.getPort(), request.getQueryParams(), headers.keySet());
+            LOGGER.debug(LOG_PREFIX
+                             + "Scheme: {}, Remote host: {}, Remote addr: {}, Remote port: {}, Remote user: {}, Header names: {}",
+                         correlationId,
+                         requestURI.getScheme(),
+                         remoteHost,
+                         remoteAddr,
+                         remoteInfo.getPort(),
+                         request.getQueryParams(),
+                         headers.keySet());
             LOGGER.debug(LOG_PREFIX + "Forwarded headers => {}", correlationId, headers);
         }
     }
@@ -135,11 +145,11 @@ public class InputOutputPreparationFilter implements GlobalFilter {
         response.getHeaders().add(CORRELATION_ID, correlationId);
 
         LOGGER.info(LogConstants.SECURITY_MARKER + "Response ({}) for tracked request {} : {}@{} from {}",
-                response.getStatusCode(),
-                correlationId,
-                req.getURI(),
-                req.getMethod(),
-                req.getRemoteAddress());
+                    response.getStatusCode(),
+                    correlationId,
+                    req.getURI(),
+                    req.getMethod(),
+                    req.getRemoteAddress());
     }
 
     private String generateCorrelationId() {

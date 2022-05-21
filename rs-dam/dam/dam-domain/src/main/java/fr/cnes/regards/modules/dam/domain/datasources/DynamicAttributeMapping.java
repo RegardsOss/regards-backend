@@ -5,6 +5,7 @@ import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 /**
  * Datasource attribute mapping for dynamic fields ie without mapping options.
  * This kind of attribute mapping must have and optionaly a namespace but cannot have mapping options.
+ *
  * @author oroussel
  * @author Christophe Mertz
  */
@@ -17,9 +18,10 @@ public class DynamicAttributeMapping extends AbstractAttributeMapping {
 
     /**
      * Complete constructor
-     * @param pName name of attribute in model
+     *
+     * @param pName      name of attribute in model
      * @param pNameSpace fragment name in model (ie namespace)
-     * @param pType attribute type in model
+     * @param pType      attribute type in model
      * @param pMappingDS attribute name in datasource
      */
     public DynamicAttributeMapping(String pName, String pNameSpace, PropertyType pType, String pMappingDS) {

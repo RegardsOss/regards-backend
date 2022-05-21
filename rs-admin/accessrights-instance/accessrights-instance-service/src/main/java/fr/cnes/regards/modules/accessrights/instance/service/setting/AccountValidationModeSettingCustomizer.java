@@ -28,8 +28,8 @@ public class AccountValidationModeSettingCustomizer implements IDynamicTenantSet
 
     @Override
     public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
-        return isProperValue(dynamicTenantSetting.getDefaultValue())
-                && (dynamicTenantSetting.getValue() == null || isProperValue(dynamicTenantSetting.getValue()));
+        return isProperValue(dynamicTenantSetting.getDefaultValue()) && (dynamicTenantSetting.getValue() == null
+            || isProperValue(dynamicTenantSetting.getValue()));
     }
 
     @Override

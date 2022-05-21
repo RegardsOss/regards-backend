@@ -14,7 +14,6 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 
 /**
- *
  * Advice for back-for-frontend exceptions
  *
  * @author Sylvain Vissiere-Guerinet

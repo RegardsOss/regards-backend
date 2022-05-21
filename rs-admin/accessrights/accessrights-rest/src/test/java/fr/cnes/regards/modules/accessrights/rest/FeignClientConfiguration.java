@@ -31,7 +31,6 @@ import javax.mail.internet.MimeMessage;
 
 /**
  * @author Marc Sordi
- *
  */
 @Configuration
 public class FeignClientConfiguration {

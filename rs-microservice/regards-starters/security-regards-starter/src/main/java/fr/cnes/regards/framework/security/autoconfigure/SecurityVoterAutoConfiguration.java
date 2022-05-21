@@ -18,6 +18,12 @@
  */
 package fr.cnes.regards.framework.security.autoconfigure;
 
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.security.endpoint.voter.*;
+import fr.cnes.regards.framework.security.utils.endpoint.IInstanceAdminAccessVoter;
+import fr.cnes.regards.framework.security.utils.endpoint.IInstancePublicAccessVoter;
+import fr.cnes.regards.framework.security.utils.endpoint.IProjectAdminAccessVoter;
+import fr.cnes.regards.framework.security.utils.endpoint.ISystemAccessVoter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -26,19 +32,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.framework.security.endpoint.voter.InstanceAdminAccessVoter;
-import fr.cnes.regards.framework.security.endpoint.voter.InstancePublicAccessVoter;
-import fr.cnes.regards.framework.security.endpoint.voter.ProjectAdminAccessVoter;
-import fr.cnes.regards.framework.security.endpoint.voter.ResourceAccessVoter;
-import fr.cnes.regards.framework.security.endpoint.voter.SystemAccessVoter;
-import fr.cnes.regards.framework.security.utils.endpoint.IInstanceAdminAccessVoter;
-import fr.cnes.regards.framework.security.utils.endpoint.IInstancePublicAccessVoter;
-import fr.cnes.regards.framework.security.utils.endpoint.IProjectAdminAccessVoter;
-import fr.cnes.regards.framework.security.utils.endpoint.ISystemAccessVoter;
-
 /**
  * This class autoconfigures required voters based on configuration.
+ *
  * @author Marc Sordi
  */
 @Configuration
@@ -56,11 +52,12 @@ public class SecurityVoterAutoConfiguration {
 
     /**
      * Give full access for internal system call between microservices
+     *
      * @return {@link ISystemAccessVoter}
      */
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "regards.security", name = "system.voter.enabled", havingValue = "true",
-            matchIfMissing = true)
+        matchIfMissing = true)
     @Bean
     public ISystemAccessVoter systemAccessVoter() {
         return new SystemAccessVoter();
@@ -68,11 +65,12 @@ public class SecurityVoterAutoConfiguration {
 
     /**
      * Give full access for instance admin call
+     *
      * @return {@link IInstanceAdminAccessVoter}
      */
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "regards.security", name = "instance.voter.enabled", havingValue = "true",
-            matchIfMissing = true)
+        matchIfMissing = true)
     @Bean
     public IInstanceAdminAccessVoter instanceAccessVoter() {
         return new InstanceAdminAccessVoter();
@@ -80,11 +78,12 @@ public class SecurityVoterAutoConfiguration {
 
     /**
      * Give access to public endpoints for instance public call
+     *
      * @return {@link IInstancePublicAccessVoter}
      */
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "regards.security", name = "instance.voter.enabled", havingValue = "true",
-            matchIfMissing = true)
+        matchIfMissing = true)
     @Bean
     public IInstancePublicAccessVoter instancePublicAccessVoter() {
         return new InstancePublicAccessVoter(instanceTenantName);
@@ -92,11 +91,12 @@ public class SecurityVoterAutoConfiguration {
 
     /**
      * Give full access for project admin call
+     *
      * @return {@link IInstanceAdminAccessVoter}
      */
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "regards.security", name = "project.admin.voter.enabled", havingValue = "true",
-            matchIfMissing = true)
+        matchIfMissing = true)
     @Bean
     public IProjectAdminAccessVoter adminAccessVoter() {
         return new ProjectAdminAccessVoter();
@@ -104,6 +104,7 @@ public class SecurityVoterAutoConfiguration {
 
     /**
      * Manage dynamic endpoint security based on roles
+     *
      * @return {@link ResourceAccessVoter}
      */
     @ConditionalOnMissingBean

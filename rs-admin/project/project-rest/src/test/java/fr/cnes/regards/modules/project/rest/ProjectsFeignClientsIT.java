@@ -18,6 +18,13 @@
  */
 package fr.cnes.regards.modules.project.rest;
 
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.feign.FeignClientBuilder;
+import fr.cnes.regards.framework.feign.TokenClientProvider;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.project.domain.Project;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,19 +38,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 
-import com.google.gson.Gson;
-
-import fr.cnes.regards.framework.feign.FeignClientBuilder;
-import fr.cnes.regards.framework.feign.TokenClientProvider;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.project.domain.Project;
-
 /**
  * Class ProjectsFeignClientsIT
- *
+ * <p>
  * Project feign clients.
+ *
  * @author Sébastien Binda
  */
 @ContextConfiguration(classes = { LicenseConfiguration.class })
@@ -73,10 +72,9 @@ public class ProjectsFeignClientsIT extends AbstractRegardsWebIT {
 
     @Before
     public void init() {
-        client = FeignClientBuilder.build(
-                                          new TokenClientProvider<>(IProjectsClient.class,
-                                                  "http://" + serverAddress + ":" + getPort(), feignSecurityManager),
-                                          gson);
+        client = FeignClientBuilder.build(new TokenClientProvider<>(IProjectsClient.class,
+                                                                    "http://" + serverAddress + ":" + getPort(),
+                                                                    feignSecurityManager), gson);
         FeignSecurityManager.asSystem();
     }
 

@@ -18,15 +18,14 @@
  */
 package fr.cnes.regards.modules.backendforfrontend.rest;
 
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * Integration Test for {@link AccessSearchController}
@@ -46,13 +45,18 @@ public class AccessSearchControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_ACC_USE_700")
     @Purpose("Check the system can inject applicable services to the result of a search")
     public void searchAll() {
-        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.SEARCH, customizer()
-                .expectStatusOk().expectToHaveSize(JSON_PATH_ROOT + ".content[0].content.services", 2)
-                .expectToHaveSize(JSON_PATH_ROOT + ".content[1].content.services", 1)
-                .expectValue(JSON_PATH_ROOT + ".content[0].content.services[0].content.label", "conf0")
-                .expectValue(JSON_PATH_ROOT + ".content[0].content.services[1].content.label", "uiPluginConfiguration2")
-                .expectValue(JSON_PATH_ROOT + ".content[1].content.services[0].content.label", "conf1")
-                .addParameter("q", BackendForFrontendTestUtils.OPENSEARCH_QUERY), "Error searching all entities");
+        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.SEARCH,
+                          customizer().expectStatusOk()
+                                      .expectToHaveSize(JSON_PATH_ROOT + ".content[0].content.services", 2)
+                                      .expectToHaveSize(JSON_PATH_ROOT + ".content[1].content.services", 1)
+                                      .expectValue(JSON_PATH_ROOT + ".content[0].content.services[0].content.label",
+                                                   "conf0")
+                                      .expectValue(JSON_PATH_ROOT + ".content[0].content.services[1].content.label",
+                                                   "uiPluginConfiguration2")
+                                      .expectValue(JSON_PATH_ROOT + ".content[1].content.services[0].content.label",
+                                                   "conf1")
+                                      .addParameter("q", BackendForFrontendTestUtils.OPENSEARCH_QUERY),
+                          "Error searching all entities");
     }
 
     @Test
@@ -61,10 +65,10 @@ public class AccessSearchControllerIT extends AbstractRegardsIT {
     public void searchCollections() {
         performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.COLLECTIONS_SEARCH,
                           customizer().expectStatusOk()
-                                  .expectToHaveSize(JSON_PATH_ROOT + ".content[0].content.services", 1)
-                                  .expectValue(JSON_PATH_ROOT + ".content[0].content.services[0].content.label",
-                                               "conf1")
-                                  .addParameter("q", BackendForFrontendTestUtils.OPENSEARCH_QUERY),
+                                      .expectToHaveSize(JSON_PATH_ROOT + ".content[0].content.services", 1)
+                                      .expectValue(JSON_PATH_ROOT + ".content[0].content.services[0].content.label",
+                                                   "conf1")
+                                      .addParameter("q", BackendForFrontendTestUtils.OPENSEARCH_QUERY),
                           "Error searching collections");
     }
 
@@ -72,23 +76,31 @@ public class AccessSearchControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_ACC_USE_700")
     @Purpose("Check the system can inject applicable services to the result of a search")
     public void searchDatasets() {
-        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.DATASETS_SEARCH, customizer()
-                .expectStatusOk().expectToHaveSize(JSON_PATH_ROOT + ".content[0].content.services", 0)
-                .expectToHaveSize(JSON_PATH_ROOT + ".content[1].content.services", 2)
-                .expectValue(JSON_PATH_ROOT + ".content[1].content.services[0].content.label", "conf0")
-                .expectValue(JSON_PATH_ROOT + ".content[1].content.services[1].content.label", "uiPluginConfiguration2")
-                .addParameter("q", BackendForFrontendTestUtils.OPENSEARCH_QUERY), "Error searching datasets");
+        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.DATASETS_SEARCH,
+                          customizer().expectStatusOk()
+                                      .expectToHaveSize(JSON_PATH_ROOT + ".content[0].content.services", 0)
+                                      .expectToHaveSize(JSON_PATH_ROOT + ".content[1].content.services", 2)
+                                      .expectValue(JSON_PATH_ROOT + ".content[1].content.services[0].content.label",
+                                                   "conf0")
+                                      .expectValue(JSON_PATH_ROOT + ".content[1].content.services[1].content.label",
+                                                   "uiPluginConfiguration2")
+                                      .addParameter("q", BackendForFrontendTestUtils.OPENSEARCH_QUERY),
+                          "Error searching datasets");
     }
 
     @Test
     @Requirement("REGARDS_DSL_ACC_USE_700")
     @Purpose("Check the system can inject applicable services to the result of a search")
     public void searchDataobjects() {
-        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.DATAOBJECTS_SEARCH, customizer()
-                .expectStatusOk().expectToHaveSize(JSON_PATH_ROOT + ".content[0].content.services", 2)
-                .expectValue(JSON_PATH_ROOT + ".content[0].content.services[0].content.label", "conf0")
-                .expectValue(JSON_PATH_ROOT + ".content[0].content.services[1].content.label", "uiPluginConfiguration2")
-                .addParameter("q", BackendForFrontendTestUtils.OPENSEARCH_QUERY), "Error searching datasets");
+        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.DATAOBJECTS_SEARCH,
+                          customizer().expectStatusOk()
+                                      .expectToHaveSize(JSON_PATH_ROOT + ".content[0].content.services", 2)
+                                      .expectValue(JSON_PATH_ROOT + ".content[0].content.services[0].content.label",
+                                                   "conf0")
+                                      .expectValue(JSON_PATH_ROOT + ".content[0].content.services[1].content.label",
+                                                   "uiPluginConfiguration2")
+                                      .addParameter("q", BackendForFrontendTestUtils.OPENSEARCH_QUERY),
+                          "Error searching datasets");
     }
 
     @Test
@@ -97,14 +109,22 @@ public class AccessSearchControllerIT extends AbstractRegardsIT {
     public void searchDataobjectsReturnDatasets() {
         // Define customizer
         RequestBuilderCustomizer customizer = customizer().expectStatusOk()
-                .expectToHaveSize(JSON_PATH_ROOT + ".content[0].content.services", 0)
-                .expectToHaveSize(JSON_PATH_ROOT + ".content[1].content.services", 2)
-                .expectValue(JSON_PATH_ROOT + ".content[1].content.services[0].content.label", "conf0")
-                .expectValue(JSON_PATH_ROOT + ".content[1].content.services[1].content.label", "uiPluginConfiguration2")
-                .addParameter("q", BackendForFrontendTestUtils.OPENSEARCH_QUERY);
+                                                          .expectToHaveSize(
+                                                              JSON_PATH_ROOT + ".content[0].content.services", 0)
+                                                          .expectToHaveSize(
+                                                              JSON_PATH_ROOT + ".content[1].content.services", 2)
+                                                          .expectValue(JSON_PATH_ROOT
+                                                                           + ".content[1].content.services[0].content.label",
+                                                                       "conf0")
+                                                          .expectValue(JSON_PATH_ROOT
+                                                                           + ".content[1].content.services[1].content.label",
+                                                                       "uiPluginConfiguration2")
+                                                          .addParameter("q",
+                                                                        BackendForFrontendTestUtils.OPENSEARCH_QUERY);
         // Call
         performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.DATAOBJECTS_DATASETS_SEARCH,
-                          customizer, "Error searching datasets");
+                          customizer,
+                          "Error searching datasets");
     }
 
     @Override

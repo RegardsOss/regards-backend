@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.modules.session.agent.domain.step;
 
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
-import java.util.Objects;
 
 /**
  * Store information related to {@link StepPropertyUpdateRequestEvent}
@@ -59,8 +58,12 @@ public class StepPropertyInfo {
      */
     private boolean outputRelated;
 
-    public StepPropertyInfo(StepTypeEnum stepType, StepPropertyStateEnum state, String property, String value,
-            boolean inputRelated, boolean outputRelated) {
+    public StepPropertyInfo(StepTypeEnum stepType,
+                            StepPropertyStateEnum state,
+                            String property,
+                            String value,
+                            boolean inputRelated,
+                            boolean outputRelated) {
         this.stepType = stepType;
         this.state = state;
         this.property = property;
@@ -120,7 +123,6 @@ public class StepPropertyInfo {
     @Override
     public String toString() {
         return "StepPropertyInfo{" + "stepType=" + stepType + ", state=" + state + ", property='" + property + '\''
-                + ", value='" + value + '\'' + ", inputRelated=" + inputRelated + ", outputRelated=" + outputRelated
-                + '}';
+            + ", value='" + value + '\'' + ", inputRelated=" + inputRelated + ", outputRelated=" + outputRelated + '}';
     }
 }

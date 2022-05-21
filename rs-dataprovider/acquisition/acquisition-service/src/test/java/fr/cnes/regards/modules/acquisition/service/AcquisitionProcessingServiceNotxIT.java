@@ -30,15 +30,6 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,11 +39,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 /**
  * Test {@link AcquisitionProcessingService} for {@link AcquisitionProcessingChain} workflow
  *
  * @author Marc Sordi
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acquisition2" })
 public class AcquisitionProcessingServiceNotxIT extends AbstractMultitenantServiceIT {
@@ -113,8 +113,13 @@ public class AcquisitionProcessingServiceNotxIT extends AbstractMultitenantServi
         filePaths.add(first);
         filePaths.add(searchDir.resolve("CSSI_PRODUCT_02.md"));
         filePaths.add(searchDir.resolve("CSSI_PRODUCT_03.md"));
-        Assert.assertEquals(2, processingService.registerFiles(filePaths.iterator(), fileInfo, scanDirInfo,
-                                                               Optional.of(lmd), "chain1", "session1"));
+        Assert.assertEquals(2,
+                            processingService.registerFiles(filePaths.iterator(),
+                                                            fileInfo,
+                                                            scanDirInfo,
+                                                            Optional.of(lmd),
+                                                            "chain1",
+                                                            "session1"));
 
     }
 }

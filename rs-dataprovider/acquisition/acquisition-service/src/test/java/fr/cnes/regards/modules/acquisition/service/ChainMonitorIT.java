@@ -55,17 +55,19 @@ import java.util.function.LongSupplier;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestPropertySource(
-        properties = {"spring.jpa.properties.hibernate.default_schema=acquisition_monitor", "regards.amqp.enabled=true"},
-        locations = {"classpath:application-monitor.properties"}
-)
-@ActiveProfiles({"testAmqp", "nohandler", "disableDataProviderTask", "noscheduler", "nojobs"})
+    properties = { "spring.jpa.properties.hibernate.default_schema=acquisition_monitor", "regards.amqp.enabled=true" },
+    locations = { "classpath:application-monitor.properties" })
+@ActiveProfiles({ "testAmqp", "nohandler", "disableDataProviderTask", "noscheduler", "nojobs" })
 public class ChainMonitorIT extends DataproviderMultitenantServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChainMonitorIT.class);
 
     private Path rootPath = Paths.get("src", "test", "resources", "startstop");
+
     private Path fakePath = rootPath.resolve("fake").toAbsolutePath();
+
     private Path imagePath = rootPath.resolve("images").toAbsolutePath();
+
     private Path blockerPath = rootPath.resolve("blocker").toAbsolutePath();
 
     @Autowired
@@ -82,9 +84,10 @@ public class ChainMonitorIT extends DataproviderMultitenantServiceIT {
     public void doInit() throws InterruptedException {
         processingService.getFullChains().forEach(chain -> {
             try {
-                processingService.patchStateAndMode(
-                        chain.getId(),
-                        UpdateAcquisitionProcessingChains.build(false, AcquisitionProcessingChainMode.AUTO, UpdateAcquisitionProcessingChainType.ALL));
+                processingService.patchStateAndMode(chain.getId(),
+                                                    UpdateAcquisitionProcessingChains.build(false,
+                                                                                            AcquisitionProcessingChainMode.AUTO,
+                                                                                            UpdateAcquisitionProcessingChainType.ALL));
                 processingService.stopAndCleanChain(chain.getId());
                 processingService.deleteChain(chain.getId());
             } catch (ModuleException e) {
@@ -94,7 +97,8 @@ public class ChainMonitorIT extends DataproviderMultitenantServiceIT {
         TimeUnit.SECONDS.sleep(2);
     }
 
-    @Ignore("Test to count sql queries during chain monitor requests - not required to run during builds (enable hibernate and sql debug logs)")
+    @Ignore(
+        "Test to count sql queries during chain monitor requests - not required to run during builds (enable hibernate and sql debug logs)")
     @Test
     public void chainMonitorTest() throws ModuleException {
 
@@ -169,26 +173,35 @@ public class ChainMonitorIT extends DataproviderMultitenantServiceIT {
         processingChain.addFileInfo(fileInfo3);
 
         // Validation
-        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class, "validPlugin", new HashSet<>());
+        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class,
+                                                                         "validPlugin",
+                                                                         new HashSet<>());
         validationPlugin.setIsActive(true);
         validationPlugin.setLabel("Validation plugin");
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
-        Set<IPluginParam> parametersProduct = IPluginParam.set(IPluginParam.build(DefaultProductPlugin.FIELD_REMOVE_EXT, true));
-        PluginConfiguration productPlugin = PluginConfiguration.build(DefaultProductPlugin.class, "productPlugin", parametersProduct);
+        Set<IPluginParam> parametersProduct = IPluginParam.set(IPluginParam.build(DefaultProductPlugin.FIELD_REMOVE_EXT,
+                                                                                  true));
+        PluginConfiguration productPlugin = PluginConfiguration.build(DefaultProductPlugin.class,
+                                                                      "productPlugin",
+                                                                      parametersProduct);
         productPlugin.setIsActive(true);
         productPlugin.setLabel("Product plugin");
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginConfiguration.build(DefaultSIPGeneration.class, "sipGenPlugin", new HashSet<>());
+        PluginConfiguration sipGenPlugin = PluginConfiguration.build(DefaultSIPGeneration.class,
+                                                                     "sipGenPlugin",
+                                                                     new HashSet<>());
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin");
         processingChain.setGenerateSipPluginConf(sipGenPlugin);
 
         // Post-processing blocking plugin
-        PluginConfiguration cleanAndAcknowledgePlugin = PluginConfiguration.build(CleanAndAcknowledgePlugin.class, "cleanAndAcknowledgePlugin", null);
+        PluginConfiguration cleanAndAcknowledgePlugin = PluginConfiguration.build(CleanAndAcknowledgePlugin.class,
+                                                                                  "cleanAndAcknowledgePlugin",
+                                                                                  null);
         cleanAndAcknowledgePlugin.setIsActive(true);
         cleanAndAcknowledgePlugin.setLabel("Clean and Acknowledge plugin");
         processingChain.setPostProcessSipPluginConf(cleanAndAcknowledgePlugin);
@@ -206,7 +219,8 @@ public class ChainMonitorIT extends DataproviderMultitenantServiceIT {
         assertExactCount(100, 1, expected, objectCount);
     }
 
-    private void assertExactCount(int maxLoops, int delay, long expected, LongSupplier objectCount) throws InterruptedException {
+    private void assertExactCount(int maxLoops, int delay, long expected, LongSupplier objectCount)
+        throws InterruptedException {
         int loops = maxLoops;
         while (loops > 0 && objectCount.getAsLong() != expected) {
             loops--;
@@ -219,7 +233,8 @@ public class ChainMonitorIT extends DataproviderMultitenantServiceIT {
         assertMinCount(100, 1, expected, objectCount);
     }
 
-    private void assertMinCount(int maxLoops, int delay, long expected, LongSupplier objectCount) throws InterruptedException {
+    private void assertMinCount(int maxLoops, int delay, long expected, LongSupplier objectCount)
+        throws InterruptedException {
         int loops = maxLoops;
         while (loops > 0 && objectCount.getAsLong() < expected) {
             loops--;

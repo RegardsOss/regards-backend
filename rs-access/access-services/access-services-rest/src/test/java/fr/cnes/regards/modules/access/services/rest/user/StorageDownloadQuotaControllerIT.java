@@ -34,51 +34,45 @@ import static fr.cnes.regards.modules.access.services.rest.user.mock.StorageRest
  * Integration tests for StorageDownloadQuota REST Controller.
  */
 @MultitenantTransactional
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=access"},
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=access" },
     locations = { "classpath:application-test.properties" })
 public class StorageDownloadQuotaControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void getQuotaLimits_for_specific_user() {
-        RequestBuilderCustomizer customizer =
-            customizer()
-                .expectStatusOk()
-                .expectValue("$.email", USER_QUOTA_LIMITS_STUB_EMAIL)
-                .expectValue("$.maxQuota", USER_QUOTA_LIMITS_STUB_MAX_QUOTA)
-                .expectValue("$.rateLimit", USER_QUOTA_LIMITS_STUB_RATE_LIMIT)
-            ;
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                                                          .expectValue("$.email", USER_QUOTA_LIMITS_STUB_EMAIL)
+                                                          .expectValue("$.maxQuota", USER_QUOTA_LIMITS_STUB_MAX_QUOTA)
+                                                          .expectValue("$.rateLimit",
+                                                                       USER_QUOTA_LIMITS_STUB_RATE_LIMIT);
         performDefaultGet(PATH_USER_QUOTA, customizer, "Failed to get user quota limits", USER_QUOTA_LIMITS_STUB_EMAIL);
     }
 
     @Test
     public void upsertQuotaLimits() {
-        DownloadQuotaLimitsDto dto = new DownloadQuotaLimitsDto(
-            USER_QUOTA_LIMITS_STUB_EMAIL,
-            USER_QUOTA_LIMITS_STUB_MAX_QUOTA,
-            USER_QUOTA_LIMITS_STUB_RATE_LIMIT
-        );
-        RequestBuilderCustomizer customizer =
-            customizer()
-                .expectStatusOk()
-                .expectValue("$.email", dto.getEmail())
-                .expectValue("$.maxQuota", dto.getMaxQuota())
-                .expectValue("$.rateLimit", dto.getRateLimit())
-            ;
-        performDefaultPut(PATH_USER_QUOTA, dto, customizer, "Failed to upsert user quota limits", USER_QUOTA_LIMITS_STUB_EMAIL);
+        DownloadQuotaLimitsDto dto = new DownloadQuotaLimitsDto(USER_QUOTA_LIMITS_STUB_EMAIL,
+                                                                USER_QUOTA_LIMITS_STUB_MAX_QUOTA,
+                                                                USER_QUOTA_LIMITS_STUB_RATE_LIMIT);
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                                                          .expectValue("$.email", dto.getEmail())
+                                                          .expectValue("$.maxQuota", dto.getMaxQuota())
+                                                          .expectValue("$.rateLimit", dto.getRateLimit());
+        performDefaultPut(PATH_USER_QUOTA,
+                          dto,
+                          customizer,
+                          "Failed to upsert user quota limits",
+                          USER_QUOTA_LIMITS_STUB_EMAIL);
     }
 
     @Test
     public void getQuotaLimits_for_current_user() {
         String userEmail = UUID.randomUUID().toString();
 
-        RequestBuilderCustomizer customizer =
-            customizer()
-                .expectStatusOk()
-                .expectValue("$.email", userEmail)
-                .expectValue("$.maxQuota", USER_QUOTA_LIMITS_STUB_MAX_QUOTA)
-                .expectValue("$.rateLimit", USER_QUOTA_LIMITS_STUB_RATE_LIMIT)
-            ;
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                                                          .expectValue("$.email", userEmail)
+                                                          .expectValue("$.maxQuota", USER_QUOTA_LIMITS_STUB_MAX_QUOTA)
+                                                          .expectValue("$.rateLimit",
+                                                                       USER_QUOTA_LIMITS_STUB_RATE_LIMIT);
 
         String token = manageSecurity(getDefaultTenant(), PATH_QUOTA, RequestMethod.GET, userEmail, getDefaultRole());
         performGet(PATH_QUOTA, token, customizer, "Failed to get current user quota limits");
@@ -88,17 +82,18 @@ public class StorageDownloadQuotaControllerIT extends AbstractRegardsTransaction
     public void getCurrentQuotas() {
         String userEmail = UUID.randomUUID().toString();
 
-        RequestBuilderCustomizer customizer =
-            customizer()
-                .expectStatusOk()
-                .expectValue("$.email", userEmail)
-                .expectValue("$.maxQuota", USER_QUOTA_LIMITS_STUB_MAX_QUOTA)
-                .expectValue("$.rateLimit", USER_QUOTA_LIMITS_STUB_RATE_LIMIT)
-                .expectValue("$.currentQuota", CURRENT_USER_QUOTA_STUB)
-                .expectValue("$.currentRate", CURRENT_USER_RATE_STUB)
-            ;
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                                                          .expectValue("$.email", userEmail)
+                                                          .expectValue("$.maxQuota", USER_QUOTA_LIMITS_STUB_MAX_QUOTA)
+                                                          .expectValue("$.rateLimit", USER_QUOTA_LIMITS_STUB_RATE_LIMIT)
+                                                          .expectValue("$.currentQuota", CURRENT_USER_QUOTA_STUB)
+                                                          .expectValue("$.currentRate", CURRENT_USER_RATE_STUB);
 
-        String token = manageSecurity(getDefaultTenant(), PATH_CURRENT_QUOTA, RequestMethod.GET, userEmail, getDefaultRole());
+        String token = manageSecurity(getDefaultTenant(),
+                                      PATH_CURRENT_QUOTA,
+                                      RequestMethod.GET,
+                                      userEmail,
+                                      getDefaultRole());
         performGet(PATH_CURRENT_QUOTA, token, customizer, "Failed to get current user quotas");
     }
 }

@@ -1,9 +1,8 @@
 package fr.cnes.regards.framework.test;
 
+import fr.cnes.regards.framework.test.util.Beans;
 import org.junit.Assert;
 import org.junit.Test;
-
-import fr.cnes.regards.framework.test.util.Beans;
 
 public class BeansTest {
 

@@ -22,10 +22,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerRequestDlqEvent;
-import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerResponseEvent;
-import fr.cnes.regards.modules.workermanager.dto.events.out.WorkerRequestEvent;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -41,7 +38,7 @@ import java.util.List;
  */
 @Component
 public class WorkerRequestDlqHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<WorkerRequestDlqEvent> {
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<WorkerRequestDlqEvent> {
 
     /**
      * Bulk size limit to handle messages
@@ -60,8 +57,11 @@ public class WorkerRequestDlqHandler
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(WorkerRequestDlqEvent.class, this, service.getWorkerRequestDlqName(),
-                               service.getWorkerRequestDlxName(), false);
+        subscriber.subscribeTo(WorkerRequestDlqEvent.class,
+                               this,
+                               service.getWorkerRequestDlqName(),
+                               service.getWorkerRequestDlxName(),
+                               false);
     }
 
     @Override

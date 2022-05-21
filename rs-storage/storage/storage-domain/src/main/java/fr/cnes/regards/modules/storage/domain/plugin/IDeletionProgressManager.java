@@ -27,20 +27,23 @@ import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionReque
  * <li>Deletion succeed {@link #deletionSucceed}</li>
  * <li>Deletion failed {@link #deletionFailed}</li>
  * </ul>
+ *
  * @author Sébastien Binda
  */
 public interface IDeletionProgressManager {
 
     /**
      * Notify system that the given {@link FileDeletionRequest} is deleted.
+     *
      * @param FileDeletionRequest {@link FileDeletionRequest} deleted.
      */
     public void deletionSucceed(FileDeletionRequest fileDeletionRequest);
 
     /**
      * Notify the system that the given {@link FileReference} couldn't be deleted.
+     *
      * @param fileDeletionRequest {@link FileDeletionRequest} not deleted.
-     * @param cause {@link String} error message.
+     * @param cause               {@link String} error message.
      */
     public void deletionFailed(FileDeletionRequest fileDeletionRequest, String cause);
 

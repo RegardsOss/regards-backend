@@ -18,13 +18,13 @@
  */
 package fr.cnes.regards.framework.multitenant.test;
 
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-
 /**
  * Single tenant resolver. Useful for testing purpose. Add multi-thread management.
+ *
  * @author Marc Sordi
  * @author oroussel
  */

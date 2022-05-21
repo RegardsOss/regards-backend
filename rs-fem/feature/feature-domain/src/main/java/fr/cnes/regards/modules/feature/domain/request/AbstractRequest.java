@@ -18,33 +18,26 @@
  */
 package fr.cnes.regards.modules.feature.domain.request;
 
-import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.MappedSuperclass;
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Type;
-import org.springframework.util.Assert;
-
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
+import org.springframework.util.Assert;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Common request properties
  *
  * @author Marc SORDI
- *
  */
 @MappedSuperclass
 public abstract class AbstractRequest {
@@ -117,8 +110,12 @@ public abstract class AbstractRequest {
     protected Set<String> errors;
 
     @SuppressWarnings("unchecked")
-    protected <T extends AbstractRequest> T with(String requestId, String requestOwner, OffsetDateTime requestDate,
-            PriorityLevel priority, RequestState state, FeatureRequestStep step) {
+    protected <T extends AbstractRequest> T with(String requestId,
+                                                 String requestOwner,
+                                                 OffsetDateTime requestDate,
+                                                 PriorityLevel priority,
+                                                 RequestState state,
+                                                 FeatureRequestStep step) {
         Assert.notNull(requestId, "Request id is required");
         Assert.notNull(requestDate, "Request date is required");
         Assert.notNull(priority, "Request priority is required");

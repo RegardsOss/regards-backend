@@ -30,7 +30,8 @@ import org.springframework.test.context.TestPropertySource;
  * Integration tests for AccessSettings REST Controller.
  */
 @MultitenantTransactional
-@TestPropertySource(properties = {"spring.jpa.properties.hibernate.default_schema=access"}, locations = {"classpath:application-test.properties"})
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=access" },
+    locations = { "classpath:application-test.properties" })
 public class AccessSettingsControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test

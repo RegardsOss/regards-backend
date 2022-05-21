@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.catalog.services.plugins;
  * Sample Object to test return of a java object with the SampleServicePlugin
  *
  * @author sbinda
- *
  */
 public class ResponseObject {
 

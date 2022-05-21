@@ -23,6 +23,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * JWT test configuration
+ *
  * @author msordi
  */
 @Configuration

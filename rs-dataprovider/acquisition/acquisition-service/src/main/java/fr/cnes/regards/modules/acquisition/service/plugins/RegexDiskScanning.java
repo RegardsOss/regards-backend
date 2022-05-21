@@ -22,6 +22,9 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -32,20 +35,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Scan directories and return detected files according to last modification date filter and a regular expression
  * pattern.
  *
  * @author Marc Sordi
- *
  */
 @Plugin(id = "RegexDiskScanning", version = "1.0.0-SNAPSHOT",
-        description = "Scan directories to detect files filtering with a regular expression pattern",
-        author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+    description = "Scan directories to detect files filtering with a regular expression pattern",
+    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
+    url = "https://github.com/RegardsOss")
 public class RegexDiskScanning implements IScanPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RegexDiskScanning.class);
@@ -78,8 +78,8 @@ public class RegexDiskScanning implements IScanPlugin {
             for (Path entry : stream) {
                 if (Files.isRegularFile(entry)) {
                     if (scanningDate.isPresent()) {
-                        OffsetDateTime lmd = OffsetDateTime
-                                .ofInstant(Files.getLastModifiedTime(entry).toInstant(), ZoneOffset.UTC);
+                        OffsetDateTime lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(entry).toInstant(),
+                                                                      ZoneOffset.UTC);
                         if (lmd.isAfter(scanningDate.get()) || lmd.isEqual(scanningDate.get())) {
                             scannedFiles.add(entry);
                         }
@@ -92,8 +92,10 @@ public class RegexDiskScanning implements IScanPlugin {
             throw new PluginUtilsRuntimeException("Scanning failure", x);
         }
 
-        LOGGER.info("{} new file(s) scanned inside the directory {} in {} milliseconds", scannedFiles.size(),
-                    dirPath.toString(), System.currentTimeMillis() - startTime);
+        LOGGER.info("{} new file(s) scanned inside the directory {} in {} milliseconds",
+                    scannedFiles.size(),
+                    dirPath.toString(),
+                    System.currentTimeMillis() - startTime);
         return scannedFiles;
     }
 

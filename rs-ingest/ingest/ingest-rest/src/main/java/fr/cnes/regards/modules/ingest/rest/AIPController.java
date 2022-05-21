@@ -141,6 +141,7 @@ public class AIPController implements IResourceController<AIPEntityLight> {
 
     /**
      * Retrieve a page of aip metadata according to the given filters
+     *
      * @param filters
      * @param pageable
      * @param assembler
@@ -149,14 +150,17 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Return a page of AIPs", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<AIPEntityLight>>> searchAIPs(@RequestBody SearchAIPsParameters filters,
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<AIPEntityLight> assembler) {
+                                                                              @PageableDefault(sort = "id",
+                                                                                  direction = Sort.Direction.ASC)
+                                                                              Pageable pageable,
+                                                                              PagedResourcesAssembler<AIPEntityLight> assembler) {
         Page<AIPEntityLight> aips = aipService.findLightByFilters(filters, pageable);
         return new ResponseEntity<>(toPagedResources(aips, assembler), HttpStatus.OK);
     }
 
     /**
      * Retrieve common tags according to the given filters
+     *
      * @param filters
      * @return tags
      */
@@ -169,6 +173,7 @@ public class AIPController implements IResourceController<AIPEntityLight> {
 
     /**
      * Retrieve common storage location (pluginBusinessId) according to the given filters
+     *
      * @param filters
      * @return storage location
      */
@@ -181,6 +186,7 @@ public class AIPController implements IResourceController<AIPEntityLight> {
 
     /**
      * Retrieve common categories according to the given filters
+     *
      * @param filters
      * @return categories
      */
@@ -192,11 +198,11 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     }
 
     @RequestMapping(value = AIPStorageService.AIP_DOWNLOAD_PATH, method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+        produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     @ResourceAccess(description = "Download AIP as JSON file", role = DefaultRole.PUBLIC)
     public void downloadAIP(@RequestParam(required = false, name = "origin") String origin,
-            @Valid @PathVariable(AIPStorageService.AIP_ID_PATH_PARAM) String aipId, HttpServletResponse response)
-            throws ModuleException, IOException {
+                            @Valid @PathVariable(AIPStorageService.AIP_ID_PATH_PARAM) String aipId,
+                            HttpServletResponse response) throws ModuleException, IOException {
 
         LOGGER.debug("Downloading AIP file for entity \"{}\"", aipId.toString());
 

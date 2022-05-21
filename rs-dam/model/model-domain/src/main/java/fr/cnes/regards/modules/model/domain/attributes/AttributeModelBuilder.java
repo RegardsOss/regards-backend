@@ -18,18 +18,15 @@
  */
 package fr.cnes.regards.modules.model.domain.attributes;
 
-import org.springframework.util.Assert;
-
 import fr.cnes.regards.modules.model.domain.attributes.restriction.AbstractRestriction;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionFactory;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import org.springframework.util.Assert;
 
 /**
- *
  * Attribute model builder
  *
  * @author Marc Sordi
- *
  */
 public final class AttributeModelBuilder {
 
@@ -44,6 +41,7 @@ public final class AttributeModelBuilder {
 
     /**
      * Initialize the builder by instanciating a minimal attribute model
+     *
      * @param pName attribute name
      * @param pType attribute type
      * @param label attribute label
@@ -109,8 +107,9 @@ public final class AttributeModelBuilder {
     public <T extends AbstractRestriction> AttributeModel withRestriction(T pRestriction) {
         Assert.notNull(pRestriction, "Restriction is required");
         if (!pRestriction.supports(attributeModel.getType())) {
-            throw new IllegalArgumentException("Unsupported restriction " + pRestriction.getType()
-                    + " for attribute type " + attributeModel.getType());
+            throw new IllegalArgumentException(
+                "Unsupported restriction " + pRestriction.getType() + " for attribute type "
+                    + attributeModel.getType());
         }
         attributeModel.setRestriction(pRestriction);
         return attributeModel;
@@ -120,13 +119,17 @@ public final class AttributeModelBuilder {
         return withRestriction(RestrictionFactory.buildEnumerationRestriction(pAcceptableValues));
     }
 
-    public AttributeModel withFloatRangeRestriction(Double pMin, Double pMax, boolean pMinExcluded,
-            boolean pMaxExcluded) {
+    public AttributeModel withFloatRangeRestriction(Double pMin,
+                                                    Double pMax,
+                                                    boolean pMinExcluded,
+                                                    boolean pMaxExcluded) {
         return withRestriction(RestrictionFactory.buildFloatRangeRestriction(pMin, pMax, pMinExcluded, pMaxExcluded));
     }
 
-    public AttributeModel withIntegerRangeRestriction(Integer pMin, Integer pMax, boolean pMinExcluded,
-            boolean pMaxExcluded) {
+    public AttributeModel withIntegerRangeRestriction(Integer pMin,
+                                                      Integer pMax,
+                                                      boolean pMinExcluded,
+                                                      boolean pMaxExcluded) {
         return withRestriction(RestrictionFactory.buildIntegerRangeRestriction(pMin, pMax, pMinExcluded, pMaxExcluded));
     }
 

@@ -41,10 +41,9 @@ import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Marc SORDI
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=dam_access_rights" },
-        locations = "classpath:es.properties")
+    locations = "classpath:es.properties")
 public class AccessRightServiceIT extends AbstractMultitenantServiceIT {
 
     @SuppressWarnings("unused")

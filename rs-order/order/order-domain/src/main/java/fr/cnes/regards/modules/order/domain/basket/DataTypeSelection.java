@@ -26,13 +26,17 @@ import java.util.List;
 /**
  * Data type selection (quilooks and/or raw data)
  * File types are from enum class DataType (from rs-dam/entities-domain)
+ *
  * @author oroussel
  */
 public enum DataTypeSelection {
 
-    ALL(DataType.RAWDATA, DataType.QUICKLOOK_SD, DataType.QUICKLOOK_MD, DataType.QUICKLOOK_HD),
-    QUICKLOOKS(DataType.QUICKLOOK_SD, DataType.QUICKLOOK_MD, DataType.QUICKLOOK_HD),
-    RAWDATA(DataType.RAWDATA);
+    ALL(DataType.RAWDATA,
+        DataType.QUICKLOOK_SD,
+        DataType.QUICKLOOK_MD,
+        DataType.QUICKLOOK_HD), QUICKLOOKS(DataType.QUICKLOOK_SD,
+                                           DataType.QUICKLOOK_MD,
+                                           DataType.QUICKLOOK_HD), RAWDATA(DataType.RAWDATA);
 
     private DataType[] fileTypes;
 

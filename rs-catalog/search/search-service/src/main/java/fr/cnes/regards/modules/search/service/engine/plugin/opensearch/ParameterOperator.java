@@ -20,12 +20,9 @@ package fr.cnes.regards.modules.search.service.engine.plugin.opensearch;
 
 /**
  * Search operators.
+ *
  * @author Sébastien Binda
  */
 public enum ParameterOperator {
-    EQ,
-    GE,
-    GT,
-    LE,
-    LT;
+    EQ, GE, GT, LE, LT;
 }

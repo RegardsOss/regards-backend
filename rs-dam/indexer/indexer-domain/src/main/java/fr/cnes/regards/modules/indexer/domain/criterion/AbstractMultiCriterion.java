@@ -23,6 +23,7 @@ import java.util.List;
 
 /**
  * ICriterion aggregator
+ *
  * @author oroussel
  */
 public abstract class AbstractMultiCriterion implements ICriterion {

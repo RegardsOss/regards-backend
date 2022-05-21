@@ -26,8 +26,11 @@ import org.locationtech.spatial4j.shape.Circle;
 import java.util.Objects;
 
 public class CircleBuilder extends ShapeBuilder<Circle, org.elasticsearch.geometry.Circle, CircleBuilder> {
+
     private DistanceUnit unit;
+
     private double radius;
+
     private Coordinate center;
 
     public CircleBuilder() {
@@ -75,7 +78,9 @@ public class CircleBuilder extends ShapeBuilder<Circle, org.elasticsearch.geomet
     }
 
     public Circle buildS4J() {
-        return SPATIAL_CONTEXT.makeCircle(this.center.x, this.center.y, 360.0D * this.radius / this.unit.getEarthCircumference());
+        return SPATIAL_CONTEXT.makeCircle(this.center.x,
+                                          this.center.y,
+                                          360.0D * this.radius / this.unit.getEarthCircumference());
     }
 
     public org.elasticsearch.geometry.Circle buildGeometry() {
@@ -91,15 +96,16 @@ public class CircleBuilder extends ShapeBuilder<Circle, org.elasticsearch.geomet
     }
 
     public int hashCode() {
-        return Objects.hash(new Object[]{this.center, this.radius, this.unit.ordinal()});
+        return Objects.hash(new Object[] { this.center, this.radius, this.unit.ordinal() });
     }
 
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         } else if (obj != null && this.getClass() == obj.getClass()) {
-            CircleBuilder other = (CircleBuilder)obj;
-            return Objects.equals(this.center, other.center) && Objects.equals(this.radius, other.radius) && Objects.equals(this.unit.ordinal(), other.unit.ordinal());
+            CircleBuilder other = (CircleBuilder) obj;
+            return Objects.equals(this.center, other.center) && Objects.equals(this.radius, other.radius)
+                && Objects.equals(this.unit.ordinal(), other.unit.ordinal());
         } else {
             return false;
         }

@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.modules.indexer.dao.converter;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.function.BiConsumer;
-
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.function.BiConsumer;
 
 /**
  * Implement the type conversion logic for a {@link Sort}t to a {@link LinkedHashMap} representation.<br>
@@ -42,8 +42,9 @@ public class LinkedHashMapToSort implements Converter<LinkedHashMap<String, Bool
             return Sort.by(Direction.ASC, "id");
         }
         List<Order> orders = new ArrayList<>();
-        BiConsumer<? super String, ? super Boolean> addNewOrder = (property, ascendance) -> orders
-                .add(new Order(ascendance ? Direction.ASC : Direction.DESC, property));
+        BiConsumer<? super String, ? super Boolean> addNewOrder = (property, ascendance) -> orders.add(new Order(
+            ascendance ? Direction.ASC : Direction.DESC,
+            property));
 
         sortMap.forEach(addNewOrder);
         return Sort.by(orders);

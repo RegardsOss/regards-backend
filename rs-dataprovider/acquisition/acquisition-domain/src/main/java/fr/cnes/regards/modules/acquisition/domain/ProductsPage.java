@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.acquisition.domain;
  * POJO to handle schedule of {@link Product}s by page.
  *
  * @author Sébastien Binda
- *
  */
 public class ProductsPage {
 
@@ -42,8 +41,7 @@ public class ProductsPage {
     private long notScheduled = 0L;
 
     /**
-     *
-     * @param next Does still remains {@link Product}s to schedule ?
+     * @param next      Does still remains {@link Product}s to schedule ?
      * @param scheduled Number of scheduled {@link Product}s on this iteration.
      * @return {@link ProductsPage}
      */
@@ -57,6 +55,7 @@ public class ProductsPage {
 
     /**
      * Does still remains {@link Product}s to schedule ?
+     *
      * @return boolean
      */
     public boolean hasNext() {
@@ -65,6 +64,7 @@ public class ProductsPage {
 
     /**
      * Number of scheduled {@link Product}s on this iteration.
+     *
      * @return long
      */
     public long getScheduled() {
@@ -73,6 +73,7 @@ public class ProductsPage {
 
     /**
      * Number of not scheduled {@link Product}s on this iteration.
+     *
      * @return long
      */
     public long getNotScheduled() {

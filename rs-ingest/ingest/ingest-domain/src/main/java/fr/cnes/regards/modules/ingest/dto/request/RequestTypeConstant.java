@@ -28,7 +28,8 @@ import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
  */
 public class RequestTypeConstant {
 
-    private RequestTypeConstant() {}
+    private RequestTypeConstant() {
+    }
 
     public static final String UPDATE_VALUE = "UPDATE";
 

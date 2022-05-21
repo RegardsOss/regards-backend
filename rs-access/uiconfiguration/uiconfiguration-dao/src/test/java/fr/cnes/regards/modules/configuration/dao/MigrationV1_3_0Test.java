@@ -14,7 +14,6 @@ import java.util.function.Function;
 
 public class MigrationV1_3_0Test {
 
-
     @Test
     @Ignore("Manual tests, generates migrated files")
     public void testSearchResultsUpdate() throws IOException {
@@ -27,8 +26,12 @@ public class MigrationV1_3_0Test {
         testUpdate("description", V1_3_0__update::updateDescriptionModule);
     }
 
-    public void testUpdate(String moduleType, Function<Map<String, Object>, Map<String, Object>> updater) throws IOException {
-        String filePath = getClass().getClassLoader().getResource("fr.cnes.regards.modules.configuration.dao/1_2_to_1_3/" + moduleType + ".conf.json").getPath();
+    public void testUpdate(String moduleType, Function<Map<String, Object>, Map<String, Object>> updater)
+        throws IOException {
+        String filePath = getClass().getClassLoader()
+                                    .getResource("fr.cnes.regards.modules.configuration.dao/1_2_to_1_3/" + moduleType
+                                                     + ".conf.json")
+                                    .getPath();
         String oldConfiguration = new String(Files.readAllBytes(Paths.get(filePath)));
         String newConfiguration = V1_3_0__update.withParsedMap(oldConfiguration, updater);
 

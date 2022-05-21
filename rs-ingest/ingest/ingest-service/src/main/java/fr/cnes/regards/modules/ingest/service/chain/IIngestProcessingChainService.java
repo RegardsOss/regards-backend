@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 
 /**
  * Ingest processing service interface
@@ -39,6 +38,7 @@ public interface IIngestProcessingChainService {
 
     /**
      * Create a new {@link IngestProcessingChain}
+     *
      * @param newChain {@link IngestProcessingChain}
      * @return created {@link IngestProcessingChain}
      */
@@ -46,6 +46,7 @@ public interface IIngestProcessingChainService {
 
     /**
      * Create a new {@link IngestProcessingChain}
+     *
      * @param input JSON file containing an {@link IngestProcessingChain}
      * @return the newly created {@link IngestProcessingChain}
      */
@@ -53,13 +54,15 @@ public interface IIngestProcessingChainService {
 
     /**
      * Export specified processing chain as JSON file
+     *
      * @param name processing chain name
-     * @param os output stream
+     * @param os   output stream
      */
     void exportProcessingChain(String name, OutputStream os) throws ModuleException, IOException;
 
     /**
      * Update a {@link IngestProcessingChain}
+     *
      * @param chainToUpdate {@link IngestProcessingChain}
      * @return updated {@link IngestProcessingChain}
      */
@@ -67,6 +70,7 @@ public interface IIngestProcessingChainService {
 
     /**
      * Delete a {@link IngestProcessingChain}
+     *
      * @param name {@link String}
      */
     void deleteChain(String name) throws ModuleException;
@@ -83,6 +87,7 @@ public interface IIngestProcessingChainService {
 
     /**
      * Retrieve a {@link IngestProcessingChain} by name
+     *
      * @param name {@link String}
      * @return IngestProcessingChain
      */
@@ -90,6 +95,7 @@ public interface IIngestProcessingChainService {
 
     /**
      * Check chain with specified name exists
+     *
      * @param name chain name
      * @return true is exists
      */

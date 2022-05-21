@@ -18,26 +18,25 @@
  */
 package fr.cnes.regards.framework.modules.workspace.service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-
+import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
 @TestPropertySource(
-        properties = { "regards.cipher.key-location=src/test/resources/testKey", "regards.cipher.iv=1234567812345678",
-                "regards.workspace.occupation.threshold=0", "regards.workspace.critical.occupation.threshold=0" })
+    properties = { "regards.cipher.key-location=src/test/resources/testKey", "regards.cipher.iv=1234567812345678",
+        "regards.workspace.occupation.threshold=0", "regards.workspace.critical.occupation.threshold=0" })
 public class WorkspaceServiceMonitoringIT extends AbstractRegardsServiceIT {
 
     @Autowired

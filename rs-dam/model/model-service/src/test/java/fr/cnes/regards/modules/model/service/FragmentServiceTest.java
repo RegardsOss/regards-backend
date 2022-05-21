@@ -18,15 +18,18 @@
  */
 package fr.cnes.regards.modules.model.service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
+import com.google.common.collect.Iterables;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.module.rest.exception.*;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.model.dao.IAttributeModelRepository;
+import fr.cnes.regards.modules.model.dao.IFragmentRepository;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModelBuilder;
+import fr.cnes.regards.modules.model.domain.attributes.Fragment;
+import fr.cnes.regards.modules.model.domain.attributes.restriction.EnumerationRestriction;
+import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,23 +42,14 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Iterables;
-
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotEmptyException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.model.dao.IAttributeModelRepository;
-import fr.cnes.regards.modules.model.dao.IFragmentRepository;
-import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.model.domain.attributes.AttributeModelBuilder;
-import fr.cnes.regards.modules.model.domain.attributes.Fragment;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.EnumerationRestriction;
-import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Test fragment service
@@ -111,8 +105,10 @@ public class FragmentServiceTest {
 
     @Before
     public void beforeTest() {
-        fragmentService = new FragmentService(mockFragmentR, mockAttModelR, mockAttModelS,
-                Mockito.mock(IPublisher.class));
+        fragmentService = new FragmentService(mockFragmentR,
+                                              mockAttModelR,
+                                              mockAttModelS,
+                                              Mockito.mock(IPublisher.class));
     }
 
     @Test
@@ -210,9 +206,10 @@ public class FragmentServiceTest {
         List<AttributeModel> attModels = new ArrayList<>();
         attModels.add(AttributeModelBuilder.build("NAME", PropertyType.BOOLEAN, "ForTests").withoutRestriction());
         attModels.add(AttributeModelBuilder.build("PROFILE", PropertyType.STRING, "ForTests")
-                .withEnumerationRestriction("public", "scientist", "user"));
+                                           .withEnumerationRestriction("public", "scientist", "user"));
         attModels.add(AttributeModelBuilder.build("DATA", PropertyType.DOUBLE_ARRAY, "ForTests")
-                .description("physical data").withoutRestriction());
+                                           .description("physical data")
+                                           .withoutRestriction());
 
         Mockito.when(mockFragmentR.findById(fragmentId)).thenReturn(Optional.of(expected));
         Mockito.when(mockAttModelR.findByFragmentId(fragmentId)).thenReturn(attModels);

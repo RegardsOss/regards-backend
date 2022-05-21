@@ -19,19 +19,6 @@
 
 package fr.cnes.regards.framework.modules.plugins.service;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.encryption.BlowfishEncryptionService;
 import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
@@ -45,9 +32,22 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Unit testing of {@link PluginService}.
+ *
  * @author Christophe Mertz
  */
 public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtility {
@@ -69,10 +69,13 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
         // create a mock repository
         pluginConfRepositoryMocked = Mockito.mock(IPluginConfigurationRepository.class);
         BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
-        blowfishEncryptionService
-                .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "12345678"));
-        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, Mockito.mock(IPublisher.class),
-                runtimeTenantResolver, blowfishEncryptionService, null);
+        blowfishEncryptionService.init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"),
+                                                            "12345678"));
+        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked,
+                                                Mockito.mock(IPublisher.class),
+                                                runtimeTenantResolver,
+                                                blowfishEncryptionService,
+                                                null);
         PluginUtils.setup();
     }
 
@@ -87,7 +90,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
         aPluginConfiguration.setId(AN_ID);
         try {
             Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
-                    .thenReturn(aPluginConfiguration);
+                   .thenReturn(aPluginConfiguration);
             Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfiguration);
 
             PluginConfiguration updatedConf = pluginServiceMocked.updatePluginConfiguration(aPluginConfiguration);
@@ -134,7 +137,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
         aPluginConfiguration.setId(AN_ID);
         try {
             Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
-                    .thenReturn(aPluginConfiguration);
+                   .thenReturn(aPluginConfiguration);
             Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfiguration);
 
             PluginConfiguration updatedConf = pluginServiceMocked.updatePluginConfiguration(aPluginConfiguration);

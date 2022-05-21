@@ -5,15 +5,13 @@ import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantS
 import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
 import org.springframework.stereotype.Component;
 
-
 @Component
 public class ActiveNotificationSettingCustomizer implements IDynamicTenantSettingCustomizer {
 
     @Override
     public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
-        return dynamicTenantSetting.getDefaultValue() != null
-                && isProperValue(dynamicTenantSetting.getDefaultValue())
-                && (dynamicTenantSetting.getValue() == null || isProperValue(dynamicTenantSetting.getValue()));
+        return dynamicTenantSetting.getDefaultValue() != null && isProperValue(dynamicTenantSetting.getDefaultValue())
+            && (dynamicTenantSetting.getValue() == null || isProperValue(dynamicTenantSetting.getValue()));
     }
 
     @Override

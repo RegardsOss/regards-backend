@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.dam.domain.entities.event;
 
 /**
  * Broadcast entity event type
+ *
  * @author oroussel
  */
 public enum EventType {

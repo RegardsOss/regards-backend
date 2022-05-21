@@ -1,7 +1,6 @@
 package fr.cnes.regards.framework.jsoniter.decoders;
 
 import com.jsoniter.JsonIterator;
-import com.jsoniter.ValueType;
 import com.jsoniter.any.Any;
 import com.jsoniter.spi.Decoder;
 import com.jsoniter.spi.JsoniterSpi;
@@ -40,26 +39,21 @@ public class IGeometryJsoniterDecoder implements NullSafeDecoderBuilder {
                 return Polygon.fromArray(asDoubleArray3(coordinates));
             case "MULTIPOLYGON":
                 return MultiPolygon.fromArray(asDoubleArray4(coordinates));
-            default: return null;
+            default:
+                return null;
         }
     }
 
     private double[][][][] asDoubleArray4(Any coordinates) {
-        return List.ofAll(coordinates.asList())
-            .map(this::asDoubleArray3)
-            .toJavaArray(double[][][][]::new);
+        return List.ofAll(coordinates.asList()).map(this::asDoubleArray3).toJavaArray(double[][][][]::new);
     }
 
     private double[][][] asDoubleArray3(Any coordinates) {
-        return List.ofAll(coordinates.asList())
-            .map(this::asDoubleArray2)
-            .toJavaArray(double[][][]::new);
+        return List.ofAll(coordinates.asList()).map(this::asDoubleArray2).toJavaArray(double[][][]::new);
     }
 
     private double[][] asDoubleArray2(Any coordinates) {
-        return List.ofAll(coordinates.asList())
-            .map(any -> any.as(double[].class))
-            .toJavaArray(double[][]::new);
+        return List.ofAll(coordinates.asList()).map(any -> any.as(double[].class)).toJavaArray(double[][]::new);
     }
 
 }

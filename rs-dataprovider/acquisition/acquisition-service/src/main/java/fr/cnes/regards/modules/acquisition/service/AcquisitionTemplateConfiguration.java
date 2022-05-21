@@ -39,7 +39,8 @@ public class AcquisitionTemplateConfiguration {
 
     @Bean
     public Template acquInvalidFilesTemplate() throws IOException {
-        return TemplateConfigUtil.readTemplate(ACQUISITION_INVALID_FILES_TEMPLATE, "template/acquisition_invalid_files.html");
+        return TemplateConfigUtil.readTemplate(ACQUISITION_INVALID_FILES_TEMPLATE,
+                                               "template/acquisition_invalid_files.html");
     }
 
     @Bean

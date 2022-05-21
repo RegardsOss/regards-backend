@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.storage.service.file.download;
 
-import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import io.vavr.control.Try;
@@ -10,6 +9,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 public interface IQuotaService<T> {
+
     /**
      * Executes <code>operation</code> if and only if the current gauge for the
      * target user (specified by its <code>userEmail</code>) is not superior
@@ -60,7 +60,9 @@ public interface IQuotaService<T> {
     void removeQuotaFor(Set<String> emails);
 
     interface WithQuotaOperationHandler {
+
         void start();
+
         void stop();
     }
 }

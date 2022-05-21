@@ -19,9 +19,7 @@
 package fr.cnes.regards.framework.modules.plugins.service.gson;
 
 /**
- *
  * @author Marc SORDI
- *
  */
 public class SimplePojo {
 

@@ -59,7 +59,7 @@ public class Position extends ArrayList<Double> {
             return new Position(coordinates[0], coordinates[1], coordinates[2]);
         } else {
             throw new IllegalArgumentException(
-                    "Position should at least have 2 coordinates: longitude and latitude, or 3 (longitude, latitude, altitude)");
+                "Position should at least have 2 coordinates: longitude and latitude, or 3 (longitude, latitude, altitude)");
         }
     }
 
@@ -140,7 +140,7 @@ public class Position extends ArrayList<Double> {
     @Override
     public Double[] toArray() {
         return getAltitude().isPresent() ?
-                new Double[] { getLongitude(), getLatitude(), getAltitude().get() } :
-                new Double[] { getLongitude(), getLatitude() };
+            new Double[] { getLongitude(), getLatitude(), getAltitude().get() } :
+            new Double[] { getLongitude(), getLatitude() };
     }
 }

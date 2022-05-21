@@ -29,8 +29,9 @@ import java.util.Map;
 
 /**
  * Utility class allowing us to serialize and deserialize object to and from JSON
- *
+ * <p>
  * inspired from @Vlad Mihalcea JacksonUtil class
+ *
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
  */
@@ -47,7 +48,8 @@ public final class GsonUtil {
 
     /**
      * Convert JSON string to JAVA object
-     * @param <T> java object type
+     *
+     * @param <T>  java object type
      * @param json JSON string to deserialize
      * @param type target type
      * @return a JAVA object representing the target type
@@ -57,12 +59,13 @@ public final class GsonUtil {
             return gson.fromJson(json, type);
         } catch (JsonSyntaxException e) {
             throw new IllegalArgumentException(
-                    "The given string value: " + json + " cannot be transformed to Json object", e);
+                "The given string value: " + json + " cannot be transformed to Json object", e);
         }
     }
 
     /**
      * Convert JAVA object to JSON string
+     *
      * @param object java object to convert
      * @return JSON string
      */
@@ -76,6 +79,7 @@ public final class GsonUtil {
 
     /**
      * Convert JAVA object to JSON element
+     *
      * @param object java object to convert
      * @return {@link JsonElement}
      */
@@ -85,9 +89,10 @@ public final class GsonUtil {
 
     /**
      * Clone a java object
-     * @param <T> java object type
+     *
+     * @param <T>    java object type
      * @param object java object to clone
-     * @param type target type
+     * @param type   target type
      * @return java object clone
      */
     public static <T> T clone(T object, Type type) {
@@ -96,6 +101,7 @@ public final class GsonUtil {
 
     /**
      * Initialize utility class with common GSON instance managing system custom adapters and factories
+     *
      * @param gsonInstance GSON system instance
      */
     public static synchronized void setGson(Gson gsonInstance) {
@@ -104,8 +110,9 @@ public final class GsonUtil {
 
     /**
      * Create a {@link TypeToken} for a Map<K, V>, that can be used as a helper for deserialization
+     *
      * @param keyArgType {@link Type} of the key type of the map
-     * @param argType {@link Type} of the value type of the map
+     * @param argType    {@link Type} of the value type of the map
      * @return a TypeToken representing a Map<K,V>, K and V being dynamicly set
      */
     @SuppressWarnings({ "unchecked", "serial" })

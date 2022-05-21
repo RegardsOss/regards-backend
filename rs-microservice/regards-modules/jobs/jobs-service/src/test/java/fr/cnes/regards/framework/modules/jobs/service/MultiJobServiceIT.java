@@ -18,6 +18,13 @@
  */
 package fr.cnes.regards.framework.modules.jobs.service;
 
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.RandomFloatJob;
+import fr.cnes.regards.framework.modules.jobs.domain.WaiterJob;
+import fr.cnes.regards.framework.modules.jobs.test.MultiJobServiceConfiguration;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -29,18 +36,11 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
-import fr.cnes.regards.framework.modules.jobs.domain.RandomFloatJob;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.domain.WaiterJob;
-import fr.cnes.regards.framework.modules.jobs.test.MultiJobServiceConfiguration;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-
 /**
  * This test permits to test several job services locking mechanism.
  * IT IS MANDATORY TO COMMENT JobInitializer.onApplicationEvent() method to avoid launching jobInfoService.manage()
  * asynchronous method.
+ *
  * @author oroussel
  */
 @RunWith(SpringRunner.class)

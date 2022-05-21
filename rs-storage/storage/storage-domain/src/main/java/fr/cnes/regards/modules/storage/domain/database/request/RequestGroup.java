@@ -18,23 +18,14 @@
  */
 package fr.cnes.regards.modules.storage.domain.database.request;
 
-import java.time.OffsetDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
-
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 
+import javax.persistence.*;
+import java.time.OffsetDateTime;
+
 /**
  * @author sbinda
- *
  */
 @Entity
 @Table(name = "t_request_group", indexes = { @Index(name = "idx_t_request_group", columnList = "id") })

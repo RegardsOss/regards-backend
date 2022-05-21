@@ -41,8 +41,8 @@ public class QuotedFieldQueryNodeBuilder implements ICriterionQueryBuilder {
                 Set<AttributeModel> atts = MultiSearchHelper.discoverFields(attributeFinder, value);
                 return IFeatureCriterion.multiMatch(atts, value);
             } catch (OpenSearchUnknownParameter e) {
-                throw new QueryNodeException(
-                        new MessageImpl(QueryParserMessages.FIELD_TYPE_UNDETERMINATED, e.getMessage()), e);
+                throw new QueryNodeException(new MessageImpl(QueryParserMessages.FIELD_TYPE_UNDETERMINATED,
+                                                             e.getMessage()), e);
             }
         }
 
@@ -54,7 +54,7 @@ public class QuotedFieldQueryNodeBuilder implements ICriterionQueryBuilder {
             attributeModel = attributeFinder.findByName(fieldAndMatchType.getFirst());
         } catch (OpenSearchUnknownParameter e) {
             throw new QueryNodeException(new MessageImpl(QueryParserMessages.FIELD_TYPE_UNDETERMINATED, e.getMessage()),
-                    e);
+                                         e);
         }
 
         switch (attributeModel.getType()) {

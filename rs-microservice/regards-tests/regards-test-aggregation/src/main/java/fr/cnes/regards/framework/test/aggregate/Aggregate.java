@@ -18,17 +18,17 @@
  */
 package fr.cnes.regards.framework.test.aggregate;
 
+import fr.cnes.regards.framework.test.report.exception.ReportException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import fr.cnes.regards.framework.test.report.exception.ReportException;
-
 /**
  * Launch report aggregation
+ *
  * @author Marc Sordi
  */
 public class Aggregate {

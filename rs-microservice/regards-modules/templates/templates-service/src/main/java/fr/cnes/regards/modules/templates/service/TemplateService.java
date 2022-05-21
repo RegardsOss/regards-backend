@@ -18,26 +18,6 @@
  */
 package fr.cnes.regards.modules.templates.service;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -53,9 +33,29 @@ import freemarker.core.ParseException;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * {@link ITemplateService} implementation.
+ *
  * @author Xavier-Alexandre Brochard
  * @author Marc Sordi
  */
@@ -173,7 +173,7 @@ public class TemplateService implements ITemplateService {
 
     @Override
     public Template update(Long id, Template template)
-            throws EntityInconsistentIdentifierException, EntityNotFoundException, EntityInvalidException {
+        throws EntityInconsistentIdentifierException, EntityNotFoundException, EntityInvalidException {
         if (!id.equals(template.getId())) {
             throw new EntityInconsistentIdentifierException(id, template.getId(), Template.class);
         }
@@ -206,7 +206,7 @@ public class TemplateService implements ITemplateService {
             return out.toString();
         } catch (IOException e) {
             LOG.error("Unable to process the data into the template of code " + template.getName()
-                    + ". Falling back to the not templated content.", e);
+                          + ". Falling back to the not templated content.", e);
             throw new RsRuntimeException(e);
         }
     }

@@ -25,13 +25,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
 import java.util.Set;
 
 /**
  * This class contains the data necessary to determine if a suborder gets too big or not.
  *
  * @author Guillaume Andrieu
- *
  */
 @Component
 public class SuborderSizeCounter implements InitializingBean {

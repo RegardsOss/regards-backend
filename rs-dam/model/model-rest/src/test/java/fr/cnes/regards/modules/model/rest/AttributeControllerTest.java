@@ -18,9 +18,13 @@
  */
 package fr.cnes.regards.modules.model.rest;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModelBuilder;
+import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import fr.cnes.regards.modules.model.service.IAttributeModelService;
+import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
+import fr.cnes.regards.modules.model.service.RestrictionService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,20 +34,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.model.domain.attributes.AttributeModelBuilder;
-import fr.cnes.regards.modules.model.dto.properties.PropertyType;
-import fr.cnes.regards.modules.model.service.IAttributeModelService;
-import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
-import fr.cnes.regards.modules.model.service.RestrictionService;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- *
  * Attribute controller test
  *
  * @author msordi
- *
  */
 public class AttributeControllerTest {
 
@@ -82,24 +79,34 @@ public class AttributeControllerTest {
         modelAttrAssocService = Mockito.mock(IModelAttrAssocService.class);
         final RestrictionService restrictionService = Mockito.mock(RestrictionService.class);
         // Init controller
-        attributeController = new AttributeModelController(attributeServiceMocked, resourceServiceMocked,
-                modelAttrAssocService, restrictionService);
+        attributeController = new AttributeModelController(attributeServiceMocked,
+                                                           resourceServiceMocked,
+                                                           modelAttrAssocService,
+                                                           restrictionService);
     }
 
     @Test
     public void getAttributeTest() {
         final List<AttributeModel> attributes = new ArrayList<>();
-        attributes.add(AttributeModelBuilder.build("NAME", PropertyType.STRING, "ForTests").withId(1L).defaultFragment()
-                .get());
-        attributes.add(AttributeModelBuilder.build("START_DATE", PropertyType.DATE_ISO8601, "ForTests").withId(2L)
-                .defaultFragment().get());
+        attributes.add(AttributeModelBuilder.build("NAME", PropertyType.STRING, "ForTests")
+                                            .withId(1L)
+                                            .defaultFragment()
+                                            .get());
+        attributes.add(AttributeModelBuilder.build("START_DATE", PropertyType.DATE_ISO8601, "ForTests")
+                                            .withId(2L)
+                                            .defaultFragment()
+                                            .get());
         // CHECKSTYLE:OFF
-        attributes.add(AttributeModelBuilder.build("STOP_DATE", PropertyType.DATE_ISO8601, "ForTests").withId(3L)
-                .defaultFragment().get());
+        attributes.add(AttributeModelBuilder.build("STOP_DATE", PropertyType.DATE_ISO8601, "ForTests")
+                                            .withId(3L)
+                                            .defaultFragment()
+                                            .get());
         // CHECKSTYLE:ON
         Mockito.when(attributeServiceMocked.getAttributes(null, null, null)).thenReturn(attributes);
-        final ResponseEntity<List<EntityModel<AttributeModel>>> response = attributeController
-                .getAttributes(null, null, null, null);
+        final ResponseEntity<List<EntityModel<AttributeModel>>> response = attributeController.getAttributes(null,
+                                                                                                             null,
+                                                                                                             null,
+                                                                                                             null);
         Assert.assertEquals(attributes.size(), response.getBody().size());
     }
 

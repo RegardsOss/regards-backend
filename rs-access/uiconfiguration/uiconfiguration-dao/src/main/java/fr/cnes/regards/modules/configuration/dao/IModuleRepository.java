@@ -18,19 +18,17 @@
  */
 package fr.cnes.regards.modules.configuration.dao;
 
-import java.util.List;
-
+import fr.cnes.regards.modules.configuration.domain.Module;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-import fr.cnes.regards.modules.configuration.domain.Module;
+import java.util.List;
 
 /**
- *
  * Class IModuleRepository
- *
+ * <p>
  * JPA Repository for Module entities
  *
  * @author Sébastien Binda
@@ -39,7 +37,6 @@ import fr.cnes.regards.modules.configuration.domain.Module;
 public interface IModuleRepository extends JpaRepository<Module, Long>, JpaSpecificationExecutor<Module> {
 
     /**
-     *
      * Retrieve modules for the given application id.
      *
      * @param applicationId
@@ -59,7 +56,6 @@ public interface IModuleRepository extends JpaRepository<Module, Long>, JpaSpeci
     List<Module> findByApplicationId(String applicationId);
 
     /**
-     *
      * Retrieve modules for the given application id without pagination
      *
      * @param applicationId
@@ -69,7 +65,6 @@ public interface IModuleRepository extends JpaRepository<Module, Long>, JpaSpeci
     List<Module> findByApplicationIdAndPageHomeTrue(String applicationId);
 
     /**
-     *
      * Retrieve modules for the given application id.
      *
      * @param applicationId

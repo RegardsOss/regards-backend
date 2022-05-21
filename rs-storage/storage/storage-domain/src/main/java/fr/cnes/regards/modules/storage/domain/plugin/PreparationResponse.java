@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.modules.storage.domain.plugin;
 
-import java.util.Collection;
-import java.util.Map;
-
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * Response for working subsets preparation before request handled.
  *
  * @author Sébastien
- *
  */
 public class PreparationResponse<W, R> {
 
@@ -51,6 +50,7 @@ public class PreparationResponse<W, R> {
 
     /**
      * Add a generated subset
+     *
      * @param subset
      */
     public void addPreparedSubset(W subset) {
@@ -59,6 +59,7 @@ public class PreparationResponse<W, R> {
 
     /**
      * Add a request to the list of not handled requests.
+     *
      * @param request
      * @param errorCause
      */

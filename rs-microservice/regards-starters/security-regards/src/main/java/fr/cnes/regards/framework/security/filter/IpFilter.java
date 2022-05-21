@@ -18,6 +18,16 @@
  */
 package fr.cnes.regards.framework.security.filter;
 
+import fr.cnes.regards.framework.security.domain.SecurityException;
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.filter.OncePerRequestFilter;
+
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -29,21 +39,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import fr.cnes.regards.framework.security.domain.SecurityException;
-import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
-
 /**
  * Class IPFilter
- *
+ * <p>
  * Spring MVC request filter by IP
+ *
  * @author sbinda
  */
 public class IpFilter extends OncePerRequestFilter {
@@ -65,19 +65,19 @@ public class IpFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+        throws ServletException, IOException {
 
         // Get authorized ip associated to given role
         JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
-        @SuppressWarnings("unchecked") Collection<RoleAuthority> roles = (Collection<RoleAuthority>) authentication
-                .getAuthorities();
+        @SuppressWarnings("unchecked")
+        Collection<RoleAuthority> roles = (Collection<RoleAuthority>) authentication.getAuthorities();
 
         if (!roles.isEmpty()) {
             List<String> authorizedAddresses = retrieveRoleAuthorizedAddresses(roles, authentication.getTenant());
             if (!checkAccessByAddress(authorizedAddresses, request.getRemoteAddr())) {
-                String message = String
-                        .format("[REGARDS IP FILTER] - %s - Authorization denied", request.getRemoteAddr());
+                String message = String.format("[REGARDS IP FILTER] - %s - Authorization denied",
+                                               request.getRemoteAddr());
                 LOG.error(message);
                 response.sendError(HttpStatus.UNAUTHORIZED.value(), message);
             } else {
@@ -93,6 +93,7 @@ public class IpFilter extends OncePerRequestFilter {
 
     /**
      * Retrieve authorized addresses for the given roles.
+     *
      * @param roles roles
      * @return authorized addresses
      * @throws SecurityException Error retrieving role informations
@@ -101,10 +102,10 @@ public class IpFilter extends OncePerRequestFilter {
         List<String> authorizedAddresses = new ArrayList<>();
         for (RoleAuthority role : roles) {
             // Role is a sys role then there is no ip limitation
-            if (!RoleAuthority.isSysRole(role.getAuthority()) && !RoleAuthority
-                    .isInstanceAdminRole(role.getAuthority())) {
-                Optional<RoleAuthority> roleAuth = methodAuthService
-                        .getRoleAuthority(RoleAuthority.getRoleName(role.getAuthority()), tenant);
+            if (!RoleAuthority.isSysRole(role.getAuthority())
+                && !RoleAuthority.isInstanceAdminRole(role.getAuthority())) {
+                Optional<RoleAuthority> roleAuth = methodAuthService.getRoleAuthority(RoleAuthority.getRoleName(role.getAuthority()),
+                                                                                      tenant);
                 roleAuth.ifPresent(r -> authorizedAddresses.addAll(r.getAuthorizedIpAdresses()));
             }
         }
@@ -113,8 +114,9 @@ public class IpFilter extends OncePerRequestFilter {
 
     /**
      * Check if the user adress match ones of the role authorized addresses.
+     *
      * @param inAuthorizedAddress Role authorized addresses
-     * @param userAdress user address
+     * @param userAdress          user address
      * @return [true|false]
      */
     private boolean checkAccessByAddress(List<String> inAuthorizedAddress, String userAdress) {

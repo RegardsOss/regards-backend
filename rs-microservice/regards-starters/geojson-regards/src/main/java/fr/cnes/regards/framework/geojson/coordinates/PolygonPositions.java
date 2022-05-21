@@ -18,17 +18,18 @@
  */
 package fr.cnes.regards.framework.geojson.coordinates;
 
+import fr.cnes.regards.framework.geojson.validator.PolygonPositionsConstraints;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import fr.cnes.regards.framework.geojson.validator.PolygonPositionsConstraints;
-
 /**
  * Not in RFC 7946 -August 2016<br/>
  * GeoJson set of positions representation for polygon.<br/>
+ *
  * @author Marc Sordi
  */
 @SuppressWarnings("serial")

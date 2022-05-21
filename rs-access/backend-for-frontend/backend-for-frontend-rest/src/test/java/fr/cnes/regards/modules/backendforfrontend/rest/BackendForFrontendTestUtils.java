@@ -147,8 +147,6 @@ public class BackendForFrontendTestUtils {
     // FIXME: should use GsonBuilderFactory with spring context configuration
     private static final Gson gson = GsonCustomizer.gsonBuilder(Optional.empty(), Optional.empty()).create();
 
-
-
     static {
         DATASET_MODEL = new Model();
         DATASET_MODEL.setType(EntityType.DATASET);

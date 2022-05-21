@@ -18,21 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.gson.reflect.TypeToken;
-
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -45,9 +31,15 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.PostProcessResult;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This job is used to create XML files from aip contents.
+ *
  * @author Iliana Ghazali
  * @author Sébastien Binda
  */
@@ -73,7 +65,7 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         Type type = new TypeToken<List<Long>>() {
 
         }.getType();
@@ -96,7 +88,8 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
         launchPlugins();
 
         logger.debug("[AIP POSTPROCESS JOB] Job handled for {} AIPPostProcesses(s) requests in {}ms",
-                     this.requests.size(), System.currentTimeMillis() - start);
+                     this.requests.size(),
+                     System.currentTimeMillis() - start);
 
     }
 
@@ -198,6 +191,7 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
 
     /**
      * Transform list of requests to map of reqIds - requests and put all request states to ABORTED state
+     *
      * @param list list of requests
      * @return map of reqIds - aborted requests
      */
@@ -211,6 +205,7 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
 
     /**
      * Get set of aips to postprocess by provided their ids.
+     *
      * @param aipIdSet set of aipsId
      * @return set of aips
      */
@@ -231,6 +226,7 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
 
     /**
      * Update status of requests in errors to ERROR
+     *
      * @param errorMap map of aipIds in error and the corresponding list of error messages
      */
     private void putReqError(Map<String, Set<String>> errorMap) {
@@ -246,7 +242,9 @@ public class IngestPostProcessingJob extends AbstractJob<Void> {
             request.setState(InternalRequestState.ERROR);
             request.setErrors(errorMsg);
             sessionNotifier.incrementPostProcessError(request);
-            logger.error("Request {} corresponding to AIP {} in error. Caused by [{}]", reqId, aipId,
+            logger.error("Request {} corresponding to AIP {} in error. Caused by [{}]",
+                         reqId,
+                         aipId,
                          String.join(",\n", errorMsg));
         }
     }

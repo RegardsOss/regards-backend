@@ -23,8 +23,8 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Search service configuration file
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
 @Configuration
 @EnableCaching

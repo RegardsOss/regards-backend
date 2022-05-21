@@ -50,19 +50,20 @@ public class VerificationTokensPurgeTask {
 
     private VerificationTokensPurgeTask self;
 
-    public VerificationTokensPurgeTask(IVerificationTokenRepository tokenRepository, ITenantResolver tenantResolver,
-                                       IRuntimeTenantResolver runtimeTenantResolver, VerificationTokensPurgeTask verificationTokensPurgeTask) {
+    public VerificationTokensPurgeTask(IVerificationTokenRepository tokenRepository,
+                                       ITenantResolver tenantResolver,
+                                       IRuntimeTenantResolver runtimeTenantResolver,
+                                       VerificationTokensPurgeTask verificationTokensPurgeTask) {
         this.tokenRepository = tokenRepository;
         this.tenantResolver = tenantResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.self = verificationTokensPurgeTask;
     }
 
-
     @Scheduled(cron = "${purge.cron.expression}")
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void purgeSchedule() {
-        for( String tenant : tenantResolver.getAllActiveTenants()) {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 self.purgeExpired();

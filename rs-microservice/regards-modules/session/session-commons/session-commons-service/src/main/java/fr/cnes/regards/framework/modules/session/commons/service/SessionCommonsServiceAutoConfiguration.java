@@ -18,12 +18,7 @@
  */
 package fr.cnes.regards.framework.modules.session.commons.service;
 
-import fr.cnes.regards.framework.modules.session.commons.service.delete.DefaultSessionDeleteService;
-import fr.cnes.regards.framework.modules.session.commons.service.delete.DefaultSourceDeleteService;
-import fr.cnes.regards.framework.modules.session.commons.service.delete.ISessionDeleteService;
-import fr.cnes.regards.framework.modules.session.commons.service.delete.ISourceDeleteService;
-import fr.cnes.regards.framework.modules.session.commons.service.delete.SessionDeleteEventHandler;
-import fr.cnes.regards.framework.modules.session.commons.service.delete.SourceDeleteEventHandler;
+import fr.cnes.regards.framework.modules.session.commons.service.delete.*;
 import fr.cnes.regards.framework.modules.session.commons.service.jobs.SnapshotJobEventHandler;
 import fr.cnes.regards.framework.modules.session.commons.service.jobs.SnapshotJobEventService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;

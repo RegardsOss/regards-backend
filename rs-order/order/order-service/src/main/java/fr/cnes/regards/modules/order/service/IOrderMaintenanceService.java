@@ -22,7 +22,6 @@ import fr.cnes.regards.modules.order.domain.Order;
 
 import java.util.Optional;
 
-
 public interface IOrderMaintenanceService {
 
     /**

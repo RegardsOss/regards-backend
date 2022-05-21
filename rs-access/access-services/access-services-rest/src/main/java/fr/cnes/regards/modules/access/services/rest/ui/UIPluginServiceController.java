@@ -18,8 +18,13 @@
  */
 package fr.cnes.regards.modules.access.services.rest.ui;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
+import fr.cnes.regards.modules.access.services.service.ui.IUIPluginConfigurationService;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -29,16 +34,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
-import fr.cnes.regards.modules.access.services.service.ui.IUIPluginConfigurationService;
-import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import java.util.List;
 
 /**
- *
  * Class UIPluginServiceController
  *
  * @author Sébastien Binda
@@ -65,15 +63,14 @@ public class UIPluginServiceController implements IResourceController<UIPluginCo
     /**
      * Return all generic ui services plus those linked to passed dataset if any given
      *
-     * @param datasetId
-     *            the id of the {@link Dataset}. Can be <code>null</code>.
+     * @param datasetId the id of the {@link Dataset}. Can be <code>null</code>.
      * @return the list of services
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(role = DefaultRole.PUBLIC,
-            description = "Return all generic ui services plus those linked to passed dataset if any given")
+        description = "Return all generic ui services plus those linked to passed dataset if any given")
     public ResponseEntity<List<EntityModel<UIPluginConfiguration>>> retrieveServices(
-            @RequestParam(value = "dataset_id", required = false) final String datasetId) {
+        @RequestParam(value = "dataset_id", required = false) final String datasetId) {
         final List<UIPluginConfiguration> services = service.retrieveActivePluginServices(datasetId, null);
         return new ResponseEntity<>(toResources(services), HttpStatus.OK);
     }

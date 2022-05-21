@@ -18,17 +18,12 @@
  */
 package fr.cnes.regards.modules.feature.dto.event.in;
 
-import java.time.OffsetDateTime;
+import fr.cnes.regards.framework.amqp.event.*;
+import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-
-import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
-import fr.cnes.regards.framework.amqp.event.Event;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
-import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
+import java.time.OffsetDateTime;
 
 /**
  * Abstract class for creation events
@@ -47,7 +42,7 @@ public class AbstractCreationRequestEvent extends AbstractRequestEvent implement
     }
 
     public static AbstractCreationRequestEvent build(FeatureCreationSessionMetadata metadata,
-            OffsetDateTime requestDate) {
+                                                     OffsetDateTime requestDate) {
         AbstractCreationRequestEvent event = new AbstractCreationRequestEvent();
         event.setRequestId(generateRequestId());
         event.setMetadata(metadata);

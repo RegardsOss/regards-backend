@@ -20,14 +20,12 @@ package fr.cnes.regards.modules.model.dto.properties;
 
 import com.google.common.collect.Range;
 import com.google.gson.annotations.JsonAdapter;
-
 import fr.cnes.regards.modules.model.dto.properties.adapter.IntegerIntervalAttributeAdapter;
 
 /**
  * Represent a {@link PropertyType#INTEGER_INTERVAL} model attribute
  *
  * @author Marc Sordi
- *
  */
 @JsonAdapter(IntegerIntervalAttributeAdapter.class)
 public class IntegerIntervalProperty extends AbstractProperty<Range<Integer>> {

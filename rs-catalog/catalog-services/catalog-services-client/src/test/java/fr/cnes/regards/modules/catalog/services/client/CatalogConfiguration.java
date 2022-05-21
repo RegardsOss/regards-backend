@@ -39,7 +39,6 @@ import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author kevin
- *
  */
 @Configuration
 @TestPropertySource("classpath:test.properties")
@@ -49,7 +48,7 @@ public class CatalogConfiguration {
     public IDatasetClient datasetClient() {
         IDatasetClient client = Mockito.mock(IDatasetClient.class);
         Mockito.when(client.retrieveDataset(1L))
-                .thenReturn(new ResponseEntity<EntityModel<Dataset>>(HateoasUtils.wrap(new Dataset()), HttpStatus.OK));
+               .thenReturn(new ResponseEntity<EntityModel<Dataset>>(HateoasUtils.wrap(new Dataset()), HttpStatus.OK));
         return client;
     }
 

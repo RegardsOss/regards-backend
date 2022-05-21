@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.framework.test.integration;
 
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.transaction.BeforeTransaction;
-
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * >
  * Add default transactional initialization
+ *
  * @author Christophe Mertz
  */
 public abstract class AbstractRegardsServiceTransactionalIT extends AbstractRegardsServiceIT {

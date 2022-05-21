@@ -18,23 +18,23 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins;
 
-import java.nio.file.Path;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+
+import java.nio.file.Path;
 
 /**
  * Third <b>required</b> step of acquisition processing chain. This step is used to compute product name for a specified
  * file.
  *
  * @author Marc Sordi
- *
  */
 @PluginInterface(description = "Product name computing plugin contract")
 public interface IProductPlugin {
 
     /**
      * Compute product name for a specified file
+     *
      * @param filePath file path
      * @return product name
      * @throws ModuleException if error occurs!

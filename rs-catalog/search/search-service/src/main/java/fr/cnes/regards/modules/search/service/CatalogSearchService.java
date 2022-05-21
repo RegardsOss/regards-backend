@@ -220,7 +220,7 @@ public class CatalogSearchService implements ICatalogSearchService {
         if (userGroups != null) {
             if (userGroups.stream()
                           .noneMatch(userGroup -> (groupsAccessRightMap.containsKey(userGroup)
-                                                   && groupsAccessRightMap.get(userGroup)))) {
+                              && groupsAccessRightMap.get(userGroup)))) {
                 dataObject.getFiles().removeAll(DataType.RAWDATA);
             }
         }

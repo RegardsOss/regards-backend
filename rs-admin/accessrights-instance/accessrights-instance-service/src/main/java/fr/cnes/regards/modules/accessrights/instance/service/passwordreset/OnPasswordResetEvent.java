@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service.passwordreset;
 
-import org.springframework.context.ApplicationEvent;
-
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import org.springframework.context.ApplicationEvent;
 
 /**
  * Event transporting the data needed for the password reset process.
@@ -52,12 +51,9 @@ public class OnPasswordResetEvent extends ApplicationEvent {
     /**
      * Class constructor
      *
-     * @param pAccount
-     *            the account
-     * @param pOriginUrl
-     *            the origin url
-     * @param pResetUrl
-     *            the reset url
+     * @param pAccount   the account
+     * @param pOriginUrl the origin url
+     * @param pResetUrl  the reset url
      */
     public OnPasswordResetEvent(final Account pAccount, final String pOriginUrl, final String pResetUrl) {
         super(pAccount);
@@ -74,8 +70,7 @@ public class OnPasswordResetEvent extends ApplicationEvent {
     }
 
     /**
-     * @param pAccount
-     *            the account to set
+     * @param pAccount the account to set
      */
     public void setAccount(final Account pAccount) {
         account = pAccount;

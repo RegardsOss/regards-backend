@@ -18,9 +18,15 @@
  */
 package fr.cnes.regards.modules.model.service.xml;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.domain.schema.Attribute;
+import fr.cnes.regards.modules.model.domain.schema.Fragment;
+import fr.cnes.regards.modules.model.domain.schema.Model;
+import fr.cnes.regards.modules.model.service.exception.ImportException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -29,20 +35,13 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
-
-import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
-import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.model.domain.schema.Attribute;
-import fr.cnes.regards.modules.model.domain.schema.Fragment;
-import fr.cnes.regards.modules.model.domain.schema.Model;
-import fr.cnes.regards.modules.model.service.exception.ImportException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Help to manage model XML import based on XML schema definition
+ *
  * @author Marc Sordi
  */
 public final class XmlImportHelper {
@@ -57,6 +56,7 @@ public final class XmlImportHelper {
 
     /**
      * Import fragment {@link AttributeModel} from input stream
+     *
      * @param pInputStream input stream
      * @return list of {@link AttributeModel} linked to same {@link Fragment}
      * @throws ImportException if error occurs!
@@ -91,13 +91,15 @@ public final class XmlImportHelper {
 
     /**
      * Import model {@link ModelAttrAssoc} from input stream
-     * @param pInputStream input stream
+     *
+     * @param pInputStream             input stream
      * @param computationPluginService initialize computation plugins
      * @return list of {@link ModelAttrAssoc}
      * @throws ImportException if error occurs!
      */
     public static List<ModelAttrAssoc> importModel(InputStream pInputStream,
-            IComputationPluginService computationPluginService) throws ImportException {
+                                                   IComputationPluginService computationPluginService)
+        throws ImportException {
         final Model xmlModel = read(pInputStream, Model.class);
 
         if (xmlModel.getAttribute().isEmpty() && xmlModel.getFragment().isEmpty()) {
@@ -154,9 +156,10 @@ public final class XmlImportHelper {
 
     /**
      * Read {@link JAXBElement} from {@link InputStream}
-     * @param <T> JAXB annotated class
+     *
+     * @param <T>          JAXB annotated class
      * @param pInputStream {@link InputStream}
-     * @param pClass type of {@link JAXBElement} to read
+     * @param pClass       type of {@link JAXBElement} to read
      * @return {@link JAXBElement}
      * @throws ImportException if error occurs!
      */
@@ -170,10 +173,10 @@ public final class XmlImportHelper {
 
             // Enable validation
             final InputStream in = XmlExportHelper.class.getClassLoader()
-                    .getResourceAsStream(XmlExportHelper.XML_SCHEMA_NAME);
+                                                        .getResourceAsStream(XmlExportHelper.XML_SCHEMA_NAME);
             final StreamSource xsdSource = new StreamSource(in);
-            jaxbUnmarshaller
-                    .setSchema(SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(xsdSource));
+            jaxbUnmarshaller.setSchema(SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
+                                                    .newSchema(xsdSource));
 
             // Unmarshall data
             return (T) jaxbUnmarshaller.unmarshal(pInputStream);

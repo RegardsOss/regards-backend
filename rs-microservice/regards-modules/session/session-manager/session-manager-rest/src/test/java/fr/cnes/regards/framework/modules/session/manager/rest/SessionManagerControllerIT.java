@@ -32,9 +32,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -42,6 +39,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test for {@link SessionManagerController}
@@ -146,7 +147,8 @@ public class SessionManagerControllerIT extends AbstractRegardsTransactionalIT {
     public void deleteSession() {
         List<Session> sessionList = createSessions();
         performDefaultDelete(SessionManagerController.ROOT_MAPPING + SessionManagerController.ID_MAPPING,
-                             customizer().expectStatusOk(), "The order to delete a session was not published",
+                             customizer().expectStatusOk(),
+                             "The order to delete a session was not published",
                              sessionList.get(0).getId());
 
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(SessionDeleteEvent.class));
@@ -173,7 +175,8 @@ public class SessionManagerControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer customizer0 = customizer();
         customizer0.expectStatusOk();
         customizer0.expectToHaveSize("$", ISessionManagerRepository.MAX_SESSION_NAMES_RESULTS);
-        performDefaultGet(SessionManagerController.ROOT_MAPPING + SessionManagerController.NAME_MAPPING, customizer0,
+        performDefaultGet(SessionManagerController.ROOT_MAPPING + SessionManagerController.NAME_MAPPING,
+                          customizer0,
                           "All sessions were not retrieved with limited parameter");
 
         // retrieve unique session
@@ -182,7 +185,8 @@ public class SessionManagerControllerIT extends AbstractRegardsTransactionalIT {
         customizer1.expectStatusOk();
         customizer1.expectValue("$.[0]", sessionList.get(0).getName());
 
-        performDefaultGet(SessionManagerController.ROOT_MAPPING + SessionManagerController.NAME_MAPPING, customizer1,
+        performDefaultGet(SessionManagerController.ROOT_MAPPING + SessionManagerController.NAME_MAPPING,
+                          customizer1,
                           "The wrong session name was retrieved");
 
         // retrieve session duplicated, only one name should be present
@@ -191,7 +195,8 @@ public class SessionManagerControllerIT extends AbstractRegardsTransactionalIT {
         customizer2.expectStatusOk();
         customizer2.expectValue("$.[0]", sessionList.get(nbSessions).getName());
 
-        performDefaultGet(SessionManagerController.ROOT_MAPPING + SessionManagerController.NAME_MAPPING, customizer2,
+        performDefaultGet(SessionManagerController.ROOT_MAPPING + SessionManagerController.NAME_MAPPING,
+                          customizer2,
                           "The wrong session name was retrieved");
     }
 
@@ -202,7 +207,8 @@ public class SessionManagerControllerIT extends AbstractRegardsTransactionalIT {
         long testedId = sessionList.get(0).getId();
         performDefaultGet(SessionManagerController.ROOT_MAPPING + SessionManagerController.ID_MAPPING,
                           customizer().expectStatusOk().expectValue("$.content.id", testedId),
-                          "The session was not retrieved", testedId);
+                          "The session was not retrieved",
+                          testedId);
     }
 
     /**
@@ -215,7 +221,10 @@ public class SessionManagerControllerIT extends AbstractRegardsTransactionalIT {
             String sourceName = "SOURCE_" + i;
             String sessionName = "SESSION_1";
             // create sessionStep
-            SessionStep sessionStep = new SessionStep("oais", sourceName, sessionName, StepTypeEnum.REFERENCING,
+            SessionStep sessionStep = new SessionStep("oais",
+                                                      sourceName,
+                                                      sessionName,
+                                                      StepTypeEnum.REFERENCING,
                                                       new StepState());
             sessionStep.setLastUpdateDate(OffsetDateTime.now());
             // create session
@@ -225,7 +234,10 @@ public class SessionManagerControllerIT extends AbstractRegardsTransactionalIT {
         }
 
         // copy last element of list to add session linked to same source
-        SessionStep sessionStep = new SessionStep("oais", "SOURCE_5", "SESSION_2", StepTypeEnum.REFERENCING,
+        SessionStep sessionStep = new SessionStep("oais",
+                                                  "SOURCE_5",
+                                                  "SESSION_2",
+                                                  StepTypeEnum.REFERENCING,
                                                   new StepState());
         sessionStep.setLastUpdateDate(OffsetDateTime.now());
         Session session6 = new Session("SOURCE_5", "SESSION_2");

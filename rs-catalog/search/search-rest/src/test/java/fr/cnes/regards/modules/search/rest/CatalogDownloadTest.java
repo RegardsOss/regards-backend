@@ -89,7 +89,7 @@ public class CatalogDownloadTest {
 
     private String linkToAcceptAndDownloadFile() {
         return "/downloads/" + productFactory.authorizedProduct() + "/files/" + fileFactory.validFile() + "?"
-               + "isContentInline=" + true + "&" + "acceptLicense=true";
+            + "isContentInline=" + true + "&" + "acceptLicense=true";
     }
 
     @Test

@@ -18,6 +18,7 @@
  */
 /**
  * Test plugin parameters in with inheritance
+ *
  * @author Marc Sordi
  */
 package fr.cnes.regards.framework.utils.plugins.inheritance;

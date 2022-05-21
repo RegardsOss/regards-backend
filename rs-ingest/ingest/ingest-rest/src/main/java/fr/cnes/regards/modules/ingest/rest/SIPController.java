@@ -18,28 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -55,12 +33,27 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 /**
  * REST API for managing SIP
  *
  * @author Marc Sordi
- *
  */
 @RestController
 @RequestMapping(SIPController.TYPE_MAPPING)
@@ -121,16 +114,14 @@ public class SIPController implements IResourceController<SIPEntity> {
     /**
      * Import a SIP collection by file
      *
-     * @param file
-     *            model to import
+     * @param file model to import
      * @return nothing
-     * @throws ModuleException
-     *             if error occurs!
+     * @throws ModuleException if error occurs!
      */
     @ResourceAccess(description = "SIP collection submission using multipart request", role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.POST, value = IMPORT_PATH)
     public ResponseEntity<RequestInfoDto> ingestFile(@RequestParam(name = REQUEST_PARAM_FILE) MultipartFile file)
-            throws ModuleException {
+        throws ModuleException {
         try {
             RequestInfoDto requestInfo = ingestService.handleSIPCollection(file.getInputStream());
             return ResponseEntity.status(HttpStatus.OK).body(requestInfo);
@@ -144,8 +135,10 @@ public class SIPController implements IResourceController<SIPEntity> {
     @ResourceAccess(description = "Search for SIPEntities with optional criterion.", role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<PagedModel<EntityModel<SIPEntity>>> search(@RequestBody SearchSIPsParameters params,
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<SIPEntity> pAssembler) {
+                                                                     @PageableDefault(sort = "id",
+                                                                         direction = Sort.Direction.ASC)
+                                                                     Pageable pageable,
+                                                                     PagedResourcesAssembler<SIPEntity> pAssembler) {
         Page<SIPEntity> sipEntities = sipService.search(params, pageable);
         PagedModel<EntityModel<SIPEntity>> resources = toPagedResources(sipEntities, pAssembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
@@ -154,16 +147,19 @@ public class SIPController implements IResourceController<SIPEntity> {
     @ResourceAccess(description = "Retrieve one SIP by its sipId.", role = DefaultRole.EXPLOIT)
     @RequestMapping(value = SIPID_PATH, method = RequestMethod.GET)
     public ResponseEntity<EntityModel<SIPEntity>> getSipEntity(@PathVariable(REQUEST_PARAM_SIP_ID) String sipId)
-            throws ModuleException {
+        throws ModuleException {
         SIPEntity sip = sipService.getEntity(sipId)
-                .orElseThrow(() -> new EntityNotFoundException(sipId, SIPEntity.class));
+                                  .orElseThrow(() -> new EntityNotFoundException(sipId, SIPEntity.class));
         return new ResponseEntity<>(toResource(sip), HttpStatus.OK);
     }
 
     @Override
     public EntityModel<SIPEntity> toResource(SIPEntity sipEntity, Object... pExtras) {
         final EntityModel<SIPEntity> resource = resourceService.toResource(sipEntity);
-        resourceService.addLink(resource, this.getClass(), "getSipEntity", LinkRels.SELF,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "getSipEntity",
+                                LinkRels.SELF,
                                 MethodParamFactory.build(String.class, sipEntity.getSipId().toString()));
         return resource;
     }

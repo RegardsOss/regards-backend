@@ -14,9 +14,13 @@ import java.io.IOException;
 public class AccessRightsTemplateConfiguration {
 
     public static final String USER_DENIED_TEMPLATE_NAME = "USER_DENIED_TEMPLATE";
+
     public static final String USER_ACTIVATED_TEMPLATE_NAME = "USER_ACTIVATED_TEMPLATE";
+
     public static final String USER_DISABLED_TEMPLATE_NAME = "USER_DISABLED_TEMPLATE";
+
     public static final String USER_CREATED_TEMPLATE_NAME = "USER_CREATED_TEMPLATE";
+
     public static final String EMAIL_ACCOUNT_VALIDATION_TEMPLATE_NAME = "EMAIL_ACCOUNT_VALIDATION_TEMPLATE";
 
     @Bean
@@ -41,7 +45,8 @@ public class AccessRightsTemplateConfiguration {
 
     @Bean
     public Template emailAccountValidationTemplate() throws IOException {
-        return TemplateConfigUtil.readTemplate(EMAIL_ACCOUNT_VALIDATION_TEMPLATE_NAME, "template/email-account-validation-template.html");
+        return TemplateConfigUtil.readTemplate(EMAIL_ACCOUNT_VALIDATION_TEMPLATE_NAME,
+                                               "template/email-account-validation-template.html");
     }
 
 }

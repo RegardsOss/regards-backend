@@ -31,6 +31,7 @@ import static fr.cnes.regards.modules.ingest.service.schedule.SchedulerConstant.
 
 /**
  * Scheduler to handle aip dumps
+ *
  * @author Iliana Ghazali
  */
 // should not put profile @Profile("!noscheduler") because {@link DumpSettings} need access to {@link AbstractDumpScheduler}

@@ -24,6 +24,7 @@ import org.springframework.stereotype.Repository;
 
 /**
  * Repository for {@link SourceStepAggregation}
+ *
  * @author Iliana Ghazali
  */
 @Repository

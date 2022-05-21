@@ -40,16 +40,16 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Kevin Marchois
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=notification_perf",
-        "regards.amqp.enabled=true" },
-        locations = { "classpath:regards_perf.properties", "classpath:batch.properties" })
+@TestPropertySource(
+    properties = { "spring.jpa.properties.hibernate.default_schema=notification_perf", "regards.amqp.enabled=true" },
+    locations = { "classpath:regards_perf.properties", "classpath:batch.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
 @Ignore("Perf test in local")
 public class NotificationPerfIT extends AbstractNotificationMultitenantServiceIT {
 
     @Test
     public void testRegistrationAndProcessing()
-            throws ExecutionException, NotAvailablePluginConfigurationException, ModuleException, InterruptedException {
+        throws ExecutionException, NotAvailablePluginConfigurationException, ModuleException, InterruptedException {
 
         JsonObject element = initElement("elementRule1.json");
 
@@ -75,7 +75,7 @@ public class NotificationPerfIT extends AbstractNotificationMultitenantServiceIT
 
     @Test
     public void testRegistrationAndProcessingWith1RecipientFail()
-            throws ExecutionException, NotAvailablePluginConfigurationException, ModuleException, InterruptedException {
+        throws ExecutionException, NotAvailablePluginConfigurationException, ModuleException, InterruptedException {
         JsonObject element = initElement("elementRule1.json");
         initPlugins(true);
 

@@ -43,19 +43,22 @@ import java.util.List;
  */
 @Repository
 public interface IAcquisitionFileRepository
-        extends JpaRepository<AcquisitionFile, Long>, JpaSpecificationExecutor<AcquisitionFile> {
+    extends JpaRepository<AcquisitionFile, Long>, JpaSpecificationExecutor<AcquisitionFile> {
 
     Page<AcquisitionFile> findByStateAndFileInfoInOrderByAcqDateAsc(AcquisitionFileState state,
-            Collection<AcquisitionFileInfo> fileInfos, Pageable pageable);
+                                                                    Collection<AcquisitionFileInfo> fileInfos,
+                                                                    Pageable pageable);
 
     /**
      * Search all acquisition files for specified filters
      */
-    Page<AcquisitionFile> findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState state, AcquisitionFileInfo fileInfo,
-            Pageable pageable);
+    Page<AcquisitionFile> findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState state,
+                                                             AcquisitionFileInfo fileInfo,
+                                                             Pageable pageable);
 
     /**
      * Search all acquisition files for the given {@link AcquisitionFileState}
+     *
      * @param state {@link AcquisitionFileState}
      * @return {@link AcquisitionFile}s
      */
@@ -64,7 +67,8 @@ public interface IAcquisitionFileRepository
     /**
      * Count number of {@link AcquisitionFile} associated to the given {@link AcquisitionFileInfo}
      * and with one of the given {@link AcquisitionFileState}s
-     * @param fileInfo {@link AcquisitionFile}
+     *
+     * @param fileInfo   {@link AcquisitionFile}
      * @param fileStates {@link AcquisitionFileInfo}
      * @return number of matching {@link AcquisitionFile}
      */
@@ -72,6 +76,7 @@ public interface IAcquisitionFileRepository
 
     /**
      * Count number of {@link AcquisitionFile} associated to the given {@link AcquisitionFileInfo}
+     *
      * @param fileInfo {@link AcquisitionFile}
      * @return number of matching {@link AcquisitionFile}
      */

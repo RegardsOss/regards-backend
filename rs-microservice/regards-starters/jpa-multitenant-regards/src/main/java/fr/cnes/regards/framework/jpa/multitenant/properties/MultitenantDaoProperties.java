@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.properties;
 
+import fr.cnes.regards.framework.jpa.utils.MigrationTool;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
-import fr.cnes.regards.framework.jpa.utils.MigrationTool;
-
 /**
  * POJO for microservice configuration
+ *
  * @author Sébastien Binda
  */
 @ConfigurationProperties("regards.jpa.multitenant")

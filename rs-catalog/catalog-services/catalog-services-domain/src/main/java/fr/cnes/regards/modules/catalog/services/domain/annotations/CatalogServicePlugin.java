@@ -18,14 +18,10 @@
  */
 package fr.cnes.regards.modules.catalog.services.domain.annotations;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+
+import java.lang.annotation.*;
 
 /**
  * Indicates that an annotated class is a "CatalogServicePlugin", that it is to say a Plugin from rs-catalog which is applied to entities.

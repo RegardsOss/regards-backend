@@ -20,10 +20,11 @@ package fr.cnes.regards.modules.acquisition.dao;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
-import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 /**
  * {@link AcquisitionFileInfo} repository
@@ -33,6 +34,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface IAcquisitionFileInfoRepository extends JpaRepository<AcquisitionFileInfo, Long> {
 
-    @Query("select fileInfo.scanPlugin from AcquisitionFileInfo fileInfo,PluginConfiguration conf where fileInfo.id = ?1 and fileInfo.scanPlugin.id = conf.id")
+    @Query(
+        "select fileInfo.scanPlugin from AcquisitionFileInfo fileInfo,PluginConfiguration conf where fileInfo.id = ?1 and fileInfo.scanPlugin.id = conf.id")
     Optional<PluginConfiguration> findOneScanPlugin(Long fileInfoId);
 }

@@ -20,11 +20,11 @@ package fr.cnes.regards.framework.modules.session.commons.domain;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 
-import java.util.Objects;
 import javax.persistence.*;
-import java.time.OffsetDateTime;
-import java.util.UUID;
 import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
+import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Process used to create or update {@link SessionStep}s from StepPropertyUpdateEventRequests
@@ -109,6 +109,6 @@ public class SnapshotProcess {
     @Override
     public String toString() {
         return "SnapshotProcess{" + "source='" + source + '\'' + ", lastUpdateDate=" + lastUpdateDate + ", jobId="
-                + jobId + '}';
+            + jobId + '}';
     }
 }

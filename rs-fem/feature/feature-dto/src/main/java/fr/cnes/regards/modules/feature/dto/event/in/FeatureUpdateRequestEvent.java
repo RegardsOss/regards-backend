@@ -18,18 +18,13 @@
  */
 package fr.cnes.regards.modules.feature.dto.event.in;
 
-import java.time.OffsetDateTime;
+import fr.cnes.regards.framework.amqp.event.*;
+import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureMetadata;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-
-import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
-import fr.cnes.regards.framework.amqp.event.Event;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
-import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.FeatureMetadata;
+import java.time.OffsetDateTime;
 
 /**
  * Request for new feature creation using event driven mechanism
@@ -70,8 +65,10 @@ public class FeatureUpdateRequestEvent extends AbstractRequestEvent implements I
         return build(requestOwner, metadata, feature, OffsetDateTime.now());
     }
 
-    public static FeatureUpdateRequestEvent build(String requestOwner, FeatureMetadata metadata, Feature feature,
-            OffsetDateTime requestDate) {
+    public static FeatureUpdateRequestEvent build(String requestOwner,
+                                                  FeatureMetadata metadata,
+                                                  Feature feature,
+                                                  OffsetDateTime requestDate) {
         FeatureUpdateRequestEvent event = new FeatureUpdateRequestEvent();
         event.setFeature(feature);
         event.setRequestId(generateRequestId());

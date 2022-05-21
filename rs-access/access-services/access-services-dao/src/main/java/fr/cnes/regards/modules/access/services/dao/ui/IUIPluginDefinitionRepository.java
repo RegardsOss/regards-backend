@@ -18,19 +18,17 @@
  */
 package fr.cnes.regards.modules.access.services.dao.ui;
 
-import java.util.Optional;
-
+import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
+import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
-import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
+import java.util.Optional;
 
 /**
- *
  * Class IPluginRepository
- *
+ * <p>
  * JPA Repository for Plugin entities
  *
  * @author Sébastien Binda

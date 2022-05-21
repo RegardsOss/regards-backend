@@ -76,7 +76,8 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
         role.setName(DefaultRole.REGISTERED_USER.name());
         ProjectUser projectUser = new ProjectUser();
         projectUser.setRole(role);
-        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(EntityModel.of(projectUser), HttpStatus.OK));
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString()))
+               .thenReturn(new ResponseEntity<>(EntityModel.of(projectUser), HttpStatus.OK));
     }
 
     @After
@@ -99,7 +100,8 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
      */
     @Test
     @Requirement("REGARDS_DSL_STO_CMD_100")
-    public void test() throws EmptyBasketException, EmptySelectionException, EntityInvalidException, TooManyItemsSelectedInBasketException {
+    public void test() throws EmptyBasketException, EmptySelectionException, EntityInvalidException,
+        TooManyItemsSelectedInBasketException {
         Basket basket = basketService.findOrCreate(USER_EMAIL);
 
         Assert.assertNotNull(basketService.find(USER_EMAIL));
@@ -113,9 +115,17 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
         Assert.assertEquals(1, basket.getDatasetSelections().size());
         BasketDatasetSelection dsSelection = basket.getDatasetSelections().first();
         Assert.assertEquals(DS1_IP_ID.toString(), dsSelection.getDatasetIpid());
-        Assert.assertEquals(8L, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSelection.getFileTypeCount(ft.name())).sum());
+        Assert.assertEquals(8L,
+                            DataTypeSelection.ALL.getFileTypes()
+                                                 .stream()
+                                                 .mapToLong(ft -> dsSelection.getFileTypeCount(ft.name()))
+                                                 .sum());
         Assert.assertEquals(2, dsSelection.getObjectsCount());
-        Assert.assertEquals(3_003_000L, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSelection.getFileTypeSize(ft.name())).sum());
+        Assert.assertEquals(3_003_000L,
+                            DataTypeSelection.ALL.getFileTypes()
+                                                 .stream()
+                                                 .mapToLong(ft -> dsSelection.getFileTypeSize(ft.name()))
+                                                 .sum());
 
         // Add a selection on DS2 and DS3 with an opensearch request
         basketService.addSelection(basket.getId(), createBasketSelectionRequest(null, SearchClientMock.QUERY_DS2_DS3));
@@ -124,20 +134,41 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
         for (BasketDatasetSelection dsSel : basket.getDatasetSelections()) {
             // No change on DS1
             if (dsSel.getDatasetIpid().equals(DS1_IP_ID.toString())) {
-                Assert.assertEquals(8, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeCount(ft.name())).sum());
+                Assert.assertEquals(8,
+                                    DataTypeSelection.ALL.getFileTypes()
+                                                         .stream()
+                                                         .mapToLong(ft -> dsSel.getFileTypeCount(ft.name()))
+                                                         .sum());
                 Assert.assertEquals(2, dsSel.getObjectsCount());
                 Assert.assertEquals(3_003_000L,
-                        DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
+                                    DataTypeSelection.ALL.getFileTypes()
+                                                         .stream()
+                                                         .mapToLong(ft -> dsSel.getFileTypeSize(ft.name()))
+                                                         .sum());
             } else if (dsSel.getDatasetIpid().equals(DS2_IP_ID.toString())) {
-                Assert.assertEquals(8, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeCount(ft.name())).sum());
+                Assert.assertEquals(8,
+                                    DataTypeSelection.ALL.getFileTypes()
+                                                         .stream()
+                                                         .mapToLong(ft -> dsSel.getFileTypeCount(ft.name()))
+                                                         .sum());
                 Assert.assertEquals(2, dsSel.getObjectsCount());
                 Assert.assertEquals(2_020_202L,
-                        DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
+                                    DataTypeSelection.ALL.getFileTypes()
+                                                         .stream()
+                                                         .mapToLong(ft -> dsSel.getFileTypeSize(ft.name()))
+                                                         .sum());
             } else if (dsSel.getDatasetIpid().equals(DS3_IP_ID.toString())) {
-                Assert.assertEquals(4, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeCount(ft.name())).sum());
+                Assert.assertEquals(4,
+                                    DataTypeSelection.ALL.getFileTypes()
+                                                         .stream()
+                                                         .mapToLong(ft -> dsSel.getFileTypeCount(ft.name()))
+                                                         .sum());
                 Assert.assertEquals(1, dsSel.getObjectsCount());
                 Assert.assertEquals(1_010_101L,
-                        DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
+                                    DataTypeSelection.ALL.getFileTypes()
+                                                         .stream()
+                                                         .mapToLong(ft -> dsSel.getFileTypeSize(ft.name()))
+                                                         .sum());
             } else {
                 Assert.fail("Unknown Dataset !!!");
             }
@@ -151,40 +182,103 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
         // Computations on dataset selections must not have been changed (concerns same files as previous)
         for (BasketDatasetSelection dsSel : basket.getDatasetSelections()) {
             if (dsSel.getDatasetIpid().equals(DS1_IP_ID.toString())) {
-                Assert.assertEquals(8, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeCount(ft.name())).sum());
+                Assert.assertEquals(8,
+                                    DataTypeSelection.ALL.getFileTypes()
+                                                         .stream()
+                                                         .mapToLong(ft -> dsSel.getFileTypeCount(ft.name()))
+                                                         .sum());
                 Assert.assertEquals(2, dsSel.getObjectsCount());
                 Assert.assertEquals(3_003_000L,
-                        DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
+                                    DataTypeSelection.ALL.getFileTypes()
+                                                         .stream()
+                                                         .mapToLong(ft -> dsSel.getFileTypeSize(ft.name()))
+                                                         .sum());
                 // Must have 2 itemsSelections
                 Assert.assertEquals(2, dsSel.getItemsSelections().size());
                 // And both must have same values as dataset selection (only date changed and opensearch request)
                 for (BasketDatedItemsSelection itemsSel : dsSel.getItemsSelections()) {
-                    Assert.assertEquals(DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeCount(ft.name())).sum(), DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> itemsSel.getFileTypeCount(ft.name())).sum());
-                    Assert.assertEquals(DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum(), DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> itemsSel.getFileTypeSize(ft.name())).sum());
+                    Assert.assertEquals(DataTypeSelection.ALL.getFileTypes()
+                                                             .stream()
+                                                             .mapToLong(ft -> dsSel.getFileTypeCount(ft.name()))
+                                                             .sum(),
+                                        DataTypeSelection.ALL.getFileTypes()
+                                                             .stream()
+                                                             .mapToLong(ft -> itemsSel.getFileTypeCount(ft.name()))
+                                                             .sum());
+                    Assert.assertEquals(DataTypeSelection.ALL.getFileTypes()
+                                                             .stream()
+                                                             .mapToLong(ft -> dsSel.getFileTypeSize(ft.name()))
+                                                             .sum(),
+                                        DataTypeSelection.ALL.getFileTypes()
+                                                             .stream()
+                                                             .mapToLong(ft -> itemsSel.getFileTypeSize(ft.name()))
+                                                             .sum());
                 }
             } else if (dsSel.getDatasetIpid().equals(DS2_IP_ID.toString())) {
-                Assert.assertEquals(8, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeCount(ft.name())).sum());
+                Assert.assertEquals(8,
+                                    DataTypeSelection.ALL.getFileTypes()
+                                                         .stream()
+                                                         .mapToLong(ft -> dsSel.getFileTypeCount(ft.name()))
+                                                         .sum());
                 Assert.assertEquals(2, dsSel.getObjectsCount());
                 Assert.assertEquals(2_020_202L,
-                        DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
+                                    DataTypeSelection.ALL.getFileTypes()
+                                                         .stream()
+                                                         .mapToLong(ft -> dsSel.getFileTypeSize(ft.name()))
+                                                         .sum());
                 // Must have 2 itemsSelections
                 Assert.assertEquals(2, dsSel.getItemsSelections().size());
                 // And both must have same values as dataset selection (only date changed and opensearch request)
                 for (BasketDatedItemsSelection itemsSel : dsSel.getItemsSelections()) {
-                    Assert.assertEquals(DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeCount(ft.name())).sum(), DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> itemsSel.getFileTypeCount(ft.name())).sum());
-                    Assert.assertEquals(DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum(), DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> itemsSel.getFileTypeSize(ft.name())).sum());
+                    Assert.assertEquals(DataTypeSelection.ALL.getFileTypes()
+                                                             .stream()
+                                                             .mapToLong(ft -> dsSel.getFileTypeCount(ft.name()))
+                                                             .sum(),
+                                        DataTypeSelection.ALL.getFileTypes()
+                                                             .stream()
+                                                             .mapToLong(ft -> itemsSel.getFileTypeCount(ft.name()))
+                                                             .sum());
+                    Assert.assertEquals(DataTypeSelection.ALL.getFileTypes()
+                                                             .stream()
+                                                             .mapToLong(ft -> dsSel.getFileTypeSize(ft.name()))
+                                                             .sum(),
+                                        DataTypeSelection.ALL.getFileTypes()
+                                                             .stream()
+                                                             .mapToLong(ft -> itemsSel.getFileTypeSize(ft.name()))
+                                                             .sum());
                 }
             } else if (dsSel.getDatasetIpid().equals(DS3_IP_ID.toString())) {
-                Assert.assertEquals(4, DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeCount(ft.name())).sum());
+                Assert.assertEquals(4,
+                                    DataTypeSelection.ALL.getFileTypes()
+                                                         .stream()
+                                                         .mapToLong(ft -> dsSel.getFileTypeCount(ft.name()))
+                                                         .sum());
                 Assert.assertEquals(1, dsSel.getObjectsCount());
                 Assert.assertEquals(1_010_101L,
-                        DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum());
+                                    DataTypeSelection.ALL.getFileTypes()
+                                                         .stream()
+                                                         .mapToLong(ft -> dsSel.getFileTypeSize(ft.name()))
+                                                         .sum());
                 // Must have 2 itemsSelections
                 Assert.assertEquals(2, dsSel.getItemsSelections().size());
                 // And both must have same values as dataset selection (only date changed and opensearch request)
                 for (BasketDatedItemsSelection itemsSel : dsSel.getItemsSelections()) {
-                    Assert.assertEquals(DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeCount(ft.name())).sum(), DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> itemsSel.getFileTypeCount(ft.name())).sum());
-                    Assert.assertEquals(DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> dsSel.getFileTypeSize(ft.name())).sum(), DataTypeSelection.ALL.getFileTypes().stream().mapToLong(ft -> itemsSel.getFileTypeSize(ft.name())).sum());
+                    Assert.assertEquals(DataTypeSelection.ALL.getFileTypes()
+                                                             .stream()
+                                                             .mapToLong(ft -> dsSel.getFileTypeCount(ft.name()))
+                                                             .sum(),
+                                        DataTypeSelection.ALL.getFileTypes()
+                                                             .stream()
+                                                             .mapToLong(ft -> itemsSel.getFileTypeCount(ft.name()))
+                                                             .sum());
+                    Assert.assertEquals(DataTypeSelection.ALL.getFileTypes()
+                                                             .stream()
+                                                             .mapToLong(ft -> dsSel.getFileTypeSize(ft.name()))
+                                                             .sum(),
+                                        DataTypeSelection.ALL.getFileTypes()
+                                                             .stream()
+                                                             .mapToLong(ft -> itemsSel.getFileTypeSize(ft.name()))
+                                                             .sum());
                 }
             } else {
                 Assert.fail("Unknown Dataset !!!");
@@ -194,61 +288,59 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
         orderService.createOrder(basket, "perdu", "http://perdu.com", 240);
 
         // manage periodic email notifications
-       orderMaintenanceService.sendPeriodicNotifications();
+        orderMaintenanceService.sendPeriodicNotifications();
     }
 
     @Test
     @Purpose("Test if the selection is in error when too many features are added")
     public void addOversizedSelectionTestForFeatures() throws EmptyBasketException, EmptySelectionException {
-       OrderProcessInfo orderProcessInfo =  new OrderProcessInfo(
-                Scope.FEATURE,
-                Cardinality.ONE_PER_INPUT_FILE,
-                List.of(DataType.RAWDATA),
-                new SizeLimit(SizeLimit.Type.FEATURES, 2L),
-                new MultiplierResultSizeForecast(1d), Boolean.TRUE);
+        OrderProcessInfo orderProcessInfo = new OrderProcessInfo(Scope.FEATURE,
+                                                                 Cardinality.ONE_PER_INPUT_FILE,
+                                                                 List.of(DataType.RAWDATA),
+                                                                 new SizeLimit(SizeLimit.Type.FEATURES, 2L),
+                                                                 new MultiplierResultSizeForecast(1d),
+                                                                 Boolean.TRUE);
         testSelectionOverProcessSizeLimit(orderProcessInfo, true);
     }
 
     @Test
     @Purpose("Test if the selection is in error when too many files are added")
     public void addOversizedSelectionTestForFiles() throws EmptyBasketException, EmptySelectionException {
-        OrderProcessInfo orderProcessInfo =  new OrderProcessInfo(
-                Scope.FEATURE,
-                Cardinality.ONE_PER_INPUT_FILE,
-                List.of(DataType.RAWDATA),
-                new SizeLimit(SizeLimit.Type.FILES, 16L),
-                new MultiplierResultSizeForecast(1d), Boolean.TRUE);
+        OrderProcessInfo orderProcessInfo = new OrderProcessInfo(Scope.FEATURE,
+                                                                 Cardinality.ONE_PER_INPUT_FILE,
+                                                                 List.of(DataType.RAWDATA),
+                                                                 new SizeLimit(SizeLimit.Type.FILES, 16L),
+                                                                 new MultiplierResultSizeForecast(1d),
+                                                                 Boolean.TRUE);
         testSelectionOverProcessSizeLimit(orderProcessInfo, true);
     }
 
     @Test
     @Purpose("Test if the selection is in error when file sizes exceed the process limit")
     public void addOversizedSelectionTestForFileSizes() throws EmptyBasketException, EmptySelectionException {
-        OrderProcessInfo orderProcessInfo =  new OrderProcessInfo(
-                Scope.FEATURE,
-                Cardinality.ONE_PER_INPUT_FILE,
-                List.of(DataType.RAWDATA),
-                new SizeLimit(SizeLimit.Type.BYTES, 4040404L),
-                new MultiplierResultSizeForecast(1d), Boolean.TRUE);
+        OrderProcessInfo orderProcessInfo = new OrderProcessInfo(Scope.FEATURE,
+                                                                 Cardinality.ONE_PER_INPUT_FILE,
+                                                                 List.of(DataType.RAWDATA),
+                                                                 new SizeLimit(SizeLimit.Type.BYTES, 4040404L),
+                                                                 new MultiplierResultSizeForecast(1d),
+                                                                 Boolean.TRUE);
         testSelectionOverProcessSizeLimit(orderProcessInfo, true);
     }
-
 
     @Test
     @Purpose("Test if the selection is working when there is no limit")
     public void addOversizedSelectionTestWithNoLimit() throws EmptyBasketException, EmptySelectionException {
-        OrderProcessInfo orderProcessInfo =  new OrderProcessInfo(
-                Scope.FEATURE,
-                Cardinality.ONE_PER_INPUT_FILE,
-                List.of(DataType.RAWDATA),
-                new SizeLimit(SizeLimit.Type.NO_LIMIT, 0L),
-                new MultiplierResultSizeForecast(1d), Boolean.TRUE);
+        OrderProcessInfo orderProcessInfo = new OrderProcessInfo(Scope.FEATURE,
+                                                                 Cardinality.ONE_PER_INPUT_FILE,
+                                                                 List.of(DataType.RAWDATA),
+                                                                 new SizeLimit(SizeLimit.Type.NO_LIMIT, 0L),
+                                                                 new MultiplierResultSizeForecast(1d),
+                                                                 Boolean.TRUE);
         testSelectionOverProcessSizeLimit(orderProcessInfo, false);
     }
 
-
-    private void testSelectionOverProcessSizeLimit(OrderProcessInfo orderProcessInfo, boolean expectedException) throws EmptyBasketException,
-            EmptySelectionException {
+    private void testSelectionOverProcessSizeLimit(OrderProcessInfo orderProcessInfo, boolean expectedException)
+        throws EmptyBasketException, EmptySelectionException {
         UUID processBusinessId = UUID.randomUUID();
         setUpProcessingClient(processBusinessId, new OrderProcessInfoMapper(), orderProcessInfo);
         // Create a basket add multiple selections to the basket
@@ -261,8 +353,8 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
 
             // Attach a processing to the basket
             basketService.attachProcessing(basket,
-                    basket.getDatasetSelections().stream().findFirst().get().getId(),
-                    new ProcessDatasetDescription(processBusinessId, null));
+                                           basket.getDatasetSelections().stream().findFirst().get().getId(),
+                                           new ProcessDatasetDescription(processBusinessId, null));
         } catch (TooManyItemsSelectedInBasketException e) {
             LOGGER.error(e.getMessage(), e);
             Assert.fail("No error is expected at this point.");
@@ -274,13 +366,13 @@ public class BasketServiceIT extends AbstractOrderProcessingServiceIT {
             basketService.addSelection(basketId, createBasketSelectionRequest(null, SearchClientMock.QUERY_DS2_DS3));
             if (expectedException) {
                 Assert.fail(String.format("Expected %s exception to occur",
-                        TooManyItemsSelectedInBasketException.class.getName()));
+                                          TooManyItemsSelectedInBasketException.class.getName()));
             } else {
                 basket = basketService.load(basketId);
                 // assert the selection was correctly added
-                Assert.assertEquals("The selection was not correctly added",  2,  basket.getDatasetSelections().size());
+                Assert.assertEquals("The selection was not correctly added", 2, basket.getDatasetSelections().size());
             }
-         } catch(TooManyItemsSelectedInBasketException e) {
+        } catch (TooManyItemsSelectedInBasketException e) {
             LOGGER.error(e.getMessage(), e);
         }
     }

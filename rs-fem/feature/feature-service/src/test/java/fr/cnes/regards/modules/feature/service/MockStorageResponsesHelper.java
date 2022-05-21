@@ -61,9 +61,9 @@ public class MockStorageResponsesHelper {
     private IFeatureCreationRequestRepository featureCreationRequestRepo;
 
     public MockStorageResponsesHelper(FeatureConfigurationProperties properties,
-            IFeatureCreationRequestRepository featureCreationRequestRepo,
-            IFeatureUpdateRequestRepository featureUpdateRequestRepo,
-            IFeatureRequestService featureRequestService) {
+                                      IFeatureCreationRequestRepository featureCreationRequestRepo,
+                                      IFeatureUpdateRequestRepository featureUpdateRequestRepo,
+                                      IFeatureRequestService featureRequestService) {
         this.properties = properties;
         this.featureRequestService = featureRequestService;
         this.featureUpdateRequestRepo = featureUpdateRequestRepo;
@@ -110,14 +110,17 @@ public class MockStorageResponsesHelper {
     /**
      * Mock storage responses success for all creation request in database matching the given groupIds.
      * Including reference and storage requests.
+     *
      * @param groupIds
      */
     public void mockFeatureCreationStorageSuccess(Collection<String> groupIds) {
         mockStorageResponses(featureCreationRequestRepo, Optional.empty(), groupIds, true);
     }
 
-    private void mockStorageResponses(IAbstractFeatureRequestRepository repo, Optional<Integer> nbRequestsToMock,
-            Collection<String> groupIds, boolean success) {
+    private void mockStorageResponses(IAbstractFeatureRequestRepository repo,
+                                      Optional<Integer> nbRequestsToMock,
+                                      Collection<String> groupIds,
+                                      boolean success) {
         int pageSize = properties.getMaxBulkSize();
         if (nbRequestsToMock.isPresent() && nbRequestsToMock.get() < pageSize) {
             pageSize = nbRequestsToMock.get();
@@ -128,13 +131,16 @@ public class MockStorageResponsesHelper {
         do {
             if (groupIds != null && !groupIds.isEmpty()) {
                 fcrPage = repo.findByStepAndGroupIdIn(FeatureRequestStep.REMOTE_STORAGE_REQUESTED,
-                                                      groupIds, pageToRequest);
+                                                      groupIds,
+                                                      pageToRequest);
             } else {
                 fcrPage = repo.findByStep(FeatureRequestStep.REMOTE_STORAGE_REQUESTED, pageToRequest);
             }
             List<AbstractFeatureRequest> requestsToHandle = fcrPage.getContent();
             if (nbRequestsToMock.isPresent() && (handled + fcrPage.getSize()) > nbRequestsToMock.get()) {
-                requestsToHandle = requestsToHandle.stream().limit(nbRequestsToMock.get()-handled).collect(Collectors.toList());
+                requestsToHandle = requestsToHandle.stream()
+                                                   .limit(nbRequestsToMock.get() - handled)
+                                                   .collect(Collectors.toList());
             }
             if (success) {
                 mockStorageSuccess(requestsToHandle);
@@ -145,16 +151,19 @@ public class MockStorageResponsesHelper {
         } while (fcrPage.hasNext() && handled < nbRequestsToMock.orElse(Integer.MAX_VALUE));
     }
 
-    private Set<RequestResultInfoDTO> toStorageRequestInfoResponse(FeatureUpdateRequest featureRequest, boolean success) {
+    private Set<RequestResultInfoDTO> toStorageRequestInfoResponse(FeatureUpdateRequest featureRequest,
+                                                                   boolean success) {
         Set<RequestResultInfoDTO> requestsInfo = Sets.newHashSet();
-        List<StorageMetadata> storages = featureRequest.getMetadata() != null ? featureRequest.getMetadata().getStorages() : new ArrayList<>();
+        List<StorageMetadata> storages =
+            featureRequest.getMetadata() != null ? featureRequest.getMetadata().getStorages() : new ArrayList<>();
         featureRequest.getFeature().getFiles().forEach(file -> {
             requestsInfo.addAll(toInfo(file, featureRequest, storages, success));
         });
         return requestsInfo;
     }
 
-    private Set<RequestResultInfoDTO> toStorageRequestInfoResponse(FeatureCreationRequest featureRequest, boolean success) {
+    private Set<RequestResultInfoDTO> toStorageRequestInfoResponse(FeatureCreationRequest featureRequest,
+                                                                   boolean success) {
         Set<RequestResultInfoDTO> requestsInfo = Sets.newHashSet();
         List<StorageMetadata> storages = featureRequest.getMetadata().getStorages();
         featureRequest.getFeatureEntity().getFeature().getFiles().forEach(file -> {
@@ -165,23 +174,34 @@ public class MockStorageResponsesHelper {
         return requestsInfo;
     }
 
-    private Set<RequestResultInfoDTO> toInfo(
-            FeatureFile file, AbstractFeatureRequest featureRequest, Collection<StorageMetadata> storages, boolean success) {
+    private Set<RequestResultInfoDTO> toInfo(FeatureFile file,
+                                             AbstractFeatureRequest featureRequest,
+                                             Collection<StorageMetadata> storages,
+                                             boolean success) {
         Set<RequestResultInfoDTO> requestsInfo = Sets.newHashSet();
         file.getLocations().forEach(location -> {
             FileReferenceMetaInfoDTO meta = FileReferenceMetaInfoDTO.build(file.getAttributes().getChecksum(),
                                                                            file.getAttributes().getAlgorithm(),
                                                                            file.getAttributes().getFilename(),
-                                                                           file.getAttributes().getFilesize(), null,
-                                                                           null, file.getAttributes().getMimeType(),
-                                                                           file.getAttributes().getDataType()
-                                                                                   .toString());
+                                                                           file.getAttributes().getFilesize(),
+                                                                           null,
+                                                                           null,
+                                                                           file.getAttributes().getMimeType(),
+                                                                           file.getAttributes()
+                                                                               .getDataType()
+                                                                               .toString());
             if (location.getStorage() != null && !location.getStorage().isEmpty()) {
-                requestsInfo.add(createStorageResultInfo(success, featureRequest.getGroupId(), location.getStorage(), meta,
+                requestsInfo.add(createStorageResultInfo(success,
+                                                         featureRequest.getGroupId(),
+                                                         location.getStorage(),
+                                                         meta,
                                                          Optional.of(location.getUrl())));
-            } else if (storages!= null && !storages.isEmpty()) {
+            } else if (storages != null && !storages.isEmpty()) {
                 storages.forEach(storage -> {
-                    requestsInfo.add(createStorageResultInfo(success, featureRequest.getGroupId(), storage.getPluginBusinessId(), meta,
+                    requestsInfo.add(createStorageResultInfo(success,
+                                                             featureRequest.getGroupId(),
+                                                             storage.getPluginBusinessId(),
+                                                             meta,
                                                              Optional.empty()));
                 });
             }
@@ -189,15 +209,24 @@ public class MockStorageResponsesHelper {
         return requestsInfo;
     }
 
-    private RequestResultInfoDTO createStorageResultInfo(boolean success, String groupId, String storage, FileReferenceMetaInfoDTO meta,
-            Optional<String> refUrl) {
+    private RequestResultInfoDTO createStorageResultInfo(boolean success,
+                                                         String groupId,
+                                                         String storage,
+                                                         FileReferenceMetaInfoDTO meta,
+                                                         Optional<String> refUrl) {
         FileLocationDTO fl = FileLocationDTO.build(storage, refUrl.orElse("storage://internal/store/directory"));
         FileReferenceDTO fr = FileReferenceDTO.build(OffsetDateTime.now(), meta, fl, Lists.newArrayList());
         String errorCause = null;
         if (!success) {
             errorCause = "Simulated storage error";
         }
-        return RequestResultInfoDTO.build(groupId, meta.getChecksum(), storage, null, Lists.newArrayList(), fr, errorCause);
+        return RequestResultInfoDTO.build(groupId,
+                                          meta.getChecksum(),
+                                          storage,
+                                          null,
+                                          Lists.newArrayList(),
+                                          fr,
+                                          errorCause);
     }
 
     private void mockStorageSuccess(Collection<AbstractFeatureRequest> featureRequestsPage) {

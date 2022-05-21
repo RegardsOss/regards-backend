@@ -18,8 +18,14 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain;
 
-import java.util.Optional;
-
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoIT;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
+import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,27 +40,18 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoIT;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
-import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
+import java.util.Optional;
 
 /**
  * Create and update a processing chain (without test transaction that can't work)
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
 @RunWith(SpringRunner.class)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
-@TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=ingestu", "jwt.secret=123456789",
-                "regards.workspace=target/workspace", "eureka.client.enabled=false" },
-        locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingestu", "jwt.secret=123456789",
+    "regards.workspace=target/workspace", "eureka.client.enabled=false" },
+    locations = { "classpath:application-test.properties" })
 @ContextConfiguration(classes = { UpdateProcessingChainIT.IngestConfiguration.class })
 public class UpdateProcessingChainIT extends AbstractDaoIT {
 
@@ -69,6 +66,7 @@ public class UpdateProcessingChainIT extends AbstractDaoIT {
     @Configuration
     @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
     static class IngestConfiguration {
+
     }
 
     @Before
@@ -89,7 +87,8 @@ public class UpdateProcessingChainIT extends AbstractDaoIT {
         validation.setLabel("validationPlugin_ipst");
         newChain.setValidationPlugin(validation);
 
-        PluginConfiguration generation = PluginConfiguration.build(AIPGenerationTestPlugin.class, null,
+        PluginConfiguration generation = PluginConfiguration.build(AIPGenerationTestPlugin.class,
+                                                                   null,
                                                                    Sets.newHashSet());
         generation.setIsActive(true);
         generation.setLabel("generationPlugin_ipst");
@@ -111,7 +110,8 @@ public class UpdateProcessingChainIT extends AbstractDaoIT {
         validation.setLabel("validationPlugin_ipst_new");
         chain.setValidationPlugin(validation);
 
-        PluginConfiguration generation = PluginConfiguration.build(AIPGenerationTestPlugin.class, null,
+        PluginConfiguration generation = PluginConfiguration.build(AIPGenerationTestPlugin.class,
+                                                                   null,
                                                                    Sets.newHashSet());
         generation.setIsActive(true);
         generation.setLabel("generationPlugin_ipst_new");

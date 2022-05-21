@@ -18,20 +18,17 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
-import java.util.Set;
-
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import java.util.Set;
 
 /**
  * @author sbinda
- *
  */
 @Component
 public class StorageListener implements IStorageRequestListener {
@@ -60,7 +57,8 @@ public class StorageListener implements IStorageRequestListener {
     @Override
     public void onCopySuccess(Set<RequestInfo> requests) {
         for (RequestInfo ri : requests) {
-            LOGGER.debug("[TEST RESULT] - Copy success for group {} with {} success", ri.getGroupId(),
+            LOGGER.debug("[TEST RESULT] - Copy success for group {} with {} success",
+                         ri.getGroupId(),
                          ri.getSuccessRequests().size());
             this.success.putAll(ri, ri.getSuccessRequests());
         }
@@ -69,8 +67,10 @@ public class StorageListener implements IStorageRequestListener {
     @Override
     public void onCopyError(Set<RequestInfo> requests) {
         for (RequestInfo ri : requests) {
-            LOGGER.debug("[TEST RESULT] - Copy error for group {} with {} errors and {} success", ri.getGroupId(),
-                         errors.size(), success.size());
+            LOGGER.debug("[TEST RESULT] - Copy error for group {} with {} errors and {} success",
+                         ri.getGroupId(),
+                         errors.size(),
+                         success.size());
             this.errors.putAll(ri, ri.getErrorRequests());
             this.success.putAll(ri, ri.getSuccessRequests());
         }
@@ -80,7 +80,8 @@ public class StorageListener implements IStorageRequestListener {
     @Override
     public void onAvailable(Set<RequestInfo> requests) {
         for (RequestInfo ri : requests) {
-            LOGGER.debug("[TEST RESULT] - Availability success for group {} with {} success", ri.getGroupId(),
+            LOGGER.debug("[TEST RESULT] - Availability success for group {} with {} success",
+                         ri.getGroupId(),
                          success.size());
             this.success.putAll(ri, ri.getSuccessRequests());
         }
@@ -90,7 +91,9 @@ public class StorageListener implements IStorageRequestListener {
     public void onAvailabilityError(Set<RequestInfo> requests) {
         for (RequestInfo ri : requests) {
             LOGGER.debug("[TEST RESULT] - Availability error for group {} with {} errors and {} success",
-                         ri.getGroupId(), errors.size(), success.size());
+                         ri.getGroupId(),
+                         errors.size(),
+                         success.size());
             this.errors.putAll(ri, ri.getErrorRequests());
             this.success.putAll(ri, ri.getSuccessRequests());
         }
@@ -99,7 +102,8 @@ public class StorageListener implements IStorageRequestListener {
     @Override
     public void onDeletionSuccess(Set<RequestInfo> requests) {
         for (RequestInfo ri : requests) {
-            LOGGER.debug("[TEST RESULT] - Deletion success for group {} with {} success", ri.getGroupId(),
+            LOGGER.debug("[TEST RESULT] - Deletion success for group {} with {} success",
+                         ri.getGroupId(),
                          success.size());
             this.success.putAll(ri, ri.getSuccessRequests());
         }
@@ -108,8 +112,10 @@ public class StorageListener implements IStorageRequestListener {
     @Override
     public void onDeletionError(Set<RequestInfo> requests) {
         for (RequestInfo ri : requests) {
-            LOGGER.debug("[TEST RESULT] - Deletion error for group {} with {} errors and {} success", ri.getGroupId(),
-                         errors.size(), success.size());
+            LOGGER.debug("[TEST RESULT] - Deletion error for group {} with {} errors and {} success",
+                         ri.getGroupId(),
+                         errors.size(),
+                         success.size());
             this.errors.putAll(ri, ri.getErrorRequests());
             this.success.putAll(ri, ri.getSuccessRequests());
         }
@@ -118,7 +124,8 @@ public class StorageListener implements IStorageRequestListener {
     @Override
     public void onReferenceSuccess(Set<RequestInfo> requests) {
         for (RequestInfo ri : requests) {
-            LOGGER.debug("[TEST RESULT] - Reference success for group {} with {} success", ri.getGroupId(),
+            LOGGER.debug("[TEST RESULT] - Reference success for group {} with {} success",
+                         ri.getGroupId(),
                          success.size());
             this.success.putAll(ri, ri.getSuccessRequests());
         }
@@ -127,8 +134,10 @@ public class StorageListener implements IStorageRequestListener {
     @Override
     public void onReferenceError(Set<RequestInfo> requests) {
         for (RequestInfo ri : requests) {
-            LOGGER.debug("[TEST RESULT] - Reference error for group {} with {} errors and {} success", ri.getGroupId(),
-                         errors.size(), success.size());
+            LOGGER.debug("[TEST RESULT] - Reference error for group {} with {} errors and {} success",
+                         ri.getGroupId(),
+                         errors.size(),
+                         success.size());
             this.errors.putAll(ri, ri.getErrorRequests());
             this.success.putAll(ri, ri.getSuccessRequests());
         }
@@ -148,7 +157,8 @@ public class StorageListener implements IStorageRequestListener {
     @Override
     public void onStoreSuccess(Set<RequestInfo> requests) {
         for (RequestInfo ri : requests) {
-            LOGGER.debug("[TEST RESULT] - Storage success for group {} with {} success", ri.getGroupId(),
+            LOGGER.debug("[TEST RESULT] - Storage success for group {} with {} success",
+                         ri.getGroupId(),
                          ri.getSuccessRequests().size());
             for (RequestResultInfoDTO r : ri.getSuccessRequests()) {
                 LOGGER.trace("-> {}", r.getResultFile().getMetaInfo().getFileName());
@@ -160,8 +170,10 @@ public class StorageListener implements IStorageRequestListener {
     @Override
     public void onStoreError(Set<RequestInfo> requests) {
         for (RequestInfo ri : requests) {
-            LOGGER.debug("[TEST RESULT] - Storage error for group {} with {} errors and {} success", ri.getGroupId(),
-                         errors.size(), success.size());
+            LOGGER.debug("[TEST RESULT] - Storage error for group {} with {} errors and {} success",
+                         ri.getGroupId(),
+                         errors.size(),
+                         success.size());
             this.errors.putAll(ri, ri.getErrorRequests());
             this.success.putAll(ri, ri.getSuccessRequests());
         }

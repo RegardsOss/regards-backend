@@ -29,7 +29,7 @@ class DownloadableFileWrapper extends FileDownloadService.QuotaLimitedDownloadab
     private final IQuotaService.WithQuotaOperationHandler quotaHandler;
 
     DownloadableFileWrapper(FileDownloadService.QuotaLimitedDownloadableFile dlFile,
-            IQuotaService.WithQuotaOperationHandler quotaHandler) {
+                            IQuotaService.WithQuotaOperationHandler quotaHandler) {
         super(dlFile.getFileInputStream(), dlFile.getRealFileSize(), dlFile.getFileName(), dlFile.getMimeType());
         this.dlFile = dlFile;
         this.quotaHandler = quotaHandler;
@@ -42,7 +42,7 @@ class DownloadableFileWrapper extends FileDownloadService.QuotaLimitedDownloadab
     }
 
     protected static DownloadableFileWrapper wrap(FileDownloadService.QuotaLimitedDownloadableFile dlFile,
-            IQuotaService.WithQuotaOperationHandler quotaHandler) {
+                                                  IQuotaService.WithQuotaOperationHandler quotaHandler) {
         return new DownloadableFileWrapper(dlFile, quotaHandler);
     }
 }

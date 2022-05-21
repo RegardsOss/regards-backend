@@ -54,24 +54,28 @@ public class WorkerConfigCacheService {
      * WorkerConfig cache is used to avoid useless database request as worker config rarely change!<br/>
      */
     private final LoadingCache<String, Map<String, String>> workerConfigsCachePerTenant = CacheBuilder.newBuilder()
-            .build(new CacheLoader<String, Map<String, String>>() {
+                                                                                                      .build(new CacheLoader<String, Map<String, String>>() {
 
-                @Override
-                public Map<String, String> load(String tenant) {
-                    List<WorkerConfig> workerConfigs = workerConfigRepository.findAll();
-                    // Reorganise worker configs into a Map with content type as key and worker type as value
-                    Map<String, String> workerTypeByContentType = new HashMap<>();
-                    for (WorkerConfig workerConfig : workerConfigs) {
-                        for (String contentType : workerConfig.getContentTypes()) {
-                            workerTypeByContentType.put(contentType, workerConfig.getWorkerType());
-                        }
-                    }
-                    return workerTypeByContentType;
-                }
-            });
+                                                                                                          @Override
+                                                                                                          public Map<String, String> load(
+                                                                                                              String tenant) {
+                                                                                                              List<WorkerConfig> workerConfigs = workerConfigRepository.findAll();
+                                                                                                              // Reorganise worker configs into a Map with content type as key and worker type as value
+                                                                                                              Map<String, String> workerTypeByContentType = new HashMap<>();
+                                                                                                              for (WorkerConfig workerConfig : workerConfigs) {
+                                                                                                                  for (String contentType : workerConfig.getContentTypes()) {
+                                                                                                                      workerTypeByContentType.put(
+                                                                                                                          contentType,
+                                                                                                                          workerConfig.getWorkerType());
+                                                                                                                  }
+                                                                                                              }
+                                                                                                              return workerTypeByContentType;
+                                                                                                          }
+                                                                                                      });
 
     /**
      * Get the worker type as an optional
+     *
      * @param contentType
      * @return
      */
@@ -85,7 +89,6 @@ public class WorkerConfigCacheService {
 
     /**
      * Clean all values on the cache relative to current tenant
-     *
      */
     public void cleanCache() {
         String tenant = runtimeTenantResolver.getTenant();

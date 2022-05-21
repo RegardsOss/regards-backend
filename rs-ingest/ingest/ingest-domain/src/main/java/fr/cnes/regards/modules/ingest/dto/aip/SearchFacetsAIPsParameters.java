@@ -21,7 +21,8 @@ package fr.cnes.regards.modules.ingest.dto.aip;
 /**
  * @author Léo Mieulet
  */
-public class SearchFacetsAIPsParameters extends AbstractSearchAIPsParameters<SearchFacetsAIPsParameters>  {
+public class SearchFacetsAIPsParameters extends AbstractSearchAIPsParameters<SearchFacetsAIPsParameters> {
+
     public static SearchFacetsAIPsParameters build() {
         return new SearchFacetsAIPsParameters();
     }

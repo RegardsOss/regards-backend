@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service.workflow.state;
 
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
@@ -29,6 +27,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.instance.service.accountunlock.IAccountUnlockTokenService;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.project.service.ITenantService;
+import org.springframework.stereotype.Component;
 
 /**
  * State class of the State Pattern implementing the available actions on a {@link Account} in status ACTIVE.
@@ -48,10 +47,17 @@ public class ActiveState extends AbstractDeletableState {
      * @param passwordResetService
      * @param accountUnlockTokenService
      */
-    public ActiveState(IProjectUsersClient projectUsersClient, IAccountRepository accountRepository,
-            ITenantService tenantService, IRuntimeTenantResolver runtimeTenantResolver,
-            IPasswordResetService passwordResetService, IAccountUnlockTokenService accountUnlockTokenService) {
-        super(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver, passwordResetService,
+    public ActiveState(IProjectUsersClient projectUsersClient,
+                       IAccountRepository accountRepository,
+                       ITenantService tenantService,
+                       IRuntimeTenantResolver runtimeTenantResolver,
+                       IPasswordResetService passwordResetService,
+                       IAccountUnlockTokenService accountUnlockTokenService) {
+        super(projectUsersClient,
+              accountRepository,
+              tenantService,
+              runtimeTenantResolver,
+              passwordResetService,
               accountUnlockTokenService);
     }
 

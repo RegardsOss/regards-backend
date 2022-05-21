@@ -37,6 +37,7 @@ public class CoordinatesBuilder {
 
     /**
      * Add a new coordinate to the collection
+     *
      * @param coordinate the coordinate to add
      * @return this
      */
@@ -44,9 +45,13 @@ public class CoordinatesBuilder {
         int expectedDims;
         int actualDims;
         if (points.isEmpty() == false
-                && (expectedDims = Double.isNaN(points.get(0).z) ? 2 : 3) != (actualDims = Double.isNaN(coordinate.z) ? 2 : 3)) {
-            throw new ElasticsearchException("unable to add coordinate to CoordinateBuilder: " +
-                                                     "coordinate dimensions do not match. Expected [{}] but found [{}]", expectedDims, actualDims);
+            && (expectedDims = Double.isNaN(points.get(0).z) ? 2 : 3) != (actualDims = Double.isNaN(coordinate.z) ?
+            2 :
+            3)) {
+            throw new ElasticsearchException("unable to add coordinate to CoordinateBuilder: "
+                                                 + "coordinate dimensions do not match. Expected [{}] but found [{}]",
+                                             expectedDims,
+                                             actualDims);
 
         } else {
             this.points.add(coordinate);
@@ -56,8 +61,9 @@ public class CoordinatesBuilder {
 
     /**
      * Add a new coordinate to the collection
+     *
      * @param longitude longitude of the coordinate
-     * @param latitude latitude of the coordinate
+     * @param latitude  latitude of the coordinate
      * @return this
      */
     public CoordinatesBuilder coordinate(double longitude, double latitude) {
@@ -70,7 +76,7 @@ public class CoordinatesBuilder {
      * @param coordinates array of {@link Coordinate}s to add
      * @return this
      */
-    public CoordinatesBuilder coordinates(Coordinate...coordinates) {
+    public CoordinatesBuilder coordinates(Coordinate... coordinates) {
         return this.coordinates(Arrays.asList(coordinates));
     }
 
@@ -91,8 +97,8 @@ public class CoordinatesBuilder {
      */
     public CoordinatesBuilder close() {
         Coordinate start = points.get(0);
-        Coordinate end = points.get(points.size()-1);
-        if(start.x != end.x || start.y != end.y) {
+        Coordinate end = points.get(points.size() - 1);
+        if (start.x != end.x || start.y != end.y) {
             points.add(start);
         }
         return this;

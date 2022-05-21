@@ -18,18 +18,16 @@
  */
 package fr.cnes.regards.modules.configuration.dao;
 
-import java.util.Set;
-
-import javax.persistence.criteria.Predicate;
-
+import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.configuration.domain.Module;
 import org.springframework.data.jpa.domain.Specification;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.modules.configuration.domain.Module;
+import javax.persistence.criteria.Predicate;
+import java.util.Set;
 
 /**
  * JPA {@link Specification} to define {@link Predicate}s for criteria search for {@link Module} from repository.
+ *
  * @author Sébastien Binda
  */
 public class ModuleSpecifications {
@@ -39,9 +37,10 @@ public class ModuleSpecifications {
 
     /**
      * Filter on the given attributes to find {@link Module}s
+     *
      * @param applicationId {@link String}
-     * @param active {@link Boolean}
-     * @param type {@link String}
+     * @param active        {@link Boolean}
+     * @param type          {@link String}
      * @return {@link Module} {@link Specification}
      */
     public static Specification<Module> search(String applicationId, Boolean active, String type) {

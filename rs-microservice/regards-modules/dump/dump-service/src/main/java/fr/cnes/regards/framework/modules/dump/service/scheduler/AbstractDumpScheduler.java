@@ -42,6 +42,7 @@ import java.util.concurrent.ScheduledFuture;
 
 /**
  * Abstract class to handle dump scheduling
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 public abstract class AbstractDumpScheduler extends AbstractTaskScheduler {
@@ -97,6 +98,7 @@ public abstract class AbstractDumpScheduler extends AbstractTaskScheduler {
     /**
      * Update the scheduler configured for the tenant
      * Cancel the previous task (if existing) and put a new task
+     *
      * @param tenant tenant to be updated
      */
     public void updateScheduler(String tenant) {
@@ -114,10 +116,9 @@ public abstract class AbstractDumpScheduler extends AbstractTaskScheduler {
                     runtimeTenantResolver.forceTenant(tenant);
                     traceScheduling(tenant, getType());
                     try {
-                        lockingTaskExecutors.executeWithLock(
-                                getDumpTask(),
-                                new LockConfiguration(getLockName(), Instant.now().plusSeconds(60L))
-                        );
+                        lockingTaskExecutors.executeWithLock(getDumpTask(),
+                                                             new LockConfiguration(getLockName(),
+                                                                                   Instant.now().plusSeconds(60L)));
                     } catch (Throwable e) {
                         handleSchedulingError(getType(), getNotificationTitle(), e);
                     } finally {

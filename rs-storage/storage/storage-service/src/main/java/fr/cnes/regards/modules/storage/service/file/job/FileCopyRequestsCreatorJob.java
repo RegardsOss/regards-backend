@@ -18,6 +18,35 @@
  */
 package fr.cnes.regards.modules.storage.service.file.job;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.storage.domain.database.FileLocation;
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
+import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
+import fr.cnes.regards.modules.storage.domain.flow.CopyFlowItem;
+import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
+import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
+import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestService;
+import net.javacrumbs.shedlock.core.LockAssert;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -27,38 +56,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.framework.notification.NotificationLevel;
-import fr.cnes.regards.framework.notification.client.INotificationClient;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.storage.domain.database.FileLocation;
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
-import fr.cnes.regards.modules.storage.domain.flow.CopyFlowItem;
-import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
-import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestService;
-import net.javacrumbs.shedlock.core.LockAssert;
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 
 /**
  * JOB to handle copy requests on many {@link FileReference}s.<br>
@@ -82,7 +79,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
     public static final String SESSION_OWNER_PARMETER_NAME = "sessionOwner";
 
-    public static final String SESSION_PARMETER_NAME = "session" ;
+    public static final String SESSION_PARMETER_NAME = "session";
 
     @Autowired
     private IPublisher publisher;
@@ -119,7 +116,7 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         storageLocationSourceId = parameters.get(STORAGE_LOCATION_SOURCE_ID_PARMETER_NAME).getValue();
         storageLocationDestinationId = parameters.get(STORAGE_LOCATION_DESTINATION_ID_PARMETER_NAME).getValue();
         sourcePath = parameters.get(SOURCE_PATH_PARMETER_NAME).getValue();
@@ -132,9 +129,9 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
         try {
             sourcePlugin = pluginService.getPlugin(storageLocationSourceId);
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
-           throw new JobParameterInvalidException(
-                   String.format("Invalid source location plugin %s. Associated storage location plugin not available",
-                                 storageLocationSourceId),e);
+            throw new JobParameterInvalidException(String.format(
+                "Invalid source location plugin %s. Associated storage location plugin not available",
+                storageLocationSourceId), e);
         }
     }
 
@@ -145,7 +142,8 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
         LockAssert.assertLocked();
         long start = System.currentTimeMillis();
         logger.info("[COPY JOB] Calculate all files to copy from storage location {} to {} ...",
-                    storageLocationSourceId, storageLocationDestinationId);
+                    storageLocationSourceId,
+                    storageLocationDestinationId);
         Pageable pageRequest = PageRequest.of(0, CopyFlowItem.MAX_REQUEST_PER_GROUP);
         Page<FileReference> pageResults;
         Optional<Path> sourceRootPath = sourcePlugin.getRootPath();
@@ -163,18 +161,23 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
             Set<FileCopyRequestDTO> requests = Sets.newHashSet();
             for (FileReference fileRef : pageResults.getContent()) {
                 try {
-                    Optional<Path> desinationFilePath = getDestinationFilePath(fileRef.getLocation().getUrl(), sourceRootPath,
-                                                                               sourcePath, destinationPath);
+                    Optional<Path> desinationFilePath = getDestinationFilePath(fileRef.getLocation().getUrl(),
+                                                                               sourceRootPath,
+                                                                               sourcePath,
+                                                                               destinationPath);
                     if (desinationFilePath.isPresent()) {
                         nbFilesToCopy++;
                         // For each file reference located in the given path, send a copy request to the destination storage location.
-                        requests.add(FileCopyRequestDTO
-                                             .build(fileRef.getMetaInfo().getChecksum(), storageLocationDestinationId,
-                                                    desinationFilePath.get().toString(), sessionOwner, session));
+                        requests.add(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+                                                              storageLocationDestinationId,
+                                                              desinationFilePath.get().toString(),
+                                                              sessionOwner,
+                                                              session));
                     }
                 } catch (MalformedURLException | ModuleException e) {
                     logger.error(String.format("Unable to handle file reference %s for copy from %s to %s. Cause:",
-                                               fileRef.getLocation().getUrl(), storageLocationSourceId,
+                                               fileRef.getLocation().getUrl(),
+                                               storageLocationSourceId,
                                                storageLocationDestinationId), e);
                 }
                 this.advanceCompletion();
@@ -182,8 +185,11 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
             publisher.publish(CopyFlowItem.build(requests, groupId));
             pageRequest = pageRequest.next();
         } while (pageResults.hasNext());
-        String message = String.format("Copy process found %s files to copy from %s:%s to %s:%s.", nbFilesToCopy,
-                                       storageLocationSourceId, sourcePath, storageLocationDestinationId,
+        String message = String.format("Copy process found %s files to copy from %s:%s to %s:%s.",
+                                       nbFilesToCopy,
+                                       storageLocationSourceId,
+                                       sourcePath,
+                                       storageLocationDestinationId,
                                        destinationPath);
         if (nbFilesToCopy > 0) {
             message = message + " Copy of files is now running, to monitor copy process go to storage locations page.";
@@ -197,8 +203,9 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
     @Override
     public void run() {
         try {
-            lockingTaskExecutors.executeWithLock(publishCopyFlowItemsTask, new LockConfiguration(
-                    FileCopyRequestService.COPY_PROCESS_LOCK, Instant.now().plusSeconds(300)));
+            lockingTaskExecutors.executeWithLock(publishCopyFlowItemsTask,
+                                                 new LockConfiguration(FileCopyRequestService.COPY_PROCESS_LOCK,
+                                                                       Instant.now().plusSeconds(300)));
         } catch (Throwable e) {
             logger.error("[COPY JOB] Unable to get a lock for copy process. Copy job canceled");
             logger.error(e.getMessage(), e);
@@ -212,14 +219,18 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
 
     /**
      * Check if the given file is in the path to copy. If it is, calculate the relative destination path.
+     *
      * @param fileUrl
      * @param sourcePathToCopy
      * @param destinationPath
      * @throws MalformedURLException
      * @throws ModuleException
      */
-    public static Optional<Path> getDestinationFilePath(String fileUrl, Optional<Path> sourceRootPath, String sourcePathToCopy, String destinationPath)
-            throws MalformedURLException, ModuleException {
+    public static Optional<Path> getDestinationFilePath(String fileUrl,
+                                                        Optional<Path> sourceRootPath,
+                                                        String sourcePathToCopy,
+                                                        String destinationPath)
+        throws MalformedURLException, ModuleException {
         String destinationFilePath = "";
         if (destinationPath == null) {
             destinationFilePath = "";
@@ -248,10 +259,13 @@ public class FileCopyRequestsCreatorJob extends AbstractJob<Void> {
             Path destinationSubDirPath = resolvedSourcePathToCopy.relativize(fileDirectoryPath);
             destinationFilePath = Paths.get(destinationPath, destinationSubDirPath.toString()).toString();
             if (destinationFilePath.length() > FileLocation.URL_MAX_LENGTH) {
-                throw new ModuleException(String
-                        .format("Destination path <%s> legnth is too long (> %d). fileUrl=%s,sourcePathToCopy=%s,destinationPath=%s",
-                                destinationFilePath.toString(), FileLocation.URL_MAX_LENGTH, fileUrl, resolvedSourcePathToCopy,
-                                destinationPath));
+                throw new ModuleException(String.format(
+                    "Destination path <%s> legnth is too long (> %d). fileUrl=%s,sourcePathToCopy=%s,destinationPath=%s",
+                    destinationFilePath.toString(),
+                    FileLocation.URL_MAX_LENGTH,
+                    fileUrl,
+                    resolvedSourcePathToCopy,
+                    destinationPath));
             }
             return Optional.of(Paths.get(destinationFilePath));
         } else {

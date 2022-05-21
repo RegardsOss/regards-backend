@@ -17,10 +17,8 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- *
  * This package manages ingest processing chain
  *
  * @author Marc Sordi
- *
  */
 package fr.cnes.regards.modules.ingest.service.chain;

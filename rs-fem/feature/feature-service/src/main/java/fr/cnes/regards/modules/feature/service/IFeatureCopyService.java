@@ -1,20 +1,19 @@
 package fr.cnes.regards.modules.feature.service;
 
-import java.util.List;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.modules.feature.domain.request.FeatureCopyRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.job.FeatureCopyJob;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 /**
  * Service to register/schedule/treat {@link FeatureCopyRequest}
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
 public interface IFeatureCopyService extends IAbstractFeatureService<FeatureCopyRequest> {
 
@@ -30,6 +29,7 @@ public interface IFeatureCopyService extends IAbstractFeatureService<FeatureCopy
 
     /**
      * Find all {@link FeatureCopyRequest}s
+     *
      * @param page
      * @return {@link FeatureCopyRequest}s
      */

@@ -23,30 +23,25 @@ package fr.cnes.regards.modules.acquisition.domain.chain;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.converters.PathAttributeConverter;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
+
+import javax.persistence.*;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Objects;
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
 
 /**
  * Information about scanned directories, linked to {@link AcquisitionFileInfo}
+ *
  * @author Iliana Ghazali
  */
 
 @Entity
-@Table(name="t_scan_dir_info")
+@Table(name = "t_scan_dir_info")
 public class ScanDirectoryInfo {
 
     @ConfigIgnore
     @Id
-    @SequenceGenerator(name= "ScanDirInfoSequence", initialValue = 1, sequenceName = "seq_scan_dir_info")
+    @SequenceGenerator(name = "ScanDirInfoSequence", initialValue = 1, sequenceName = "seq_scan_dir_info")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ScanDirInfoSequence")
     private Long id;
 
@@ -105,8 +100,8 @@ public class ScanDirectoryInfo {
             return false;
         }
         ScanDirectoryInfo that = (ScanDirectoryInfo) o;
-        return Objects.equals(scannedDirectory, that.scannedDirectory) && Objects
-                .equals(lastModificationDate, that.lastModificationDate);
+        return Objects.equals(scannedDirectory, that.scannedDirectory) && Objects.equals(lastModificationDate,
+                                                                                         that.lastModificationDate);
     }
 
     @Override

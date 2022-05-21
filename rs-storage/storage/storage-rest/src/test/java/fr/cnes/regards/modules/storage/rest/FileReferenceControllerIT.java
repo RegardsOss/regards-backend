@@ -100,11 +100,8 @@ import static org.junit.Assert.*;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
-@TestPropertySource(properties = {
-    "spring.jpa.properties.hibernate.default_schema=storage_rest_it",
-    "regards.storage.quota.report.tick=1",
-    "regards.amqp.enabled=true"
-})
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_rest_it",
+    "regards.storage.quota.report.tick=1", "regards.amqp.enabled=true" })
 @ActiveProfiles(value = { "testAmqp", "default", "test" }, inheritProfiles = false)
 public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT implements IHandler<NotificationEvent> {
 
@@ -169,7 +166,7 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT im
 
     @Before
     public void init()
-            throws NoSuchAlgorithmException, FileNotFoundException, IOException, InterruptedException, ModuleException {
+        throws NoSuchAlgorithmException, FileNotFoundException, IOException, InterruptedException, ModuleException {
         tenantResolver.forceTenant(getDefaultTenant());
         clear();
         initDataStoragePluginConfiguration();
@@ -177,19 +174,21 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT im
         Path filePath = Paths.get("src/test/resources/test-file.txt");
         String algorithm = "md5";
         String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(filePath.toFile()), algorithm);
-        FileReferenceMetaInfo metaInfo =
-            new FileReferenceMetaInfo(
-                checksum,
-                algorithm,
-                filePath.getFileName().toString(),
-                null,
-                MediaType.APPLICATION_OCTET_STREAM
-            );
+        FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(checksum,
+                                                                   algorithm,
+                                                                   filePath.getFileName().toString(),
+                                                                   null,
+                                                                   MediaType.APPLICATION_OCTET_STREAM);
         metaInfo.setType(DataType.RAWDATA.name());
         tenantResolver.forceTenant(getDefaultTenant());
-        storeReqService.handleRequest("rest-test", "source1", "session1", metaInfo,
+        storeReqService.handleRequest("rest-test",
+                                      "source1",
+                                      "session1",
+                                      metaInfo,
                                       filePath.toAbsolutePath().toUri().toURL().toString(),
-                                      TARGET_STORAGE, Optional.of("/sub/dir/1/"), UUID.randomUUID().toString());
+                                      TARGET_STORAGE,
+                                      Optional.of("/sub/dir/1/"),
+                                      UUID.randomUUID().toString());
         // Wait for storage file referenced
         boolean found = false;
         int loops = 100;
@@ -213,14 +212,16 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT im
         notificationEvents.set(0);
     }
 
-
     @Test
     public void getLocationsWithChecksums() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk().expectToHaveSize("$.*", 1);
         Set<String> checksums = new HashSet<>();
         checksums.add(storedFileChecksum);
-        performDefaultPost(FileReferenceController.FILE_PATH + FileReferenceController.LOCATIONS_PATH, checksums,requestBuilderCustomizer,
-                "File reference should have been found", TARGET_STORAGE);
+        performDefaultPost(FileReferenceController.FILE_PATH + FileReferenceController.LOCATIONS_PATH,
+                           checksums,
+                           requestBuilderCustomizer,
+                           "File reference should have been found",
+                           TARGET_STORAGE);
     }
 
     @Test
@@ -228,15 +229,19 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT im
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk().expectIsEmpty("$");
         Set<String> checksums = new HashSet<>();
         checksums.add(UUID.randomUUID().toString());
-        performDefaultPost(FileReferenceController.FILE_PATH + FileReferenceController.LOCATIONS_PATH, checksums,requestBuilderCustomizer,
-                "File reference should have been found", TARGET_STORAGE);
+        performDefaultPost(FileReferenceController.FILE_PATH + FileReferenceController.LOCATIONS_PATH,
+                           checksums,
+                           requestBuilderCustomizer,
+                           "File reference should have been found",
+                           TARGET_STORAGE);
     }
 
     @Test
     public void downloadFileError() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusNotFound();
         performDefaultGet(FileReferenceController.FILE_PATH + FileReferenceController.DOWNLOAD_PATH,
-                          requestBuilderCustomizer, "File download response status should be NOT_FOUND.",
+                          requestBuilderCustomizer,
+                          "File download response status should be NOT_FOUND.",
                           UUID.randomUUID().toString());
     }
 
@@ -246,14 +251,16 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT im
     @Purpose("Check file download")
     public void downloadFileSuccess() {
         Mono.defer(() -> {
-            RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-            performDefaultGet(FileReferenceController.FILE_PATH + FileReferenceController.DOWNLOAD_PATH,
-                requestBuilderCustomizer, "File download response status should be OK", storedFileChecksum);
-            return Mono.empty();
-        })
+                RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+                performDefaultGet(FileReferenceController.FILE_PATH + FileReferenceController.DOWNLOAD_PATH,
+                                  requestBuilderCustomizer,
+                                  "File download response status should be OK",
+                                  storedFileChecksum);
+                return Mono.empty();
+            })
             // Retry in case of weird but transient "Spring headers" error.
             // Still, let AssertionErrors fail the test downstream.
-            .retryWhen(Retry.indefinitely().filter(t -> ! (t instanceof AssertionError)))
+            .retryWhen(Retry.indefinitely().filter(t -> !(t instanceof AssertionError)))
             // blow up maybe?
             .block();
     }
@@ -266,37 +273,36 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT im
         String userEmail = UUID.randomUUID().toString();
         long maxQuota = 5L;
         long rateLimit = 10_000L;
-        quotaRepository.save(
-            new DownloadQuotaLimits(
-                getDefaultTenant(),
-                userEmail,
-                maxQuota,
-                rateLimit
-            )
-        );
+        quotaRepository.save(new DownloadQuotaLimits(getDefaultTenant(), userEmail, maxQuota, rateLimit));
 
         String urlTemplate = FileReferenceController.FILE_PATH + FileReferenceController.DOWNLOAD_PATH;
-        String authToken = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.GET,
-            userEmail, getDefaultRole());
+        String authToken = manageSecurity(getDefaultTenant(),
+                                          urlTemplate,
+                                          RequestMethod.GET,
+                                          userEmail,
+                                          getDefaultRole());
 
-        LongStream.range(0, maxQuota+1)
-            .forEach(i -> {
-                if (i < maxQuota) {
-                    RequestBuilderCustomizer requestBuilderCustomizer =
-                        customizer()
-                            .expectStatusOk();
-                    performGet(urlTemplate, authToken, requestBuilderCustomizer, "File download response status should be OK", storedFileChecksum);
-                } else {
-                    assertEquals("No notification should be present at this point", 0, notificationEvents.get());
-                    RequestBuilderCustomizer requestBuilderCustomizer =
-                        customizer()
-                            .expectStatus(HttpStatus.TOO_MANY_REQUESTS);
-                    performGet(urlTemplate, authToken, requestBuilderCustomizer, "File download response status should be 429", storedFileChecksum);
-                    // there's been a notification send for that
-                    Try.run(() -> Thread.sleep(5_000)); // wait for batch reporting, at most 1 sec as per this test properties
-                    assertEquals("A notification should have been sent on quota exceeded", 1, notificationEvents.get());
-                }
-            });
+        LongStream.range(0, maxQuota + 1).forEach(i -> {
+            if (i < maxQuota) {
+                RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+                performGet(urlTemplate,
+                           authToken,
+                           requestBuilderCustomizer,
+                           "File download response status should be OK",
+                           storedFileChecksum);
+            } else {
+                assertEquals("No notification should be present at this point", 0, notificationEvents.get());
+                RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.TOO_MANY_REQUESTS);
+                performGet(urlTemplate,
+                           authToken,
+                           requestBuilderCustomizer,
+                           "File download response status should be 429",
+                           storedFileChecksum);
+                // there's been a notification send for that
+                Try.run(() -> Thread.sleep(5_000)); // wait for batch reporting, at most 1 sec as per this test properties
+                assertEquals("A notification should have been sent on quota exceeded", 1, notificationEvents.get());
+            }
+        });
     }
 
     @Test
@@ -305,23 +311,21 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT im
         tenantResolver.forceTenant(getDefaultTenant());
 
         String userEmail = UUID.randomUUID().toString();
-        quotaRepository.save(
-            new DownloadQuotaLimits(
-                getDefaultTenant(),
-                userEmail,
-                10L,
-                0L
-            )
-        );
+        quotaRepository.save(new DownloadQuotaLimits(getDefaultTenant(), userEmail, 10L, 0L));
 
         String urlTemplate = FileReferenceController.FILE_PATH + FileReferenceController.DOWNLOAD_PATH;
-        String authToken = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.GET,
-            userEmail, getDefaultRole());
+        String authToken = manageSecurity(getDefaultTenant(),
+                                          urlTemplate,
+                                          RequestMethod.GET,
+                                          userEmail,
+                                          getDefaultRole());
 
-        RequestBuilderCustomizer requestBuilderCustomizer =
-            customizer()
-                .expectStatus(HttpStatus.TOO_MANY_REQUESTS);
-        performGet(urlTemplate, authToken, requestBuilderCustomizer, "File download response status should be 429", storedFileChecksum);
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.TOO_MANY_REQUESTS);
+        performGet(urlTemplate,
+                   authToken,
+                   requestBuilderCustomizer,
+                   "File download response status should be 429",
+                   storedFileChecksum);
         // there's been a notification send for that
         Try.run(() -> Thread.sleep(5_000)); // wait for batch reporting, at most 1 sec as per this test properties
         assertEquals("A notification should have been sent on rate exceeded", 1, notificationEvents.get());
@@ -335,14 +339,7 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT im
         String userEmail = UUID.randomUUID().toString();
         long maxQuota = -1L; // unlimited because IDK how many retries will be needed until the rate limiter gets angry
         long rateLimit = 2L; // low enough in order to increase the chance of hitting the rate limiter
-        quotaRepository.save(
-            new DownloadQuotaLimits(
-                getDefaultTenant(),
-                userEmail,
-                maxQuota,
-                rateLimit
-            )
-        );
+        quotaRepository.save(new DownloadQuotaLimits(getDefaultTenant(), userEmail, maxQuota, rateLimit));
 
         AtomicReference<List<Integer>> downloadReqStatuses = new AtomicReference<>(List.empty());
         AtomicReference<List<Integer>> currentRatesHistory = new AtomicReference<>(List.empty());
@@ -356,28 +353,26 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT im
 
         // periodically check current rate and store the observed value
         JsonPath jsonPath = JsonPath.compile("$.currentRate");
-        Disposable monitor =
-            Flux.interval(Duration.ofMillis(50L))
-                .concatMap(i ->
-                    Mono.defer(() -> {
-                        RequestBuilderCustomizer requestBuilderCustomizer =
-                            customizer()
-                                // let assertion pass, I want to accumulate status codes!
-                                .expect(r -> assertTrue(true));
-                        String api = DownloadQuotaController.PATH_CURRENT_QUOTA;
-                        String authToken = manageSecurity(getDefaultTenant(), api, RequestMethod.GET, userEmail, getDefaultRole());
-                        ResultActions res = performGet(api, authToken, requestBuilderCustomizer, "Get current quotas should not blow up");
-                        MvcResult result = res.andReturn();
+        Disposable monitor = Flux.interval(Duration.ofMillis(50L)).concatMap(i -> Mono.defer(() -> {
+                                     RequestBuilderCustomizer requestBuilderCustomizer = customizer()
+                                         // let assertion pass, I want to accumulate status codes!
+                                         .expect(r -> assertTrue(true));
+                                     String api = DownloadQuotaController.PATH_CURRENT_QUOTA;
+                                     String authToken = manageSecurity(getDefaultTenant(), api, RequestMethod.GET, userEmail, getDefaultRole());
+                                     ResultActions res = performGet(api,
+                                                                    authToken,
+                                                                    requestBuilderCustomizer,
+                                                                    "Get current quotas should not blow up");
+                                     MvcResult result = res.andReturn();
 
-                        try {
-                            return Mono.<Integer>just(jsonPath.read(result.getResponse().getContentAsString()));
-                        } catch (UnsupportedEncodingException e) {
-                            return Mono.error(e);
-                        }
-                    }).retry()
-                )
-                // record each currentRate observed
-                .subscribe(currentRate -> currentRatesHistory.updateAndGet(l -> l.append(currentRate)));
+                                     try {
+                                         return Mono.<Integer>just(jsonPath.read(result.getResponse().getContentAsString()));
+                                     } catch (UnsupportedEncodingException e) {
+                                         return Mono.error(e);
+                                     }
+                                 }).retry())
+                                 // record each currentRate observed
+                                 .subscribe(currentRate -> currentRatesHistory.updateAndGet(l -> l.append(currentRate)));
 
         // record the max nb of requests sent in parallel, just to be sure that the test was relevant
         // (if max concurrent calls <= rate limit then the test was useless)
@@ -385,46 +380,52 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT im
 
         // try to make each download
         RuntimeException unexpectedResultEx = new RuntimeException("Unexpected result");
-        Disposable hammer = Flux.range(0, nbDownloads)
-            .flatMap(
-                ignored -> Mono.defer(() -> {
-                    // increase the nb of concurrent calls
-                    maxConcurrentCalls.updateAndGet(l -> l.append(l.last()+1));
+        Disposable hammer = Flux.range(0, nbDownloads).flatMap(ignored -> Mono.defer(() -> {
+                                                                                  // increase the nb of concurrent calls
+                                                                                  maxConcurrentCalls.updateAndGet(l -> l.append(l.last() + 1));
 
-                    // download
-                    RequestBuilderCustomizer requestBuilderCustomizer =
-                        customizer()
-                            // let assertion pass, I want to accumulate status codes!
-                            .expect(r -> assertTrue(true));
-                    String urlTemplate = FileReferenceController.FILE_PATH + FileReferenceController.DOWNLOAD_PATH;
-                    String authToken = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.GET, userEmail, getDefaultRole());
-                    ResultActions res = performGet(urlTemplate, authToken, requestBuilderCustomizer, "File download response status should not blow up at this point", storedFileChecksum);
-                    int status = res.andReturn().getResponse().getStatus();
+                                                                                  // download
+                                                                                  RequestBuilderCustomizer requestBuilderCustomizer = customizer()
+                                                                                      // let assertion pass, I want to accumulate status codes!
+                                                                                      .expect(r -> assertTrue(true));
+                                                                                  String urlTemplate = FileReferenceController.FILE_PATH + FileReferenceController.DOWNLOAD_PATH;
+                                                                                  String authToken = manageSecurity(getDefaultTenant(),
+                                                                                                                    urlTemplate,
+                                                                                                                    RequestMethod.GET,
+                                                                                                                    userEmail,
+                                                                                                                    getDefaultRole());
+                                                                                  ResultActions res = performGet(urlTemplate,
+                                                                                                                 authToken,
+                                                                                                                 requestBuilderCustomizer,
+                                                                                                                 "File download response status should not blow up at this point",
+                                                                                                                 storedFileChecksum);
+                                                                                  int status = res.andReturn().getResponse().getStatus();
 
-                    // record the download status (200, 429, 500, other ?)
-                    downloadReqStatuses.updateAndGet(l -> l.append(status));
+                                                                                  // record the download status (200, 429, 500, other ?)
+                                                                                  downloadReqStatuses.updateAndGet(l -> l.append(status));
 
-                    // call finished, decrease the nb of concurrent calls
-                    maxConcurrentCalls.updateAndGet(l -> l.append(l.last()-1));
+                                                                                  // call finished, decrease the nb of concurrent calls
+                                                                                  maxConcurrentCalls.updateAndGet(l -> l.append(l.last() - 1));
 
-                    // if the result is not 200 then return and error Mono in order to retry
-                    if (status == HttpStatus.OK.value()) {
-                        return Mono.just(status);
-                    } else {
-                        return Mono.error(unexpectedResultEx).delayElement(Duration.ofMillis(200L));
-                    }
-                })
-                    // retry until we finally get the result we expect (200 download successful)
-                    .retryWhen(Retry.indefinitely().filter(t -> t == unexpectedResultEx))
-                    // use the dedicated thread pool
-                    .subscribeOn(Schedulers.newParallel("hammer", maxConcurrency))
-                ,
-                maxConcurrency
-            )
-            // Spring warm up time
-            .delaySubscription(Duration.ofSeconds(15))
-            // for each OK result, count down
-            .subscribe(ignored -> latch.countDown());
+                                                                                  // if the result is not 200 then return and error Mono in order to retry
+                                                                                  if (status == HttpStatus.OK.value()) {
+                                                                                      return Mono.just(status);
+                                                                                  } else {
+                                                                                      return Mono.error(unexpectedResultEx).delayElement(Duration.ofMillis(200L));
+                                                                                  }
+                                                                              })
+                                                                              // retry until we finally get the result we expect (200 download successful)
+                                                                              .retryWhen(Retry.indefinitely()
+                                                                                              .filter(t -> t
+                                                                                                  == unexpectedResultEx))
+                                                                              // use the dedicated thread pool
+                                                                              .subscribeOn(Schedulers.newParallel(
+                                                                                  "hammer",
+                                                                                  maxConcurrency)), maxConcurrency)
+                                // Spring warm up time
+                                .delaySubscription(Duration.ofSeconds(15))
+                                // for each OK result, count down
+                                .subscribe(ignored -> latch.countDown());
 
         // wait for the calls to end (max 60secs)
         boolean timely = latch.await(120, TimeUnit.SECONDS);
@@ -434,10 +435,10 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT im
         Thread.sleep(1_000);
         monitor.dispose();
 
-//        LOGGER.info("concurrent="+maxConcurrentCalls.get().mkString(","));
-//        LOGGER.info("downloadReqStatuses="+downloadReqStatuses.get().mkString(","));
-//        LOGGER.info("rates="+currentRatesHistory.get().mkString(","));
-//        LOGGER.info("reqs count="+downloadReqStatuses.get().size());
+        //        LOGGER.info("concurrent="+maxConcurrentCalls.get().mkString(","));
+        //        LOGGER.info("downloadReqStatuses="+downloadReqStatuses.get().mkString(","));
+        //        LOGGER.info("rates="+currentRatesHistory.get().mkString(","));
+        //        LOGGER.info("reqs count="+downloadReqStatuses.get().size());
         assertTrue(
             "Test should have ended in a timely manner. Check your setup, the delay is either too short or the test took longer than expected (are you on a crowded environment?).",
             timely);
@@ -449,12 +450,9 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT im
             nbDownloads < downloadReqStatuses.get().size());
         assertTrue(
             "Observed rate history should never have exceeded the rate limit (in this single node setting at least).",
-            currentRatesHistory.get().reduce(Integer::max) <= rateLimit
-        );
-        assertFalse(
-            "Each time the rate went up above 0 it should eventually have gone back to zero.",
-            currentRatesHistory.get()
-                .foldLeft(false, (aboveZero, next) -> next > 0));
+            currentRatesHistory.get().reduce(Integer::max) <= rateLimit);
+        assertFalse("Each time the rate went up above 0 it should eventually have gone back to zero.",
+                    currentRatesHistory.get().foldLeft(false, (aboveZero, next) -> next > 0));
         // there's been many notifications send for that
         assertTrue("Several notification should have been sent on quota exceeded", notificationEvents.get() > 1);
     }
@@ -464,13 +462,16 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT im
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
             Files.createDirectories(Paths.get(STORAGE_PATH));
 
-            Set<IPluginParam> parameters = IPluginParam
-                    .set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                                            STORAGE_PATH),
-                         IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
-                         IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
-            PluginConfiguration dataStorageConf = new PluginConfiguration(TARGET_STORAGE, parameters, 0,
-                    dataStoMeta.getPluginId());
+            Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                                                                               STORAGE_PATH),
+                                                            IPluginParam.build(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN,
+                                                                               "error.*"),
+                                                            IPluginParam.build(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN,
+                                                                               "delErr.*"));
+            PluginConfiguration dataStorageConf = new PluginConfiguration(TARGET_STORAGE,
+                                                                          parameters,
+                                                                          0,
+                                                                          dataStoMeta.getPluginId());
             prioritizedDataStorageService.create(TARGET_STORAGE, dataStorageConf, 1_000_000L);
             storagePlgConfHandler.refresh();
             tenantResolver.forceTenant(getDefaultTenant());

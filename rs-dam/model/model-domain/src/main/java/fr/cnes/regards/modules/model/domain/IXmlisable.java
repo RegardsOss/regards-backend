@@ -19,13 +19,10 @@
 package fr.cnes.regards.modules.model.domain;
 
 /**
- *
  * Identify pojo canditates for XML import and export
  *
- * @param <X>
- *            XML element
+ * @param <X> XML element
  * @author Marc Sordi
- *
  */
 public interface IXmlisable<X> {
 

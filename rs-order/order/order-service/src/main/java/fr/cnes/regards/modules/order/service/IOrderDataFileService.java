@@ -18,27 +18,28 @@
  */
 package fr.cnes.regards.modules.order.service;
 
+import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.ResponseEntity;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.ResponseEntity;
-
-import fr.cnes.regards.framework.urn.UniformResourceName;
-import fr.cnes.regards.modules.order.domain.Order;
-import fr.cnes.regards.modules.order.domain.OrderDataFile;
-
 /**
  * OrderDataFile specific service (OrderDataFiles are detached entities from Order, DatasetTasks and FilesTasks)
+ *
  * @author oroussel
  */
 public interface IOrderDataFileService {
 
     /**
      * Simply save OrderDataFile in database, no more action is done. This method is to be used at sub-orders creation.
+     *
      * @param dataFiles
      * @return {@link OrderDataFile}s
      */
@@ -47,6 +48,7 @@ public interface IOrderDataFileService {
     /**
      * Save given OrderDataFile, search for associated files task, update its end state then update associated order
      * waiting for user flag
+     *
      * @param dataFile
      * @return {@link OrderDataFile}
      */
@@ -55,6 +57,7 @@ public interface IOrderDataFileService {
     /**
      * Save given OrderDataFiles, search for associated files task, update them end state then update associated order
      * waiting for user flag
+     *
      * @param dataFiles
      * @return {@link OrderDataFile}s
      */
@@ -68,6 +71,7 @@ public interface IOrderDataFileService {
 
     /**
      * Find all OrderDataFile with state AVAILABLE associated to given order
+     *
      * @param orderId id of order
      * @return {@link OrderDataFile}s
      */
@@ -75,6 +79,7 @@ public interface IOrderDataFileService {
 
     /**
      * Find all OrderDataFile of given order
+     *
      * @param orderId if of order
      * @return {@link OrderDataFile}s
      */
@@ -82,8 +87,9 @@ public interface IOrderDataFileService {
 
     /**
      * Copy asked file from storage to HttpServletResponse
+     *
      * @param dataFile
-     * @param asUser Download file as the given user or empty to use security context user
+     * @param asUser   Download file as the given user or empty to use security context user
      * @param os
      * @return
      * @throws IOException
@@ -95,13 +101,15 @@ public interface IOrderDataFileService {
      * error count).
      * Search all orders (eventually finished), compute available files count and update values.
      * THIS METHOD DON'T UPDATE ANYTHING INTO DATABASE (it concerns Orders so it is the responsibility of OrderService,
-     * @see IOrderService#updateTenantOrdersComputations )
+     *
      * @return updated orders
+     * @see IOrderService#updateTenantOrdersComputations )
      */
     Set<Order> updateCurrentOrdersComputedValues();
 
     /**
      * Remove all data files from an order
+     *
      * @param orderId
      */
     void removeAll(Long orderId);

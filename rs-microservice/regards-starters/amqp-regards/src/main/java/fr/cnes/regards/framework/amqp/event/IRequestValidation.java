@@ -20,12 +20,10 @@ package fr.cnes.regards.framework.amqp.event;
 
 import org.springframework.validation.Errors;
 
-import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
-
 /**
  * Validate that all required validation parameters is present.
- * @author Marc SORDI
  *
+ * @author Marc SORDI
  */
 public interface IRequestValidation {
 

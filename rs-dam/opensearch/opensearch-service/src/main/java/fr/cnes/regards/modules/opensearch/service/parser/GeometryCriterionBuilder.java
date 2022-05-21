@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.opensearch.service.parser;
 
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
+import fr.cnes.regards.modules.opensearch.service.converter.PolygonToArray;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
@@ -26,12 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.converter.Converter;
 
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
-import fr.cnes.regards.modules.opensearch.service.converter.PolygonToArray;
-
 /**
  * Creates {@link ICriterion} from multiple geometry types.
+ *
  * @author Sébastien Binda
  */
 public class GeometryCriterionBuilder {
@@ -41,11 +41,13 @@ public class GeometryCriterionBuilder {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(GeometryCriterionBuilder.class);
 
-    private GeometryCriterionBuilder() {}
+    private GeometryCriterionBuilder() {
+    }
 
     /**
      * Read WKT format in given String to creates a Geometry criterion.
      * Only Polygons are handled here.
+     *
      * @param wktGeometry geometry in WKT format
      */
     public static ICriterion build(String wktGeometry) throws InvalidGeometryException {
@@ -70,13 +72,14 @@ public class GeometryCriterionBuilder {
 
     /**
      * Creates a circle geometry criterion from longitute, latitude and radius.
+     *
      * @param lonParam
      * @param latParam
      * @param radiusParam
      * @return {@link ICriterion}
      */
     public static ICriterion build(String lonParam, String latParam, String radiusParam)
-            throws InvalidGeometryException {
+        throws InvalidGeometryException {
         // Check required query parameter
         if (latParam == null && lonParam == null && radiusParam == null) {
             return null;

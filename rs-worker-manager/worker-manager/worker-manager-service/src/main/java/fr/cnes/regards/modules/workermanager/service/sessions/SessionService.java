@@ -64,8 +64,11 @@ public class SessionService {
             RequestsInfo sessionInfo = infoPerSession.get(key);
 
             Map<String, StepProperty> propertySteps = new HashMap<>();
-            preparePropertyStep(source, session, WorkerStepPropertyEnum.TOTAL_REQUESTS.getPropertyPath(),
-                                WorkerStepPropertyEnum.TOTAL_REQUESTS, propertySteps,
+            preparePropertyStep(source,
+                                session,
+                                WorkerStepPropertyEnum.TOTAL_REQUESTS.getPropertyPath(),
+                                WorkerStepPropertyEnum.TOTAL_REQUESTS,
+                                propertySteps,
                                 sessionInfo.getRequests().values().stream().mapToInt(Collection::size).sum());
             sendSteps(propertySteps);
         });
@@ -81,7 +84,11 @@ public class SessionService {
                 Map<String, StepProperty> propertySteps = new HashMap<>();
                 preparePropertyStepsForSession(source, session, sessionInfo, propertySteps, false);
 
-                List<RequestDTO> requests = sessionInfo.getRequests().values().stream().flatMap(Collection::stream).collect(Collectors.toList());
+                List<RequestDTO> requests = sessionInfo.getRequests()
+                                                       .values()
+                                                       .stream()
+                                                       .flatMap(Collection::stream)
+                                                       .collect(Collectors.toList());
                 preparePropertyStepForRequests(source, session, requests, stepProperty, propertySteps, true);
                 sendSteps(propertySteps);
             });
@@ -97,8 +104,11 @@ public class SessionService {
             Map<String, StepProperty> propertySteps = new HashMap<>();
             preparePropertyStepsForSession(source, session, sessionInfo, propertySteps, false);
 
-            preparePropertyStep(source, session, WorkerStepPropertyEnum.TOTAL_REQUESTS.getPropertyPath(),
-                                WorkerStepPropertyEnum.TOTAL_REQUESTS, propertySteps,
+            preparePropertyStep(source,
+                                session,
+                                WorkerStepPropertyEnum.TOTAL_REQUESTS.getPropertyPath(),
+                                WorkerStepPropertyEnum.TOTAL_REQUESTS,
+                                propertySteps,
                                 -sessionInfo.getRequests().values().stream().mapToInt(Collection::size).sum());
             sendSteps(propertySteps);
         });
@@ -120,35 +130,59 @@ public class SessionService {
         });
     }
 
-    private void preparePropertyStepsForSession(String source, String session, RequestsInfo sessionInfo,
-            Map<String, StepProperty> propertySteps, boolean inc) {
+    private void preparePropertyStepsForSession(String source,
+                                                String session,
+                                                RequestsInfo sessionInfo,
+                                                Map<String, StepProperty> propertySteps,
+                                                boolean inc) {
         for (RequestStatus status : RequestStatus.values()) {
             WorkerStepPropertyEnum.parse(status).ifPresent(stepProperty -> {
-                preparePropertyStepForRequests(source, session,
-                                               sessionInfo.getRequests().get(status), stepProperty,
-                                               propertySteps, inc);
+                preparePropertyStepForRequests(source,
+                                               session,
+                                               sessionInfo.getRequests().get(status),
+                                               stepProperty,
+                                               propertySteps,
+                                               inc);
             });
         }
     }
 
-    private void preparePropertyStepForRequests(String source, String session, Collection<RequestDTO> requests,
-            WorkerStepPropertyEnum propertyType, Map<String, StepProperty> propertySteps, boolean inc) {
+    private void preparePropertyStepForRequests(String source,
+                                                String session,
+                                                Collection<RequestDTO> requests,
+                                                WorkerStepPropertyEnum propertyType,
+                                                Map<String, StepProperty> propertySteps,
+                                                boolean inc) {
         if (requests != null && !requests.isEmpty()) {
-            requests.forEach(
-                    request -> this.preparePropertyStepForRequest(source, session, request, propertyType, propertySteps,
-                                                                  inc));
+            requests.forEach(request -> this.preparePropertyStepForRequest(source,
+                                                                           session,
+                                                                           request,
+                                                                           propertyType,
+                                                                           propertySteps,
+                                                                           inc));
         }
     }
 
-    private void preparePropertyStepForRequest(String source, String session, RequestDTO request,
-            WorkerStepPropertyEnum propertyType, Map<String, StepProperty> propertySteps, boolean inc) {
-        getSessionPropertyName(request, propertyType).ifPresent(property ->
-            preparePropertyStepForRequest(source, session, property, propertyType, propertySteps, inc)
-        );
+    private void preparePropertyStepForRequest(String source,
+                                               String session,
+                                               RequestDTO request,
+                                               WorkerStepPropertyEnum propertyType,
+                                               Map<String, StepProperty> propertySteps,
+                                               boolean inc) {
+        getSessionPropertyName(request, propertyType).ifPresent(property -> preparePropertyStepForRequest(source,
+                                                                                                          session,
+                                                                                                          property,
+                                                                                                          propertyType,
+                                                                                                          propertySteps,
+                                                                                                          inc));
     }
 
-    private void preparePropertyStepForRequest(String source, String session, String newPropertyPath,
-            WorkerStepPropertyEnum propertyType, Map<String, StepProperty> propertySteps, boolean inc) {
+    private void preparePropertyStepForRequest(String source,
+                                               String session,
+                                               String newPropertyPath,
+                                               WorkerStepPropertyEnum propertyType,
+                                               Map<String, StepProperty> propertySteps,
+                                               boolean inc) {
         propertySteps.compute(newPropertyPath, (propertyPath, property) -> {
             if (property == null) {
                 Integer intValue = inc ? 1 : -1;
@@ -162,34 +196,47 @@ public class SessionService {
         });
     }
 
-    private void preparePropertyStep(String source, String session, String newPropertyPath,
-            WorkerStepPropertyEnum propertyType, Map<String, StepProperty> propertySteps, Integer value) {
-        propertySteps.put(newPropertyPath, createStep(source, session, newPropertyPath, value.toString(), propertyType));
+    private void preparePropertyStep(String source,
+                                     String session,
+                                     String newPropertyPath,
+                                     WorkerStepPropertyEnum propertyType,
+                                     Map<String, StepProperty> propertySteps,
+                                     Integer value) {
+        propertySteps.put(newPropertyPath,
+                          createStep(source, session, newPropertyPath, value.toString(), propertyType));
     }
 
-
-    private StepProperty createStep(String source, String session, String propertyPath, String value,
-            WorkerStepPropertyEnum propertyType) {
-        return new StepProperty(GLOBAL_SESSION_STEP, source, session,
-                                new StepPropertyInfo(StepTypeEnum.ACQUISITION, propertyType.getPropertyState(),
-                                                     propertyPath, value, propertyType.isInputRelated(),
+    private StepProperty createStep(String source,
+                                    String session,
+                                    String propertyPath,
+                                    String value,
+                                    WorkerStepPropertyEnum propertyType) {
+        return new StepProperty(GLOBAL_SESSION_STEP,
+                                source,
+                                session,
+                                new StepPropertyInfo(StepTypeEnum.ACQUISITION,
+                                                     propertyType.getPropertyState(),
+                                                     propertyPath,
+                                                     value,
+                                                     propertyType.isInputRelated(),
                                                      propertyType.isOutputRelated()));
     }
 
     private void sendSteps(Map<String, StepProperty> propertySteps) {
-        propertySteps.values().stream()
-                .filter(ppt -> Integer.valueOf(ppt.getStepPropertyInfo().getValue()) != 0)
-                .forEach(ppt -> {
-                    int value = Integer.parseInt(ppt.getStepPropertyInfo().getValue());
-                    if (value > 0 ) {
-                        LOGGER.debug("Send session update INC : {}",ppt.toString());
-                        sessionNotificationClient.increment(ppt);
-                    } else {
-                        ppt.getStepPropertyInfo().setValue(String.valueOf(-value));
-                        LOGGER.debug("Send session update DEC : {}",ppt.toString());
-                        sessionNotificationClient.decrement(ppt);
-                    }
-                } );
+        propertySteps.values()
+                     .stream()
+                     .filter(ppt -> Integer.valueOf(ppt.getStepPropertyInfo().getValue()) != 0)
+                     .forEach(ppt -> {
+                         int value = Integer.parseInt(ppt.getStepPropertyInfo().getValue());
+                         if (value > 0) {
+                             LOGGER.debug("Send session update INC : {}", ppt.toString());
+                             sessionNotificationClient.increment(ppt);
+                         } else {
+                             ppt.getStepPropertyInfo().setValue(String.valueOf(-value));
+                             LOGGER.debug("Send session update DEC : {}", ppt.toString());
+                             sessionNotificationClient.decrement(ppt);
+                         }
+                     });
     }
 
 }

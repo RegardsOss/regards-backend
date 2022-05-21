@@ -18,24 +18,24 @@
  */
 package fr.cnes.regards.framework.amqp;
 
-import java.util.Optional;
-
 import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.Exchange;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Exchange;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+
+import java.util.Optional;
 
 /**
  * Common poller methods
+ *
  * @author svissier
  * @author Marc Sordi
  */
@@ -61,8 +61,9 @@ public abstract class AbstractPoller implements IPollerContract {
      */
     private final IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
-    public AbstractPoller(IRabbitVirtualHostAdmin pVirtualHostAdmin, RabbitTemplate rabbitTemplate,
-            IAmqpAdmin amqpAdmin) {
+    public AbstractPoller(IRabbitVirtualHostAdmin pVirtualHostAdmin,
+                          RabbitTemplate rabbitTemplate,
+                          IAmqpAdmin amqpAdmin) {
         super();
         this.rabbitVirtualHostAdmin = pVirtualHostAdmin;
         this.rabbitTemplate = rabbitTemplate;
@@ -72,7 +73,10 @@ public abstract class AbstractPoller implements IPollerContract {
     @Override
     public <T extends IPollable> T poll(Class<T> pEvent) {
         String tenant = resolveTenant();
-        return poll(tenant, resolveVirtualHost(tenant), pEvent, WorkerMode.UNICAST,
+        return poll(tenant,
+                    resolveVirtualHost(tenant),
+                    pEvent,
+                    WorkerMode.UNICAST,
                     EventUtils.getTargetRestriction(pEvent));
     }
 
@@ -89,19 +93,23 @@ public abstract class AbstractPoller implements IPollerContract {
 
     /**
      * Poll an event
-     * @param <T> event object
-     * @param tenant tenant
+     *
+     * @param <T>         event object
+     * @param tenant      tenant
      * @param virtualHost virtual host
-     * @param eventType event to poll
-     * @param workerMode {@link WorkerMode}
-     * @param target {@link Target}
+     * @param eventType   event to poll
+     * @param workerMode  {@link WorkerMode}
+     * @param target      {@link Target}
      * @return event
      */
     @SuppressWarnings("unchecked")
     protected <T> T poll(String tenant, String virtualHost, Class<T> eventType, WorkerMode workerMode, Target target) {
 
-        LOGGER.debug("Polling event {} for tenant {} (Target : {}, WorkerMode : {} )", eventType.getName(), tenant,
-                     target, workerMode);
+        LOGGER.debug("Polling event {} for tenant {} (Target : {}, WorkerMode : {} )",
+                     eventType.getName(),
+                     tenant,
+                     target,
+                     workerMode);
 
         try {
             // Bind the connection to the right vHost (i.e. tenant to publish the message)

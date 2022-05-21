@@ -23,8 +23,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @param <M> Type of message you are handling
- *
- * Interface identifying classes that can handle message from the broker
+ *            <p>
+ *            Interface identifying classes that can handle message from the broker
  * @author svissier
  */
 public interface IHandler<M> {
@@ -35,8 +35,8 @@ public interface IHandler<M> {
     Logger LOGGER = LoggerFactory.getLogger(IHandler.class);
 
     /**
-     * @deprecated User {@link #handleAndLog(String, Object)} instead.
      * @param wrapper
+     * @deprecated User {@link #handleAndLog(String, Object)} instead.
      */
     @Deprecated
     default void handleAndLog(TenantWrapper<M> wrapper) {

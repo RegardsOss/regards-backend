@@ -51,15 +51,15 @@ import java.util.Set;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_clean_process_it",
-        "regards.session.manager.clean.session.limit.store=30" })
+    "regards.session.manager.clean.session.limit.store=30" })
 @ActiveProfiles({ "noscheduler" })
 public class ManagerCleanServiceIT extends AbstractManagerServiceUtilsIT {
-    
+
     private static OffsetDateTime UPDATE_DATE;
-    
+
     @Autowired
     private ManagerCleanService managerCleanService;
-    
+
     @Autowired
     private ManagerSnapshotService managerSnapshotService;
 
@@ -68,7 +68,9 @@ public class ManagerCleanServiceIT extends AbstractManagerServiceUtilsIT {
 
     @Override
     public void doInit() {
-        UPDATE_DATE = OffsetDateTime.now(ZoneOffset.UTC).minusDays(limitStoreSessionSteps).truncatedTo(ChronoUnit.MICROS);
+        UPDATE_DATE = OffsetDateTime.now(ZoneOffset.UTC)
+                                    .minusDays(limitStoreSessionSteps)
+                                    .truncatedTo(ChronoUnit.MICROS);
     }
 
     @Test
@@ -92,27 +94,39 @@ public class ManagerCleanServiceIT extends AbstractManagerServiceUtilsIT {
         List<SessionStep> stepRequests = new ArrayList<>();
 
         // ACQUISITION
-        SessionStep step1 = new SessionStep("scan", SOURCE_1, SESSION_1, StepTypeEnum.ACQUISITION,
+        SessionStep step1 = new SessionStep("scan",
+                                            SOURCE_1,
+                                            SESSION_1,
+                                            StepTypeEnum.ACQUISITION,
                                             new StepState(3L, 2L, 5L));
         step1.setLastUpdateDate(UPDATE_DATE.plusMinutes(100L));
         step1.setRegistrationDate(step1.getLastUpdateDate());
         stepRequests.add(step1);
 
         // REFERENCING
-        SessionStep step2 = new SessionStep("oais", SOURCE_1, SESSION_1, StepTypeEnum.REFERENCING,
+        SessionStep step2 = new SessionStep("oais",
+                                            SOURCE_1,
+                                            SESSION_1,
+                                            StepTypeEnum.REFERENCING,
                                             new StepState(0L, 1L, 0L));
         step2.setLastUpdateDate(UPDATE_DATE.plusMinutes(1000L));
         step2.setRegistrationDate(step2.getLastUpdateDate());
         stepRequests.add(step2);
 
-        SessionStep step3 = new SessionStep("oais", SOURCE_1, SESSION_2, StepTypeEnum.REFERENCING,
+        SessionStep step3 = new SessionStep("oais",
+                                            SOURCE_1,
+                                            SESSION_2,
+                                            StepTypeEnum.REFERENCING,
                                             new StepState(1L, 6L, 10L));
         step3.setLastUpdateDate(UPDATE_DATE.minusDays(1));
         step3.setRegistrationDate(step3.getLastUpdateDate());
         stepRequests.add(step3);
 
         // STORAGE
-        SessionStep step4 = new SessionStep("storage", SOURCE_2, SESSION_1, StepTypeEnum.STORAGE,
+        SessionStep step4 = new SessionStep("storage",
+                                            SOURCE_2,
+                                            SESSION_1,
+                                            StepTypeEnum.STORAGE,
                                             new StepState(0L, 2L, 0L));
         step4.setLastUpdateDate(UPDATE_DATE.minusSeconds(1L));
         step4.setRegistrationDate(step4.getLastUpdateDate());
@@ -123,14 +137,13 @@ public class ManagerCleanServiceIT extends AbstractManagerServiceUtilsIT {
     }
 
     private void checkResult(int nbSessionDeleted) {
-        Assert.assertEquals(
-                String.format("There should be 2 sessions deleted (with lastUpdateDate before %s)", UPDATE_DATE), 2,
-                nbSessionDeleted);
+        Assert.assertEquals(String.format("There should be 2 sessions deleted (with lastUpdateDate before %s)",
+                                          UPDATE_DATE), 2, nbSessionDeleted);
 
         Optional<Session> session1Opt = this.sessionRepo.findBySourceAndName(SOURCE_1, SESSION_1);
-        Assert.assertTrue(
-                String.format("Session \"%s\" of source \"%s\" should have been present", SESSION_1, SOURCE_1),
-                session1Opt.isPresent());
+        Assert.assertTrue(String.format("Session \"%s\" of source \"%s\" should have been present",
+                                        SESSION_1,
+                                        SOURCE_1), session1Opt.isPresent());
 
         // --- SOURCE 1 ---
         // CHECK SESSION 1/SOURCE 1 was created with two session steps. Its update date is after the limit so it
@@ -155,9 +168,9 @@ public class ManagerCleanServiceIT extends AbstractManagerServiceUtilsIT {
 
         // CHECK SESSION 2/SOURCE 1 was correctly deleted
         Optional<Session> session2Opt = this.sessionRepo.findBySourceAndName(SOURCE_1, SESSION_2);
-        Assert.assertFalse(
-                String.format("Session \"%s\" of source \"%s\" should have been deleted", SESSION_2, SOURCE_1),
-                session2Opt.isPresent());
+        Assert.assertFalse(String.format("Session \"%s\" of source \"%s\" should have been deleted",
+                                         SESSION_2,
+                                         SOURCE_1), session2Opt.isPresent());
 
         // CHECK SOURCE 1 was created and updated after the cleaning process
         Optional<Source> source1Opt = this.sourceRepo.findByName(SOURCE_1);
@@ -169,18 +182,24 @@ public class ManagerCleanServiceIT extends AbstractManagerServiceUtilsIT {
         for (SourceStepAggregation agg : aggSteps) {
             AggregationState state = agg.getState();
             if (agg.getType().equals(StepTypeEnum.ACQUISITION)) {
-                Assert.assertEquals("Wrong property, check the snapshot generation and the cleaning process", 3L,
+                Assert.assertEquals("Wrong property, check the snapshot generation and the cleaning process",
+                                    3L,
                                     state.getErrors());
-                Assert.assertEquals("Wrong property, check the snapshot generation and the cleaning process", 2L,
+                Assert.assertEquals("Wrong property, check the snapshot generation and the cleaning process",
+                                    2L,
                                     state.getWaiting());
-                Assert.assertEquals("Wrong property, check the snapshot generation the cleaning process ", 5L,
+                Assert.assertEquals("Wrong property, check the snapshot generation the cleaning process ",
+                                    5L,
                                     state.getRunning());
             } else if (agg.getType().equals(StepTypeEnum.REFERENCING)) {
-                Assert.assertEquals("Wrong property, check the snapshot generation and the cleaning process", 0L,
+                Assert.assertEquals("Wrong property, check the snapshot generation and the cleaning process",
+                                    0L,
                                     state.getErrors());
-                Assert.assertEquals("Wrong property, check the snapshot generation and the cleaning process", 1L,
+                Assert.assertEquals("Wrong property, check the snapshot generation and the cleaning process",
+                                    1L,
                                     state.getWaiting());
-                Assert.assertEquals("Wrong property, check the snapshot generation the cleaning process ", 0L,
+                Assert.assertEquals("Wrong property, check the snapshot generation the cleaning process ",
+                                    0L,
                                     state.getRunning());
             } else {
                 Assert.fail(String.format("Was not expecting type \"%s\"", agg.getType()));
@@ -190,21 +209,23 @@ public class ManagerCleanServiceIT extends AbstractManagerServiceUtilsIT {
         // outdated sessionSteps from the sessionRepo should be deleted because it is a temporary tables. All
         // sessionSteps have been processed within sessions
         Assert.assertTrue("SessionStep should be present because its lastUpdateDate is after the limit",
-                           this.sessionStepRepo.findBySourceAndSessionAndStepId(SOURCE_1, SESSION_1, "scan").isPresent());
+                          this.sessionStepRepo.findBySourceAndSessionAndStepId(SOURCE_1, SESSION_1, "scan")
+                                              .isPresent());
         Assert.assertFalse("Outdated sessionStep should have been deleted from the temporary table",
-                           this.sessionStepRepo.findBySourceAndSessionAndStepId(SOURCE_1, SESSION_2, "oais").isPresent());
+                           this.sessionStepRepo.findBySourceAndSessionAndStepId(SOURCE_1, SESSION_2, "oais")
+                                               .isPresent());
 
         // --- SOURCE 2 ---
         // CHECK SESSION 1/SOURCE 2 was correctly deleted
         Optional<Session> session3Opt = this.sessionRepo.findBySourceAndName(SOURCE_2, SESSION_1);
-        Assert.assertFalse(
-                String.format("Session \"%s\" of source \"%s\" should have been deleted", SESSION_1, SOURCE_2),
-                session3Opt.isPresent());
+        Assert.assertFalse(String.format("Session \"%s\" of source \"%s\" should have been deleted",
+                                         SESSION_1,
+                                         SOURCE_2), session3Opt.isPresent());
 
         // CHECK SOURCE 2 was correctly deleted
         Optional<Source> source2Opt = this.sourceRepo.findByName(SOURCE_2);
-        Assert.assertFalse(
-                String.format("Source \"%s\" should have been deleted because there is no session is " + "related",
-                              SOURCE_2), source2Opt.isPresent());
+        Assert.assertFalse(String.format(
+                               "Source \"%s\" should have been deleted because there is no session is " + "related", SOURCE_2),
+                           source2Opt.isPresent());
     }
 }

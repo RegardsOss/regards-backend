@@ -88,11 +88,8 @@ public class DownloadQuotaLimits {
             return false;
         }
         DownloadQuotaLimits that = (DownloadQuotaLimits) o;
-        return Objects.equals(id, that.id) &&
-            Objects.equals(tenant, that.tenant) &&
-            Objects.equals(email, that.email) &&
-            Objects.equals(maxQuota, that.maxQuota) &&
-            Objects.equals(rateLimit, that.rateLimit);
+        return Objects.equals(id, that.id) && Objects.equals(tenant, that.tenant) && Objects.equals(email, that.email)
+            && Objects.equals(maxQuota, that.maxQuota) && Objects.equals(rateLimit, that.rateLimit);
     }
 
     @Override

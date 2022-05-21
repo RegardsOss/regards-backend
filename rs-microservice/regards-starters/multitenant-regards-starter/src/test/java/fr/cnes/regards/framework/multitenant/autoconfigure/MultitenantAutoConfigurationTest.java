@@ -18,9 +18,7 @@
  */
 package fr.cnes.regards.framework.multitenant.autoconfigure;
 
-import java.util.Set;
-import java.util.TreeSet;
-
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,10 +28,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Test auto configuration
+ *
  * @author msordi
  */
 public class MultitenantAutoConfigurationTest {
@@ -94,6 +94,7 @@ public class MultitenantAutoConfigurationTest {
 
     /**
      * Empty configuration
+     *
      * @author msordi
      */
     @Configuration
@@ -103,6 +104,7 @@ public class MultitenantAutoConfigurationTest {
 
     /**
      * Custom tenant resolver configuration
+     *
      * @author msordi
      */
     @Configuration
@@ -115,6 +117,7 @@ public class MultitenantAutoConfigurationTest {
 
         /**
          * Custom tenant resolver
+         *
          * @author msordi
          */
         private class CustomTenantResolver implements ITenantResolver {

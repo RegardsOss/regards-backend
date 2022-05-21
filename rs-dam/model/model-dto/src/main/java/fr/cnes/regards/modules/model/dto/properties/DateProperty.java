@@ -24,7 +24,6 @@ import java.time.OffsetDateTime;
  * Represent a {@link PropertyType#DATE_ISO8601} model attribute
  *
  * @author Marc Sordi
- *
  */
 public class DateProperty extends AbstractProperty<OffsetDateTime> {
 

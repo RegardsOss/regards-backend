@@ -7,10 +7,11 @@ import java.util.Set;
 
 /**
  * Validate {@link HandledMessageDigestAlgorithm}
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class HandledMessageDigestAlgorithmValidator
-        implements ConstraintValidator<HandledMessageDigestAlgorithm, String> {
+    implements ConstraintValidator<HandledMessageDigestAlgorithm, String> {
 
     @Override
     public void initialize(HandledMessageDigestAlgorithm constraintAnnotation) {

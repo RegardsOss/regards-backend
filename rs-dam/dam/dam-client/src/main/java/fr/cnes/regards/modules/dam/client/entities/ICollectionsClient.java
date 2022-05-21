@@ -42,7 +42,8 @@ public interface ICollectionsClient {
      * @return list of all {@link Collection}
      * Entry point to retrieve all collections
      */
-    @GetMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<List<EntityModel<Collection>>> retrieveCollections();
 
@@ -51,27 +52,30 @@ public interface ICollectionsClient {
      * @return the specified {@link Collection}
      * Entry point to retrieve a {@link Collection} using its id
      */
-    @GetMapping(path = ROOT_PATH + "/{collection_id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH + "/{collection_id}", consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public HttpEntity<EntityModel<Collection>> retrieveCollection(@PathVariable("collection_id") Long collectionId);
 
     /**
      * @param collectionId id of the {@link Collection} to update
-     * @param collection updated {@link Collection}
+     * @param collection   updated {@link Collection}
      * @return Updated {@link Collection}
      * Entry point to update a {@link Collection} using its id
      */
-    @PutMapping(path = ROOT_PATH + "/{collection_id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = ROOT_PATH + "/{collection_id}", consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<EntityModel<Collection>> updateCollection(@PathVariable("collection_id") Long collectionId,
-            @RequestBody Collection collection);
+                                                         @RequestBody Collection collection);
 
     /**
      * @param collectionId id of the {@link Collection} to delete
      * @return Void
      * Entry point to delete a collection using its id
      */
-    @DeleteMapping(path = ROOT_PATH + "/{collection_id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(path = ROOT_PATH + "/{collection_id}", consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<Void> deleteCollection(@PathVariable("collection_id") Long collectionId);
 
@@ -80,29 +84,35 @@ public interface ICollectionsClient {
      * @return created {@link Collection}
      * Entry point to create a collection
      */
-    @PostMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<EntityModel<Collection>> createCollection(@RequestBody Collection collection);
 
     /**
      * Entry point to handle dissociation of {@link Collection} specified by its id to other entities
-     * @param collectionId {@link Collection} id
+     *
+     * @param collectionId    {@link Collection} id
      * @param toBeDissociated entity to dissociate
      * @return {@link Collection} as a {@link EntityModel}
      */
-    @PutMapping(path = ROOT_PATH + "/{collection_id}/dissociate", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = ROOT_PATH + "/{collection_id}/dissociate", consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<EntityModel<Collection>> dissociateCollection(@PathVariable("collection_id") Long collectionId,
-            @RequestBody Set<OaisUniformResourceName> toBeDissociated);
+                                                             @RequestBody Set<OaisUniformResourceName> toBeDissociated);
 
     /**
      * Entry point to handle association of {@link Collection} specified by its id to other entities
-     * @param collectionId {@link Collection} id
+     *
+     * @param collectionId       {@link Collection} id
      * @param toBeAssociatedWith entities to be associated
      * @return {@link Collection} as a {@link EntityModel}
      */
-    @PutMapping(path = ROOT_PATH + "/{collection_id}/associate", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = ROOT_PATH + "/{collection_id}/associate", consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     HttpEntity<EntityModel<Collection>> associateCollections(@PathVariable("collection_id") Long collectionId,
-            @RequestBody Set<OaisUniformResourceName> toBeAssociatedWith);
+                                                             @RequestBody
+                                                             Set<OaisUniformResourceName> toBeAssociatedWith);
 }

@@ -50,7 +50,7 @@ public class ExecResultHandlerResultEvent extends ApplicationEvent {
     }
 
     public static ExecResultHandlerResultEvent event(PExecutionResultEvent resultEvent,
-            java.util.Collection<OrderDataFile> updatedOrderDataFiles) {
+                                                     java.util.Collection<OrderDataFile> updatedOrderDataFiles) {
         return new ExecResultHandlerResultEvent(resultEvent, List.ofAll(updatedOrderDataFiles));
     }
 }

@@ -51,7 +51,10 @@ public class OrderTestUtils {
         return dsSelection;
     }
 
-    public static BasketDatedItemsSelection createDatasetItemSelection(long filesSize, long filesCount, int objectsCount, String query) {
+    public static BasketDatedItemsSelection createDatasetItemSelection(long filesSize,
+                                                                       long filesCount,
+                                                                       int objectsCount,
+                                                                       String query) {
         BasketDatedItemsSelection item = new BasketDatedItemsSelection();
         item.setFileTypeSize(DataType.RAWDATA.name() + "_ref", 0L);
         item.setFileTypeCount(DataType.RAWDATA.name() + "_ref", 0L);

@@ -18,25 +18,25 @@
  */
 package fr.cnes.regards.modules.notifier.dao;
 
-import java.util.Optional;
-import java.util.Set;
-
+import fr.cnes.regards.modules.notifier.domain.Rule;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.notifier.domain.Rule;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Repository to manipulate {@link Rule}
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
 @Repository
 public interface IRuleRepository extends JpaRepository<Rule, Long> {
 
     /**
      * Get all enabled {@link Rule}
+     *
      * @return a set of {@link Rule}
      */
     @EntityGraph(attributePaths = { "rulePlugin", "recipients" }, type = EntityGraph.EntityGraphType.LOAD)

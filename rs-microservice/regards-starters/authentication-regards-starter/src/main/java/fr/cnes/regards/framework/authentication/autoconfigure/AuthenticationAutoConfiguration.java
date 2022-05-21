@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.framework.authentication.autoconfigure;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-
 /**
  * Manage authentication bean
+ *
  * @author msordi
  */
 @Configuration

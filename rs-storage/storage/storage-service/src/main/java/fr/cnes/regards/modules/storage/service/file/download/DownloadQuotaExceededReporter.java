@@ -40,6 +40,7 @@ public class DownloadQuotaExceededReporter implements IQuotaExceededReporter<Dow
     public static final String TITLE = "Download quota errors";
 
     public static final int ELLIPSIS_THRESHOLD = 3;
+
     public static final String MORE_DOWNLOAD_ERRORS_TEMPLATE = "\n... and %d more download errors.";
 
     private long reportTick;
@@ -62,19 +63,19 @@ public class DownloadQuotaExceededReporter implements IQuotaExceededReporter<Dow
     // FIXME: change to Map<tenant, Map<user, (failure causes written, more causes but not written)>> for legibility
     private AtomicReference<Map<QuotaKey, Tuple2<List<String>, Long>>> errors = new AtomicReference<>(HashMap.empty());
 
-    public DownloadQuotaExceededReporter() {}
+    public DownloadQuotaExceededReporter() {
+    }
 
     @Autowired
-    public DownloadQuotaExceededReporter(
-        @Value("${regards.storage.quota.report.tick:30}") long reportTick,
-        @Qualifier(REPORT_TICKING_SCHEDULER) ThreadPoolTaskScheduler reportTickingScheduler,
-        INotificationClient notificationClient,
-        ITenantResolver tenantResolver,
-        IRuntimeTenantResolver runtimeTenantResolver,
-        ApplicationContext applicationContext,
-        Environment env,
-        DownloadQuotaExceededReporter downloadQuotaExceededReporter
-    ) {
+    public DownloadQuotaExceededReporter(@Value("${regards.storage.quota.report.tick:30}") long reportTick,
+                                         @Qualifier(REPORT_TICKING_SCHEDULER)
+                                         ThreadPoolTaskScheduler reportTickingScheduler,
+                                         INotificationClient notificationClient,
+                                         ITenantResolver tenantResolver,
+                                         IRuntimeTenantResolver runtimeTenantResolver,
+                                         ApplicationContext applicationContext,
+                                         Environment env,
+                                         DownloadQuotaExceededReporter downloadQuotaExceededReporter) {
         this.reportTick = reportTick;
         this.reportTickingScheduler = reportTickingScheduler;
         this.notificationClient = notificationClient;
@@ -100,10 +101,9 @@ public class DownloadQuotaExceededReporter implements IQuotaExceededReporter<Dow
         self = applicationContext.getBean(DownloadQuotaExceededReporter.class);
 
         // start schedulers only if not in "noscheduler" profile (i.e. disable schedulers for tests)
-        boolean shouldStartSchedulers =
-            Arrays.stream(env.getActiveProfiles())
-                .distinct() // maybe useless but I don't trust
-                .noneMatch(profile -> profile.equals("noscheduler"));
+        boolean shouldStartSchedulers = Arrays.stream(env.getActiveProfiles())
+                                              .distinct() // maybe useless but I don't trust
+                                              .noneMatch(profile -> profile.equals("noscheduler"));
         if (shouldStartSchedulers) {
             startReportSyncScheduler();
         }
@@ -111,28 +111,24 @@ public class DownloadQuotaExceededReporter implements IQuotaExceededReporter<Dow
 
     private void startReportSyncScheduler() {
         reportTickingScheduler.setThreadNamePrefix("quotas-report-");
-        reportTickingScheduler.scheduleWithFixedDelay(() ->
-                tenantResolver.getAllActiveTenants()
-                    .forEach(tenant -> {
-                        runtimeTenantResolver.forceTenant(tenant);
-                        try {
-                            self.notifyErrorsBatch(tenant);
-                        } finally {
-                            runtimeTenantResolver.clearTenant();
-                        }
-                    }),
-            Duration.ofSeconds(reportTick)
-        );
+        reportTickingScheduler.scheduleWithFixedDelay(() -> tenantResolver.getAllActiveTenants().forEach(tenant -> {
+            runtimeTenantResolver.forceTenant(tenant);
+            try {
+                self.notifyErrorsBatch(tenant);
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        }), Duration.ofSeconds(reportTick));
     }
 
     public void notifyErrorsBatch(String tenant) {
-        Map<String, Tuple2<List<String>, Long>> tenantErrors =
-            errors.getAndUpdate(m ->
-                    // Imagine this operation is executed after the rest of the code if you are not used to AtomicReference and vavr Map
-                m.filterKeys(k -> !k.getTenant().equals(tenant))
-            )
-                .filterKeys(k -> k.getTenant().equals(tenant))
-                .mapKeys(QuotaKey::getUserEmail);
+        Map<String, Tuple2<List<String>, Long>> tenantErrors = errors.getAndUpdate(m ->
+                                                                                       // Imagine this operation is executed after the rest of the code if you are not used to AtomicReference and vavr Map
+                                                                                       m.filterKeys(k -> !k.getTenant()
+                                                                                                           .equals(
+                                                                                                               tenant)))
+                                                                     .filterKeys(k -> k.getTenant().equals(tenant))
+                                                                     .mapKeys(QuotaKey::getUserEmail);
 
         self.notifyTenantErrors(tenantErrors);
     }
@@ -147,43 +143,36 @@ public class DownloadQuotaExceededReporter implements IQuotaExceededReporter<Dow
 
     public void notifyUserErrors(String userEmail, List<String> messages, Long errors) {
         Try.run(() -> {
-            StringBuilder notification =
-                Joiner.on("\n").appendTo(new StringBuilder(), messages);
+            StringBuilder notification = Joiner.on("\n").appendTo(new StringBuilder(), messages);
             if (errors > 0) {
                 notification.append(String.format(MORE_DOWNLOAD_ERRORS_TEMPLATE, errors));
             }
-            notificationClient.notify(
-                notification.toString(),
-                TITLE,
-                NotificationLevel.INFO,
-                MimeTypeUtils.TEXT_PLAIN,
-                new String[]{userEmail}
-            );
+            notificationClient.notify(notification.toString(),
+                                      TITLE,
+                                      NotificationLevel.INFO,
+                                      MimeTypeUtils.TEXT_PLAIN,
+                                      new String[] { userEmail });
         });
     }
 
     @Override
-    public void report(DownloadLimitExceededException.DownloadQuotaExceededException e, DownloadableFile file, String email, String tenant) {
-        report(
-            () -> String.format(
-                "Could not download file %s: download quota exceeded.",
-                file.getFileName()
-            ),
-            email,
-            tenant
-        );
+    public void report(DownloadLimitExceededException.DownloadQuotaExceededException e,
+                       DownloadableFile file,
+                       String email,
+                       String tenant) {
+        report(() -> String.format("Could not download file %s: download quota exceeded.", file.getFileName()),
+               email,
+               tenant);
     }
 
     @Override
-    public void report(DownloadLimitExceededException.DownloadRateExceededException e, DownloadableFile file, String email, String tenant) {
-        report(
-            () -> String.format(
-                "Could not download file %s: download rate exceeded.",
-                file.getFileName()
-            ),
-            email,
-            tenant
-        );
+    public void report(DownloadLimitExceededException.DownloadRateExceededException e,
+                       DownloadableFile file,
+                       String email,
+                       String tenant) {
+        report(() -> String.format("Could not download file %s: download rate exceeded.", file.getFileName()),
+               email,
+               tenant);
     }
 
     /**
@@ -194,16 +183,18 @@ public class DownloadQuotaExceededReporter implements IQuotaExceededReporter<Dow
     @VisibleForTesting
     protected void report(Supplier<String> message, String email, String tenant) {
         QuotaKey key = QuotaKey.make(tenant, email);
-        errors.updateAndGet(m -> m
-            .computeIfAbsent(key, k -> Tuple.of(List.empty(), 0L))
-            ._2
-            .computeIfPresent(key, (k, t) -> {
-                if (t._1.size() < ELLIPSIS_THRESHOLD) {
-                    return t.map1(l -> l.append(message.get()));
-                }
-                return t.map2(c -> c + 1);
-            })
-            ._2
-        );
+        errors.updateAndGet(m -> m.computeIfAbsent(key, k -> Tuple.of(List.empty(), 0L))._2.computeIfPresent(key,
+                                                                                                             (k, t) -> {
+                                                                                                                 if (t._1.size()
+                                                                                                                     < ELLIPSIS_THRESHOLD) {
+                                                                                                                     return t.map1(
+                                                                                                                         l -> l.append(
+                                                                                                                             message.get()));
+                                                                                                                 }
+                                                                                                                 return t.map2(
+                                                                                                                     c ->
+                                                                                                                         c
+                                                                                                                             + 1);
+                                                                                                             })._2);
     }
 }

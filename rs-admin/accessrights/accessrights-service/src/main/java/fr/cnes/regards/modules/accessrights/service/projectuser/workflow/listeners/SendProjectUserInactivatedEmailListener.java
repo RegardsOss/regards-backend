@@ -45,12 +45,13 @@ public class SendProjectUserInactivatedEmailListener implements ApplicationListe
 
     @Override
     public void onApplicationEvent(final OnInactiveEvent event) {
-        AccessRightsEmailWrapper wrapper = new AccessRightsEmailWrapper()
-                .setProjectUser(event.getProjectUser())
-                .setSubject("[REGARDS] User disabled")
-                .setTo(Collections.singleton(event.getProjectUser().getEmail()))
-                .setTemplate(AccessRightsTemplateConfiguration.USER_DISABLED_TEMPLATE_NAME)
-                .setDefaultMessage("Your access has been deactivated.");
+        AccessRightsEmailWrapper wrapper = new AccessRightsEmailWrapper().setProjectUser(event.getProjectUser())
+                                                                         .setSubject("[REGARDS] User disabled")
+                                                                         .setTo(Collections.singleton(event.getProjectUser()
+                                                                                                           .getEmail()))
+                                                                         .setTemplate(AccessRightsTemplateConfiguration.USER_DISABLED_TEMPLATE_NAME)
+                                                                         .setDefaultMessage(
+                                                                             "Your access has been deactivated.");
 
         accessRightsEmailService.sendEmail(wrapper);
     }

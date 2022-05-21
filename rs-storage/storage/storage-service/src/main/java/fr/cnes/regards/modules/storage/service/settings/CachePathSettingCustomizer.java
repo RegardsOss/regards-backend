@@ -1,21 +1,19 @@
 package fr.cnes.regards.modules.storage.service.settings;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Objects;
-
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingCustomizer;
+import fr.cnes.regards.modules.storage.domain.StorageSetting;
+import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
-import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingCustomizer;
-import fr.cnes.regards.modules.storage.domain.StorageSetting;
-import fr.cnes.regards.modules.storage.service.cache.CacheService;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Objects;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -50,7 +48,7 @@ public class CachePathSettingCustomizer implements IDynamicTenantSettingCustomiz
                     isValid = true;
                 } else {
                     LOGGER.error("Tenant cache path {} cannot be used by the application because of rights! "
-                                         + "Ensure execution user can read and write in the directory.", path);
+                                     + "Ensure execution user can read and write in the directory.", path);
                 }
             } catch (IOException e) {
                 LOGGER.error(String.format("Tenant cache path %s is invalid!", path), e);

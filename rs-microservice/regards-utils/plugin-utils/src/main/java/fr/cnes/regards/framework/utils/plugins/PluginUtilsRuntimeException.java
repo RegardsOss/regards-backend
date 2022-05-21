@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Exception for plugin utils package. It usually means that the plugin couldn't be instanciated.
+ *
  * @author Christophe Mertz
  */
 @SuppressWarnings("serial")
@@ -36,6 +37,7 @@ public class PluginUtilsRuntimeException extends RuntimeException {
 
     /**
      * Constructor
+     *
      * @param message an error message
      */
     public PluginUtilsRuntimeException(final String message) {
@@ -45,8 +47,9 @@ public class PluginUtilsRuntimeException extends RuntimeException {
 
     /**
      * Constructor
+     *
      * @param message an error message
-     * @param cause the exception
+     * @param cause   the exception
      */
     public PluginUtilsRuntimeException(final String message, final Throwable cause) {
         super(message, cause);
@@ -55,6 +58,7 @@ public class PluginUtilsRuntimeException extends RuntimeException {
 
     /**
      * Constructor
+     *
      * @param cause the exception
      */
     public PluginUtilsRuntimeException(final Throwable cause) {

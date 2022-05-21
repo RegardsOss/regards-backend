@@ -13,7 +13,8 @@ public class AccountAcceptedEvent implements ISubscribable {
 
     private String accountEmail;
 
-    public AccountAcceptedEvent() {}
+    public AccountAcceptedEvent() {
+    }
 
     public AccountAcceptedEvent(Account account) {
         this.accountEmail = account.getEmail();

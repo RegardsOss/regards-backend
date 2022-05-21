@@ -1,8 +1,9 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.test.JobTestConfiguration;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,14 +14,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.test.JobTestConfiguration;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+
 import static org.junit.Assert.assertEquals;
 
 /**
  * Test of Jobs executions (status, pool, spring autowiring, ...)
+ *
  * @author oroussel
  */
 @RunWith(SpringRunner.class)

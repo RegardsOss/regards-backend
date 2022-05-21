@@ -6,6 +6,7 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 
 /**
  * AbstractEntityEvent specialization for AbstractEntity other than Dataset
+ *
  * @author oroussel
  */
 @Event(target = Target.MICROSERVICE)

@@ -18,12 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.job.step;
 
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
@@ -35,6 +29,11 @@ import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.service.aip.AIPUpdateResult;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPStorageService;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 /**
  * Update step to add/remove a {@link OAISDataObjectLocation} to an {@link AIP} {@link OAISDataObject}
@@ -50,7 +49,7 @@ public class UpdateAIPLocation implements IUpdateStep {
 
     @Override
     public AIPEntityUpdateWrapper run(AIPEntityUpdateWrapper aipWrapper, AbstractAIPUpdateTask updateTask)
-            throws ModuleException {
+        throws ModuleException {
 
         AIPUpdateTaskType taskType = updateTask.getType();
         AIPUpdateFileLocationTask updateFileLocation = (AIPUpdateFileLocationTask) updateTask;
@@ -62,8 +61,11 @@ public class UpdateAIPLocation implements IUpdateStep {
             updated = aipStorageService.removeAIPLocations(aipWrapper.getAip(),
                                                            updateFileLocation.getFileLocationUpdates());
         }
-        LOGGER.debug("[AIP {}] Running update task {}. updated={} manifestUpdate={}", aipWrapper.getAip().getAipId(),
-                     taskType.toString(), updated.isAipEntityUpdated(), updated.isAipUpdated());
+        LOGGER.debug("[AIP {}] Running update task {}. updated={} manifestUpdate={}",
+                     aipWrapper.getAip().getAipId(),
+                     taskType.toString(),
+                     updated.isAipEntityUpdated(),
+                     updated.isAipUpdated());
         if (updated.isAipEntityUpdated()) {
             aipWrapper.markAsUpdated(updated.isAipUpdated());
         }

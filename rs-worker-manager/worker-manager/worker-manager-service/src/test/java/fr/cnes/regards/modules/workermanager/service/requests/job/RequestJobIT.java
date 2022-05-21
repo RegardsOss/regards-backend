@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.workermanager.service.requests.job;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
+import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
 import fr.cnes.regards.modules.workermanager.service.requests.scan.AbstractRequestJobIT;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -54,7 +54,6 @@ public class RequestJobIT extends AbstractRequestJobIT {
             Assert.assertEquals("All jobs should be ok", JobStatus.SUCCEEDED, jobInfo.getStatus().getStatus());
         });
 
-
         // Retrieve DeleteRequestJob jobs
         List<JobInfo> deleteJobInfos = this.getJobTestUtils().retrieveFullJobInfos(DeleteRequestJob.class);
         Assert.assertEquals("should launch correct number of DeleteRequestJob", 2, deleteJobInfos.size());
@@ -85,7 +84,6 @@ public class RequestJobIT extends AbstractRequestJobIT {
         scanJobInfos.stream().forEach(jobInfo -> {
             Assert.assertEquals("All jobs should be ok", JobStatus.SUCCEEDED, jobInfo.getStatus().getStatus());
         });
-
 
         // Retrieve DeleteRequestJob jobs
         List<JobInfo> deleteJobInfos = this.getJobTestUtils().retrieveFullJobInfos(DeleteRequestJob.class);

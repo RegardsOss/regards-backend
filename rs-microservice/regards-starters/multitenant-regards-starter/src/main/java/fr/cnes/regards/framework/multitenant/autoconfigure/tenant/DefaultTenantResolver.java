@@ -28,6 +28,7 @@ import java.util.TreeSet;
 
 /**
  * Resolve tenant base on configuration properties
+ *
  * @author msordi
  */
 public class DefaultTenantResolver implements ITenantResolver, InitializingBean {

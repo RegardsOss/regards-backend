@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.order.service.processing;
 
 import com.google.common.hash.Hashing;
@@ -94,38 +94,74 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@ActiveProfiles(value = {"default", "test", "testAmqp"}, inheritProfiles = false)
+@ActiveProfiles(value = { "default", "test", "testAmqp" }, inheritProfiles = false)
 @ContextConfiguration(classes = ProcessingServiceConfiguration.class)
-@TestPropertySource(properties = {
-        "regards.amqp.enabled=true",
-        "logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE",
-        "logging.level.org.springframework.transaction=TRACE",
-        "regards.order.files.bucket.size.Mb=50", // We regulate the suborder sizes with process info limits
-})
+@TestPropertySource(
+    properties = { "regards.amqp.enabled=true", "logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE",
+        "logging.level.org.springframework.transaction=TRACE", "regards.order.files.bucket.size.Mb=50",
+        // We regulate the suborder sizes with process info limits
+    })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitenantServiceIT {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(OrderServiceTestIT.class);
 
-    @Autowired protected IBasketDatasetSelectionRepository dsSelRepo;
-    @Autowired protected IOrderService orderService;
-    @Autowired protected IOrderDownloadService orderDownloadService;
-    @Autowired protected IOrderRepository orderRepos;
-    @Autowired protected IOrderDataFileRepository dataFileRepos;
-    @Autowired protected IOrderDataFileService dataFileService;
-    @Autowired protected IBasketRepository basketRepos;
-    @Autowired protected IJobInfoRepository jobInfoRepos;
-    @Autowired protected IAuthenticationResolver authResolver;
-    @Autowired protected IProjectsClient projectsClient;
-    @Autowired protected IRuntimeTenantResolver tenantResolver;
-    @Autowired protected StorageClientMock storageClientMock;
-    @Autowired protected IProcessingRestClient processingClient;
-    @Autowired protected IProcessingEventSender processingEventSender;
-    @Autowired protected IPublisher publisher;
-    @Autowired protected TaskExecutor taskExecutor;
-    @Autowired protected ExecResultHandlerResultEventHandler execResultHandlerResultEventHandler;
-    @Autowired protected OrderCreationCompletedEventHandler orderCreationCompletedEventHandler;
-    @Autowired protected IBasketService basketService;
+    @Autowired
+    protected IBasketDatasetSelectionRepository dsSelRepo;
+
+    @Autowired
+    protected IOrderService orderService;
+
+    @Autowired
+    protected IOrderDownloadService orderDownloadService;
+
+    @Autowired
+    protected IOrderRepository orderRepos;
+
+    @Autowired
+    protected IOrderDataFileRepository dataFileRepos;
+
+    @Autowired
+    protected IOrderDataFileService dataFileService;
+
+    @Autowired
+    protected IBasketRepository basketRepos;
+
+    @Autowired
+    protected IJobInfoRepository jobInfoRepos;
+
+    @Autowired
+    protected IAuthenticationResolver authResolver;
+
+    @Autowired
+    protected IProjectsClient projectsClient;
+
+    @Autowired
+    protected IRuntimeTenantResolver tenantResolver;
+
+    @Autowired
+    protected StorageClientMock storageClientMock;
+
+    @Autowired
+    protected IProcessingRestClient processingClient;
+
+    @Autowired
+    protected IProcessingEventSender processingEventSender;
+
+    @Autowired
+    protected IPublisher publisher;
+
+    @Autowired
+    protected TaskExecutor taskExecutor;
+
+    @Autowired
+    protected ExecResultHandlerResultEventHandler execResultHandlerResultEventHandler;
+
+    @Autowired
+    protected OrderCreationCompletedEventHandler orderCreationCompletedEventHandler;
+
+    @Autowired
+    protected IBasketService basketService;
 
     @MockBean
     protected IProjectUsersClient projectUsersClient;
@@ -148,8 +184,8 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
         });
         Project project = new Project();
         project.setHost("regardsHost");
-        when(projectsClient.retrieveProject(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(EntityModel.of(project), HttpStatus.OK));
+        when(projectsClient.retrieveProject(Mockito.anyString())).thenReturn(new ResponseEntity<>(EntityModel.of(project),
+                                                                                                  HttpStatus.OK));
         simulateApplicationReadyEvent();
         simulateApplicationStartedEvent();
     }
@@ -172,17 +208,23 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
         }
     }
 
-    protected void assertProcessingEventSizes(int expectedExecutions, ProcessingMock processingMock, Long storageJobsSuccessBefore, Long execJobsSuccessBefore) {
+    protected void assertProcessingEventSizes(int expectedExecutions,
+                                              ProcessingMock processingMock,
+                                              Long storageJobsSuccessBefore,
+                                              Long execJobsSuccessBefore) {
         assertThat(processingMock.getExecRequestEvents()).hasSize(expectedExecutions);
 
-        Long storageJobsSuccessAfter = jobInfoRepos.countByClassNameAndStatusStatusIn(StorageFilesJob.class.getName(), JobStatus.SUCCEEDED);
-        Long execJobsSuccessAfter = jobInfoRepos.countByClassNameAndStatusStatusIn(ProcessExecutionJob.class.getName(), JobStatus.SUCCEEDED);
+        Long storageJobsSuccessAfter = jobInfoRepos.countByClassNameAndStatusStatusIn(StorageFilesJob.class.getName(),
+                                                                                      JobStatus.SUCCEEDED);
+        Long execJobsSuccessAfter = jobInfoRepos.countByClassNameAndStatusStatusIn(ProcessExecutionJob.class.getName(),
+                                                                                   JobStatus.SUCCEEDED);
         assertThat(storageJobsSuccessAfter - storageJobsSuccessBefore).isEqualTo(expectedExecutions);
         assertThat(execJobsSuccessAfter - execJobsSuccessBefore).isEqualTo(expectedExecutions);
 
     }
 
-    protected void awaitLatches(CountDownLatch orderCreatedLatch, CountDownLatch receivedExecutionResultsLatch) throws InterruptedException {
+    protected void awaitLatches(CountDownLatch orderCreatedLatch, CountDownLatch receivedExecutionResultsLatch)
+        throws InterruptedException {
         if (!orderCreatedLatch.await(5, TimeUnit.MINUTES)) {
             fail("Did not create the order in a large amount of time.");
         }
@@ -195,7 +237,15 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
         //assertThat(orderService.loadComplete(order.getId()).getStatus()).isEqualTo(OrderStatus.DONE);
     }
 
-    protected void setupMocksAndHandlers(UUID processBusinessId, OrderProcessInfoMapper processInfoMapper, OrderProcessInfo processInfo, String defaultTenant, ProcessingMock processingMock, AtomicInteger sendProcessingRequestCallCount, String orderOwner, CountDownLatch orderCreatedLatch, CountDownLatch receivedExecutionResultsLatch) {
+    protected void setupMocksAndHandlers(UUID processBusinessId,
+                                         OrderProcessInfoMapper processInfoMapper,
+                                         OrderProcessInfo processInfo,
+                                         String defaultTenant,
+                                         ProcessingMock processingMock,
+                                         AtomicInteger sendProcessingRequestCallCount,
+                                         String orderOwner,
+                                         CountDownLatch orderCreatedLatch,
+                                         CountDownLatch receivedExecutionResultsLatch) {
         Mockito.reset(processingEventSender);
 
         setUpProcessingClient(processBusinessId, processInfoMapper, processInfo);
@@ -203,37 +253,40 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
         when(processingEventSender.sendProcessingRequest(any())).thenAnswer(i -> {
             sendProcessingRequestCallCount.incrementAndGet();
             PExecutionRequestEvent requestEvent = i.getArgument(0);
-            return processingMock.dealWithEvent(defaultTenant, requestEvent, processBusinessId, processInfo, processInfoMapper);
+            return processingMock.dealWithEvent(defaultTenant,
+                                                requestEvent,
+                                                processBusinessId,
+                                                processInfo,
+                                                processInfoMapper);
         });
 
         orderCreationCompletedEventHandler.setConsumer(order -> orderCreatedLatch.countDown());
 
         execResultHandlerResultEventHandler.setConsumer(evt -> {
             // When a file is available, simulate a download for this file by calling downloadOrderCurrentZip
-            try(ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
                 List<OrderDataFile> updatedOrderDataFiles = evt.getUpdatedOrderDataFiles();
                 LOGGER.info("Downloading {}", updatedOrderDataFiles);
                 orderDownloadService.downloadOrderCurrentZip(orderOwner, updatedOrderDataFiles.asJava(), out);
-            }
-            catch(IOException e) {
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             receivedExecutionResultsLatch.countDown();
         });
     }
 
-    protected void setUpProcessingClient(UUID processBusinessId, OrderProcessInfoMapper processInfoMapper,
-                                 OrderProcessInfo processInfo) {
+    protected void setUpProcessingClient(UUID processBusinessId,
+                                         OrderProcessInfoMapper processInfoMapper,
+                                         OrderProcessInfo processInfo) {
         Mockito.reset(processingClient);
 
         when(processingClient.findByUuid(processBusinessId.toString())).thenAnswer(i -> new ResponseEntity<>(new PProcessDTO(
-                        processBusinessId,
-                        "the-process-name",
-                        true,
-                        processInfoMapper.toMap(processInfo),
-                        List.of(new ExecutionParamDTO("the-param-name", ExecutionParameterType.STRING, "The param desc"))
-                ), HttpStatus.OK)
-        );
+            processBusinessId,
+            "the-process-name",
+            true,
+            processInfoMapper.toMap(processInfo),
+            List.of(new ExecutionParamDTO("the-param-name", ExecutionParameterType.STRING, "The param desc"))),
+                                                                                                             HttpStatus.OK));
 
         when(processingClient.createBatch(any())).thenAnswer(i -> {
             PBatchRequest req = i.getArgument(0);
@@ -244,17 +297,19 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
         });
     }
 
-
-    protected Basket createBasket(String orderOwner, String defaultTenant, UUID processBusinessId, Map<String, String> processParameters) {
+    protected Basket createBasket(String orderOwner,
+                                  String defaultTenant,
+                                  UUID processBusinessId,
+                                  Map<String, String> processParameters) {
         Basket basket = new Basket(orderOwner);
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
         dsSelection.setDatasetIpid(SearchClientMock.DS1_IP_ID.toString());
         dsSelection.setDatasetLabel("DS");
         dsSelection.setObjectsCount(3);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
-        dsSelection.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", 12L);
-        dsSelection.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", 12L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_ref", 0L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_ref", 0L);
+        dsSelection.setFileTypeCount(DataType.RAWDATA.name() + "_!ref", 12L);
+        dsSelection.setFileTypeSize(DataType.RAWDATA.name() + "_!ref", 12L);
         dsSelection.setFileTypeCount(DataType.RAWDATA.name(), 12L);
         dsSelection.setFileTypeSize(DataType.RAWDATA.name(), 12L);
         BasketDatedItemsSelection itemSelection = createDatasetItemSelection(1L, 12, 3, "ALL");
@@ -275,14 +330,16 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
         return prefix + "_" + Long.toHexString(new Random().nextLong());
     }
 
-    protected BasketDatedItemsSelection createDatasetItemSelection(long filesSize, long filesCount, int objectsCount,
-                                                                 String query) {
+    protected BasketDatedItemsSelection createDatasetItemSelection(long filesSize,
+                                                                   long filesCount,
+                                                                   int objectsCount,
+                                                                   String query) {
 
         BasketDatedItemsSelection item = new BasketDatedItemsSelection();
-        item.setFileTypeSize(DataType.RAWDATA.name()+"_ref", 0L);
-        item.setFileTypeCount(DataType.RAWDATA.name()+"_ref", 0L);
-        item.setFileTypeSize(DataType.RAWDATA.name()+"_!ref", filesSize);
-        item.setFileTypeCount(DataType.RAWDATA.name()+"_!ref", filesCount);
+        item.setFileTypeSize(DataType.RAWDATA.name() + "_ref", 0L);
+        item.setFileTypeCount(DataType.RAWDATA.name() + "_ref", 0L);
+        item.setFileTypeSize(DataType.RAWDATA.name() + "_!ref", filesSize);
+        item.setFileTypeCount(DataType.RAWDATA.name() + "_!ref", filesCount);
         item.setFileTypeSize(DataType.RAWDATA.name(), filesSize);
         item.setFileTypeCount(DataType.RAWDATA.name(), filesCount);
         item.setObjectsCount(objectsCount);
@@ -303,57 +360,60 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
     public static class ProcessingMock {
 
         protected final ConcurrentLinkedQueue<PExecutionRequestEvent> execRequestEvents = new ConcurrentLinkedQueue<>();
+
         protected final long processingMillis = 500L;
 
         protected final IRuntimeTenantResolver runtimeTenantResolver;
+
         protected final IPublisher publisher;
+
         protected final TaskExecutor taskExecutor;
+
         protected final java.util.Map<UUID, String> batchCorrelations;
 
-        public ProcessingMock(
-                IRuntimeTenantResolver runtimeTenantResolver,
-                IPublisher publisher,
-                TaskExecutor taskExecutor,
-                Map<UUID, String> batchCorrelations
-        ) {
+        public ProcessingMock(IRuntimeTenantResolver runtimeTenantResolver,
+                              IPublisher publisher,
+                              TaskExecutor taskExecutor,
+                              Map<UUID, String> batchCorrelations) {
             this.runtimeTenantResolver = runtimeTenantResolver;
             this.publisher = publisher;
             this.taskExecutor = taskExecutor;
             this.batchCorrelations = batchCorrelations;
         }
 
-        public Try<PExecutionRequestEvent> dealWithEvent(
-                String tenant,
-                PExecutionRequestEvent requestEvent,
-                UUID processBusinessId,
-                OrderProcessInfo processInfo,
-                OrderProcessInfoMapper processInfoMapper
-        ) {
+        public Try<PExecutionRequestEvent> dealWithEvent(String tenant,
+                                                         PExecutionRequestEvent requestEvent,
+                                                         UUID processBusinessId,
+                                                         OrderProcessInfo processInfo,
+                                                         OrderProcessInfoMapper processInfoMapper) {
             execRequestEvents.add(requestEvent);
             new Thread(() -> {
                 runtimeTenantResolver.forceTenant(tenant);
                 UUID executionId = UUID.randomUUID();
                 File outFile = new File("src/test/resources/processing/execResult");
-                publisher.publish(new PExecutionResultEvent(
-                        executionId,
-                        requestEvent.getExecutionCorrelationId(),
-                        requestEvent.getBatchId(),
-                        batchCorrelations.get(requestEvent.getBatchId()),
-                        processBusinessId,
-                        processInfoMapper.toMap(processInfo),
-                        ExecutionStatus.SUCCESS,
-                        List.of(new POutputFileDTO(
-                                UUID.randomUUID(),
-                                executionId,
-                                Try.of(() -> outFile.toURI().toURL()).get(),
-                                "execID-" + executionId,
-                                outFile.length(),
-                                "MD5",
-                                Try.of(() -> Files.hash(outFile, Hashing.md5()).toString()).get(),
-                                requestEvent.getInputFiles().map(PInputFile::getInputCorrelationId).toList()
-                        )),
-                        List.empty()
-                ));
+                publisher.publish(new PExecutionResultEvent(executionId,
+                                                            requestEvent.getExecutionCorrelationId(),
+                                                            requestEvent.getBatchId(),
+                                                            batchCorrelations.get(requestEvent.getBatchId()),
+                                                            processBusinessId,
+                                                            processInfoMapper.toMap(processInfo),
+                                                            ExecutionStatus.SUCCESS,
+                                                            List.of(new POutputFileDTO(UUID.randomUUID(),
+                                                                                       executionId,
+                                                                                       Try.of(() -> outFile.toURI()
+                                                                                                           .toURL())
+                                                                                          .get(),
+                                                                                       "execID-" + executionId,
+                                                                                       outFile.length(),
+                                                                                       "MD5",
+                                                                                       Try.of(() -> Files.hash(outFile,
+                                                                                                               Hashing.md5())
+                                                                                                         .toString())
+                                                                                          .get(),
+                                                                                       requestEvent.getInputFiles()
+                                                                                                   .map(PInputFile::getInputCorrelationId)
+                                                                                                   .toList())),
+                                                            List.empty()));
             }).start();
             return Try.success(requestEvent);
         }
@@ -364,29 +424,59 @@ public abstract class AbstractOrderProcessingServiceIT extends AbstractMultitena
     }
 
     @Component
-    public static class ExecResultHandlerResultEventHandler implements ApplicationListener<ExecResultHandlerResultEvent> {
+    public static class ExecResultHandlerResultEventHandler
+        implements ApplicationListener<ExecResultHandlerResultEvent> {
+
         protected final java.util.Queue<ExecResultHandlerResultEvent> events = new ConcurrentLinkedQueue<>();
-        protected Consumer<ExecResultHandlerResultEvent> consumer = e -> {};
-        public void setConsumer(Consumer<ExecResultHandlerResultEvent> consumer) { this.consumer = consumer; }
-        @Override public synchronized void onApplicationEvent(ExecResultHandlerResultEvent event) {
+
+        protected Consumer<ExecResultHandlerResultEvent> consumer = e -> {
+        };
+
+        public void setConsumer(Consumer<ExecResultHandlerResultEvent> consumer) {
+            this.consumer = consumer;
+        }
+
+        @Override
+        public synchronized void onApplicationEvent(ExecResultHandlerResultEvent event) {
             events.add(event);
             consumer.accept(event);
         }
-        public List<ExecResultHandlerResultEvent> getEvents() { return List.ofAll(events); }
-        public void clear() { events.clear(); }
+
+        public List<ExecResultHandlerResultEvent> getEvents() {
+            return List.ofAll(events);
+        }
+
+        public void clear() {
+            events.clear();
+        }
     }
 
     @Component
-    public static class OrderCreationCompletedEventHandler implements ApplicationListener<OrderCreationService.OrderCreationCompletedEvent> {
+    public static class OrderCreationCompletedEventHandler
+        implements ApplicationListener<OrderCreationService.OrderCreationCompletedEvent> {
+
         protected final java.util.Queue<OrderCreationService.OrderCreationCompletedEvent> events = new ConcurrentLinkedQueue<>();
-        protected Consumer<OrderCreationService.OrderCreationCompletedEvent> consumer = e -> {};
-        public void setConsumer(Consumer<OrderCreationService.OrderCreationCompletedEvent> consumer) { this.consumer = consumer; }
-        @Override public synchronized void onApplicationEvent(OrderCreationService.OrderCreationCompletedEvent event) {
+
+        protected Consumer<OrderCreationService.OrderCreationCompletedEvent> consumer = e -> {
+        };
+
+        public void setConsumer(Consumer<OrderCreationService.OrderCreationCompletedEvent> consumer) {
+            this.consumer = consumer;
+        }
+
+        @Override
+        public synchronized void onApplicationEvent(OrderCreationService.OrderCreationCompletedEvent event) {
             events.add(event);
             consumer.accept(event);
         }
-        public List<OrderCreationService.OrderCreationCompletedEvent> getEvents() { return List.ofAll(events); }
-        public void clear() { events.clear(); }
+
+        public List<OrderCreationService.OrderCreationCompletedEvent> getEvents() {
+            return List.ofAll(events);
+        }
+
+        public void clear() {
+            events.clear();
+        }
 
     }
 

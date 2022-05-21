@@ -18,38 +18,22 @@
  */
 package fr.cnes.regards.modules.access.services.domain.ui;
 
-import java.util.List;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import javax.persistence.*;
+import java.util.List;
 
 /**
  * Class to link a dataset to a UIPluginConfigurations
  *
  * @author Sébastien Binda
- *
  */
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @Entity
 @Table(name = "t_link_uiservice_dataset",
-        uniqueConstraints = @UniqueConstraint(name = "uk_link_uiservice_dataset_dataset_id",
-                columnNames = "dataset_id"))
+    uniqueConstraints = @UniqueConstraint(name = "uk_link_uiservice_dataset_dataset_id", columnNames = "dataset_id"))
 public class LinkUIPluginsDatasets {
 
     /**
@@ -57,7 +41,7 @@ public class LinkUIPluginsDatasets {
      */
     @Id
     @SequenceGenerator(name = "ihmLinkUiPluginDatasetSequence", initialValue = 1,
-            sequenceName = "seq_ihm_uiplugin_dataset")
+        sequenceName = "seq_ihm_uiplugin_dataset")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ihmLinkUiPluginDatasetSequence")
     private Long linkId;
 
@@ -66,15 +50,14 @@ public class LinkUIPluginsDatasets {
 
     /**
      * Ids of plugin configuration of type IService
-     *
+     * <p>
      * FetchType.EAGER : It is the only usefull information of this POJO. There is no need of getting LinkUIPluginsDatasets without services.
      */
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "ta_link_dataset_uiservices",
-            joinColumns = @JoinColumn(name = "dataset_id",
-                    foreignKey = @ForeignKey(name = "fk_link_dataset_uiservices_dataset_id_service_configuration_id")),
-            inverseJoinColumns = @JoinColumn(name = "service_configuration_id",
-                    foreignKey = @ForeignKey(name = "fk_link_dataset_uiservices_service_configuration_id_dataset_id")))
+    @JoinTable(name = "ta_link_dataset_uiservices", joinColumns = @JoinColumn(name = "dataset_id",
+        foreignKey = @ForeignKey(name = "fk_link_dataset_uiservices_dataset_id_service_configuration_id")),
+        inverseJoinColumns = @JoinColumn(name = "service_configuration_id",
+            foreignKey = @ForeignKey(name = "fk_link_dataset_uiservices_service_configuration_id_dataset_id")))
     private List<UIPluginConfiguration> services;
 
     /**
@@ -86,10 +69,8 @@ public class LinkUIPluginsDatasets {
     /**
      * Constructor
      *
-     * @param datasetId
-     *            Id of the dataset which is concerned by this mapping
-     * @param services
-     *            Ids of plugin configuration of type IService
+     * @param datasetId Id of the dataset which is concerned by this mapping
+     * @param services  Ids of plugin configuration of type IService
      */
     public LinkUIPluginsDatasets(final String datasetId, final List<UIPluginConfiguration> services) {
         super();

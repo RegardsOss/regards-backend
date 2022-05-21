@@ -18,19 +18,6 @@
  */
 package fr.cnes.regards.modules.model.service.validation;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.validation.Errors;
-import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.Validator;
-
 import fr.cnes.regards.framework.geojson.AbstractFeature;
 import fr.cnes.regards.modules.model.domain.ComputationMode;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
@@ -39,15 +26,22 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.service.validation.validator.ComputationModeValidator;
 import fr.cnes.regards.modules.model.service.validation.validator.PropertyTypeValidator;
 import fr.cnes.regards.modules.model.service.validation.validator.restriction.RestrictionValidatorFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
+
+import java.util.*;
 
 /**
- *
  * Override this class to validate feature properties
+ *
  * @author oroussel
  * @author Marc SORDI
  */
 public abstract class AbstractValidationService<F extends AbstractFeature<Set<IProperty<?>>, ?>>
-        implements IValidationService<F> {
+    implements IValidationService<F> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractValidationService.class);
 
@@ -99,14 +93,19 @@ public abstract class AbstractValidationService<F extends AbstractFeature<Set<IP
 
     /**
      * Validate a property according to its corresponding model attribute
-     * @param modelAttrAssoc model attribute
-     * @param objectName name of the object to validate
-     * @param pptyMap properties to check
+     *
+     * @param modelAttrAssoc    model attribute
+     * @param objectName        name of the object to validate
+     * @param pptyMap           properties to check
      * @param toCheckProperties properties not already checked
      * @return validation errors
      */
-    protected Errors checkModelAttribute(ModelAttrAssoc modelAttrAssoc, String objectName, ValidationMode mode,
-            F feature, Map<String, IProperty<?>> pptyMap, Set<String> toCheckProperties) {
+    protected Errors checkModelAttribute(ModelAttrAssoc modelAttrAssoc,
+                                         String objectName,
+                                         ValidationMode mode,
+                                         F feature,
+                                         Map<String, IProperty<?>> pptyMap,
+                                         Set<String> toCheckProperties) {
 
         Errors errors = new MapBindingResult(new HashMap<>(), objectName);
 
@@ -141,10 +140,9 @@ public abstract class AbstractValidationService<F extends AbstractFeature<Set<IP
                             if (validator.supports(att.getClass())) {
                                 validator.validate(att, errors);
                             } else {
-                                String defaultMessage = String
-                                        .format("Unsupported validator \"%s\" for property \"%s\"",
-                                                validator.getClass().getName(),
-                                                attPath);
+                                String defaultMessage = String.format("Unsupported validator \"%s\" for property \"%s\"",
+                                                                      validator.getClass().getName(),
+                                                                      attPath);
                                 errors.reject("error.unsupported.validator.message", defaultMessage);
                             }
                         }
@@ -161,8 +159,8 @@ public abstract class AbstractValidationService<F extends AbstractFeature<Set<IP
         if (!ValidationMode.PATCH.equals(mode)) { // In PATCH mode, all properties can be null
             if (!attModel.isOptional()) {
                 String messageKey = "error.missing.required.property.message";
-                String defaultMessage = String
-                        .format("Missing required property \"%s\".", attModel.getJsonPropertyPath());
+                String defaultMessage = String.format("Missing required property \"%s\".",
+                                                      attModel.getJsonPropertyPath());
                 errors.reject(messageKey, defaultMessage);
                 return;
             }
@@ -175,8 +173,8 @@ public abstract class AbstractValidationService<F extends AbstractFeature<Set<IP
             // In PATCH mode, null value is used to unset a property
             if (!attModel.isAlterable()) {
                 String messageKey = "error.unset.non.alterable.property.message";
-                String defaultMessage = String
-                        .format("Non alterable property \"%s\" cannot be unset.", attModel.getJsonPropertyPath());
+                String defaultMessage = String.format("Non alterable property \"%s\" cannot be unset.",
+                                                      attModel.getJsonPropertyPath());
                 errors.reject(messageKey, defaultMessage);
             } else {
                 LOGGER.debug("Property \"{}\" will be unset in {} context.", attModel.getJsonPropertyPath(), mode);
@@ -200,8 +198,10 @@ public abstract class AbstractValidationService<F extends AbstractFeature<Set<IP
     /**
      * Get validators
      */
-    protected List<Validator> getValidators(ModelAttrAssoc modelAttrAssoc, String attributeKey, ValidationMode mode,
-            F feature) {
+    protected List<Validator> getValidators(ModelAttrAssoc modelAttrAssoc,
+                                            String attributeKey,
+                                            ValidationMode mode,
+                                            F feature) {
         AttributeModel attModel = modelAttrAssoc.getAttribute();
 
         List<Validator> validators = new ArrayList<>();

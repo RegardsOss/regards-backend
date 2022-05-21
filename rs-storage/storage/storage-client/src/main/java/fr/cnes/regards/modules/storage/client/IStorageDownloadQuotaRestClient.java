@@ -18,16 +18,14 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
-import javax.validation.Valid;
-import java.util.List;
-
+import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
+import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import fr.cnes.regards.framework.modules.tenant.settings.client.IDynamicTenantSettingClient;
-import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
-import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
+import javax.validation.Valid;
+import java.util.List;
 
 public interface IStorageDownloadQuotaRestClient {
 
@@ -46,39 +44,39 @@ public interface IStorageDownloadQuotaRestClient {
     String USER_EMAIL_PARAM = "user_email";
 
     @GetMapping(path = PATH_USER_QUOTA, produces = MediaType.APPLICATION_JSON_VALUE,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
+        consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits(@PathVariable(USER_EMAIL_PARAM) String userEmail);
 
     @PutMapping(path = PATH_USER_QUOTA, produces = MediaType.APPLICATION_JSON_VALUE,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
+        consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(@PathVariable(USER_EMAIL_PARAM) String userEmail,
-            @Valid @RequestBody DownloadQuotaLimitsDto quotaLimits);
+                                                             @Valid @RequestBody DownloadQuotaLimitsDto quotaLimits);
 
     @GetMapping(path = PATH_QUOTA_LIST, produces = MediaType.APPLICATION_JSON_VALUE,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
+        consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<List<DownloadQuotaLimitsDto>> getQuotaLimits(
-            @RequestParam(value = USER_EMAIL_PARAM) String[] userEmails);
+        @RequestParam(value = USER_EMAIL_PARAM) String[] userEmails);
 
     @GetMapping(path = PATH_QUOTA, produces = MediaType.APPLICATION_JSON_VALUE,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
+        consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits();
 
     @GetMapping(path = PATH_CURRENT_QUOTA, produces = MediaType.APPLICATION_JSON_VALUE,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
+        consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<UserCurrentQuotas> getCurrentQuotas();
 
     @GetMapping(path = PATH_USER_CURRENT_QUOTA, produces = MediaType.APPLICATION_JSON_VALUE,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
+        consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<UserCurrentQuotas> getCurrentQuotas(@PathVariable(USER_EMAIL_PARAM) String userEmail);
 
     @PostMapping(path = PATH_CURRENT_QUOTA_LIST, produces = MediaType.APPLICATION_JSON_VALUE,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
+        consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(@Valid @RequestBody String[] userEmails);
 }

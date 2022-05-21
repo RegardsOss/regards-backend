@@ -36,15 +36,15 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
 /**
  * Test for {@link AIPNotificationSettingsService}
+ *
  * @author Iliana Ghazali
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=aip_notification_settings_service_it" },
-        locations = { "classpath:application-test.properties" })
-@ActiveProfiles(value = {"noscheduler"})
+    properties = { "spring.jpa.properties.hibernate.default_schema=aip_notification_settings_service_it" },
+    locations = { "classpath:application-test.properties" })
+@ActiveProfiles(value = { "noscheduler" })
 public class AIPNotificationSettingsServiceIT extends AbstractMultitenantServiceIT {
 
     @Autowired

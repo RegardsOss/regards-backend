@@ -46,13 +46,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
  * Class ResourceFeignClientIT
- *
+ * <p>
  * Test that all endpoints of the ResourceController are accessible with Feign clients
  *
  * @author Sébastien Binda
-
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class ResourceFeignClientIT extends AbstractRegardsWebIT {
@@ -88,10 +86,9 @@ public class ResourceFeignClientIT extends AbstractRegardsWebIT {
     @Before
     public void init() {
         jwtService.injectMockToken(getDefaultTenant(), DEFAULT_ROLE);
-        client = FeignClientBuilder.build(
-                                          new TokenClientProvider<>(IMicroserviceResourceClient.class,
-                                                  "http://" + serverAddress + ":" + getPort(), feignSecurityManager),
-                                          gson);
+        client = FeignClientBuilder.build(new TokenClientProvider<>(IMicroserviceResourceClient.class,
+                                                                    "http://" + serverAddress + ":" + getPort(),
+                                                                    feignSecurityManager), gson);
         FeignSecurityManager.asSystem();
     }
 
@@ -105,8 +102,10 @@ public class ResourceFeignClientIT extends AbstractRegardsWebIT {
 
     @Test
     public void retrieveMicroserviceResourcesFromFeignClient() {
-        final ResponseEntity<PagedModel<EntityModel<ResourcesAccess>>> response = client
-                .getAllResourceAccessesByMicroservice("rs-test", 0, 20);
+        final ResponseEntity<PagedModel<EntityModel<ResourcesAccess>>> response = client.getAllResourceAccessesByMicroservice(
+            "rs-test",
+            0,
+            20);
         Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
     }
 

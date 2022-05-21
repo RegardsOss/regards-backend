@@ -1,12 +1,10 @@
 package fr.cnes.regards.framework.authentication.internal;
 
-import java.io.IOException;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringJoiner;
-
+import com.google.gson.Gson;
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -19,11 +17,8 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2RefreshToken;
 import org.springframework.util.Assert;
 
-import com.google.gson.Gson;
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterBean;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Customize {@link com.google.gson.Gson} to be able to respect Oauth2 Response format.
@@ -33,7 +28,7 @@ import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterBean;
  */
 @GsonTypeAdapterBean(adapted = DefaultOAuth2AccessToken.class)
 public class Oauth2DefaultTokenAdapter extends TypeAdapter<DefaultOAuth2AccessToken>
-        implements ApplicationContextAware, ApplicationListener<ContextRefreshedEvent> {
+    implements ApplicationContextAware, ApplicationListener<ContextRefreshedEvent> {
 
     private static final Logger LOG = LoggerFactory.getLogger(Oauth2DefaultTokenAdapter.class);
 

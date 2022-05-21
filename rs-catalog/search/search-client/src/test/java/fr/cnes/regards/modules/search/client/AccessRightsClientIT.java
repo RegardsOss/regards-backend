@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.search.client;
 
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -25,12 +26,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.urn.UniformResourceName;
-
 /**
  * Test {@link IAccessRights} client
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
 @Ignore("No elastic search index")
 @TestPropertySource("classpath:test.properties")
@@ -39,8 +38,8 @@ public class AccessRightsClientIT extends AbstractSearchClientIT<IAccessRights> 
 
     @Test
     public void hasAccess() {
-        ResponseEntity<Boolean> result = client
-                .hasAccess(UniformResourceName.fromString("URN:AIP:DATA:CDPP:4ece80cd-7705-3ee5-babd-64c03ff61bcd:V1"));
+        ResponseEntity<Boolean> result = client.hasAccess(UniformResourceName.fromString(
+            "URN:AIP:DATA:CDPP:4ece80cd-7705-3ee5-babd-64c03ff61bcd:V1"));
         Assert.assertTrue(result.getBody());
     }
 }

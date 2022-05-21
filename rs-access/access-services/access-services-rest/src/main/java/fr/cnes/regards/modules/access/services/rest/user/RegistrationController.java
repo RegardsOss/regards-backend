@@ -31,9 +31,9 @@ import javax.validation.Valid;
 
 /**
  * Endpoints to handle Users registration for a project.
+ *
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
-
  */
 @RestController
 @RequestMapping(RegistrationController.REQUEST_MAPPING_ROOT)
@@ -42,10 +42,15 @@ public class RegistrationController {
     public static final String REQUEST_MAPPING_ROOT = "/accesses";
 
     public static final String EXTERNAL_ACCESS_PATH = "/external";
+
     public static final String ACCEPT_ACCESS_RELATIVE_PATH = "/{access_id}/accept";
+
     public static final String DENY_ACCESS_RELATIVE_PATH = "/{access_id}/deny";
+
     protected static final String VERIFY_EMAIL_RELATIVE_PATH = "/verifyEmail/{token}";
+
     public static final String ACTIVE_ACCESS_RELATIVE_PATH = "/{access_id}/active";
+
     public static final String INACTIVE_ACCESS_RELATIVE_PATH = "/{access_id}/inactive";
 
     private final IRegistrationClient registrationClient;
@@ -64,7 +69,9 @@ public class RegistrationController {
     @ResourceAccess(description = "Request for a new projectUser (Public feature).", role = DefaultRole.PUBLIC)
     public ResponseEntity<Void> requestAccess(@Valid @RequestBody AccessRequestDto accessRequestDto) {
         ResponseEntity<EntityModel<AccessRequestDto>> response = registrationClient.requestAccess(accessRequestDto);
-        HttpStatus status = response.getStatusCode().is2xxSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR;
+        HttpStatus status = response.getStatusCode().is2xxSuccessful() ?
+            HttpStatus.CREATED :
+            HttpStatus.INTERNAL_SERVER_ERROR;
         return ResponseEntity.status(status).build();
     }
 
@@ -77,8 +84,11 @@ public class RegistrationController {
     @PostMapping(EXTERNAL_ACCESS_PATH)
     @ResourceAccess(description = "Request for a new projectUser (Public feature).", role = DefaultRole.EXPLOIT)
     public ResponseEntity<Void> requestExternalAccess(@Valid @RequestBody AccessRequestDto accessRequestDto) {
-        ResponseEntity<EntityModel<AccessRequestDto>> response = registrationClient.requestExternalAccess(accessRequestDto);
-        HttpStatus status = response.getStatusCode().is2xxSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR;
+        ResponseEntity<EntityModel<AccessRequestDto>> response = registrationClient.requestExternalAccess(
+            accessRequestDto);
+        HttpStatus status = response.getStatusCode().is2xxSuccessful() ?
+            HttpStatus.CREATED :
+            HttpStatus.INTERNAL_SERVER_ERROR;
         return ResponseEntity.status(status).build();
     }
 

@@ -29,7 +29,7 @@ public enum NotificationStatus {
      * Read status notification
      */
     READ,
-    
+
     /**
      * Unread status notification
      */

@@ -18,13 +18,13 @@
  */
 package fr.cnes.regards.modules.indexer.dao.converter;
 
-import java.util.LinkedHashMap;
-import java.util.function.Consumer;
-
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Sort.Order;
+
+import java.util.LinkedHashMap;
+import java.util.function.Consumer;
 
 /**
  * Implement the type conversion logic for a {@link Sort}t to a {@link LinkedHashMap} representation.<br>

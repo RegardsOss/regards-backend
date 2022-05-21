@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.step;
 
 import fr.cnes.regards.modules.processing.domain.PStep;
@@ -23,7 +23,6 @@ import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import java.time.OffsetDateTime;
 
 import static fr.cnes.regards.modules.processing.utils.TimeUtils.toUtc;
-
 
 /**
  * This class defines final steps. It must be instanciated only with a final {@link ExecutionStatus},
@@ -36,8 +35,8 @@ public class PStepFinal extends PStep {
     public PStepFinal(ExecutionStatus status, OffsetDateTime time, String message) {
         super(status, toUtc(time), message);
         if (!status.isFinalStep()) {
-            throw new IllegalStateException(
-                    String.format("A final step is build with a non-final status: %s", toString()));
+            throw new IllegalStateException(String.format("A final step is build with a non-final status: %s",
+                                                          toString()));
         }
     }
 

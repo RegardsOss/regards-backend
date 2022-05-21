@@ -87,8 +87,12 @@ public class GZipCompression extends AbstractRunnableCompression {
      * @throws CompressionException si l'un des paramètres est incorrect ou illisible
      */
     @Override
-    public CompressManager runCompress(List<File> pFileList, File pCompressedFile, File pRootDirectory,
-            boolean pFlatArchive, Charset pCharset, CompressManager pCompressManager) throws CompressionException {
+    public CompressManager runCompress(List<File> pFileList,
+                                       File pCompressedFile,
+                                       File pRootDirectory,
+                                       boolean pFlatArchive,
+                                       Charset pCharset,
+                                       CompressManager pCompressManager) throws CompressionException {
         File returnedFile = null;
         File compressedTarFile = null;
 
@@ -113,7 +117,10 @@ public class GZipCompression extends AbstractRunnableCompression {
             compressedTarFile = pCompressManager.getCompressedFile();
             pCompressManager.setRatio(0.75);
         } else {
-            CompressManager compressManager = tar.compress(pFileList, compressedFile, pRootDirectory, pFlatArchive,
+            CompressManager compressManager = tar.compress(pFileList,
+                                                           compressedFile,
+                                                           pRootDirectory,
+                                                           pFlatArchive,
                                                            Boolean.FALSE);
             compressedTarFile = compressManager.getCompressedFile();
         }
@@ -174,7 +181,7 @@ public class GZipCompression extends AbstractRunnableCompression {
      * @since 1.0
      */
     private File compressOneFile(File pFileToCompress, File pCompressedFile, CompressManager pCompressManager)
-            throws CompressionException {
+        throws CompressionException {
 
         if (logger.isDebugEnabled()) {
             logger.debug("Add " + pFileToCompress.getName() + " to GZIP file.");
@@ -200,8 +207,8 @@ public class GZipCompression extends AbstractRunnableCompression {
         }
 
         // Write in this file
-        try (GZIPOutputStream out = new GZIPOutputStream(new BufferedOutputStream(
-                new CheckedOutputStream(new FileOutputStream(compressedFile), new Adler32())))) {
+        try (GZIPOutputStream out = new GZIPOutputStream(new BufferedOutputStream(new CheckedOutputStream(new FileOutputStream(
+            compressedFile), new Adler32())))) {
             byte data[] = new byte[BUFFER];
             try (BufferedInputStream origin = new BufferedInputStream(new FileInputStream(pFileToCompress), BUFFER)) {
                 int count = 0;
@@ -234,7 +241,8 @@ public class GZipCompression extends AbstractRunnableCompression {
     private void validateArchiveExtension(Path archive) throws CompressionException {
         if (isValidExtension(archive)) {
             String extensionIsInvalid = String.format("Extension of \"%s\" isn't valid. " + "Valid extensions are : %s",
-                                                      archive, String.join(", ", VALID_EXTENSIONS));
+                                                      archive,
+                                                      String.join(", ", VALID_EXTENSIONS));
             logger.error(extensionIsInvalid);
             throw new CompressionException(extensionIsInvalid);
         }
@@ -266,8 +274,7 @@ public class GZipCompression extends AbstractRunnableCompression {
 
     private void extract(File archive, File intoFile) throws CompressionException {
         try (GZIPInputStream archiveStream = new GZIPInputStream(new BufferedInputStream(new FileInputStream(archive)));
-                BufferedOutputStream extractedStream = new BufferedOutputStream(new FileOutputStream(intoFile),
-                                                                                BUFFER)) {
+            BufferedOutputStream extractedStream = new BufferedOutputStream(new FileOutputStream(intoFile), BUFFER)) {
             byte[] dataRead = new byte[BUFFER];
             int amountRead = archiveStream.read(dataRead);
             while (amountRead > 0) {

@@ -18,19 +18,19 @@
  */
 package fr.cnes.regards.framework.security.endpoint.voter;
 
-import java.util.Collection;
-
-import org.aopalliance.intercept.MethodInvocation;
-import org.springframework.security.access.ConfigAttribute;
-import org.springframework.security.core.Authentication;
-
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.IInstancePublicAccessVoter;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import org.aopalliance.intercept.MethodInvocation;
+import org.springframework.security.access.ConfigAttribute;
+import org.springframework.security.core.Authentication;
+
+import java.util.Collection;
 
 /**
  * This class authorizes access to all endpoints for instance administrator.
+ *
  * @author Sébastien Binda
  * @author Marc Sordi
  */
@@ -43,6 +43,7 @@ public class InstancePublicAccessVoter implements IInstancePublicAccessVoter {
 
     /**
      * Constructor
+     *
      * @param pInstanceTenantName instance
      */
     public InstancePublicAccessVoter(final String pInstanceTenantName) {
@@ -50,8 +51,9 @@ public class InstancePublicAccessVoter implements IInstancePublicAccessVoter {
     }
 
     @Override
-    public int vote(final Authentication pAuthentication, final Object pObject,
-            final Collection<ConfigAttribute> pAttributes) {
+    public int vote(final Authentication pAuthentication,
+                    final Object pObject,
+                    final Collection<ConfigAttribute> pAttributes) {
         // Default behavior : deny access
         int access = ACCESS_DENIED;
 

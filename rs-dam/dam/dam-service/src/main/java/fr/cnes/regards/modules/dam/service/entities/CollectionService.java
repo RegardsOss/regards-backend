@@ -34,21 +34,37 @@ import javax.persistence.EntityManager;
 
 /**
  * Specific EntityService for collections
+ *
  * @author Sylvain Vissiere-Guerinet
  * @author oroussel
  */
 @Service
 @MultitenantTransactional
 public class CollectionService extends AbstractEntityService<CollectionFeature, Collection>
-        implements ICollectionService {
+    implements ICollectionService {
 
-    public CollectionService(IModelFinder modelFinder, IAbstractEntityRepository<AbstractEntity<?>> pEntityRepository,
-                             IModelService pModelService, IDamSettingsService damSettingsService, IDeletedEntityRepository pDeletedEntityRepository,
-                             ICollectionRepository pCollectionRepository, IDatasetRepository pDatasetRepository, EntityManager pEm,
-                             IPublisher pPublisher, IRuntimeTenantResolver runtimeTenantResolver,
+    public CollectionService(IModelFinder modelFinder,
+                             IAbstractEntityRepository<AbstractEntity<?>> pEntityRepository,
+                             IModelService pModelService,
+                             IDamSettingsService damSettingsService,
+                             IDeletedEntityRepository pDeletedEntityRepository,
+                             ICollectionRepository pCollectionRepository,
+                             IDatasetRepository pDatasetRepository,
+                             EntityManager pEm,
+                             IPublisher pPublisher,
+                             IRuntimeTenantResolver runtimeTenantResolver,
                              IAbstractEntityRequestRepository abstractEntityRequestRepo) {
-        super(modelFinder, pEntityRepository, pModelService, damSettingsService, pDeletedEntityRepository, pCollectionRepository,
-              pDatasetRepository, pCollectionRepository, pEm, pPublisher, runtimeTenantResolver,
+        super(modelFinder,
+              pEntityRepository,
+              pModelService,
+              damSettingsService,
+              pDeletedEntityRepository,
+              pCollectionRepository,
+              pDatasetRepository,
+              pCollectionRepository,
+              pEm,
+              pPublisher,
+              runtimeTenantResolver,
               abstractEntityRequestRepo);
     }
 

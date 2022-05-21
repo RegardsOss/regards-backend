@@ -18,28 +18,22 @@
  */
 package fr.cnes.regards.framework.security.endpoint;
 
-import java.lang.reflect.Method;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.domain.ResourceMappingException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.web.bind.annotation.*;
+
+import java.lang.reflect.Method;
 
 /**
  * Class ResourceAccessVoterTest
- *
+ * <p>
  * Resources Access voter test class
+ *
  * @author CS
  */
 public class MethodAuthorizationTest {
@@ -51,6 +45,7 @@ public class MethodAuthorizationTest {
 
     /**
      * Verify introspection code to get the informations about endpoint access resources
+     *
      * @throws NoSuchMethodException    test error
      * @throws SecurityException        test error
      * @throws ResourceMappingException test error
@@ -59,7 +54,7 @@ public class MethodAuthorizationTest {
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
     @Test(expected = ResourceMappingException.class)
     public void missingRessourceAccessAnnotationWithValueSpecified()
-            throws NoSuchMethodException, SecurityException, ResourceMappingException {
+        throws NoSuchMethodException, SecurityException, ResourceMappingException {
         /**
          *
          * Class Controller
@@ -83,6 +78,7 @@ public class MethodAuthorizationTest {
 
     /**
      * Verify introspection code to get the informations about endpoint access resources
+     *
      * @throws NoSuchMethodException    test error
      * @throws SecurityException        test error
      * @throws ResourceMappingException test error
@@ -91,7 +87,7 @@ public class MethodAuthorizationTest {
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
     @Test(expected = ResourceMappingException.class)
     public void missingRessourceAccessAnnotationWithPathSpecified()
-            throws NoSuchMethodException, SecurityException, ResourceMappingException {
+        throws NoSuchMethodException, SecurityException, ResourceMappingException {
         /**
          *
          * Class Controller
@@ -115,6 +111,7 @@ public class MethodAuthorizationTest {
 
     /**
      * Verify introspection code to get the informations about endpoint access resources
+     *
      * @throws NoSuchMethodException    test error
      * @throws SecurityException        test error
      * @throws ResourceMappingException test error
@@ -123,7 +120,7 @@ public class MethodAuthorizationTest {
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
     @Test(expected = ResourceMappingException.class)
     public void missingRessourceAccessAnnotationWithSameValueAndPathSpecified()
-            throws NoSuchMethodException, SecurityException, ResourceMappingException {
+        throws NoSuchMethodException, SecurityException, ResourceMappingException {
         /**
          *
          * Class Controller
@@ -181,6 +178,7 @@ public class MethodAuthorizationTest {
 
     /**
      * Verify introspection code to get the informations about endpoint access resources
+     *
      * @throws NoSuchMethodException    test error
      * @throws SecurityException        test error
      * @throws ResourceMappingException test error
@@ -189,7 +187,7 @@ public class MethodAuthorizationTest {
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
     @Test
     public void presentRessourceAccessAnnotationWithGetAndValueSpecified()
-            throws NoSuchMethodException, SecurityException, ResourceMappingException {
+        throws NoSuchMethodException, SecurityException, ResourceMappingException {
         /**
          *
          * Class Controller
@@ -216,6 +214,7 @@ public class MethodAuthorizationTest {
 
     /**
      * Verify introspection code to get the informations about endpoint access resources
+     *
      * @throws NoSuchMethodException    test error
      * @throws SecurityException        test error
      * @throws ResourceMappingException test error
@@ -224,7 +223,7 @@ public class MethodAuthorizationTest {
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
     @Test
     public void presentRessourceAccessAnnotationWithPutAndValueSpecified()
-            throws NoSuchMethodException, SecurityException, ResourceMappingException {
+        throws NoSuchMethodException, SecurityException, ResourceMappingException {
         /**
          *
          * Class Controller
@@ -251,6 +250,7 @@ public class MethodAuthorizationTest {
 
     /**
      * Verify introspection code to get the informations about endpoint access resources
+     *
      * @throws NoSuchMethodException    test error
      * @throws SecurityException        test error
      * @throws ResourceMappingException test error
@@ -259,7 +259,7 @@ public class MethodAuthorizationTest {
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
     @Test
     public void presentRessourceAccessAnnotationWithPathSpecified()
-            throws NoSuchMethodException, SecurityException, ResourceMappingException {
+        throws NoSuchMethodException, SecurityException, ResourceMappingException {
         /**
          *
          * Class Controller
@@ -286,6 +286,7 @@ public class MethodAuthorizationTest {
 
     /**
      * Verify introspection code to get the informations about endpoint access resources
+     *
      * @throws NoSuchMethodException    test error
      * @throws SecurityException        test error
      * @throws ResourceMappingException test error
@@ -294,7 +295,7 @@ public class MethodAuthorizationTest {
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
     @Test
     public void presentRessourceAccessAnnotationWithSameValueAndPathSpecified()
-            throws NoSuchMethodException, SecurityException, ResourceMappingException {
+        throws NoSuchMethodException, SecurityException, ResourceMappingException {
         /**
          *
          * Class Controller
@@ -356,6 +357,7 @@ public class MethodAuthorizationTest {
 
     /**
      * Verify introspection code to get the informations about endpoint access resources
+     *
      * @throws NoSuchMethodException    test error
      * @throws SecurityException        test error
      * @throws ResourceMappingException test error
@@ -364,7 +366,7 @@ public class MethodAuthorizationTest {
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
     @Test
     public void presentRessourceAccessAnnotationWithGETAnnotation()
-            throws NoSuchMethodException, SecurityException, ResourceMappingException {
+        throws NoSuchMethodException, SecurityException, ResourceMappingException {
         /**
          *
          * Class Controller
@@ -391,6 +393,7 @@ public class MethodAuthorizationTest {
 
     /**
      * Verify introspection code to get the informations about endpoint access resources
+     *
      * @throws NoSuchMethodException    test error
      * @throws SecurityException        test error
      * @throws ResourceMappingException test error
@@ -399,7 +402,7 @@ public class MethodAuthorizationTest {
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
     @Test
     public void presentRessourceAccessAnnotationWithPUTAnnotation()
-            throws NoSuchMethodException, SecurityException, ResourceMappingException {
+        throws NoSuchMethodException, SecurityException, ResourceMappingException {
         /**
          *
          * Class Controller
@@ -426,6 +429,7 @@ public class MethodAuthorizationTest {
 
     /**
      * Verify introspection code to get the informations about endpoint access resources
+     *
      * @throws NoSuchMethodException    test error
      * @throws SecurityException        test error
      * @throws ResourceMappingException test error
@@ -434,7 +438,7 @@ public class MethodAuthorizationTest {
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
     @Test
     public void presentRessourceAccessAnnotationWithPOSTAnnotation()
-            throws NoSuchMethodException, SecurityException, ResourceMappingException {
+        throws NoSuchMethodException, SecurityException, ResourceMappingException {
         /**
          *
          * Class Controller
@@ -461,6 +465,7 @@ public class MethodAuthorizationTest {
 
     /**
      * Verify introspection code to get the informations about endpoint access resources
+     *
      * @throws NoSuchMethodException    test error
      * @throws SecurityException        test error
      * @throws ResourceMappingException test error
@@ -469,7 +474,7 @@ public class MethodAuthorizationTest {
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
     @Test
     public void presentRessourceAccessAnnotationWithDELETEAnnotation()
-            throws NoSuchMethodException, SecurityException, ResourceMappingException {
+        throws NoSuchMethodException, SecurityException, ResourceMappingException {
         /**
          *
          * Class Controller
@@ -496,6 +501,7 @@ public class MethodAuthorizationTest {
 
     /**
      * Verify introspection code to get the informations about endpoint access resources
+     *
      * @throws NoSuchMethodException    test error
      * @throws SecurityException        test error
      * @throws ResourceMappingException test error
@@ -504,7 +510,7 @@ public class MethodAuthorizationTest {
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
     @Test
     public void presentRessourceAccessAnnotationWithPATCHAnnotation()
-            throws NoSuchMethodException, SecurityException, ResourceMappingException {
+        throws NoSuchMethodException, SecurityException, ResourceMappingException {
         /**
          *
          * Class Controller

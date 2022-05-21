@@ -43,14 +43,14 @@ public class CacheableServiceAggregatorClient {
     /**
      * Returns all services applied to all datasets plus those of the given dataset
      *
-     * @param datasetIpId       the id of the Dataset
+     * @param datasetIpId      the id of the Dataset
      * @param applicationModes the set of {@link ServiceScope}
      * @return the list of services configured for the given dataset and the given scope
      */
     @Cacheable(value = ServiceAggregatorKeyGenerator.CACHE_NAME,
         keyGenerator = ServiceAggregatorKeyGenerator.KEY_GENERATOR, sync = true)
     public ResponseEntity<List<EntityModel<PluginServiceDto>>> retrieveServices(List<String> datasetIpId,
-                                                                         List<ServiceScope> applicationModes) {
+                                                                                List<ServiceScope> applicationModes) {
         return serviceAggregatorClient.retrieveServices(datasetIpId, applicationModes);
     }
 

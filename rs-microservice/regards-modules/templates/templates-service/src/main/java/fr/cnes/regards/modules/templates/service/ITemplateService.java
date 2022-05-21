@@ -18,17 +18,18 @@
  */
 package fr.cnes.regards.modules.templates.service;
 
-import java.util.List;
-import java.util.Map;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.templates.domain.Template;
 import freemarker.template.TemplateException;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * Define the base interface for any implementation of a Template Service.
+ *
  * @author Xavier-Alexandre Brochard
  */
 public interface ITemplateService {
@@ -47,19 +48,21 @@ public interface ITemplateService {
 
     /**
      * Update the template of given id
-     * @param id the updated template id
+     *
+     * @param id       the updated template id
      * @param template the updated template
-     * @throws EntityNotFoundException if no template with given id could be found<br>
+     * @throws EntityNotFoundException                if no template with given id could be found<br>
      * @throws EntityInconsistentIdentifierException} if the path id differs from the template id<br>
-     * @throws EntityInvalidException if template content could not be parsed
+     * @throws EntityInvalidException                 if template content could not be parsed
      */
     Template update(final Long id, final Template template)
-            throws EntityInvalidException, EntityInconsistentIdentifierException, EntityNotFoundException;
+        throws EntityInvalidException, EntityInconsistentIdentifierException, EntityNotFoundException;
 
     /**
      * Render the template found by name, from latest value found in database
+     *
      * @param templateName template name
-     * @param dataModel data model used as dynamic values for rendering
+     * @param dataModel    data model used as dynamic values for rendering
      * @return rendered template
      * @throws TemplateException in case dataModel is not coherent with the template
      */

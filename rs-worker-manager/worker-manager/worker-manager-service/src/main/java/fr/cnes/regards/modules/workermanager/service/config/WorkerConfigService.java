@@ -133,37 +133,45 @@ public class WorkerConfigService {
         }
         // Check if this WorkerConfig use content type already used by another WorkerConfig(s)
         List<WorkerConfig> workerConfigUsingSameContentTypes = workerConfigRepository.findAllByContentTypesIn(
-                workerConfigDto.getContentTypes());
+            workerConfigDto.getContentTypes());
         if (workerConfigUsingSameContentTypes.size() > 0) {
             // Get the list of worker types that conflicts with the current one
-            Set<String> workerTypes = workerConfigUsingSameContentTypes.stream().map(WorkerConfig::getWorkerType)
-                    .collect(Collectors.toSet());
+            Set<String> workerTypes = workerConfigUsingSameContentTypes.stream()
+                                                                       .map(WorkerConfig::getWorkerType)
+                                                                       .collect(Collectors.toSet());
             // Get the list of content types that are conflicting
             Set<String> commonContentTypes = workerConfigUsingSameContentTypes.stream()
-                    .map(WorkerConfig::getContentTypes).flatMap(Collection::stream)
-                    .filter(contentType -> workerConfigDto.getContentTypes().contains(contentType))
-                    .collect(Collectors.toSet());
+                                                                              .map(WorkerConfig::getContentTypes)
+                                                                              .flatMap(Collection::stream)
+                                                                              .filter(contentType -> workerConfigDto.getContentTypes()
+                                                                                                                    .contains(
+                                                                                                                        contentType))
+                                                                              .collect(Collectors.toSet());
 
             String errorMessage = String.format(
-                    "WorkerConf with type=%s declares contentType %s which are already used by %s",
-                    workerConfigDto.getWorkerType(), commonContentTypes, workerTypes);
+                "WorkerConf with type=%s declares contentType %s which are already used by %s",
+                workerConfigDto.getWorkerType(),
+                commonContentTypes,
+                workerTypes);
             LOGGER.error(errorMessage);
             currentWorkerConfValid = false;
             errors.add(errorMessage);
         }
 
         // Retrieve list of content types configured to be automatically skipped
-        List<String> contentTypesToSkip = workerManagerSettingsService.getValue(
-                WorkerManagerSettings.SKIP_CONTENT_TYPES_NAME);
+        List<String> contentTypesToSkip = workerManagerSettingsService.getValue(WorkerManagerSettings.SKIP_CONTENT_TYPES_NAME);
         List<String> contentTypesInsideSkipConf = contentTypesToSkip.stream()
-                .filter(contentTypeToSkip -> workerConfigDto.getContentTypes().contains(contentTypeToSkip))
-                .collect(Collectors.toList());
+                                                                    .filter(contentTypeToSkip -> workerConfigDto.getContentTypes()
+                                                                                                                .contains(
+                                                                                                                    contentTypeToSkip))
+                                                                    .collect(Collectors.toList());
         if (!contentTypesInsideSkipConf.isEmpty()) {
 
             String errorMessage = String.format(
-                    "WorkerConf with type=%s declares contentType %s which are already used inside the %s setting",
-                    workerConfigDto.getWorkerType(), contentTypesInsideSkipConf,
-                    WorkerManagerSettings.SKIP_CONTENT_TYPES_NAME);
+                "WorkerConf with type=%s declares contentType %s which are already used inside the %s setting",
+                workerConfigDto.getWorkerType(),
+                contentTypesInsideSkipConf,
+                WorkerManagerSettings.SKIP_CONTENT_TYPES_NAME);
             LOGGER.error(errorMessage);
             currentWorkerConfValid = false;
             errors.add(errorMessage);

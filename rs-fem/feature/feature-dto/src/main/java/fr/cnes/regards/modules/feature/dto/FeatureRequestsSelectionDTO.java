@@ -18,19 +18,16 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
+import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import org.apache.commons.compress.utils.Lists;
+
 import java.time.OffsetDateTime;
 import java.util.List;
 
-import org.apache.commons.compress.utils.Lists;
-
-import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
-
 /**
- *
  * Parameters to define a selection of feature requests
  *
  * @author Sébastien Binda
- *
  */
 public class FeatureRequestsSelectionDTO {
 

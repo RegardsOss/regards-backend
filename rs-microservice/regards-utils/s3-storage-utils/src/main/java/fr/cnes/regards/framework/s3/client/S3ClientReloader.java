@@ -38,8 +38,9 @@ public class S3ClientReloader<S extends SdkClient> implements AutoCloseable {
     /* All uses of consecutiveSdkErrors must be in a synchronized method */
     private short consecutiveSdkErrors;
 
-    public S3ClientReloader(int maxConsecutiveErrors, StorageConfig config,
-            CheckedFunction1<StorageConfig, S> newClient) {
+    public S3ClientReloader(int maxConsecutiveErrors,
+                            StorageConfig config,
+                            CheckedFunction1<StorageConfig, S> newClient) {
         this.maxConsecutiveErrors = maxConsecutiveErrors;
         this.config = config;
         this.newClient = newClient;
@@ -67,8 +68,12 @@ public class S3ClientReloader<S extends SdkClient> implements AutoCloseable {
     }
 
     public <T> Try<T> logAndWrapInStorageClientException(S s3, Throwable t) {
-        LOGGER.error("S3Config {} - {} instance {} - {}", config.getKey(), s3.getClass().getSimpleName(), s3.hashCode(),
-                     t.getMessage(), t);
+        LOGGER.error("S3Config {} - {} instance {} - {}",
+                     config.getKey(),
+                     s3.getClass().getSimpleName(),
+                     s3.hashCode(),
+                     t.getMessage(),
+                     t);
         return Try.failure(new S3ClientException(t));
     }
 
@@ -80,9 +85,13 @@ public class S3ClientReloader<S extends SdkClient> implements AutoCloseable {
         if (s3 != null) {
             return Try.success(s3);
         }
-        return Try.success(config).mapTry(newClient)
-                .peek(c -> LOGGER.debug("S3Config {} - {} instance {} created", config.getKey(),
-                                        c.getClass().getSimpleName(), c.hashCode())).peek(c -> s3 = c);
+        return Try.success(config)
+                  .mapTry(newClient)
+                  .peek(c -> LOGGER.debug("S3Config {} - {} instance {} created",
+                                          config.getKey(),
+                                          c.getClass().getSimpleName(),
+                                          c.hashCode()))
+                  .peek(c -> s3 = c);
     }
 
     private synchronized void recordError(S client) {
@@ -90,7 +99,10 @@ public class S3ClientReloader<S extends SdkClient> implements AutoCloseable {
             consecutiveSdkErrors += 1;
             if (consecutiveSdkErrors > maxConsecutiveErrors) {
                 LOGGER.debug("S3Config {} - {} instance {} discarded because {} successive errors occurred",
-                             config.getKey(), s3.getClass().getSimpleName(), s3.hashCode(), consecutiveSdkErrors);
+                             config.getKey(),
+                             s3.getClass().getSimpleName(),
+                             s3.hashCode(),
+                             consecutiveSdkErrors);
                 consecutiveSdkErrors = 0;
 
                 s3.close();

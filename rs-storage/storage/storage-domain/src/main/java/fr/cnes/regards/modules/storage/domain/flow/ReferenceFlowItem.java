@@ -18,22 +18,20 @@
  */
 package fr.cnes.regards.modules.storage.domain.flow;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Set;
-
-import org.springframework.validation.Errors;
-import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.Validator;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Set;
 
 /**
  * Flow message to request a new file reference.<br/>
@@ -74,7 +72,8 @@ public class ReferenceFlowItem implements ISubscribable {
 
     /**
      * Build a file reference request event for one file
-     * @param file {@link FileReferenceRequestDTO} file to reference information
+     *
+     * @param file    {@link FileReferenceRequestDTO} file to reference information
      * @param groupId business request identifier to identify request in asynchronous response messages {@link FileRequestsGroupEvent}
      * @return {@link ReferenceFlowItem}
      */
@@ -87,7 +86,8 @@ public class ReferenceFlowItem implements ISubscribable {
 
     /**
      * Build a file reference request event for a collection of files
-     * @param files  {@link FileReferenceRequestDTO} files to reference information
+     *
+     * @param files   {@link FileReferenceRequestDTO} files to reference information
      * @param groupId business request identifier to identify request in asynchronous response messages {@link FileRequestsGroupEvent}
      * @return {@link ReferenceFlowItem}
      */
@@ -100,8 +100,9 @@ public class ReferenceFlowItem implements ISubscribable {
 
     @Override
     public String toString() {
-        return "FileReferenceFlowItem [" + (files != null ? "files=" + files + ", " : "")
-                + (groupId != null ? "groupId=" + groupId : "") + "]";
+        return "FileReferenceFlowItem [" + (files != null ? "files=" + files + ", " : "") + (groupId != null ?
+            "groupId=" + groupId :
+            "") + "]";
     }
 
     /**
@@ -113,7 +114,9 @@ public class ReferenceFlowItem implements ISubscribable {
             errors = new MapBindingResult(new HashMap<>(), this.getClass().getName());
             errors.reject("FileReferenceRequests",
                           String.format("Number of reference requests (%d) for group %s exceeds maximum limit of %d",
-                                        files.size(), groupId, MAX_REQUEST_PER_GROUP));
+                                        files.size(),
+                                        groupId,
+                                        MAX_REQUEST_PER_GROUP));
         } else {
             errors = new MapBindingResult(new HashMap<>(), FileReferenceRequestDTO.class.getName());
             for (FileReferenceRequestDTO file : files) {

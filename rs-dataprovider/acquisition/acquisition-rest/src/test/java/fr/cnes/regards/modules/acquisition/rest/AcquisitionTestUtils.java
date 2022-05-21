@@ -22,26 +22,22 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
-import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
+import fr.cnes.regards.modules.acquisition.domain.chain.*;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
+import org.springframework.http.MediaType;
+
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import org.springframework.http.MediaType;
 
 /**
  * Utils for product acquisition testing
  *
  * @author Marc Sordi
- *
  */
 public class AcquisitionTestUtils {
 
@@ -72,21 +68,24 @@ public class AcquisitionTestUtils {
         processingChain.addFileInfo(fileInfo);
 
         // Validation
-        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class, null,
+        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class,
+                                                                         null,
                                                                          new HashSet<IPluginParam>());
         validationPlugin.setIsActive(true);
         validationPlugin.setLabel(labelPrefix + " : " + "Validation plugin");
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
-        PluginConfiguration productPlugin = PluginConfiguration.build(DefaultProductPlugin.class, null,
+        PluginConfiguration productPlugin = PluginConfiguration.build(DefaultProductPlugin.class,
+                                                                      null,
                                                                       new HashSet<IPluginParam>());
         productPlugin.setIsActive(true);
         productPlugin.setLabel(labelPrefix + " : " + "Product plugin");
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginConfiguration.build(DefaultSIPGeneration.class, null,
+        PluginConfiguration sipGenPlugin = PluginConfiguration.build(DefaultSIPGeneration.class,
+                                                                     null,
                                                                      new HashSet<IPluginParam>());
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel(labelPrefix + " : " + "SIP generation plugin");

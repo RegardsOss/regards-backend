@@ -1,17 +1,17 @@
 package fr.cnes.regards.modules.model.domain.adapter;
 
-import java.io.IOException;
-
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-
 import fr.cnes.regards.modules.model.domain.Model;
+
+import java.io.IOException;
 
 /**
  * Model adapter to be used by AbstractEntity gson serialization.
  * The aim is just to manage name and id properties, not avoid loosing crucial informations when serialize/deserialize
  * entities.
+ *
  * @author oroussel
  */
 public class ModelAdapter extends TypeAdapter<Model> {

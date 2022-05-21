@@ -25,6 +25,7 @@
 package fr.cnes.regards.modules.processing.service;
 
 public class DownloadQuotaExceededException extends Exception {
+
     public DownloadQuotaExceededException(String user, String checksum) {
         super(String.format("Exceeded quota for user %s when downloading %s", user, checksum));
     }

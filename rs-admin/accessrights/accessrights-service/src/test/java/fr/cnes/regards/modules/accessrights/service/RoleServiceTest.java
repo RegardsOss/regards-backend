@@ -52,6 +52,7 @@ import java.util.*;
 
 /**
  * Test class for {@link RoleService}.
+ *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  * @author Christophe Mertz
@@ -136,8 +137,12 @@ public class RoleServiceTest {
         projectUserRepository = Mockito.mock(IProjectUserRepository.class);
         tenantResolver = Mockito.mock(ITenantResolver.class);
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
-        roleService = new RoleService(roleRepository, projectUserRepository, tenantResolver, runtimeTenantResolver,
-                Mockito.mock(IPublisher.class), authResolver);
+        roleService = new RoleService(roleRepository,
+                                      projectUserRepository,
+                                      tenantResolver,
+                                      runtimeTenantResolver,
+                                      Mockito.mock(IPublisher.class),
+                                      authResolver);
 
         // Clear the repos
         projectUserRepository.deleteAll();
@@ -173,7 +178,7 @@ public class RoleServiceTest {
     public void roleHierarchyTest() throws EntityNotFoundException {
 
         Mockito.when(roleRepository.findOneByName(DefaultRole.REGISTERED_USER.toString()))
-                .thenReturn(Optional.of(roleRegisteredUser));
+               .thenReturn(Optional.of(roleRegisteredUser));
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
         Assert.assertFalse("Registered user should be superior to admin",
                            roleService.isCurrentRoleSuperiorTo(DefaultRole.ADMIN.toString()));
@@ -233,6 +238,7 @@ public class RoleServiceTest {
 
     /**
      * Check that the allows to retrieve a single role.
+     *
      * @throws EntityNotFoundException when no role with passed name could be found
      */
     @Test
@@ -250,6 +256,7 @@ public class RoleServiceTest {
 
     /**
      * Check that the system allows to create a role in a regular case.
+     *
      * @throws EntityAlreadyExistsException Thrown if a role with passed id already exists
      */
     @Test
@@ -285,6 +292,7 @@ public class RoleServiceTest {
 
     /**
      * Check that the system fails when trying to update a role which does not exist.
+     *
      * @throws EntityException <br>
      *                         {@link EntityNotFoundException} when no {@link Role} with passed <code>id</code> could be found<br/>
      *                         <br>
@@ -304,6 +312,7 @@ public class RoleServiceTest {
 
     /**
      * Check that the system fails when trying to update a role which id is different from the passed one.
+     *
      * @throws EntityException <br>
      *                         {@link EntityNotFoundException} when no {@link Role} with passed <code>id</code> could be found<br/>
      *                         <br>
@@ -324,6 +333,7 @@ public class RoleServiceTest {
 
     /**
      * Check that the system allows to update a role in a regular case.
+     *
      * @throws EntityException <br>
      *                         {@link EntityNotFoundException} when no {@link Role} with passed <code>id</code> could be found<br/>
      *                         <br>
@@ -377,6 +387,7 @@ public class RoleServiceTest {
 
     /**
      * Check that the system allows to delete a role in a regular case.
+     *
      * @throws EntityException when the updated role is native. Native roles should not be modified.
      */
     @Test
@@ -427,8 +438,13 @@ public class RoleServiceTest {
     public void updateRoleResourcesAccessAddingResourcesAccess() throws EntityException {
         // Mock
         Set<ResourcesAccess> resourcesAccesses = new HashSet<>();
-        ResourcesAccess addedResourcesAccess = new ResourcesAccess(468645L, "", "", "", "Controller",
-                RequestMethod.PATCH, DefaultRole.ADMIN);
+        ResourcesAccess addedResourcesAccess = new ResourcesAccess(468645L,
+                                                                   "",
+                                                                   "",
+                                                                   "",
+                                                                   "Controller",
+                                                                   RequestMethod.PATCH,
+                                                                   DefaultRole.ADMIN);
         resourcesAccesses.add(addedResourcesAccess);
         // for this test, let's consider that the user adding a right onto role PUBLIC has the role ADMIN
 
@@ -450,9 +466,14 @@ public class RoleServiceTest {
             return sonsOfRU;
         });
         Mockito.when(roleRepository.findByParentRoleName(roleAdmin.getName()))
-                .thenAnswer(invocation -> new HashSet<Role>());
-        rolePublic.addPermission(new ResourcesAccess(4567L, "", "", "", "Controller", RequestMethod.GET,
-                DefaultRole.ADMIN));
+               .thenAnswer(invocation -> new HashSet<Role>());
+        rolePublic.addPermission(new ResourcesAccess(4567L,
+                                                     "",
+                                                     "",
+                                                     "",
+                                                     "Controller",
+                                                     RequestMethod.GET,
+                                                     DefaultRole.ADMIN));
         Mockito.when(roleRepository.existsById(PUBLIC_ID)).thenReturn(true);
         Mockito.when(roleRepository.findById(PUBLIC_ID)).thenReturn(Optional.of(rolePublic));
         Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
@@ -483,12 +504,22 @@ public class RoleServiceTest {
     @Purpose("Check that the system allows to update resources accesses of a role.")
     public void updateRoleResourcesAccessUpdatingResourcesAccess() throws EntityException {
         Set<ResourcesAccess> initRAs = new HashSet<>();
-        initRAs.add(new ResourcesAccess(0L, "desc", "mic", "res", "Controller", RequestMethod.TRACE,
-                DefaultRole.ADMIN));
+        initRAs.add(new ResourcesAccess(0L,
+                                        "desc",
+                                        "mic",
+                                        "res",
+                                        "Controller",
+                                        RequestMethod.TRACE,
+                                        DefaultRole.ADMIN));
 
         Set<ResourcesAccess> passedRAs = new HashSet<>();
-        passedRAs.add(new ResourcesAccess(0L, "new desc", "new mic", "new res", "Controller", RequestMethod.DELETE,
-                DefaultRole.ADMIN));
+        passedRAs.add(new ResourcesAccess(0L,
+                                          "new desc",
+                                          "new mic",
+                                          "new res",
+                                          "Controller",
+                                          RequestMethod.DELETE,
+                                          DefaultRole.ADMIN));
 
         // for this test, let's consider that the user adding a right onto role PUBLIC has the role ADMIN
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.ADMIN.toString());
@@ -535,6 +566,7 @@ public class RoleServiceTest {
 
     /**
      * Check that the system allows to remove all resources accesses of a role.
+     *
      * @throws EntityNotFoundException Thrown if no role with passed id could be found
      */
     @Test
@@ -543,8 +575,13 @@ public class RoleServiceTest {
     public void clearRoleResourcesAccess() throws EntityNotFoundException {
         // Prepare the role by adding some resources accesses
         Set<ResourcesAccess> resourcesAccesses = new HashSet<>();
-        resourcesAccesses.add(new ResourcesAccess(0L, "desc", "mic", "res", "Controller", RequestMethod.TRACE,
-                DefaultRole.ADMIN));
+        resourcesAccesses.add(new ResourcesAccess(0L,
+                                                  "desc",
+                                                  "mic",
+                                                  "res",
+                                                  "Controller",
+                                                  RequestMethod.TRACE,
+                                                  DefaultRole.ADMIN));
         rolePublic.setPermissions(resourcesAccesses);
 
         // Mock
@@ -566,6 +603,7 @@ public class RoleServiceTest {
 
     /**
      * Check that the system allows to retrieve all users from a role hierarchy.
+     *
      * @throws EntityNotFoundException Thrown when no entity of passed id could be found
      */
     @Test
@@ -750,8 +788,9 @@ public class RoleServiceTest {
 
     /**
      * Check that the passed {@link Role} has same attributes as the passed {@link Role}.
+     *
      * @param expected The expected role
-     * @param actual The actual role
+     * @param actual   The actual role
      */
     private void checkRolesEqual(Role expected, Role actual) {
         Assert.assertThat(actual.getId(), CoreMatchers.is(CoreMatchers.equalTo(expected.getId())));

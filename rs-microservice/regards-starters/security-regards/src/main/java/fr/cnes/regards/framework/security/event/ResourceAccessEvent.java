@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 /**
  * This event must be sent when one or more resource access configuration change so security cache needs to be
  * refreshed.
+ *
  * @author Marc Sordi
  */
 @Event(target = Target.ALL)

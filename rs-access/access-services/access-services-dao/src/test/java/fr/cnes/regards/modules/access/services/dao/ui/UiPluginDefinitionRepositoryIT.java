@@ -18,19 +18,17 @@
  */
 package fr.cnes.regards.modules.access.services.dao.ui;
 
-import java.net.MalformedURLException;
-
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalIT;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
+
+import java.net.MalformedURLException;
 
 /**
  * Unit test for {@link IUIPluginDefinitionRepository}
@@ -46,7 +44,8 @@ public class UiPluginDefinitionRepositoryIT extends AbstractDaoTransactionalIT {
     @Test
     public void save() throws MalformedURLException {
         UIPluginDefinition uiPluginDefinition = UIPluginDefinition.build("My Cool Plugin",
-                "the/source/path", UIPluginTypesEnum.SERVICE);
+                                                                         "the/source/path",
+                                                                         UIPluginTypesEnum.SERVICE);
         uiPluginDefinition.setId(0L);
         uiPluginDefinition.setIconUrl("http://wwww.google.com");
         uiPluginDefinition.setEntityTypes(Sets.newHashSet(EntityType.COLLECTION, EntityType.DATA));

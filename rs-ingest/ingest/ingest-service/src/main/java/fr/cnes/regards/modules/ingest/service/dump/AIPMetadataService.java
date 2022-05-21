@@ -18,27 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.dump;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.dump.service.DumpService;
 import fr.cnes.regards.framework.modules.dump.service.ObjectDump;
@@ -53,9 +32,29 @@ import fr.cnes.regards.modules.ingest.domain.exception.DuplicateUniqueNameExcept
 import fr.cnes.regards.modules.ingest.domain.exception.NothingToDoException;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * see {@link IAIPMetadataService}
+ *
  * @author Iliana Ghazali
  * @author Sylvain VISSIERE-GUERINET
  */
@@ -69,7 +68,7 @@ public class AIPMetadataService implements IAIPMetadataService {
     // Limit number of AIPs to retrieve in one page
     @Value("${regards.aip.dump.zip-limit:1000}")
     private int zipLimit;
-    
+
     private IAIPSaveMetadataRequestRepository metadataRequestRepository;
 
     private IAIPRepository aipRepository;
@@ -80,8 +79,10 @@ public class AIPMetadataService implements IAIPMetadataService {
 
     private INotificationClient notificationClient;
 
-    public AIPMetadataService(IAIPSaveMetadataRequestRepository metadataRequestRepository, 
-                              IAIPRepository aipRepository, DumpService dumpService, IAIPMetadataService iaipMetadataService, 
+    public AIPMetadataService(IAIPSaveMetadataRequestRepository metadataRequestRepository,
+                              IAIPRepository aipRepository,
+                              DumpService dumpService,
+                              IAIPMetadataService iaipMetadataService,
                               INotificationClient notificationClient) {
         this.metadataRequestRepository = metadataRequestRepository;
         this.aipRepository = aipRepository;
@@ -92,7 +93,7 @@ public class AIPMetadataService implements IAIPMetadataService {
 
     @Override
     public void writeDump(AIPSaveMetadataRequest metadataRequest, Path dumpLocation, Path tmpZipLocation)
-            throws IOException {
+        throws IOException {
         // Write dump (create a zip of multiple zips)
         dumpService.generateDump(dumpLocation, tmpZipLocation, metadataRequest.getCreationDate());
     }
@@ -100,7 +101,7 @@ public class AIPMetadataService implements IAIPMetadataService {
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void writeZips(AIPSaveMetadataRequest metadataRequest, Path tmpZipLocation)
-            throws NothingToDoException, IOException {
+        throws NothingToDoException, IOException {
         Pageable pageToRequest = PageRequest.of(0, zipLimit, Sort.by(Sort.Order.asc("creationDate")));
         try {
             do {
@@ -115,7 +116,7 @@ public class AIPMetadataService implements IAIPMetadataService {
 
     @Override
     public Pageable dumpOnePage(AIPSaveMetadataRequest metadataRequest, Pageable pageToRequest, Path tmpZipLocation)
-            throws IOException, DuplicateUniqueNameException, NothingToDoException {
+        throws IOException, DuplicateUniqueNameException, NothingToDoException {
         // Find aips to zip
         Page<AIPEntity> aipToDump;
         OffsetDateTime previousDumpDate = metadataRequest.getPreviousDumpDate();
@@ -130,8 +131,9 @@ public class AIPMetadataService implements IAIPMetadataService {
 
         // If no aip was found, throw NothingToDoException
         if (!aipToDump.hasContent()) {
-            throw new NothingToDoException(
-                    String.format("There is nothing to dump between %s and %s", previousDumpDate, dumpDate));
+            throw new NothingToDoException(String.format("There is nothing to dump between %s and %s",
+                                                         previousDumpDate,
+                                                         dumpDate));
         }
 
         // If some aips were found, convert them into ObjectDump
@@ -142,10 +144,12 @@ public class AIPMetadataService implements IAIPMetadataService {
         List<ObjectDump> duplicatedJsonNames;
         duplicatedJsonNames = dumpService.checkUniqueJsonNames(objectDumps);
         if (!duplicatedJsonNames.isEmpty()) {
-            String errorMessage = duplicatedJsonNames.stream().map(ObjectDump::getJsonName).collect(Collectors.joining(
-                    ", ", "Some AIPs to dump had the same generated names "
-                            + "(providerId-version.json) should be unique: ",
-                    ". Please edit your AIPs so there is no duplicates."));
+            String errorMessage = duplicatedJsonNames.stream()
+                                                     .map(ObjectDump::getJsonName)
+                                                     .collect(Collectors.joining(", ",
+                                                                                 "Some AIPs to dump had the same generated names "
+                                                                                     + "(providerId-version.json) should be unique: ",
+                                                                                 ". Please edit your AIPs so there is no duplicates."));
             handleError(metadataRequest, errorMessage);
             throw new DuplicateUniqueNameException(errorMessage);
         }
@@ -161,18 +165,22 @@ public class AIPMetadataService implements IAIPMetadataService {
     }
 
     private List<ObjectDump> convertAipToObjectDump(Collection<AIPEntity> aipEntities) {
-        return aipEntities.stream().map(aipEntity -> new ObjectDump(aipEntity.getCreationDate(),
-                                                                    aipEntity.getProviderId() + "-" + aipEntity
-                                                                            .getVersion(), aipEntity.getAip(),
-                                                                    aipEntity.getAipId())).collect(Collectors.toList());
+        return aipEntities.stream()
+                          .map(aipEntity -> new ObjectDump(aipEntity.getCreationDate(),
+                                                           aipEntity.getProviderId() + "-" + aipEntity.getVersion(),
+                                                           aipEntity.getAip(),
+                                                           aipEntity.getAipId()))
+                          .collect(Collectors.toList());
     }
 
     @Override
     public void handleError(AIPSaveMetadataRequest metadataRequest, String errorMessage) {
-        notificationClient.notify(errorMessage, String.format("Error while dumping AIPs for period %s to %s",
-                                                              metadataRequest.getPreviousDumpDate(),
-                                                              metadataRequest.getCreationDate()),
-                                  NotificationLevel.ERROR, DefaultRole.ADMIN);
+        notificationClient.notify(errorMessage,
+                                  String.format("Error while dumping AIPs for period %s to %s",
+                                                metadataRequest.getPreviousDumpDate(),
+                                                metadataRequest.getCreationDate()),
+                                  NotificationLevel.ERROR,
+                                  DefaultRole.ADMIN);
         metadataRequest.addError(errorMessage);
         metadataRequest.setState(InternalRequestState.ERROR);
         metadataRequestRepository.save(metadataRequest);

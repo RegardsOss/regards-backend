@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.modules.emails.dao;
 
-import org.junit.Ignore;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorIT;
+import org.junit.Ignore;
 
 /**
  * Generate DDL with HBM2DDL
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
 @Ignore("Helper for SQL generation")
 public class EmailsSQLGeneratorIT extends AbstractScriptGeneratorIT {
+
 }

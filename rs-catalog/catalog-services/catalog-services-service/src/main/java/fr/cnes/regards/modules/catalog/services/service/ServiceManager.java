@@ -18,27 +18,8 @@
  */
 package fr.cnes.regards.modules.catalog.services.service;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -58,6 +39,18 @@ import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDt
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 import fr.cnes.regards.modules.catalog.services.plugins.AbstractCatalogServicePlugin;
 import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDatasetsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
+import javax.servlet.http.HttpServletResponse;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Class managing the execution of {@link IService} plugins
@@ -79,9 +72,10 @@ public class ServiceManager implements IServiceManager {
      * Builds a predicate telling if the passed {@link PluginConfiguration} is applicable on passed {@link ServiceScope}.
      * Returns <code>true</code> if passed <code>pServiceScope</code> is <code>null</code>.
      */
-    private static final Function<List<ServiceScope>, Predicate<PluginConfiguration>> IS_APPLICABLE_ON = serviceScope -> configuration -> (serviceScope == null)
-            || Arrays.asList(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(configuration).applicationModes())
-                    .containsAll(serviceScope);
+    private static final Function<List<ServiceScope>, Predicate<PluginConfiguration>> IS_APPLICABLE_ON = serviceScope -> configuration ->
+        (serviceScope == null) || Arrays.asList(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(configuration)
+                                                                                     .applicationModes())
+                                        .containsAll(serviceScope);
 
     /**
      * The service managing plugins
@@ -96,13 +90,11 @@ public class ServiceManager implements IServiceManager {
     /**
      * Constructor
      *
-     * @param pluginService
-     *            the service managing plugins
-     * @param linkPluginsDatasetsService
-     *            service linking plugins with datasets
+     * @param pluginService              the service managing plugins
+     * @param linkPluginsDatasetsService service linking plugins with datasets
      */
     public ServiceManager(final IPluginService pluginService,
-            final ILinkPluginsDatasetsService linkPluginsDatasetsService) {
+                          final ILinkPluginsDatasetsService linkPluginsDatasetsService) {
         this.pluginService = pluginService;
         this.linkPluginsDatasetsService = linkPluginsDatasetsService;
     }
@@ -133,22 +125,23 @@ public class ServiceManager implements IServiceManager {
         }
 
         try (Stream<PluginConfiguration> stream = allServices.stream()) {
-            return stream.filter(IS_APPLICABLE_ON.apply(serviceScopes)).map(PluginConfigurationDto::new)
-                    .collect(Collectors.toList());
+            return stream.filter(IS_APPLICABLE_ON.apply(serviceScopes))
+                         .map(PluginConfigurationDto::new)
+                         .collect(Collectors.toList());
         }
     }
 
     @Override
     public ResponseEntity<StreamingResponseBody> apply(final String pluginConfigurationBusinessId,
-            final ServicePluginParameters servicePluginParameters, HttpServletResponse response)
-            throws ModuleException {
+                                                       final ServicePluginParameters servicePluginParameters,
+                                                       HttpServletResponse response) throws ModuleException {
 
         LOGGER.info("Applying plugin service {}", pluginConfigurationBusinessId);
         final PluginConfiguration conf = pluginService.getPluginConfiguration(pluginConfigurationBusinessId);
         // is it a Service configuration?
         if (!conf.getInterfaceNames().contains(IService.class.getName())) {
             throw new EntityInvalidException(
-                    pluginConfigurationBusinessId + " is not a " + IService.class.getName() + " plugin configuration");
+                pluginConfigurationBusinessId + " is not a " + IService.class.getName() + " plugin configuration");
         }
         // is it a service applyable to this dataset?
         // TODO : Check if the current service is applicable for the given entities (throught the dataset associated)
@@ -157,13 +150,18 @@ public class ServiceManager implements IServiceManager {
         Set<IPluginParam> parameters = new HashSet<>();
         if (servicePluginParameters.getDynamicParameters() != null) {
             servicePluginParameters.getDynamicParameters().forEach((k, v) -> {
-                Optional<PluginParamDescriptor> param = conf.getMetaData().getParameters().stream()
-                        .filter(p -> p.getName().equals(k)).findFirst();
+                Optional<PluginParamDescriptor> param = conf.getMetaData()
+                                                            .getParameters()
+                                                            .stream()
+                                                            .filter(p -> p.getName().equals(k))
+                                                            .findFirst();
                 if (param.isPresent()) {
                     parameters.add(PluginParameterUtils.forType(param.get().getType(), k, v, true));
                 } else {
-                    LOGGER.warn("Invalid dynamic parameter  {} for plugin {} of type {}", k,
-                                pluginConfigurationBusinessId, conf.getPluginId());
+                    LOGGER.warn("Invalid dynamic parameter  {} for plugin {} of type {}",
+                                k,
+                                pluginConfigurationBusinessId,
+                                conf.getPluginId());
                     parameters.add(IPluginParam.build(k, v).dynamic());
                 }
             });

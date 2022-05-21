@@ -20,8 +20,9 @@ package fr.cnes.regards.framework.security.controller.test;
 
 /**
  * Class IPluginTest
- *
+ * <p>
  * Test interface
+ *
  * @author CS
  */
 public interface IPluginTest {

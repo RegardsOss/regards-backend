@@ -18,15 +18,14 @@
  */
 package fr.cnes.regards.modules.templates.service;
 
+import fr.cnes.regards.modules.templates.domain.Template;
+import org.springframework.core.io.ClassPathResource;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-
-import org.springframework.core.io.ClassPathResource;
-
-import fr.cnes.regards.modules.templates.domain.Template;
 
 /**
  * @author Xavier-Alexandre Brochard
@@ -48,6 +47,7 @@ public final class TemplateConfigUtil {
 
     /**
      * Writes an {@link InputStream} to a {@link String}.
+     *
      * @param is the input stream
      * @return the string
      * @throws IOException when an error occurs while reading the stream

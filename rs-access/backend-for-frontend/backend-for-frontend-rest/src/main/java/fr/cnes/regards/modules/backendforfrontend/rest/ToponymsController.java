@@ -43,7 +43,6 @@ import java.util.List;
  * Controller to search for Toponymms throught instance module toponyms of access-instance
  *
  * @author Sébastien Binda
- *
  */
 @RestController
 @RequestMapping(path = ToponymsRestConfiguration.ROOT_MAPPING)
@@ -52,14 +51,17 @@ public class ToponymsController {
     @Autowired
     private IToponymsClient client;
 
-    /** Authentication */
+    /**
+     * Authentication
+     */
     @Autowired
     private IAuthenticationResolver authenticationResolver;
 
-    /** Tenant resolver */
+    /**
+     * Tenant resolver
+     */
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
-
 
     /**
      * Endpoint to retrieve one toponym by his identifier
@@ -70,11 +72,12 @@ public class ToponymsController {
      * @throws EntityNotFoundException
      */
     @RequestMapping(value = ToponymsRestConfiguration.TOPONYM_ID, method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+        produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve one toponym by his identifier", role = DefaultRole.PUBLIC)
     public ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId,
-            @RequestParam(required = false) Boolean simplified) throws HttpClientErrorException, HttpServerErrorException  {
+                                                       @RequestParam(required = false) Boolean simplified)
+        throws HttpClientErrorException, HttpServerErrorException {
         FeignSecurityManager.asInstance();
         try {
             if (simplified != null) {
@@ -96,13 +99,14 @@ public class ToponymsController {
      * @throws EntityNotFoundException
      */
     @RequestMapping(value = ToponymsRestConfiguration.SEARCH, method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+        produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(
-            description = "Endpoint to search for toponyms. Geometries are not retrivied and list content is limited to 100 entities.",
-            role = DefaultRole.PUBLIC)
+        description = "Endpoint to search for toponyms. Geometries are not retrivied and list content is limited to 100 entities.",
+        role = DefaultRole.PUBLIC)
     public ResponseEntity<List<EntityModel<ToponymDTO>>> search(@RequestParam(required = false) String partialLabel,
-            @RequestParam(required = false) String locale) throws HttpClientErrorException, HttpServerErrorException {
+                                                                @RequestParam(required = false) String locale)
+        throws HttpClientErrorException, HttpServerErrorException {
         FeignSecurityManager.asInstance();
         try {
             return client.search(partialLabel, locale);
@@ -115,12 +119,12 @@ public class ToponymsController {
     @ResponseBody
     @ResourceAccess(description = "Endpoint to add a not visible toponym.", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<EntityModel<ToponymDTO>> createNotVisibleToponym(
-            @RequestBody ToponymGeoJsonDTO toponymGeoJsonDTO)
-            throws HttpClientErrorException, HttpServerErrorException {
+        @RequestBody ToponymGeoJsonDTO toponymGeoJsonDTO) throws HttpClientErrorException, HttpServerErrorException {
         FeignSecurityManager.asInstance();
         try {
             String feature = toponymGeoJsonDTO.getToponym();
-            return client.createNotVisibleToponym(new ToponymGeoJson(feature, this.authenticationResolver.getUser(),
+            return client.createNotVisibleToponym(new ToponymGeoJson(feature,
+                                                                     this.authenticationResolver.getUser(),
                                                                      this.tenantResolver.getTenant()));
         } finally {
             FeignSecurityManager.reset();

@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 
 /**
  * Bus message to inform that a {@link FileReference} has been updated.
+ *
  * @author Sébastien Binda
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)

@@ -18,13 +18,12 @@
  */
 package fr.cnes.regards.modules.access.services.dao.ui;
 
-import java.util.List;
-import java.util.stream.Stream;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import fr.cnes.regards.modules.access.services.domain.ui.LinkUIPluginsDatasets;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * JPA Respository to access {@link LinkUIPluginsDatasets} entities

@@ -83,17 +83,21 @@ public class RegardsAmqpAppender extends AppenderBase<ILoggingEvent> {
 
         if (tenant != null) {
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("[" + tenant + "] <" + microserviceName + "> send message  <" + eventObject
-                        .getFormattedMessage() + ">");
+                LOGGER.debug(
+                    "[" + tenant + "] <" + microserviceName + "> send message  <" + eventObject.getFormattedMessage()
+                        + ">");
             }
 
             Instant instant = Instant.ofEpochMilli(eventObject.getTimeStamp());
             LocalDateTime ldt = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
 
-            final LogEvent sended = new LogEvent(eventObject.getFormattedMessage(), microserviceName,
+            final LogEvent sended = new LogEvent(eventObject.getFormattedMessage(),
+                                                 microserviceName,
                                                  eventObject.getCallerData()[0].getClassName(),
-                                                 eventObject.getCallerData()[0].getMethodName(), ldt.toString(),
-                                                 eventObject.getLevel().toString(), user);
+                                                 eventObject.getCallerData()[0].getMethodName(),
+                                                 ldt.toString(),
+                                                 eventObject.getLevel().toString(),
+                                                 user);
             publisher.publish(sended);
 
             if (LOGGER.isDebugEnabled()) {

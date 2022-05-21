@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service.workflow.state;
 
-import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -60,18 +59,20 @@ public class PendingState extends AbstractDeletableState {
      * @param eventPublisher
      * @param accountService
      */
-    public PendingState(IProjectUsersClient projectUsersClient, IAccountRepository accountRepository,
-                        ITenantService tenantService, IRuntimeTenantResolver runtimeTenantResolver,
-                        IPasswordResetService passwordResetService, IAccountUnlockTokenService accountUnlockTokenService,
-                        ApplicationEventPublisher eventPublisher, IAccountService accountService
-    ) {
+    public PendingState(IProjectUsersClient projectUsersClient,
+                        IAccountRepository accountRepository,
+                        ITenantService tenantService,
+                        IRuntimeTenantResolver runtimeTenantResolver,
+                        IPasswordResetService passwordResetService,
+                        IAccountUnlockTokenService accountUnlockTokenService,
+                        ApplicationEventPublisher eventPublisher,
+                        IAccountService accountService) {
         super(projectUsersClient,
               accountRepository,
               tenantService,
               runtimeTenantResolver,
               passwordResetService,
-              accountUnlockTokenService
-        );
+              accountUnlockTokenService);
         this.eventPublisher = eventPublisher;
         this.accountService = accountService;
     }

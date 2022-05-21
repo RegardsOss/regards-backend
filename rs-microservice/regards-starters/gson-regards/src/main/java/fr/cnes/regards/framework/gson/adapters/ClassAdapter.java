@@ -18,14 +18,15 @@
  */
 package fr.cnes.regards.framework.gson.adapters;
 
-import java.io.IOException;
-
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
+import java.io.IOException;
+
 /**
  * Gson adapter for {@link Class}
+ *
  * @author Marc Sordi
  */
 public class ClassAdapter extends TypeAdapter<Class<?>> {

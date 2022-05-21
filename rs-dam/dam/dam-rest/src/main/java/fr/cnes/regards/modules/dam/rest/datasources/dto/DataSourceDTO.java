@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 
 /**
  * DTO to add number of associated datasets to a data source {@link PluginConfiguration}
+ *
  * @author sbinda
  */
 public class DataSourceDTO extends PluginConfiguration {

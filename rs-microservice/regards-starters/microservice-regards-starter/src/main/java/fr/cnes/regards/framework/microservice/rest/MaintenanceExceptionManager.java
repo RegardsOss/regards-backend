@@ -62,7 +62,7 @@ public class MaintenanceExceptionManager {
         MaintenanceManager.setMaintenance(resolver.getTenant());
         LOGGER.error("Maintenance mode activated for tenant {}", resolver.getTenant());
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                .body(new ServerErrorResponse(pException.getMessage(), pException));
+                             .body(new ServerErrorResponse(pException.getMessage(), pException));
     }
 
     /**
@@ -74,10 +74,12 @@ public class MaintenanceExceptionManager {
     @ExceptionHandler(Throwable.class)
     public ResponseEntity<ServerErrorResponse> handleThrowable(Throwable throwable) {
         LOGGER.error("Unexpected server error", throwable);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ServerErrorResponse(String.format(
-                "An unexpected error occurred, please consult the microservice log for more information. "
-                        + "Cause: %s, message: %s", throwable.getClass().getSimpleName(), throwable.getMessage()),
-                                                                                                    throwable));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                             .body(new ServerErrorResponse(String.format(
+                                 "An unexpected error occurred, please consult the microservice log for more information. "
+                                     + "Cause: %s, message: %s",
+                                 throwable.getClass().getSimpleName(),
+                                 throwable.getMessage()), throwable));
     }
 
 }

@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.framework.amqp.client;
 
-import java.util.HashMap;
-
+import com.google.gson.annotations.Expose;
+import fr.cnes.regards.framework.amqp.event.IMessagePropertiesAware;
 import org.springframework.amqp.core.MessageProperties;
 
-import com.google.gson.annotations.Expose;
-
-import fr.cnes.regards.framework.amqp.event.IMessagePropertiesAware;
+import java.util.HashMap;
 
 /**
  * Useful to send message with headers
+ *
  * @author Marc SORDI
  */
 public class MessageWithHeaders<K, V> extends HashMap<K, V> implements IMessagePropertiesAware {

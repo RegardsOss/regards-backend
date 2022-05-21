@@ -20,25 +20,20 @@
 
 package fr.cnes.regards.modules.ingest.service.plugin;
 
-import java.util.Collection;
-
-import org.apache.commons.compress.utils.Lists;
-
 import com.google.common.collect.Maps;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPostprocessing;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.PostProcessResult;
 
+import java.util.Collection;
+
 /**
- *
  * @author Iliana Ghazali
  */
 
-@Plugin(id = "PostProcessTestPlugin", version = "1.0.0-SNAPSHOT",
-        description = "Test plugin", author = "REGARDS Team",
-        contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
+@Plugin(id = "PostProcessTestPlugin", version = "1.0.0-SNAPSHOT", description = "Test plugin", author = "REGARDS Team",
+    contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class AIPPostProcessTestPlugin implements ISipPostprocessing {
 
     @Override

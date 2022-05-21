@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.access.services.domain.event;
 
 /**
  * @author sbinda
- *
  */
 public enum EventType {
 

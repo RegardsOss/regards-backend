@@ -18,28 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.UUID;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.validation.Errors;
-import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.Validator;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -55,11 +34,7 @@ import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
-import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
+import fr.cnes.regards.modules.acquisition.domain.chain.*;
 import fr.cnes.regards.modules.acquisition.exception.SIPGenerationException;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
@@ -67,12 +42,26 @@ import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
+
+import java.nio.file.Paths;
+import java.util.*;
 
 /**
  * Test {@link AcquisitionProcessingService} for {@link AcquisitionProcessingChain} workflow
  *
  * @author Marc Sordi
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acquisition_chains" })
 public class AcquisitionProcessingServiceIT extends AbstractMultitenantServiceIT {
@@ -117,8 +106,8 @@ public class AcquisitionProcessingServiceIT extends AbstractMultitenantServiceIT
         // Test loading chain by mode
         List<AcquisitionProcessingChain> automaticChains = processingService.findAllBootableAutomaticChains();
         Assert.assertTrue(automaticChains.isEmpty());
-        List<AcquisitionProcessingChain> manualChains = processingService
-                .findByModeAndActiveTrueAndLockedFalse(AcquisitionProcessingChainMode.MANUAL);
+        List<AcquisitionProcessingChain> manualChains = processingService.findByModeAndActiveTrueAndLockedFalse(
+            AcquisitionProcessingChainMode.MANUAL);
         Assert.assertTrue(!manualChains.isEmpty() && (manualChains.size() == 1));
     }
 
@@ -149,7 +138,8 @@ public class AcquisitionProcessingServiceIT extends AbstractMultitenantServiceIT
     }
 
     @Test
-    @Purpose("The product has to be stored by reference, thus test if the store path is saved in the content information of the product")
+    @Purpose(
+        "The product has to be stored by reference, thus test if the store path is saved in the content information of the product")
     public void createProductsByReference() throws ModuleException {
         String refStorageIf = "reference-loc";
         // create chain
@@ -162,9 +152,17 @@ public class AcquisitionProcessingServiceIT extends AbstractMultitenantServiceIT
         Product product = createProduct(chain);
         // test result
         Product productCreated = productService.retrieve(product.getProductName());
-        Assert.assertEquals("Location should be equal to the pluginId provided in acquisition storage", refStorageIf,
-                            productCreated.getSip().getProperties().getContentInformations().get(0).getDataObject()
-                                    .getLocations().iterator().next().getStorage());
+        Assert.assertEquals("Location should be equal to the pluginId provided in acquisition storage",
+                            refStorageIf,
+                            productCreated.getSip()
+                                          .getProperties()
+                                          .getContentInformations()
+                                          .get(0)
+                                          .getDataObject()
+                                          .getLocations()
+                                          .iterator()
+                                          .next()
+                                          .getStorage());
     }
 
     private AcquisitionProcessingChain create() {
@@ -193,21 +191,24 @@ public class AcquisitionProcessingServiceIT extends AbstractMultitenantServiceIT
         processingChain.addFileInfo(fileInfo);
 
         // Validation
-        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class, null,
+        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class,
+                                                                         null,
                                                                          new HashSet<IPluginParam>());
         validationPlugin.setIsActive(true);
         validationPlugin.setLabel("Validation plugin");
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
-        PluginConfiguration productPlugin = PluginConfiguration.build(DefaultProductPlugin.class, null,
+        PluginConfiguration productPlugin = PluginConfiguration.build(DefaultProductPlugin.class,
+                                                                      null,
                                                                       new HashSet<IPluginParam>());
         productPlugin.setIsActive(true);
         productPlugin.setLabel("Product plugin");
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginConfiguration.build(DefaultSIPGeneration.class, null,
+        PluginConfiguration sipGenPlugin = PluginConfiguration.build(DefaultSIPGeneration.class,
+                                                                     null,
                                                                      new HashSet<IPluginParam>());
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin");
@@ -250,7 +251,11 @@ public class AcquisitionProcessingServiceIT extends AbstractMultitenantServiceIT
         syntax.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         ri.setSyntax(syntax);
         ci.setRepresentationInformation(ri);
-        ci.withDataObject(DataType.RAWDATA, "filename", "MD5", UUID.randomUUID().toString(), 10L,
+        ci.withDataObject(DataType.RAWDATA,
+                          "filename",
+                          "MD5",
+                          UUID.randomUUID().toString(),
+                          10L,
                           OAISDataObjectLocation.build("file://ARCHIVE1/NODE1/sample1.dat/"));
         sip.getProperties().getContentInformations().add(ci);
 

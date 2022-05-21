@@ -1,18 +1,18 @@
 package fr.cnes.regards.framework.security.endpoint;
 
-import java.util.List;
-import java.util.Optional;
-
+import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.security.domain.SecurityException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.security.core.GrantedAuthority;
 
-import fr.cnes.regards.framework.security.domain.ResourceMapping;
-import fr.cnes.regards.framework.security.domain.SecurityException;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Specification of {@link MethodAuthorizationService} for instance microservices. It allows to configure resources saying to the system that the actual tenant is instance.
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class InstanceMethodAuthorizationService extends MethodAuthorizationService {
@@ -32,7 +32,8 @@ public class InstanceMethodAuthorizationService extends MethodAuthorizationServi
 
     /**
      * Override {@link MethodAuthorizationService#getAuthorities(String, ResourceMapping)} to specify instance tenant
-     * @param pTenant forced to instance
+     *
+     * @param pTenant          forced to instance
      * @param pResourceMapping resource to retrieve
      */
     @Override

@@ -20,14 +20,12 @@ package fr.cnes.regards.modules.model.dto.properties;
 
 import com.google.common.collect.Range;
 import com.google.gson.annotations.JsonAdapter;
-
 import fr.cnes.regards.modules.model.dto.properties.adapter.DoubleIntervalAttributeAdapter;
 
 /**
  * Represent a {@link PropertyType#DOUBLE_INTERVAL} model attribute
  *
  * @author Marc Sordi
- *
  */
 @JsonAdapter(DoubleIntervalAttributeAdapter.class)
 public class DoubleIntervalProperty extends AbstractProperty<Range<Double>> {

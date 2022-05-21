@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.framework.amqp.client;
 
-import java.util.Map;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +30,9 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
+
+import java.util.Map;
+import java.util.Optional;
 
 @SpringBootApplication
 public class AmqpClientApplication implements ApplicationRunner {
@@ -84,7 +85,10 @@ public class AmqpClientApplication implements ApplicationRunner {
     public static void main(String[] args) {
         LOGGER.info("Starting AMQP client");
         ConfigurableApplicationContext ctx = new SpringApplicationBuilder().bannerMode(Mode.OFF)
-                .web(WebApplicationType.NONE).sources(AmqpClientApplication.class).profiles("nohandler").run(args);
+                                                                           .web(WebApplicationType.NONE)
+                                                                           .sources(AmqpClientApplication.class)
+                                                                           .profiles("nohandler")
+                                                                           .run(args);
         int exitCode = SpringApplication.exit(ctx, () -> 0);
         LOGGER.info("AMQP client exits with code {}", exitCode);
         System.exit(exitCode);
@@ -101,7 +105,13 @@ public class AmqpClientApplication implements ApplicationRunner {
         if ((queueName != null) && !queueName.isEmpty()) {
             queue = Optional.of(queueName);
         }
-        publisher.publish(exchangeName, queue, Optional.ofNullable(routingKey), Optional.empty(), priority, headers,
-                          jsonPathString, iterations);
+        publisher.publish(exchangeName,
+                          queue,
+                          Optional.ofNullable(routingKey),
+                          Optional.empty(),
+                          priority,
+                          headers,
+                          jsonPathString,
+                          iterations);
     }
 }

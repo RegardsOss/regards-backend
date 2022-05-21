@@ -18,24 +18,22 @@
  */
 package fr.cnes.regards.modules.project.service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Default implementation of {@link ITenantService}.
  *
  * @author Marc Sordi
- *
  */
 @Service
 public class TenantService implements ITenantService {
@@ -51,7 +49,7 @@ public class TenantService implements ITenantService {
     private final IProjectConnectionRepository projectConnectionRepository;
 
     public TenantService(IProjectRepository pProjectRepository,
-            IProjectConnectionRepository pProjectConnectionRepository) {
+                         IProjectConnectionRepository pProjectConnectionRepository) {
         this.projectRepository = pProjectRepository;
         this.projectConnectionRepository = pProjectConnectionRepository;
     }

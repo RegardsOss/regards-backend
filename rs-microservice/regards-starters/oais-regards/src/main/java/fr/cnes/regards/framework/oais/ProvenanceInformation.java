@@ -18,18 +18,18 @@
  */
 package fr.cnes.regards.framework.oais;
 
+import org.springframework.lang.Nullable;
+
+import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.validation.constraints.NotNull;
-
-import org.springframework.lang.Nullable;
-
 /**
  * OAIS Preservation Description Information object
+ *
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
  */

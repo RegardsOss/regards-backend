@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.model.service.validation;
 
 /**
  * Validation mode
+ *
  * @author Marc SORDI
  */
 public enum ValidationMode {

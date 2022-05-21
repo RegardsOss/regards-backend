@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.model.gson;
  * Constants used to read json schemas
  *
  * @author Sébastien Binda
- *
  */
 public class JsonSchemaConstants {
 

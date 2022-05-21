@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.modules.dam.dao.entities;
 
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.stereotype.Repository;
-
-import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-
 /**
  * Specific requests on Dataset
+ *
  * @author Sylvain Vissiere-Guerinet
  * @author oroussel
  */
@@ -41,6 +41,7 @@ public interface IDatasetRepository extends IAbstractEntityRepository<Dataset> {
 
     /**
      * Check if at least one model is already linked to at least one dataset as a data source model
+     *
      * @param dataModelNames model list
      * @return true if no dataset exists linked with at least one model
      */

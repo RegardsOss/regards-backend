@@ -18,25 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.oais.ContentInformation;
@@ -59,13 +42,24 @@ import fr.cnes.regards.modules.storage.domain.dto.FileLocationDTO;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceMetaInfoDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
+import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
+import java.util.*;
 
 /**
  * @author Léo Mieulet
  */
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_storage_service" },
-        locations = { "classpath:application-test.properties" })
+    locations = { "classpath:application-test.properties" })
 public class AIPStorageServiceIT extends AbstractMultitenantServiceIT {
 
     @SpyBean
@@ -105,31 +99,57 @@ public class AIPStorageServiceIT extends AbstractMultitenantServiceIT {
     private IAIPStorageService storageService;
 
     public void init() {
-        sipEntity = SIPEntity
-                .build(getDefaultTenant(),
-                       IngestMetadata.build(sessionOwner, session, ingestChain, categories,
-                                            StorageMetadata.build(LOCATION, "/dir1/dir2/", new HashSet<>()),
-                                            StorageMetadata.build(LOCATION_2, "/dir1/dir2/", new HashSet<>()),
-                                            StorageMetadata.build(LOCATION_3, "/dir1/dir2/", new HashSet<>())),
-                       SIP.build(EntityType.DATA, providerId), 1, SIPState.INGESTED);
+        sipEntity = SIPEntity.build(getDefaultTenant(),
+                                    IngestMetadata.build(sessionOwner,
+                                                         session,
+                                                         ingestChain,
+                                                         categories,
+                                                         StorageMetadata.build(LOCATION,
+                                                                               "/dir1/dir2/",
+                                                                               new HashSet<>()),
+                                                         StorageMetadata.build(LOCATION_2,
+                                                                               "/dir1/dir2/",
+                                                                               new HashSet<>()),
+                                                         StorageMetadata.build(LOCATION_3,
+                                                                               "/dir1/dir2/",
+                                                                               new HashSet<>())),
+                                    SIP.build(EntityType.DATA, providerId),
+                                    1,
+                                    SIPState.INGESTED);
         sipEntity.getSip()
-                .withDataObject(DataType.RAWDATA, "myfile1.txt", "MD5", FAKE_CHECKSUM_1, 0L,
-                                OAISDataObjectLocation.build("rs-storage/myfile1.txt", LOCATION),
-                                OAISDataObjectLocation.build("rs-storage/myfile3.txt", LOCATION_3))
-                .registerContentInformation()
-                .withDataObject(DataType.DESCRIPTION, "myfile2.txt", "MD5", FAKE_CHECKSUM_2, 0L,
-                                OAISDataObjectLocation.build("rs-storage/myfile2.txt", LOCATION_2),
-                                OAISDataObjectLocation.build("rs-storage/myfile2.txt", LOCATION_3))
-                .registerContentInformation()
-                .withDataObject(DataType.DOCUMENT, "myfile3.txt", "MD5", FAKE_CHECKSUM_3, 0L,
-                                OAISDataObjectLocation.build("rs-storage/myfile3.txt", LOCATION_3))
-                .registerContentInformation();
-        aipEntity1 = AIPEntity
-                .build(sipEntity, AIPState.GENERATED,
-                       AIP.build(sipEntity.getSip(),
-                                 OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.COLLECTION,
-                                                                         getDefaultTenant(), 1),
-                                 Optional.ofNullable(sipEntity.getSipIdUrn()), providerId, sipEntity.getVersion()));
+                 .withDataObject(DataType.RAWDATA,
+                                 "myfile1.txt",
+                                 "MD5",
+                                 FAKE_CHECKSUM_1,
+                                 0L,
+                                 OAISDataObjectLocation.build("rs-storage/myfile1.txt", LOCATION),
+                                 OAISDataObjectLocation.build("rs-storage/myfile3.txt", LOCATION_3))
+                 .registerContentInformation()
+                 .withDataObject(DataType.DESCRIPTION,
+                                 "myfile2.txt",
+                                 "MD5",
+                                 FAKE_CHECKSUM_2,
+                                 0L,
+                                 OAISDataObjectLocation.build("rs-storage/myfile2.txt", LOCATION_2),
+                                 OAISDataObjectLocation.build("rs-storage/myfile2.txt", LOCATION_3))
+                 .registerContentInformation()
+                 .withDataObject(DataType.DOCUMENT,
+                                 "myfile3.txt",
+                                 "MD5",
+                                 FAKE_CHECKSUM_3,
+                                 0L,
+                                 OAISDataObjectLocation.build("rs-storage/myfile3.txt", LOCATION_3))
+                 .registerContentInformation();
+        aipEntity1 = AIPEntity.build(sipEntity,
+                                     AIPState.GENERATED,
+                                     AIP.build(sipEntity.getSip(),
+                                               OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP,
+                                                                                       EntityType.COLLECTION,
+                                                                                       getDefaultTenant(),
+                                                                                       1),
+                                               Optional.ofNullable(sipEntity.getSipIdUrn()),
+                                               providerId,
+                                               sipEntity.getVersion()));
         aipEntity1.setStorages(Sets.newHashSet(LOCATION, LOCATION_2, LOCATION_3));
     }
 
@@ -147,10 +167,17 @@ public class AIPStorageServiceIT extends AbstractMultitenantServiceIT {
         Assert.assertTrue("Should detect some change", isUpdated.isAipEntityUpdated());
         Assert.assertTrue("Should detect some change", isUpdated.isAipUpdated());
         Assert.assertEquals("Now 4 storages should be defined in ingest metadata", 4, aipEntity1.getStorages().size());
-        Optional<ContentInformation> ciOp = aipEntity1.getAip().getProperties().getContentInformations().stream()
-                .filter(ci -> ci.getDataObject().getChecksum().equals(FAKE_CHECKSUM_3)).findFirst();
+        Optional<ContentInformation> ciOp = aipEntity1.getAip()
+                                                      .getProperties()
+                                                      .getContentInformations()
+                                                      .stream()
+                                                      .filter(ci -> ci.getDataObject()
+                                                                      .getChecksum()
+                                                                      .equals(FAKE_CHECKSUM_3))
+                                                      .findFirst();
         Assert.assertTrue(ciOp.isPresent());
-        Assert.assertEquals("Now two locations should be defined in that dataobject", 2,
+        Assert.assertEquals("Now two locations should be defined in that dataobject",
+                            2,
                             ciOp.get().getDataObject().getLocations().size());
         Assert.assertEquals("Some event have been added", 1, aipEntity1.getAip().getHistory().size());
 
@@ -161,10 +188,15 @@ public class AIPStorageServiceIT extends AbstractMultitenantServiceIT {
         Assert.assertTrue("Should detect some change", isUpdated.isAipEntityUpdated());
         Assert.assertTrue("Should detect some change", isUpdated.isAipUpdated());
         Assert.assertEquals("Sill 3 storages should be defined in ingest metadata", 3, aipEntity1.getStorages().size());
-        ciOp = aipEntity1.getAip().getProperties().getContentInformations().stream()
-                .filter(ci -> ci.getDataObject().getChecksum().equals(FAKE_CHECKSUM_3)).findFirst();
+        ciOp = aipEntity1.getAip()
+                         .getProperties()
+                         .getContentInformations()
+                         .stream()
+                         .filter(ci -> ci.getDataObject().getChecksum().equals(FAKE_CHECKSUM_3))
+                         .findFirst();
         Assert.assertTrue(ciOp.isPresent());
-        Assert.assertEquals("Now two locations should be defined in that dataobject", 2,
+        Assert.assertEquals("Now two locations should be defined in that dataobject",
+                            2,
                             ciOp.get().getDataObject().getLocations().size());
     }
 
@@ -196,12 +228,20 @@ public class AIPStorageServiceIT extends AbstractMultitenantServiceIT {
         Assert.assertTrue("Should detect some change", isUpdated.isAipEntityUpdated());
         Assert.assertTrue("Should detect some change", isUpdated.isAipUpdated());
         Assert.assertEquals("Now 2 storages in ingest metadata remaining", 2, aipEntity1.getStorages().size());
-        Optional<ContentInformation> ciOp = aipEntity1.getAip().getProperties().getContentInformations().stream()
-                .filter(ci -> ci.getDataObject().getChecksum().equals(FAKE_CHECKSUM_2)).findFirst();
+        Optional<ContentInformation> ciOp = aipEntity1.getAip()
+                                                      .getProperties()
+                                                      .getContentInformations()
+                                                      .stream()
+                                                      .filter(ci -> ci.getDataObject()
+                                                                      .getChecksum()
+                                                                      .equals(FAKE_CHECKSUM_2))
+                                                      .findFirst();
         Assert.assertTrue(ciOp.isPresent());
-        Assert.assertEquals("Still 1 location should be defined in that dataobject", 1,
+        Assert.assertEquals("Still 1 location should be defined in that dataobject",
+                            1,
                             ciOp.get().getDataObject().getLocations().size());
-        Assert.assertNotEquals("The remaining location should not be the one we've just removed", LOCATION_2,
+        Assert.assertNotEquals("The remaining location should not be the one we've just removed",
+                               LOCATION_2,
                                ciOp.get().getDataObject().getLocations().iterator().next().getStorage());
         Assert.assertEquals("Some event have been added", 1, aipEntity1.getAip().getHistory().size());
 
@@ -213,10 +253,15 @@ public class AIPStorageServiceIT extends AbstractMultitenantServiceIT {
         Assert.assertTrue("Should detect some change", isUpdated.isAipEntityUpdated());
         Assert.assertTrue("Should detect some change", isUpdated.isAipUpdated());
         Assert.assertEquals("Still 3 storages in ingest metadata", 3, aipEntity1.getStorages().size());
-        ciOp = aipEntity1.getAip().getProperties().getContentInformations().stream()
-                .filter(ci -> ci.getDataObject().getChecksum().equals(FAKE_CHECKSUM_3)).findFirst();
+        ciOp = aipEntity1.getAip()
+                         .getProperties()
+                         .getContentInformations()
+                         .stream()
+                         .filter(ci -> ci.getDataObject().getChecksum().equals(FAKE_CHECKSUM_3))
+                         .findFirst();
         Assert.assertTrue(ciOp.isPresent());
-        Assert.assertEquals("No more location should be defined in that dataobject", 0,
+        Assert.assertEquals("No more location should be defined in that dataobject",
+                            0,
                             ciOp.get().getDataObject().getLocations().size());
     }
 
@@ -237,12 +282,24 @@ public class AIPStorageServiceIT extends AbstractMultitenantServiceIT {
     }
 
     private ArrayList<RequestResultInfoDTO> getStorageQueryResult(String fakeChecksum3, String location) {
-        return Lists.newArrayList(RequestResultInfoDTO
-                .build("groupId", fakeChecksum3, location, null, Sets.newHashSet("someone"),
-                       FileReferenceDTO.build(OffsetDateTime.now(),
-                                              FileReferenceMetaInfoDTO.build(fakeChecksum3, null, null, null, null,
-                                                                             null, null, null),
-                                              FileLocationDTO.build(location, "http://someurl.com"), Sets.newHashSet()),
-                       null));
+        return Lists.newArrayList(RequestResultInfoDTO.build("groupId",
+                                                             fakeChecksum3,
+                                                             location,
+                                                             null,
+                                                             Sets.newHashSet("someone"),
+                                                             FileReferenceDTO.build(OffsetDateTime.now(),
+                                                                                    FileReferenceMetaInfoDTO.build(
+                                                                                        fakeChecksum3,
+                                                                                        null,
+                                                                                        null,
+                                                                                        null,
+                                                                                        null,
+                                                                                        null,
+                                                                                        null,
+                                                                                        null),
+                                                                                    FileLocationDTO.build(location,
+                                                                                                          "http://someurl.com"),
+                                                                                    Sets.newHashSet()),
+                                                             null));
     }
 }

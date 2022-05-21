@@ -23,7 +23,6 @@ import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import java.time.Instant;
 import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
@@ -33,6 +32,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+
+import java.time.Instant;
 
 /**
  * Scheduler to clean old {@link fr.cnes.regards.framework.modules.session.commons.domain.SessionStep}
@@ -82,9 +83,9 @@ public class AgentCleanSessionStepScheduler extends AbstractTaskScheduler {
      * Bulk save queued items every second.
      */
     @Scheduled(initialDelayString = "${regards.session.agent.clean.session.step.scheduler.bulk.initial.delay:"
-            + DEFAULT_INITIAL_DELAY + "}",
-            fixedDelayString = "${regards.session.agent.clean.session.step.scheduler.bulk.delay:"
-                    + DEFAULT_SCHEDULING_DELAY + "}")
+        + DEFAULT_INITIAL_DELAY + "}",
+        fixedDelayString = "${regards.session.agent.clean.session.step.scheduler.bulk.delay:" + DEFAULT_SCHEDULING_DELAY
+            + "}")
     protected void scheduleCleanSessionStep() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {

@@ -26,7 +26,6 @@ import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantAutoConfig
 import fr.cnes.regards.framework.security.autoconfigure.test.SecureTestRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.endpoint.*;
 import fr.cnes.regards.framework.security.event.SecurityEventHandler;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -35,10 +34,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.env.Environment;
 
 /**
  * Method Authorization Service auto configuration
+ *
  * @author msordi
  */
 @Configuration
@@ -103,7 +102,7 @@ public class MethodAuthorizationServiceAutoConfiguration {
 
     @Bean
     public SecurityEventHandler securityEventHandler(final ISubscriber subscriber,
-            MethodAuthorizationService methodAuthorizationService) {
+                                                     MethodAuthorizationService methodAuthorizationService) {
         return new SecurityEventHandler(microserviceName, subscriber, methodAuthorizationService);
     }
 }

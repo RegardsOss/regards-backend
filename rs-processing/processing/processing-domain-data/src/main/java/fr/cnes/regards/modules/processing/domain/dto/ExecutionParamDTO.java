@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.dto;
 
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterDescriptor;
@@ -23,12 +23,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.With;
+
 /**
  * This class defines a DTO for execution parameters.
  *
  * @author gandrieu
  */
-@Data @With
+@Data
+@With
 @AllArgsConstructor
 @Builder(toBuilder = true)
 

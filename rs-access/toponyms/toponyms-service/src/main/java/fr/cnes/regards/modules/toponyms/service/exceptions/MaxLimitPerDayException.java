@@ -2,7 +2,6 @@ package fr.cnes.regards.modules.toponyms.service.exceptions;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
-
 /**
  * Exception when a user has reached the maximum number of toponyms added in a day
  *

@@ -39,7 +39,8 @@ import java.util.List;
  */
 @Component
 @Profile("!nohandler")
-public class NotificationRequestEventHandler implements IBatchHandler<NotificationRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
+public class NotificationRequestEventHandler
+    implements IBatchHandler<NotificationRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
 
     @Autowired
     private ISubscriber subscriber;

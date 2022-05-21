@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.framework.amqp.configuration;
 
-import java.util.List;
-
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+
+import java.util.List;
 
 /**
  * @author svissier
@@ -29,6 +29,7 @@ public interface IRabbitVirtualHostAdmin {
 
     /**
      * GET Request to host/api/vhosts to know which Vhosts are already defined
+     *
      * @return list of all virtual hosts
      */
     List<String> retrieveVhostList();
@@ -45,18 +46,21 @@ public interface IRabbitVirtualHostAdmin {
 
     /**
      * PUT Request to /api/vhost/{vhostName} to add this Vhost only if it is not already defined
+     *
      * @param virtualHost name virtual host you want to add
      */
     void addVhost(String virtualHost);
 
     /**
      * DELETE Request to /api/vhost/{vhostName}
+     *
      * @param virtualHost name of virtual host you want to remove
      */
     void removeVhost(String virtualHost);
 
     /**
      * Retrieve {@link ConnectionFactory} for virtual host
+     *
      * @param virtualHost virtual host
      * @return vhost {@link ConnectionFactory}
      */
@@ -64,6 +68,7 @@ public interface IRabbitVirtualHostAdmin {
 
     /**
      * Determine if the request done is to be considered successful
+     *
      * @param pStatusValue status to examine
      * @return true if the request was successfull, false otherwise
      */
@@ -94,6 +99,7 @@ public interface IRabbitVirtualHostAdmin {
 
     /**
      * Bind {@link ConnectionFactory} to virtual host before declaring an AMQP element
+     *
      * @param virtualHost virtual host to bind
      */
     void bind(String virtualHost);

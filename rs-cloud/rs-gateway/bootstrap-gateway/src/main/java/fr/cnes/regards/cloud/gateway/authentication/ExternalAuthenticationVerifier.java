@@ -48,20 +48,26 @@ public class ExternalAuthenticationVerifier {
 
     public Mono<Authentication> verifyAndAuthenticate(String externalToken, String tenant) {
         String token = getSystemToken(tenant);
-        return webClientBuilder.build().get()
-                .uri("http://rs-authentication/serviceproviders/verify?externalToken={externalToken}", externalToken)
-                .header(AUTHORIZATION, BEARER + " " + token).exchangeToMono(response -> {
-                    if (response.statusCode().equals(HttpStatus.OK)) {
-                        return response.bodyToMono(Authentication.class);
-                    } else {
-                        return response.createException().flatMap(Mono::error);
-                    }
-                });
+        return webClientBuilder.build()
+                               .get()
+                               .uri("http://rs-authentication/serviceproviders/verify?externalToken={externalToken}",
+                                    externalToken)
+                               .header(AUTHORIZATION, BEARER + " " + token)
+                               .exchangeToMono(response -> {
+                                   if (response.statusCode().equals(HttpStatus.OK)) {
+                                       return response.bodyToMono(Authentication.class);
+                                   } else {
+                                       return response.createException().flatMap(Mono::error);
+                                   }
+                               });
     }
 
     private String getSystemToken(String tenant) {
         String role = RoleAuthority.getSysRole(appName);
-        LOGGER.debug("Generating internal system JWT for application {}, tenant {} and role {} ", appName, tenant, role);
+        LOGGER.debug("Generating internal system JWT for application {}, tenant {} and role {} ",
+                     appName,
+                     tenant,
+                     role);
         return jwtService.generateToken(tenant, appName, appName, role);
     }
 

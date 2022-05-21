@@ -22,6 +22,7 @@ import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 
 /**
  * DTO to represents location a file referenced in storage catalog.
+ *
  * @author Sébastien Binda
  */
 public class FileLocationDTO {

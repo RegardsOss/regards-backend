@@ -18,19 +18,19 @@
  */
 package fr.cnes.regards.framework.gson.adapters.sample2;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
+import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParseException;
-import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
-
 /**
  * Test with a programmatic implementation of the {@link PolymorphicTypeAdapterFactory} with explicit sub types
  * declaration.
+ *
  * @author Marc Sordi
  */
 public class AdapterTest {

@@ -18,12 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service.passwordreset;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -33,9 +27,15 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PasswordResetToken;
 import fr.cnes.regards.modules.accessrights.instance.service.IAccountService;
 import fr.cnes.regards.modules.accessrights.instance.service.encryption.EncryptionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 /**
  * {@link IPasswordResetService} implementation.
+ *
  * @author Xavier-Alexandre Brochard
  */
 @Service
@@ -56,8 +56,9 @@ public class PasswordResetService implements IPasswordResetService {
 
     /**
      * Creates a new instance with passed deps
+     *
      * @param pTokenRepository The verif token repository
-     * @param pAccountService The account service
+     * @param pAccountService  The account service
      */
     public PasswordResetService(IPasswordResetTokenRepository pTokenRepository, IAccountService pAccountService) {
         tokenRepository = pTokenRepository;
@@ -67,7 +68,7 @@ public class PasswordResetService implements IPasswordResetService {
     @Override
     public PasswordResetToken getPasswordResetToken(String pToken) throws EntityNotFoundException {
         return tokenRepository.findByToken(pToken)
-                .orElseThrow(() -> new EntityNotFoundException(pToken, PasswordResetToken.class));
+                              .orElseThrow(() -> new EntityNotFoundException(pToken, PasswordResetToken.class));
     }
 
     @Override
@@ -85,7 +86,7 @@ public class PasswordResetService implements IPasswordResetService {
 
     @Override
     public void performPasswordReset(String pAccountEmail, String pResetCode, String pNewPassword)
-            throws EntityException {
+        throws EntityException {
         Account account = accountService.retrieveAccountByEmail(pAccountEmail);
         validatePasswordResetToken(pAccountEmail, pResetCode);
         accountService.changePassword(account.getId(), EncryptionUtils.encryptPassword(pNewPassword));
@@ -93,15 +94,18 @@ public class PasswordResetService implements IPasswordResetService {
 
     /**
      * Validate the password reset token
+     *
      * @param pAccountEmail the account email
-     * @param pToken the token to validate
+     * @param pToken        the token to validate
      * @throws EntityOperationForbiddenException Thrown if: - token does not exists - is not linked to the passed account - is expired
      */
     private void validatePasswordResetToken(String pAccountEmail, String pToken)
-            throws EntityOperationForbiddenException {
+        throws EntityOperationForbiddenException {
         // Retrieve the token object
-        PasswordResetToken passToken = tokenRepository.findByToken(pToken).orElseThrow(
-                () -> new EntityOperationForbiddenException(pToken, PasswordResetToken.class, "Token does not exist"));
+        PasswordResetToken passToken = tokenRepository.findByToken(pToken)
+                                                      .orElseThrow(() -> new EntityOperationForbiddenException(pToken,
+                                                                                                               PasswordResetToken.class,
+                                                                                                               "Token does not exist"));
 
         // Check same account
         if (!passToken.getAccount().getEmail().equals(pAccountEmail)) {

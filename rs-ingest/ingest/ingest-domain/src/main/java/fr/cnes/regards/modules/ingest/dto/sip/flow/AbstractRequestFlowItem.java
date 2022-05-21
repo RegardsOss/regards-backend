@@ -18,16 +18,14 @@
  */
 package fr.cnes.regards.modules.ingest.dto.sip.flow;
 
-import java.util.UUID;
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
-
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
+import java.util.UUID;
 
 /**
  * @author Marc SORDI
- *
  */
 public abstract class AbstractRequestFlowItem {
 

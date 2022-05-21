@@ -26,10 +26,14 @@ public class IIndexableJsoniterDecoder implements NullSafeDecoderBuilder {
     public Object decode(JsonIterator iter) throws IOException {
         Any indexable = iter.readAny();
         EntityType type = indexable.get("type").as(EntityType.class);
-        switch(type) {
-            case COLLECTION: return indexable.as(Collection.class);
-            case DATASET: return indexable.as(Dataset.class);
-            case DATA: default: return indexable.as(DataObject.class);
+        switch (type) {
+            case COLLECTION:
+                return indexable.as(Collection.class);
+            case DATASET:
+                return indexable.as(Dataset.class);
+            case DATA:
+            default:
+                return indexable.as(DataObject.class);
         }
     }
 }

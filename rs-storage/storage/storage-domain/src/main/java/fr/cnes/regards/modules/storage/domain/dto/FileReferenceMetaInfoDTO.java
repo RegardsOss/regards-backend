@@ -18,12 +18,12 @@
  */
 package fr.cnes.regards.modules.storage.domain.dto;
 
-import org.springframework.util.MimeType;
-
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
+import org.springframework.util.MimeType;
 
 /**
  * DTO represents meta information about a file referenced in storage catalog.
+ *
  * @author Sébastien Binda
  */
 public class FileReferenceMetaInfoDTO {
@@ -68,8 +68,14 @@ public class FileReferenceMetaInfoDTO {
      */
     private String type;
 
-    public static FileReferenceMetaInfoDTO build(String checksum, String algorithm, String fileName, Long fileSize,
-            Integer height, Integer width, MimeType mimeType, String type) {
+    public static FileReferenceMetaInfoDTO build(String checksum,
+                                                 String algorithm,
+                                                 String fileName,
+                                                 Long fileSize,
+                                                 Integer height,
+                                                 Integer width,
+                                                 MimeType mimeType,
+                                                 String type) {
         FileReferenceMetaInfoDTO dto = new FileReferenceMetaInfoDTO();
         dto.checksum = checksum;
         dto.algorithm = algorithm;

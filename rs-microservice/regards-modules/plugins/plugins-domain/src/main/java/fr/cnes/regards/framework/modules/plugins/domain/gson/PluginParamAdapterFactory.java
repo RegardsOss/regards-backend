@@ -20,20 +20,7 @@ package fr.cnes.regards.framework.modules.plugins.domain.gson;
 
 import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.BooleanPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.BytePluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.DoublePluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.FloatPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IntegerPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.JsonCollectionPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.JsonMapPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.JsonObjectPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.LongPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.NestedPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.PluginParamType;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.ShortPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.StringPluginParam;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.*;
 
 /**
  * Factory to (de)serialize {@link IPluginParam}

@@ -21,11 +21,9 @@ package fr.cnes.regards.modules.model.service.exception;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
- *
  * Error that occurs during XML export
  *
  * @author Marc Sordi
- *
  */
 public class ExportException extends ModuleException {
 

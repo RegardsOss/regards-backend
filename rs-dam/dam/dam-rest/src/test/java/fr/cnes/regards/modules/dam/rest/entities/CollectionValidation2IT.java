@@ -18,27 +18,9 @@
  */
 package fr.cnes.regards.modules.dam.rest.entities;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import fr.cnes.regards.framework.jsoniter.property.JsoniterAttributeModelPropertyTypeFinder;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
 import com.google.gson.JsonParseException;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.jsoniter.property.JsoniterAttributeModelPropertyTypeFinder;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -53,6 +35,22 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFactory;
 import fr.cnes.regards.modules.model.rest.ModelController;
 import fr.cnes.regards.modules.model.service.IAttributeModelService;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Test collection validation
@@ -155,8 +153,7 @@ public class CollectionValidation2IT extends AbstractRegardsTransactionalIT {
     /**
      * Import a model
      *
-     * @param filename
-     *            model to import from resources folder
+     * @param filename model to import from resources folder
      */
     private void importModel(final String filename) {
 
@@ -165,7 +162,9 @@ public class CollectionValidation2IT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer expectations = customizer();
         expectations.expect(MockMvcResultMatchers.status().isCreated());
 
-        performDefaultFileUpload(ModelController.TYPE_MAPPING + "/import", filePath, expectations,
+        performDefaultFileUpload(ModelController.TYPE_MAPPING + "/import",
+                                 filePath,
+                                 expectations,
                                  "Should be able to import a fragment");
 
         final List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null);
@@ -214,7 +213,9 @@ public class CollectionValidation2IT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer customizer = customizer();
         customizer.expect(MockMvcResultMatchers.status().isCreated());
         tenantResolver.forceTenant(getDefaultTenant());
-        performDefaultPost(CollectionController.TYPE_MAPPING, collection, customizer,
+        performDefaultPost(CollectionController.TYPE_MAPPING,
+                           collection,
+                           customizer,
                            "Failed to create a new collection");
 
         // lets test update without altering the non alterable attribute(active)
@@ -230,8 +231,11 @@ public class CollectionValidation2IT extends AbstractRegardsTransactionalIT {
 
         customizer = customizer();
         customizer.expect(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(CollectionController.TYPE_MAPPING + CollectionController.COLLECTION_MAPPING, collection,
-                          customizer, "Failed to update a collection", collection.getId());
+        performDefaultPut(CollectionController.TYPE_MAPPING + CollectionController.COLLECTION_MAPPING,
+                          collection,
+                          customizer,
+                          "Failed to update a collection",
+                          collection.getId());
 
         // lets change the non alterable
         atts = new HashSet<>();
@@ -253,8 +257,11 @@ public class CollectionValidation2IT extends AbstractRegardsTransactionalIT {
         customizer = customizer();
         customizer.expect(MockMvcResultMatchers.status().isUnprocessableEntity());
         tenantResolver.forceTenant(getDefaultTenant());
-        performDefaultPut(CollectionController.TYPE_MAPPING + CollectionController.COLLECTION_MAPPING, newCollection,
-                          customizer, "Failed to update a collection", collection.getId());
+        performDefaultPut(CollectionController.TYPE_MAPPING + CollectionController.COLLECTION_MAPPING,
+                          newCollection,
+                          customizer,
+                          "Failed to update a collection",
+                          collection.getId());
     }
 
     @Test
@@ -272,7 +279,9 @@ public class CollectionValidation2IT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer customizer = customizer();
         customizer.expect(MockMvcResultMatchers.status().isCreated());
         tenantResolver.forceTenant(getDefaultTenant());
-        performDefaultPost(CollectionController.TYPE_MAPPING, optionalNonAlterable, customizer,
+        performDefaultPost(CollectionController.TYPE_MAPPING,
+                           optionalNonAlterable,
+                           customizer,
                            "Failed to create a new collection");
 
         // now lets try to update this collection and get an error
@@ -294,27 +303,36 @@ public class CollectionValidation2IT extends AbstractRegardsTransactionalIT {
 
         customizer = customizer();
         customizer.expect(MockMvcResultMatchers.status().isUnprocessableEntity());
-        performDefaultPut(CollectionController.TYPE_MAPPING + CollectionController.COLLECTION_MAPPING, optionalAltered,
-                          customizer, "Failed to update a collection", optionalNonAlterable.getId());
+        performDefaultPut(CollectionController.TYPE_MAPPING + CollectionController.COLLECTION_MAPPING,
+                          optionalAltered,
+                          customizer,
+                          "Failed to update a collection",
+                          optionalNonAlterable.getId());
 
         // now lets try again without giving the value on the creation
 
-        Collection optionalNotGivenNonAlterable = new Collection(model, getDefaultTenant(), "COL3",
-                "optionalNotGivenNonAlterable");
+        Collection optionalNotGivenNonAlterable = new Collection(model,
+                                                                 getDefaultTenant(),
+                                                                 "COL3",
+                                                                 "optionalNotGivenNonAlterable");
         optionalNonAlterable.setProviderId(providerId);
         optionalNonAlterable.setCreationDate(OffsetDateTime.now());
 
         customizer = customizer();
         customizer.expect(MockMvcResultMatchers.status().isCreated());
-        performDefaultPost(CollectionController.TYPE_MAPPING, optionalNotGivenNonAlterable, customizer,
+        performDefaultPost(CollectionController.TYPE_MAPPING,
+                           optionalNotGivenNonAlterable,
+                           customizer,
                            "Failed to create a new collection");
 
         // now lets try to update this collection and give the optional value and be a success=
         tenantResolver.forceTenant(getDefaultTenant());
         optionalNotGivenNonAlterable = collectionService.load(optionalNotGivenNonAlterable.getIpId());
         atts = new HashSet<>();
-        Collection optionalAlteredNotGiven = new Collection(model, getDefaultTenant(), "COL4",
-                "optionalAlteredNotGiven");
+        Collection optionalAlteredNotGiven = new Collection(model,
+                                                            getDefaultTenant(),
+                                                            "COL4",
+                                                            "optionalAlteredNotGiven");
         optionalAlteredNotGiven.setCreationDate(optionalNotGivenNonAlterable.getCreationDate());
         optionalAlteredNotGiven.setNormalizedGeometry(optionalNotGivenNonAlterable.getNormalizedGeometry());
         optionalAlteredNotGiven.setGroups(optionalNotGivenNonAlterable.getGroups());
@@ -330,15 +348,16 @@ public class CollectionValidation2IT extends AbstractRegardsTransactionalIT {
         customizer = customizer();
         customizer.expect(MockMvcResultMatchers.status().isOk());
         performDefaultPut(CollectionController.TYPE_MAPPING + CollectionController.COLLECTION_MAPPING,
-                          optionalAlteredNotGiven, customizer, "Failed to update a collection",
+                          optionalAlteredNotGiven,
+                          customizer,
+                          "Failed to update a collection",
                           optionalNotGivenNonAlterable.getId());
     }
 
     /**
      * Test if error occurs when an attribute has a bad type
      *
-     * @throws ModuleException
-     *             module exception
+     * @throws ModuleException module exception
      */
     @Ignore
     @Test(expected = JsonParseException.class)
@@ -368,15 +387,16 @@ public class CollectionValidation2IT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer customizer = customizer();
         customizer.expect(MockMvcResultMatchers.status().is5xxServerError());
         tenantResolver.forceTenant(getDefaultTenant());
-        performDefaultPost(CollectionController.TYPE_MAPPING, collection, customizer,
+        performDefaultPost(CollectionController.TYPE_MAPPING,
+                           collection,
+                           customizer,
                            "Failed to create a new collection");
     }
 
     /**
      * Test if an error occurs when giving an attribute a bad name
      *
-     * @throws ModuleException
-     *             module exception
+     * @throws ModuleException module exception
      */
     @Test(expected = AssertionError.class)
     public void postCollectionWithBadAttributeName() throws ModuleException {
@@ -401,15 +421,16 @@ public class CollectionValidation2IT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer customizer = customizer();
         customizer.expect(MockMvcResultMatchers.status().isUnprocessableEntity());
         tenantResolver.forceTenant(getDefaultTenant());
-        performDefaultPost(CollectionController.TYPE_MAPPING, collection, customizer,
+        performDefaultPost(CollectionController.TYPE_MAPPING,
+                           collection,
+                           customizer,
                            "Failed to create a new collection");
     }
 
     /**
      * Test if an error occurs when an enumaration restriction is violated
      *
-     * @throws ModuleException
-     *             module exception
+     * @throws ModuleException module exception
      */
     @Test
     public void postCollectionWithWrongValue() throws ModuleException {
@@ -435,7 +456,9 @@ public class CollectionValidation2IT extends AbstractRegardsTransactionalIT {
         tenantResolver.forceTenant(getDefaultTenant());
         RequestBuilderCustomizer customizer = customizer();
         customizer.expect(MockMvcResultMatchers.status().isUnprocessableEntity());
-        performDefaultPost(CollectionController.TYPE_MAPPING, collection, customizer,
+        performDefaultPost(CollectionController.TYPE_MAPPING,
+                           collection,
+                           customizer,
                            "Failed to create a new collection");
     }
 

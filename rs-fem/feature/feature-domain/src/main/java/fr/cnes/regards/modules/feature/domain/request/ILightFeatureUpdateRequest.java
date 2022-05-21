@@ -1,9 +1,9 @@
 package fr.cnes.regards.modules.feature.domain.request;
 
-import javax.persistence.Convert;
-
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
+
+import javax.persistence.Convert;
 
 /**
  * @author Sylvain VISSIERE-GUERINET

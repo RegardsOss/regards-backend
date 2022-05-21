@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.UUID;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_version"
-        //        , "spring.jpa.show-sql=true"
+    //        , "spring.jpa.show-sql=true"
 })
 @ActiveProfiles(value = { "noscheduler", "noFemHandler" })
 public class FeatureVersionIT extends AbstractFeatureMultitenantServiceIT {
@@ -44,7 +44,7 @@ public class FeatureVersionIT extends AbstractFeatureMultitenantServiceIT {
     public void multipleVersionTest() {
 
         // Init 2 requests
-        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(2, true,false);
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(2, true, false);
         featureService.registerRequests(events);
 
         // V1 & V2 for first feature
@@ -61,7 +61,8 @@ public class FeatureVersionIT extends AbstractFeatureMultitenantServiceIT {
 
     /**
      * Save a set of versions
-     * @param feature feature version to save
+     *
+     * @param feature       feature version to save
      * @param versionNumber number of version to save. Must be greater than or equals to 1
      */
     private void savePreviousVersions(Feature feature, Integer versionNumber) {

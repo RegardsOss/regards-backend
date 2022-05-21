@@ -18,22 +18,20 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.HashSet;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
+import fr.cnes.regards.framework.urn.DataType;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 
-import fr.cnes.regards.framework.urn.DataType;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.HashSet;
 
 /**
  * OAIS content information<br/>
- *
+ * <p>
  * A {@link ContentInformation} is composed of two objects :
  * <ul>
  * <li>An {@link OAISDataObject} containing physical file information</li>
@@ -61,6 +59,7 @@ import fr.cnes.regards.framework.urn.DataType;
  * <li>{@link #withSoftwareEnvironmentProperty(String, Object)}</li>
  * </ul>
  * <br/>
+ *
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
  */
@@ -137,11 +136,12 @@ public class ContentInformation {
      * Set <b>required</b> data object properties for a data object reference<br/>
      * Use this method to reference an external data object that will not be managed by archival storage (i.e. physical
      * file will not be stored by the system)<br/>
+     *
      * @param dataType {@link DataType}
      * @param filename filename
-     * @param url external url
-     * @param storage storage identifier not managed by storage service (to just reference the file and avoid manipulating it).
-     * An arbitrary character string may be appropriate!
+     * @param url      external url
+     * @param storage  storage identifier not managed by storage service (to just reference the file and avoid manipulating it).
+     *                 An arbitrary character string may be appropriate!
      */
     public ContentInformation withDataObjectReference(DataType dataType, String filename, String url, String storage) {
         Assert.notNull(dataType, "Data type is required");
@@ -160,15 +160,20 @@ public class ContentInformation {
 
     /**
      * Set <b>required</b> data object properties<br/>
-     * @param dataType {@link DataType}
-     * @param filename filename
+     *
+     * @param dataType  {@link DataType}
+     * @param filename  filename
      * @param algorithm checksum algorithm
-     * @param checksum the checksum
-     * @param fileSize <b>optional</b> file size
+     * @param checksum  the checksum
+     * @param fileSize  <b>optional</b> file size
      * @param locations references to the physical file. Use {@link OAISDataObjectLocation} build methods to create location!
      */
-    public ContentInformation withDataObject(DataType dataType, String filename, String algorithm, String checksum,
-            Long fileSize, OAISDataObjectLocation... locations) {
+    public ContentInformation withDataObject(DataType dataType,
+                                             String filename,
+                                             String algorithm,
+                                             String checksum,
+                                             Long fileSize,
+                                             OAISDataObjectLocation... locations) {
         Assert.notNull(dataType, "Data type is required");
         Assert.hasText(filename, "Filename is required");
         Assert.hasText(algorithm, "Checksum algorithm is required");
@@ -188,26 +193,36 @@ public class ContentInformation {
 
     /**
      * Set <b>required</b> data object properties
-     * @param dataType {@link DataType}
-     * @param filePath reference to the physical file
-     * @param filename filename
+     *
+     * @param dataType  {@link DataType}
+     * @param filePath  reference to the physical file
+     * @param filename  filename
      * @param algorithm checksum algorithm
-     * @param checksum the checksum
-     * @param fileSize file size
+     * @param checksum  the checksum
+     * @param fileSize  file size
      */
-    public ContentInformation withDataObject(DataType dataType, Path filePath, String filename, String algorithm,
-            String checksum, Long fileSize) {
-        return withDataObject(dataType, filename, algorithm, checksum, fileSize,
+    public ContentInformation withDataObject(DataType dataType,
+                                             Path filePath,
+                                             String filename,
+                                             String algorithm,
+                                             String checksum,
+                                             Long fileSize) {
+        return withDataObject(dataType,
+                              filename,
+                              algorithm,
+                              checksum,
+                              fileSize,
                               OAISDataObjectLocation.build(filePath));
     }
 
     /**
      * Alias for {@link ContentInformation#withDataObject(DataType, Path, String, String, String, Long)} (no
      * file size)
-     * @param dataType {@link DataType}
-     * @param filePath reference to the physical file
+     *
+     * @param dataType  {@link DataType}
+     * @param filePath  reference to the physical file
      * @param algorithm checksum algorithm
-     * @param checksum the checksum
+     * @param checksum  the checksum
      */
     public ContentInformation withDataObject(DataType dataType, Path filePath, String algorithm, String checksum) {
         return withDataObject(dataType, filePath, filePath.getFileName().toString(), algorithm, checksum, null);
@@ -216,6 +231,7 @@ public class ContentInformation {
     /**
      * Alias for {@link ContentInformation#withDataObject(DataType, Path, String, String, String, Long)} (no file
      * size and MD5 default checksum algorithm)
+     *
      * @param dataType {@link DataType}
      * @param filePath reference to the physical file
      * @param checksum the checksum
@@ -226,12 +242,16 @@ public class ContentInformation {
 
     /**
      * Set syntax representation
-     * @param mimeName MIME name
+     *
+     * @param mimeName        MIME name
      * @param mimeDescription MIME description
-     * @param mimeType MIME type
+     * @param mimeType        MIME type
      */
-    public ContentInformation withSyntax(@Nullable String mimeName, @Nullable String mimeDescription, MimeType mimeType,
-            @Nullable Double width, @Nullable Double height) {
+    public ContentInformation withSyntax(@Nullable String mimeName,
+                                         @Nullable String mimeDescription,
+                                         MimeType mimeType,
+                                         @Nullable Double width,
+                                         @Nullable Double height) {
         Assert.notNull(mimeType, "Mime type cannot be null");
         Assert.hasLength(mimeType.getType(), "Mime type type cannot be null");
         Assert.hasLength(mimeType.getSubtype(), "Mime type subtype cannot be null");
@@ -252,6 +272,7 @@ public class ContentInformation {
 
     /**
      * Set syntax representation
+     *
      * @param mimeType MIME type
      */
     public ContentInformation withSyntax(MimeType mimeType) {
@@ -260,6 +281,7 @@ public class ContentInformation {
 
     /**
      * Set syntax representation
+     *
      * @param mimeType MIME type
      */
     public ContentInformation withSyntaxAndDimension(MimeType mimeType, Double width, Double height) {
@@ -268,13 +290,16 @@ public class ContentInformation {
 
     /**
      * Set syntax and <b>optional</b> semantic representations
-     * @param mimeName MIME name
-     * @param mimeDescription MIME description
-     * @param mimeType MIME type
+     *
+     * @param mimeName            MIME name
+     * @param mimeDescription     MIME description
+     * @param mimeType            MIME type
      * @param semanticDescription semantic description
      */
-    public ContentInformation withSyntaxAndSemantic(String mimeName, String mimeDescription, MimeType mimeType,
-            String semanticDescription) {
+    public ContentInformation withSyntaxAndSemantic(String mimeName,
+                                                    String mimeDescription,
+                                                    MimeType mimeType,
+                                                    String semanticDescription) {
         withSyntax(mimeName, mimeDescription, mimeType, null, null);
 
         Assert.hasLength(semanticDescription, "Semantic description cannot be null. Use alternative method otherwise.");
@@ -287,7 +312,8 @@ public class ContentInformation {
 
     /**
      * Set syntax and <b>optional</b> semantic representations
-     * @param mimeType MIME type
+     *
+     * @param mimeType            MIME type
      * @param semanticDescription semantic description
      */
     public ContentInformation withSyntaxAndSemantic(MimeType mimeType, String semanticDescription) {

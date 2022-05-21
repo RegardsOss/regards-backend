@@ -18,17 +18,15 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
-import java.util.List;
-
 import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
 import fr.cnes.regards.modules.storage.domain.flow.DeletionFlowItem;
 
+import java.util.List;
+
 /**
- *
  * Listener to handle bus messages from storage service.
  *
  * @author Sébastien Binda
- *
  */
 public interface IStorageFileListener {
 

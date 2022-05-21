@@ -18,14 +18,12 @@
  */
 package fr.cnes.regards.framework.gson.adapters.sample6;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-
 import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Marc Sordi
@@ -80,6 +78,7 @@ public class CustomPolymorphicTypeAdapterFactory extends PolymorphicTypeAdapterF
 
     /**
      * Add namespace to {@link JsonElement} children of ObjectAttribute
+     *
      * @param inJsonElement {@link JsonElement}
      * @param discriminator discriminator value
      */
@@ -106,7 +105,8 @@ public class CustomPolymorphicTypeAdapterFactory extends PolymorphicTypeAdapterF
 
     /**
      * Add namespace to {@link JsonElement} child
-     * @param jsonElement {@link JsonElement}
+     *
+     * @param jsonElement   {@link JsonElement}
      * @param discriminator discriminator value
      */
     protected void addNamespaceToChild(JsonElement jsonElement, String discriminator) {
@@ -135,6 +135,7 @@ public class CustomPolymorphicTypeAdapterFactory extends PolymorphicTypeAdapterF
 
     /**
      * Remove namespace from {@link JsonElement}
+     *
      * @param jsonElement target {@link JsonElement}
      */
     protected void removeParentNamespace(JsonElement jsonElement) {
@@ -157,10 +158,12 @@ public class CustomPolymorphicTypeAdapterFactory extends PolymorphicTypeAdapterF
 
             if (LOGGER.isDebugEnabled()) {
                 if (splitNsName.length > 1) {
-                    LOGGER.debug(String.format("Namespace removed : \"%s\" -> \"%s\"", logOriginal,
+                    LOGGER.debug(String.format("Namespace removed : \"%s\" -> \"%s\"",
+                                               logOriginal,
                                                jsonElement.toString()));
                 } else {
-                    LOGGER.debug(String.format("No namespace to remove : \"%s\" -> \"%s\"", logOriginal,
+                    LOGGER.debug(String.format("No namespace to remove : \"%s\" -> \"%s\"",
+                                               logOriginal,
                                                jsonElement.toString()));
                 }
             }
@@ -176,7 +179,8 @@ public class CustomPolymorphicTypeAdapterFactory extends PolymorphicTypeAdapterF
     }
 
     private IllegalArgumentException missingFieldException(JsonElement jsonElement, String fieldName) {
-        String errorMessage = String.format("JSON element %s must contains a %s field", jsonElement.toString(),
+        String errorMessage = String.format("JSON element %s must contains a %s field",
+                                            jsonElement.toString(),
                                             fieldName);
         LOGGER.error(errorMessage);
         return new IllegalArgumentException(errorMessage);

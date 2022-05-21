@@ -18,10 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.service.file.job;
 
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -35,6 +31,9 @@ import fr.cnes.regards.modules.storage.domain.database.request.FileStorageReques
 import fr.cnes.regards.modules.storage.domain.plugin.FileRestorationWorkingSubset;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Map;
 
 /**
  * Storage of file references job. This jobs is scheduled to store a bundle of file reference,
@@ -42,7 +41,6 @@ import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestServ
  * The storage jobs are used to storage files on a specific storage location.
  *
  * @author Sébastien Binda
- *
  */
 public class FileCacheRequestJob extends AbstractJob<Void> {
 
@@ -73,7 +71,7 @@ public class FileCacheRequestJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         // lets instantiate the plugin to use
         plgBusinessId = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();
         workingSubset = parameters.get(WORKING_SUB_SET).getValue();
@@ -103,11 +101,13 @@ public class FileCacheRequestJob extends AbstractJob<Void> {
                     progressManager.restoreFailed(req,
                                                   String.format("File %s (checksum: %s) not handled by storage job. %s",
                                                                 fileRef.getMetaInfo().getFileName(),
-                                                                fileRef.getMetaInfo().getChecksum(), errorCause));
+                                                                fileRef.getMetaInfo().getChecksum(),
+                                                                errorCause));
                 }
             }
             logger.debug("[AVAILABILITY JOB] Availability job handled in {} ms for {} cache requests",
-                         System.currentTimeMillis() - start, nbRequestToHandle);
+                         System.currentTimeMillis() - start,
+                         nbRequestToHandle);
         }
     }
 

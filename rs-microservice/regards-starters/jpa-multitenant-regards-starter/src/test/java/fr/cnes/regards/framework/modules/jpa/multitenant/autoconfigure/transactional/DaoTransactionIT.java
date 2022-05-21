@@ -36,8 +36,9 @@ import java.util.List;
 
 /**
  * Class DaoTransactionIT
- *
+ * <p>
  * Test for transactionnal DAO actions
+ *
  * @author CS
  */
 @RunWith(SpringRunner.class)

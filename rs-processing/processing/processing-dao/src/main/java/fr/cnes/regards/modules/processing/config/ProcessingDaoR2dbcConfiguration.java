@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.config;
 
 import com.google.gson.Gson;
@@ -61,7 +61,7 @@ import static io.r2dbc.spi.ConnectionFactoryOptions.*;
  */
 @Configuration
 @EnableR2dbcRepositories(basePackageClasses = { IBatchEntityRepository.class, IExecutionEntityRepository.class,
-        IOutputFileEntityRepository.class })
+    IOutputFileEntityRepository.class })
 @EnableAutoConfiguration(exclude = { R2dbcMigrateAutoConfiguration.class })
 @EntityScan(basePackageClasses = { BatchEntity.class, ExecutionEntity.class })
 @ComponentScan(basePackageClasses = { BatchMapper.class, PBatchRepositoryImpl.class, PExecutionRepositoryImpl.class })
@@ -84,12 +84,17 @@ public class ProcessingDaoR2dbcConfiguration extends AbstractR2dbcConfiguration 
     @Override
     @Bean
     public ConnectionFactory connectionFactory() {
-        Builder builder = builder().option(DRIVER, "pool").option(PROTOCOL, "postgresql").option(ACQUIRE_RETRY, 5)
-                .option(MAX_ACQUIRE_TIME, Duration.ofSeconds(5)).option(MAX_LIFE_TIME, Duration.ofMinutes(10))
-                .option(MAX_IDLE_TIME, Duration.ofMinutes(5)).option(HOST, pgSqlProperties.getHost())
-                .option(PORT, pgSqlProperties.getPort()).option(DATABASE, pgSqlProperties.getDbname())
-                .option(MAX_SIZE, pgSqlProperties.getPoolMaxSize())
-                .option(INITIAL_SIZE, pgSqlProperties.getPoolMinSize());
+        Builder builder = builder().option(DRIVER, "pool")
+                                   .option(PROTOCOL, "postgresql")
+                                   .option(ACQUIRE_RETRY, 5)
+                                   .option(MAX_ACQUIRE_TIME, Duration.ofSeconds(5))
+                                   .option(MAX_LIFE_TIME, Duration.ofMinutes(10))
+                                   .option(MAX_IDLE_TIME, Duration.ofMinutes(5))
+                                   .option(HOST, pgSqlProperties.getHost())
+                                   .option(PORT, pgSqlProperties.getPort())
+                                   .option(DATABASE, pgSqlProperties.getDbname())
+                                   .option(MAX_SIZE, pgSqlProperties.getPoolMaxSize())
+                                   .option(INITIAL_SIZE, pgSqlProperties.getPoolMinSize());
         if ((pgSqlProperties.getSchema() != null) && !pgSqlProperties.getSchema().isEmpty()) {
             builder = builder.option(SCHEMA, pgSqlProperties.getSchema());
         }
@@ -103,8 +108,12 @@ public class ProcessingDaoR2dbcConfiguration extends AbstractR2dbcConfiguration 
         ConnectionFactory connectionFactory = ConnectionFactories.get(builder.build());
 
         ConnectionPoolConfiguration configuration = ConnectionPoolConfiguration.builder(connectionFactory)
-                .maxIdleTime(Duration.ofMinutes(5)).initialSize(pgSqlProperties.getPoolMinSize())
-                .maxSize(pgSqlProperties.getPoolMaxSize()).maxCreateConnectionTime(Duration.ofSeconds(1)).build();
+                                                                               .maxIdleTime(Duration.ofMinutes(5))
+                                                                               .initialSize(pgSqlProperties.getPoolMinSize())
+                                                                               .maxSize(pgSqlProperties.getPoolMaxSize())
+                                                                               .maxCreateConnectionTime(Duration.ofSeconds(
+                                                                                   1))
+                                                                               .build();
 
         return new ConnectionPool(configuration);
     }
@@ -149,7 +158,7 @@ public class ProcessingDaoR2dbcConfiguration extends AbstractR2dbcConfiguration 
 
     @Bean(initMethod = "migrate")
     public R2dbcMigrateBlockingInvoker r2dbcMigrate(ConnectionFactory connectionFactory,
-            R2dbcMigrateProperties properties) {
+                                                    R2dbcMigrateProperties properties) {
         return new R2dbcMigrateBlockingInvoker(connectionFactory, properties);
     }
 

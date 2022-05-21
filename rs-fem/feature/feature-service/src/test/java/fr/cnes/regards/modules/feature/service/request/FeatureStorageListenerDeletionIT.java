@@ -18,19 +18,6 @@
  */
 package fr.cnes.regards.modules.feature.service.request;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
@@ -41,14 +28,23 @@ import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantService
 import fr.cnes.regards.modules.feature.service.FeatureDeletionService;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Kevin Marchois
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_listener_deletion",
-        "regards.amqp.enabled=true", "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
-        "spring.jpa.properties.hibernate.order_inserts=true" })
+    "regards.amqp.enabled=true", "spring.jpa.properties.hibernate.jdbc.batch_size=1024",
+    "spring.jpa.properties.hibernate.order_inserts=true" })
 @ActiveProfiles(value = { "noscheduler", "noFemHandler" })
 public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -69,6 +65,7 @@ public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenant
      * Test storage listener we will prepare data send {@linkFeatureDeletionReventEvent} and call handleDeletionSuccess
      * from {@link FeatureRequestService} to mock storage call back
      * Then we will test that all  {@linkFeatureDeletionRevent} are delete and all {@link FeatureEntity} too
+     *
      * @throws InterruptedException
      */
     @Test
@@ -78,8 +75,9 @@ public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenant
         this.featureCreationRequestRepo.deleteAll();
 
         List<FeatureDeletionRequest> toDelete = this.featureDeletionRequestRepo.findAll();
-        requestService.handleDeletionSuccess(toDelete.stream().map(AbstractFeatureRequest::getGroupId)
-                .collect(Collectors.toSet()));
+        requestService.handleDeletionSuccess(toDelete.stream()
+                                                     .map(AbstractFeatureRequest::getGroupId)
+                                                     .collect(Collectors.toSet()));
         if (this.isToNotify) {
             mockNotificationSuccess();
         }
@@ -95,6 +93,7 @@ public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenant
      * from {@link FeatureRequestService} to mock storage call back
      * Then we will test that all  {@linkFeatureDeletionRevent} and all {@link FeatureEntity} are still in database
      * and  {@linkFeatureDeletionRevent} have their {@link RequestState} to ERROR
+     *
      * @throws InterruptedException
      */
     @Test
@@ -103,10 +102,15 @@ public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenant
 
         FileReference fr = null;
         List<FeatureDeletionRequest> toDelete = this.featureDeletionRequestRepo.findAll();
-        requestService.handleDeletionError(toDelete
-                .stream().map(t -> RequestResultInfoDTO.build(t.getGroupId(), "checksum", "storage", "storePath", null,
-                                                              fr, "simulated error for tests"))
-                .collect(Collectors.toSet()));
+        requestService.handleDeletionError(toDelete.stream()
+                                                   .map(t -> RequestResultInfoDTO.build(t.getGroupId(),
+                                                                                        "checksum",
+                                                                                        "storage",
+                                                                                        "storePath",
+                                                                                        null,
+                                                                                        fr,
+                                                                                        "simulated error for tests"))
+                                                   .collect(Collectors.toSet()));
 
         // Feature entity and FeatureDeletionRequest must be deleted
         assertEquals(properties.getMaxBulkSize().intValue(), this.featureRepo.count());
@@ -121,7 +125,8 @@ public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenant
         String deletionOwner = "deleter";
         long deletionRequestWaitingForStorageResponseCount;
         int cpt = 0;
-        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, true,
+        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner,
+                                                                           true,
                                                                            properties.getMaxBulkSize(),
                                                                            this.isToNotify);
 
@@ -130,8 +135,9 @@ public class FeatureStorageListenerDeletionIT extends AbstractFeatureMultitenant
         this.featureDeletionService.scheduleRequests();
 
         do {
-            deletionRequestWaitingForStorageResponseCount = this.featureDeletionRequestRepo
-                    .findByStep(FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED, OffsetDateTime.now()).size();
+            deletionRequestWaitingForStorageResponseCount = this.featureDeletionRequestRepo.findByStep(
+                FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED,
+                OffsetDateTime.now()).size();
             Thread.sleep(100);
             cpt++;
         } while ((cpt < 100) && (deletionRequestWaitingForStorageResponseCount != properties.getMaxBulkSize()));

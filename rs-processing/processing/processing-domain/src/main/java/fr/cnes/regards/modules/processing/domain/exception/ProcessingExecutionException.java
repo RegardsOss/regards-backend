@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.exception;
 
 import fr.cnes.regards.modules.processing.domain.PExecution;
@@ -35,16 +35,22 @@ public class ProcessingExecutionException extends ProcessingException {
         this.exec = exec;
     }
 
-    public ProcessingExecutionException(ProcessingExceptionType type, PExecution exec, String message,
-            Throwable throwable) {
+    public ProcessingExecutionException(ProcessingExceptionType type,
+                                        PExecution exec,
+                                        String message,
+                                        Throwable throwable) {
         super(type, message, throwable);
         this.exec = exec;
     }
 
     @Override
     public final String getMessage() {
-        return String.format("id=%s type=%s exec=%s batch=%s message=%s", this.exceptionId, this.type,
-                             this.exec.getId(), this.exec.getBatchId(), this.desc);
+        return String.format("id=%s type=%s exec=%s batch=%s message=%s",
+                             this.exceptionId,
+                             this.type,
+                             this.exec.getId(),
+                             this.exec.getBatchId(),
+                             this.desc);
     }
 
     public PExecution getExec() {

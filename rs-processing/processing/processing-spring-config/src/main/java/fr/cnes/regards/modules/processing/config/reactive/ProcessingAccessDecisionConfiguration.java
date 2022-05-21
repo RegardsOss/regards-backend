@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.config.reactive;
 
 import fr.cnes.regards.framework.security.endpoint.voter.ResourceAccessVoter;
@@ -35,6 +35,7 @@ import java.util.List;
 
 /**
  * This class is the AccessDecisionManager config for reactive application.
+ *
  * @author gandrieu
  */
 @Configuration

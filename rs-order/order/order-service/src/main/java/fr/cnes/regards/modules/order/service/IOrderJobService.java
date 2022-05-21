@@ -25,6 +25,7 @@ import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEven
  * Order job service.
  * This service is responsible of managing order jobs taken into account user restrictions on priorities and number of
  * concurrent jobs
+ *
  * @author oroussel
  */
 public interface IOrderJobService {
@@ -35,6 +36,7 @@ public interface IOrderJobService {
 
     /**
      * Compute priority for next order/jobInfo(s)
+     *
      * @param user user concerned by priority computing
      * @param role user role
      * @return a number between 0 and 100
@@ -44,6 +46,7 @@ public interface IOrderJobService {
     /**
      * Manage user order jobs ie look if restriction on user concurrent jobs count permits new ones to be added and add
      * them if it is the case
+     *
      * @param user
      */
     void manageUserOrderStorageFilesJobInfos(String user);

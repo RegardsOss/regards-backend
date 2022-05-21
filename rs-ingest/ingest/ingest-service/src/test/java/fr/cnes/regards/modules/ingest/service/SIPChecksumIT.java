@@ -18,32 +18,29 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-
-import com.google.gson.Gson;
-
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
-
 /**
- *
  * Test checksum computation
- * @author Marc SORDI
  *
+ * @author Marc SORDI
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=checksum", "eureka.client.enabled=false" },
-        locations = { "classpath:application-test.properties" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=checksum", "eureka.client.enabled=false" },
+    locations = { "classpath:application-test.properties" })
 public class SIPChecksumIT extends AbstractMultitenantServiceIT {
 
     @Autowired
@@ -62,7 +59,7 @@ public class SIPChecksumIT extends AbstractMultitenantServiceIT {
     private String getChecksum(String filename) throws NoSuchAlgorithmException, IOException {
         String checksum;
         try (Reader json = new InputStreamReader(this.getClass().getResourceAsStream(filename),
-                Charset.forName("UTF-8"))) {
+                                                 Charset.forName("UTF-8"))) {
             SIP sip = gson.fromJson(json, SIP.class);
             checksum = sipService.calculateChecksum(sip);
         }

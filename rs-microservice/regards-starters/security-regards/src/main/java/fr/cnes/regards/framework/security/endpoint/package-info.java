@@ -18,7 +18,7 @@
  */
 /**
  * <h1>Endpoint security</h1>
- *
+ * <p>
  * This package manage endpoint security using :
  *
  * <ul>

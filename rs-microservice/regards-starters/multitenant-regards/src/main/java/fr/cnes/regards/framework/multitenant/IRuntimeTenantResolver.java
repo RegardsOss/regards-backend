@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.multitenant;
 
 /**
  * In a request context, this resolver allows to retrieve request tenant. This resolver must be thread safe.
+ *
  * @author Marc Sordi
  */
 public interface IRuntimeTenantResolver {
@@ -31,6 +32,7 @@ public interface IRuntimeTenantResolver {
 
     /**
      * Does the current tenant is instance
+     *
      * @return true|false
      */
     boolean isInstance();
@@ -39,6 +41,7 @@ public interface IRuntimeTenantResolver {
      * Force runtime tenant to a specific value on current thread.<br/>
      * We recommend to use {@link IRuntimeTenantResolver#clearTenant()} to clean the thread in a finally clause.<br/>
      * It is mostly recommended for server threads as they are reused.
+     *
      * @param tenant tenant
      */
     void forceTenant(String tenant);
@@ -46,8 +49,8 @@ public interface IRuntimeTenantResolver {
     /**
      * Clear forced tenant on current thread.<br>
      * This method should only be used in the following context:<br>
-     *   - Thread that can be reused by multiple tenants<br>
-     *   - Thread tenant cannot only be determined thanks to authentication<br>
+     * - Thread that can be reused by multiple tenants<br>
+     * - Thread tenant cannot only be determined thanks to authentication<br>
      * For example, server thread that handle REST call. This means it should be used only by fr.cnes.regards.framework.security.filter.JWTAuthenticationFilter.
      */
     void clearTenant();

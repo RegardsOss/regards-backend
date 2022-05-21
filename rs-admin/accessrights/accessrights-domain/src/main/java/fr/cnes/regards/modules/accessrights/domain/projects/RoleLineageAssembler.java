@@ -28,7 +28,6 @@ import java.util.List;
  *
  * @author xbrochard
  * @author Sébastien Binda
- *
  */
 public class RoleLineageAssembler {
 

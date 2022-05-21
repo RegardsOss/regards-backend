@@ -18,23 +18,22 @@
  */
 package fr.cnes.regards.framework.security.filter;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.regex.Pattern;
+import com.google.common.base.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import com.google.common.base.Strings;
+import java.io.IOException;
+import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Add the allow origin in the response headers to allow CORS requests.
+ *
  * @author Sébastien Binda
  */
 public class CorsFilter extends OncePerRequestFilter {
@@ -90,7 +89,7 @@ public class CorsFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+        throws ServletException, IOException {
 
         doSecurisedFilter(request, response, filterChain);
 
@@ -102,14 +101,16 @@ public class CorsFilter extends OncePerRequestFilter {
 
     /**
      * Allow CORS Request only if authenticate user is autorized to.
-     * @param request Http request
-     * @param response Http response
+     *
+     * @param request      Http request
+     * @param response     Http response
      * @param pFilterChain Filter chain
      * @throws ServletException Servlet error
      * @throws IOException      Internal error
      */
-    private void doSecurisedFilter(final HttpServletRequest request, final HttpServletResponse response,
-            final FilterChain pFilterChain) throws ServletException, IOException {
+    private void doSecurisedFilter(final HttpServletRequest request,
+                                   final HttpServletResponse response,
+                                   final FilterChain pFilterChain) throws ServletException, IOException {
 
         final String originAdress = getClientOrigin(request);
 
@@ -142,12 +143,14 @@ public class CorsFilter extends OncePerRequestFilter {
 
     /**
      * Allow cors request
-     * @param request Http request
-     * @param response Http response
+     *
+     * @param request     Http request
+     * @param response    Http response
      * @param filterChain Filter chain
      */
-    public static void allowCorsRequest(HttpServletRequest request, HttpServletResponse response,
-            FilterChain filterChain) {
+    public static void allowCorsRequest(HttpServletRequest request,
+                                        HttpServletResponse response,
+                                        FilterChain filterChain) {
         response.setHeader(ALLOW_ORIGIN, "*");
         response.setHeader(ALLOW_METHOD, "POST, PUT, GET, OPTIONS, DELETE");
         response.setHeader(ALLOW_HEADER, "authorization, content-type, scope");

@@ -18,44 +18,41 @@
  */
 package fr.cnes.regards.modules.model.service.validation;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
-
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.dto.event.ModelChangeEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Cache proxy to handle model attributes
  *
  * @author Marc SORDI
- *
  */
 public abstract class AbstractCacheableModelFinder
-        implements IModelFinder, ApplicationListener<ApplicationReadyEvent>, IHandler<ModelChangeEvent> {
+    implements IModelFinder, ApplicationListener<ApplicationReadyEvent>, IHandler<ModelChangeEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractCacheableModelFinder.class);
 
     /**
-    * Model cache is used to avoid useless database request as models rarely change!<br/>
-    * tenant key -> model key / attributes val
-    */
+     * Model cache is used to avoid useless database request as models rarely change!<br/>
+     * tenant key -> model key / attributes val
+     */
     private final Map<String, LoadingCache<String, List<ModelAttrAssoc>>> modelCacheMap = new ConcurrentHashMap<>();
 
     @Autowired
@@ -81,19 +78,24 @@ public abstract class AbstractCacheableModelFinder
     }
 
     private LoadingCache<String, List<ModelAttrAssoc>> getTenantCache(String tenant) {
-        return modelCacheMap.computeIfAbsent(tenant, t ->
-            CacheBuilder.newBuilder().expireAfterWrite(60, TimeUnit.MINUTES)
-                .build(new CacheLoader<String, List<ModelAttrAssoc>>() {
+        return modelCacheMap.computeIfAbsent(tenant,
+                                             t -> CacheBuilder.newBuilder()
+                                                              .expireAfterWrite(60, TimeUnit.MINUTES)
+                                                              .build(new CacheLoader<String, List<ModelAttrAssoc>>() {
 
-                    @Override
-                    public List<ModelAttrAssoc> load(String modelName) throws Exception {
-                        List<ModelAttrAssoc> attributesByModel = loadAttributesByModel(modelName);
-                        if (attributesByModel == null) {
-                            throw new Exception(String.format("Unknow Model %s", modelName));
-                        }
-                        return attributesByModel;
-                    }
-                }));
+                                                                  @Override
+                                                                  public List<ModelAttrAssoc> load(String modelName)
+                                                                      throws Exception {
+                                                                      List<ModelAttrAssoc> attributesByModel = loadAttributesByModel(
+                                                                          modelName);
+                                                                      if (attributesByModel == null) {
+                                                                          throw new Exception(String.format(
+                                                                              "Unknow Model %s",
+                                                                              modelName));
+                                                                      }
+                                                                      return attributesByModel;
+                                                                  }
+                                                              }));
     }
 
     private void cleanTenantCache(String tenant, String model) {

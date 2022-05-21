@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.modules.indexer.domain.facet;
 
-import java.util.Map;
-
 import com.google.gson.annotations.JsonAdapter;
-
 import fr.cnes.regards.modules.indexer.domain.facet.adapters.gson.StringFacetSerializer;
+
+import java.util.Map;
 
 /**
  * String facet. It represents a String cloud ie most common terms and associated occurrence counts.

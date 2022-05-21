@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.framework.security.utils.endpoint;
 
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import org.springframework.security.core.GrantedAuthority;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.security.core.GrantedAuthority;
-
-import fr.cnes.regards.framework.security.role.DefaultRole;
-
 /**
  * REGARDS authority
+ *
  * @author Marc Sordi
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
@@ -61,6 +61,7 @@ public class RoleAuthority implements GrantedAuthority {
 
     /**
      * Constructor
+     *
      * @param roleName The role name
      */
     public RoleAuthority(String roleName) {
@@ -73,6 +74,7 @@ public class RoleAuthority implements GrantedAuthority {
 
     /**
      * Remove Authority ROLE_ prefix to get real role name
+     *
      * @param roleAuthorityName Authority role name with ROLE_PREFIX
      * @return role name
      */
@@ -86,6 +88,7 @@ public class RoleAuthority implements GrantedAuthority {
 
     /**
      * Add Authority PREFIX to given Role name if necessary
+     *
      * @param roleName The role name
      * @return RoleAuthority
      */
@@ -99,6 +102,7 @@ public class RoleAuthority implements GrantedAuthority {
     /**
      * Retrieve the SYS ROLE for the current microservice. SYS ROLE is a specific role that permit access to all
      * administration endpoints.
+     *
      * @param microserviceName the current microservice name
      * @return SYS Role name
      */
@@ -108,6 +112,7 @@ public class RoleAuthority implements GrantedAuthority {
 
     /**
      * Is the given role a system role ?
+     *
      * @param roleName The role name
      * @return [true|false]
      */
@@ -121,6 +126,7 @@ public class RoleAuthority implements GrantedAuthority {
 
     /**
      * Is the given role the virtual instance admin role ?
+     *
      * @param roleName The role name
      * @return [true|false]
      */
@@ -134,6 +140,7 @@ public class RoleAuthority implements GrantedAuthority {
 
     /**
      * Is the given role the virtual project admin role ?
+     *
      * @param roleName The role name
      * @return [true|false]
      */

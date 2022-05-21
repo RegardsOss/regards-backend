@@ -43,7 +43,6 @@ import java.nio.charset.Charset;
  * GSON message converter
  *
  * @author Marc SORDI
- *
  */
 public class Gson2JsonMessageConverter extends AbstractMessageConverter {
 
@@ -85,7 +84,7 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
         MessageProperties messageProperties = message.getMessageProperties();
         if (messageProperties != null) {
             try (Reader json = new InputStreamReader(new ByteArrayInputStream(message.getBody()),
-                    Charset.forName(DEFAULT_CHARSET))) {
+                                                     Charset.forName(DEFAULT_CHARSET))) {
                 content = gson.fromJson(json, createTypeToken(message));
             } catch (Exception e) {
                 String errorMessage = String.format(CONVERSION_ERROR, e.getMessage());
@@ -122,7 +121,9 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
     @SuppressWarnings("serial")
     private static <T> TypeToken<TenantWrapper<T>> createTypeToken(Class<T> clazz) {
         return new TypeToken<TenantWrapper<T>>() {
+
         }.where(new TypeParameter<T>() {
+
         }, TypeToken.of(clazz));
     }
 

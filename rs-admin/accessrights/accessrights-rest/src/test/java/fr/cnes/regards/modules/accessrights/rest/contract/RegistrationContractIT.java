@@ -55,18 +55,20 @@ public class RegistrationContractIT extends AbstractRegardsTransactionalIT {
         Account account = new Account("sebastien.binda@c-s.fr", "seb", "seb", "seb");
 
         Mockito.when(accountsClient.retrieveAccounByEmail("sebastien.binda@c-s.fr"))
-                .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND),
-                            new ResponseEntity<>(EntityModel.of(account), HttpStatus.OK));
+               .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND),
+                           new ResponseEntity<>(EntityModel.of(account), HttpStatus.OK));
 
         AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
 
         Mockito.when(accountsClient.createAccount(accountNPassword))
-                .thenReturn(new ResponseEntity<>(EntityModel.of(account), HttpStatus.CREATED));
+               .thenReturn(new ResponseEntity<>(EntityModel.of(account), HttpStatus.CREATED));
 
         String accessRequest = readJsonContract("request-access.json");
 
-        performDefaultPost(RegistrationController.REQUEST_MAPPING_ROOT, accessRequest,
-                           customizer().expectStatusCreated(), "Access request error!");
+        performDefaultPost(RegistrationController.REQUEST_MAPPING_ROOT,
+                           accessRequest,
+                           customizer().expectStatusCreated(),
+                           "Access request error!");
     }
 
 }

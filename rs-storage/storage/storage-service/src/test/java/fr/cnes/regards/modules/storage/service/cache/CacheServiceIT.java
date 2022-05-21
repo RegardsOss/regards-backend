@@ -54,12 +54,12 @@ import java.util.UUID;
 
 /**
  * Test class for cache service.
+ *
  * @author Sébastien Binda
  */
 @ActiveProfiles({ "noscheduler" })
-@TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=storage_cache_tests" },
-        locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_cache_tests" },
+    locations = { "classpath:application-test.properties" })
 public class CacheServiceIT extends AbstractMultitenantServiceIT {
 
     @Autowired
@@ -92,16 +92,26 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
         String checksum = UUID.randomUUID().toString();
         OffsetDateTime expirationDate = OffsetDateTime.now().plusDays(1).truncatedTo(ChronoUnit.MICROS);
         Assert.assertFalse("File should not referenced in cache", service.getCacheFile(checksum).isPresent());
-        service.addFile(checksum, 123L, "test.file.test", MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
-                        DataType.RAWDATA.name(), new URL("file", null, "/plop/test.file.test"), expirationDate,
+        service.addFile(checksum,
+                        123L,
+                        "test.file.test",
+                        MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                        DataType.RAWDATA.name(),
+                        new URL("file", null, "/plop/test.file.test"),
+                        expirationDate,
                         UUID.randomUUID().toString());
         Optional<CacheFile> oCf = service.getCacheFile(checksum);
         Assert.assertTrue("File should be referenced in cache", oCf.isPresent());
         Assert.assertTrue("Invalid expiration date", expirationDate.isEqual(oCf.get().getExpirationDate()));
         // Try to reference again the same file in cache
         OffsetDateTime newExpirationDate = OffsetDateTime.now().plusDays(2).truncatedTo(ChronoUnit.MICROS);
-        service.addFile(checksum, 123L, "test.file.test", MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
-                        DataType.RAWDATA.name(), new URL("file", null, "/plop/test.file.test"), newExpirationDate,
+        service.addFile(checksum,
+                        123L,
+                        "test.file.test",
+                        MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                        DataType.RAWDATA.name(),
+                        new URL("file", null, "/plop/test.file.test"),
+                        newExpirationDate,
                         UUID.randomUUID().toString());
         oCf = service.getCacheFile(checksum);
         Assert.assertTrue("File should be referenced in cache", oCf.isPresent());
@@ -112,9 +122,13 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
     public void calculateCacheSize() throws MalformedURLException {
         OffsetDateTime expirationDate = OffsetDateTime.now().plusDays(1);
         for (int i = 0; i < 1_000; i++) {
-            service.addFile(UUID.randomUUID().toString(), 10L, "test.file.test",
-                            MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE), DataType.RAWDATA.name(),
-                            new URL("file", null, "/plop/test.file.test"), expirationDate,
+            service.addFile(UUID.randomUUID().toString(),
+                            10L,
+                            "test.file.test",
+                            MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                            DataType.RAWDATA.name(),
+                            new URL("file", null, "/plop/test.file.test"),
+                            expirationDate,
                             UUID.randomUUID().toString());
         }
         Assert.assertEquals("Total size not valid", 10_000L, service.getCacheSizeUsedBytes().longValue());
@@ -131,9 +145,13 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
         // Create some files in cache
         for (int i = 0; i < 1_000; i++) {
             expirationDate = expirationDate.plusDays(1);
-            service.addFile(UUID.randomUUID().toString(), 10L, "test.file.test",
-                            MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE), DataType.RAWDATA.name(),
-                            new URL("file", null, "/plop/test.file.test"), expirationDate,
+            service.addFile(UUID.randomUUID().toString(),
+                            10L,
+                            "test.file.test",
+                            MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                            DataType.RAWDATA.name(),
+                            new URL("file", null, "/plop/test.file.test"),
+                            expirationDate,
                             UUID.randomUUID().toString());
         }
         Assert.assertEquals("There should be 1000 files in cache", 1000, repository.findAll().size());
@@ -152,9 +170,14 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
         // Init files in cache does not exists
         List<CacheFile> files = Lists.newArrayList();
         for (int i = 0; i < nbFiles; i++) {
-            files.add(new CacheFile(UUID.randomUUID().toString(), 12L, "plip" + i + ".test",
-                    MimeType.valueOf(MediaType.APPLICATION_ATOM_XML_VALUE), new URL("file:/plop/plip_" + i + ".test"),
-                    OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString(), "RAWDATA"));
+            files.add(new CacheFile(UUID.randomUUID().toString(),
+                                    12L,
+                                    "plip" + i + ".test",
+                                    MimeType.valueOf(MediaType.APPLICATION_ATOM_XML_VALUE),
+                                    new URL("file:/plop/plip_" + i + ".test"),
+                                    OffsetDateTime.now().plusDays(1),
+                                    UUID.randomUUID().toString(),
+                                    "RAWDATA"));
         }
         repository.saveAll(files);
         // Init existing files in cache
@@ -164,9 +187,14 @@ public class CacheServiceIT extends AbstractMultitenantServiceIT {
         }
         Files.walk(path).filter(Files::isRegularFile).forEach(p -> {
             try {
-                repository.save(new CacheFile(UUID.randomUUID().toString(), 12L, p.getFileName().toString(),
-                                              MimeType.valueOf(MediaType.APPLICATION_ATOM_XML_VALUE), new URL("file:" + p.toAbsolutePath().toString()),
-                        OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString(), "RAWDATA"));
+                repository.save(new CacheFile(UUID.randomUUID().toString(),
+                                              12L,
+                                              p.getFileName().toString(),
+                                              MimeType.valueOf(MediaType.APPLICATION_ATOM_XML_VALUE),
+                                              new URL("file:" + p.toAbsolutePath().toString()),
+                                              OffsetDateTime.now().plusDays(1),
+                                              UUID.randomUUID().toString(),
+                                              "RAWDATA"));
             } catch (MalformedURLException e) {
                 Assert.fail(e.getMessage());
             }

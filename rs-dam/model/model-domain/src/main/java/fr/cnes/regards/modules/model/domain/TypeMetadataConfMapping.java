@@ -1,10 +1,10 @@
 package fr.cnes.regards.modules.model.domain;
 
-import java.util.Set;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+
+import java.util.Set;
 
 /**
  * POJO allowing us to map which plugin configurations and plugin metadata can be mapped to which attribute type
@@ -36,12 +36,14 @@ public class TypeMetadataConfMapping {
 
     /**
      * Constructor setting the parameters as attribute
+     *
      * @param attrType
      * @param pluginConfigurations
      * @param pluginMetaData
      */
-    public TypeMetadataConfMapping(PropertyType attrType, Set<PluginConfiguration> pluginConfigurations,
-            Set<PluginMetaData> pluginMetaData) {
+    public TypeMetadataConfMapping(PropertyType attrType,
+                                   Set<PluginConfiguration> pluginConfigurations,
+                                   Set<PluginMetaData> pluginMetaData) {
         this.attrType = attrType;
         this.pluginConfigurations = pluginConfigurations;
         this.pluginMetaDatas = pluginMetaData;
@@ -56,6 +58,7 @@ public class TypeMetadataConfMapping {
 
     /**
      * Set the attribute type
+     *
      * @param attrType
      */
     public void setAttrType(PropertyType attrType) {
@@ -71,6 +74,7 @@ public class TypeMetadataConfMapping {
 
     /**
      * Set the plugin configurations
+     *
      * @param pluginConfigurations
      */
     public void setPluginConfigurations(Set<PluginConfiguration> pluginConfigurations) {
@@ -86,6 +90,7 @@ public class TypeMetadataConfMapping {
 
     /**
      * Set the plugin meta data
+     *
      * @param pluginMetaDatas
      */
     public void setPluginMetaDatas(Set<PluginMetaData> pluginMetaDatas) {

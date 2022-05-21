@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.security.utils;
 
 /**
  * Security constants
+ *
  * @author Marc Sordi
  * @author Sébastien Binda
  */

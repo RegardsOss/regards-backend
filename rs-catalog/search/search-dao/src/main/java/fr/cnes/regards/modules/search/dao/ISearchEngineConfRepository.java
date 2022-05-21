@@ -18,16 +18,16 @@
  */
 package fr.cnes.regards.modules.search.dao;
 
-import java.util.List;
-
+import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
+import java.util.List;
 
 /**
  * JPA repository for {@link SearchEngineConfiguration} entities.
+ *
  * @author Sébastien Binda
  */
 public interface ISearchEngineConfRepository extends JpaRepository<SearchEngineConfiguration, Long> {

@@ -18,16 +18,7 @@
  */
 package fr.cnes.regards.modules.catalog.services.rest;
 
-import java.util.UUID;
-
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -36,10 +27,16 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+
+import java.util.UUID;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @TestPropertySource(locations = "classpath:test.properties")
 @MultitenantTransactional
@@ -51,23 +48,36 @@ public class LinkDatasetsPluginsControllerIT extends AbstractRegardsTransactiona
     @Requirement("REGARDS_DSL_DAM_SET_230")
     @Purpose("The system allows to get the list of plugin's service for a dataset")
     public void retrieveLink() {
-        UniformResourceName urn = UniformResourceName.build(OAISIdentifier.AIP.name(), EntityType.DATASET,
-                                                            getDefaultTenant(), UUID.randomUUID(), 1, null, null);
+        UniformResourceName urn = UniformResourceName.build(OAISIdentifier.AIP.name(),
+                                                            EntityType.DATASET,
+                                                            getDefaultTenant(),
+                                                            UUID.randomUUID(),
+                                                            1,
+                                                            null,
+                                                            null);
         performDefaultGet(LinkPluginsDatasetsController.PATH_LINK,
                           customizer().expectStatusOk().expectContentType(MediaType.APPLICATION_JSON_UTF8_VALUE),
-                          "Failed to fetch a specific dataset using its id", urn.toString());
+                          "Failed to fetch a specific dataset using its id",
+                          urn.toString());
     }
 
     @Test
     @Requirement("REGARDS_DSL_DAM_SET_210")
     @Purpose("The system allows to link a plugin's service to a dataset")
     public void updateLink() {
-        UniformResourceName urn = UniformResourceName.build(OAISIdentifier.AIP.name(), EntityType.DATASET,
-                                                            getDefaultTenant(), UUID.randomUUID(), 1, null, null);
+        UniformResourceName urn = UniformResourceName.build(OAISIdentifier.AIP.name(),
+                                                            EntityType.DATASET,
+                                                            getDefaultTenant(),
+                                                            UUID.randomUUID(),
+                                                            1,
+                                                            null,
+                                                            null);
         final LinkPluginsDatasets newLink = new LinkPluginsDatasets(urn.toString(), Sets.newHashSet());
-        performDefaultPut(LinkPluginsDatasetsController.PATH_LINK, newLink,
+        performDefaultPut(LinkPluginsDatasetsController.PATH_LINK,
+                          newLink,
                           customizer().expectStatusOk().expectContentType(MediaType.APPLICATION_JSON_UTF8_VALUE),
-                          "Failed to fetch a specific dataset using its id", urn.toString());
+                          "Failed to fetch a specific dataset using its id",
+                          urn.toString());
     }
 
     @Override

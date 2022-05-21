@@ -18,13 +18,20 @@
  */
 package fr.cnes.regards.framework.amqp;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
-import fr.cnes.regards.framework.amqp.configuration.*;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.framework.amqp.batch.RabbitBatchMessageListener;
+import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
+import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RegardsErrorHandler;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.RabbitMessageListenerAdapter;
 import fr.cnes.regards.framework.amqp.event.*;
+import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,19 +45,14 @@ import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.MessageConverter;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
-
-import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.amqp.batch.RabbitBatchMessageListener;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.RabbitMessageListenerAdapter;
-import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Common subscriber methods
+ *
  * @author Marc Sordi
  */
 public abstract class AbstractSubscriber implements ISubscriberContract {
@@ -112,10 +114,15 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
     private final ITenantResolver tenantResolver;
 
-    protected AbstractSubscriber(IRabbitVirtualHostAdmin virtualHostAdmin, IAmqpAdmin amqpAdmin,
-            MessageConverter jsonMessageConverters, RegardsErrorHandler errorHandler, String microserviceName,
-            IInstancePublisher instancePublisher, IPublisher publisher, IRuntimeTenantResolver runtimeTenantResolver,
-            ITenantResolver tenantResolver) {
+    protected AbstractSubscriber(IRabbitVirtualHostAdmin virtualHostAdmin,
+                                 IAmqpAdmin amqpAdmin,
+                                 MessageConverter jsonMessageConverters,
+                                 RegardsErrorHandler errorHandler,
+                                 String microserviceName,
+                                 IInstancePublisher instancePublisher,
+                                 IPublisher publisher,
+                                 IRuntimeTenantResolver runtimeTenantResolver,
+                                 ITenantResolver tenantResolver) {
         this.virtualHostAdmin = virtualHostAdmin;
         this.amqpAdmin = amqpAdmin;
         this.jsonMessageConverters = jsonMessageConverters;
@@ -150,7 +157,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     }
 
     private void unsubscribe(Class<?> handlerClass, boolean fast) {
-        LOGGER.info("AMQP Subscriber : Unsubscribe from {}",handlerClass.getName());
+        LOGGER.info("AMQP Subscriber : Unsubscribe from {}", handlerClass.getName());
         // Retrieve listeners for current handler
         Map<String, SimpleMessageListenerContainer> tenantContainers = listeners.remove(handlerClass);
         // In case unsubscribeFrom has been called too late
@@ -159,57 +166,62 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             for (SimpleMessageListenerContainer container : tenantContainers.values()) {
                 if (fast) {
                     // Force fast dying consumer, as they do not matter anymore
-                    container.setShutdownTimeout(5/1000);
+                    container.setShutdownTimeout(5 / 1000);
                 }
                 container.stop();
             }
         }
-        LOGGER.info("END AMQP Subscriber : Unsubscribe from {}",handlerClass.getName());
+        LOGGER.info("END AMQP Subscriber : Unsubscribe from {}", handlerClass.getName());
     }
 
     @Override
     public <T extends ISubscribable> void subscribeTo(Class<T> eventType, IHandler<T> receiver) {
         AmqpChannel channel = AmqpChannel.build(eventType)
-                .autoDelete(EventUtils.isAutoDeleteQueue(eventType))
-                .forHandler(receiver);
-        subscribeTo(receiver,channel, false);
+                                         .autoDelete(EventUtils.isAutoDeleteQueue(eventType))
+                                         .forHandler(receiver);
+        subscribeTo(receiver, channel, false);
     }
 
     @Override
-    public <T extends ISubscribable> void subscribeTo(Class<T> eventType, IHandler<T> receiver, String queueName, String exchangeName) {
+    public <T extends ISubscribable> void subscribeTo(Class<T> eventType,
+                                                      IHandler<T> receiver,
+                                                      String queueName,
+                                                      String exchangeName) {
         AmqpChannel channel = AmqpChannel.build(eventType)
-                .forHandler(receiver)
-                .autoDelete(EventUtils.isAutoDeleteQueue(eventType))
-                .exchange(exchangeName)
-                .queue(queueName);
-        subscribeTo(receiver,channel, false);
+                                         .forHandler(receiver)
+                                         .autoDelete(EventUtils.isAutoDeleteQueue(eventType))
+                                         .exchange(exchangeName)
+                                         .queue(queueName);
+        subscribeTo(receiver, channel, false);
     }
 
     @Override
-    public <T extends ISubscribable> void subscribeTo(Class<T> eventType, IHandler<T> receiver, String queueName,
-            String exchangeName, boolean purgeQueue) {
+    public <T extends ISubscribable> void subscribeTo(Class<T> eventType,
+                                                      IHandler<T> receiver,
+                                                      String queueName,
+                                                      String exchangeName,
+                                                      boolean purgeQueue) {
         AmqpChannel channel = AmqpChannel.build(eventType)
-                .forHandler(receiver)
-                .autoDelete(EventUtils.isAutoDeleteQueue(eventType))
-                .exchange(exchangeName)
-                .queue(queueName);
-        subscribeTo(receiver,channel, true);
+                                         .forHandler(receiver)
+                                         .autoDelete(EventUtils.isAutoDeleteQueue(eventType))
+                                         .exchange(exchangeName)
+                                         .queue(queueName);
+        subscribeTo(receiver, channel, true);
     }
 
     @Override
     public <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, boolean purgeQueue) {
         AmqpChannel channel = AmqpChannel.build(eventType)
-                .forHandler(receiver)
-                .autoDelete(EventUtils.isAutoDeleteQueue(eventType));
-        subscribeTo(receiver,channel, purgeQueue);
+                                         .forHandler(receiver)
+                                         .autoDelete(EventUtils.isAutoDeleteQueue(eventType));
+        subscribeTo(receiver, channel, purgeQueue);
     }
 
     @Override
     public void purgeAllQueues(String tenant) {
         if (virtualHostAdmin != null) {
             LOGGER.info("Purging queues for {} handlers", handlerInstances.size());
-            handlerInstances.values().parallelStream()
-                    .forEach(handler -> cleanAMQPQueue(handler, tenant));
+            handlerInstances.values().parallelStream().forEach(handler -> cleanAMQPQueue(handler, tenant));
             LOGGER.info("End purging queues for {} handlers", handlerInstances.size());
         }
     }
@@ -240,23 +252,28 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
     /**
      * Allows to purge a queue content by generating queue name from given parameters
-     * @param tenant String
+     *
+     * @param tenant  String
      * @param handler {@link Class} of {@link IHandler}
-     * @param event {@link Class} of {@link Event}
-     * @param mode {@link WorkerMode}
-     * @param target {@link Target}
+     * @param event   {@link Class} of {@link Event}
+     * @param mode    {@link WorkerMode}
+     * @param target  {@link Target}
      */
     private void purgeQueueByName(String tenant, IHandler<?> handler, Class<?> event, WorkerMode mode, Target target) {
         try {
             virtualHostAdmin.bind(AmqpChannel.AMQP_MULTITENANT_MANAGER);
             String queueName;
             if (mode == WorkerMode.BROADCAST) {
-                queueName = amqpAdmin.getSubscriptionQueueName((Class<? extends IHandler<?>>) handler.getClass(), target);
+                queueName = amqpAdmin.getSubscriptionQueueName((Class<? extends IHandler<?>>) handler.getClass(),
+                                                               target);
             } else {
                 queueName = amqpAdmin.getUnicastQueueName(tenant, event, target);
             }
-            LOGGER.info("Purging queue {} --> for {},{},{}", queueName, event.getName(),
-                        target.toString(), mode.toString());
+            LOGGER.info("Purging queue {} --> for {},{},{}",
+                        queueName,
+                        event.getName(),
+                        target.toString(),
+                        mode.toString());
             amqpAdmin.purgeQueue(queueName, false);
         } catch (AmqpIOException e) {
             //todo
@@ -266,7 +283,9 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     }
 
     @Override
-    public <E extends ISubscribable> void purgeQueue(Class<E> eventType, Class<? extends IHandler<E>> handlerType, Optional<String> queueName) {
+    public <E extends ISubscribable> void purgeQueue(Class<E> eventType,
+                                                     Class<? extends IHandler<E>> handlerType,
+                                                     Optional<String> queueName) {
 
         Set<String> tenants = resolveTenants();
         for (final String tenant : tenants) {
@@ -274,8 +293,8 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             try {
                 virtualHostAdmin.bind(virtualHost);
                 AmqpChannel channel = AmqpChannel.build(eventType,
-                                                              EventUtils.getWorkerMode(eventType),
-                                                              EventUtils.getTargetRestriction(eventType));
+                                                        EventUtils.getWorkerMode(eventType),
+                                                        EventUtils.getTargetRestriction(eventType));
                 Queue queue = amqpAdmin.declareQueue(tenant, channel.forHandlerType(handlerType));
                 amqpAdmin.purgeQueue(queue.getName(), false);
             } finally {
@@ -287,15 +306,19 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     /**
      * Initialize any necessary container to listen to specified event using
      * AbstractSubscriber#initializeSimpleMessageListenerContainer(Class, String, IHandler, WorkerMode, Target)
-     * @param <E> event type to which we subscribe
-     * @param <H> handler type
-     * @param handler the POJO defining the method handling the corresponding event connection factory from context
-     * @param channel Channel configuration for exchange/queue/binding
+     *
+     * @param <E>        event type to which we subscribe
+     * @param <H>        handler type
+     * @param handler    the POJO defining the method handling the corresponding event connection factory from context
+     * @param channel    Channel configuration for exchange/queue/binding
      * @param purgeQueue true to purge queue if already exists
      */
-    protected <E extends ISubscribable, H extends IHandler<E>> void subscribeTo(H handler, AmqpChannel channel, boolean purgeQueue) {
+    protected <E extends ISubscribable, H extends IHandler<E>> void subscribeTo(H handler,
+                                                                                AmqpChannel channel,
+                                                                                boolean purgeQueue) {
 
-        LOGGER.info("Subscribing to event {} with target {} and mode {} - {}", channel.getEventType().getName(),
+        LOGGER.info("Subscribing to event {} with target {} and mode {} - {}",
+                    channel.getEventType().getName(),
                     channel.getTarget(),
                     channel.getWorkerMode(),
                     channel.getQueueName().orElse(""));
@@ -308,7 +331,8 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             listeners.put(handler.getClass(), vhostsContainers);
             handledEvents.put(handler.getClass(), channel.getEventType());
             handlerInstances.put(handler.getClass(), handler);
-            handledQueueExchangeNames.put(handler.getClass(), Pair.of(channel.getQueueName(),channel.getExchangeName()));
+            handledQueueExchangeNames.put(handler.getClass(),
+                                          Pair.of(channel.getQueueName(), channel.getExchangeName()));
         }
 
         Multimap<String, Queue> vhostQueues = ArrayListMultimap.create();
@@ -340,10 +364,11 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     /**
      * Declare exchange, queue and binding on a virtual host<br/>
      * Queue name is queueName if provided or is computed with {@link WorkerMode},  {@link Target}
+     *
      * @param virtualHost virtual host
      * @param tenant
-     * @param channel Channel configuration for exchange/queue/binding
-     * @param purgeQueue true to purge queue if already exists
+     * @param channel     Channel configuration for exchange/queue/binding
+     * @param purgeQueue  true to purge queue if already exists
      */
     protected Queue declareElements(String virtualHost, String tenant, AmqpChannel channel, boolean purgeQueue) {
         Queue queue;
@@ -369,12 +394,16 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
     /**
      * Declare listener according to virtual host, handler and queue(s).
+     *
      * @param virtualHost virtual host
-     * @param handler event handler
-     * @param queues queues to listen to
+     * @param handler     event handler
+     * @param queues      queues to listen to
      */
-    protected void declareListener(String virtualHost, MessageConverter messageConverter,
-            IHandler<? extends ISubscribable> handler, Collection<Queue> queues, final Class<?> eventType) {
+    protected void declareListener(String virtualHost,
+                                   MessageConverter messageConverter,
+                                   IHandler<? extends ISubscribable> handler,
+                                   Collection<Queue> queues,
+                                   final Class<?> eventType) {
 
         // Prevent redundant listener
         Map<String, SimpleMessageListenerContainer> vhostsContainers = listeners.get(handler.getClass());
@@ -418,9 +447,14 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             container.setBatchSize(batchHandler.getBatchSize());
             container.setPrefetchCount(batchHandler.getBatchSize());
             container.setReceiveTimeout(batchHandler.getReceiveTimeout());
-            MessageListener batchListener = new RabbitBatchMessageListener(amqpAdmin, microserviceName,
-                    instancePublisher, publisher, runtimeTenantResolver, tenantResolver, messageConverter,
-                    batchHandler);
+            MessageListener batchListener = new RabbitBatchMessageListener(amqpAdmin,
+                                                                           microserviceName,
+                                                                           instancePublisher,
+                                                                           publisher,
+                                                                           runtimeTenantResolver,
+                                                                           tenantResolver,
+                                                                           messageConverter,
+                                                                           batchHandler);
             container.setMessageListener(batchListener);
         } else {
             container.setChannelTransacted(true);
@@ -441,6 +475,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
     /**
      * Add tenant listener to existing subscribers
+     *
      * @param tenant new tenant to manage
      */
     protected void addTenantListeners(String tenant) {
@@ -453,8 +488,8 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
             // Declare AMQP elements
             AmqpChannel channel = AmqpChannel.build(eventType)
-                    .forHandler(handler)
-                    .autoDelete(EventUtils.isAutoDeleteQueue(eventType));
+                                             .forHandler(handler)
+                                             .autoDelete(EventUtils.isAutoDeleteQueue(eventType));
             queueExchangeName.getLeft().ifPresent(name -> channel.queue(name));
             queueExchangeName.getRight().ifPresent(name -> channel.exchange(name));
 
@@ -469,6 +504,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
     /**
      * Retrieve listeners for specified handler. For test purpose!
+     *
      * @param handler event handler
      * @return all listeners by virtual host or <code>null</code>
      */

@@ -62,10 +62,8 @@ public class IndexService {
         if (esRepos.indexExists(tenant)) {
             return false;
         }
-        CreateIndexConfiguration configuration = new CreateIndexConfiguration(
-                damSettingsService.getIndexNumberOfShards(),
-                damSettingsService.getIndexNumberOfReplicas()
-        );
+        CreateIndexConfiguration configuration = new CreateIndexConfiguration(damSettingsService.getIndexNumberOfShards(),
+                                                                              damSettingsService.getIndexNumberOfReplicas());
         return esRepos.createIndex(tenant, configuration);
     }
 

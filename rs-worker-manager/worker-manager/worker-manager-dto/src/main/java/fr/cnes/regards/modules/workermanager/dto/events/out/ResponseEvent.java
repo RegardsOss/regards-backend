@@ -52,6 +52,7 @@ public class ResponseEvent implements ISubscribable, IMessagePropertiesAware {
      * we add the type parameter to EXTRACTION as it was in previous version of regards.
      */
     private String type;
+
     private String requestOwner;
 
     public static ResponseEvent build(ResponseStatus state, String requestId, String type, String requestOwner) {

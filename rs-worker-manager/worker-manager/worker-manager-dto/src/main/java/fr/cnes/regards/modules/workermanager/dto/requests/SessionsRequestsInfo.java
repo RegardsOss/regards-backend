@@ -59,13 +59,14 @@ public class SessionsRequestsInfo {
 
     public Set<RequestDTO> addRequest(RequestDTO request) {
         Map<RequestStatus, Set<RequestDTO>> requestsByStatuses = infosPerSession.compute(getKey(request),
-                                                                                       (sessionKey, ri) -> ri == null ?
-                                                                                               new RequestsInfo() :
-                                                                                               ri).getRequests();
+                                                                                         (sessionKey, ri) ->
+                                                                                             ri == null ?
+                                                                                                 new RequestsInfo() :
+                                                                                                 ri).getRequests();
         Set<RequestDTO> statusRequests = requestsByStatuses.compute(request.getStatus(),
-                                                                  (status, requests) -> requests == null ?
-                                                                          Sets.newHashSet() :
-                                                                          requests);
+                                                                    (status, requests) -> requests == null ?
+                                                                        Sets.newHashSet() :
+                                                                        requests);
         statusRequests.add(request);
         return statusRequests;
     }
@@ -75,9 +76,15 @@ public class SessionsRequestsInfo {
     }
 
     public Collection<RequestDTO> getRequests(RequestStatus status) {
-        return infosPerSession.values().stream().flatMap(
-                r -> r.getRequests().compute(status, (key, requests) -> requests == null ? Sets.newHashSet() : requests)
-                        .stream()).collect(Collectors.toList());
+        return infosPerSession.values()
+                              .stream()
+                              .flatMap(r -> r.getRequests()
+                                             .compute(status,
+                                                      (key, requests) -> requests == null ?
+                                                          Sets.newHashSet() :
+                                                          requests)
+                                             .stream())
+                              .collect(Collectors.toList());
     }
 
 }

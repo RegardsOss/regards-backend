@@ -18,19 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.service.plugin;
 
-import org.springframework.validation.Errors;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipValidation;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import org.springframework.validation.Errors;
 
 /**
  * Fake plugin for the processing chains.
+ *
  * @author Christophe Mertz
  */
 @Plugin(author = "REGARDS Team", description = "Fake plugin for SIP validation", id = "FakeValidationTestPlugin",
-        version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-        url = "https://regardsoss.github.io/")
+    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
+    url = "https://regardsoss.github.io/")
 public class FakeValidationTestPlugin implements ISipValidation {
 
     @Override

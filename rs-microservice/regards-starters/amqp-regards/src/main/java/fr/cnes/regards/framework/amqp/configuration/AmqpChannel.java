@@ -21,7 +21,6 @@ package fr.cnes.regards.framework.amqp.configuration;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
 
@@ -106,12 +105,13 @@ public class AmqpChannel {
     /**
      * Build AmqpChannel without reading {@link WorkerMode}, {@link Target} and routingKey
      * from {@link fr.cnes.regards.framework.amqp.event.Event} on eventType
+     *
      * @param eventType
      * @param workerMode
      * @param target
      * @return
      */
-    public static AmqpChannel build(Class<?> eventType, WorkerMode workerMode,Target target) {
+    public static AmqpChannel build(Class<?> eventType, WorkerMode workerMode, Target target) {
         AmqpChannel conf = new AmqpChannel();
         conf.eventType = eventType;
         conf.workerMode = workerMode;
@@ -122,6 +122,7 @@ public class AmqpChannel {
     /**
      * Build AmqpChannel by reading {@link WorkerMode}, {@link Target} and routingKey
      * from {@link fr.cnes.regards.framework.amqp.event.Event} on eventType
+     *
      * @param eventType
      * @return
      */

@@ -18,15 +18,13 @@
  */
 package fr.cnes.regards.modules.model.service.validation.validator;
 
-import org.springframework.validation.Errors;
-
 import fr.cnes.regards.modules.model.domain.ComputationMode;
+import org.springframework.validation.Errors;
 
 /**
  * Validate computation mode
  *
  * @author Marc Sordi
- *
  */
 public class ComputationModeValidator extends AbstractPropertyValidator {
 

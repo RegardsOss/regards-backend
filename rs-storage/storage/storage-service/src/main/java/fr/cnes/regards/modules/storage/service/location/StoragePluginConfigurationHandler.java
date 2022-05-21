@@ -18,21 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.service.location;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.SetMultimap;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -45,6 +32,17 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This component handle the pool of {@link IStorageLocation} plugins configuration as known as {@link StorageLocationConfiguration}.
@@ -97,8 +95,8 @@ public class StoragePluginConfigurationHandler implements IHandler<BroadcastPlug
 
                 switch (wrapper.getContent().getAction()) {
                     case CREATE:
-                        PluginConfiguration conf = pluginService
-                                .getPluginConfiguration(wrapper.getContent().getPluginBusinnessId());
+                        PluginConfiguration conf = pluginService.getPluginConfiguration(wrapper.getContent()
+                                                                                               .getPluginBusinnessId());
                         this.storages.put(tenant, conf);
                         if (conf.getInterfaceNames().contains(IOnlineStorageLocation.class.getName())) {
                             this.onlineStorages.put(tenant, conf);
@@ -129,7 +127,7 @@ public class StoragePluginConfigurationHandler implements IHandler<BroadcastPlug
      */
     public Set<PluginConfiguration> getConfiguredStorages() {
         if ((this.storages.get(runtimeTenantResolver.getTenant()) == null)
-                || this.storages.get(runtimeTenantResolver.getTenant()).isEmpty()) {
+            || this.storages.get(runtimeTenantResolver.getTenant()).isEmpty()) {
             this.refresh();
             LOGGER.trace("[STORAGE CONFIGURATION] Plugin configuration list refreshed !");
         }
@@ -144,8 +142,8 @@ public class StoragePluginConfigurationHandler implements IHandler<BroadcastPlug
      * Return all the online storage location configured {@link PluginConfiguration} labels.
      */
     private Set<PluginConfiguration> getConfiguredOnlineStorages() {
-        if ((this.onlineStorages.get(runtimeTenantResolver.getTenant()) == null)
-                || this.onlineStorages.get(runtimeTenantResolver.getTenant()).isEmpty()) {
+        if ((this.onlineStorages.get(runtimeTenantResolver.getTenant()) == null) || this.onlineStorages.get(
+            runtimeTenantResolver.getTenant()).isEmpty()) {
             this.refresh();
         }
         return this.onlineStorages.get(runtimeTenantResolver.getTenant());
@@ -157,8 +155,9 @@ public class StoragePluginConfigurationHandler implements IHandler<BroadcastPlug
     public void refresh() {
         List<PluginConfiguration> confs = pluginService.getPluginConfigurationsByType(IStorageLocation.class);
         List<PluginConfiguration> onlineConfs = confs.stream()
-                .filter(c -> c.getInterfaceNames().contains(IOnlineStorageLocation.class.getName()))
-                .collect(Collectors.toList());
+                                                     .filter(c -> c.getInterfaceNames()
+                                                                   .contains(IOnlineStorageLocation.class.getName()))
+                                                     .collect(Collectors.toList());
         confs.forEach(c -> this.storages.put(runtimeTenantResolver.getTenant(), c));
         onlineConfs.forEach(c -> this.onlineStorages.put(runtimeTenantResolver.getTenant(), c));
     }

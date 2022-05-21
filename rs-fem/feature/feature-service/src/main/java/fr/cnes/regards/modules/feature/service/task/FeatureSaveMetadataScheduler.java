@@ -30,6 +30,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Scheduler to handle feature dumps
+ *
  * @author Iliana Ghazali
  */
 // should not put profile @Profile("!noscheduler") because {@link DumpSettings} need access to {@link AbstractDumpScheduler}

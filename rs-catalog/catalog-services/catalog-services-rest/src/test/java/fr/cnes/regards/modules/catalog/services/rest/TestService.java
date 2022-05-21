@@ -18,15 +18,6 @@
  */
 package fr.cnes.regards.modules.catalog.services.rest;
 
-import java.util.LinkedHashSet;
-import java.util.UUID;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.assertj.core.util.Sets;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
@@ -41,12 +32,19 @@ import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFact
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.model.domain.Model;
+import org.assertj.core.util.Sets;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
+import javax.servlet.http.HttpServletResponse;
+import java.util.LinkedHashSet;
+import java.util.UUID;
 
 /**
  * @author Sylvain Vissiere-Guerinet
  */
 @Plugin(id = "tata", description = "plugin for test", author = "REGARDS Team", contact = "regards@c-s.fr",
-        license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss", version = "1.0.0")
+    license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss", version = "1.0.0")
 @CatalogServicePlugin(applicationModes = { ServiceScope.ONE, ServiceScope.MANY }, entityTypes = { EntityType.DATA })
 public class TestService implements IService {
 
@@ -57,7 +55,7 @@ public class TestService implements IService {
 
     @Override
     public ResponseEntity<StreamingResponseBody> apply(ServicePluginParameters pParameters,
-            HttpServletResponse pResponse) {
+                                                       HttpServletResponse pResponse) {
 
         LinkedHashSet<DataObject> responseList;
 
@@ -66,16 +64,26 @@ public class TestService implements IService {
         } else {
             Model model = Model.build("pName", "pDescription", EntityType.DATA);
             DataObject do1 = new DataObject(model, "pTenant", "DO1", "pLabel1");
-            do1.setIpId(UniformResourceName.build(OAISIdentifier.AIP.name(), EntityType.DATA, "pTenant",
-                                                  UUID.fromString("924d1f0d-37ba-4da1-9be3-d94aac629897"), 1, null,
+            do1.setIpId(UniformResourceName.build(OAISIdentifier.AIP.name(),
+                                                  EntityType.DATA,
+                                                  "pTenant",
+                                                  UUID.fromString("924d1f0d-37ba-4da1-9be3-d94aac629897"),
+                                                  1,
+                                                  null,
                                                   null));
             DataObject do2 = new DataObject(model, "pTenant", "DO2", "pLabel2");
-            do2.setIpId(new OaisUniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "pTenant",
-                    UUID.fromString("74f2c965-0136-47f0-93e1-4fd098db701c"), 1, null, null));
+            do2.setIpId(new OaisUniformResourceName(OAISIdentifier.AIP,
+                                                    EntityType.DATA,
+                                                    "pTenant",
+                                                    UUID.fromString("74f2c965-0136-47f0-93e1-4fd098db701c"),
+                                                    1,
+                                                    null,
+                                                    null));
             responseList = Sets.newLinkedHashSet(do1, do2);
         }
 
-        return CatalogPluginResponseFactory.createSuccessResponse(pResponse, CatalogPluginResponseType.JSON,
+        return CatalogPluginResponseFactory.createSuccessResponse(pResponse,
+                                                                  CatalogPluginResponseType.JSON,
                                                                   responseList);
     }
 

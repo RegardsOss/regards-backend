@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.security.domain;
 
 /**
  * This exception is thrown when an error occurs during security check process
+ *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  */

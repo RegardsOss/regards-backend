@@ -72,17 +72,17 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
 
     private final ApplicationContext applicationContext;
 
-    public FlywayDatasourceSchemaHelper(Map<String, Object> hibernateProperties, ApplicationContext applicationContext) {
+    public FlywayDatasourceSchemaHelper(Map<String, Object> hibernateProperties,
+                                        ApplicationContext applicationContext) {
         super(hibernateProperties);
         this.applicationContext = applicationContext;
     }
-
 
     /**
      * Use JPA configuration to retrieve schema and launch migration
      *
      * @param dataSource the datasource to migrate
-     * @param tenant associated tenant
+     * @param tenant     associated tenant
      */
     @Override
     public void migrate(DataSource dataSource, String tenant) {
@@ -109,21 +109,22 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
         LOGGER.info("Migrating datasource {} with schema {}", dataSource, schema);
 
         // Use flyway scanner initialized with script dir (ie resources/scripts)
-        Scanner<JavaMigration> scanner = new Scanner<>(
-                JavaMigration.class,
-                Collections.singleton(new Location(SCRIPT_LOCATION_PATH)),
-                classLoader,
-                Charset.defaultCharset(),
-                false,
-                false,
-                new ResourceNameCache(),
-                new LocationScannerCache(),
-                false);
+        Scanner<JavaMigration> scanner = new Scanner<>(JavaMigration.class,
+                                                       Collections.singleton(new Location(SCRIPT_LOCATION_PATH)),
+                                                       classLoader,
+                                                       Charset.defaultCharset(),
+                                                       false,
+                                                       false,
+                                                       new ResourceNameCache(),
+                                                       new LocationScannerCache(),
+                                                       false);
 
         // Scan all sql scripts without considering modules (into resources/scripts, there are one dir per module)
         Collection<LoadableResource> sqlScripts = scanner.getResources("", SQL_MIGRATION_SUFFIX);
         // Manage resource (ie SQL scripts) pattern (^scripts/(.*)/.*\\.sql)
-        Pattern scriptPattern = Pattern.compile("^" + SCRIPT_LOCATION_PATH + File.separator + "(.*)" + File.separator + ".*\\" + SQL_MIGRATION_SUFFIX + "$");
+        Pattern scriptPattern = Pattern.compile(
+            "^" + SCRIPT_LOCATION_PATH + File.separator + "(.*)" + File.separator + ".*\\" + SQL_MIGRATION_SUFFIX
+                + "$");
         // Retrieve all modules (scripts are into <module> dir)
         Set<String> modules = new HashSet<>();
         for (Resource script : sqlScripts) {
@@ -132,7 +133,9 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
             if (matcher.matches()) {
                 modules.add(matcher.group(1));
             } else {
-                LOGGER.warn("Cannot retrieve module name in resource {}. Format must conform to {}", script.getAbsolutePath(), scriptPattern);
+                LOGGER.warn("Cannot retrieve module name in resource {}. Format must conform to {}",
+                            script.getAbsolutePath(),
+                            scriptPattern);
             }
         }
         // Apply dependency check
@@ -144,7 +147,6 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
         // Run Spring aware JavaMigrations
         performMigrations(dataSource, schema);
     }
-
 
     /**
      * Migrate a specific module in datasource and schema to new version
@@ -167,17 +169,13 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
                               // Set module location
                               .locations(SCRIPT_LOCATION_PATH + File.separator + moduleName)
                               // Specify working schema
-                              .schemas(schema)
-                              .defaultSchema(schema)
+                              .schemas(schema).defaultSchema(schema)
                               // Create one migration table by module
-                              .table(moduleName + TABLE_SUFFIX)
-                              .baselineOnMigrate(true)
+                              .table(moduleName + TABLE_SUFFIX).baselineOnMigrate(true)
                               // When creating module metadata table, set beginning version to 0 in order to properly apply all init scripts
-                              .baselineVersion(MigrationVersion.fromVersion("0"))
-                              .load();
+                              .baselineVersion(MigrationVersion.fromVersion("0")).load();
         flyway.migrate();
     }
-
 
     /**
      * Build database module tree and sort all modules by priority
@@ -218,9 +216,13 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
 
                     DatabaseModule depDbModule = moduleMap.get(depModule);
                     if (depDbModule == null) {
-                        LOGGER.warn("Dependent module \"{}\" of module \"{}\" not found in classpath", depModule, dbModule.getName());
+                        LOGGER.warn("Dependent module \"{}\" of module \"{}\" not found in classpath",
+                                    depModule,
+                                    dbModule.getName());
                     } else {
-                        LOGGER.debug("Dependency found for module \"{}\": \"{}\"", dbModule.getName(), depDbModule.getName());
+                        LOGGER.debug("Dependency found for module \"{}\": \"{}\"",
+                                     dbModule.getName(),
+                                     depDbModule.getName());
                         moduleMap.get(dbModule.getName()).addDependency(depDbModule);
                     }
 
@@ -234,6 +236,7 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
 
     /**
      * Load module properties if any
+     *
      * @param module name of the module
      * @return {@link Properties}
      */
@@ -241,7 +244,8 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
 
         Properties properties = new Properties();
 
-        try (InputStream input = classLoader.getResourceAsStream(SCRIPT_LOCATION_PATH + File.separator + module + File.separator + "dbmodule.properties")) {
+        try (InputStream input = classLoader.getResourceAsStream(
+            SCRIPT_LOCATION_PATH + File.separator + module + File.separator + "dbmodule.properties")) {
             if (input == null) {
                 LOGGER.info("No module property found for module \"{}\"", module);
             } else {
@@ -272,18 +276,18 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
                               // Associate datasource
                               .dataSource(dataSource)
                               // Specify working schema
-                              .schemas(schema)
-                              .defaultSchema(schema)
+                              .schemas(schema).defaultSchema(schema)
                               // Create one migration table by module
-                              .table(MIGRATION_TABLE_NAME + TABLE_SUFFIX)
-                              .baselineOnMigrate(true)
+                              .table(MIGRATION_TABLE_NAME + TABLE_SUFFIX).baselineOnMigrate(true)
                               // When creating module metadata table, set beginning version to 0 in order to properly apply all init scripts
                               .baselineVersion(MigrationVersion.fromVersion("0"))
                               // Include all Spring managed Java migrations
-                              .javaMigrations(migrations.toArray(new JavaMigration[0]))
-                              .load();
+                              .javaMigrations(migrations.toArray(new JavaMigration[0])).load();
 
-        LOGGER.info("Migration beans : {}", migrations.stream().map(javaMigration -> javaMigration.getClass().getSimpleName()).collect(Collectors.toList()));
+        LOGGER.info("Migration beans : {}",
+                    migrations.stream()
+                              .map(javaMigration -> javaMigration.getClass().getSimpleName())
+                              .collect(Collectors.toList()));
 
         flyway.migrate();
     }

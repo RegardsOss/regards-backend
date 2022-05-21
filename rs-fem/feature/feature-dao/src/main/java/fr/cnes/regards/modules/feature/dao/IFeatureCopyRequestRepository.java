@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
-import org.springframework.stereotype.Repository;
-
 import fr.cnes.regards.modules.feature.domain.request.FeatureCopyRequest;
+import org.springframework.stereotype.Repository;
 
 /**
  * @author Kevin Marchois
- *
  */
 @Repository
 public interface IFeatureCopyRequestRepository extends IAbstractFeatureRequestRepository<FeatureCopyRequest> {
+
 }

@@ -18,12 +18,13 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import static org.junit.Assert.assertNotEquals;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
+import fr.cnes.regards.modules.feature.service.request.FeatureStorageListener;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,14 +32,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Sets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.modules.feature.domain.FeatureEntity;
-import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
-import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
-import fr.cnes.regards.modules.feature.service.request.FeatureStorageListener;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * Test feature mutation based on null property values.
@@ -47,9 +45,8 @@ import fr.cnes.regards.modules.storage.client.RequestInfo;
  * @author Sébastien Binda
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=feature_duplication",
-                "regards.amqp.enabled=true" },
-        locations = { "classpath:batch.properties", "classpath:metrics.properties" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=feature_duplication", "regards.amqp.enabled=true" },
+    locations = { "classpath:batch.properties", "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
 public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -68,6 +65,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceIT {
     public void doInit() {
         this.isToNotify = initDefaultNotificationSettings();
     }
+
     @Test
     public void testDuplicatedFeatureCreationWithOverride() {
         List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true, false);
@@ -82,7 +80,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceIT {
         mockStorageHelper.mockFeatureCreationStorageSuccess();
 
         //end creation process
-        if(this.isToNotify) {
+        if (this.isToNotify) {
             mockNotificationSuccess();
         }
 
@@ -97,7 +95,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceIT {
         mockStorageHelper.mockFeatureCreationStorageSuccess();
 
         //end creation process
-        if(this.isToNotify) {
+        if (this.isToNotify) {
             mockNotificationSuccess();
         }
 
@@ -113,7 +111,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceIT {
         this.listener.onDeletionSuccess(Sets.newHashSet(info));
 
         //end deletion process
-        if(this.isToNotify) {
+        if (this.isToNotify) {
             mockNotificationSuccess();
         }
 
@@ -126,7 +124,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceIT {
 
     @Test
     public void testDuplicatedFeatureCreationWithOverrideCaseNoFiles() {
-        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true,false);
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true, false);
         events.get(0).getFeature().setId("id");
         events.get(0).getFeature().setFiles(new ArrayList<>());
         publisher.publish(events);
@@ -140,7 +138,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceIT {
         FeatureEntity featureInDatabase = this.featureRepo.findAll().get(0);
 
         // end creation process
-        if(this.isToNotify) {
+        if (this.isToNotify) {
             mockNotificationSuccess();
         }
 
@@ -155,7 +153,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceIT {
         this.featureDeletionService.scheduleRequests();
 
         // end creation process
-        if(this.isToNotify) {
+        if (this.isToNotify) {
             mockNotificationSuccess();
         }
 
@@ -167,7 +165,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceIT {
 
     @Test
     public void testDuplicatedFeatureCreationWithoutOverride() {
-        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true,false);
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true, false);
         events.get(0).getMetadata().setOverride(false);
 
         events.get(0).getFeature().setId("id");
@@ -180,7 +178,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceIT {
         mockStorageHelper.mockFeatureCreationStorageSuccess();
 
         // end creation process
-        if(this.isToNotify) {
+        if (this.isToNotify) {
             mockNotificationSuccess();
         }
 
@@ -194,7 +192,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceIT {
         mockStorageHelper.mockFeatureCreationStorageSuccess();
 
         // end creation process
-        if(this.isToNotify) {
+        if (this.isToNotify) {
             mockNotificationSuccess();
         }
 
@@ -205,7 +203,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceIT {
 
     @Test
     public void testDuplicatedFeatureCreationWithoutOverrideCaseNoFiles() {
-        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true,false);
+        List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true, false);
         events.get(0).getMetadata().setOverride(false);
 
         events.get(0).getFeature().setId("id");
@@ -218,7 +216,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceIT {
         mockStorageHelper.mockFeatureCreationStorageSuccess();
 
         // end creation process
-        if(this.isToNotify) {
+        if (this.isToNotify) {
             mockNotificationSuccess();
         }
 
@@ -231,7 +229,7 @@ public class DuplicatedFeatureIT extends AbstractFeatureMultitenantServiceIT {
         waitRequest(this.featureRepo, 2, 30000);
 
         // end creation process
-        if(this.isToNotify) {
+        if (this.isToNotify) {
             mockNotificationSuccess();
         }
     }

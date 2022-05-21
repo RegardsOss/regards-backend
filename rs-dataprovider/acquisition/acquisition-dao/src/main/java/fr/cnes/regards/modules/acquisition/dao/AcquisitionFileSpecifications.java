@@ -18,24 +18,22 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Set;
-
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-
-import org.springframework.data.jpa.domain.Specification;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import org.springframework.data.jpa.domain.Specification;
+
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Specification class to filter DAO searches on {@link AcquisitionFile} entities.
+ *
  * @author Sébastien Binda
  */
 public final class AcquisitionFileSpecifications {
@@ -48,13 +46,17 @@ public final class AcquisitionFileSpecifications {
     /**
      * Filter on the given attributes and return result ordered by descending ingestDate
      * * @param filePath {@link String}
-     * @param states {@link AcquisitionFileState}
+     *
+     * @param states    {@link AcquisitionFileState}
      * @param productId {@link Long} identifier of {@link Product}
-     * @param from {@link OffsetDateTime}
+     * @param from      {@link OffsetDateTime}
      * @return @return {@link Specification}<{@link AcquisitionFile}>
      */
-    public static Specification<AcquisitionFile> search(String filePath, List<AcquisitionFileState> states,
-            Long productId, Long chainId, OffsetDateTime from) {
+    public static Specification<AcquisitionFile> search(String filePath,
+                                                        List<AcquisitionFileState> states,
+                                                        Long productId,
+                                                        Long chainId,
+                                                        OffsetDateTime from) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
 

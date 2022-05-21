@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.framework.gson.adapters;
 
-
 import com.google.gson.*;
 
 import java.lang.reflect.ParameterizedType;
@@ -34,7 +33,7 @@ public class OptionalAdapter<T> implements JsonSerializer<Optional<T>>, JsonDese
 
     @Override
     public Optional<T> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-            throws JsonParseException {
+        throws JsonParseException {
         final T value = context.deserialize(json, ((ParameterizedType) typeOfT).getActualTypeArguments()[0]);
         return Optional.ofNullable(value);
     }

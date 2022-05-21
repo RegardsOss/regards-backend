@@ -52,11 +52,12 @@ import java.util.zip.ZipFile;
 
 /**
  * Test for {@link AIPMetadataService}
+ *
  * @author Iliana Ghazali
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_metadata_service_it",
-        "regards.amqp.enabled=true", "regards.aip.dump.zip-limit = 3" },
-        locations = { "classpath:application-test.properties" })
+    "regards.amqp.enabled=true", "regards.aip.dump.zip-limit = 3" },
+    locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noscheduler" })
 public class AIPMetadataServiceIT extends IngestMultitenantServiceIT {
 
@@ -78,7 +79,6 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceIT {
     @Autowired
     private DumpSettingsService dumpSettingsService;
 
-    
     @Test
     @Purpose("Test creation of multiple zips between lastDumpReqDate and reqDumpDate")
     public void writeZipsTest() {
@@ -102,7 +102,8 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceIT {
         // Number of zips created
         File[] zipFolder = TMP_ZIP_LOCATION.toFile().listFiles();
         int nbZipCreated = zipFolder.length;
-        Assert.assertEquals("Unexpected number of created zips", (int) Math.ceil((double) nbAIPToDump / zipLimit),
+        Assert.assertEquals("Unexpected number of created zips",
+                            (int) Math.ceil((double) nbAIPToDump / zipLimit),
                             nbZipCreated);
 
         // Number of files per zip
@@ -135,8 +136,7 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceIT {
         AIPSaveMetadataRequest metadataRequest = createSaveMetadataRequest();
         try {
             metadataService.writeZips(metadataRequest, TMP_ZIP_LOCATION);
-            metadataService
-                    .writeDump(metadataRequest, Paths.get(metadataRequest.getDumpLocation()), TMP_ZIP_LOCATION);
+            metadataService.writeDump(metadataRequest, Paths.get(metadataRequest.getDumpLocation()), TMP_ZIP_LOCATION);
         } catch (NothingToDoException | IOException e) {
             LOGGER.error("Error occurred while dumping aips", e);
         }
@@ -144,26 +144,30 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceIT {
         // CHECK RESULTS
         // Number of dump created
         File[] dumpFolder = TARGET_ZIP_LOCATION.toFile().listFiles();
-        Assert.assertEquals("Only one dump was expected" , 1, dumpFolder.length);
+        Assert.assertEquals("Only one dump was expected", 1, dumpFolder.length);
 
         // Number of zips in dump
         Assert.assertEquals("The number of created zips in dump is not expected",
-                            (int) Math.ceil((double) nbSIP / zipLimit), readZipEntryNames(dumpFolder[0]).size());
+                            (int) Math.ceil((double) nbSIP / zipLimit),
+                            readZipEntryNames(dumpFolder[0]).size());
     }
 
     /**
      * Create a request to save aip metadata
+     *
      * @return AIPSaveMetadataRequest
      */
     private AIPSaveMetadataRequest createSaveMetadataRequest() {
         // Create request
-        AIPSaveMetadataRequest aipSaveMetadataRequest = new AIPSaveMetadataRequest(this.lastDumpReqDate, TARGET_ZIP_LOCATION.toString());
+        AIPSaveMetadataRequest aipSaveMetadataRequest = new AIPSaveMetadataRequest(this.lastDumpReqDate,
+                                                                                   TARGET_ZIP_LOCATION.toString());
         aipSaveMetadataRequest.setState(InternalRequestState.RUNNING);
         return aipSaveMetadataRequest;
     }
 
     /**
      * Update aip last dates by decreasing the number of days
+     *
      * @param nbAIPToDump number of aips to update
      */
     private void updateAIPLastUpdateDate(int nbAIPToDump) {
@@ -180,6 +184,7 @@ public class AIPMetadataServiceIT extends IngestMultitenantServiceIT {
 
     /**
      * List all filenames contained in a zip
+     *
      * @param parentZip zip to scan
      * @return list of filenames
      */

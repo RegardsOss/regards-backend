@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.acquisition.plugins;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -39,11 +40,9 @@ public interface IScanPlugin {
      * Warning : if last modification date is not used, file might be acquired several times!<br/>
      * <b>When using last modification date, we assume scan plugin is working with a precision to the second at least.
      * Plugin has to return files with last modification date equals or after the given last modification date.
-     *  The system will filter duplicates if any!</b>
+     * The system will filter duplicates if any!</b>
      *
-
-     *
-     * @param dirPath directory to scan
+     * @param dirPath      directory to scan
      * @param scanningDate last scanning date of the directory
      * @return list of detected files
      */

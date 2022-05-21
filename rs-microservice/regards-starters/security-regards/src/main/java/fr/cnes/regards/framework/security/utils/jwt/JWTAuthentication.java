@@ -18,16 +18,16 @@
  */
 package fr.cnes.regards.framework.security.utils.jwt;
 
-import java.util.*;
-
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
-import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import java.util.*;
 
 /**
  * REGARDS custom authentication.<br/>
  * All attributes of this class are filled from JWT content.
+ *
  * @author msordi
  */
 public class JWTAuthentication implements Authentication {
@@ -64,6 +64,7 @@ public class JWTAuthentication implements Authentication {
 
     /**
      * Constructor
+     *
      * @param pJWT the JSON Web Token
      */
     public JWTAuthentication(String pJWT) {
@@ -110,6 +111,7 @@ public class JWTAuthentication implements Authentication {
 
     /**
      * Abstraction on how to get the tenant
+     *
      * @return tenant for whom the JWT was provided
      */
     public String getTenant() {
@@ -118,6 +120,7 @@ public class JWTAuthentication implements Authentication {
 
     /**
      * Abstraction on how to set the tenant
+     *
      * @param pTenant the new tenant
      */
     public void setTenant(String pTenant) {
@@ -136,6 +139,7 @@ public class JWTAuthentication implements Authentication {
 
     /**
      * Set user role
+     *
      * @param pRoleName the role name
      */
     public void setRole(String pRoleName) {

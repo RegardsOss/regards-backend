@@ -27,6 +27,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * COnfiguration to prevent Flyway auto configuration
+ *
  * @author Olivier Rousselot
  */
 @Configuration

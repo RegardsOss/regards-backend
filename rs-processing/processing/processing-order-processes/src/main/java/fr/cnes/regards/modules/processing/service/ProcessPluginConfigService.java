@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.service;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -63,17 +63,16 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
     private final IRightsPluginConfigurationRepository rightsPluginConfigRepo;
 
     private final IPExecutionRepository executionRepository;
+
     private final IPBatchRepository batchRepo;
 
     private final IPublisher publisher;
 
-    public ProcessPluginConfigService(
-            IRightsPluginConfigurationRepository rightsPluginConfigRepo,
-            IPExecutionRepository executionRepository,
-            IPublisher publisher,
-            IPluginService pluginService,
-            IPBatchRepository batchRepo
-    ) {
+    public ProcessPluginConfigService(IRightsPluginConfigurationRepository rightsPluginConfigRepo,
+                                      IPExecutionRepository executionRepository,
+                                      IPublisher publisher,
+                                      IPluginService pluginService,
+                                      IPBatchRepository batchRepo) {
         this.rightsPluginConfigRepo = rightsPluginConfigRepo;
         this.executionRepository = executionRepository;
         this.publisher = publisher;
@@ -83,8 +82,10 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
 
     @Override
     public Collection<ProcessPluginConfigurationRightsDTO> findAllRightsPluginConfigs() {
-        return rightsPluginConfigRepo.findAll().stream().map(RightsPluginConfiguration::toDto)
-                .collect(Collectors.toSet());
+        return rightsPluginConfigRepo.findAll()
+                                     .stream()
+                                     .map(RightsPluginConfiguration::toDto)
+                                     .collect(Collectors.toSet());
     }
 
     @Override
@@ -95,7 +96,8 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
 
     @Override
     public ProcessPluginConfigurationRightsDTO update(UUID processBusinessId,
-            ProcessPluginConfigurationRightsDTO rightsDto) throws ModuleException {
+                                                      ProcessPluginConfigurationRightsDTO rightsDto)
+        throws ModuleException {
         PluginConfiguration updatedPc = pluginService.updatePluginConfiguration(rightsDto.getPluginConfiguration());
         RightsPluginConfiguration rights = findEntityByBusinessId(processBusinessId);
         rights.setPluginConfiguration(updatedPc);
@@ -104,14 +106,15 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
         rights.setLinkedToAllDatasets(rightsDto.getRights().isLinkedToAllDatasets());
         RightsPluginConfiguration persistedRights = rightsPluginConfigRepo.save(rights);
         ProcessPluginConfigurationRightsDTO dto = RightsPluginConfiguration.toDto(persistedRights);
-        publisher.publish(new RightsPluginConfigurationEvent(RightsPluginConfigurationEvent.Type.UPDATE, rightsDto,
-                dto));
+        publisher.publish(new RightsPluginConfigurationEvent(RightsPluginConfigurationEvent.Type.UPDATE,
+                                                             rightsDto,
+                                                             dto));
         return dto;
     }
 
     @Override
     public ProcessPluginConfigurationRightsDTO create(ProcessPluginConfigurationRightsDTO rightsDto)
-            throws EntityNotFoundException {
+        throws EntityNotFoundException {
         ProcessPluginConfigurationRightsDTO toSave;
         String businessId = rightsDto.getPluginConfiguration().getBusinessId();
         if (businessId == null) {
@@ -133,10 +136,10 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
 
     @Override
     public Boolean canDelete(UUID processBusinessId) {
-        return executionRepository
-                .countByProcessBusinessIdAndStatusIn(processBusinessId, ExecutionStatus.nonFinalStatusList())
-                .map(count -> count == 0)
-                .block();
+        return executionRepository.countByProcessBusinessIdAndStatusIn(processBusinessId,
+                                                                       ExecutionStatus.nonFinalStatusList())
+                                  .map(count -> count == 0)
+                                  .block();
     }
 
     @Override
@@ -159,8 +162,10 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
     @Override
     public Collection<ProcessLabelDTO> getDatasetLinkedProcesses(String dataset) {
         java.util.List<RightsPluginConfiguration> fetched = rightsPluginConfigRepo.findByReferencedDataset(dataset);
-        return fetched.stream().map(RightsPluginConfiguration::getPluginConfiguration)
-                .map(ProcessLabelDTO::fromPluginConfiguration).collect(Collectors.toSet());
+        return fetched.stream()
+                      .map(RightsPluginConfiguration::getPluginConfiguration)
+                      .map(ProcessLabelDTO::fromPluginConfiguration)
+                      .collect(Collectors.toSet());
     }
 
     @Override
@@ -172,8 +177,11 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
     public ProcessesByDatasetsDTO findProcessesByDatasets(java.util.List<String> datasets) {
         List<RightsPluginConfiguration> rpcs = List.ofAll(rightsPluginConfigRepo.findAll());
         Map<String, List<ProcessLabelDTO>> map = Stream.ofAll(datasets)
-                .collect(HashMap.collector(d -> d, d -> rpcs.filter(rpc -> rpc.getDatasets().contains(d))
-                        .map(rpc -> ProcessLabelDTO.fromPluginConfiguration(rpc.getPluginConfiguration()))));
+                                                       .collect(HashMap.collector(d -> d,
+                                                                                  d -> rpcs.filter(rpc -> rpc.getDatasets()
+                                                                                                             .contains(d))
+                                                                                           .map(rpc -> ProcessLabelDTO.fromPluginConfiguration(
+                                                                                               rpc.getPluginConfiguration()))));
         return new ProcessesByDatasetsDTO(map);
     }
 
@@ -184,8 +192,10 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
 
     private RightsPluginConfiguration findEntityByBusinessId(UUID processBusinessId) {
         return rightsPluginConfigRepo.findByPluginConfigurationBusinessId(processBusinessId.toString())
-                .getOrElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Rights for plugin with UUID " + processBusinessId + " not found"));
+                                     .getOrElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                                                                       "Rights for plugin with UUID "
+                                                                                           + processBusinessId
+                                                                                           + " not found"));
     }
 
     @SuppressWarnings("serial")

@@ -18,16 +18,14 @@
  */
 package fr.cnes.regards.modules.model.service.validation.validator;
 
-import org.springframework.validation.Errors;
-
 import fr.cnes.regards.modules.model.dto.properties.AbstractProperty;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import org.springframework.validation.Errors;
 
 /**
  * Validate attribute type
  *
  * @author Marc Sordi
- *
  */
 public class PropertyTypeValidator extends AbstractPropertyValidator {
 

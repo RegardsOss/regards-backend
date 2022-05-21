@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.plugin;
 
-import org.springframework.validation.Errors;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipValidation;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import org.springframework.validation.Errors;
 
 /**
  * Default no effect SIP validation plugin
@@ -30,8 +29,8 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
  * @author Marc Sordi
  */
 @Plugin(author = "REGARDS Team", description = "Default no effect SIP validation plugin", id = "DefaultSipValidation",
-        version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-        url = "https://regardsoss.github.io/")
+    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
+    url = "https://regardsoss.github.io/")
 public class DefaultSipValidation implements ISipValidation {
 
     @Override

@@ -23,11 +23,9 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 
 /**
- *
  * Deletion event
  *
  * @author Marc Sordi
- *
  */
 @Event(target = Target.ALL)
 public class AttributeModelDeleted extends AbstractAttributeModelEvent {

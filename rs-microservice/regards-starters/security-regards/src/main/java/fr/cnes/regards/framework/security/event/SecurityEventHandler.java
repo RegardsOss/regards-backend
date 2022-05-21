@@ -18,19 +18,19 @@
  */
 package fr.cnes.regards.framework.security.event;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 
 /**
  * This class manages multitenant security event workflow
+ *
  * @author Marc Sordi
  */
 public class SecurityEventHandler implements ApplicationListener<ApplicationReadyEvent> {
@@ -56,8 +56,9 @@ public class SecurityEventHandler implements ApplicationListener<ApplicationRead
      */
     private final MethodAuthorizationService methodAuthorizationService;
 
-    public SecurityEventHandler(String microservice, final ISubscriber subscriber,
-            final MethodAuthorizationService methodAuthorizationService) {
+    public SecurityEventHandler(String microservice,
+                                final ISubscriber subscriber,
+                                final MethodAuthorizationService methodAuthorizationService) {
         this.microservice = microservice;
         this.subscriber = subscriber;
         this.methodAuthorizationService = methodAuthorizationService;
@@ -81,6 +82,7 @@ public class SecurityEventHandler implements ApplicationListener<ApplicationRead
 
     /**
      * Handle {@link ResourceAccessEvent} event to refresh security cache
+     *
      * @author Marc Sordi
      */
     private class ResourceAccessUpdateHandler implements IHandler<ResourceAccessEvent> {
@@ -99,6 +101,7 @@ public class SecurityEventHandler implements ApplicationListener<ApplicationRead
 
     /**
      * Handle {@link ResourceAccessInit} event to register default resource access for a new tenant
+     *
      * @author Marc Sordi
      */
     private class ResourceAccessInitHandler implements IHandler<ResourceAccessInit> {
@@ -109,7 +112,8 @@ public class SecurityEventHandler implements ApplicationListener<ApplicationRead
                 methodAuthorizationService.manageTenant(pWrapper.getTenant());
             } catch (SecurityException e) {
                 LOGGER.error("Microservice resource cannot be register for tenant {} and microservice {}",
-                             pWrapper.getTenant(), microservice);
+                             pWrapper.getTenant(),
+                             microservice);
                 LOGGER.error(e.getMessage(), e);
             }
 
@@ -118,6 +122,7 @@ public class SecurityEventHandler implements ApplicationListener<ApplicationRead
 
     /**
      * Handle {@link RoleEvent} to refresh security cache
+     *
      * @author Marc Sordi
      */
     private class RoleEventHandler implements IHandler<RoleEvent> {
@@ -128,7 +133,9 @@ public class SecurityEventHandler implements ApplicationListener<ApplicationRead
                 methodAuthorizationService.collectRolesAndAuthorities(pWrapper.getTenant());
             } catch (SecurityException e) {
                 LOGGER.error("Security cache cannot be refresh for role {}, tenant {} and microservice {}",
-                             pWrapper.getContent().getRole(), pWrapper.getTenant(), microservice);
+                             pWrapper.getContent().getRole(),
+                             pWrapper.getTenant(),
+                             microservice);
                 LOGGER.error(e.getMessage(), e);
             }
         }

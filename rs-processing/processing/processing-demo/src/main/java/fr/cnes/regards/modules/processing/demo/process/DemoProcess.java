@@ -14,13 +14,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.demo.process;
-
-import static fr.cnes.regards.modules.processing.demo.DemoConstants.PROFILE;
-import static fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterType.STRING;
-
-import java.util.UUID;
 
 import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.PExecution;
@@ -36,6 +31,11 @@ import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
+
+import java.util.UUID;
+
+import static fr.cnes.regards.modules.processing.demo.DemoConstants.PROFILE;
+import static fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterType.STRING;
 
 /**
  * This class is a demo process.
@@ -85,8 +85,12 @@ public class DemoProcess implements PProcess {
 
     @Override
     public Seq<ExecutionParameterDescriptor> getParameters() {
-        return List.of(new ExecutionParameterDescriptor(PROFILE, STRING, "Profile for this process execution", false,
-                false, true));
+        return List.of(new ExecutionParameterDescriptor(PROFILE,
+                                                        STRING,
+                                                        "Profile for this process execution",
+                                                        false,
+                                                        false,
+                                                        true));
     }
 
     @Override

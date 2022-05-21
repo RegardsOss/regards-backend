@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.utils.gson;
 
 import com.google.gson.Gson;
@@ -26,7 +26,8 @@ import com.google.gson.Gson;
  */
 public class GsonProcessingTestUtils {
 
-    private GsonProcessingTestUtils() {}
+    private GsonProcessingTestUtils() {
+    }
 
     public static Gson gson() {
         return ProcessingGsonUtils.gsonPretty();

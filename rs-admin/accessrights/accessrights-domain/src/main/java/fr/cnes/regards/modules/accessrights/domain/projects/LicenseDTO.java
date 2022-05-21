@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.accessrights.domain.projects;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 public class LicenseDTO {
 
@@ -43,6 +42,7 @@ public class LicenseDTO {
 
     /**
      * Constructor setting the parameters as attributes
+     *
      * @param pAccepted
      * @param pLicenceLink
      */
@@ -61,6 +61,7 @@ public class LicenseDTO {
 
     /**
      * Set whether the license is accepted or not
+     *
      * @param pAccepted
      */
     public void setAccepted(boolean pAccepted) {
@@ -76,6 +77,7 @@ public class LicenseDTO {
 
     /**
      * Set the link to the license
+     *
      * @param pLicenceLink
      */
     public void setLicenceLink(String pLicenceLink) {

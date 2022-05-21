@@ -18,14 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import fr.cnes.regards.modules.ingest.domain.sip.ISipIdAndVersion;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -33,15 +29,16 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import fr.cnes.regards.modules.ingest.domain.sip.ISipIdAndVersion;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * {@link SIPEntity} repository
  *
  * @author Marc Sordi
- *
  */
 public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpecificationExecutor<SIPEntity> {
 
@@ -54,25 +51,27 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
 
     /**
      * Find last ingest SIP with specified SIP ID according to ingest date
+     *
      * @param providerId external SIP identifier
      * @return the latest registered SIP
      */
     default SIPEntity findTopByProviderIdOrderByCreationDateDesc(String providerId) {
         return findByProviderId(providerId).stream()
-                .sorted(Comparator.comparing(SIPEntity::getCreationDate).reversed())
-                .findFirst()
-                .orElse(null);
+                                           .sorted(Comparator.comparing(SIPEntity::getCreationDate).reversed())
+                                           .findFirst()
+                                           .orElse(null);
     }
 
     /**
      * Find all SIP version of a provider id
+     *
      * @param providerId provider id
      * @return all SIP versions of this provider id
      */
     default Collection<SIPEntity> findAllByProviderIdOrderByVersionAsc(String providerId) {
         return findByProviderId(providerId).stream()
-                .sorted(Comparator.comparing(SIPEntity::getCreationDate))
-                .collect(Collectors.toList());
+                                           .sorted(Comparator.comparing(SIPEntity::getCreationDate))
+                                           .collect(Collectors.toList());
     }
 
     long countByProviderId(String providerId);
@@ -84,6 +83,7 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
 
     /**
      * Check if SIP already ingested
+     *
      * @param checksum checksum
      * @return 0 or 1
      */
@@ -93,6 +93,7 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
 
     /**
      * Get next version of the SIP identified by provider id
+     *
      * @param providerId provider id
      * @return next version
      */
@@ -115,8 +116,9 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
         List<Long> sipIds = sips.stream().map(p -> p.getId()).collect(Collectors.toList());
         // now that we have the ids, lets load the products and keep the same sort
         List<SIPEntity> loaded = findAllByIdIn(sipIds, pageable.getSort());
-        return new PageImpl<>(loaded, PageRequest.of(sips.getNumber(), sips.getSize(), sips.getSort()),
-                sips.getTotalElements());
+        return new PageImpl<>(loaded,
+                              PageRequest.of(sips.getNumber(), sips.getSize(), sips.getSort()),
+                              sips.getTotalElements());
     }
 
     List<SIPEntity> findAllByIdIn(List<Long> ingestProcChainIds, Sort sort);
@@ -128,8 +130,8 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      */
     default List<ISipIdAndVersion> findByProviderIdAndLast(String providerId, boolean last) {
         return findAllLightByProviderId(providerId).stream()
-                .filter(s -> s.getLast() == last)
-                .collect(Collectors.toList());
+                                                   .filter(s -> s.getLast() == last)
+                                                   .collect(Collectors.toList());
     }
 
     @Query(value = "select version from SIPEntity where provider_id = :providerId")

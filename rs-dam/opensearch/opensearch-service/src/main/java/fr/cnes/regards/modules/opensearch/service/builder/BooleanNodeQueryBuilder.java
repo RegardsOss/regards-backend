@@ -1,17 +1,16 @@
 package fr.cnes.regards.modules.opensearch.service.builder;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
-
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.opensearch.service.message.QueryParserMessages;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.core.builders.QueryTreeBuilder;
 import org.apache.lucene.queryparser.flexible.core.nodes.BooleanQueryNode;
 import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
 import org.apache.lucene.queryparser.flexible.messages.MessageImpl;
 
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.opensearch.service.message.QueryParserMessages;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
 
 public class BooleanNodeQueryBuilder implements ICriterionQueryBuilder {
 
@@ -35,8 +34,8 @@ public class BooleanNodeQueryBuilder implements ICriterionQueryBuilder {
         if (criterions.size() > 1) {
             StringJoiner joiner = new StringJoiner(", ");
             criterions.forEach(c -> joiner.add(c.toString()));
-            throw new QueryNodeException(
-                    new MessageImpl(QueryParserMessages.INDETERMINATED_RELATIONSHIP, joiner.toString()));
+            throw new QueryNodeException(new MessageImpl(QueryParserMessages.INDETERMINATED_RELATIONSHIP,
+                                                         joiner.toString()));
         }
         return criterions.get(0);
     }

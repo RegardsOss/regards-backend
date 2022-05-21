@@ -18,23 +18,23 @@
  */
 package fr.cnes.regards.framework.module.validation;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.StringJoiner;
-
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.StringJoiner;
 
 /**
  * Utility class for manipulating validation {@link Errors}
  *
  * @author Marc SORDI
- *
  */
 public final class ErrorTranslator {
 
-    private ErrorTranslator() {}
+    private ErrorTranslator() {
+    }
 
     /**
      * Build a set of error string from a not empty {@link Errors} object.
@@ -45,7 +45,8 @@ public final class ErrorTranslator {
             errors.getAllErrors().forEach(error -> {
                 if (error instanceof FieldError) {
                     FieldError fieldError = (FieldError) error;
-                    err.add(String.format("%s at %s: rejected value [%s].", fieldError.getDefaultMessage(),
+                    err.add(String.format("%s at %s: rejected value [%s].",
+                                          fieldError.getDefaultMessage(),
                                           fieldError.getField(),
                                           ObjectUtils.nullSafeToString(fieldError.getRejectedValue())));
                 } else {

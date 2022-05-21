@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.modules.storage.domain.flow;
 
-import java.util.Collection;
-import java.util.Set;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
+
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * Flow message to request file(s) reference deletion.<br/>
@@ -69,7 +68,8 @@ public class CopyFlowItem implements ISubscribable {
 
     /**
      * Build a copy request for one {@link FileCopyRequestDTO} file.
-     * @param file {@link FileCopyRequestDTO} to remove information
+     *
+     * @param file    {@link FileCopyRequestDTO} to remove information
      * @param groupId business request identifier
      * @return {@link CopyFlowItem}
      */
@@ -82,7 +82,8 @@ public class CopyFlowItem implements ISubscribable {
 
     /**
      * Build a copy request for many {@link FileCopyRequestDTO} files.
-     * @param files {@link FileCopyRequestDTO}s to remove information
+     *
+     * @param files   {@link FileCopyRequestDTO}s to remove information
      * @param groupId business request identifier
      * @return {@link CopyFlowItem}
      */
@@ -95,8 +96,9 @@ public class CopyFlowItem implements ISubscribable {
 
     @Override
     public String toString() {
-        return "DeleteFileRefFlowItem [" + (files != null ? "files=" + files + ", " : "")
-                + (groupId != null ? "groupId=" + groupId : "") + "]";
+        return "DeleteFileRefFlowItem [" + (files != null ? "files=" + files + ", " : "") + (groupId != null ?
+            "groupId=" + groupId :
+            "") + "]";
     }
 
 }

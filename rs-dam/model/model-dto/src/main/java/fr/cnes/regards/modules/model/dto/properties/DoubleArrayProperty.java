@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.model.dto.properties;
  * Represent a {@link PropertyType#DOUBLE_ARRAY} model attribute
  *
  * @author Marc Sordi
- *
  */
 public class DoubleArrayProperty extends AbstractProperty<Double[]> {
 

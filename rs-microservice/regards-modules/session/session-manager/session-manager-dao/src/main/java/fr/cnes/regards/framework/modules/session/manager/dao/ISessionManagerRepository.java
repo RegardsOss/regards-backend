@@ -19,15 +19,16 @@
 package fr.cnes.regards.framework.modules.session.manager.dao;
 
 import fr.cnes.regards.framework.modules.session.manager.domain.Session;
-import java.time.OffsetDateTime;
-import java.util.Optional;
-import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.time.OffsetDateTime;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Repository for {@link Session}
@@ -46,8 +47,7 @@ public interface ISessionManagerRepository extends JpaRepository<Session, Long>,
     void deleteBySourceAndName(String source, String session);
 
     @Query(value = "select distinct name from t_session_manager where lower(name) like lower(?1) ORDER BY name LIMIT "
-            + "?2",
-            nativeQuery = true)
+        + "?2", nativeQuery = true)
     Set<String> internalFindAllSessionsNames(String name, int nbResults);
 
     @Query(value = "select distinct name from t_session_manager ORDER BY name LIMIT ?1", nativeQuery = true)
@@ -55,13 +55,14 @@ public interface ISessionManagerRepository extends JpaRepository<Session, Long>,
 
     /**
      * Used to discover session names using an ilike filter
-     * @author lmieulet
+     *
      * @param name the session name, can be empty
      * @return a subset of all session names matching
+     * @author lmieulet
      */
     default Set<String> findAllSessionsNames(String name) {
         if ((name != null) && !name.isEmpty()) {
-            return internalFindAllSessionsNames( "%" + name + "%", MAX_SESSION_NAMES_RESULTS);
+            return internalFindAllSessionsNames("%" + name + "%", MAX_SESSION_NAMES_RESULTS);
         } else {
             return internalFindAllSessionsNames(MAX_SESSION_NAMES_RESULTS);
         }

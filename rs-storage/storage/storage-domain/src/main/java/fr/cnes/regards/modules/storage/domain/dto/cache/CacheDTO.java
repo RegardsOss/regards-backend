@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.storage.domain.dto.cache;
  * DTO to regroup cache system informations
  *
  * @author Sébastien Binda
- *
  */
 public class CacheDTO {
 

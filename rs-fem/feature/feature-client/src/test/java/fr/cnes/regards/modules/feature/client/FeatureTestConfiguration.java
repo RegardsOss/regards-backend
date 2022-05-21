@@ -18,17 +18,15 @@
  */
 package fr.cnes.regards.modules.feature.client;
 
+import fr.cnes.regards.modules.model.client.IAttributeModelClient;
+import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
+import fr.cnes.regards.modules.model.client.IModelClient;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.modules.model.client.IAttributeModelClient;
-import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
-import fr.cnes.regards.modules.model.client.IModelClient;
-
 /**
  * @author Kevin Marchois
- *
  */
 @Configuration
 public class FeatureTestConfiguration {

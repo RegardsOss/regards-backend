@@ -18,23 +18,20 @@
  */
 package fr.cnes.regards.modules.model.domain.attributes.restriction.validator;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.networknt.schema.JsonSchemaException;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
-
 import fr.cnes.regards.modules.model.domain.attributes.restriction.JsonSchemaRestriction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 
 /**
  * Check if given json schema is valid
  *
  * @author Sébastien Binda
- *
  */
 public class CheckJsonSchemaValidator implements ConstraintValidator<CheckJsonSchema, JsonSchemaRestriction> {
 

@@ -18,16 +18,16 @@
  */
 package fr.cnes.regards.framework.utils.file.compression;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.nio.charset.Charset;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Class CompressionRunImpl
- *
+ * <p>
  * Classe représentant le traintement asynchrone d'une compression dans un thread.
  */
 public class CompressionRunImpl implements Runnable {
@@ -52,8 +52,12 @@ public class CompressionRunImpl implements Runnable {
         return compressManager;
     }
 
-    public CompressionRunImpl(AbstractRunnableCompression pCompression, List<File> pFileList, File pCompressedFile,
-            File pRootDirectory, boolean pFlatArchive, Charset pCharset) {
+    public CompressionRunImpl(AbstractRunnableCompression pCompression,
+                              List<File> pFileList,
+                              File pCompressedFile,
+                              File pRootDirectory,
+                              boolean pFlatArchive,
+                              Charset pCharset) {
         compression = pCompression;
         fileList = pFileList;
         compressedFile = pCompressedFile;

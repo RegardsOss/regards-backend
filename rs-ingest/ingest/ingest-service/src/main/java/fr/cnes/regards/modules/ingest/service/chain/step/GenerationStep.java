@@ -18,18 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.step;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.Errors;
-import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.Validator;
-
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
@@ -44,6 +32,17 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Generation step is used to generate AIP(s) from specified SIP calling {@link IAipGeneration#generate(SIPEntity, String, fr.cnes.regards.framework.urn.EntityType)} (SIP, UniformResourceName, UniformResourceName, String)}.
@@ -103,10 +102,11 @@ public class GenerationStep extends AbstractIngestStep<SIPEntity, List<AIP>> {
             // now lets handle issues with all aips generated
             String providerId = aip.getProviderId();
             aipLightRepository.findAllByProviderId(providerId)
-                    .forEach(aipLight -> versionsByProviderId.put(providerId, aipLight.getVersion()));
+                              .forEach(aipLight -> versionsByProviderId.put(providerId, aipLight.getVersion()));
             if (!versionsByProviderId.put(providerId, aip.getVersion())) {
-                String error = String
-                        .format("Version %s already exists for the providerId %s.", aip.getVersion(), providerId);
+                String error = String.format("Version %s already exists for the providerId %s.",
+                                             aip.getVersion(),
+                                             providerId);
                 validationErrors.rejectValue("version", error);
             }
             if (validationErrors.hasErrors()) {
@@ -130,6 +130,8 @@ public class GenerationStep extends AbstractIngestStep<SIPEntity, List<AIP>> {
         if (e.isPresent()) {
             error = e.get().getMessage();
         }
-        handleRequestError(String.format("Generation fails for AIP(s) of SIP \"%s\". Cause : %s", sip.getSip().getId(),error));
+        handleRequestError(String.format("Generation fails for AIP(s) of SIP \"%s\". Cause : %s",
+                                         sip.getSip().getId(),
+                                         error));
     }
 }

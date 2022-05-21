@@ -18,12 +18,13 @@
  */
 package fr.cnes.regards.modules.dam.domain.datasources.plugins;
 
-import java.sql.SQLException;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+
+import java.sql.SQLException;
 
 /**
  * Database specialization of data source plugin
+ *
  * @author oroussel
  */
 @PluginInterface(description = "Plugin to search in a database data source")
@@ -31,6 +32,7 @@ public interface IDBDataSourcePlugin extends IDataSourcePlugin {
 
     /**
      * Retrieve DB connection plugin used by the datasource plugin
+     *
      * @return {@link IDBConnectionPlugin}
      * @throws SQLException {@link java.sql.Connection} is not available
      */

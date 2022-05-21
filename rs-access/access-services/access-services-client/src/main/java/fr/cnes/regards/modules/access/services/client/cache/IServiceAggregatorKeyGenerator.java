@@ -22,7 +22,6 @@ import org.springframework.cache.interceptor.KeyGenerator;
 
 /**
  * @author Sébastien Binda
- *
  */
 public interface IServiceAggregatorKeyGenerator extends KeyGenerator {
 

@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Set;
 
 /**
- *
  * @author Xavier-Alexandre Brochard
  */
 public class SearchClientTestUtils {
@@ -71,35 +70,48 @@ public class SearchClientTestUtils {
 
     public static final Fragment TEST_FRAGMENT = Fragment.buildDefault();
 
-    public static final AttributeModel INTEGER_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(INTEGER_ATTRIBUTE_NAME, PropertyType.INTEGER, INTEGER_ATTRIBUTE_NAME).fragment(TEST_FRAGMENT).get();
+    public static final AttributeModel INTEGER_ATTRIBUTE_MODEL = AttributeModelBuilder.build(INTEGER_ATTRIBUTE_NAME,
+                                                                                             PropertyType.INTEGER,
+                                                                                             INTEGER_ATTRIBUTE_NAME)
+                                                                                      .fragment(TEST_FRAGMENT)
+                                                                                      .get();
 
-    public static final AttributeModel STRING_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(STRING_ATTRIBUTE_NAME, PropertyType.STRING, STRING_ATTRIBUTE_NAME).get();
+    public static final AttributeModel STRING_ATTRIBUTE_MODEL = AttributeModelBuilder.build(STRING_ATTRIBUTE_NAME,
+                                                                                            PropertyType.STRING,
+                                                                                            STRING_ATTRIBUTE_NAME)
+                                                                                     .get();
 
-    public static final AttributeModel DATE_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(DATE_ATTRIBUTE_NAME, PropertyType.DATE_ISO8601, DATE_ATTRIBUTE_NAME).fragment(TEST_FRAGMENT).get();
+    public static final AttributeModel DATE_ATTRIBUTE_MODEL = AttributeModelBuilder.build(DATE_ATTRIBUTE_NAME,
+                                                                                          PropertyType.DATE_ISO8601,
+                                                                                          DATE_ATTRIBUTE_NAME)
+                                                                                   .fragment(TEST_FRAGMENT)
+                                                                                   .get();
 
-    public static final AttributeModel EXTRA_ATTRIBUTE_MODEL = AttributeModelBuilder
-            .build(EXTRA_ATTRIBUTE_NAME, PropertyType.STRING, EXTRA_ATTRIBUTE_NAME).fragment(TEST_FRAGMENT).get();
+    public static final AttributeModel EXTRA_ATTRIBUTE_MODEL = AttributeModelBuilder.build(EXTRA_ATTRIBUTE_NAME,
+                                                                                           PropertyType.STRING,
+                                                                                           EXTRA_ATTRIBUTE_NAME)
+                                                                                    .fragment(TEST_FRAGMENT)
+                                                                                    .get();
 
-    public static final List<AttributeModel> LIST = Lists.newArrayList(INTEGER_ATTRIBUTE_MODEL, DATE_ATTRIBUTE_MODEL,
+    public static final List<AttributeModel> LIST = Lists.newArrayList(INTEGER_ATTRIBUTE_MODEL,
+                                                                       DATE_ATTRIBUTE_MODEL,
                                                                        EXTRA_ATTRIBUTE_MODEL);
 
     /**
      * A dummy list of facets
      */
-    public static final List<String> FACETS = Lists
-            .newArrayList(INTEGER_ATTRIBUTE_MODEL.getJsonPath(), STRING_ATTRIBUTE_NAME,
-                          DATE_ATTRIBUTE_MODEL.getJsonPath(), EXTRA_ATTRIBUTE_MODEL.getJsonPath());
+    public static final List<String> FACETS = Lists.newArrayList(INTEGER_ATTRIBUTE_MODEL.getJsonPath(),
+                                                                 STRING_ATTRIBUTE_NAME,
+                                                                 DATE_ATTRIBUTE_MODEL.getJsonPath(),
+                                                                 EXTRA_ATTRIBUTE_MODEL.getJsonPath());
 
     /**
      * The dummy list of facets as array
      */
     public static final String[] FACETS_AS_ARRAY = FACETS.toArray(new String[FACETS.size()]);
 
-    public static final ResponseEntity<List<EntityModel<AttributeModel>>> ATTRIBUTE_MODEL_CLIENT_RESPONSE = ResponseEntity
-            .ok(HateoasUtils.wrapList(LIST));
+    public static final ResponseEntity<List<EntityModel<AttributeModel>>> ATTRIBUTE_MODEL_CLIENT_RESPONSE = ResponseEntity.ok(
+        HateoasUtils.wrapList(LIST));
 
     /**
      * A dummy access group name
@@ -131,17 +143,17 @@ public class SearchClientTestUtils {
 
     public static final AccessGroup ACCESS_GROUP_2 = new AccessGroup(ACCESS_GROUP_NAME_2);
 
-    public static final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> USER_CLIENT_RESPONSE = ResponseEntity
-            .ok(HateoasUtils.wrapToPagedResources(Lists.newArrayList(ACCESS_GROUP_0, ACCESS_GROUP_1)));
+    public static final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> USER_CLIENT_RESPONSE = ResponseEntity.ok(
+        HateoasUtils.wrapToPagedResources(Lists.newArrayList(ACCESS_GROUP_0, ACCESS_GROUP_1)));
 
-    public static final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> PUBLIC_USER_CLIENT_RESPONSE = ResponseEntity
-            .ok(HateoasUtils.wrapToPagedResources(Lists.newArrayList()));
+    public static final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> PUBLIC_USER_CLIENT_RESPONSE = ResponseEntity.ok(
+        HateoasUtils.wrapToPagedResources(Lists.newArrayList()));
 
-    public static final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> USER_CLIENT_EMPTY_RESPONSE = ResponseEntity
-            .ok(HateoasUtils.wrapToPagedResources(Lists.newArrayList()));
+    public static final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> USER_CLIENT_EMPTY_RESPONSE = ResponseEntity.ok(
+        HateoasUtils.wrapToPagedResources(Lists.newArrayList()));
 
-    public static final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> USER_CLIENT_OTHER_RESPONSE = ResponseEntity
-            .ok(HateoasUtils.wrapToPagedResources(Lists.newArrayList(ACCESS_GROUP_2)));
+    public static final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> USER_CLIENT_OTHER_RESPONSE = ResponseEntity.ok(
+        HateoasUtils.wrapToPagedResources(Lists.newArrayList(ACCESS_GROUP_2)));
 
     /**
      * Sample response from the {@link IProjectUsersClient} isAdmin: false

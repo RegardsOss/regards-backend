@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.utils.random;
 
 import io.github.xshadov.easyrandom.vavr.VavrRandomizerRegistry;
@@ -59,9 +59,9 @@ public interface RandomUtils {
         vavrWrappersRegistry.setEasyRandom(generator);
 
         parameters.collectionSizeRange(0, 10)
-            .randomize(Duration.class, () -> Duration.ofSeconds(generator.nextInt(3600 * 24 * 10)))
-            .randomize(OffsetDateTime.class, () -> getOffsetDateTime(generator))
-            .randomize(LocalDateTime.class, () -> getLocalDateTime(generator));
+                  .randomize(Duration.class, () -> Duration.ofSeconds(generator.nextInt(3600 * 24 * 10)))
+                  .randomize(OffsetDateTime.class, () -> getOffsetDateTime(generator))
+                  .randomize(LocalDateTime.class, () -> getLocalDateTime(generator));
 
         ServiceLoader<TypedRandomizer> loader = ServiceLoader.load(TypedRandomizer.class);
         loader.iterator().forEachRemaining(tr -> parameters.randomize(tr.type(), tr.randomizer(generator)));
@@ -74,7 +74,9 @@ public interface RandomUtils {
     }
 
     static OffsetDateTime getOffsetDateTime(EasyRandom generator) {
-        return OffsetDateTime.now().withNano(0).minusSeconds(generator.nextInt(3600 * 24 * 10))
-                .withOffsetSameInstant(ZoneOffset.UTC);
+        return OffsetDateTime.now()
+                             .withNano(0)
+                             .minusSeconds(generator.nextInt(3600 * 24 * 10))
+                             .withOffsetSameInstant(ZoneOffset.UTC);
     }
 }

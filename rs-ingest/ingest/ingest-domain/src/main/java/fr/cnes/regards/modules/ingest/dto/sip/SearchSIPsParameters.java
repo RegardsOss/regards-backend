@@ -18,25 +18,23 @@
  */
 package fr.cnes.regards.modules.ingest.dto.sip;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import org.apache.commons.compress.utils.Lists;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import javax.validation.constraints.NotBlank;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import javax.validation.constraints.NotBlank;
-
-import org.apache.commons.compress.utils.Lists;
-import org.springframework.format.annotation.DateTimeFormat;
-
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-
 /**
  * Store SIP criteria filters to do some research against SIP repo
+ *
  * @author Léo Mieulet
  */
 public class SearchSIPsParameters {

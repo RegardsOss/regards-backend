@@ -1,28 +1,20 @@
 package fr.cnes.regards.modules.configuration.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
-
 import org.hibernate.annotations.Type;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+
 /**
-*
-* Class Configuration
-*
-* Configuration for projects IHMs
-*
-* @author Kevin Marchois
-*/
+ * Class Configuration
+ * <p>
+ * Configuration for projects IHMs
+ *
+ * @author Kevin Marchois
+ */
 @Entity
 @Table(name = "t_ui_configuration", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_ui_configuration_application_id", columnNames = { "application_id" }) })
+    @UniqueConstraint(name = "uk_ui_configuration_application_id", columnNames = { "application_id" }) })
 public class UIConfiguration {
 
     /**

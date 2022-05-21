@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.framework.gson;
 
-import java.util.Optional;
-
+import com.google.gson.GsonBuilder;
 import org.springframework.context.ApplicationContext;
 
-import com.google.gson.GsonBuilder;
+import java.util.Optional;
 
 /**
  * This class allows to build a new fresh {@link GsonBuilder} with specific properties independently of the main one.
+ *
  * @author Marc Sordi
  */
 public class GsonBuilderFactory {

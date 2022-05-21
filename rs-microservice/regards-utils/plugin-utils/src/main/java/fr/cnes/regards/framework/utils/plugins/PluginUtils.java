@@ -47,6 +47,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * This class contains all the utilities to create a {@link Plugin} instance, to retrieve all annotated plugins and to
  * create a {@link PluginConfiguration}.<br/>
  * Before using it, you have to call a setup method.
+ *
  * @author Christophe Mertz
  * @author Marc Sordi
  */
@@ -90,6 +91,7 @@ public final class PluginUtils {
     /**
      * Method to set up plugin context.<br/>
      * <b>Must be call on startup in a thread safe manner</b>
+     *
      * @param reflectionPackage package to scan
      */
     public static void setup(String reflectionPackage) {
@@ -103,10 +105,11 @@ public final class PluginUtils {
     /**
      * Method to set up plugin context.<br/>
      * <b>Must be call on startup in a thread safe manner</b>
+     *
      * @param reflectionPackages packages to scan
-     * @param gson gson instance
-     * <b>Note: this method is synchronized due to pluginInterfaceCache, pluginCache and pluginMetadataCache
-     * initializations. This not a problem because this method should be called only once.</b>
+     * @param gson               gson instance
+     *                           <b>Note: this method is synchronized due to pluginInterfaceCache, pluginCache and pluginMetadataCache
+     *                           initializations. This not a problem because this method should be called only once.</b>
      */
     public static synchronized void setup(List<String> reflectionPackages, Gson gson) {
 
@@ -148,16 +151,19 @@ public final class PluginUtils {
             // Check a plugin does not already exists with the same plugin id
             if (pluginMetadataCache.containsKey(plugin.getPluginId())) {
                 PluginMetaData pMeta = pluginMetadataCache.get(plugin.getPluginId());
-                String message = String
-                        .format("Plugin identifier must be unique : %s for plugin \"%s\" already used in plugin \"%s\"!",
-                                plugin.getPluginId(), plugin.getPluginClassName(), pMeta.getPluginClassName());
+                String message = String.format(
+                    "Plugin identifier must be unique : %s for plugin \"%s\" already used in plugin \"%s\"!",
+                    plugin.getPluginId(),
+                    plugin.getPluginClassName(),
+                    pMeta.getPluginClassName());
                 LOGGER.warn(message);
             }
 
             // Store plugin reference
             pluginMetadataCache.put(plugin.getPluginId(), plugin);
 
-            LOGGER.info(String.format("Plugin \"%s\" with identifier \"%s\" loaded.", plugin.getPluginClassName(),
+            LOGGER.info(String.format("Plugin \"%s\" with identifier \"%s\" loaded.",
+                                      plugin.getPluginClassName(),
                                       plugin.getPluginId()));
         }
         LOGGER.info("{} Plugins loaded!", HR);
@@ -170,8 +176,9 @@ public final class PluginUtils {
     /**
      * Retrieve all annotated plugins (@see {@link Plugin}) and initialize a map whose key is the {@link Plugin}
      * identifier and value the required plugin metadata.
-     * @return all class annotated {@link Plugin}
      *
+     * @return all class annotated {@link Plugin}
+     * <p>
      * Use
      */
     public static Map<String, PluginMetaData> getPlugins() {
@@ -180,6 +187,7 @@ public final class PluginUtils {
 
     /**
      * Return {@link PluginMetaData} for specified plugin identifier (Equivalent to {@link Plugin#id()}
+     *
      * @param pluginId {@link Plugin#id()}
      * @return related {@link PluginMetaData} or null if plugin doesn't exist!
      */
@@ -189,6 +197,7 @@ public final class PluginUtils {
 
     /**
      * Create {@link PluginMetaData} based on its annotations {@link Plugin} and {@link IPluginParam} if any.
+     *
      * @param pluginClass a class that must contains a {@link Plugin} annotation
      * @return the {@link PluginMetaData} create
      */
@@ -221,45 +230,53 @@ public final class PluginUtils {
         return pluginMetaData;
     }
 
-    public static <T> T getPlugin(PluginConfiguration conf, Map<String, Object> instantiatedPlugins,
-            IPluginParam... dynamicParams) throws NotAvailablePluginConfigurationException {
+    public static <T> T getPlugin(PluginConfiguration conf,
+                                  Map<String, Object> instantiatedPlugins,
+                                  IPluginParam... dynamicParams) throws NotAvailablePluginConfigurationException {
         return getPlugin(conf, pluginMetadataCache.get(conf.getPluginId()), instantiatedPlugins, dynamicParams);
     }
 
     /**
      * Create an instance of {@link Plugin} based on its configuration and metadata
-     * @param <T> a {@link Plugin}
-     * @param conf the {@link PluginConfiguration}
-     * @param pluginMetadata the {@link PluginMetaData}
+     *
+     * @param <T>                 a {@link Plugin}
+     * @param conf                the {@link PluginConfiguration}
+     * @param pluginMetadata      the {@link PluginMetaData}
      * @param instantiatedPlugins already instaniated plugins
-     * @param dynamicParams an optional list of {@link IPluginParam}
+     * @param dynamicParams       an optional list of {@link IPluginParam}
      * @return an instance of a {@link Plugin} @ if a problem occurs
      */
-    public static <T> T getPlugin(PluginConfiguration conf, PluginMetaData pluginMetadata,
-            Map<String, Object> instantiatedPlugins, IPluginParam... dynamicParams)
-            throws NotAvailablePluginConfigurationException {
+    public static <T> T getPlugin(PluginConfiguration conf,
+                                  PluginMetaData pluginMetadata,
+                                  Map<String, Object> instantiatedPlugins,
+                                  IPluginParam... dynamicParams) throws NotAvailablePluginConfigurationException {
         if (pluginMetadata == null) {
-            throw new IllegalArgumentException(
-                    String.format("Plugin metadata are required for plugin \"%s\"", conf.getPluginId()));
+            throw new IllegalArgumentException(String.format("Plugin metadata are required for plugin \"%s\"",
+                                                             conf.getPluginId()));
         }
         if (!conf.isActive()) {
-            throw new NotAvailablePluginConfigurationException(
-                    String.format("Plugin configuration <%d - %s> is not active.", conf.getId(), conf.getLabel()));
+            throw new NotAvailablePluginConfigurationException(String.format(
+                "Plugin configuration <%d - %s> is not active.",
+                conf.getId(),
+                conf.getLabel()));
         }
         return getPlugin(conf, pluginMetadata.getPluginClassName(), instantiatedPlugins, dynamicParams);
     }
 
     /**
      * Create an instance of {@link Plugin} based on its configuration and the plugin class name
-     * @param <T> a {@link Plugin}
-     * @param conf the {@link PluginConfiguration}
-     * @param pluginClass the {@link Plugin} class name
+     *
+     * @param <T>           a {@link Plugin}
+     * @param conf          the {@link PluginConfiguration}
+     * @param pluginClass   the {@link Plugin} class name
      * @param dynamicParams an optional list of {@link IPluginParam}
      * @return an instance of {@link Plugin} @ if a problem occurs
      */
     @SuppressWarnings("unchecked")
-    public static <T> T getPlugin(PluginConfiguration conf, String pluginClass, Map<String, Object> instantiatedPlugins,
-            IPluginParam... dynamicParams) {
+    public static <T> T getPlugin(PluginConfiguration conf,
+                                  String pluginClass,
+                                  Map<String, Object> instantiatedPlugins,
+                                  IPluginParam... dynamicParams) {
         T returnPlugin = null;
 
         try {
@@ -273,8 +290,8 @@ public final class PluginUtils {
             // Launch init method if detected
             doInitPlugin(returnPlugin);
 
-        } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException
-                | SecurityException | ClassNotFoundException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException |
+                 SecurityException | ClassNotFoundException e) {
             throw new PluginUtilsRuntimeException(String.format("Cannot instantiate <%s>", pluginClass), e);
         }
 
@@ -294,7 +311,8 @@ public final class PluginUtils {
 
     /**
      * Look for {@link PluginDestroy} annotation and launch corresponding method if found.
-     * @param <T> a {@link Plugin}
+     *
+     * @param <T>    a {@link Plugin}
      * @param plugin the {@link Plugin} instance
      */
     public static <T> void doDestroyPlugin(final T plugin) {
@@ -306,8 +324,7 @@ public final class PluginUtils {
                     method.invoke(plugin);
                 } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     LOGGER.error(String.format("Exception while invoking destroy method on plugin class <%s>.",
-                                               plugin.getClass()),
-                                 e);
+                                               plugin.getClass()), e);
                     throw new PluginUtilsRuntimeException(e);
                 }
             }
@@ -316,7 +333,8 @@ public final class PluginUtils {
 
     /**
      * Look for {@link PluginInit} annotation and launch corresponding method if found.
-     * @param <T> a {@link Plugin}
+     *
+     * @param <T>    a {@link Plugin}
      * @param plugin the {@link Plugin} instance @ if a problem occurs
      */
     private static <T> void doInitPlugin(final T plugin) {
@@ -331,8 +349,7 @@ public final class PluginUtils {
                     throw new PluginUtilsRuntimeException(e.getTargetException());
                 } catch (final IllegalAccessException | IllegalArgumentException e) {
                     LOGGER.error(String.format("Exception while invoking init method on plugin class <%s>.",
-                                               plugin.getClass()),
-                                 e);
+                                               plugin.getClass()), e);
                     if (e.getCause() instanceof PluginUtilsRuntimeException) {
                         throw (PluginUtilsRuntimeException) e.getCause();
                     } else {
@@ -340,8 +357,7 @@ public final class PluginUtils {
                     }
                 } catch (Exception e) {
                     LOGGER.error(String.format("Error during plugin %s initialization. Plugin may not be fully usable.",
-                                               plugin.getClass().getName()),
-                                 e);
+                                               plugin.getClass().getName()), e);
                 }
             }
         }
@@ -366,6 +382,7 @@ public final class PluginUtils {
 
     /**
      * Validate the plugin configuration
+     *
      * @param conf the plugin configuration to be validated
      * @return null if there is no validation issues, the exception containing all validation errors as messages
      */
@@ -401,15 +418,17 @@ public final class PluginUtils {
         } else {
             // Check that version is the same between plugin one and plugin configuration one
             if (!Objects.equals(pluginMetadata.getVersion(), conf.getVersion())) {
-                validationErrors
-                        .add(String.format("Plugin configuration version (%s) is different from plugin one (%s).",
-                                           conf.getVersion(), pluginMetadata.getVersion()));
+                validationErrors.add(String.format(
+                    "Plugin configuration version (%s) is different from plugin one (%s).",
+                    conf.getVersion(),
+                    pluginMetadata.getVersion()));
             }
         }
         // Check that pluginId is the same between plugin one and plugin configuration one
         if (!Objects.equals(pluginMetadata.getPluginId(), conf.getPluginId())) {
             validationErrors.add(String.format("Plugin configuration pluginId (%s) is different from plugin one (%s).",
-                                               conf.getPluginId(), pluginMetadata.getPluginId()));
+                                               conf.getPluginId(),
+                                               pluginMetadata.getPluginId()));
         }
 
         // First lets check the plugin parameters
@@ -419,8 +438,8 @@ public final class PluginUtils {
         // lets check that all remaining parameters are correctly given
         for (PluginParamDescriptor plgParamMeta : pluginParametersFromMeta) {
             IPluginParam parameterFromConf = conf.getParameter(plgParamMeta.getName());
-            if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable() && (parameterFromConf == null)
-                    && (plgParamMeta.getDefaultValue() == null)) {
+            if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable() && (parameterFromConf == null) && (
+                plgParamMeta.getDefaultValue() == null)) {
                 validationErrors.add(String.format("Plugin Parameter %s is missing.", plgParamMeta.getName()));
             }
         }

@@ -18,23 +18,19 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
-import javax.xml.bind.annotation.XmlSchema;
-
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
 
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
-
-import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
+import javax.xml.bind.annotation.XmlSchema;
 
 /**
  * As JaxB annotation module for Jackson converter does not handle XmlSchema annotation We force use of JaxBconverter
  * to read/write OpensearchDescriptor classes.
  *
- * @see {@link JaxbAnnotationIntrospector} {@link XmlSchema} not handled
- *
  * @author Sébastien Binda
- *
+ * @see {@link JaxbAnnotationIntrospector} {@link XmlSchema} not handled
  */
 public class OpensSearchJaxbConverter extends Jaxb2RootElementHttpMessageConverter {
 

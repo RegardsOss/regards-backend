@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.modules.storage.domain.dto.request;
 
-import org.springframework.util.Assert;
-
 import fr.cnes.regards.modules.storage.domain.flow.DeletionFlowItem;
+import org.springframework.util.Assert;
 
 /**
  * Information about a file for a deletion request.<br/>
  * Mandatory information are : <ul>
- *  <li> Checksum of the file to delete</li>
- *  <li> Storage location where to copy the file</li>
- *  <li> Owner of the file who ask for deletion </li>
+ * <li> Checksum of the file to delete</li>
+ * <li> Storage location where to copy the file</li>
+ * <li> Owner of the file who ask for deletion </li>
  * </ul>
  * See {@link DeletionFlowItem} for more information about deletion request process.
  *
@@ -93,8 +92,11 @@ public class FileCopyRequestDTO {
         return request;
     }
 
-    public static FileCopyRequestDTO build(String checksum, String storage, String subDirectory, String sessionOwner,
-            String session) {
+    public static FileCopyRequestDTO build(String checksum,
+                                           String storage,
+                                           String subDirectory,
+                                           String sessionOwner,
+                                           String session) {
         FileCopyRequestDTO request = new FileCopyRequestDTO();
 
         Assert.notNull(checksum, "Checksum is mandatory.");

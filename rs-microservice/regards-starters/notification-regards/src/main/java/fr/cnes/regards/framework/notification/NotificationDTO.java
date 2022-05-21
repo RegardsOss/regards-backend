@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.framework.notification;
 
-import java.util.Set;
-
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
+
+import java.util.Set;
 
 /**
  * DTO representing a notification.
@@ -71,8 +71,7 @@ public class NotificationDTO {
     }
 
     /**
-     * @param pMessage
-     *            the message to set
+     * @param pMessage the message to set
      */
     public void setMessage(final String pMessage) {
         message = pMessage;
@@ -86,8 +85,7 @@ public class NotificationDTO {
     }
 
     /**
-     * @param pProjectUserRecipients
-     *            the projectUserRecipients to set
+     * @param pProjectUserRecipients the projectUserRecipients to set
      */
     public void setProjectUserRecipients(final Set<String> pProjectUserRecipients) {
         projectUserRecipients = pProjectUserRecipients;
@@ -101,8 +99,7 @@ public class NotificationDTO {
     }
 
     /**
-     * @param pRoleRecipients
-     *            the roleRecipients to set
+     * @param pRoleRecipients the roleRecipients to set
      */
     public void setRoleRecipients(final Set<String> pRoleRecipients) {
         roleRecipients = pRoleRecipients;
@@ -116,8 +113,7 @@ public class NotificationDTO {
     }
 
     /**
-     * @param pSender
-     *            the sender to set
+     * @param pSender the sender to set
      */
     public void setSender(final String pSender) {
         sender = pSender;
@@ -131,8 +127,7 @@ public class NotificationDTO {
     }
 
     /**
-     * @param pTitle
-     *            the title to set
+     * @param pTitle the title to set
      */
     public void setTitle(final String pTitle) {
         title = pTitle;

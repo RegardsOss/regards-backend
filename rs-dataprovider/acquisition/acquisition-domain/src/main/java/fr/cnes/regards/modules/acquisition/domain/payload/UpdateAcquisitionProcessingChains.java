@@ -15,7 +15,7 @@ public class UpdateAcquisitionProcessingChains extends UpdateAcquisitionProcessi
     }
 
     public static UpdateAcquisitionProcessingChains build(List<Long> chainIds,
-            UpdateAcquisitionProcessingChain updateAcquisitionProcessingChain) {
+                                                          UpdateAcquisitionProcessingChain updateAcquisitionProcessingChain) {
         UpdateAcquisitionProcessingChains updateQuery = new UpdateAcquisitionProcessingChains();
         updateQuery.setChainIds(chainIds);
         updateQuery.setActive(updateAcquisitionProcessingChain.getActive());

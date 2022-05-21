@@ -35,13 +35,14 @@ import org.springframework.web.client.HttpServerErrorException;
 
 /**
  * Class SimpleAuthentication
- *
+ * <p>
  * Regards internal authentication plugin
+ *
  * @author Sébastien Binda
  */
 @Plugin(author = "CSSI", description = "Regards internal authentication plugin",
-        id = "RegardsInternalAuthenticationPlugin", version = "1.0", contact = "regards@c-s.fr", license = "GPLv3",
-        owner = "CNES", url = "www.cnes.fr")
+    id = "RegardsInternalAuthenticationPlugin", version = "1.0", contact = "regards@c-s.fr", license = "GPLv3",
+    owner = "CNES", url = "www.cnes.fr")
 public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugin {
 
     /**
@@ -67,17 +68,18 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
             FeignSecurityManager.asSystem();
             ResponseEntity<EntityModel<Account>> response = accountsClient.retrieveAccounByEmail(pEmail);
             if ((response != null) && (response.getBody() != null) && (response.getBody().getContent() != null)
-                    && !response.getBody().getContent().isExternal()) {
+                && !response.getBody().getContent().isExternal()) {
                 validateResponse = accountsClient.validatePassword(pEmail, pPassword);
             } else {
-                String message = String
-                        .format("Account %s is not allowed to authenticate (External account authentication)", pEmail);
+                String message = String.format(
+                    "Account %s is not allowed to authenticate (External account authentication)",
+                    pEmail);
                 LOG.error(message);
                 return new AuthenticationPluginResponse(false, pEmail, message);
             }
         } catch (HttpServerErrorException |
 
-                HttpClientErrorException e) {
+                 HttpClientErrorException e) {
             LOG.error(e.getMessage(), e);
             return new AuthenticationPluginResponse(false, pEmail, "Invalid password");
         } finally {

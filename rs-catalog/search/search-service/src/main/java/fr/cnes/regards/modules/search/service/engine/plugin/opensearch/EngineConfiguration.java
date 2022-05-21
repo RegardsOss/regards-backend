@@ -5,37 +5,37 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 public class EngineConfiguration {
 
     @PluginParameter(name = "searchTitle", label = "Title of responses of this search engine",
-            description = "Search title for response metadatas. Used to construct metadatas for atom+xml and geo+json responses.",
-            defaultValue = "Open search engine", optional = false)
+        description = "Search title for response metadatas. Used to construct metadatas for atom+xml and geo+json responses.",
+        defaultValue = "Open search engine", optional = false)
     private String searchTitle;
 
     @PluginParameter(name = "searchDescription", label = "Description of responses of this search engine",
-            description = "Description for response metadatas. Used to construct metadatas for atom+xml and geo+json responses.",
-            defaultValue = "Open search engine", optional = false)
+        description = "Description for response metadatas. Used to construct metadatas for atom+xml and geo+json responses.",
+        defaultValue = "Open search engine", optional = false)
     private String searchDescription;
 
     @PluginParameter(name = "contact", label = "Contact email",
-            description = "Description for response metadatas. Used to construct metadatas for atom+xml and geo+json responses.",
-            optional = true)
+        description = "Description for response metadatas. Used to construct metadatas for atom+xml and geo+json responses.",
+        optional = true)
     private String contact;
 
     @PluginParameter(name = "tags", label = "Optional tags to add in opensearch descriptor xml file",
-            description = "Optional tags to add in opensearch descriptor xml file. Each tag must be separated by a blank white space caracter.",
-            optional = true)
+        description = "Optional tags to add in opensearch descriptor xml file. Each tag must be separated by a blank white space caracter.",
+        optional = true)
     private String tags;
 
     @PluginParameter(name = "shortName", label = "Engine short name", defaultValue = "Opensearch", optional = false)
     private String shortName;
 
     @PluginParameter(name = "longName", label = "Engine long name", defaultValue = "Open search engine",
-            optional = true)
+        optional = true)
     private String longName;
 
     @PluginParameter(name = "image", label = "Optional image (icon or image) URL", optional = true)
     private String image;
 
     @PluginParameter(name = "attribution", label = "Attribution",
-            defaultValue = "Created by RegardsOss framework (CNES)")
+        defaultValue = "Created by RegardsOss framework (CNES)")
     private String attribution;
 
     public String getSearchTitle() {

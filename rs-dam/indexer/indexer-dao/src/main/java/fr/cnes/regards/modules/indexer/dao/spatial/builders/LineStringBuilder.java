@@ -28,18 +28,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class LineStringBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.geometry.Geometry, LineStringBuilder> {
+public class LineStringBuilder
+    extends ShapeBuilder<JtsGeometry, org.elasticsearch.geometry.Geometry, LineStringBuilder> {
+
     /**
      * Construct a new LineString.
      * Per GeoJSON spec (http://geojson.org/geojson-spec.html#linestring)
      * a LineString must contain two or more coordinates
+     *
      * @param coordinates the initial list of coordinates
      * @throws IllegalArgumentException if there are less then two coordinates defined
      */
     public LineStringBuilder(List<Coordinate> coordinates) {
         super(coordinates);
         if (coordinates.size() < 2) {
-            throw new IllegalArgumentException("invalid number of points in LineString (found [" + coordinates.size() + "] - must be >= 2)");
+            throw new IllegalArgumentException(
+                "invalid number of points in LineString (found [" + coordinates.size() + "] - must be >= 2)");
         }
     }
 
@@ -63,7 +67,8 @@ public class LineStringBuilder extends ShapeBuilder<JtsGeometry, org.elasticsear
     @Override
     public int numDimensions() {
         if (coordinates == null || coordinates.isEmpty()) {
-            throw new IllegalStateException("unable to get number of dimensions, " + "LineString has not yet been initialized");
+            throw new IllegalStateException(
+                "unable to get number of dimensions, " + "LineString has not yet been initialized");
         }
         return Double.isNaN(coordinates.get(0).z) ? 2 : 3;
     }
@@ -88,7 +93,9 @@ public class LineStringBuilder extends ShapeBuilder<JtsGeometry, org.elasticsear
         return jtsGeometry(geometry);
     }
 
-    static ArrayList<LineString> decomposeS4J(GeometryFactory factory, Coordinate[] coordinates, ArrayList<LineString> strings) {
+    static ArrayList<LineString> decomposeS4J(GeometryFactory factory,
+                                              Coordinate[] coordinates,
+                                              ArrayList<LineString> strings) {
         for (Coordinate[] part : decompose(+DATELINE, coordinates)) {
             for (Coordinate[] line : decompose(-DATELINE, part)) {
                 strings.add(factory.createLineString(line));
@@ -99,7 +106,8 @@ public class LineStringBuilder extends ShapeBuilder<JtsGeometry, org.elasticsear
 
     /**
      * Decompose a linestring given as array of coordinates at a vertical line.
-     * @param dateline x-axis intercept of the vertical line
+     *
+     * @param dateline    x-axis intercept of the vertical line
      * @param coordinates coordinates forming the linestring
      * @return array of linestrings given as coordinate arrays
      */

@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.dto;
 
 import fr.cnes.regards.modules.processing.domain.PProcess;
@@ -23,6 +23,7 @@ import io.vavr.collection.Map;
 import lombok.Value;
 
 import java.util.UUID;
+
 /**
  * This class defines a DTO for processes.
  *
@@ -37,18 +38,16 @@ public class PProcessDTO {
 
     boolean active;
 
-    Map<String,String> processInfo;
+    Map<String, String> processInfo;
 
     List<ExecutionParamDTO> params;
 
     public static PProcessDTO fromProcess(PProcess p) {
-        return new PProcessDTO(
-                p.getProcessId(),
-                p.getProcessName(),
-                p.isActive(),
-                p.getProcessInfo(),
-                p.getParameters().map(ExecutionParamDTO::fromProcessParam).toList()
-        );
+        return new PProcessDTO(p.getProcessId(),
+                               p.getProcessName(),
+                               p.isActive(),
+                               p.getProcessInfo(),
+                               p.getParameters().map(ExecutionParamDTO::fromProcessParam).toList());
     }
 
 }

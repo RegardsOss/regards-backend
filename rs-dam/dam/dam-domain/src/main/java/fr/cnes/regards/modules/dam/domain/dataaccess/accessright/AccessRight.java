@@ -18,32 +18,13 @@
  */
 package fr.cnes.regards.modules.dam.domain.dataaccess.accessright;
 
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
-import javax.persistence.NamedEntityGraphs;
-import javax.persistence.NamedSubgraph;
-import javax.persistence.OneToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
-
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 /**
  * Access right of a group
@@ -51,24 +32,17 @@ import fr.cnes.regards.modules.dam.domain.entities.Dataset;
  * @author Sylvain Vissiere-Guerinet
  */
 @Entity
-@Table(name = "t_access_right",
-        uniqueConstraints = @UniqueConstraint(columnNames = { "access_group_id", "dataset_id" },
-                name = "uk_access_right_access_group_id_dataset_id"))
-@NamedEntityGraphs({
-        @NamedEntityGraph(name = "graph.accessright.dataset.and.accessgroup", attributeNodes = {
-                @NamedAttributeNode(value = "dataset", subgraph = "subgraph.dataset"),
-                @NamedAttributeNode(
-                        value = "accessGroup", subgraph = "subgraph.accessgroup"),
-                @NamedAttributeNode(value = "dataAccessPlugin") },
-                subgraphs = {
-                        @NamedSubgraph(name = "subgraph.accessgroup",
-                                attributeNodes = { @NamedAttributeNode(value = "users") }),
-                        @NamedSubgraph(name = "subgraph.dataset",
-                                attributeNodes = { @NamedAttributeNode(value = "tags"),
-                                        @NamedAttributeNode(value = "groups"),
-                                        @NamedAttributeNode(value = "model") }) }),
-        @NamedEntityGraph(name = "graph.accessright.plugins",
-                attributeNodes = { @NamedAttributeNode(value = "dataAccessPlugin") }) })
+@Table(name = "t_access_right", uniqueConstraints = @UniqueConstraint(columnNames = { "access_group_id", "dataset_id" },
+    name = "uk_access_right_access_group_id_dataset_id"))
+@NamedEntityGraphs({ @NamedEntityGraph(name = "graph.accessright.dataset.and.accessgroup",
+    attributeNodes = { @NamedAttributeNode(value = "dataset", subgraph = "subgraph.dataset"),
+        @NamedAttributeNode(value = "accessGroup", subgraph = "subgraph.accessgroup"),
+        @NamedAttributeNode(value = "dataAccessPlugin") }, subgraphs = {
+    @NamedSubgraph(name = "subgraph.accessgroup", attributeNodes = { @NamedAttributeNode(value = "users") }),
+    @NamedSubgraph(name = "subgraph.dataset",
+        attributeNodes = { @NamedAttributeNode(value = "tags"), @NamedAttributeNode(value = "groups"),
+            @NamedAttributeNode(value = "model") }) }), @NamedEntityGraph(name = "graph.accessright.plugins",
+    attributeNodes = { @NamedAttributeNode(value = "dataAccessPlugin") }) })
 public class AccessRight implements IIdentifiable<Long> {
 
     /**
@@ -115,7 +89,7 @@ public class AccessRight implements IIdentifiable<Long> {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dataset_id", foreignKey = @ForeignKey(name = "fk_access_right_access_dataset_id"),
-            updatable = false)
+        updatable = false)
     private Dataset dataset;
 
     /**
@@ -124,7 +98,7 @@ public class AccessRight implements IIdentifiable<Long> {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "access_group_id", foreignKey = @ForeignKey(name = "fk_access_right_access_group_id"),
-            updatable = false)
+        updatable = false)
     private AccessGroup accessGroup;
 
     /**
@@ -133,8 +107,10 @@ public class AccessRight implements IIdentifiable<Long> {
     protected AccessRight() {
     }
 
-    public AccessRight(final QualityFilter pQualityFilter, final AccessLevel pAccessLevel, final Dataset pDataset,
-            final AccessGroup pAccessGroup) {
+    public AccessRight(final QualityFilter pQualityFilter,
+                       final AccessLevel pAccessLevel,
+                       final Dataset pDataset,
+                       final AccessGroup pAccessGroup) {
         super();
         qualityFilter = pQualityFilter;
         accessLevel = pAccessLevel;

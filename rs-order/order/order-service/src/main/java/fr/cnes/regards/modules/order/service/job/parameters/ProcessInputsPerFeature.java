@@ -23,11 +23,10 @@ import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * This class is a wrapper around a map, used as a Job Parameter
  * in {@link fr.cnes.regards.modules.order.service.job.parameters.ProcessInputsPerFeatureJobParameter}.
- *
+ * <p>
  * The wrapper allows for an easy ser/deser by Gson without having to deal
  * with type adapters for the map generic type parameters.
  *

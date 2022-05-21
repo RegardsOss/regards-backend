@@ -29,12 +29,11 @@ import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
  * An implementation of the notification client using asynchronous messaging
  *
  * @author Marc SORDI
- *
  */
 @Service
 @RegardsTransactional
 public class InstanceNotificationPublisher extends AbstractNotificationPublisher
-        implements IInstanceNotificationClient {
+    implements IInstanceNotificationClient {
 
     @Autowired
     private IInstancePublisher publisher;

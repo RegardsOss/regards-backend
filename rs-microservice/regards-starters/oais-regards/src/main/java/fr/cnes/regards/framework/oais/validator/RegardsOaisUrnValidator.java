@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.framework.oais.validator;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 
 /**
  * @author Kevin Marchois
@@ -36,8 +36,8 @@ public class RegardsOaisUrnValidator implements ConstraintValidator<RegardsOaisU
 
     @Override
     public boolean isValid(OaisUniformResourceName pValue, ConstraintValidatorContext pContext) {
-        return (pValue == null) || !(pValue.getIdentifier().equals(OAISIdentifier.SIP.name())
-                && ((pValue.getOrder() != null) || (pValue.getRevision() != null)));
+        return (pValue == null) || !(pValue.getIdentifier().equals(OAISIdentifier.SIP.name()) && (
+            (pValue.getOrder() != null) || (pValue.getRevision() != null)));
     }
 
 }

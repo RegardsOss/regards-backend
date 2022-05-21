@@ -44,7 +44,11 @@ public class SearchAfterReminder extends AbstractReminder {
     // For information (serialized into Elasticsearch)
     private final int nextPageSize;
 
-    public SearchAfterReminder(String searchAfterSortValues, long nextOffset, int nextPageSize, String docId, OffsetDateTime expirationDate) {
+    public SearchAfterReminder(String searchAfterSortValues,
+                               long nextOffset,
+                               int nextPageSize,
+                               String docId,
+                               OffsetDateTime expirationDate) {
         this.searchAfterSortValues = searchAfterSortValues;
         this.nextOffset = nextOffset;
         this.nextPageSize = nextPageSize;
@@ -55,9 +59,9 @@ public class SearchAfterReminder extends AbstractReminder {
     public SearchAfterReminder(ICriterion crit, SearchKey<?, ?> searchKey, Sort sort, Pageable nextPage) {
         super();
         // Generate a unique String with concatenation of gson objects and join keys
-        String unique = GsonUtil.toString(crit) + "__" + GsonUtil.toString(nextPage) + "__" + GsonUtil
-                .toString(searchKey.getSearchIndex()) + "__" + GsonUtil.toString(searchKey.getSearchTypes()) + "__"
-                + GsonUtil.toString(sort);
+        String unique = GsonUtil.toString(crit) + "__" + GsonUtil.toString(nextPage) + "__" + GsonUtil.toString(
+            searchKey.getSearchIndex()) + "__" + GsonUtil.toString(searchKey.getSearchTypes()) + "__"
+            + GsonUtil.toString(sort);
         MessageDigest md;
         try {
             md = MessageDigest.getInstance("SHA1");

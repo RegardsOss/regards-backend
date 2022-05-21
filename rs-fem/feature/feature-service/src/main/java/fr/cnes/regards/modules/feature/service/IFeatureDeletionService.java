@@ -18,14 +18,6 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import java.util.List;
-import java.util.Set;
-
-import javax.validation.Valid;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureDeletionCollection;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
@@ -33,11 +25,17 @@ import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.job.FeatureDeletionJob;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Service for deleting Features
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
 public interface IFeatureDeletionService extends IAbstractFeatureService<FeatureDeletionRequest> {
 
@@ -58,6 +56,7 @@ public interface IFeatureDeletionService extends IAbstractFeatureService<Feature
 
     /**
      * Register {@link FeatureDeletionRequest} from a {@link FeatureDeletionCollection}
+     *
      * @param collection
      * @return {@link RequestInfo} contain {@link FeatureUniformResourceName} of granted/denied features
      */
@@ -65,6 +64,7 @@ public interface IFeatureDeletionService extends IAbstractFeatureService<Feature
 
     /**
      * Find all {@link FeatureDeletionRequest}s
+     *
      * @param page
      * @return {@link FeatureDeletionRequest}s
      */

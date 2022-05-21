@@ -30,10 +30,22 @@ import java.util.stream.Collectors;
 
 public final class SessionHelper {
 
-    private SessionHelper() { }
+    private SessionHelper() {
+    }
 
-    public static void checkSession(IStepPropertyUpdateRequestRepository repo, String source, String session, String workerType, int total, int running,
-            int noWorkerAvailable, int dispatched, int success, int error, int invalid, int retry, int deletion) {
+    public static void checkSession(IStepPropertyUpdateRequestRepository repo,
+                                    String source,
+                                    String session,
+                                    String workerType,
+                                    int total,
+                                    int running,
+                                    int noWorkerAvailable,
+                                    int dispatched,
+                                    int success,
+                                    int error,
+                                    int invalid,
+                                    int retry,
+                                    int deletion) {
 
         try {
             // Wait for handler to handle session events
@@ -41,9 +53,11 @@ public final class SessionHelper {
         } catch (InterruptedException e) {
             Assert.fail("Fails !!");
         }
-        Map<String, List<StepPropertyUpdateRequest>> stepProperties = repo.findBySession(
-                        session).stream().filter(s -> s.getSource().equals(source))
-                .collect(Collectors.groupingBy(s -> s.getStepPropertyInfo().getProperty()));
+        Map<String, List<StepPropertyUpdateRequest>> stepProperties = repo.findBySession(session)
+                                                                          .stream()
+                                                                          .filter(s -> s.getSource().equals(source))
+                                                                          .collect(Collectors.groupingBy(s -> s.getStepPropertyInfo()
+                                                                                                               .getProperty()));
 
         checkSessionProperty(workerType, stepProperties, WorkerStepPropertyEnum.TOTAL_REQUESTS, total);
         checkSessionProperty(workerType, stepProperties, WorkerStepPropertyEnum.RUNNING, running);
@@ -57,14 +71,17 @@ public final class SessionHelper {
 
     }
 
-    private static void checkSessionProperty(String workerType, Map<String, List<StepPropertyUpdateRequest>> stepProperties,
-            WorkerStepPropertyEnum property, int expected) {
+    private static void checkSessionProperty(String workerType,
+                                             Map<String, List<StepPropertyUpdateRequest>> stepProperties,
+                                             WorkerStepPropertyEnum property,
+                                             int expected) {
         String propertyName = SessionService.getSessionPropertyName(workerType, property);
-        int count = stepProperties.getOrDefault(propertyName, new ArrayList<>()).stream()
-                .mapToInt(s -> s.getType() == StepPropertyEventTypeEnum.INC ?
-                        Integer.parseInt(s.getStepPropertyInfo().getValue()) :
-                        -Integer.parseInt(s.getStepPropertyInfo().getValue()))
-                .reduce(0 , (total, value) -> total + value);
+        int count = stepProperties.getOrDefault(propertyName, new ArrayList<>())
+                                  .stream()
+                                  .mapToInt(s -> s.getType() == StepPropertyEventTypeEnum.INC ?
+                                      Integer.parseInt(s.getStepPropertyInfo().getValue()) :
+                                      -Integer.parseInt(s.getStepPropertyInfo().getValue()))
+                                  .reduce(0, (total, value) -> total + value);
         Assert.assertEquals(String.format("Invalid number of %s requests in session", property), expected, count);
     }
 

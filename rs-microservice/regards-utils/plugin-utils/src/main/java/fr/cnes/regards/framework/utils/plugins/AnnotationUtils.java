@@ -18,15 +18,16 @@
  */
 package fr.cnes.regards.framework.utils.plugins;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Utils for plugin annotations
+ *
  * @author Marc Sordi
  */
 public final class AnnotationUtils {
@@ -46,7 +47,8 @@ public final class AnnotationUtils {
 
     /**
      * This method allows to load a markdown file from jar archives using {@link Class#getResourceAsStream(String)}
-     * @param clazz class to document defining the target package
+     *
+     * @param clazz    class to document defining the target package
      * @param filename markdown filename
      * @return markdown text as a single string
      */
@@ -73,8 +75,7 @@ public final class AnnotationUtils {
             // Alternative implementation
             try {
                 StringBuilder data = new StringBuilder();
-                try (BufferedReader br = new BufferedReader(
-                        new InputStreamReader(clazz.getResourceAsStream(filename)))) {
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(clazz.getResourceAsStream(filename)))) {
                     String line;
                     while ((line = br.readLine()) != null) {
                         data.append(line).append(END_LINE);

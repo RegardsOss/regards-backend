@@ -62,20 +62,18 @@ import java.util.List;
  * Test entity attachments processing
  *
  * @author Marc Sordi
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=attachment",
-        "regards.dam.local_storage.path=target/store" })
+    "regards.dam.local_storage.path=target/store" })
 @MultitenantTransactional
 public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final Path ATTACHMENT_FOLDER = Paths.get("src", "test", "resources", "attachments");
 
-    private static final String PDF_CONTENT_TYPE = MediaType.APPLICATION_PDF_VALUE + " ;charset="
-            + StandardCharsets.UTF_8;
+    private static final String PDF_CONTENT_TYPE =
+        MediaType.APPLICATION_PDF_VALUE + " ;charset=" + StandardCharsets.UTF_8;
 
-    private static final String HTML_CONTENT_TYPE = MediaType.TEXT_HTML_VALUE + " ;charset="
-            + StandardCharsets.UTF_8;
+    private static final String HTML_CONTENT_TYPE = MediaType.TEXT_HTML_VALUE + " ;charset=" + StandardCharsets.UTF_8;
 
     @Autowired
     private IModelService modelService;
@@ -100,7 +98,8 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
         collectionService.create(collection);
         Project defaultProjectMock = new Project("defaultTenantMock", "", true, getDefaultTenant());
         defaultProjectMock.setHost("http://localhost");
-        Mockito.when(projectsClient.retrieveProject(getDefaultTenant())).thenReturn(ResponseEntity.ok(EntityModel.of(defaultProjectMock)));
+        Mockito.when(projectsClient.retrieveProject(getDefaultTenant()))
+               .thenReturn(ResponseEntity.ok(EntityModel.of(defaultProjectMock)));
     }
 
     private MockMultipartFile getMultipartFile(String originalFilename, String contentType) throws IOException {
@@ -108,42 +107,46 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     private MockMultipartFile getMultipartFile(String filename, String originalFilename, String contentType)
-            throws IOException {
+        throws IOException {
         Path filePath = ATTACHMENT_FOLDER.resolve(filename);
-        return new MockMultipartFile("file", originalFilename, contentType,
-                Files.newInputStream(filePath));
+        return new MockMultipartFile("file", originalFilename, contentType, Files.newInputStream(filePath));
     }
 
     private MockMultipartFile getMultipartFileRefs(DataFileReference... refs) {
         Assert.assertNotNull(refs);
         String contentAsString = gson(Arrays.asList(refs));
-        return new MockMultipartFile("refs", "", MediaType.APPLICATION_JSON_VALUE,
-                contentAsString.getBytes());
+        return new MockMultipartFile("refs", "", MediaType.APPLICATION_JSON_VALUE, contentAsString.getBytes());
     }
 
     @Test
     public void attachDescription() throws IOException {
 
         RequestBuilderCustomizer customizer = customizer().expectStatusOk()
-                .expect(MockMvcResultMatchers
-                        .jsonPath("$.content.feature.files." + DataType.DESCRIPTION + ".length()",
-                                  Matchers.equalTo(2)));
+                                                          .expect(MockMvcResultMatchers.jsonPath(
+                                                              "$.content.feature.files." + DataType.DESCRIPTION
+                                                                  + ".length()",
+                                                              Matchers.equalTo(2)));
 
         List<MockMultipartFile> files = new ArrayList<>();
         files.add(getMultipartFile("description.pdf", PDF_CONTENT_TYPE));
         files.add(getMultipartFile("description2.pdf", PDF_CONTENT_TYPE));
 
-        performDefaultFileUpload(AttachmentController.TYPE_MAPPING + AttachmentController.ATTACHMENTS_MAPPING, files,
-                                 customizer, "Attachment error", collection.getIpId().toString(), DataType.DESCRIPTION);
+        performDefaultFileUpload(AttachmentController.TYPE_MAPPING + AttachmentController.ATTACHMENTS_MAPPING,
+                                 files,
+                                 customizer,
+                                 "Attachment error",
+                                 collection.getIpId().toString(),
+                                 DataType.DESCRIPTION);
     }
 
     @Test
     public void attachUrlDescription() {
 
         RequestBuilderCustomizer customizer = customizer().expectStatusOk()
-                .expect(MockMvcResultMatchers
-                        .jsonPath("$.content.feature.files." + DataType.DESCRIPTION + ".length()",
-                                  Matchers.equalTo(1)));
+                                                          .expect(MockMvcResultMatchers.jsonPath(
+                                                              "$.content.feature.files." + DataType.DESCRIPTION
+                                                                  + ".length()",
+                                                              Matchers.equalTo(1)));
 
         List<MockMultipartFile> files = new ArrayList<>();
 
@@ -155,17 +158,22 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
 
         files.add(getMultipartFileRefs(ref));
 
-        performDefaultFileUpload(AttachmentController.TYPE_MAPPING + AttachmentController.ATTACHMENTS_MAPPING, files,
-                                 customizer, "Attachment error", collection.getIpId().toString(), DataType.DESCRIPTION);
+        performDefaultFileUpload(AttachmentController.TYPE_MAPPING + AttachmentController.ATTACHMENTS_MAPPING,
+                                 files,
+                                 customizer,
+                                 "Attachment error",
+                                 collection.getIpId().toString(),
+                                 DataType.DESCRIPTION);
     }
 
     @Test
     public void attachGetAndRemoveDescription() {
 
         RequestBuilderCustomizer customizer = customizer().expectStatusOk()
-                .expect(MockMvcResultMatchers
-                        .jsonPath("$.content.feature.files." + DataType.DESCRIPTION + ".length()",
-                                  Matchers.equalTo(1)));
+                                                          .expect(MockMvcResultMatchers.jsonPath(
+                                                              "$.content.feature.files." + DataType.DESCRIPTION
+                                                                  + ".length()",
+                                                              Matchers.equalTo(1)));
 
         List<MockMultipartFile> files = new ArrayList<>();
 
@@ -177,25 +185,34 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
 
         files.add(getMultipartFileRefs(ref));
 
-        ResultActions result = performDefaultFileUpload(AttachmentController.TYPE_MAPPING
-                + AttachmentController.ATTACHMENTS_MAPPING, files, customizer, "Attachment error",
-                                                        collection.getIpId().toString(), DataType.DESCRIPTION);
+        ResultActions result = performDefaultFileUpload(
+            AttachmentController.TYPE_MAPPING + AttachmentController.ATTACHMENTS_MAPPING,
+            files,
+            customizer,
+            "Attachment error",
+            collection.getIpId().toString(),
+            DataType.DESCRIPTION);
 
         String json = payload(result);
-        String checksum = JsonPath.read(json,
-                                        "$.content.feature.files." + DataType.DESCRIPTION + "[0].checksum");
+        String checksum = JsonPath.read(json, "$.content.feature.files." + DataType.DESCRIPTION + "[0].checksum");
         Assert.assertNotNull(checksum);
 
         // Get it
         customizer = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY);
-        performDefaultGet(AttachmentController.TYPE_MAPPING + AttachmentController.ATTACHMENT_MAPPING, customizer,
-                          "Download error", collection.getIpId().toString(), checksum);
+        performDefaultGet(AttachmentController.TYPE_MAPPING + AttachmentController.ATTACHMENT_MAPPING,
+                          customizer,
+                          "Download error",
+                          collection.getIpId().toString(),
+                          checksum);
 
         // Remove it
         customizer = customizer().expectStatusOk();
 
         performDefaultDelete(AttachmentController.TYPE_MAPPING + AttachmentController.ATTACHMENT_MAPPING,
-                                      customizer, "Remove error", collection.getIpId().toString(), checksum);
+                             customizer,
+                             "Remove error",
+                             collection.getIpId().toString(),
+                             checksum);
         Assert.assertThat("Description must be removed",
                           JsonPathMatchers.hasNoJsonPath("$.content.feature.files." + DataType.DESCRIPTION));
 
@@ -205,9 +222,10 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
     public void attachRefAndNormalDescription() throws IOException {
 
         RequestBuilderCustomizer customizer = customizer().expectStatusOk()
-                .expect(MockMvcResultMatchers
-                        .jsonPath("$.content.feature.files." + DataType.DESCRIPTION + ".length()",
-                                  Matchers.equalTo(2)));
+                                                          .expect(MockMvcResultMatchers.jsonPath(
+                                                              "$.content.feature.files." + DataType.DESCRIPTION
+                                                                  + ".length()",
+                                                              Matchers.equalTo(2)));
 
         List<MockMultipartFile> files = new ArrayList<>();
 
@@ -221,8 +239,12 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
         // Create normal description
         files.add(getMultipartFile("description.pdf", PDF_CONTENT_TYPE));
 
-        performDefaultFileUpload(AttachmentController.TYPE_MAPPING + AttachmentController.ATTACHMENTS_MAPPING, files,
-                                 customizer, "Attachment error", collection.getIpId().toString(), DataType.DESCRIPTION);
+        performDefaultFileUpload(AttachmentController.TYPE_MAPPING + AttachmentController.ATTACHMENTS_MAPPING,
+                                 files,
+                                 customizer,
+                                 "Attachment error",
+                                 collection.getIpId().toString(),
+                                 DataType.DESCRIPTION);
     }
 
     @Test
@@ -234,8 +256,12 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
         List<MockMultipartFile> files = new ArrayList<>();
         files.add(getMultipartFile("description.pdf", "", pdfContentType));
 
-        performDefaultFileUpload(AttachmentController.TYPE_MAPPING + AttachmentController.ATTACHMENTS_MAPPING, files,
-                                 customizer, "Attachment error", collection.getIpId().toString(), DataType.DESCRIPTION);
+        performDefaultFileUpload(AttachmentController.TYPE_MAPPING + AttachmentController.ATTACHMENTS_MAPPING,
+                                 files,
+                                 customizer,
+                                 "Attachment error",
+                                 collection.getIpId().toString(),
+                                 DataType.DESCRIPTION);
     }
 
     @Test
@@ -247,22 +273,31 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
         List<MockMultipartFile> files = new ArrayList<>();
         files.add(getMultipartFile("description.pdf", pdfContentType));
 
-        performDefaultFileUpload(AttachmentController.TYPE_MAPPING + AttachmentController.ATTACHMENTS_MAPPING, files,
-                                 customizer, "Attachment error", collection.getIpId().toString(), DataType.DESCRIPTION);
+        performDefaultFileUpload(AttachmentController.TYPE_MAPPING + AttachmentController.ATTACHMENTS_MAPPING,
+                                 files,
+                                 customizer,
+                                 "Attachment error",
+                                 collection.getIpId().toString(),
+                                 DataType.DESCRIPTION);
     }
 
     private void uploadDocument() throws IOException {
         // Upload document
         RequestBuilderCustomizer customizer = customizer().expectStatusOk()
-                .expect(MockMvcResultMatchers
-                        .jsonPath("$.content.feature.files." + DataType.DOCUMENT + ".length()",
-                                  Matchers.equalTo(1)));
+                                                          .expect(MockMvcResultMatchers.jsonPath(
+                                                              "$.content.feature.files." + DataType.DOCUMENT
+                                                                  + ".length()",
+                                                              Matchers.equalTo(1)));
 
         List<MockMultipartFile> files = new ArrayList<>();
         files.add(getMultipartFile("description.docx", MediaType.APPLICATION_OCTET_STREAM_VALUE));
 
-        performDefaultFileUpload(AttachmentController.TYPE_MAPPING + AttachmentController.ATTACHMENTS_MAPPING, files,
-                                 customizer, "Attachment error", collection.getIpId().toString(), DataType.DOCUMENT);
+        performDefaultFileUpload(AttachmentController.TYPE_MAPPING + AttachmentController.ATTACHMENTS_MAPPING,
+                                 files,
+                                 customizer,
+                                 "Attachment error",
+                                 collection.getIpId().toString(),
+                                 DataType.DOCUMENT);
     }
 
     @Test
@@ -274,8 +309,11 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
         DataFile dataFile = collection.getFiles().get(DataType.DOCUMENT).stream().findFirst().get();
 
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        performDefaultGet(AttachmentController.TYPE_MAPPING + AttachmentController.ATTACHMENT_MAPPING, customizer,
-                          "Download error", collection.getIpId().toString(), dataFile.getChecksum());
+        performDefaultGet(AttachmentController.TYPE_MAPPING + AttachmentController.ATTACHMENT_MAPPING,
+                          customizer,
+                          "Download error",
+                          collection.getIpId().toString(),
+                          dataFile.getChecksum());
     }
 
     @Test
@@ -287,8 +325,11 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
         DataFile dataFile = collection.getFiles().get(DataType.DOCUMENT).stream().findFirst().get();
 
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        performDefaultDelete(AttachmentController.TYPE_MAPPING + AttachmentController.ATTACHMENT_MAPPING, customizer,
-                             "Remove error", collection.getIpId().toString(), dataFile.getChecksum());
+        performDefaultDelete(AttachmentController.TYPE_MAPPING + AttachmentController.ATTACHMENT_MAPPING,
+                             customizer,
+                             "Remove error",
+                             collection.getIpId().toString(),
+                             dataFile.getChecksum());
     }
 
 }

@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider;
 
-import java.util.Objects;
-
 import fr.cnes.regards.modules.authentication.domain.exception.ServiceProviderPluginException;
-import fr.cnes.regards.modules.authentication.domain.plugin.serviceprovider.ServiceProviderAuthenticationInfo.AuthenticationInfo;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
+
+import java.util.Objects;
 
 public class ServiceProviderAuthenticationInfo<AuthenticationInfo extends ServiceProviderAuthenticationInfo.AuthenticationInfo> {
 
@@ -53,8 +52,8 @@ public class ServiceProviderAuthenticationInfo<AuthenticationInfo extends Servic
             return false;
         }
         ServiceProviderAuthenticationInfo<?> that = (ServiceProviderAuthenticationInfo<?>) o;
-        return Objects.equals(userInfo, that.userInfo) && Objects
-                .equals(authenticationInfo.getAuthenticationInfo(), that.authenticationInfo.getAuthenticationInfo());
+        return Objects.equals(userInfo, that.userInfo) && Objects.equals(authenticationInfo.getAuthenticationInfo(),
+                                                                         that.authenticationInfo.getAuthenticationInfo());
     }
 
     @Override
@@ -142,8 +141,9 @@ public class ServiceProviderAuthenticationInfo<AuthenticationInfo extends Servic
                 return false;
             }
             UserInfo that = (UserInfo) o;
-            return Objects.equals(email, that.email) && Objects.equals(firstname, that.firstname)
-                    && Objects.equals(lastname, that.lastname) && Objects.equals(metadata, that.metadata);
+            return Objects.equals(email, that.email) && Objects.equals(firstname, that.firstname) && Objects.equals(
+                lastname,
+                that.lastname) && Objects.equals(metadata, that.metadata);
         }
 
         @Override

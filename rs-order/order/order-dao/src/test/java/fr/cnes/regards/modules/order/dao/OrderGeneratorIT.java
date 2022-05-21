@@ -26,4 +26,5 @@ import org.junit.Ignore;
  */
 @Ignore
 public class OrderGeneratorIT extends AbstractScriptGeneratorIT {
+
 }

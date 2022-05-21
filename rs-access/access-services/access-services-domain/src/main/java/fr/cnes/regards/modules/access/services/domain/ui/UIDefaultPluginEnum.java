@@ -19,44 +19,51 @@
 package fr.cnes.regards.modules.access.services.domain.ui;
 
 /**
- *
  * Enumeration of default plugins to initialize at service start
  *
  * @author Sébastien Binda
- *
  */
 public enum UIDefaultPluginEnum {
 
     DEFAULT_STRING_CRITERION_NAME("string-criteria", "/plugins/criterion/string/plugin.js", UIPluginTypesEnum.CRITERIA),
 
-    DEFAULT_FULLTEXT_CRITERION_NAME("full-text-criteria", "/plugins/criterion/full-text/plugin.js",
-            UIPluginTypesEnum.CRITERIA),
+    DEFAULT_FULLTEXT_CRITERION_NAME("full-text-criteria",
+                                    "/plugins/criterion/full-text/plugin.js",
+                                    UIPluginTypesEnum.CRITERIA),
 
-    DEFAULT_NUMERICAL_CRITERION_NAME("numerical-criteria", "/plugins/criterion/numerical/plugin.js",
-            UIPluginTypesEnum.CRITERIA),
+    DEFAULT_NUMERICAL_CRITERION_NAME("numerical-criteria",
+                                     "/plugins/criterion/numerical/plugin.js",
+                                     UIPluginTypesEnum.CRITERIA),
 
-    DEFAULT_TWONUMERICAL_CRITERION_NAME("two-numerical-criteria", "/plugins/criterion/two-numerical/plugin.js",
-            UIPluginTypesEnum.CRITERIA),
+    DEFAULT_TWONUMERICAL_CRITERION_NAME("two-numerical-criteria",
+                                        "/plugins/criterion/two-numerical/plugin.js",
+                                        UIPluginTypesEnum.CRITERIA),
 
-    DEFAULT_TEMPORAL_CRITERION_NAME("temporal-criteria", "/plugins/criterion/temporal/plugin.js",
-            UIPluginTypesEnum.CRITERIA),
+    DEFAULT_TEMPORAL_CRITERION_NAME("temporal-criteria",
+                                    "/plugins/criterion/temporal/plugin.js",
+                                    UIPluginTypesEnum.CRITERIA),
 
-    DEFAULT_TWOTEMPORAL_CRITERION_NAME("two-temporal-criteria", "/plugins/criterion/two-temporal/plugin.js",
-            UIPluginTypesEnum.CRITERIA),
+    DEFAULT_TWOTEMPORAL_CRITERION_NAME("two-temporal-criteria",
+                                       "/plugins/criterion/two-temporal/plugin.js",
+                                       UIPluginTypesEnum.CRITERIA),
 
-    DEFAULT_ENUMERATED_CRITERION_NAME("enumerated-criteria", "/plugins/criterion/enumerated/plugin.js",
-            UIPluginTypesEnum.CRITERIA),
+    DEFAULT_ENUMERATED_CRITERION_NAME("enumerated-criteria",
+                                      "/plugins/criterion/enumerated/plugin.js",
+                                      UIPluginTypesEnum.CRITERIA),
 
     DEFAULT_DATAWITHONLYPIC_CRITERION_NAME("data-with-picture-only",
-            "/plugins/criterion/data-with-picture-only/plugin.js", UIPluginTypesEnum.CRITERIA),
+                                           "/plugins/criterion/data-with-picture-only/plugin.js",
+                                           UIPluginTypesEnum.CRITERIA),
 
-    DEFAULT_LAST_VERSION_ONLY_CRITERION_NAME("last-version-only", "/plugins/criterion/last-version-only/plugin.js",
-            UIPluginTypesEnum.CRITERIA),
+    DEFAULT_LAST_VERSION_ONLY_CRITERION_NAME("last-version-only",
+                                             "/plugins/criterion/last-version-only/plugin.js",
+                                             UIPluginTypesEnum.CRITERIA),
 
     DEFAULT_TOPONYM_CRITERION_NAME("toponym", "/plugins/criterion/toponym/plugin.js", UIPluginTypesEnum.CRITERIA),
 
     DEFAULT_NUMERICAL_RANGE_CRITERION_NAME("numerical-range-criteria",
-            "/plugins/criterion/numerical-range-criteria/plugin.js", UIPluginTypesEnum.CRITERIA);
+                                           "/plugins/criterion/numerical-range-criteria/plugin.js",
+                                           UIPluginTypesEnum.CRITERIA);
 
     private String value;
 

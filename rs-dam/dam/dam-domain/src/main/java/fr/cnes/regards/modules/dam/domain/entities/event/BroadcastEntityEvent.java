@@ -7,6 +7,7 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 
 /**
  * Broadcast entity event to be sent to all microservices (in fact one per microservice type)
+ *
  * @author oroussel
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)

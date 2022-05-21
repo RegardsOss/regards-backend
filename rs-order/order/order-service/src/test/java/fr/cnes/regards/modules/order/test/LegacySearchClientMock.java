@@ -37,7 +37,10 @@ public class LegacySearchClientMock implements ILegacySearchEngineClient {
 
     @Override
     public ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchAll(HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, String engineParserType, int page, int size) {
+                                                                                    MultiValueMap<String, String> queryParams,
+                                                                                    String engineParserType,
+                                                                                    int page,
+                                                                                    int size) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -50,14 +53,19 @@ public class LegacySearchClientMock implements ILegacySearchEngineClient {
 
     @Override
     public ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchAllCollections(HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, String engineParserType, int page, int size) {
+                                                                                               MultiValueMap<String, String> queryParams,
+                                                                                               String engineParserType,
+                                                                                               int page,
+                                                                                               int size) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public ResponseEntity<List<String>> searchCollectionPropertyValues(String propertyName, HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, int maxCount) {
+    public ResponseEntity<List<String>> searchCollectionPropertyValues(String propertyName,
+                                                                       HttpHeaders headers,
+                                                                       MultiValueMap<String, String> queryParams,
+                                                                       int maxCount) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -70,14 +78,19 @@ public class LegacySearchClientMock implements ILegacySearchEngineClient {
 
     @Override
     public ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchAllDatasets(HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, String engineParserType, int page, int size) {
+                                                                                            MultiValueMap<String, String> queryParams,
+                                                                                            String engineParserType,
+                                                                                            int page,
+                                                                                            int size) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public ResponseEntity<List<String>> searchDatasetPropertyValues(String propertyName, HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, int maxCount) {
+    public ResponseEntity<List<String>> searchDatasetPropertyValues(String propertyName,
+                                                                    HttpHeaders headers,
+                                                                    MultiValueMap<String, String> queryParams,
+                                                                    int maxCount) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -89,14 +102,19 @@ public class LegacySearchClientMock implements ILegacySearchEngineClient {
 
     @Override
     public ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchAllDataobjects(HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, String engineParserType, int page, int size) {
+                                                                                               MultiValueMap<String, String> queryParams,
+                                                                                               String engineParserType,
+                                                                                               int page,
+                                                                                               int size) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public ResponseEntity<List<String>> searchDataobjectPropertyValues(String propertyName, HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, int maxCount) {
+    public ResponseEntity<List<String>> searchDataobjectPropertyValues(String propertyName,
+                                                                       HttpHeaders headers,
+                                                                       MultiValueMap<String, String> queryParams,
+                                                                       int maxCount) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -109,23 +127,31 @@ public class LegacySearchClientMock implements ILegacySearchEngineClient {
 
     @Override
     public ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchSingleDataset(String datasetUrn,
-            HttpHeaders headers, MultiValueMap<String, String> queryParams, String engineParserType, int page,
-            int size) {
+                                                                                              HttpHeaders headers,
+                                                                                              MultiValueMap<String, String> queryParams,
+                                                                                              String engineParserType,
+                                                                                              int page,
+                                                                                              int size) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public ResponseEntity<List<String>> searchDataobjectPropertyValuesOnDataset(String datasetUrn, String propertyName,
-            HttpHeaders headers, MultiValueMap<String, String> queryParams, int maxCount) {
+    public ResponseEntity<List<String>> searchDataobjectPropertyValuesOnDataset(String datasetUrn,
+                                                                                String propertyName,
+                                                                                HttpHeaders headers,
+                                                                                MultiValueMap<String, String> queryParams,
+                                                                                int maxCount) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchDataobjectsReturnDatasets(
-            HttpHeaders headers, MultiValueMap<String, String> queryParams, String engineParserType, int page,
-            int size) {
+    public ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchDataobjectsReturnDatasets(HttpHeaders headers,
+                                                                                                          MultiValueMap<String, String> queryParams,
+                                                                                                          String engineParserType,
+                                                                                                          int page,
+                                                                                                          int size) {
         // TODO Auto-generated method stub
         return null;
     }

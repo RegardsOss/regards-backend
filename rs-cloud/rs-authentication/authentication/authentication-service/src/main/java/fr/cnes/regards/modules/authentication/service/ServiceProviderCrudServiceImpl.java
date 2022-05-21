@@ -41,48 +41,42 @@ public class ServiceProviderCrudServiceImpl implements IServiceProviderCrudServi
 
     @Override
     public Try<ServiceProvider> save(final ServiceProvider serviceProvider) {
-        return Try.of(() ->  {
+        return Try.of(() -> {
             PluginConfiguration configuration = serviceProvider.getConfiguration();
             String name = serviceProvider.getName();
             configuration.setBusinessId(name);
             configuration.setLabel(name);
             configuration = pluginService.savePluginConfiguration(configuration);
-            return new ServiceProvider(
-                name,
-                serviceProvider.getAuthUrl(),
-                serviceProvider.getLogoutUrl(),
-                configuration
-            );
+            return new ServiceProvider(name,
+                                       serviceProvider.getAuthUrl(),
+                                       serviceProvider.getLogoutUrl(),
+                                       configuration);
         }).map(repository::save);
     }
 
     @Override
     public Try<ServiceProvider> update(String name, final ServiceProvider serviceProvider) {
-        return repository.findByName(name).toTry()
-            .mapTry(sp ->  {
-                PluginConfiguration configuration = serviceProvider.getConfiguration();
-                configuration = pluginService.updatePluginConfiguration(configuration);
-                return new ServiceProvider(
-                    name,
-                    serviceProvider.getAuthUrl(),
-                    serviceProvider.getLogoutUrl(),
-                    configuration
-                );
-            }).map(repository::save);
+        return repository.findByName(name).toTry().mapTry(sp -> {
+            PluginConfiguration configuration = serviceProvider.getConfiguration();
+            configuration = pluginService.updatePluginConfiguration(configuration);
+            return new ServiceProvider(name,
+                                       serviceProvider.getAuthUrl(),
+                                       serviceProvider.getLogoutUrl(),
+                                       configuration);
+        }).map(repository::save);
     }
 
     @Override
     public Try<Unit> delete(String name) {
-        return Try.of(() -> repository.delete(name))
-            .map(u -> {
-                try {
-                    if (pluginService.exists(OpenIdConnectPlugin.ID)) {
-                        pluginService.deletePluginConfiguration(name);
-                    }
-                } catch (ModuleException e) {
-                    // ignored, the service provider has been deleted
+        return Try.of(() -> repository.delete(name)).map(u -> {
+            try {
+                if (pluginService.exists(OpenIdConnectPlugin.ID)) {
+                    pluginService.deletePluginConfiguration(name);
                 }
-                return u;
-            });
+            } catch (ModuleException e) {
+                // ignored, the service provider has been deleted
+            }
+            return u;
+        });
     }
 }

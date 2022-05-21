@@ -7,14 +7,13 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-
 @Component
 public class DefaultGroupsSettingCustomizer implements IDynamicTenantSettingCustomizer {
 
     @Override
     public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
-        return isProperValue(dynamicTenantSetting.getDefaultValue())
-                && (dynamicTenantSetting.getValue() == null || isProperValue(dynamicTenantSetting.getValue()));
+        return isProperValue(dynamicTenantSetting.getDefaultValue()) && (dynamicTenantSetting.getValue() == null
+            || isProperValue(dynamicTenantSetting.getValue()));
     }
 
     @Override

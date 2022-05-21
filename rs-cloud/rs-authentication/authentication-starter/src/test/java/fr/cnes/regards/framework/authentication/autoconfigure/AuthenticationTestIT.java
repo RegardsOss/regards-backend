@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.framework.authentication.autoconfigure;
 
-import java.util.Base64;
-
+import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -36,12 +37,11 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import java.util.Base64;
 
 /**
  * Class GatewayApplicationTest Test class for the Gateway application
+ *
  * @author Sébastien Binda
  */
 @SpringBootTest(classes = AuthenticationTestConfiguration.class)
@@ -123,7 +123,7 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
         invalidBasicString = Base64.getEncoder().encodeToString(invalidBasicString.getBytes());
 
         mockMvc.perform(MockMvcRequestBuilders.get("/non/existing/endpoint"))
-                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+               .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 
     /**
@@ -138,15 +138,19 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
             invalidBasicString = Base64.getEncoder().encodeToString(invalidBasicString.getBytes());
 
             mockMvc.perform(MockMvcRequestBuilders.get(TOKEN_ENDPOINT))
-                    .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+                   .andExpect(MockMvcResultMatchers.status().isUnauthorized());
             mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT))
-                    .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+                   .andExpect(MockMvcResultMatchers.status().isUnauthorized());
 
             mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
-                    .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + invalidBasicString)
-                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).param(GRANT_TYPE, PASSWORD)
-                    .param(SCOPE, "scope1").param(USER_NAME, "name1").param(PASSWORD, "mdp"))
-                    .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+                                                  .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + invalidBasicString)
+                                                  .header(HttpHeaders.CONTENT_TYPE,
+                                                          MediaType.APPLICATION_JSON_UTF8_VALUE)
+                                                  .param(GRANT_TYPE, PASSWORD)
+                                                  .param(SCOPE, "scope1")
+                                                  .param(USER_NAME, "name1")
+                                                  .param(PASSWORD, "mdp"))
+                   .andExpect(MockMvcResultMatchers.status().isUnauthorized());
             // CHECKSTYLE:OFF
         } catch (final Exception e) {
             // CHECKSTYLE:ON
@@ -167,11 +171,14 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
             basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
 
             mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
-                    .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + basicString)
-                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).param(GRANT_TYPE, PASSWORD)
-                    .param(SCOPE, "PROJECT").param(USER_NAME, "name2")
-                    .param(PASSWORD, AuthenticationTestConfiguration.INVALID_PASSWORD))
-                    .andExpect(MockMvcResultMatchers.status().is4xxClientError());
+                                                  .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + basicString)
+                                                  .header(HttpHeaders.CONTENT_TYPE,
+                                                          MediaType.APPLICATION_JSON_UTF8_VALUE)
+                                                  .param(GRANT_TYPE, PASSWORD)
+                                                  .param(SCOPE, "PROJECT")
+                                                  .param(USER_NAME, "name2")
+                                                  .param(PASSWORD, AuthenticationTestConfiguration.INVALID_PASSWORD))
+                   .andExpect(MockMvcResultMatchers.status().is4xxClientError());
         } catch (final Exception e) { // NOSONAR
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -189,22 +196,26 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
             String basicString = String.format("%s:%s", basicUserName, basicPassword);
             basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
 
-            ResultActions result = mockMvc
-                    .perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
-                            .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + basicString)
-                            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE)
-                            .param(GRANT_TYPE, PASSWORD).param(SCOPE, "PROJECT").param(USER_NAME, "test@regards.fr")
-                            .param(PASSWORD, AuthenticationTestConfiguration.VALID_PASSWORD))
-                    .andExpect(MockMvcResultMatchers.status().isOk())
-                    .andExpect(MockMvcResultMatchers.jsonPath("$.access_token").exists())
-                    .andExpect(MockMvcResultMatchers.jsonPath("$.email").exists())
-                    .andExpect(MockMvcResultMatchers.jsonPath("$.scope").exists())
-                    .andExpect(MockMvcResultMatchers.jsonPath("$.tenant").exists())
-                    .andExpect(MockMvcResultMatchers.jsonPath("$.sub").exists())
-                    .andExpect(MockMvcResultMatchers.jsonPath("$.role").exists())
-                    .andExpect(MockMvcResultMatchers.jsonPath("$.token_type").exists())
-                    .andExpect(MockMvcResultMatchers.jsonPath("$.expires_in").exists())
-                    .andExpect(MockMvcResultMatchers.jsonPath("$.jti").exists());
+            ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
+                                                                         .header(HttpHeaders.AUTHORIZATION,
+                                                                                 BASIC_AUTH + basicString)
+                                                                         .header(HttpHeaders.CONTENT_TYPE,
+                                                                                 MediaType.APPLICATION_JSON_UTF8_VALUE)
+                                                                         .param(GRANT_TYPE, PASSWORD)
+                                                                         .param(SCOPE, "PROJECT")
+                                                                         .param(USER_NAME, "test@regards.fr")
+                                                                         .param(PASSWORD,
+                                                                                AuthenticationTestConfiguration.VALID_PASSWORD))
+                                          .andExpect(MockMvcResultMatchers.status().isOk())
+                                          .andExpect(MockMvcResultMatchers.jsonPath("$.access_token").exists())
+                                          .andExpect(MockMvcResultMatchers.jsonPath("$.email").exists())
+                                          .andExpect(MockMvcResultMatchers.jsonPath("$.scope").exists())
+                                          .andExpect(MockMvcResultMatchers.jsonPath("$.tenant").exists())
+                                          .andExpect(MockMvcResultMatchers.jsonPath("$.sub").exists())
+                                          .andExpect(MockMvcResultMatchers.jsonPath("$.role").exists())
+                                          .andExpect(MockMvcResultMatchers.jsonPath("$.token_type").exists())
+                                          .andExpect(MockMvcResultMatchers.jsonPath("$.expires_in").exists())
+                                          .andExpect(MockMvcResultMatchers.jsonPath("$.jti").exists());
 
         } catch (Exception e) {
             e.printStackTrace();

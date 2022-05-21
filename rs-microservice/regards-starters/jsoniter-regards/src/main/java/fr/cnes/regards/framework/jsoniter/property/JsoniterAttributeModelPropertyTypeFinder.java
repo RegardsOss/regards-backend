@@ -54,7 +54,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class JsoniterAttributeModelPropertyTypeFinder
-        implements ApplicationListener<ApplicationStartedEvent>, AttributeModelPropertyTypeFinder {
+    implements ApplicationListener<ApplicationStartedEvent>, AttributeModelPropertyTypeFinder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JsoniterAttributeModelPropertyTypeFinder.class);
 
@@ -93,18 +93,19 @@ public class JsoniterAttributeModelPropertyTypeFinder
     public Option<PropertyType> getPropertyTypeForAttributeWithName(String name) {
         String tenant = runtimeTenantResolver.getTenant();
         return attributes.get(tenant)
-            .flatMap(attrs -> findAttributeWithSameName(name, attrs)
-                .orElse(() -> findAttributeWithFragmentNamed(name, attrs)));
+                         .flatMap(attrs -> findAttributeWithSameName(name,
+                                                                     attrs).orElse(() -> findAttributeWithFragmentNamed(
+                             name,
+                             attrs)));
     }
 
     private Option<PropertyType> findAttributeWithSameName(String name, Traversable<AttributeModel> attrs) {
-        return attrs.find(attr -> attr.getName().equals(name))
-                .map(AttributeModel::getType);
+        return attrs.find(attr -> attr.getName().equals(name)).map(AttributeModel::getType);
     }
 
     private Option<PropertyType> findAttributeWithFragmentNamed(String name, Traversable<AttributeModel> attrs) {
         return attrs.find(attr -> !attr.getFragment().isDefaultFragment() && attr.getFragment().getName().equals(name))
-                .map(attr -> PropertyType.OBJECT);
+                    .map(attr -> PropertyType.OBJECT);
     }
 
     @Override
@@ -151,8 +152,9 @@ public class JsoniterAttributeModelPropertyTypeFinder
             String tenant = pWrapper.getTenant();
             Fragment fragment = new Fragment();
             fragment.setName(amc.getFragmentName());
-            AttributeModel attributeModel = AttributeModelBuilder
-                    .build(amc.getAttributeName(), amc.getPropertyType(), null).fragment(fragment).get();
+            AttributeModel attributeModel = AttributeModelBuilder.build(amc.getAttributeName(),
+                                                                        amc.getPropertyType(),
+                                                                        null).fragment(fragment).get();
 
             attributes = attributes.merge(multimapOf(tenant, List.of(attributeModel)));
         }
@@ -168,8 +170,9 @@ public class JsoniterAttributeModelPropertyTypeFinder
             AttributeModelDeleted amd = pWrapper.getContent();
             Fragment fragment = new Fragment();
             fragment.setName(amd.getFragmentName());
-            AttributeModel attributeModel = AttributeModelBuilder
-                    .build(amd.getAttributeName(), amd.getPropertyType(), null).fragment(fragment).get();
+            AttributeModel attributeModel = AttributeModelBuilder.build(amd.getAttributeName(),
+                                                                        amd.getPropertyType(),
+                                                                        null).fragment(fragment).get();
 
             attributes = attributes.filterValues(am -> !am.equals(attributeModel));
         }

@@ -32,11 +32,12 @@ import java.util.Set;
 
 /**
  * Crawler service for Dataset. <b>This service need @EnableSchedule at Configuration</b>
+ *
  * @author oroussel
  */
 @Service
 public class DatasetCrawlerService extends AbstractCrawlerService<DatasetEvent>
-        implements IDatasetCrawlerService, IHandler<AccessRightEvent> {
+    implements IDatasetCrawlerService, IHandler<AccessRightEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DatasetCrawlerService.class);
 
@@ -103,8 +104,10 @@ public class DatasetCrawlerService extends AbstractCrawlerService<DatasetEvent>
             try {
                 runtimeTenantResolver.forceTenant(wrapper.getTenant());
                 notifyAccessRightUpdateBeginning(event);
-                entityIndexerService
-                        .updateEntityIntoEs(wrapper.getTenant(), event.getDatasetIpId(), OffsetDateTime.now(), true);
+                entityIndexerService.updateEntityIntoEs(wrapper.getTenant(),
+                                                        event.getDatasetIpId(),
+                                                        OffsetDateTime.now(),
+                                                        true);
                 notifyAccessRightUpdateDone(event);
             } catch (ModuleException e) {
                 LOGGER.error("Cannot handle access right event", e);
@@ -118,21 +121,21 @@ public class DatasetCrawlerService extends AbstractCrawlerService<DatasetEvent>
     private void notifyAccessRightUpdateError(AccessRightEvent accessRightEvent, ModuleException e) {
         if (accessRightEvent.getEventType() == AccessRightEventType.DELETE) {
             notificationClient.notifyRoles(String.format(
-                    "Dataset %s access right could not be removed for users having Group %s because of an unexpected issue: \"%s\"."
-                            + " Please try to remove them once again.",
-                    accessRightEvent.getDatasetLabel(),
-                    accessRightEvent.getAccessGroupName(),
-                    e.getMessage()),
+                                               "Dataset %s access right could not be removed for users having Group %s because of an unexpected issue: \"%s\"."
+                                                   + " Please try to remove them once again.",
+                                               accessRightEvent.getDatasetLabel(),
+                                               accessRightEvent.getAccessGroupName(),
+                                               e.getMessage()),
                                            "Access right removal error",
                                            NotificationLevel.ERROR,
                                            MimeTypeUtils.TEXT_PLAIN,
                                            Sets.newHashSet(accessRightEvent.getRoleToNotify()));
         } else {
-            String message = String
-                    .format("Dataset %s access rights could not be modified after all because of an unexpected issue: \"%s\"."
-                                    + " Please change them once again to retry.",
-                            accessRightEvent.getDatasetLabel(),
-                            e.getMessage());
+            String message = String.format(
+                "Dataset %s access rights could not be modified after all because of an unexpected issue: \"%s\"."
+                    + " Please change them once again to retry.",
+                accessRightEvent.getDatasetLabel(),
+                e.getMessage());
             notificationClient.notifyRoles(message,
                                            "Access right update error",
                                            NotificationLevel.ERROR,
@@ -144,9 +147,9 @@ public class DatasetCrawlerService extends AbstractCrawlerService<DatasetEvent>
     private void notifyAccessRightUpdateBeginning(AccessRightEvent accessRightEvent) {
         if (accessRightEvent.getEventType() == AccessRightEventType.DELETE) {
             notificationClient.notifyRoles(String.format(
-                    "Some access right will be removed between the dataset %s and the group %s",
-                    accessRightEvent.getDatasetLabel(),
-                    accessRightEvent.getAccessGroupName()),
+                                               "Some access right will be removed between the dataset %s and the group %s",
+                                               accessRightEvent.getDatasetLabel(),
+                                               accessRightEvent.getAccessGroupName()),
                                            "Access right removal beginning",
                                            NotificationLevel.INFO,
                                            MimeTypeUtils.TEXT_PLAIN,
@@ -157,38 +160,38 @@ public class DatasetCrawlerService extends AbstractCrawlerService<DatasetEvent>
             switch (accessRightEvent.getAccessLevel()) {
                 case FULL_ACCESS:
                     message = String.format("Dataset %s access rights are being modified."
-                                                    + " Users having group %s have access to this dataset metadata and its data metadata."
-                                                    + " Access to physical data is: %s",
+                                                + " Users having group %s have access to this dataset metadata and its data metadata."
+                                                + " Access to physical data is: %s",
                                             accessRightEvent.getDatasetLabel(),
                                             accessRightEvent.getAccessGroupName(),
                                             accessRightEvent.getDataAccessLevel());
                     break;
                 case RESTRICTED_ACCESS:
                     message = String.format("Dataset %s access rights are being modified."
-                                                    + " Users having group %s have access to this dataset."
-                                                    + " This means they can only see its metadata and no information about its data.",
+                                                + " Users having group %s have access to this dataset."
+                                                + " This means they can only see its metadata and no information about its data.",
                                             accessRightEvent.getDatasetLabel(),
                                             accessRightEvent.getAccessGroupName());
                     break;
                 case CUSTOM_ACCESS:
                     message = String.format("Dataset %s access rights are being modified."
-                                                    + " Users having group %s have access to this dataset metadata"
-                                                    + " and its data access is decided by the plugin %s.",
+                                                + " Users having group %s have access to this dataset metadata"
+                                                + " and its data access is decided by the plugin %s.",
                                             accessRightEvent.getDatasetLabel(),
                                             accessRightEvent.getAccessGroupName(),
                                             accessRightEvent.getDataAccessPluginLabel());
                     break;
                 case NO_ACCESS:
                     message = String.format("Dataset %s access rights are being modified."
-                                                    + " Users having group %s has no access to this dataset metadata and its data.",
+                                                + " Users having group %s has no access to this dataset metadata and its data.",
                                             accessRightEvent.getDatasetLabel(),
                                             accessRightEvent.getAccessGroupName());
                     break;
                 default:
                     message = String.format(
-                            "Dataset %s access rights are being modified with an undocumented access level %s.",
-                            accessRightEvent.getDatasetLabel(),
-                            accessRightEvent.getAccessLevel());
+                        "Dataset %s access rights are being modified with an undocumented access level %s.",
+                        accessRightEvent.getDatasetLabel(),
+                        accessRightEvent.getAccessLevel());
                     break;
             }
             notificationClient.notifyRoles(message,
@@ -202,9 +205,9 @@ public class DatasetCrawlerService extends AbstractCrawlerService<DatasetEvent>
     private void notifyAccessRightUpdateDone(AccessRightEvent accessRightEvent) {
         if (accessRightEvent.getEventType() == AccessRightEventType.DELETE) {
             notificationClient.notifyRoles(String.format(
-                    "Some access right has been removed between the dataset %s and the group %s",
-                    accessRightEvent.getDatasetLabel(),
-                    accessRightEvent.getAccessGroupName()),
+                                               "Some access right has been removed between the dataset %s and the group %s",
+                                               accessRightEvent.getDatasetLabel(),
+                                               accessRightEvent.getAccessGroupName()),
                                            "Access right removal done",
                                            NotificationLevel.INFO,
                                            MimeTypeUtils.TEXT_PLAIN,
@@ -215,38 +218,38 @@ public class DatasetCrawlerService extends AbstractCrawlerService<DatasetEvent>
             switch (accessRightEvent.getAccessLevel()) {
                 case FULL_ACCESS:
                     message = String.format("Dataset %s access right has been modified."
-                                                    + " Users having group %s have access to this dataset metadata and its data metadata."
-                                                    + " Access to physical data is: %s",
+                                                + " Users having group %s have access to this dataset metadata and its data metadata."
+                                                + " Access to physical data is: %s",
                                             accessRightEvent.getDatasetLabel(),
                                             accessRightEvent.getAccessGroupName(),
                                             accessRightEvent.getDataAccessLevel());
                     break;
                 case RESTRICTED_ACCESS:
                     message = String.format("Dataset %s access right has been modified."
-                                                    + " Users having group %s have access to this dataset."
-                                                    + " This means they can only see its metadata and no information about its data.",
+                                                + " Users having group %s have access to this dataset."
+                                                + " This means they can only see its metadata and no information about its data.",
                                             accessRightEvent.getDatasetLabel(),
                                             accessRightEvent.getAccessGroupName());
                     break;
                 case CUSTOM_ACCESS:
                     message = String.format("Dataset %s access right has been modified."
-                                                    + " Users having group %s have access to this dataset metadata"
-                                                    + " and its data access is decided by the plugin %s.",
+                                                + " Users having group %s have access to this dataset metadata"
+                                                + " and its data access is decided by the plugin %s.",
                                             accessRightEvent.getDatasetLabel(),
                                             accessRightEvent.getAccessGroupName(),
                                             accessRightEvent.getDataAccessPluginLabel());
                     break;
                 case NO_ACCESS:
                     message = String.format("Dataset %s access right has been modified."
-                                                    + " Users having group %s has no access to this dataset metadata and its data.",
+                                                + " Users having group %s has no access to this dataset metadata and its data.",
                                             accessRightEvent.getDatasetLabel(),
                                             accessRightEvent.getAccessGroupName());
                     break;
                 default:
                     message = String.format(
-                            "Dataset %s access rights have been modified with an undocumented access level %s.",
-                            accessRightEvent.getDatasetLabel(),
-                            accessRightEvent.getAccessLevel());
+                        "Dataset %s access rights have been modified with an undocumented access level %s.",
+                        accessRightEvent.getDatasetLabel(),
+                        accessRightEvent.getAccessLevel());
                     break;
             }
             notificationClient.notifyRoles(message,

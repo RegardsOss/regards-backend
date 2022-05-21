@@ -18,14 +18,15 @@
  */
 package fr.cnes.regards.framework.jpa.converters;
 
+import com.google.common.base.Joiner;
+
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
-
-import com.google.common.base.Joiner;
 
 /**
  * Simple String Array converter.
  * <b>Beware : join character is ';'</b>
+ *
  * @author oroussel
  */
 @Converter

@@ -42,8 +42,7 @@ import java.util.List;
  * @author Théo Lasserre
  */
 @ContextConfiguration(classes = { RequestServiceIT.Config.class })
-@TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=request_service_it" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_service_it" })
 public class RequestServiceIT extends AbstractWorkerManagerServiceUtilsIT {
 
     @Configuration
@@ -67,18 +66,60 @@ public class RequestServiceIT extends AbstractWorkerManagerServiceUtilsIT {
     protected void doInit() throws Exception {
         // Override to init something
         LOGGER.info("=========================> BEGIN INIT DATA FOR TESTS <=====================");
-        createRequests("requestId1", OffsetDateTime.now(), "contentType1", "source1", "session1",
-                       RequestStatus.DISPATCHED, "blbl".getBytes(), "error1", 1);
-        createRequests("requestId2", OffsetDateTime.now(), "contentType2", "source2", "session2",
-                       RequestStatus.INVALID_CONTENT, "blbl".getBytes(), "error2", 2);
-        createRequests("requestId3", OffsetDateTime.now(), "contentType3", "source3", "session3",
-                       RequestStatus.NO_WORKER_AVAILABLE, "blbl".getBytes(), "error3", 3);
-        createRequests("requestId4", OffsetDateTime.now(), "contentType4", "source4", "session4", RequestStatus.ERROR,
-                       "blbl".getBytes(), "error4", 4);
-        createRequests("requestId5", OffsetDateTime.now(), "contentType5", "source5", "session5", RequestStatus.RUNNING,
-                       "blbl".getBytes(), "error5", 5);
-        createRequests("requestId6", OffsetDateTime.now(), "contentType6", "source6", "session6", RequestStatus.SUCCESS,
-                       "blbl".getBytes(), "error6", 6);
+        createRequests("requestId1",
+                       OffsetDateTime.now(),
+                       "contentType1",
+                       "source1",
+                       "session1",
+                       RequestStatus.DISPATCHED,
+                       "blbl".getBytes(),
+                       "error1",
+                       1);
+        createRequests("requestId2",
+                       OffsetDateTime.now(),
+                       "contentType2",
+                       "source2",
+                       "session2",
+                       RequestStatus.INVALID_CONTENT,
+                       "blbl".getBytes(),
+                       "error2",
+                       2);
+        createRequests("requestId3",
+                       OffsetDateTime.now(),
+                       "contentType3",
+                       "source3",
+                       "session3",
+                       RequestStatus.NO_WORKER_AVAILABLE,
+                       "blbl".getBytes(),
+                       "error3",
+                       3);
+        createRequests("requestId4",
+                       OffsetDateTime.now(),
+                       "contentType4",
+                       "source4",
+                       "session4",
+                       RequestStatus.ERROR,
+                       "blbl".getBytes(),
+                       "error4",
+                       4);
+        createRequests("requestId5",
+                       OffsetDateTime.now(),
+                       "contentType5",
+                       "source5",
+                       "session5",
+                       RequestStatus.RUNNING,
+                       "blbl".getBytes(),
+                       "error5",
+                       5);
+        createRequests("requestId6",
+                       OffsetDateTime.now(),
+                       "contentType6",
+                       "source6",
+                       "session6",
+                       RequestStatus.SUCCESS,
+                       "blbl".getBytes(),
+                       "error6",
+                       6);
         LOGGER.info("=========================> END INIT DATA FOR TESTS <=====================");
     }
 
@@ -95,23 +136,23 @@ public class RequestServiceIT extends AbstractWorkerManagerServiceUtilsIT {
 
         srp.withStatusesIncluded(RequestStatus.INVALID_CONTENT);
         requests = requestService.searchLightRequests(srp, pr);
-        Assert.assertEquals("Error searching INVALID_CONTENT requests",2, requests.getTotalElements());
+        Assert.assertEquals("Error searching INVALID_CONTENT requests", 2, requests.getTotalElements());
 
         srp.withStatusesIncluded(RequestStatus.NO_WORKER_AVAILABLE);
         requests = requestService.searchLightRequests(srp, pr);
-        Assert.assertEquals("Error searching NO_WORKER_AVAILABLE requests",3, requests.getTotalElements());
+        Assert.assertEquals("Error searching NO_WORKER_AVAILABLE requests", 3, requests.getTotalElements());
 
         srp.withStatusesIncluded(RequestStatus.ERROR);
         requests = requestService.searchLightRequests(srp, pr);
-        Assert.assertEquals("Error searching ERROR requests",4, requests.getTotalElements());
+        Assert.assertEquals("Error searching ERROR requests", 4, requests.getTotalElements());
 
         srp.withStatusesIncluded(RequestStatus.RUNNING);
         requests = requestService.searchLightRequests(srp, pr);
-        Assert.assertEquals("Error searching RUNNING requests",5, requests.getTotalElements());
+        Assert.assertEquals("Error searching RUNNING requests", 5, requests.getTotalElements());
 
         srp.withStatusesIncluded(RequestStatus.SUCCESS);
         requests = requestService.searchLightRequests(srp, pr);
-        Assert.assertEquals("Error searching SUCCESS requests",6, requests.getTotalElements());
+        Assert.assertEquals("Error searching SUCCESS requests", 6, requests.getTotalElements());
 
         srp.withStatusesIncluded(); // clear status
         OffsetDateTime createdBefore = OffsetDateTime.now().plusDays(2);
@@ -146,9 +187,8 @@ public class RequestServiceIT extends AbstractWorkerManagerServiceUtilsIT {
 
     @Test
     public void testSourceSearchFilter() {
-        Page<LightRequest> requests = requestService.searchLightRequests(
-                new SearchRequestParameters().withSource("source2"),
-                PageRequest.of(0, 100));
+        Page<LightRequest> requests = requestService.searchLightRequests(new SearchRequestParameters().withSource(
+            "source2"), PageRequest.of(0, 100));
         Assert.assertEquals("Error searching a collection of requestId", 2, requests.getTotalElements());
     }
 

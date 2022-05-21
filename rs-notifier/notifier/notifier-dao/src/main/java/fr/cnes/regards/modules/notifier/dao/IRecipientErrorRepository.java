@@ -18,18 +18,17 @@
  */
 package fr.cnes.regards.modules.notifier.dao;
 
-import java.util.List;
-import java.util.UUID;
-
+import fr.cnes.regards.modules.notifier.domain.RecipientError;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.notifier.domain.RecipientError;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Repository to access {@link RecipientError}
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
 @Repository
 public interface IRecipientErrorRepository extends JpaRepository<RecipientError, Long> {

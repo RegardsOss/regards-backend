@@ -31,6 +31,7 @@ import javax.persistence.PersistenceContext;
 
 /**
  * Default configuration test
+ *
  * @author Marc Sordi
  */
 @ActiveProfiles("test")

@@ -18,17 +18,14 @@
  */
 package fr.cnes.regards.modules.model.dao;
 
+import fr.cnes.regards.modules.model.domain.attributes.Fragment;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.model.domain.attributes.Fragment;
-
 /**
- *
  * {@link Fragment} repository
  *
  * @author Marc Sordi
- *
  */
 @Repository
 public interface IFragmentRepository extends CrudRepository<Fragment, Long> {

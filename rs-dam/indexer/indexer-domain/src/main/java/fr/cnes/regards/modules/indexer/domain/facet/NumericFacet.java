@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.indexer.domain.facet;
 
-import java.util.Map;
-
 import com.google.common.collect.Range;
 import com.google.gson.annotations.JsonAdapter;
-
 import fr.cnes.regards.modules.indexer.domain.facet.adapters.gson.NumericFacetSerializer;
+
+import java.util.Map;
 
 /**
  * Numeric facet. It represents a sorted map whose keys are double ranges (eventually opened for first and last ranges)

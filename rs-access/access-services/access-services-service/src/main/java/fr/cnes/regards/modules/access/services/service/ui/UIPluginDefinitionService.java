@@ -18,23 +18,6 @@
  */
 package fr.cnes.regards.modules.access.services.service.ui;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.EventListener;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -50,10 +33,26 @@ import fr.cnes.regards.modules.access.services.domain.event.UIPluginDefinitionEv
 import fr.cnes.regards.modules.access.services.domain.ui.UIDefaultPluginEnum;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.EventListener;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service(value = "pluginService")
 public class UIPluginDefinitionService
-        implements IUIPluginDefinitionService, ApplicationListener<ApplicationReadyEvent> , InitializingBean {
+    implements IUIPluginDefinitionService, ApplicationListener<ApplicationReadyEvent>, InitializingBean {
 
     /**
      * Class logger
@@ -159,7 +158,7 @@ public class UIPluginDefinitionService
 
     @Override
     public UIPluginDefinition updatePlugin(final UIPluginDefinition pPlugin)
-            throws EntityNotFoundException, EntityInvalidException {
+        throws EntityNotFoundException, EntityInvalidException {
         if (!repository.existsById(pPlugin.getId())) {
             throw new EntityNotFoundException(pPlugin.getId(), UIPluginDefinition.class);
         }

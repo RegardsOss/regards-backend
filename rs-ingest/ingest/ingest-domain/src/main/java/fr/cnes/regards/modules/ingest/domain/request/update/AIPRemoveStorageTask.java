@@ -20,13 +20,14 @@ package fr.cnes.regards.modules.ingest.domain.request.update;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import java.util.List;
-import javax.persistence.Column;
-import javax.persistence.Entity;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import java.util.List;
 
 /**
  * @author Léo Mieulet

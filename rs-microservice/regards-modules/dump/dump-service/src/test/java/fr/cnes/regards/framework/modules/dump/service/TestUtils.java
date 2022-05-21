@@ -19,6 +19,8 @@
 
 package fr.cnes.regards.framework.modules.dump.service;
 
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+
 import java.io.File;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
@@ -28,10 +30,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
-
 /**
- *
  * @author Iliana Ghazali
  */
 
@@ -48,7 +47,7 @@ public class TestUtils {
         String validSubZipName = firstDate + "_" + lastDate + "(_[0-9]+)?\\.zip$";
         if (!zipName.matches(validSubZipName)) {
             return "The name of the created subzip \"" + zipName + "\" does not match the expected format : "
-                    + validSubZipName;
+                + validSubZipName;
         }
 
         // Verify number of created files in zip
@@ -56,7 +55,7 @@ public class TestUtils {
         int createdNbFiles = fileNames.size();
         if (validNbFiles != createdNbFiles) {
             return "The number of json files in zip \"" + zipName + " is unexpected, " + createdNbFiles
-                    + " were created instead of " + validNbFiles;
+                + " were created instead of " + validNbFiles;
         }
 
         // Verify created paths
@@ -66,8 +65,8 @@ public class TestUtils {
         DateTimeFormatter pathFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
         while (indexFile < validNbFiles) {
             validObjectDump = zipCollection.get(indexFile);
-            validPath = validObjectDump.getCreationDate().format(pathFormatter) + "/" + validObjectDump.getJsonName()
-                    + ".json";
+            validPath =
+                validObjectDump.getCreationDate().format(pathFormatter) + "/" + validObjectDump.getJsonName() + ".json";
             createdPath = fileNames.get(indexFile);
             if (!validPath.equals(createdPath)) {
                 return "Expected path \"" + validPath + "\", found path \"" + createdPath + "\" instead";

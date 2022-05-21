@@ -59,34 +59,51 @@ public class MonitoringController implements IResourceController<AcquisitionProc
     /**
      * Build all {@link AcquisitionProcessingChainMonitor} from {@link AcquisitionProcessingChain}s matching given
      * criterion.
-     * @param mode {@link AcquisitionProcessingChainMode} search criteria
+     *
+     * @param mode    {@link AcquisitionProcessingChainMode} search criteria
      * @param running {@link Boolean} search criteria
-     * @param label {@link String} search criteria
+     * @param label   {@link String} search criteria
      * @return page of {@link AcquisitionProcessingChainMonitor}s
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Search for acquisition processing chain summaries", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<AcquisitionProcessingChainMonitor>>> search(
-            @RequestParam(name = "mode", required = false) AcquisitionProcessingChainMode mode,
-            @RequestParam(name = "running", required = false) Boolean running,
-            @RequestParam(name = "label", required = false) String label,
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<AcquisitionProcessingChainMonitor> assembler) {
-        Page<AcquisitionProcessingChainMonitor> results = processingService.buildAcquisitionProcessingChainSummaries(label, running, mode, pageable);
+        @RequestParam(name = "mode", required = false) AcquisitionProcessingChainMode mode,
+        @RequestParam(name = "running", required = false) Boolean running,
+        @RequestParam(name = "label", required = false) String label,
+        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        PagedResourcesAssembler<AcquisitionProcessingChainMonitor> assembler) {
+        Page<AcquisitionProcessingChainMonitor> results = processingService.buildAcquisitionProcessingChainSummaries(
+            label,
+            running,
+            mode,
+            pageable);
         return new ResponseEntity<>(toPagedResources(results, assembler), HttpStatus.OK);
     }
 
     @Override
-    public EntityModel<AcquisitionProcessingChainMonitor> toResource(AcquisitionProcessingChainMonitor element, Object... pExtras) {
+    public EntityModel<AcquisitionProcessingChainMonitor> toResource(AcquisitionProcessingChainMonitor element,
+                                                                     Object... pExtras) {
 
         EntityModel<AcquisitionProcessingChainMonitor> resource = resourceService.toResource(element);
 
-        if ((element != null) && (element.getChain() != null) && !processingService.isDeletionPending(element.getChain())) {
+        if ((element != null) && (element.getChain() != null)
+            && !processingService.isDeletionPending(element.getChain())) {
             MethodParam<Long> idParam = MethodParamFactory.build(Long.class, element.getChain().getId());
             Class<AcquisitionProcessingChainController> clazz = AcquisitionProcessingChainController.class;
-            resourceService.addLink(resource, clazz, "update", LinkRels.UPDATE, idParam, MethodParamFactory.build(AcquisitionProcessingChain.class));
+            resourceService.addLink(resource,
+                                    clazz,
+                                    "update",
+                                    LinkRels.UPDATE,
+                                    idParam,
+                                    MethodParamFactory.build(AcquisitionProcessingChain.class));
             if (processingService.canBeStarted(element)) {
-                resourceService.addLink(resource, clazz, "startManualChain", LinkRelation.of("start"), idParam, MethodParamFactory.build(Optional.class));
+                resourceService.addLink(resource,
+                                        clazz,
+                                        "startManualChain",
+                                        LinkRelation.of("start"),
+                                        idParam,
+                                        MethodParamFactory.build(Optional.class));
             }
             if (element.isActive()) {
                 resourceService.addLink(resource, clazz, "stopChain", LinkRelation.of("stop"), idParam);
@@ -94,7 +111,11 @@ public class MonitoringController implements IResourceController<AcquisitionProc
             if (!element.getChain().isActive()) {
                 resourceService.addLink(resource, clazz, "delete", LinkRels.DELETE, idParam);
             }
-            resourceService.addLink(resource, clazz, "updateStateAndMode", LinkRelation.of("patch"), idParam,
+            resourceService.addLink(resource,
+                                    clazz,
+                                    "updateStateAndMode",
+                                    LinkRelation.of("patch"),
+                                    idParam,
                                     MethodParamFactory.build(UpdateAcquisitionProcessingChain.class));
         }
         return resource;

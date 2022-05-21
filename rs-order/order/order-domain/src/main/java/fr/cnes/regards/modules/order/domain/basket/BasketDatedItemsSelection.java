@@ -33,6 +33,7 @@ import java.util.Optional;
 
 /**
  * Dated items selection
+ *
  * @author oroussel
  * @author Sébastien Binda
  */
@@ -94,26 +95,22 @@ public class BasketDatedItemsSelection implements Comparable<BasketDatedItemsSel
     }
 
     public Long getFileTypeSize(String fileType) {
-        return Optional.ofNullable(fileTypesSizes)
-            .map(m -> m.getOrDefault(fileType, 0L))
-            .orElse(0L);
+        return Optional.ofNullable(fileTypesSizes).map(m -> m.getOrDefault(fileType, 0L)).orElse(0L);
     }
 
     public void setFileTypeSize(String fileType, Long filesSize) {
-        if (fileTypesSizes==null) {
+        if (fileTypesSizes == null) {
             fileTypesSizes = new StringToLongMap();
         }
         this.fileTypesSizes.put(fileType, filesSize);
     }
 
     public Long getFileTypeCount(String fileType) {
-        return Optional.ofNullable(fileTypesCount)
-            .map(m -> m.getOrDefault(fileType, 0L))
-            .orElse(0L);
+        return Optional.ofNullable(fileTypesCount).map(m -> m.getOrDefault(fileType, 0L)).orElse(0L);
     }
 
     public void setFileTypeCount(String fileType, Long filesCount) {
-        if (fileTypesCount==null) {
+        if (fileTypesCount == null) {
             fileTypesCount = new StringToLongMap();
         }
         this.fileTypesCount.put(fileType, filesCount);

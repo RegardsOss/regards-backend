@@ -23,7 +23,8 @@ import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 
 public final class DataSourcePluginConstants {
 
-    private DataSourcePluginConstants() {}
+    private DataSourcePluginConstants() {
+    }
 
     /**
      * Model mapping parameter name
@@ -61,8 +62,8 @@ public final class DataSourcePluginConstants {
     public static final String DOT = ".";
 
     /**
-    * Prefix for all model properties
-    */
+     * Prefix for all model properties
+     */
     public static final String PROPERTY_PREFIX = StaticProperties.FEATURE_PROPERTIES + DOT;
 
     /**

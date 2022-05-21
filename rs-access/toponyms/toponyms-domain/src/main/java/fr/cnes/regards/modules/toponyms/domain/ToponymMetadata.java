@@ -21,13 +21,13 @@
 package fr.cnes.regards.modules.toponyms.domain;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-import java.time.OffsetDateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Embeddable;
+import java.time.OffsetDateTime;
 
 /**
- *
  * @author Iliana Ghazali
  */
 
@@ -42,10 +42,10 @@ public class ToponymMetadata {
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime expirationDate;
 
-    @Column(name="project")
+    @Column(name = "project")
     private String project;
 
-    @Column(name="author")
+    @Column(name = "author")
     private String author;
 
     public OffsetDateTime getCreationDate() {

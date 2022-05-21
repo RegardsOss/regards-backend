@@ -39,8 +39,8 @@ import java.util.Set;
  **/
 public class SetAdapter<E> extends TypeAdapter<Set<E>> {
 
-
     public static final TypeAdapterFactory FACTORY = new TypeAdapterFactory() {
+
         @Override
         public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
             Class<T> rawType = (Class<T>) type.getRawType();

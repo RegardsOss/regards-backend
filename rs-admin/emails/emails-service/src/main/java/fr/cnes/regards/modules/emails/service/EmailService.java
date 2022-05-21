@@ -18,6 +18,22 @@
  */
 package fr.cnes.regards.modules.emails.service;
 
+import com.google.common.io.ByteStreams;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.modules.emails.dao.IEmailRepository;
+import fr.cnes.regards.modules.emails.domain.Email;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.InputStreamSource;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.stereotype.Service;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,26 +46,9 @@ import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
-import org.springframework.core.io.InputStreamSource;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.stereotype.Service;
-
-import com.google.common.io.ByteStreams;
-
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.modules.emails.dao.IEmailRepository;
-import fr.cnes.regards.modules.emails.domain.Email;
-
 /**
  * An implementation of {@link IEmailService}
+ *
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
  */
@@ -78,8 +77,9 @@ public class EmailService extends AbstractEmailService {
 
     /**
      * Creates an {@link EmailService} wired to the given {@link IEmailRepository}.
+     *
      * @param pEmailRepository Autowired by Spring. Must not be {@literal null}.
-     * @param pMailSender Autowired by Spring. Must not be {@literal null}.
+     * @param pMailSender      Autowired by Spring. Must not be {@literal null}.
      */
     public EmailService(final IEmailRepository pEmailRepository, final JavaMailSender pMailSender) {
         super();
@@ -142,6 +142,7 @@ public class EmailService extends AbstractEmailService {
 
     /**
      * Create a {@link SimpleMailMessage} with same content as the passed {@link Email}.
+     *
      * @param pEmail The {@link Email}
      * @return The {@link SimpleMailMessage}
      */
@@ -163,6 +164,7 @@ public class EmailService extends AbstractEmailService {
     /**
      * Create a domain {@link Email} with same content as the passed {@link SimpleMailMessage} in order to save it in
      * db.
+     *
      * @param msg The message
      * @return The savable email
      */
@@ -173,11 +175,13 @@ public class EmailService extends AbstractEmailService {
     /**
      * Create a domain {@link Email} with same content as the passed {@link SimpleMailMessage} in order to save it in
      * db.
+     *
      * @param message The message
      * @return The savable email
      */
-    private Email createEmailFromSimpleMailMessage(final SimpleMailMessage message, String attName,
-            InputStreamSource source) {
+    private Email createEmailFromSimpleMailMessage(final SimpleMailMessage message,
+                                                   String attName,
+                                                   InputStreamSource source) {
         final Email email = new Email();
         email.setBcc(message.getBcc());
         email.setCc(message.getCc());

@@ -18,17 +18,17 @@
  */
 package fr.cnes.regards.framework.security.client;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import java.util.List;
 
 /**
  * Class IResourcesClient
- *
+ * <p>
  * Feign Client to access /security/resources common microservice endpoint
+ *
  * @author CS
  */
 @FunctionalInterface
@@ -36,6 +36,7 @@ public interface IResourcesClient {
 
     /**
      * Get all resources from the current microservice.
+     *
      * @return List<ResourceMapping>
      */
     @RequestMapping(value = "/security/resources", method = RequestMethod.GET)

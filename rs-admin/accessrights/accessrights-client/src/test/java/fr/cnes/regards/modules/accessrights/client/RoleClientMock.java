@@ -18,22 +18,19 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
-import java.util.List;
-import java.util.Set;
-
-import javax.validation.Valid;
-
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author sbinda
- *
  */
 public class RoleClientMock implements IRolesClient {
 

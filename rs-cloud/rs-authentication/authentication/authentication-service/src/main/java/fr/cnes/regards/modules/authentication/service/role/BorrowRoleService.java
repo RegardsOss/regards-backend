@@ -18,20 +18,7 @@
  */
 package fr.cnes.regards.modules.authentication.service.role;
 
-import java.sql.Date;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
@@ -40,6 +27,17 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
+import org.springframework.stereotype.Service;
+
+import java.sql.Date;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -68,20 +66,23 @@ public class BorrowRoleService implements IBorrowRoleService {
 
     @Override
     public DefaultOAuth2AccessToken switchTo(String targetRoleName)
-            throws JwtException, EntityOperationForbiddenException {
+        throws JwtException, EntityOperationForbiddenException {
         Set<String> borrowableRoleNames = getBorrowableRoleNames();
 
         JWTAuthentication currentToken = jwtService.getCurrentToken();
         if (!borrowableRoleNames.contains(targetRoleName)) {
-            throw new EntityOperationForbiddenException(
-                    String.format("Users of role %s are not allowed to borrow role %s",
-                                  currentToken.getUser().getRole(), targetRoleName));
+            throw new EntityOperationForbiddenException(String.format(
+                "Users of role %s are not allowed to borrow role %s",
+                currentToken.getUser().getRole(),
+                targetRoleName));
         }
         String name = currentToken.getName();
         String tenant = currentToken.getTenant();
         String email = currentToken.getUser().getEmail();
-        DefaultOAuth2AccessToken newToken = new DefaultOAuth2AccessToken(
-                jwtService.generateToken(tenant, name, email, targetRoleName));
+        DefaultOAuth2AccessToken newToken = new DefaultOAuth2AccessToken(jwtService.generateToken(tenant,
+                                                                                                  name,
+                                                                                                  email,
+                                                                                                  targetRoleName));
         newToken.setAdditionalInformation(jwtService.generateClaims(tenant, targetRoleName, name, email));
         newToken.setExpiration(Date.from(jwtService.getExpirationDate(OffsetDateTime.now()).toInstant()));
         //FIXME: refreshToken(jti) is not set here to avoid not analysed behaviour,

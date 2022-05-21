@@ -22,6 +22,7 @@ import java.time.OffsetDateTime;
 
 /**
  * The worker heart beat payload
+ *
  * @author Léo Mieulet
  */
 public abstract class WorkerHeartBeat {

@@ -19,26 +19,16 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
-import java.net.URL;
-import java.util.Collection;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
+import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import io.vavr.control.Option;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
@@ -48,30 +38,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
-import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.framework.module.manager.ConfigIgnore;
-import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import javax.persistence.*;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import java.net.URL;
+import java.util.Collection;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Plugin configuration contains a unique Id, plugin meta-data and parameters.
+ *
  * @author cmertz
  * @author oroussel
  */
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @Entity
-@Table(name = "t_plugin_configuration",
-        indexes = { @Index(name = "idx_plugin_configuration", columnList = "pluginId"),
-                @Index(name = "idx_plugin_configuration_label", columnList = "label"),
-                @Index(name = "idx_plugin_configuration_bid", columnList = "bid") },
-        uniqueConstraints = @UniqueConstraint(name = "uk_plugin_bid", columnNames = { "bid" }))
+@Table(name = "t_plugin_configuration", indexes = { @Index(name = "idx_plugin_configuration", columnList = "pluginId"),
+    @Index(name = "idx_plugin_configuration_label", columnList = "label"),
+    @Index(name = "idx_plugin_configuration_bid", columnList = "bid") },
+    uniqueConstraints = @UniqueConstraint(name = "uk_plugin_bid", columnNames = { "bid" }))
 @SequenceGenerator(name = "pluginConfSequence", initialValue = 1, sequenceName = "seq_plugin_conf")
 public class PluginConfiguration implements IIdentifiable<Long> {
 
@@ -119,7 +107,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * A serialized {@link UUID} for business identifier
      */
     @Pattern(regexp = BID_REGEXP,
-            message = "Business identifier must conform to regular expression \"" + BID_REGEXP + "\".")
+        message = "Business identifier must conform to regular expression \"" + BID_REGEXP + "\".")
     @Column(name = "bid", length = 36, nullable = false, updatable = false)
     private String businessId;
 
@@ -150,7 +138,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     @Valid
     @Column(columnDefinition = "jsonb")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
-            value = "fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam") })
+        value = "fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam") })
     private Set<IPluginParam> parameters = Sets.newHashSet();
 
     /**
@@ -168,6 +156,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * A constructor with {@link PluginMetaData}.
+     *
      * @param label the label
      */
     public PluginConfiguration(String label, String pluginId) {
@@ -176,7 +165,8 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * A constructor with {@link PluginMetaData} and list of {@link AbstractPluginParam}.
-     * @param label the label
+     *
+     * @param label      the label
      * @param parameters the list of parameters
      */
     public PluginConfiguration(String label, Set<IPluginParam> parameters, String pluginId) {
@@ -185,6 +175,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * A constructor with {@link PluginMetaData}.
+     *
      * @param label the label
      * @param order the order
      */
@@ -194,10 +185,11 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * Main constructor
-     * @param label the label
+     *
+     * @param label      the label
      * @param parameters the list of parameters
-     * @param order the order
-     * @param pluginId plugin identifier
+     * @param order      the order
+     * @param pluginId   plugin identifier
      */
     public PluginConfiguration(String label, Collection<IPluginParam> parameters, int order, String pluginId) {
         super();
@@ -213,13 +205,16 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * Build a new plugin configuration
-     * @param pluginId the {@link Plugin#id()}.
-     * @param label the configuration label (if <code>null</code>, a random label is generated)
+     *
+     * @param pluginId   the {@link Plugin#id()}.
+     * @param label      the configuration label (if <code>null</code>, a random label is generated)
      * @param parameters the list of parameters
-     * @param order the order
+     * @param order      the order
      */
-    public static PluginConfiguration build(String pluginId, @Nullable String label,
-            @Nullable Collection<IPluginParam> parameters, int order) {
+    public static PluginConfiguration build(String pluginId,
+                                            @Nullable String label,
+                                            @Nullable Collection<IPluginParam> parameters,
+                                            int order) {
         if (label == null) {
             label = UUID.randomUUID().toString();
         }
@@ -228,27 +223,32 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * Build a new plugin configuration
-     * @param pluginId the {@link Plugin#id()}.
-     * @param label the configuration label (if <code>null</code>, a random label is generated)
+     *
+     * @param pluginId   the {@link Plugin#id()}.
+     * @param label      the configuration label (if <code>null</code>, a random label is generated)
      * @param parameters the list of parameters
      */
-    public static PluginConfiguration build(String pluginId, @Nullable String label,
-            @Nullable Collection<IPluginParam> parameters) {
+    public static PluginConfiguration build(String pluginId,
+                                            @Nullable String label,
+                                            @Nullable Collection<IPluginParam> parameters) {
         return build(pluginId, label, parameters, 0);
     }
 
     /**
      * Build a new plugin configuration
+     *
      * @param pluginType the {@link Class} annotated with {@link Plugin}.
-     * @param label the configuration label (if <code>null</code>, a random label is generated)
+     * @param label      the configuration label (if <code>null</code>, a random label is generated)
      * @param parameters the list of parameters
      */
-    public static PluginConfiguration build(Class<?> pluginType, @Nullable String label,
-            @Nullable Collection<IPluginParam> parameters) {
+    public static PluginConfiguration build(Class<?> pluginType,
+                                            @Nullable String label,
+                                            @Nullable Collection<IPluginParam> parameters) {
         Plugin plugin = pluginType.getAnnotation(Plugin.class);
         if (plugin == null) {
-            throw new IllegalArgumentException(
-                    String.format("Plugin type \"%s\" must be annotated with plugin annotation", pluginType.getName()));
+            throw new IllegalArgumentException(String.format(
+                "Plugin type \"%s\" must be annotated with plugin annotation",
+                pluginType.getName()));
         }
         return build(plugin.id(), label, parameters, 0);
     }
@@ -270,6 +270,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * Return the {@link IPluginParam} of a specific parameter
+     *
      * @param name the parameter to get the value
      * @return {@link IPluginParam} or null
      */
@@ -300,16 +301,21 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     public void logParams() {
         LOGGER.info("===> parameters <===");
-        LOGGER.info("  ---> number of dynamic parameters : "
-                + getParameters().stream().filter(IPluginParam::isDynamic).count());
+        LOGGER.info("  ---> number of dynamic parameters : " + getParameters().stream()
+                                                                              .filter(IPluginParam::isDynamic)
+                                                                              .count());
 
-        getParameters().stream().filter(IPluginParam::isDynamic)
-                .forEach(p -> LOGGER.info("  ---> dynamic parameter : {}-def val: {}", p.getName(), p.toString()));
+        getParameters().stream()
+                       .filter(IPluginParam::isDynamic)
+                       .forEach(p -> LOGGER.info("  ---> dynamic parameter : {}-def val: {}",
+                                                 p.getName(),
+                                                 p.toString()));
 
-        LOGGER.info("  ---> number of no dynamic parameters : "
-                + getParameters().stream().filter(p -> !p.isDynamic()).count());
-        getParameters().stream().filter(p -> !p.isDynamic())
-                .forEach(p -> LOGGER.info("  ---> parameter : {}-def val: {}", p.getName(), p.toString()));
+        LOGGER.info(
+            "  ---> number of no dynamic parameters : " + getParameters().stream().filter(p -> !p.isDynamic()).count());
+        getParameters().stream()
+                       .filter(p -> !p.isDynamic())
+                       .forEach(p -> LOGGER.info("  ---> parameter : {}-def val: {}", p.getName(), p.toString()));
     }
 
     public String getLabel() {
@@ -415,7 +421,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     @Override
     public String toString() {
         return "PluginConfiguration [id=" + id + ", business id=" + businessId + ", pluginId=" + pluginId + ", label="
-                + label + ", version=" + version + ", priorityOrder=" + priorityOrder + ", active=" + active + "]";
+            + label + ", version=" + version + ", priorityOrder=" + priorityOrder + ", active=" + active + "]";
     }
 
     @Override

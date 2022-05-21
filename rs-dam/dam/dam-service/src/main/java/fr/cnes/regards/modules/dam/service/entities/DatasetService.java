@@ -101,15 +101,33 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
     @Autowired
     private IModelAttrAssocService modelAttributeService;
 
-    public DatasetService(IModelFinder modelFinder, IDatasetRepository repository,
-            IAttributeModelService attributeService, IModelAttrAssocService modelAttributeService,
-            IAbstractEntityRepository<AbstractEntity<?>> entityRepository, IModelService modelService,
-            IDeletedEntityRepository deletedEntityRepository, ICollectionRepository collectionRepository,
-            EntityManager em, IPublisher publisher, IRuntimeTenantResolver runtimeTenantResolver,
-            IOpenSearchService openSearchService, IPluginService pluginService,
-            IAbstractEntityRequestRepository abstractEntityRequestRepo, IDamSettingsService damSettingsService) {
-        super(modelFinder, entityRepository, modelService, damSettingsService,deletedEntityRepository, collectionRepository, repository,
-              repository, em, publisher, runtimeTenantResolver, abstractEntityRequestRepo);
+    public DatasetService(IModelFinder modelFinder,
+                          IDatasetRepository repository,
+                          IAttributeModelService attributeService,
+                          IModelAttrAssocService modelAttributeService,
+                          IAbstractEntityRepository<AbstractEntity<?>> entityRepository,
+                          IModelService modelService,
+                          IDeletedEntityRepository deletedEntityRepository,
+                          ICollectionRepository collectionRepository,
+                          EntityManager em,
+                          IPublisher publisher,
+                          IRuntimeTenantResolver runtimeTenantResolver,
+                          IOpenSearchService openSearchService,
+                          IPluginService pluginService,
+                          IAbstractEntityRequestRepository abstractEntityRequestRepo,
+                          IDamSettingsService damSettingsService) {
+        super(modelFinder,
+              entityRepository,
+              modelService,
+              damSettingsService,
+              deletedEntityRepository,
+              collectionRepository,
+              repository,
+              repository,
+              em,
+              publisher,
+              runtimeTenantResolver,
+              abstractEntityRequestRepo);
         this.openSearchService = openSearchService;
         this.pluginService = pluginService;
     }
@@ -140,8 +158,8 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
     private Dataset checkDataSource(Dataset dataset) throws ModuleException, NotAvailablePluginConfigurationException {
         if (dataset.getDataSource() != null) {
             // Retrieve plugin from associated datasource
-            PluginConfiguration pluginConf = pluginService
-                    .getPluginConfiguration(dataset.getDataSource().getBusinessId());
+            PluginConfiguration pluginConf = pluginService.getPluginConfiguration(dataset.getDataSource()
+                                                                                         .getBusinessId());
             IDataSourcePlugin datasourcePlugin = pluginService.getPlugin(pluginConf.getBusinessId());
             String modelName = datasourcePlugin.getModelName();
             try {
@@ -150,9 +168,9 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
                 dataset.setDataSource(pluginConf);
             } catch (ModuleException e) {
                 LOGGER.error("Unable to dejsonify model parameter from PluginConfiguration", e);
-                throw new EntityNotFoundException(
-                        String.format("Unable to dejsonify model parameter from PluginConfiguration (%s)",
-                                      e.getMessage()), PluginConfiguration.class);
+                throw new EntityNotFoundException(String.format(
+                    "Unable to dejsonify model parameter from PluginConfiguration (%s)",
+                    e.getMessage()), PluginConfiguration.class);
             }
         }
         return dataset;
@@ -179,7 +197,7 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
             SubsettingCoherenceVisitor criterionVisitor = getSubsettingCoherenceVisitor();
             if (!subsettingCriterion.accept(criterionVisitor)) {
                 throw new EntityInvalidException(
-                        "Given subsettingCriterion cannot be accepted for the Dataset : " + dataset.getLabel());
+                    "Given subsettingCriterion cannot be accepted for the Dataset : " + dataset.getLabel());
             }
         }
         return dataset;
@@ -227,14 +245,16 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
             }
         } catch (NotAvailablePluginConfigurationException e) {
             LOGGER.error(e.getMessage(), e);
-            throw new EntityOperationForbiddenException(
-                    String.format("Datasources of datasets cannot be updated cause %s", e.getMessage()));
+            throw new EntityOperationForbiddenException(String.format(
+                "Datasources of datasets cannot be updated cause %s",
+                e.getMessage()));
         }
     }
 
     @Override
-    public Page<AttributeModel> getDataAttributeModels(Set<UniformResourceName> urns, Set<String> modelNames,
-            Pageable pageable) throws ModuleException {
+    public Page<AttributeModel> getDataAttributeModels(Set<UniformResourceName> urns,
+                                                       Set<String> modelNames,
+                                                       Pageable pageable) throws ModuleException {
         if (((modelNames == null) || modelNames.isEmpty()) && ((urns == null) || urns.isEmpty())) {
             List<Dataset> datasets = datasetRepository.findAll();
             return getDataAttributeModelsFromDatasets(datasets, pageable);
@@ -250,8 +270,9 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
     }
 
     @Override
-    public Page<AttributeModel> getAttributeModels(Set<UniformResourceName> urns, Set<String> modelNames,
-            Pageable pageable) throws ModuleException {
+    public Page<AttributeModel> getAttributeModels(Set<UniformResourceName> urns,
+                                                   Set<String> modelNames,
+                                                   Pageable pageable) throws ModuleException {
         Page<AttributeModel> attModelPage;
         if (((modelNames == null) || modelNames.isEmpty()) && ((urns == null) || urns.isEmpty())) {
             // Retrieve all dataset models attributes
@@ -262,8 +283,9 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
             if ((modelNames == null) || modelNames.isEmpty()) {
                 // Retrieve all attributes associated to the given datasets
                 List<Dataset> datasets = datasetRepository.findByIpIdIn(urns);
-                Set<String> dsModelNames = datasets.stream().map(ds -> ds.getModel().getName())
-                        .collect(Collectors.toSet());
+                Set<String> dsModelNames = datasets.stream()
+                                                   .map(ds -> ds.getModel().getName())
+                                                   .collect(Collectors.toSet());
                 attModelPage = modelAttributeService.getAttributeModels(dsModelNames, pageable);
             } else {
                 // Retrieve all attributes associated to the given models.
@@ -278,7 +300,7 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
      * extract all the AttributeModel of {@link DataObject} that can be contained into the datasets
      */
     private Page<AttributeModel> getDataAttributeModelsFromDatasets(Collection<Dataset> datasets, Pageable pageable)
-            throws ModuleException {
+        throws ModuleException {
         Set<String> modelNames = datasets.stream().map(ds -> ds.getDataModel()).collect(Collectors.toSet());
         Page<AttributeModel> attModelPage = modelAttributeService.getAttributeModels(modelNames, pageable);
         return attModelPage;

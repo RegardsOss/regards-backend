@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.engine;
 
 import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
@@ -41,24 +41,21 @@ public class WorkloadEngineRepositoryImpl implements IWorkloadEngineRepository {
         String name = engine.name();
         if (enginesByName.containsKey(name)) {
             return Mono.error(new EngineAlreadyExistsException(name));
-        }
-        else {
+        } else {
             enginesByName.put(name, engine);
             return Mono.just(engine);
         }
     }
 
-    @Override public Mono<IWorkloadEngine> findByName(String name) {
-        return Mono.defer(() ->
-            Option.of(enginesByName.get(name)).fold(
-                    () -> Mono.error(new EngineNotFoundException(name)),
-                    Mono::just
-            )
-        );
+    @Override
+    public Mono<IWorkloadEngine> findByName(String name) {
+        return Mono.defer(() -> Option.of(enginesByName.get(name))
+                                      .fold(() -> Mono.error(new EngineNotFoundException(name)), Mono::just));
     }
 
     @SuppressWarnings("serial")
     public static class EngineAlreadyExistsException extends Exception {
+
         public EngineAlreadyExistsException(String s) {
             super("Engine already exists for name '" + s + "'");
         }
@@ -66,6 +63,7 @@ public class WorkloadEngineRepositoryImpl implements IWorkloadEngineRepository {
 
     @SuppressWarnings("serial")
     public static class EngineNotFoundException extends Exception {
+
         public EngineNotFoundException(String s) {
             super("Engine not found for name '" + s + "'");
         }

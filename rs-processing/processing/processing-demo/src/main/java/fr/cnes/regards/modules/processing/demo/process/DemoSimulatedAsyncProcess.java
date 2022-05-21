@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.demo.process;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -50,17 +50,20 @@ public class DemoSimulatedAsyncProcess {
             try {
                 Thread.sleep(500L);
                 publisher.publish(new StepEvent(ctx.getExec().getId(),
-                        new ExecutionEvent.IntermediaryEvent(PStep.prepare("preparing..."))));
+                                                new ExecutionEvent.IntermediaryEvent(PStep.prepare("preparing..."))));
                 Thread.sleep(500L);
-                publisher.publish(new StepEvent(ctx.getExec().getId(), new ExecutionEvent.IntermediaryEvent(
-                        PStep.running("running with profile " + profile + "..."))));
+                publisher.publish(new StepEvent(ctx.getExec().getId(),
+                                                new ExecutionEvent.IntermediaryEvent(PStep.running(
+                                                    "running with profile " + profile + "..."))));
                 Thread.sleep(2000L);
                 if (profile.equals(FORCE_FAILURE)) {
-                    publisher.publish(new StepEvent(ctx.getExec().getId(), new ExecutionEvent.FinalEvent(
-                            PStep.failure("failure for profile " + profile + "..."), List.empty())));
+                    publisher.publish(new StepEvent(ctx.getExec().getId(),
+                                                    new ExecutionEvent.FinalEvent(PStep.failure(
+                                                        "failure for profile " + profile + "..."), List.empty())));
                 } else {
-                    publisher.publish(new StepEvent(ctx.getExec().getId(), new ExecutionEvent.FinalEvent(
-                            PStep.success("success for profile " + profile + "..."), List.empty())));
+                    publisher.publish(new StepEvent(ctx.getExec().getId(),
+                                                    new ExecutionEvent.FinalEvent(PStep.success(
+                                                        "success for profile " + profile + "..."), List.empty())));
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

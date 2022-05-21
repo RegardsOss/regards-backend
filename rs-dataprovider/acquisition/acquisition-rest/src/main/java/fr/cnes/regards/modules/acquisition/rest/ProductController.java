@@ -18,26 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.rest;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -49,9 +29,25 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * {@link Product} REST module controller
+ *
  * @author Sébastien Binda
  */
 @RestController
@@ -89,29 +85,36 @@ public class ProductController implements IResourceController<Product> {
 
     /**
      * Search for {@link Product} entities matching parameters
-     * @param state {@link ProductState}
-     * @param sipState {@link SIPState}
-     * @param productName {@link String}
-     * @param session {@link String}
+     *
+     * @param state             {@link ProductState}
+     * @param sipState          {@link SIPState}
+     * @param productName       {@link String}
+     * @param session           {@link String}
      * @param processingChainId {@likn Long} id of {@link AcquisitionProcessingChain}
-     * @param from {@link OffsetDateTime}
+     * @param from              {@link OffsetDateTime}
      * @return {@link Product}s
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Search for products", role = DefaultRole.ADMIN)
     public ResponseEntity<PagedModel<EntityModel<Product>>> search(
-            @RequestParam(name = REQUEST_PARAM_STATE, required = false) List<ProductState> state,
-            @RequestParam(name = REQUEST_PARAM_SIP_STATE, required = false) List<ISipState> sipState,
-            @RequestParam(name = REQUEST_PARAM_PRODUCT_NAME, required = false) String productName,
-            @RequestParam(name = REQUEST_PARAM_SESSION, required = false) String session,
-            @RequestParam(name = REQUEST_PARAM_CHAIN_ID, required = false) Long processingChainId,
-            @RequestParam(name = REQUEST_PARAM_NO_SESSION, required = false) Boolean noSession,
-            @RequestParam(name = REQUEST_PARAM_FROM,
-                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
-            @PageableDefault(sort = "lastUpdate", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<Product> assembler) {
-        Page<Product> products = productService.search(state, sipState, productName, session, processingChainId, from,
-                                                       noSession, pageable);
+        @RequestParam(name = REQUEST_PARAM_STATE, required = false) List<ProductState> state,
+        @RequestParam(name = REQUEST_PARAM_SIP_STATE, required = false) List<ISipState> sipState,
+        @RequestParam(name = REQUEST_PARAM_PRODUCT_NAME, required = false) String productName,
+        @RequestParam(name = REQUEST_PARAM_SESSION, required = false) String session,
+        @RequestParam(name = REQUEST_PARAM_CHAIN_ID, required = false) Long processingChainId,
+        @RequestParam(name = REQUEST_PARAM_NO_SESSION, required = false) Boolean noSession,
+        @RequestParam(name = REQUEST_PARAM_FROM, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+        OffsetDateTime from,
+        @PageableDefault(sort = "lastUpdate", direction = Sort.Direction.ASC) Pageable pageable,
+        PagedResourcesAssembler<Product> assembler) {
+        Page<Product> products = productService.search(state,
+                                                       sipState,
+                                                       productName,
+                                                       session,
+                                                       processingChainId,
+                                                       from,
+                                                       noSession,
+                                                       pageable);
         return new ResponseEntity<>(toPagedResources(products, assembler), HttpStatus.OK);
     }
 

@@ -54,7 +54,6 @@ import java.util.List;
  * Tools for debugging (de)serialization problems
  *
  * @author Marc Sordi
- *
  */
 @Ignore
 @RunWith(SpringRunner.class)
@@ -77,10 +76,12 @@ public class AttributeSerializationDebuggerIT extends AbstractDaoIT {
     @EnableAutoConfiguration
     @ComponentScan(basePackages = "fr.cnes.regards.modules")
     static class StaticConfiguration {
+
     }
 
     /**
      * Import a model
+     *
      * @param xmlFilePath model as XML file
      * @return list of {@link ModelAttrAssoc}
      */
@@ -97,6 +98,7 @@ public class AttributeSerializationDebuggerIT extends AbstractDaoIT {
 
     /**
      * Read a JSON file
+     *
      * @param jsonFilePath JSON file path
      * @return String representation of the JSON
      */
@@ -161,8 +163,8 @@ public class AttributeSerializationDebuggerIT extends AbstractDaoIT {
         }
 
         // Define JSON file
-        Path jsonFilePath = USE_CASE_PATH
-                .resolve(Paths.get("useCase001", "elasticsearch response with two date ko.json"));
+        Path jsonFilePath = USE_CASE_PATH.resolve(Paths.get("useCase001",
+                                                            "elasticsearch response with two date ko.json"));
 
         // Read JSON
         String jsonString = readJson(jsonFilePath);

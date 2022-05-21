@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.framework.urn.converters;
 
-import java.io.IOException;
-
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
@@ -27,8 +25,11 @@ import com.google.gson.stream.JsonWriter;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 
+import java.io.IOException;
+
 /**
  * This adapter is used by Gson via @JsonAdapter(AbstractUrnAdapter.class) on AbstractUniformResourceName<?> class
+ *
  * @author Kevin Marchois
  */
 @GsonTypeAdapter(adapted = UniformResourceName.class)

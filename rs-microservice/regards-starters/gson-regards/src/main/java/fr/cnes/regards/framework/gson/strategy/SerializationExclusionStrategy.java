@@ -18,16 +18,16 @@
  */
 package fr.cnes.regards.framework.gson.strategy;
 
-import java.lang.annotation.Annotation;
-
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
+import java.lang.annotation.Annotation;
 
 /**
  * Annotation based exclusion strategy
+ *
  * @author Marc Sordi
  */
 public class SerializationExclusionStrategy<T extends Annotation> implements ExclusionStrategy {

@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
  * Client interface for requesting the ingest service
- *
+ * <p>
  * Client requests are done asynchronously.
  * To listen to the feedback messages, you have to implement your own {@link IIngestClientListener}.
  */
@@ -32,8 +32,9 @@ public interface IIngestClient {
     /**
      * Requests a SIP ingestion with specified ingestion metadata.
      * <br/>
+     *
      * @param ingestMetadata related {@link IngestMetadataDto}
-     * @param sip the {@link SIP} to ingest
+     * @param sip            the {@link SIP} to ingest
      * @return {@link RequestInfo} containing a unique request id. This request id can
      * be used to identify responses in your {@link IIngestClientListener} implementation.
      * @throws IngestClientException if error occurs preparing ingestion submission

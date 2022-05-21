@@ -21,11 +21,9 @@ package fr.cnes.regards.modules.model.service.exception;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
- *
  * Error that occurs if attribute does not support affected restriction
  *
  * @author Marc Sordi
- *
  */
 public class UnsupportedRestrictionException extends ModuleException {
 

@@ -27,7 +27,8 @@ import lombok.Value;
  *
  * @author Guillaume Andrieu
  */
-@Value @AllArgsConstructor
+@Value
+@AllArgsConstructor
 public class ExecutionCorrelationIdentifier {
 
     String user;

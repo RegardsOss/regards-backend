@@ -18,23 +18,21 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.converters;
 
-import java.io.IOException;
-
 import com.google.gson.JsonParseException;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
-
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
 import fr.cnes.regards.modules.acquisition.domain.SipStateManager;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
+
+import java.io.IOException;
 
 /**
  * Adapter for extended SIP state
  *
  * @author Marc Sordi
- *
  */
 @GsonTypeAdapter(adapted = ISipState.class)
 public class SipStateAdapter extends TypeAdapter<ISipState> {

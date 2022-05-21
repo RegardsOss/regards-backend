@@ -47,7 +47,6 @@ import java.util.stream.Collectors;
  * This controller allows to check data access rights
  *
  * @author Marc Sordi
- *
  */
 @RestController
 @RequestMapping(path = AccessRightController.TYPE_MAPPING)
@@ -91,7 +90,7 @@ public class AccessRightController {
     @RequestMapping(method = RequestMethod.POST, value = HAS_ACCESS_MAPPING)
     @ResourceAccess(description = "Allows to know if the user can download entities", role = DefaultRole.PUBLIC)
     public ResponseEntity<Set<UniformResourceName>> hasAccess(@RequestBody Collection<UniformResourceName> inUrns)
-            throws ModuleException {
+        throws ModuleException {
         if (inUrns.isEmpty()) {
             return ResponseEntity.ok(Collections.emptySet());
         }
@@ -100,13 +99,20 @@ public class AccessRightController {
         // or clauses plus some depending on user access => create partitions of 1 000
         Iterable<List<UniformResourceName>> urnLists = Iterables.partition(inUrns, 1_000);
         for (List<UniformResourceName> urns : urnLists) {
-            ICriterion criterion = ICriterion.or(urns.stream().map(urn -> ICriterion.eq("ipId", urn.toString(), StringMatchType.KEYWORD))
-                    .toArray(n -> new ICriterion[n]));
-            FacetPage<DataObject> page = searchService.search(criterion, Searches.onSingleEntity(EntityType.DATA), null,
+            ICriterion criterion = ICriterion.or(urns.stream()
+                                                     .map(urn -> ICriterion.eq("ipId",
+                                                                               urn.toString(),
+                                                                               StringMatchType.KEYWORD))
+                                                     .toArray(n -> new ICriterion[n]));
+            FacetPage<DataObject> page = searchService.search(criterion,
+                                                              Searches.onSingleEntity(EntityType.DATA),
+                                                              null,
                                                               PageRequest.of(0, urns.size()));
-            urnsWithAccess.addAll(page.getContent().parallelStream()
-                    .filter(dataObject -> dataObject.getFiles().containsKey(DataType.RAWDATA))
-                    .map(dataObject -> dataObject.getIpId()).collect(Collectors.toSet()));
+            urnsWithAccess.addAll(page.getContent()
+                                      .parallelStream()
+                                      .filter(dataObject -> dataObject.getFiles().containsKey(DataType.RAWDATA))
+                                      .map(dataObject -> dataObject.getIpId())
+                                      .collect(Collectors.toSet()));
         }
         return ResponseEntity.ok(urnsWithAccess);
     }

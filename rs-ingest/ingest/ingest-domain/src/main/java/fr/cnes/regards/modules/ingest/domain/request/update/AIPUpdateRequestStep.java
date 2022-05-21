@@ -22,6 +22,7 @@ package fr.cnes.regards.modules.ingest.domain.request.update;
 
 /**
  * Available steps to notify AIP updates
+ *
  * @author Iliana Ghazali
  */
 
@@ -29,7 +30,9 @@ public enum AIPUpdateRequestStep {
 
     INITIAL,
 
-    /** For notification */
+    /**
+     * For notification
+     */
 
     LOCAL_TO_BE_NOTIFIED,
 

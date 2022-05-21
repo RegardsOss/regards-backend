@@ -24,7 +24,9 @@ import org.locationtech.spatial4j.shape.Rectangle;
 import java.util.Objects;
 
 public class EnvelopeBuilder extends ShapeBuilder<Rectangle, org.elasticsearch.geometry.Rectangle, EnvelopeBuilder> {
+
     private final Coordinate topLeft;
+
     private final Coordinate bottomRight;
 
     public EnvelopeBuilder(Coordinate topLeft, Coordinate bottomRight) {
@@ -68,7 +70,10 @@ public class EnvelopeBuilder extends ShapeBuilder<Rectangle, org.elasticsearch.g
     }
 
     public org.elasticsearch.geometry.Rectangle buildGeometry() {
-        return new org.elasticsearch.geometry.Rectangle(this.topLeft.x, this.bottomRight.x, this.topLeft.y, this.bottomRight.y);
+        return new org.elasticsearch.geometry.Rectangle(this.topLeft.x,
+                                                        this.bottomRight.x,
+                                                        this.topLeft.y,
+                                                        this.bottomRight.y);
     }
 
     public int numDimensions() {
@@ -76,14 +81,14 @@ public class EnvelopeBuilder extends ShapeBuilder<Rectangle, org.elasticsearch.g
     }
 
     public int hashCode() {
-        return Objects.hash(new Object[]{this.topLeft, this.bottomRight});
+        return Objects.hash(new Object[] { this.topLeft, this.bottomRight });
     }
 
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         } else if (obj != null && this.getClass() == obj.getClass()) {
-            EnvelopeBuilder other = (EnvelopeBuilder)obj;
+            EnvelopeBuilder other = (EnvelopeBuilder) obj;
             return Objects.equals(this.topLeft, other.topLeft) && Objects.equals(this.bottomRight, other.bottomRight);
         } else {
             return false;

@@ -18,15 +18,6 @@
  */
 package fr.cnes.regards.modules.opensearch.service.cache.attributemodel;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
@@ -35,12 +26,19 @@ import fr.cnes.regards.modules.model.domain.attributes.AttributeModelBuilder;
 import fr.cnes.regards.modules.model.domain.attributes.Fragment;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.gson.IAttributeHelper;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Test attribute property map algorithm
  *
  * @author Marc Sordi
- *
  */
 public class PropertyMapChecker {
 
@@ -58,8 +56,9 @@ public class PropertyMapChecker {
     public void init() {
         atts = new ArrayList<>();
         attributeHelper = Mockito.mock(IAttributeHelper.class);
-        finder = new AttributeFinder(attributeHelper, Mockito.mock(ISubscriber.class),
-                Mockito.mock(IRuntimeTenantResolver.class));
+        finder = new AttributeFinder(attributeHelper,
+                                     Mockito.mock(ISubscriber.class),
+                                     Mockito.mock(IRuntimeTenantResolver.class));
     }
 
     private Map<String, AttributeModel> getBuiltMap(List<AttributeModel> atts) {
@@ -87,8 +86,9 @@ public class PropertyMapChecker {
     @Test
     public void conflict() {
         // Define attributes
-        atts.add(AttributeModelBuilder
-                .build(StaticProperties.FEATURE_TAGS, PropertyType.BOOLEAN, "Conflictual dynamic tags").get());
+        atts.add(AttributeModelBuilder.build(StaticProperties.FEATURE_TAGS,
+                                             PropertyType.BOOLEAN,
+                                             "Conflictual dynamic tags").get());
 
         // Build and get map
         Map<String, AttributeModel> builtMap = getBuiltMap(atts);
@@ -100,7 +100,7 @@ public class PropertyMapChecker {
         // Define attributes
         String startDate = "START_DATE";
         AttributeModel startDateModel = AttributeModelBuilder.build(startDate, PropertyType.DATE_ISO8601, "Start date")
-                .get();
+                                                             .get();
         atts.add(startDateModel);
 
         // Build and get map
@@ -108,8 +108,7 @@ public class PropertyMapChecker {
         assertCount(builtMap, 2);
 
         Assert.assertTrue(builtMap.containsKey(startDate));
-        Assert.assertTrue(builtMap
-                .containsKey(startDateModel.getJsonPathForNamespace(StaticProperties.FEATURE_PROPERTIES)));
+        Assert.assertTrue(builtMap.containsKey(startDateModel.getJsonPathForNamespace(StaticProperties.FEATURE_PROPERTIES)));
         Assert.assertTrue(builtMap.containsKey(startDateModel.getFullJsonPath()));
     }
 
@@ -119,7 +118,8 @@ public class PropertyMapChecker {
         String startDate = "START_DATE";
         String fragment = "fragment";
         AttributeModel startDateModel = AttributeModelBuilder.build(startDate, PropertyType.DATE_ISO8601, "Start date")
-                .fragment(Fragment.buildFragment(fragment, "description")).get();
+                                                             .fragment(Fragment.buildFragment(fragment, "description"))
+                                                             .get();
         atts.add(startDateModel);
 
         // Build and get map
@@ -128,8 +128,7 @@ public class PropertyMapChecker {
 
         Assert.assertTrue(builtMap.containsKey(startDate));
         Assert.assertTrue(builtMap.containsKey(startDateModel.getJsonPathForNamespace("")));
-        Assert.assertTrue(builtMap
-                .containsKey(startDateModel.getJsonPathForNamespace(StaticProperties.FEATURE_PROPERTIES)));
+        Assert.assertTrue(builtMap.containsKey(startDateModel.getJsonPathForNamespace(StaticProperties.FEATURE_PROPERTIES)));
         Assert.assertTrue(builtMap.containsKey(startDateModel.getFullJsonPath()));
     }
 
@@ -139,14 +138,18 @@ public class PropertyMapChecker {
         String startDate = "START_DATE";
         String fragment1 = "fragment1";
         AttributeModel startDateModel = AttributeModelBuilder.build(startDate, PropertyType.DATE_ISO8601, "Start date")
-                .fragment(Fragment.buildFragment(fragment1, "description")).get();
+                                                             .fragment(Fragment.buildFragment(fragment1, "description"))
+                                                             .get();
         atts.add(startDateModel);
 
         // Define conflictual attribute
         String fragment2 = "fragment2";
-        AttributeModel startDateModel2 = AttributeModelBuilder
-                .build(startDate, PropertyType.DATE_ISO8601, "Start date 2")
-                .fragment(Fragment.buildFragment(fragment2, "description")).get();
+        AttributeModel startDateModel2 = AttributeModelBuilder.build(startDate,
+                                                                     PropertyType.DATE_ISO8601,
+                                                                     "Start date 2")
+                                                              .fragment(Fragment.buildFragment(fragment2,
+                                                                                               "description"))
+                                                              .get();
         atts.add(startDateModel2);
 
         // Build and get map
@@ -155,12 +158,10 @@ public class PropertyMapChecker {
 
         Assert.assertTrue(!builtMap.containsKey(startDate));
         Assert.assertTrue(builtMap.containsKey(startDateModel.getJsonPathForNamespace("")));
-        Assert.assertTrue(builtMap
-                .containsKey(startDateModel.getJsonPathForNamespace(StaticProperties.FEATURE_PROPERTIES)));
+        Assert.assertTrue(builtMap.containsKey(startDateModel.getJsonPathForNamespace(StaticProperties.FEATURE_PROPERTIES)));
         Assert.assertTrue(builtMap.containsKey(startDateModel.getFullJsonPath()));
         Assert.assertTrue(builtMap.containsKey(startDateModel2.getJsonPathForNamespace("")));
-        Assert.assertTrue(builtMap
-                .containsKey(startDateModel2.getJsonPathForNamespace(StaticProperties.FEATURE_PROPERTIES)));
+        Assert.assertTrue(builtMap.containsKey(startDateModel2.getJsonPathForNamespace(StaticProperties.FEATURE_PROPERTIES)));
         Assert.assertTrue(builtMap.containsKey(startDateModel2.getFullJsonPath()));
     }
 }

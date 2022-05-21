@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.plugins.impl.sample;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -34,41 +34,40 @@ import io.vavr.collection.Seq;
 import io.vavr.control.Try;
 import reactor.core.publisher.Mono;
 
-@Plugin(id = "UselessProcessPlugin",
-        version = "1.0.0-SNAPSHOT",
-        description = "UselessProcessPlugin description",
-        author = "REGARDS Team",
-        contact = "regards@c-s.fr",
-        license = "GPLv3",
-        owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+@Plugin(id = "UselessProcessPlugin", version = "1.0.0-SNAPSHOT", description = "UselessProcessPlugin description",
+    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
+    url = "https://github.com/RegardsOss")
 public class UselessProcessPlugin implements IProcessDefinition {
 
     private IResultSizeForecast sizeForecast = new AbsoluteResultSizeForecast(0);
 
-    @Override public OrderProcessInfo processInfo() {
-        return new OrderProcessInfo(
-            Scope.FEATURE,
-            Cardinality.ONE_PER_INPUT_FILE,
-            List.of(DataType.RAWDATA),
-            new SizeLimit(SizeLimit.Type.FILES, 0L),
-            sizeForecast, Boolean.FALSE
-        );
+    @Override
+    public OrderProcessInfo processInfo() {
+        return new OrderProcessInfo(Scope.FEATURE,
+                                    Cardinality.ONE_PER_INPUT_FILE,
+                                    List.of(DataType.RAWDATA),
+                                    new SizeLimit(SizeLimit.Type.FILES, 0L),
+                                    sizeForecast,
+                                    Boolean.FALSE);
     }
 
-    @Override public Try<IResultSizeForecast> sizeForecast() {
+    @Override
+    public Try<IResultSizeForecast> sizeForecast() {
         return Try.success(sizeForecast);
     }
 
-    @Override public Try<IRunningDurationForecast> durationForecast() {
+    @Override
+    public Try<IRunningDurationForecast> durationForecast() {
         return Try.success(IRunningDurationForecast.defaultDuration());
     }
 
-    @Override public IExecutable executable() {
+    @Override
+    public IExecutable executable() {
         return IExecutable.wrap(Mono::just);
     }
 
-    @Override public Seq<ExecutionParameterDescriptor> parameters() {
+    @Override
+    public Seq<ExecutionParameterDescriptor> parameters() {
         return List.empty();
     }
 }

@@ -18,15 +18,13 @@
  */
 package fr.cnes.regards.modules.model.service;
 
-import java.util.List;
-
+import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionType;
+import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionType;
-import fr.cnes.regards.modules.model.dto.properties.PropertyType;
-import fr.cnes.regards.modules.model.service.RestrictionService;
+import java.util.List;
 
 /**
  * Restriction service test
@@ -46,8 +44,9 @@ public class RestrictionServiceTest {
         restrictionService.afterPropertiesSet();
     }
 
-    private void testRestriction(PropertyType pPropertyType, int pMatchedRestrictions,
-            RestrictionType... pAcceptableRestrictions) {
+    private void testRestriction(PropertyType pPropertyType,
+                                 int pMatchedRestrictions,
+                                 RestrictionType... pAcceptableRestrictions) {
         final List<String> restrictions = restrictionService.getRestrictions(pPropertyType);
         Assert.assertEquals(pMatchedRestrictions, restrictions.size());
         if (pAcceptableRestrictions != null) {

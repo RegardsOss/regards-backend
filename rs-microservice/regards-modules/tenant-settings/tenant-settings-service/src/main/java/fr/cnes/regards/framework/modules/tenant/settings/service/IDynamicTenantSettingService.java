@@ -22,14 +22,14 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
-import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSettingDto;
 
 import java.util.Optional;
 import java.util.Set;
 
 public interface IDynamicTenantSettingService {
 
-    DynamicTenantSetting create(DynamicTenantSetting dynamicTenantSetting) throws EntityOperationForbiddenException, EntityInvalidException, EntityNotFoundException;
+    DynamicTenantSetting create(DynamicTenantSetting dynamicTenantSetting)
+        throws EntityOperationForbiddenException, EntityInvalidException, EntityNotFoundException;
 
     Optional<DynamicTenantSetting> read(String name);
 
@@ -37,11 +37,13 @@ public interface IDynamicTenantSettingService {
 
     Set<DynamicTenantSetting> readAll();
 
-    <T> DynamicTenantSetting update(String name, T value) throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException;
+    <T> DynamicTenantSetting update(String name, T value)
+        throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException;
 
     void delete(String name) throws EntityNotFoundException;
 
-    DynamicTenantSetting reset(String name) throws EntityNotFoundException, EntityInvalidException, EntityOperationForbiddenException;
+    DynamicTenantSetting reset(String name)
+        throws EntityNotFoundException, EntityInvalidException, EntityOperationForbiddenException;
 
     boolean canUpdate(String name);
 }

@@ -20,8 +20,9 @@ package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transact
 
 /**
  * Class TestDaoException
- *
+ * <p>
  * DAO Exception for tests.
+ *
  * @author CS
  * @since TODO
  */
@@ -29,6 +30,7 @@ public class DaoTestException extends Exception {
 
     /**
      * serialVersionUID field.
+     *
      * @author CS
      */
     private static final long serialVersionUID = 1L;
@@ -42,8 +44,9 @@ public class DaoTestException extends Exception {
 
     /**
      * Constructor
+     *
      * @param pMessage message
-     * @param pCause cause
+     * @param pCause   cause
      */
     public DaoTestException(String pMessage, Throwable pCause) {
         super(pMessage, pCause);
@@ -51,6 +54,7 @@ public class DaoTestException extends Exception {
 
     /**
      * Constructor
+     *
      * @param pMessage message
      */
     public DaoTestException(String pMessage) {

@@ -18,21 +18,22 @@
  */
 package fr.cnes.regards.modules.dam.plugin.dataaccess.accessright;
 
-import java.time.OffsetDateTime;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.plugins.IDataObjectAccessFilterPlugin;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 
+import java.time.OffsetDateTime;
+
 /**
  * Plugin to allow access to dataobjects newly created.
+ *
  * @author Sébastien Binda
  */
 @Plugin(id = "NewDataObjectsAccess", version = "4.0.0-SNAPSHOT",
-        description = "Allow access only to new data objects. New data objects are thoses created at most X days ago. X is a parameter to configure.",
-        author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+    description = "Allow access only to new data objects. New data objects are thoses created at most X days ago. X is a parameter to configure.",
+    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
+    url = "https://github.com/RegardsOss")
 public class NewDataObjectsAccessPlugin implements IDataObjectAccessFilterPlugin {
 
     public static final String NB_DAYS_PARAM = "numberOfDays";
@@ -43,8 +44,8 @@ public class NewDataObjectsAccessPlugin implements IDataObjectAccessFilterPlugin
     private long numberOfDays;
 
     @PluginParameter(name = DATE_ATTR_PARAM, label = "Date attribute",
-            description = "It's the model's attribute's name with the fragment if there is. The model contains the date. In order to use an attribute from the meta of your datas, use the prefix \"feature.properties\" like \"feature.properties.DataStartDate\". Without this prefix you can access regards internal meta attributes like default selected date attribute \"creationDate\"",
-            defaultValue = "creationDate", optional = true)
+        description = "It's the model's attribute's name with the fragment if there is. The model contains the date. In order to use an attribute from the meta of your datas, use the prefix \"feature.properties\" like \"feature.properties.DataStartDate\". Without this prefix you can access regards internal meta attributes like default selected date attribute \"creationDate\"",
+        defaultValue = "creationDate", optional = true)
     private String dateAttribute;
 
     @Override

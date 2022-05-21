@@ -26,13 +26,11 @@ import org.springframework.jmx.export.MBeanExporter;
 import org.springframework.jmx.support.RegistrationPolicy;
 
 /**
- *
  * Class ProjectDaoTestConfiguration
- *
+ * <p>
  * Configuration class for DAO tests.
  *
  * @author CS
-
  */
 @Configuration
 @EnableAutoConfiguration
@@ -41,7 +39,7 @@ public class ProjectDaoTestConfiguration {
 
     @Bean
     public MBeanExporter mBeanExporter() {
-        MBeanExporter exporter=new MBeanExporter();
+        MBeanExporter exporter = new MBeanExporter();
         exporter.setRegistrationPolicy(RegistrationPolicy.IGNORE_EXISTING);
         return exporter;
     }

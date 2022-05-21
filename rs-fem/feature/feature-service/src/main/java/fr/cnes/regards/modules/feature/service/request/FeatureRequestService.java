@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.service.request;
 
-import com.google.common.collect.*;
+import com.google.common.collect.Maps;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.feature.dao.*;
@@ -49,7 +49,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- *
  * @author kevin
  * @author Sébastien Binda
  */
@@ -96,39 +95,40 @@ public class FeatureRequestService implements IFeatureRequestService {
     public IFeatureEntityRepository featureRepo;
 
     @Override
-    public RequestsPage<FeatureRequestDTO> findAll(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection,
-            Pageable page) {
+    public RequestsPage<FeatureRequestDTO> findAll(FeatureRequestTypeEnum type,
+                                                   FeatureRequestsSelectionDTO selection,
+                                                   Pageable page) {
         Page<FeatureRequestDTO> results = new PageImpl<>(Lists.newArrayList(), page, 0L);
         RequestsInfo info = RequestsInfo.build(0L);
         switch (type) {
             case COPY:
                 results = featureCopyService.findRequests(selection, page)
-                        .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                                            .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
                 info = featureCopyService.getInfo(selection);
                 break;
             case CREATION:
                 results = featureCreationService.findRequests(selection, page)
-                        .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                                                .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
                 info = featureCreationService.getInfo(selection);
                 break;
             case DELETION:
                 results = featureDeletionService.findRequests(selection, page)
-                        .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                                                .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
                 info = featureDeletionService.getInfo(selection);
                 break;
             case NOTIFICATION:
                 results = featureNotificationService.findRequests(selection, page)
-                        .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                                                    .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
                 info = featureNotificationService.getInfo(selection);
                 break;
             case SAVE_METADATA:
                 results = featureMetadataService.findRequests(selection, page)
-                        .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                                                .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
                 info = featureMetadataService.getInfo(selection);
                 break;
             case UPDATE:
                 results = featureUpdateService.findRequests(selection, page)
-                        .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
+                                              .map(fcr -> AbstractFeatureRequest.toDTO(fcr));
                 info = featureUpdateService.getInfo(selection);
                 break;
             default:
@@ -192,8 +192,10 @@ public class FeatureRequestService implements IFeatureRequestService {
     @Override
     public void handleStorageSuccess(Set<RequestResultInfoDTO> requestsInfo) {
         long scheduleStart = System.currentTimeMillis();
-        LOGGER.trace("Handling {} storage success responses from storage",requestsInfo.size());
-        Map<String, List<RequestResultInfoDTO>> requestInfoPerGroupId = requestsInfo.stream().collect(Collectors.groupingBy(RequestResultInfoDTO::getGroupId));
+        LOGGER.trace("Handling {} storage success responses from storage", requestsInfo.size());
+        Map<String, List<RequestResultInfoDTO>> requestInfoPerGroupId = requestsInfo.stream()
+                                                                                    .collect(Collectors.groupingBy(
+                                                                                        RequestResultInfoDTO::getGroupId));
         Map<FeatureEntity, List<RequestResultInfoDTO>> updateInfos = new HashMap<>();
 
         // Find FeatureCreationRequest associated to success storage responses if any
@@ -206,11 +208,14 @@ public class FeatureRequestService implements IFeatureRequestService {
         Set<FeatureUpdateRequest> updateRequests = this.furRepo.findByGroupIdIn(requestInfoPerGroupId.keySet());
         if (!updateRequests.isEmpty()) {
             // Retrieve features to update associated to storage responses
-            List<FeatureEntity> featuresToUpdate = featureRepo.findCompleteByUrnIn(
-                    updateRequests.stream().map(r -> r.getUrn()).collect(Collectors.toSet()));
+            List<FeatureEntity> featuresToUpdate = featureRepo.findCompleteByUrnIn(updateRequests.stream()
+                                                                                                 .map(r -> r.getUrn())
+                                                                                                 .collect(Collectors.toSet()));
             for (FeatureEntity f : featuresToUpdate) {
                 // Associate Feature to FeatureUpdaterRequest thanks to feature urn
-                Optional<FeatureUpdateRequest> request = updateRequests.stream().filter(r -> r.getUrn().equals(f.getUrn())).findFirst();
+                Optional<FeatureUpdateRequest> request = updateRequests.stream()
+                                                                       .filter(r -> r.getUrn().equals(f.getUrn()))
+                                                                       .findFirst();
                 if (request.isPresent()) {
                     updateInfos.put(f, requestInfoPerGroupId.get(request.get().getGroupId()));
                 }
@@ -223,8 +228,9 @@ public class FeatureRequestService implements IFeatureRequestService {
             // After update done, if updated feature is associated to an update request we need to set feature toNotify
             // in the request for further notification step.
             Optional<FeatureUpdateRequest> updateRequest = updateRequests.stream()
-                    .filter(r -> r.getUrn().equals(updatedFeature.getUrn()))
-                    .findFirst();
+                                                                         .filter(r -> r.getUrn()
+                                                                                       .equals(updatedFeature.getUrn()))
+                                                                         .findFirst();
             updateRequest.ifPresent(u -> u.setToNotify(updatedFeature.getFeature()));
         }
 
@@ -232,7 +238,7 @@ public class FeatureRequestService implements IFeatureRequestService {
         featureCreationService.handleSuccessfulCreation(creationRequests);
         featureUpdateService.doOnSuccess(updateRequests);
         LOGGER.debug("------------->>> {} features updated from {} storage responses "
-                             + "associated to {} creation requests and {} update requests in {} ms",
+                         + "associated to {} creation requests and {} update requests in {} ms",
                      updatedFeatures.size(),
                      requestsInfo.size(),
                      creationRequests.size(),
@@ -259,12 +265,18 @@ public class FeatureRequestService implements IFeatureRequestService {
         Set<FeatureDeletionRequest> deletionRequests = fdrRepo.findByGroupIdIn(errorByGroupId.keySet());
 
         // publish error notification for all deletionRequests id
-        deletionRequests.forEach(item -> publisher.publish(FeatureRequestEvent.build(FeatureRequestType.DELETION, item.getRequestId(), item.getRequestOwner(), null,
-                                                                                     item.getUrn(), RequestState.ERROR, null)));
+        deletionRequests.forEach(item -> publisher.publish(FeatureRequestEvent.build(FeatureRequestType.DELETION,
+                                                                                     item.getRequestId(),
+                                                                                     item.getRequestOwner(),
+                                                                                     null,
+                                                                                     item.getUrn(),
+                                                                                     RequestState.ERROR,
+                                                                                     null)));
         // set FeatureDeletionRequest to error state
         deletionRequests.forEach(r -> {
             r.setState(RequestState.ERROR);
-            r.addError(String.format("Error during file deletion : %s", Optional.ofNullable(errorByGroupId.get(r.getGroupId())).orElse("unknown error.")));
+            r.addError(String.format("Error during file deletion : %s",
+                                     Optional.ofNullable(errorByGroupId.get(r.getGroupId())).orElse("unknown error.")));
         });
 
         featureDeletionService.doOnError(deletionRequests);
@@ -277,11 +289,18 @@ public class FeatureRequestService implements IFeatureRequestService {
      * @param requests {@link FeatureRequestDTO}s page
      */
     private void addProviderIdsToRequests(Page<FeatureRequestDTO> requests) {
-        List<FeatureUniformResourceName> missingUrns = requests.stream().map(FeatureRequestDTO::getUrn).filter(Objects::nonNull).collect(Collectors.toList());
+        List<FeatureUniformResourceName> missingUrns = requests.stream()
+                                                               .map(FeatureRequestDTO::getUrn)
+                                                               .filter(Objects::nonNull)
+                                                               .collect(Collectors.toList());
         if (!missingUrns.isEmpty()) {
-            List<IProviderIdByUrn> providerIds = abstractFeatureRequestRepo.findFeatureProviderIdFromRequestUrns(missingUrns);
+            List<IProviderIdByUrn> providerIds = abstractFeatureRequestRepo.findFeatureProviderIdFromRequestUrns(
+                missingUrns);
             requests.forEach(r -> {
-                providerIds.stream().filter(i -> i.getUrn().equals(r.getUrn())).findFirst().ifPresent(i -> r.setProviderId(i.getProviderId()));
+                providerIds.stream()
+                           .filter(i -> i.getUrn().equals(r.getUrn()))
+                           .findFirst()
+                           .ifPresent(i -> r.setProviderId(i.getProviderId()));
             });
         }
     }

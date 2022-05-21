@@ -18,21 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -47,13 +32,22 @@ import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storage.service.file.request.FileDeletionRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.RequestStatusService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 /**
  * REST Controller to handle requests on {@link FileRequestInfoDTO}s.<br/>
  * Those requests are DTO from {@link FileStorageRequest} {@link FileCopyRequest}, {@link FileCacheRequest} or {@link FileDeletionRequestService}.
  *
  * @author Sébastien Binda
- *
  */
 @RestController
 @RequestMapping(FileRequestsController.REQUESTS_PATH)
@@ -84,21 +78,23 @@ public class FileRequestsController implements IResourceController<FileRequestIn
     @RequestMapping(method = RequestMethod.GET, path = STORAGE_PATH + TYPE_PATH)
     @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.ADMIN)
     public ResponseEntity<PagedModel<EntityModel<FileRequestInfoDTO>>> search(
-            @PathVariable(name = "storage") String storageLocationId, @PathVariable(name = "type") FileRequestType type,
-            @RequestParam(name = STATUS_PARAM, required = false) FileRequestStatus status, Pageable page,
-            PagedResourcesAssembler<FileRequestInfoDTO> assembler) {
-        return new ResponseEntity<>(
-                toPagedResources(service.getRequestInfos(storageLocationId, type, Optional.ofNullable(status), page),
-                                 assembler),
-                HttpStatus.OK);
+        @PathVariable(name = "storage") String storageLocationId,
+        @PathVariable(name = "type") FileRequestType type,
+        @RequestParam(name = STATUS_PARAM, required = false) FileRequestStatus status,
+        Pageable page,
+        PagedResourcesAssembler<FileRequestInfoDTO> assembler) {
+        return new ResponseEntity<>(toPagedResources(service.getRequestInfos(storageLocationId,
+                                                                             type,
+                                                                             Optional.ofNullable(status),
+                                                                             page), assembler), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.DELETE, path = STORAGE_PATH + TYPE_PATH)
     @ResourceAccess(description = "Delete storage location", role = DefaultRole.ADMIN)
     public ResponseEntity<Void> delete(@PathVariable(name = "storage") String storageLocationId,
-            @PathVariable(name = "type") FileRequestType type,
-            @RequestParam(name = STATUS_PARAM, required = false) FileRequestStatus status, Pageable page)
-            throws ModuleException {
+                                       @PathVariable(name = "type") FileRequestType type,
+                                       @RequestParam(name = STATUS_PARAM, required = false) FileRequestStatus status,
+                                       Pageable page) throws ModuleException {
         service.deleteRequests(storageLocationId, type, Optional.ofNullable(status));
         return new ResponseEntity<>(HttpStatus.OK);
     }

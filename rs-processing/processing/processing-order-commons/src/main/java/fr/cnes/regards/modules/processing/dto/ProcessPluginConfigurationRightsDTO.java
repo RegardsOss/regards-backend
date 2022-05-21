@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -35,12 +35,16 @@ public class ProcessPluginConfigurationRightsDTO {
     @Value
     @AllArgsConstructor(onConstructor_ = { @JsonCreator })
     public static class Rights {
+
         String role;
+
         List<String> datasets;
+
         boolean isLinkedToAllDatasets;
     }
 
     PluginConfiguration pluginConfiguration;
+
     Rights rights;
 
 }

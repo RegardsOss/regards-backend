@@ -22,6 +22,7 @@ package fr.cnes.regards.framework.geojson;
  * This class represents a default GeoJson feature collection containing default {@link Feature}
  * identifier.<br/>
  * You can define your own extending {@link AbstractFeatureCollection}.
+ *
  * @author Marc Sordi
  */
 public class FeatureCollection extends AbstractFeatureCollection<Feature> {

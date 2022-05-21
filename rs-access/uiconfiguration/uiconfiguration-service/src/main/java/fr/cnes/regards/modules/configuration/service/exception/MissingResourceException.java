@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.configuration.service.exception;
 
 /**
  * Runtime exception thrown when a required Spring @Resource is null.
+ *
  * @author Xavier-Alexandre Brochard
  */
 @SuppressWarnings("serial")

@@ -22,7 +22,6 @@ import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
 /**
  * Event received by Feature Manager to acknowledge a feature has been received by a specific recipient

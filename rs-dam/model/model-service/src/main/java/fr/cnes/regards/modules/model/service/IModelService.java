@@ -18,20 +18,18 @@
  */
 package fr.cnes.regards.modules.model.service;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.List;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.model.domain.Model;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
+
 /**
- *
  * Model service
  *
  * @author Marc Sordi
- *
  */
 public interface IModelService {
 

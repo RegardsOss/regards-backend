@@ -18,30 +18,6 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
-import java.util.NoSuchElementException;
-import java.util.Optional;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -61,6 +37,24 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Encoders;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletResponse;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 /**
  * @author oroussel
@@ -93,39 +87,44 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
 
     @ResourceAccess(description = "Find all files from order for specified dataset", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET,
-            path = OrderControllerEndpointConfiguration.ORDERS_ORDER_ID_DATASET_DATASET_ID_FILES)
+        path = OrderControllerEndpointConfiguration.ORDERS_ORDER_ID_DATASET_DATASET_ID_FILES)
     public ResponseEntity<PagedModel<EntityModel<OrderDataFile>>> findFiles(@PathVariable("orderId") Long orderId,
-            @PathVariable("datasetId") Long datasetId, Pageable pageRequest,
-            PagedResourcesAssembler<OrderDataFile> assembler) {
+                                                                            @PathVariable("datasetId") Long datasetId,
+                                                                            Pageable pageRequest,
+                                                                            PagedResourcesAssembler<OrderDataFile> assembler) {
         Page<OrderDataFile> dataFiles = datasetTaskService.loadDataFiles(datasetId, pageRequest);
         return ResponseEntity.ok(toPagedResources(dataFiles, assembler));
     }
 
     @ResourceAccess(description = "Download a file that is part of an order", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = OrderControllerEndpointConfiguration.ORDERS_FILES_DATA_FILE_ID,
-            produces = MediaType.ALL_VALUE)
+        produces = MediaType.ALL_VALUE)
     public ResponseEntity<InputStreamResource> downloadFile(@PathVariable("dataFileId") Long dataFileId,
-            HttpServletResponse response) throws NoSuchElementException {
+                                                            HttpServletResponse response)
+        throws NoSuchElementException {
         return manageFile(Boolean.FALSE, dataFileId, Optional.empty(), response);
     }
 
     @ResourceAccess(description = "Test file download availability", role = DefaultRole.PUBLIC)
     @RequestMapping(method = RequestMethod.HEAD,
-            path = OrderControllerEndpointConfiguration.PUBLIC_ORDERS_FILES_DATA_FILE_ID)
+        path = OrderControllerEndpointConfiguration.PUBLIC_ORDERS_FILES_DATA_FILE_ID)
     public ResponseEntity<InputStreamResource> testDownloadFile(@PathVariable("dataFileId") Long dataFileId,
-            @RequestParam(name = IOrderService.ORDER_TOKEN) String token, HttpServletResponse response)
-            throws NoSuchElementException {
+                                                                @RequestParam(name = IOrderService.ORDER_TOKEN)
+                                                                String token,
+                                                                HttpServletResponse response)
+        throws NoSuchElementException {
         return manageFile(Boolean.TRUE, dataFileId, Optional.ofNullable(token), response);
     }
 
     @ResourceAccess(description = "Download a file that is part of an order granted by token",
-            role = DefaultRole.PUBLIC)
+        role = DefaultRole.PUBLIC)
     @RequestMapping(method = RequestMethod.GET,
-            path = OrderControllerEndpointConfiguration.PUBLIC_ORDERS_FILES_DATA_FILE_ID,
-            produces = MediaType.ALL_VALUE)
+        path = OrderControllerEndpointConfiguration.PUBLIC_ORDERS_FILES_DATA_FILE_ID, produces = MediaType.ALL_VALUE)
     public ResponseEntity<InputStreamResource> publicDownloadFile(@PathVariable("dataFileId") Long dataFileId,
-            @RequestParam(name = IOrderService.ORDER_TOKEN, required = true) String token, HttpServletResponse response)
-            throws NoSuchElementException {
+                                                                  @RequestParam(name = IOrderService.ORDER_TOKEN,
+                                                                      required = true) String token,
+                                                                  HttpServletResponse response)
+        throws NoSuchElementException {
         return manageFile(Boolean.FALSE, dataFileId, Optional.of(token), response);
     }
 
@@ -133,8 +132,10 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
      * Above controller endpoints are duplicated to fit security single endpoint policy.
      * (Otherwise, we could have set 2 HTTP method in a single endpoint!)
      */
-    private ResponseEntity<InputStreamResource> manageFile(Boolean headRequest, Long dataFileId,
-            Optional<String> validityToken, HttpServletResponse response) throws NoSuchElementException {
+    private ResponseEntity<InputStreamResource> manageFile(Boolean headRequest,
+                                                           Long dataFileId,
+                                                           Optional<String> validityToken,
+                                                           HttpServletResponse response) throws NoSuchElementException {
         OrderDataFile dataFile;
         String user = null;
         if (validityToken.isPresent()) {
@@ -178,7 +179,10 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     @Override
     public EntityModel<OrderDataFile> toResource(OrderDataFile dataFile, Object... extras) {
         EntityModel<OrderDataFile> resource = resourceService.toResource(dataFile);
-        resourceService.addLink(resource, this.getClass(), "downloadFile", LinkRels.SELF,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "downloadFile",
+                                LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, dataFile.getId()),
                                 MethodParamFactory.build(HttpServletResponse.class));
         return resource;

@@ -18,15 +18,13 @@
  */
 package fr.cnes.regards.framework.amqp.client;
 
+import fr.cnes.regards.framework.random.function.IPropertyGetter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.random.function.IPropertyGetter;
-
 /**
  * @author sbinda
- *
  */
 @Component
 public class PropertyGetter implements IPropertyGetter {

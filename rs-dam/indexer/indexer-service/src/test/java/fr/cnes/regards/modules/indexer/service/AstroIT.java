@@ -18,40 +18,7 @@
  */
 package fr.cnes.regards.modules.indexer.service;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.hipparchus.util.FastMath;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.opengis.referencing.operation.TransformException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
 import fr.cnes.regards.framework.geojson.coordinates.Position;
 import fr.cnes.regards.framework.geojson.coordinates.Positions;
@@ -70,6 +37,28 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
 import fr.cnes.regards.modules.indexer.service.test.SearchConfiguration;
 import fr.cnes.regards.modules.model.domain.Model;
+import org.hipparchus.util.FastMath;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.opengis.referencing.operation.TransformException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import java.io.*;
+import java.nio.charset.Charset;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author oroussel
@@ -145,14 +134,14 @@ public class AstroIT {
      * It's better to not saving them because Postgis corrected polygons are worst
      */
     public void fillConstellations() throws IOException, TransformException, SQLException {
-        try (BufferedWriter bw = new BufferedWriter(
-                new FileWriter("/home/oroussel/Téléchargements/REGARDS/GEOJSON/constellations.json"))) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(
+            "/home/oroussel/Téléchargements/REGARDS/GEOJSON/constellations.json"))) {
             bw.write("{\n" + "  \"type\": \"FeatureCollection\",\n" + "  \"features\": [");
 
             Map<String, String> constMap = new HashMap<>();
             // Read "key;name" constellations file
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    ClassLoader.getSystemResourceAsStream("constellations_names.txt"), Charset.defaultCharset()))) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(ClassLoader.getSystemResourceAsStream(
+                "constellations_names.txt"), Charset.defaultCharset()))) {
                 String line = reader.readLine();
                 while (line != null) {
                     String[] keyName = line.split(";");
@@ -162,8 +151,8 @@ public class AstroIT {
             }
 
             // Read constellations coordinates file
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    ClassLoader.getSystemResourceAsStream("constellations_polygons.txt"), Charset.defaultCharset()))) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(ClassLoader.getSystemResourceAsStream(
+                "constellations_polygons.txt"), Charset.defaultCharset()))) {
                 // Useful variables
                 String curConstellation = null;
                 // North hemisphere constellations (and crossing equator) are described right hand
@@ -232,8 +221,10 @@ public class AstroIT {
         }
     }
 
-    private void saveConstellation(BufferedWriter bw, Map<String, String> constMap, String curConstellation,
-            List<double[]> pointsWgs84) throws IOException {
+    private void saveConstellation(BufferedWriter bw,
+                                   Map<String, String> constMap,
+                                   String curConstellation,
+                                   List<double[]> pointsWgs84) throws IOException {
         IGeometry polygon = GeoHelper.normalize(createPolygonFromPoints(pointsWgs84));
         IGeometry polygonWgs84 = GeoHelper.normalize(createPolygonFromPoints(pointsWgs84));
 
@@ -269,7 +260,13 @@ public class AstroIT {
     private DataObject createDataObject(IGeometry shape, IGeometry shapeWgs84, String label) {
         System.out.println("Saving " + label);
         DataObject object = new DataObject(model, TENANT, label, label);
-        object.setIpId(new OaisUniformResourceName(OAISIdentifier.SIP, EntityType.DATA, TENANT, UUID.randomUUID(), 1, null, null));
+        object.setIpId(new OaisUniformResourceName(OAISIdentifier.SIP,
+                                                   EntityType.DATA,
+                                                   TENANT,
+                                                   UUID.randomUUID(),
+                                                   1,
+                                                   null,
+                                                   null));
         object.setNormalizedGeometry(GeoHelper.normalize(shape));
         object.getFeature().setCrs(Crs.ASTRO.toString());
         object.setWgs84(GeoHelper.normalize(shapeWgs84));
@@ -470,7 +467,7 @@ public class AstroIT {
     public void testPolygon() {
         // BBox (8h, 50°, 9h, 60°)
         ICriterion crit = ICriterion.intersectsPolygon(new double[][][] {
-                { { 120.0, 50.0 }, { 135, 50.0 }, { 135.0, 60.0 }, { 120.0, 60.0 }, { 120.0, 50.0 } } });
+            { { 120.0, 50.0 }, { 135, 50.0 }, { 135.0, 60.0 }, { 120.0, 60.0 }, { 120.0, 50.0 } } });
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(EntityType.DATA);
         searchKey.setCrs(Crs.ASTRO);
         searchKey.setSearchIndex(TENANT);
@@ -482,7 +479,7 @@ public class AstroIT {
 
         // BBox (15h, 60°, 16h, 70°) (into Draco reaching limit with Ursa Minor)
         crit = ICriterion.intersectsPolygon(new double[][][] {
-                { { -105, 60.0 }, { -105, 70.0 }, { -120.0, 70.0 }, { -120, 60.0 }, { -105, 60.0 } } });
+            { { -105, 60.0 }, { -105, 70.0 }, { -120.0, 70.0 }, { -120, 60.0 }, { -105, 60.0 } } });
         page = repos.search(searchKey, 100, crit);
         Assert.assertEquals(2, page.getTotalElements());
         constNames = page.getContent().stream().map(DataObject::getLabel).collect(Collectors.toList());
@@ -491,7 +488,7 @@ public class AstroIT {
 
         // BBox (15h, 60°, 16h, 69°) (into Draco close to Ursa Minor but not reaching it)
         crit = ICriterion.intersectsPolygon(new double[][][] {
-                { { -105, 60.0 }, { -105, 69.9 }, { -120.0, 69.9 }, { -120, 60.0 }, { -105, 60.0 } } });
+            { { -105, 60.0 }, { -105, 69.9 }, { -120.0, 69.9 }, { -120, 60.0 }, { -105, 60.0 } } });
         page = repos.search(searchKey, 100, crit);
         Assert.assertEquals(1, page.getTotalElements());
         constNames = page.getContent().stream().map(DataObject::getLabel).collect(Collectors.toList());
@@ -499,22 +496,24 @@ public class AstroIT {
 
         // BBox (15h, 60°, 16h, 69°) (into Draco close to Ursa Minor but not reaching it)
         crit = ICriterion.intersectsPolygon(new double[][][] {
-                { { -105, 60.0 }, { -105, 69.99 }, { -120.0, 69.99 }, { -120, 60.0 }, { -105, 60.0 } } });
+            { { -105, 60.0 }, { -105, 69.99 }, { -120.0, 69.99 }, { -120, 60.0 }, { -105, 60.0 } } });
         page = repos.search(searchKey, 100, crit);
         if (page.getTotalElements() != 1) {
             double precision = 0.1;
-            System.out.printf("Precision > %f ° (%f m)\n", precision,
+            System.out.printf("Precision > %f ° (%f m)\n",
+                              precision,
                               FastMath.toRadians(precision) * GeoHelper.AUTHALIC_SPHERE_RADIUS);
             return;
         }
 
         // BBox (15h, 60°, 16h, 69°) (into Draco close to Ursa Minor but not reaching it)
         crit = ICriterion.intersectsPolygon(new double[][][] {
-                { { -105, 60.0 }, { -105, 69.999 }, { -120.0, 69.999 }, { -120, 60.0 }, { -105, 60.0 } } });
+            { { -105, 60.0 }, { -105, 69.999 }, { -120.0, 69.999 }, { -120, 60.0 }, { -105, 60.0 } } });
         page = repos.search(searchKey, 100, crit);
         if (page.getTotalElements() != 1) {
             double precision = 0.01;
-            System.out.printf("Precision > %f ° (%f m)\n", precision,
+            System.out.printf("Precision > %f ° (%f m)\n",
+                              precision,
                               FastMath.toRadians(precision) * GeoHelper.AUTHALIC_SPHERE_RADIUS);
             return;
         }
@@ -522,11 +521,12 @@ public class AstroIT {
         // BBox (15h, 60°, 16h, 69°) (into Draco close to Ursa Minor but not reaching it)
         // Not ok with quadtree and tree_levels 20 (69.99984 is ok)
         crit = ICriterion.intersectsPolygon(new double[][][] {
-                { { -105, 60.0 }, { -105, 69.9999 }, { -120.0, 69.9999 }, { -120, 60.0 }, { -105, 60.0 } } });
+            { { -105, 60.0 }, { -105, 69.9999 }, { -120.0, 69.9999 }, { -120, 60.0 }, { -105, 60.0 } } });
         page = repos.search(searchKey, 100, crit);
         if (page.getTotalElements() != 1) {
             double precision = 0.001;
-            System.out.printf("Precision > %f ° (%f m)\n", precision,
+            System.out.printf("Precision > %f ° (%f m)\n",
+                              precision,
                               FastMath.toRadians(precision) * GeoHelper.AUTHALIC_SPHERE_RADIUS);
             return;
         }
@@ -534,15 +534,17 @@ public class AstroIT {
         // BBox (15h, 60°, 16h, 69°) (into Draco close to Ursa Minor but not reaching it)
         // Ok with quadtree and tree_levels 21
         crit = ICriterion.intersectsPolygon(new double[][][] {
-                { { -105, 60.0 }, { -105, 69.99993 }, { -120.0, 69.99993 }, { -120, 60.0 }, { -105, 60.0 } } });
+            { { -105, 60.0 }, { -105, 69.99993 }, { -120.0, 69.99993 }, { -120, 60.0 }, { -105, 60.0 } } });
         page = repos.search(searchKey, 100, crit);
         if (page.getTotalElements() != 1) {
             double precision = 0.0001;
-            System.out.printf("Precision > %f ° (%f m)\n", precision,
+            System.out.printf("Precision > %f ° (%f m)\n",
+                              precision,
                               FastMath.toRadians(precision) * GeoHelper.AUTHALIC_SPHERE_RADIUS);
         } else {
             double precision = 0.00007;
-            System.out.printf("Precision < %f ° (%f m)\n", precision,
+            System.out.printf("Precision < %f ° (%f m)\n",
+                              precision,
                               FastMath.toRadians(precision) * GeoHelper.AUTHALIC_SPHERE_RADIUS);
         }
     }

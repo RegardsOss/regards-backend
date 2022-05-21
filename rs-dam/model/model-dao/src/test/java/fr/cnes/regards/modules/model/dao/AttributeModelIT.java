@@ -18,17 +18,15 @@
  */
 package fr.cnes.regards.modules.model.dao;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.google.common.collect.Iterables;
-
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModelBuilder;
 import fr.cnes.regards.modules.model.domain.attributes.Fragment;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Repository tests
@@ -53,7 +51,8 @@ public class AttributeModelIT extends AbstractModelIT {
         final String description = "DESCRIPTION OF THE FAKE ATTRIBUTE";
 
         final AttributeModel attModel = AttributeModelBuilder.build(attName, PropertyType.STRING, "ForTests")
-                .description(description).get();
+                                                             .description(description)
+                                                             .get();
         saveAttribute(attModel);
 
         // Try to retrieve attribute
@@ -77,11 +76,13 @@ public class AttributeModelIT extends AbstractModelIT {
         final Fragment f = Fragment.buildFragment(name, description);
 
         final AttributeModel attModel1 = AttributeModelBuilder.build("GEOMETRY", PropertyType.INTEGER, "ForTests")
-                .fragment(f).withoutRestriction();
+                                                              .fragment(f)
+                                                              .withoutRestriction();
         saveAttribute(attModel1);
 
-        final AttributeModel attModel2 = AttributeModelBuilder.build("CRS", PropertyType.STRING, "ForTests").fragment(f)
-                .withEnumerationRestriction("EARTH", "ASTRO", "MARS");
+        final AttributeModel attModel2 = AttributeModelBuilder.build("CRS", PropertyType.STRING, "ForTests")
+                                                              .fragment(f)
+                                                              .withEnumerationRestriction("EARTH", "ASTRO", "MARS");
         saveAttribute(attModel2);
 
         final Iterable<AttributeModel> atts = attModelRepository.findAll();
@@ -96,7 +97,7 @@ public class AttributeModelIT extends AbstractModelIT {
     @Test
     public void deleteAttributeTest() {
         final AttributeModel attModel = AttributeModelBuilder.build("TO_DELETE", PropertyType.STRING, "ForTests")
-                .withoutRestriction();
+                                                             .withoutRestriction();
         final AttributeModel saved = saveAttribute(attModel);
         attModelRepository.delete(saved);
     }

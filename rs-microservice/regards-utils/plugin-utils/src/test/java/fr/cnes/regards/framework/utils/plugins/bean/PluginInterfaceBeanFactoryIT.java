@@ -18,9 +18,11 @@
  */
 package fr.cnes.regards.framework.utils.plugins.bean;
 
-import java.util.HashMap;
-import java.util.Set;
-
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.framework.utils.plugins.basic.PluginUtilsTestConstants;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,11 +32,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.framework.utils.plugins.basic.PluginUtilsTestConstants;
-import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import java.util.HashMap;
+import java.util.Set;
 
 /**
  * @author Christophe Mertz
@@ -53,6 +52,7 @@ public final class PluginInterfaceBeanFactoryIT extends PluginUtilsTestConstants
 
     /**
      * Load a plugins
+     *
      * @throws NotAvailablePluginConfigurationException
      */
     @Test
@@ -60,8 +60,8 @@ public final class PluginInterfaceBeanFactoryIT extends PluginUtilsTestConstants
         SampleBeanFactoryPlugin samplePlugin = null;
         Assert.assertNotNull(sampleBeanService);
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(SampleBeanFactoryPlugin.FIELD_NAME_SUFFIX, "chris_test_1"));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SampleBeanFactoryPlugin.FIELD_NAME_SUFFIX,
+                                                                           "chris_test_1"));
 
         PluginUtils.setup(SampleBeanFactoryPlugin.class.getPackage().getName());
         samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SampleBeanFactoryPlugin.class, "", parameters),

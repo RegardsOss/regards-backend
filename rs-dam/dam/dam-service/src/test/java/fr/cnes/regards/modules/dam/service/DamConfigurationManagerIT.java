@@ -63,7 +63,7 @@ import java.util.Set;
  * @author Marc SORDI
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=dam_configuration" },
-        locations = "classpath:es.properties")
+    locations = "classpath:es.properties")
 public class DamConfigurationManagerIT extends AbstractMultitenantServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DamConfigurationManagerIT.class);
@@ -133,8 +133,10 @@ public class DamConfigurationManagerIT extends AbstractMultitenantServiceIT {
         jsoniterAttributeFactory.refresh(getDefaultTenant(), atts);
 
         // Import datasource
-        datasourceConfiguration = PluginConfiguration.build("FakeDatasourcePlugin", "Test datasource", IPluginParam
-                .set(IPluginParam.build(FakeDatasourcePlugin.MODEL_PARAM, dataModel.getName())));
+        datasourceConfiguration = PluginConfiguration.build("FakeDatasourcePlugin",
+                                                            "Test datasource",
+                                                            IPluginParam.set(IPluginParam.build(FakeDatasourcePlugin.MODEL_PARAM,
+                                                                                                dataModel.getName())));
         pluginService.savePluginConfiguration(datasourceConfiguration);
     }
 
@@ -163,13 +165,16 @@ public class DamConfigurationManagerIT extends AbstractMultitenantServiceIT {
         feature.addProperty(IProperty.buildJson("providers", providers));
 
         // Create a dataset configuration module item
-        DatasetConfiguration dsConf = DatasetConfiguration.builder().datasource(datasourceConfiguration.getBusinessId())
-                .subsetting("hydro.data_type:\"TEST_TYPE\"").feature(feature).build();
+        DatasetConfiguration dsConf = DatasetConfiguration.builder()
+                                                          .datasource(datasourceConfiguration.getBusinessId())
+                                                          .subsetting("hydro.data_type:\"TEST_TYPE\"")
+                                                          .feature(feature)
+                                                          .build();
         ModuleConfigurationItem<DatasetConfiguration> item = ModuleConfigurationItem.build(dsConf);
 
         // Import configuration
-        ModuleConfiguration conf = ModuleConfiguration
-                .build(configurationManager.getModuleInformation(), Lists.newArrayList(item));
+        ModuleConfiguration conf = ModuleConfiguration.build(configurationManager.getModuleInformation(),
+                                                             Lists.newArrayList(item));
         Set<String> errors = configurationManager.importConfiguration(conf, Sets.newHashSet());
         errors.forEach(error -> LOGGER.error(error));
         Assert.assertTrue("Error detected", errors.isEmpty());

@@ -40,7 +40,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.validation.Errors;
 
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -87,9 +90,13 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
         // Monitoring log
         logRequestDenied(requestOwner, requestId, Sets.newHashSet(errorMessage));
         // Publish DENIED request
-        publisher.publish(FeatureRequestEvent
-                                  .build(getRequestType(), requestId, requestOwner, null, null, RequestState.DENIED,
-                                         Sets.newHashSet(errorMessage)));
+        publisher.publish(FeatureRequestEvent.build(getRequestType(),
+                                                    requestId,
+                                                    requestOwner,
+                                                    null,
+                                                    null,
+                                                    RequestState.DENIED,
+                                                    Sets.newHashSet(errorMessage)));
         return true;
     }
 
@@ -184,21 +191,22 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
     }
 
     @Override
-    public Map<FeatureUniformResourceName, ILightFeatureEntity> getSessionInfoByUrn(
-            Collection<FeatureUniformResourceName> uniformResourceNames) {
-        return featureEntityRepository.findLightByUrnIn(uniformResourceNames).stream()
-                .collect(Collectors.toMap(ILightFeatureEntity::getUrn, Function.identity()));
+    public Map<FeatureUniformResourceName, ILightFeatureEntity> getSessionInfoByUrn(Collection<FeatureUniformResourceName> uniformResourceNames) {
+        return featureEntityRepository.findLightByUrnIn(uniformResourceNames)
+                                      .stream()
+                                      .collect(Collectors.toMap(ILightFeatureEntity::getUrn, Function.identity()));
     }
 
     /**
      * Update given request with an error status and error message
-     * @param request Request to update
+     *
+     * @param request    Request to update
      * @param errorCause Error cause message
      */
     protected void addRemoteStorageError(AbstractFeatureRequest request, String errorCause) {
         request.setState(RequestState.ERROR);
         request.setStep(FeatureRequestStep.REMOTE_STORAGE_ERROR);
-        request.addError(String.format("Error during file storage : %s",errorCause));
+        request.addError(String.format("Error during file storage : %s", errorCause));
     }
 
     protected abstract Page<R> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);

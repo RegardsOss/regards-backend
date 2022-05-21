@@ -18,26 +18,11 @@
  */
 package fr.cnes.regards.modules.model.service;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotEmptyException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.module.rest.exception.*;
 import fr.cnes.regards.modules.model.dao.IAttributeModelRepository;
 import fr.cnes.regards.modules.model.dao.IFragmentRepository;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
@@ -45,9 +30,19 @@ import fr.cnes.regards.modules.model.domain.attributes.Fragment;
 import fr.cnes.regards.modules.model.domain.event.FragmentDeletedEvent;
 import fr.cnes.regards.modules.model.service.xml.XmlExportHelper;
 import fr.cnes.regards.modules.model.service.xml.XmlImportHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Fragment service
+ *
  * @author Marc Sordi
  */
 @Service
@@ -80,8 +75,10 @@ public class FragmentService implements IFragmentService {
      */
     private final IPublisher publisher;
 
-    public FragmentService(IFragmentRepository fragmentRepository, IAttributeModelRepository attributeModelRepository,
-            IAttributeModelService attributeModelService, IPublisher publisher) {
+    public FragmentService(IFragmentRepository fragmentRepository,
+                           IAttributeModelRepository attributeModelRepository,
+                           IAttributeModelService attributeModelService,
+                           IPublisher publisher) {
         this.fragmentRepository = fragmentRepository;
         this.attributeModelRepository = attributeModelRepository;
         this.attributeModelService = attributeModelService;
@@ -91,21 +88,22 @@ public class FragmentService implements IFragmentService {
     @Override
     public List<Fragment> getFragments() {
         Iterable<Fragment> fragments = fragmentRepository.findAll();
-        return ((fragments != null) && fragments.iterator().hasNext()) ? ImmutableList.copyOf(fragments)
-                : Collections.emptyList();
+        return ((fragments != null) && fragments.iterator().hasNext()) ?
+            ImmutableList.copyOf(fragments) :
+            Collections.emptyList();
     }
 
     @Override
     public Fragment addFragment(Fragment pFragment) throws ModuleException {
         Fragment existing = fragmentRepository.findByName(pFragment.getName());
         if (existing != null) {
-            throw new EntityAlreadyExistsException(
-                    String.format("Fragment with name \"%s\" already exists!", pFragment.getName()));
+            throw new EntityAlreadyExistsException(String.format("Fragment with name \"%s\" already exists!",
+                                                                 pFragment.getName()));
         }
         if (!attributeModelService.isFragmentCreatable(pFragment.getName())) {
-            throw new EntityAlreadyExistsException(String
-                    .format("Fragment with name \"%s\" cannot be created because an attribute with the same name already exists!",
-                            pFragment.getName()));
+            throw new EntityAlreadyExistsException(String.format(
+                "Fragment with name \"%s\" cannot be created because an attribute with the same name already exists!",
+                pFragment.getName()));
         }
         return fragmentRepository.save(pFragment);
     }
@@ -122,8 +120,8 @@ public class FragmentService implements IFragmentService {
     @Override
     public Fragment updateFragment(Long fragmentId, Fragment fragment) throws ModuleException {
         if (!fragment.isIdentifiable()) {
-            throw new EntityNotFoundException(
-                    String.format("Unknown identifier for fragment \"%s\"", fragment.getName()));
+            throw new EntityNotFoundException(String.format("Unknown identifier for fragment \"%s\"",
+                                                            fragment.getName()));
         }
         if (!fragmentId.equals(fragment.getId())) {
             throw new EntityInconsistentIdentifierException(fragmentId, fragment.getId(), Fragment.class);

@@ -18,20 +18,18 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service.encryption;
 
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import fr.cnes.regards.framework.utils.RsRuntimeException;
-
 /**
- *
  * Class EncryptionUtils
- *
+ * <p>
  * Tools to encrypt passwords.
  *
  * @author Sébastien Binda
-
  */
 public final class EncryptionUtils {
 
@@ -46,13 +44,10 @@ public final class EncryptionUtils {
     }
 
     /**
-     *
      * Encrypt given password with SHA_512
      *
-     * @param pPassword
-     *            to encrypt
+     * @param pPassword to encrypt
      * @return Encrypted password
-
      */
     public static String encryptPassword(final String pPassword) {
         try {

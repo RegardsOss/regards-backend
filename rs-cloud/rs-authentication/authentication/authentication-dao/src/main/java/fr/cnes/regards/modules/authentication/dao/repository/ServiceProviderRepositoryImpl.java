@@ -25,8 +25,6 @@ import fr.cnes.regards.modules.authentication.domain.repository.IServiceProvider
 import fr.cnes.regards.modules.authentication.domain.utils.fp.Unit;
 import io.vavr.collection.List;
 import io.vavr.control.Option;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,40 +38,29 @@ public class ServiceProviderRepositoryImpl implements IServiceProviderRepository
     private final DomainEntityMapper mapper;
 
     @Autowired
-    public ServiceProviderRepositoryImpl(
-            IServiceProviderEntityRepository delegate,
-            DomainEntityMapper mapper
-    ) {
+    public ServiceProviderRepositoryImpl(IServiceProviderEntityRepository delegate, DomainEntityMapper mapper) {
         this.delegate = delegate;
         this.mapper = mapper;
     }
 
     @Override
     public Option<ServiceProvider> findByName(String name) {
-        return Option.ofOptional(delegate.findOneByName(name))
-            .map(mapper::toDomain);
+        return Option.ofOptional(delegate.findOneByName(name)).map(mapper::toDomain);
     }
 
     @Override
     public Page<ServiceProvider> findAll(Pageable pageable) {
-        return delegate.findAll(pageable)
-            .map(mapper::toDomain);
+        return delegate.findAll(pageable).map(mapper::toDomain);
     }
 
     @Override
     public List<ServiceProvider> findAll() {
-        return List.ofAll(delegate.findAll())
-            .map(mapper::toDomain);
+        return List.ofAll(delegate.findAll()).map(mapper::toDomain);
     }
 
     @Override
     public ServiceProvider save(ServiceProvider serviceProvider) {
-        return
-            mapper.toDomain(
-                delegate.save(
-                    mapper.toEntity(serviceProvider)
-                )
-            );
+        return mapper.toDomain(delegate.save(mapper.toEntity(serviceProvider)));
     }
 
     @Override

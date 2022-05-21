@@ -18,14 +18,8 @@
  */
 package fr.cnes.regards.framework.security.filter;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -34,13 +28,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class CorsFilterTest
- *
+ * <p>
  * Cors filter test class
+ *
  * @author Sébastien Binda
  */
 public class CorsFilterTest {
@@ -75,10 +74,12 @@ public class CorsFilterTest {
 
             Assert.assertEquals(errorMessage, "*", mockedResponse.getHeader(CorsFilter.ALLOW_ORIGIN));
 
-            Assert.assertEquals(errorMessage, "POST, PUT, GET, OPTIONS, DELETE",
+            Assert.assertEquals(errorMessage,
+                                "POST, PUT, GET, OPTIONS, DELETE",
                                 mockedResponse.getHeader(CorsFilter.ALLOW_METHOD));
 
-            Assert.assertEquals(errorMessage, "authorization, content-type, scope",
+            Assert.assertEquals(errorMessage,
+                                "authorization, content-type, scope",
                                 mockedResponse.getHeader(CorsFilter.ALLOW_HEADER));
 
             Assert.assertEquals(errorMessage, "3600", mockedResponse.getHeader(CorsFilter.CONTROL_MAX_AGE));
@@ -114,10 +115,12 @@ public class CorsFilterTest {
 
             Assert.assertNotEquals(errorMessage, "*", mockedResponse.getHeader(CorsFilter.ALLOW_ORIGIN));
 
-            Assert.assertNotEquals(errorMessage, "POST, PUT, GET, OPTIONS, DELETE",
+            Assert.assertNotEquals(errorMessage,
+                                   "POST, PUT, GET, OPTIONS, DELETE",
                                    mockedResponse.getHeader(CorsFilter.ALLOW_METHOD));
 
-            Assert.assertNotEquals(errorMessage, "authorization, content-type, scope",
+            Assert.assertNotEquals(errorMessage,
+                                   "authorization, content-type, scope",
                                    mockedResponse.getHeader(CorsFilter.ALLOW_HEADER));
 
             Assert.assertNotEquals(errorMessage, "3600", mockedResponse.getHeader(CorsFilter.CONTROL_MAX_AGE));

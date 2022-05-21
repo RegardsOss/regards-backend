@@ -18,19 +18,18 @@
  */
 package fr.cnes.regards.framework.modules.plugins.domain.parameter;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
 /**
  * Plugin parameter interface
  *
  * @author Marc SORDI
- *
  */
 public interface IPluginParam {
 
@@ -87,13 +86,15 @@ public interface IPluginParam {
      * Apply default value to current parameter
      */
     default void applyDefaultValue(String value) {
-        throw new UnsupportedOperationException(
-                String.format("Cannot apply default value for parameter \"%s\" of type \"%s\"", getName(), getType()));
+        throw new UnsupportedOperationException(String.format(
+            "Cannot apply default value for parameter \"%s\" of type \"%s\"",
+            getName(),
+            getType()));
     }
 
     default void illegalValueForParameter() {
-        throw new IllegalArgumentException(
-                String.format("Value is not compatible with \"%s\" parameter type", getType()));
+        throw new IllegalArgumentException(String.format("Value is not compatible with \"%s\" parameter type",
+                                                         getType()));
     }
 
     static StringPluginParam build(String name, String value) {
@@ -230,6 +231,7 @@ public interface IPluginParam {
 
     /**
      * Build a plugin parameter referencing a nested plugin configuration with its business identifier
+     *
      * @param name parameter name
      * @key plugin business identifier
      */

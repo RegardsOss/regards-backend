@@ -238,6 +238,7 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
 
     /**
      * Concert {@link Message}s to {@link BatchMessage}s
+     *
      * @param messages
      * @param channel
      * @return
@@ -308,7 +309,8 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
             methodInvoker.setArguments(arguments);
             methodInvoker.prepare();
             return (Errors) methodInvoker.invoke();
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | ClassNotFoundException ex) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException |
+                 ClassNotFoundException ex) {
             String errorMessage = "Validation method fail - message assumed to be invalid as a default fallback!";
             LOGGER.error(errorMessage, ex);
             // Propagate errors
@@ -342,7 +344,8 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
             methodInvoker.setArguments(arguments);
             methodInvoker.prepare();
             methodInvoker.invoke();
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | ClassNotFoundException ex) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException |
+                 ClassNotFoundException ex) {
             LOGGER.error(String.format("Fail to invoke handler %s#%s with following raw exception",
                                        batchHandler.getClass().getName(),
                                        HANDLE_METHOD_NAME), ex);

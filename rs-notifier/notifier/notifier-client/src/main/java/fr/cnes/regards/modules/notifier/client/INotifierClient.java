@@ -1,8 +1,8 @@
 package fr.cnes.regards.modules.notifier.client;
 
-import java.util.List;
-
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
+
+import java.util.List;
 
 /**
  * @author Sylvain VISSIERE-GUERINET

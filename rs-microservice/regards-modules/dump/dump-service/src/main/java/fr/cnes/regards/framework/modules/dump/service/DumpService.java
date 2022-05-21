@@ -20,6 +20,15 @@
 
 package fr.cnes.regards.framework.modules.dump.service;
 
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
+import com.google.common.io.ByteStreams;
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -33,19 +42,10 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Multimaps;
-import com.google.common.io.ByteStreams;
-import com.google.gson.Gson;
-import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
-
 /**
  * The purpose of this service is to created a zip of zips (dump). These zips contain a limited number of json files
  * distributed according to a temporal tree structure
+ *
  * @author Iliana Ghazali
  * @author Sylvain VISSIERE-GUERINET
  */
@@ -62,14 +62,15 @@ public class DumpService {
 
     /**
      * Check if jsonNames are unique in dumpCollection
+     *
      * @param dumpCollection objects to dump
      * @return list of dumpObjects with duplicated jsonNames
      */
     public List<ObjectDump> checkUniqueJsonNames(List<ObjectDump> dumpCollection) {
         List<ObjectDump> listDuplicatedDumps = new ArrayList<>();
         // Create multimap with jsonNames
-        ImmutableListMultimap<String, ObjectDump> dumpMultimap = Multimaps
-                .index(dumpCollection, ObjectDump::getJsonName);
+        ImmutableListMultimap<String, ObjectDump> dumpMultimap = Multimaps.index(dumpCollection,
+                                                                                 ObjectDump::getJsonName);
         // If duplicated keys were found, jsonNames are not uniques in collection
         if (dumpCollection.size() != dumpMultimap.keySet().size()) {
             dumpMultimap.asMap().forEach((key, collection) -> {
@@ -84,7 +85,8 @@ public class DumpService {
 
     /**
      * Generate a zip from list of object dumps
-     * @param zipCollection list of objects to dump
+     *
+     * @param zipCollection  list of objects to dump
      * @param tmpZipLocation temporary location to write zip
      * @throws IOException zip could not be written
      */
@@ -122,7 +124,8 @@ public class DumpService {
 
         // add json files to zip
         try (ByteArrayOutputStream tmpZipByte = new ByteArrayOutputStream();
-                ZipOutputStream tmpZip = new ZipOutputStream(new BufferedOutputStream(tmpZipByte), StandardCharsets.UTF_8)) {
+            ZipOutputStream tmpZip = new ZipOutputStream(new BufferedOutputStream(tmpZipByte),
+                                                         StandardCharsets.UTF_8)) {
             // add all json files to zip in memory
             for (ObjectDump objectDump : zipCollection) {
                 filename = objectDump.getJsonName() + ".json";
@@ -144,9 +147,10 @@ public class DumpService {
 
     /**
      * Generate a dump (a zip of zips)
-     * @param dumpLocation final location of the dump
+     *
+     * @param dumpLocation   final location of the dump
      * @param tmpZipLocation location of the temporary zips to dump
-     * @param reqDumpDate date when a request was created to dump objects
+     * @param reqDumpDate    date when a request was created to dump objects
      * @throws IOException the dump could not be written
      */
     public void generateDump(Path dumpLocation, Path tmpZipLocation, OffsetDateTime reqDumpDate) throws IOException {
@@ -160,11 +164,11 @@ public class DumpService {
 
             // Create dump
             String dumpName =
-                    "dump_json_" + this.microservice + "_" + OffsetDateTimeAdapter.format(reqDumpDate) + ".zip";
+                "dump_json_" + this.microservice + "_" + OffsetDateTimeAdapter.format(reqDumpDate) + ".zip";
             Files.createDirectories(dumpLocation);
 
-            try (ZipOutputStream dumpZip = new ZipOutputStream(
-                    new FileOutputStream(dumpLocation.resolve(dumpName).toFile()))) {
+            try (ZipOutputStream dumpZip = new ZipOutputStream(new FileOutputStream(dumpLocation.resolve(dumpName)
+                                                                                                .toFile()))) {
                 // Zip content from tmpDumpFolder
                 for (File file : zipArray) {
                     if (!file.isDirectory()) {

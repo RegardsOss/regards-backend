@@ -1,19 +1,20 @@
 package fr.cnes.regards.framework.utils.parser;
 
+import fr.cnes.regards.framework.utils.parser.builder.RuleQueryTreeBuilder;
+import fr.cnes.regards.framework.utils.parser.rule.IRule;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.core.QueryParserHelper;
 import org.apache.lucene.queryparser.flexible.standard.config.StandardQueryConfigHandler;
 import org.apache.lucene.queryparser.flexible.standard.parser.StandardSyntaxParser;
 import org.apache.lucene.queryparser.flexible.standard.processors.StandardQueryNodeProcessorPipeline;
 
-import fr.cnes.regards.framework.utils.parser.builder.RuleQueryTreeBuilder;
-import fr.cnes.regards.framework.utils.parser.rule.IRule;
-
 public class RuleParser extends QueryParserHelper {
 
     public RuleParser() {
-        super(new StandardQueryConfigHandler(), new StandardSyntaxParser(),
-              new StandardQueryNodeProcessorPipeline(null), new RuleQueryTreeBuilder());
+        super(new StandardQueryConfigHandler(),
+              new StandardSyntaxParser(),
+              new StandardQueryNodeProcessorPipeline(null),
+              new RuleQueryTreeBuilder());
         setEnablePositionIncrements(true);
         setAllowLeadingWildcard(true);
     }
@@ -32,7 +33,8 @@ public class RuleParser extends QueryParserHelper {
      * Default: false.
      */
     private final void setAllowLeadingWildcard(final boolean allowLeadingWildcard) {
-        getQueryConfigHandler().set(StandardQueryConfigHandler.ConfigurationKeys.ALLOW_LEADING_WILDCARD, allowLeadingWildcard);
+        getQueryConfigHandler().set(StandardQueryConfigHandler.ConfigurationKeys.ALLOW_LEADING_WILDCARD,
+                                    allowLeadingWildcard);
     }
 
     /**

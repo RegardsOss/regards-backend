@@ -18,14 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.Lists;
 import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
@@ -38,6 +30,13 @@ import fr.cnes.regards.modules.ingest.domain.request.deletion.DeletionRequestSte
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.service.notification.AIPNotificationService;
 import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Job to run deletion of a given {@link AIPEntity}.<br/>
@@ -63,7 +62,7 @@ public class OAISDeletionJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         // Retrieve param
         Type type = new TypeToken<List<Long>>() {
 
@@ -83,8 +82,9 @@ public class OAISDeletionJob extends AbstractJob<Void> {
         // NOTIFICATION RETRY
         // filter out requests with notification step (in case of retry)
         Set<AbstractRequest> notificationRetryRequests = requests.stream()
-                .filter(req -> req.getStep() == DeletionRequestStep.REMOTE_NOTIFICATION_ERROR)
-                .collect(Collectors.toSet());
+                                                                 .filter(req -> req.getStep()
+                                                                     == DeletionRequestStep.REMOTE_NOTIFICATION_ERROR)
+                                                                 .collect(Collectors.toSet());
         if (!notificationRetryRequests.isEmpty()) {
             // remove notifications from requests to process and send them again
             this.requests.removeAll(notificationRetryRequests);
@@ -97,7 +97,8 @@ public class OAISDeletionJob extends AbstractJob<Void> {
             oaisDeletionRequestService.runDeletion(requests, this);
         }
 
-        logger.debug("Job handled for {} OAISDeletionRequest(s) requests in {}ms", nbRequestsToHandle,
+        logger.debug("Job handled for {} OAISDeletionRequest(s) requests in {}ms",
+                     nbRequestsToHandle,
                      System.currentTimeMillis() - start);
     }
 

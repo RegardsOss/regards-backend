@@ -18,9 +18,11 @@
  */
 package fr.cnes.regards.framework.security.autoconfigure;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.framework.security.endpoint.voter.ResourceAccessVoter;
+import fr.cnes.regards.framework.security.utils.endpoint.IInstanceAdminAccessVoter;
+import fr.cnes.regards.framework.security.utils.endpoint.IInstancePublicAccessVoter;
+import fr.cnes.regards.framework.security.utils.endpoint.IProjectAdminAccessVoter;
+import fr.cnes.regards.framework.security.utils.endpoint.ISystemAccessVoter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
@@ -31,18 +33,16 @@ import org.springframework.security.access.vote.AffirmativeBased;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 
-import fr.cnes.regards.framework.security.endpoint.voter.ResourceAccessVoter;
-import fr.cnes.regards.framework.security.utils.endpoint.IInstanceAdminAccessVoter;
-import fr.cnes.regards.framework.security.utils.endpoint.IInstancePublicAccessVoter;
-import fr.cnes.regards.framework.security.utils.endpoint.IProjectAdminAccessVoter;
-import fr.cnes.regards.framework.security.utils.endpoint.ISystemAccessVoter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class allow to add a security filter on method access. Each time a method is called, the accessDecisionManager
  * check if the connected user can access the method via the ResourceAccessVoter class.
- *
+ * <p>
  * {@link EnableGlobalMethodSecurity#proxyTargetClass()} is required to manage controller interface in SPRING MVC
  * controllers.
+ *
  * @author CS SI
  */
 @Configuration

@@ -26,7 +26,6 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * @author sbinda
- *
  */
 @Configuration
 public class MockConfiguration {

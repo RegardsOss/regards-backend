@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.demo.engine;
 
 import fr.cnes.regards.modules.processing.domain.PExecution;
@@ -41,11 +41,13 @@ public class DemoEngine implements IWorkloadEngine, InitializingBean {
         this.engineRepo = engineRepo;
     }
 
-    @Override public String name() {
+    @Override
+    public String name() {
         return "DEMO";
     }
 
-    @Override public Mono<PExecution> run(ExecutionContext context) {
+    @Override
+    public Mono<PExecution> run(ExecutionContext context) {
         return null;
     }
 

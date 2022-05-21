@@ -18,19 +18,18 @@
  */
 package fr.cnes.regards.modules.dam.rest.dataaccess;
 
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessLevel;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.DataAccessLevel;
 import org.junit.Test;
 import org.springframework.test.context.TestPropertySource;
-
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessLevel;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
 
 /**
  * @author Sylvain Vissiere-Guerinet
  * @author Léo Mieulet
  */
 @TestPropertySource(locations = "classpath:test.properties",
-        properties = { "spring.jpa.properties.hibernate.default_schema=projectdbdelete" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=projectdbdelete" })
 public class AccessRightControllerNoTxIT extends AbstractAccessRightControllerIT {
 
     @Test
@@ -42,20 +41,26 @@ public class AccessRightControllerNoTxIT extends AbstractAccessRightControllerIT
 
         performDefaultPut(AccessRightController.PATH_ACCESS_RIGHTS + AccessRightController.PATH_ACCESS_RIGHTS_ID,
                           garTmp,
-                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT)
-                                  .expectValue("$.content.accessLevel", "RESTRICTED_ACCESS"),
-                          ACCESS_RIGHTS_ERROR_MSG, ar1.getId());
+                          customizer().expectStatusOk()
+                                      .expectIsNotEmpty(JSON_PATH_ROOT)
+                                      .expectValue("$.content.accessLevel", "RESTRICTED_ACCESS"),
+                          ACCESS_RIGHTS_ERROR_MSG,
+                          ar1.getId());
 
         // Save again garTmp (with ag1 as access group and FULL_ACCESS)
         garTmp.setAccessLevel(AccessLevel.FULL_ACCESS);
         performDefaultPut(AccessRightController.PATH_ACCESS_RIGHTS + AccessRightController.PATH_ACCESS_RIGHTS_ID,
                           garTmp,
-                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT)
-                                  .expectValue("$.content.accessLevel", "FULL_ACCESS"),
-                          ACCESS_RIGHTS_ERROR_MSG, ar1.getId());
+                          customizer().expectStatusOk()
+                                      .expectIsNotEmpty(JSON_PATH_ROOT)
+                                      .expectValue("$.content.accessLevel", "FULL_ACCESS"),
+                          ACCESS_RIGHTS_ERROR_MSG,
+                          ar1.getId());
 
         // Delete access right
         performDefaultDelete(AccessRightController.PATH_ACCESS_RIGHTS + AccessRightController.PATH_ACCESS_RIGHTS_ID,
-                             customizer().expectStatusNoContent(), ACCESS_RIGHTS_ERROR_MSG, ar1.getId());
+                             customizer().expectStatusNoContent(),
+                             ACCESS_RIGHTS_ERROR_MSG,
+                             ar1.getId());
     }
 }

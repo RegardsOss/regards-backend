@@ -18,14 +18,6 @@
  */
 package fr.cnes.regards.modules.project.service;
 
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.PropertySource;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
@@ -34,11 +26,19 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
+
+import java.util.List;
 
 /**
  * Class ProjectServiceIT
- *
+ * <p>
  * Project business service tests
+ *
  * @author Sébastien Binda
  */
 @PropertySource("classpath:application-test.properties")
@@ -98,8 +98,11 @@ public class ProjectServiceIT extends AbstractRegardsServiceIT {
     @Requirement("REGARDS_DSL_ADM_INST_100")
     @Purpose("Check that the system allows to create a project.")
     public void createProjectTest() {
-        Project projectToCreate = new Project(project1.getId(), COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, false,
-                PROJECT_TEST_1);
+        Project projectToCreate = new Project(project1.getId(),
+                                              COMMON_PROJECT_DESCRIPTION,
+                                              COMMON_PROJECT_ICON,
+                                              false,
+                                              PROJECT_TEST_1);
         try {
             projectService.createProject(projectToCreate);
             Assert.fail("Project already exists there must be an exception thrown here");
@@ -155,8 +158,10 @@ public class ProjectServiceIT extends AbstractRegardsServiceIT {
     public void updateProject() {
 
         final String invalidProjectName = "project-invalid-update";
-        final Project invalidProject = new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, false,
-                invalidProjectName);
+        final Project invalidProject = new Project(COMMON_PROJECT_DESCRIPTION,
+                                                   COMMON_PROJECT_ICON,
+                                                   false,
+                                                   invalidProjectName);
         try {
             projectService.updateProject(invalidProjectName, invalidProject);
         } catch (final ModuleException e) {

@@ -78,16 +78,22 @@ public class CompressionContext {
 
     /**
      * Cette methode declenche la compression
+     *
      * @return le fichier compresse avec l'extension
      * @throws CompressionException Exception survenue lors du traitement
      */
     protected CompressManager doCompress() throws CompressionException {
-        return referenceStrategy
-                .compress(inputSource, compressedFile, rootDirectory, flatArchive, runInThread, charset);
+        return referenceStrategy.compress(inputSource,
+                                          compressedFile,
+                                          rootDirectory,
+                                          flatArchive,
+                                          runInThread,
+                                          charset);
     }
 
     /**
      * Cette methode declenche la decompression
+     *
      * @throws CompressionException Exception survenue lors du traitement.
      */
     protected void doUncompress() throws CompressionException {
@@ -96,6 +102,7 @@ public class CompressionContext {
 
     /**
      * Definit le mode de compression
+     *
      * @param pCompressionMethod : le mode de compression
      */
     protected void setCompression(ICompression pCompressionMethod) {
@@ -118,6 +125,7 @@ public class CompressionContext {
 
     /**
      * Modificateur inputSource
+     *
      * @param pList une liste de <code>File</code>
      */
     public void setInputSource(List<File> pList) {

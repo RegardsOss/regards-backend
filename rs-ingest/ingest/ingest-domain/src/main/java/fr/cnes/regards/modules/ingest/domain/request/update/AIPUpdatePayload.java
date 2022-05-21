@@ -22,6 +22,7 @@ package fr.cnes.regards.modules.ingest.domain.request.update;
 
 /**
  * Payload for {@link AIPUpdateRequest}
+ *
  * @author Iliana Ghazali
  */
 
@@ -37,7 +38,7 @@ public class AIPUpdatePayload {
         this.step = step;
     }
 
-    public static AIPUpdatePayload build(){
+    public static AIPUpdatePayload build() {
         AIPUpdatePayload aup = new AIPUpdatePayload();
         aup.step = AIPUpdateRequestStep.INITIAL;
         return aup;

@@ -43,7 +43,8 @@ public class AccountSpecificationsBuilder extends AbstractSpecificationsBuilder<
         if (StringUtils.isEmpty(status)) {
             return null;
         } else {
-            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("status"), AccountStatus.valueOf(status));
+            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("status"),
+                                                                           AccountStatus.valueOf(status));
         }
     }
 

@@ -19,10 +19,9 @@
 package fr.cnes.regards.modules.search.domain.plugin;
 
 /**
- *
  * All supported search type
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
 public enum SearchType {
 

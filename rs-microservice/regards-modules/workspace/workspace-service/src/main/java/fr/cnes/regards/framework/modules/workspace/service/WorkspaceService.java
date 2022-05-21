@@ -18,28 +18,7 @@
  */
 package fr.cnes.regards.framework.modules.workspace.service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.FileStore;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.UUID;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-
 import com.google.common.io.ByteStreams;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -50,9 +29,25 @@ import fr.cnes.regards.framework.modules.workspace.domain.WorkspaceMonitoringInf
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.*;
+import java.util.UUID;
 
 /**
  * Default {@link IWorkspaceService} implementation which divide the workspace according {@link #getMicroserviceWorkspace()} implementation.
+ *
  * @author svissier
  */
 @Service
@@ -117,9 +112,11 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
         // first lets check if the wroskapce occupation is not critical
         WorkspaceMonitoringInformation workspaceMonitoringInfo = getMonitoringInformation(getTenantWorkspace());
         if (workspaceMonitoringInfo.getOccupationRatio() > workspaceCriticalOccupationThreshold) {
-            String message = String.format(CRITICAL_MESSAGE_FORMAT, workspaceMonitoringInfo.getPath(),
+            String message = String.format(CRITICAL_MESSAGE_FORMAT,
+                                           workspaceMonitoringInfo.getPath(),
                                            workspaceMonitoringInfo.getOccupationRatio() * 100,
-                                           workspaceCriticalOccupationThreshold, runtimeTenantResolver.getTenant());
+                                           workspaceCriticalOccupationThreshold,
+                                           runtimeTenantResolver.getTenant());
             LOG.warn(message);
             MaintenanceManager.setMaintenance(runtimeTenantResolver.getTenant());
             notifier.sendErrorNotification(message, "Workspace occupation is critical", DefaultRole.PROJECT_ADMIN);
@@ -161,8 +158,11 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
         long totalSpace = fileStore.getTotalSpace();
         long usableSpace = fileStore.getUsableSpace();
         long usedSpace = totalSpace - usableSpace;
-        return new WorkspaceMonitoringInformation(fileStore.name(), totalSpace, usedSpace, usableSpace,
-                getMicroserviceWorkspace().toString());
+        return new WorkspaceMonitoringInformation(fileStore.name(),
+                                                  totalSpace,
+                                                  usedSpace,
+                                                  usableSpace,
+                                                  getMicroserviceWorkspace().toString());
     }
 
     @Override
@@ -202,19 +202,23 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
         try {
             WorkspaceMonitoringInformation workspaceMonitoringInfo = getMonitoringInformation(getTenantWorkspace());
             if (workspaceMonitoringInfo.getOccupationRatio() * 100 > workspaceCriticalOccupationThreshold) {
-                String message = String.format(CRITICAL_MESSAGE_FORMAT, workspaceMonitoringInfo.getPath(),
+                String message = String.format(CRITICAL_MESSAGE_FORMAT,
+                                               workspaceMonitoringInfo.getPath(),
                                                workspaceMonitoringInfo.getOccupationRatio() * 100,
-                                               workspaceCriticalOccupationThreshold, tenant);
+                                               workspaceCriticalOccupationThreshold,
+                                               tenant);
                 LOG.warn(message);
                 MaintenanceManager.setMaintenance(tenant);
                 notifier.sendErrorNotification(message, "Workspace occupation is critical", DefaultRole.PROJECT_ADMIN);
                 return;
             }
             if (workspaceMonitoringInfo.getOccupationRatio() * 100 > workspaceOccupationThreshold) {
-                String message = String
-                        .format("Workspace \"%s\" for project \"%s\" starts to be busy. Occupation is \"%.2f%%\" which is greater than \"%d%%\" (soft threshold).",
-                                workspaceMonitoringInfo.getPath(), tenant,
-                                workspaceMonitoringInfo.getOccupationRatio() * 100, workspaceOccupationThreshold);
+                String message = String.format(
+                    "Workspace \"%s\" for project \"%s\" starts to be busy. Occupation is \"%.2f%%\" which is greater than \"%d%%\" (soft threshold).",
+                    workspaceMonitoringInfo.getPath(),
+                    tenant,
+                    workspaceMonitoringInfo.getOccupationRatio() * 100,
+                    workspaceOccupationThreshold);
                 LOG.warn(message);
                 notifier.sendWarningNotification(message, "Workspace too busy", DefaultRole.PROJECT_ADMIN);
                 return;

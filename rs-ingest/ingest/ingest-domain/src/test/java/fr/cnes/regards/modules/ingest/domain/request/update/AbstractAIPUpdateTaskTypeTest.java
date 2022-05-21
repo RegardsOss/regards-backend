@@ -25,6 +25,7 @@ import org.junit.Test;
  * @author Léo Mieulet
  */
 public class AbstractAIPUpdateTaskTypeTest {
+
     @Test
     public void testOrder() {
         Assert.assertEquals(0, AIPUpdateTaskType.ADD_CATEGORY.getOrder(AIPUpdateTaskType.ADD_TAG));

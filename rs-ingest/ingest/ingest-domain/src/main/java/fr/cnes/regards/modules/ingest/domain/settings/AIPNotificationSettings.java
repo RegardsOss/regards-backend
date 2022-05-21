@@ -33,14 +33,10 @@ public final class AIPNotificationSettings {
 
     public static final boolean DEFAULT_ACTIVE_NOTIFICATION = false;
 
-    public static final DynamicTenantSetting ACTIVE_NOTIFICATION_SETTING = new DynamicTenantSetting(
-            ACTIVE_NOTIFICATION,
-            "Activate notifications on AIP request",
-            DEFAULT_ACTIVE_NOTIFICATION
-    );
+    public static final DynamicTenantSetting ACTIVE_NOTIFICATION_SETTING = new DynamicTenantSetting(ACTIVE_NOTIFICATION,
+                                                                                                    "Activate notifications on AIP request",
+                                                                                                    DEFAULT_ACTIVE_NOTIFICATION);
 
-    public static final List<DynamicTenantSetting> SETTING_LIST = Collections.singletonList(
-            ACTIVE_NOTIFICATION_SETTING
-    );
+    public static final List<DynamicTenantSetting> SETTING_LIST = Collections.singletonList(ACTIVE_NOTIFICATION_SETTING);
 
 }

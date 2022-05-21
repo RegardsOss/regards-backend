@@ -18,21 +18,18 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
-import java.util.Set;
-
-import javax.persistence.criteria.Predicate;
-
+import fr.cnes.regards.modules.feature.domain.request.FeatureNotificationRequest;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
-import fr.cnes.regards.modules.feature.domain.request.FeatureNotificationRequest;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
+import javax.persistence.criteria.Predicate;
+import java.util.Set;
 
 /**
  * JPA Specification to search for {@link FeatureNotificationRequest} from {@link IFeatureNotificationRequestRepository}
  *
  * @author Sébastien Binda
- *
  */
 public class FeatureNotificationRequestSpecification {
 
@@ -42,12 +39,13 @@ public class FeatureNotificationRequestSpecification {
 
     /**
      * Creates search {@link Specification} for {@link FeatureNotificationRequest}s
+     *
      * @param selection {@link FeatureRequestsSelectionDTO}
-     * @param page {@link Pageable}
+     * @param page      {@link Pageable}
      * @return {@link Specification}
      */
     public static Specification<FeatureNotificationRequest> searchAllByFilters(FeatureRequestsSelectionDTO selection,
-            Pageable page) {
+                                                                               Pageable page) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(selection, true, root, query, cb, page);
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));

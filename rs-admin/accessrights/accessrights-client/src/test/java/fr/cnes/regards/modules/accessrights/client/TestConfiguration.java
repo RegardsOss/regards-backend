@@ -18,17 +18,15 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-
 /**
  * @author sbinda
- *
  */
 @Configuration
 public class TestConfiguration {

@@ -34,7 +34,8 @@ public interface INearlineStorageLocation extends IStorageLocation {
 
     /**
      * Do the retrieve action for the given working subset.
-     * @param workingSubset Subset of files to restore.
+     *
+     * @param workingSubset   Subset of files to restore.
      * @param progressManager {@link IRestorationProgressManager} object to inform global store process after each transfer succeed or fail.
      */
     void retrieve(FileRestorationWorkingSubset workingSubset, IRestorationProgressManager progressManager);

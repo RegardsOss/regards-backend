@@ -14,36 +14,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.controller;
-
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.BID_SUFFIX;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.BID_USERROLE_SUFFIX;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.CONFIG_SUFFIX;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.PROCESSPLUGIN_PATH;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.PROCESS_BUSINESS_ID_PARAM;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.USER_ROLE_PARAM;
-
-import java.util.Collection;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -58,6 +30,22 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.processing.dto.ProcessPluginConfigurationRightsDTO;
 import fr.cnes.regards.modules.processing.service.IProcessPluginConfigService;
 import fr.cnes.regards.modules.processing.service.ProcessPluginConfigService.DeleteAttemptOnUsedProcessException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Collection;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.*;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.PROCESS_BUSINESS_ID_PARAM;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.USER_ROLE_PARAM;
 
 /**
  * This class is he controller for manipulating {@link fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration}s.
@@ -78,7 +66,8 @@ public class ProcessPluginConfigController implements IResourceController<Proces
 
     @Autowired
     public ProcessPluginConfigController(IAuthoritiesProvider authoritiesProvider,
-            IProcessPluginConfigService rightsConfigService, IResourceService resourceService) {
+                                         IProcessPluginConfigService rightsConfigService,
+                                         IResourceService resourceService) {
         this.rightsConfigService = rightsConfigService;
         this.resourceService = resourceService;
         this.authoritiesProvider = authoritiesProvider;
@@ -88,28 +77,33 @@ public class ProcessPluginConfigController implements IResourceController<Proces
     @ResourceAccess(description = "Find all registered configured processes", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<Collection<EntityModel<ProcessPluginConfigurationRightsDTO>>>
 
-            findAll(@RequestParam(required = false) String processNameLike) {
-        Collection<ProcessPluginConfigurationRightsDTO> allRightsPluginConfigs = rightsConfigService
-                .findAllRightsPluginConfigs();
+    findAll(@RequestParam(required = false) String processNameLike) {
+        Collection<ProcessPluginConfigurationRightsDTO> allRightsPluginConfigs = rightsConfigService.findAllRightsPluginConfigs();
         final Collection<ProcessPluginConfigurationRightsDTO> filteredRightsPluginConfigs;
         if (processNameLike != null) {
             filteredRightsPluginConfigs = allRightsPluginConfigs.stream()
-                    .filter(dto -> dto.getPluginConfiguration().getLabel().matches("^.*" + processNameLike + ".*$"))
-                    .filter(dto -> authoritiesProvider.shouldAccessToResourceRequiring(dto.getRights().getRole()))
-                    .collect(Collectors.toSet());
+                                                                .filter(dto -> dto.getPluginConfiguration()
+                                                                                  .getLabel()
+                                                                                  .matches(
+                                                                                      "^.*" + processNameLike + ".*$"))
+                                                                .filter(dto -> authoritiesProvider.shouldAccessToResourceRequiring(
+                                                                    dto.getRights().getRole()))
+                                                                .collect(Collectors.toSet());
         } else {
             filteredRightsPluginConfigs = allRightsPluginConfigs.stream()
-                    .filter(dto -> authoritiesProvider.shouldAccessToResourceRequiring(dto.getRights().getRole()))
-                    .collect(Collectors.toSet());
+                                                                .filter(dto -> authoritiesProvider.shouldAccessToResourceRequiring(
+                                                                    dto.getRights().getRole()))
+                                                                .collect(Collectors.toSet());
         }
-        return ResponseEntity
-                .ok(filteredRightsPluginConfigs.stream().map(this::toResource).collect(Collectors.toList()));
+        return ResponseEntity.ok(filteredRightsPluginConfigs.stream()
+                                                            .map(this::toResource)
+                                                            .collect(Collectors.toList()));
     }
 
     @PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE })
     @ResourceAccess(description = "Create a process configuration from a plugin", role = DefaultRole.ADMIN)
     public ResponseEntity<EntityModel<ProcessPluginConfigurationRightsDTO>> create(
-            @RequestBody ProcessPluginConfigurationRightsDTO rightsDto) throws EntityNotFoundException {
+        @RequestBody ProcessPluginConfigurationRightsDTO rightsDto) throws EntityNotFoundException {
         LOGGER.info("Creating plugin from {}", rightsDto);
         return new ResponseEntity<>(toResource(rightsConfigService.create(rightsDto)), HttpStatus.CREATED);
     }
@@ -117,16 +111,16 @@ public class ProcessPluginConfigController implements IResourceController<Proces
     @GetMapping(path = BID_SUFFIX)
     @ResourceAccess(description = "Find a configured process by its business uuid", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<EntityModel<ProcessPluginConfigurationRightsDTO>> findByBusinessId(
-            @PathVariable(PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId) {
+        @PathVariable(PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId) {
         return ResponseEntity.ok(toResource(rightsConfigService.findByBusinessId(processBusinessId)));
     }
 
     @PutMapping(path = BID_SUFFIX)
     @ResourceAccess(description = "Update the given process with the given rights configuration",
-            role = DefaultRole.ADMIN)
+        role = DefaultRole.ADMIN)
     public ResponseEntity<EntityModel<ProcessPluginConfigurationRightsDTO>> update(
-            @PathVariable(PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId,
-            @RequestBody ProcessPluginConfigurationRightsDTO rightsDto) throws ModuleException {
+        @PathVariable(PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId,
+        @RequestBody ProcessPluginConfigurationRightsDTO rightsDto) throws ModuleException {
         return ResponseEntity.ok(toResource(rightsConfigService.update(processBusinessId, rightsDto)));
     }
 
@@ -145,26 +139,35 @@ public class ProcessPluginConfigController implements IResourceController<Proces
     @PutMapping(path = BID_USERROLE_SUFFIX)
     @ResourceAccess(description = "Attache the given role to the given process", role = DefaultRole.ADMIN)
     public ResponseEntity<Void> attachRoleToProcess(@PathVariable(PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId,
-            @RequestParam(USER_ROLE_PARAM) String userRole) {
+                                                    @RequestParam(USER_ROLE_PARAM) String userRole) {
         rightsConfigService.attachRoleToProcess(processBusinessId, userRole);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
-    public EntityModel<ProcessPluginConfigurationRightsDTO> toResource(
-            final ProcessPluginConfigurationRightsDTO element, final Object... extras) {
+    public EntityModel<ProcessPluginConfigurationRightsDTO> toResource(final ProcessPluginConfigurationRightsDTO element,
+                                                                       final Object... extras) {
         final EntityModel<ProcessPluginConfigurationRightsDTO> resource = resourceService.toResource(element);
         PluginConfiguration pluginConfiguration = element.getPluginConfiguration();
         if (pluginConfiguration != null) {
             String businessIdStr = pluginConfiguration.getBusinessId();
             UUID businessId = UUID.fromString(businessIdStr);
-            resourceService.addLink(resource, this.getClass(), "findByBusinessId", LinkRels.SELF,
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "findByBusinessId",
+                                    LinkRels.SELF,
                                     MethodParamFactory.build(UUID.class, businessId));
-            resourceService.addLink(resource, this.getClass(), "update", LinkRels.UPDATE,
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "update",
+                                    LinkRels.UPDATE,
                                     MethodParamFactory.build(UUID.class, businessId),
                                     MethodParamFactory.build(ProcessPluginConfigurationRightsDTO.class));
             if (rightsConfigService.canDelete(businessId)) {
-                resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE,
+                resourceService.addLink(resource,
+                                        this.getClass(),
+                                        "delete",
+                                        LinkRels.DELETE,
                                         MethodParamFactory.build(UUID.class, businessId));
             }
         }

@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.modules.storage.domain.plugin;
 
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Plugin interface for all storage systems.
@@ -38,31 +38,32 @@ public interface IStorageLocation {
 
     /**
      * Dispatch given storage requests in one or many working subsets. Each subset will result to a storage job.
+     *
      * @param fileReferenceRequests {@link FileStorageRequest}s to dispatch
      * @return generated subsets.
      */
-    PreparationResponse<FileStorageWorkingSubset, FileStorageRequest> prepareForStorage(
-            Collection<FileStorageRequest> fileReferenceRequests);
+    PreparationResponse<FileStorageWorkingSubset, FileStorageRequest> prepareForStorage(Collection<FileStorageRequest> fileReferenceRequests);
 
     /**
      * Dispatch given deletion requests in one or many working subsets. Each subset will result to a deletion job.
+     *
      * @param fileDeletionRequests {@link FileDeletionRequest}s to dispatch
      * @return generated subsets.
      */
-    PreparationResponse<FileDeletionWorkingSubset, FileDeletionRequest> prepareForDeletion(
-            Collection<FileDeletionRequest> fileDeletionRequests);
+    PreparationResponse<FileDeletionWorkingSubset, FileDeletionRequest> prepareForDeletion(Collection<FileDeletionRequest> fileDeletionRequests);
 
     /**
      * Dispatch given cache requests in one or many working subsets. Each subset will result to a restoration job.
+     *
      * @param requests {@link FileCacheRequest}s to dispatch
      * @return generated subsets.
      */
-    PreparationResponse<FileRestorationWorkingSubset, FileCacheRequest> prepareForRestoration(
-            Collection<FileCacheRequest> requests);
+    PreparationResponse<FileRestorationWorkingSubset, FileCacheRequest> prepareForRestoration(Collection<FileCacheRequest> requests);
 
     /**
      * Delete files included in the given working subset. Subset has been prepared by {@link #prepareForDeletion(Collection)}.
      * {@link IDeletionProgressManager} is used to inform process of files deletion success or error.
+     *
      * @param workingSet
      * @param progressManager
      */
@@ -71,6 +72,7 @@ public interface IStorageLocation {
     /**
      * Store files included in the given working subset. Subset has been prepared by {@link #prepareForStorage(Collection)}.
      * {@link IStorageProgressManager} is used to inform process of files storage success or error.
+     *
      * @param workingSet
      * @param progressManager
      */
@@ -78,6 +80,7 @@ public interface IStorageLocation {
 
     /**
      * Allow service to validate that a file referenced on this storage location is valid.
+     *
      * @param urlToValidate
      * @param errors
      * @return
@@ -86,12 +89,14 @@ public interface IStorageLocation {
 
     /**
      * Does the current storage location allow physical deletion of files ?
+     *
      * @return boolean
      */
     boolean allowPhysicalDeletion();
 
     /**
      * Retrieve storage location root path if any
+     *
      * @return Optional<Path>
      */
     default Optional<Path> getRootPath() {

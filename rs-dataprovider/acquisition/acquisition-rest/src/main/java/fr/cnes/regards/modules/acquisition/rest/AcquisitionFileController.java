@@ -18,9 +18,14 @@
  */
 package fr.cnes.regards.modules.acquisition.rest;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,14 +42,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
-import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.service.IAcquisitionFileService;
+import java.time.OffsetDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping(AcquisitionFileController.TYPE_PATH)
@@ -73,23 +72,24 @@ public class AcquisitionFileController implements IResourceController<Acquisitio
 
     /**
      * Search for {@link AcquisitionFile} entities matching parameters
-     * @param filePath {@link String}
-     * @param state {@link AcquisitionFileState}
+     *
+     * @param filePath  {@link String}
+     * @param state     {@link AcquisitionFileState}
      * @param productId {@link Long} identifier of {@link Product}
-     * @param from {@link OffsetDateTime}
+     * @param from      {@link OffsetDateTime}
      * @return {@link AcquisitionFile}s
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Search for acquisition files", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<PagedModel<EntityModel<AcquisitionFile>>> search(
-            @RequestParam(name = REQUEST_PARAM_FILEPATH, required = false) String filePath,
-            @RequestParam(name = REQUEST_PARAM_STATE, required = false) List<AcquisitionFileState> state,
-            @RequestParam(name = REQUEST_PARAM_PRODUCT_ID, required = false) Long productId,
-            @RequestParam(name = REQUEST_PARAM_CHAIN_ID, required = false) Long chainId,
-            @RequestParam(name = REQUEST_PARAM_FROM,
-                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<AcquisitionFile> assembler) {
+        @RequestParam(name = REQUEST_PARAM_FILEPATH, required = false) String filePath,
+        @RequestParam(name = REQUEST_PARAM_STATE, required = false) List<AcquisitionFileState> state,
+        @RequestParam(name = REQUEST_PARAM_PRODUCT_ID, required = false) Long productId,
+        @RequestParam(name = REQUEST_PARAM_CHAIN_ID, required = false) Long chainId,
+        @RequestParam(name = REQUEST_PARAM_FROM, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+        OffsetDateTime from,
+        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        PagedResourcesAssembler<AcquisitionFile> assembler) {
         Page<AcquisitionFile> files = fileService.search(filePath, state, productId, chainId, from, pageable);
         return new ResponseEntity<>(toPagedResources(files, assembler), HttpStatus.OK);
     }

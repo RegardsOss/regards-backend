@@ -36,7 +36,6 @@ import java.util.Set;
  * This builder places the right data JSON path according to the related attribute model.
  *
  * @author Marc Sordi
- *
  */
 public interface IFeatureCriterion extends ICriterion {
 
@@ -130,8 +129,9 @@ public interface IFeatureCriterion extends ICriterion {
     /**
      * Criterion to test if a parameter is exactly the provided text or if a String array parameter contains an element
      * which is exactly the provided text
-     * @param att {@link AttributeModel}
-     * @param text provided text
+     *
+     * @param att       {@link AttributeModel}
+     * @param text      provided text
      * @param matchType string matching behavior
      * @return criterion
      */
@@ -141,7 +141,8 @@ public interface IFeatureCriterion extends ICriterion {
 
     /**
      * Criterion to test if a parameter is exactly the provided date
-     * @param att {@link AttributeModel}
+     *
+     * @param att  {@link AttributeModel}
      * @param date provided text
      * @return criterion
      */
@@ -152,8 +153,9 @@ public interface IFeatureCriterion extends ICriterion {
     /**
      * Criterion to test if a parameter starts with the provided text or if a String array parameter contains an element
      * that starts with the provided text
-     * @param att {@link AttributeModel}
-     * @param text provided text
+     *
+     * @param att       {@link AttributeModel}
+     * @param text      provided text
      * @param matchType string matching behavior
      * @return criterion
      */
@@ -164,8 +166,9 @@ public interface IFeatureCriterion extends ICriterion {
     /**
      * Criterion to test if a parameter ends with the provided text or if a String array parameter contains an element
      * that ends with the provided text
-     * @param att {@link AttributeModel}
-     * @param text provided text
+     *
+     * @param att       {@link AttributeModel}
+     * @param text      provided text
      * @param matchType string matching behavior
      * @return criterion
      */
@@ -176,8 +179,9 @@ public interface IFeatureCriterion extends ICriterion {
     /**
      * Criterion to test if a parameter contain the provided text or if a String array parameter contains an element
      * that contains the provided text
-     * @param att {@link AttributeModel}
-     * @param text provided text
+     *
+     * @param att       {@link AttributeModel}
+     * @param text      provided text
      * @param matchType string matching behavior
      * @return criterion
      */
@@ -185,12 +189,12 @@ public interface IFeatureCriterion extends ICriterion {
         return ICriterion.contains(att.getFullJsonPath(), text, matchType);
     }
 
-
     /**
      * Criterion to test if a parameter follows given regular expression or if a String array parameter contains an
      * element which follows given regular expression
-     * @param att {@link AttributeModel}
-     * @param text provided regular expression
+     *
+     * @param att       {@link AttributeModel}
+     * @param text      provided regular expression
      * @param matchType string matching behavior
      * @return criterion
      */
@@ -200,7 +204,8 @@ public interface IFeatureCriterion extends ICriterion {
 
     /**
      * Criterion to test if an array parameter contains specified value
-     * @param att {@link AttributeModel}
+     *
+     * @param att   {@link AttributeModel}
      * @param value value to search
      * @return criterion
      */
@@ -210,7 +215,8 @@ public interface IFeatureCriterion extends ICriterion {
 
     /**
      * Criterion to test if an array parameter contains specified value
-     * @param att {@link AttributeModel}
+     *
+     * @param att   {@link AttributeModel}
      * @param value value to search
      * @return criterion
      */
@@ -220,8 +226,9 @@ public interface IFeatureCriterion extends ICriterion {
 
     /**
      * Criterion to test if a double array parameter contains specified double value specifying precision
-     * @param att {@link AttributeModel}
-     * @param value value to search
+     *
+     * @param att       {@link AttributeModel}
+     * @param value     value to search
      * @param precision wanted precision
      * @return criterion
      */
@@ -231,7 +238,8 @@ public interface IFeatureCriterion extends ICriterion {
 
     /**
      * Criterion to test if a date array parameter contains a date between given lower and upper dates
-     * @param att {@link AttributeModel}
+     *
+     * @param att       {@link AttributeModel}
      * @param lowerDate inclusive lower bound
      * @param upperDate inclusive upper bound
      * @return criterion
@@ -242,9 +250,10 @@ public interface IFeatureCriterion extends ICriterion {
 
     /**
      * Criterion to test if a string parameter has one of the provided values
-     * @param att {@link AttributeModel}
+     *
+     * @param att       {@link AttributeModel}
      * @param matchType string matching behavior
-     * @param texts text array to test
+     * @param texts     text array to test
      * @return criterion
      */
     static ICriterion in(AttributeModel att, StringMatchType matchType, String... texts) {
@@ -253,7 +262,8 @@ public interface IFeatureCriterion extends ICriterion {
 
     /**
      * Criterion to test if an int parameter has a value into given range
-     * @param att {@link AttributeModel}
+     *
+     * @param att   {@link AttributeModel}
      * @param lower inclusive lower bound
      * @param upper inclusive upper bound
      * @return criterion
@@ -264,7 +274,8 @@ public interface IFeatureCriterion extends ICriterion {
 
     /**
      * Criterion to test if a long parameter has a value into given range
-     * @param att {@link AttributeModel}
+     *
+     * @param att   {@link AttributeModel}
      * @param lower inclusive lower bound
      * @param upper inclusive upper bound
      * @return criterion
@@ -275,7 +286,8 @@ public interface IFeatureCriterion extends ICriterion {
 
     /**
      * Criterion to test if a date parameter is into given range period
-     * @param att {@link AttributeModel}
+     *
+     * @param att   {@link AttributeModel}
      * @param lower inclusive lower bound
      * @param upper inclusive upper bound
      * @return criterion
@@ -286,7 +298,8 @@ public interface IFeatureCriterion extends ICriterion {
 
     /**
      * Criterion to test if a double parameter has a value into given range
-     * @param att {@link AttributeModel}
+     *
+     * @param att   {@link AttributeModel}
      * @param lower inclusive lower bound
      * @param upper inclusive upper bound
      * @return criterion
@@ -297,64 +310,81 @@ public interface IFeatureCriterion extends ICriterion {
 
     /**
      * Criterion to test if an int parameter has a value into given range
-     * @param att {@link AttributeModel}
-     * @param lower lower bound
+     *
+     * @param att            {@link AttributeModel}
+     * @param lower          lower bound
      * @param lowerInclusive inclusive lower bound or not
-     * @param upper upper bound
+     * @param upper          upper bound
      * @param upperInclusive inclusive upper bound or not
      * @return criterion
      */
-    static ICriterion between(AttributeModel att, int lower, boolean lowerInclusive, int upper,
-            boolean upperInclusive) {
+    static ICriterion between(AttributeModel att,
+                              int lower,
+                              boolean lowerInclusive,
+                              int upper,
+                              boolean upperInclusive) {
         return ICriterion.between(att.getFullJsonPath(), lower, lowerInclusive, upper, upperInclusive);
     }
 
     /**
      * Criterion to test if a long parameter has a value into given range
-     * @param att {@link AttributeModel}
-     * @param lower inclusive lower bound
+     *
+     * @param att            {@link AttributeModel}
+     * @param lower          inclusive lower bound
      * @param lowerInclusive inclusive lower bound or not
-     * @param upper inclusive upper bound
+     * @param upper          inclusive upper bound
      * @param upperInclusive inclusive upper bound or not
      * @return criterion
      */
-    static ICriterion between(AttributeModel att, long lower, boolean lowerInclusive, long upper,
-            boolean upperInclusive) {
+    static ICriterion between(AttributeModel att,
+                              long lower,
+                              boolean lowerInclusive,
+                              long upper,
+                              boolean upperInclusive) {
         return ICriterion.between(att.getFullJsonPath(), lower, lowerInclusive, upper, upperInclusive);
     }
 
     /**
      * Criterion to test if a date parameter is into given range period
-     * @param att {@link AttributeModel}
-     * @param lower inclusive lower bound
+     *
+     * @param att            {@link AttributeModel}
+     * @param lower          inclusive lower bound
      * @param lowerInclusive inclusive lower bound or not
-     * @param upper inclusive upper bound
+     * @param upper          inclusive upper bound
      * @param upperInclusive inclusive upper bound or not
      * @return criterion
      */
-    static ICriterion between(AttributeModel att, OffsetDateTime lower, boolean lowerInclusive, OffsetDateTime upper,
-            boolean upperInclusive) {
+    static ICriterion between(AttributeModel att,
+                              OffsetDateTime lower,
+                              boolean lowerInclusive,
+                              OffsetDateTime upper,
+                              boolean upperInclusive) {
         return ICriterion.between(att.getFullJsonPath(), lower, lowerInclusive, upper, upperInclusive);
     }
 
     /**
      * Criterion to test if a double parameter has a value into given range
-     * @param att {@link AttributeModel}
-     * @param lower inclusive lower bound
+     *
+     * @param att            {@link AttributeModel}
+     * @param lower          inclusive lower bound
      * @param lowerInclusive inclusive lower bound or not
-     * @param upper inclusive upper bound
+     * @param upper          inclusive upper bound
      * @param upperInclusive inclusive upper bound or not
      * @return criterion
      */
-    static ICriterion between(AttributeModel att, double lower, boolean lowerInclusive, double upper,
-            boolean upperInclusive) {
+    static ICriterion between(AttributeModel att,
+                              double lower,
+                              boolean lowerInclusive,
+                              double upper,
+                              boolean upperInclusive) {
         return ICriterion.between(att.getFullJsonPath(), lower, lowerInclusive, upper, upperInclusive);
     }
 
     /**
      * Criterion to test if a numeric value (int or double) is into (inclusive) given interval attribute name
-     * @param <T> extends {@link Number}
-     * @param att {@link AttributeModel}
+     *
+     * @param <T>   extends {@link Number}
+     * @param att   {@link AttributeModel}
      * @param value value to test inclusion
      * @return criterion
      */
@@ -364,7 +394,8 @@ public interface IFeatureCriterion extends ICriterion {
 
     /**
      * Criterion to test if given date range intersects given interval attribute name
-     * @param att {@link AttributeModel}
+     *
+     * @param att        {@link AttributeModel}
      * @param lowerBound lower bound
      * @param upperBound upper bound
      * @return criterion
@@ -375,8 +406,9 @@ public interface IFeatureCriterion extends ICriterion {
 
     /**
      * Criterion to test if given number range intersects given interval attribute name
-     * @param <T> extends {@link Number}
-     * @param att {@link AttributeModel}
+     *
+     * @param <T>        extends {@link Number}
+     * @param att        {@link AttributeModel}
      * @param lowerBound lower bound
      * @param upperBound upper bound
      * @return criterion
@@ -387,6 +419,7 @@ public interface IFeatureCriterion extends ICriterion {
 
     /**
      * Criterion to test if given attribute exists
+     *
      * @param att {@link AttributeModel}
      * @return criterion
      */
@@ -396,6 +429,7 @@ public interface IFeatureCriterion extends ICriterion {
 
     /**
      * Criterion to test if at least one of the parameters contains the provided text
+     *
      * @param atts list of attributes
      * @param text provided regular expression
      * @return criterion
@@ -408,6 +442,7 @@ public interface IFeatureCriterion extends ICriterion {
 
     /**
      * Criterion to test if at least one of the parameters starts with the provided text
+     *
      * @param atts list of attributes
      * @param text provided regular expression
      * @return criterion
@@ -423,8 +458,8 @@ public interface IFeatureCriterion extends ICriterion {
      * {field_name}+{@link #STRING_MATCH_TYPE_SEPARATOR}+{matchTypeValue}
      * <br/>
      * <br/>
-     *
-     *
+     * <p>
+     * <p>
      * If field contains {@link #STRING_MATCH_TYPE_SEPARATOR},
      * retrieve real field name and extract string matching behavior.<br/>
      * If not, just return field parameter as is!<br/>
@@ -444,9 +479,10 @@ public interface IFeatureCriterion extends ICriterion {
             } else {
                 // Default behavior
                 matchType = StringMatchType.KEYWORD;
-                LOGGER.warn(
-                        "Cannot detect string matching behavior with field {} and behavior {}. Falling back to {}!",
-                        field, fieldParts[1], matchType);
+                LOGGER.warn("Cannot detect string matching behavior with field {} and behavior {}. Falling back to {}!",
+                            field,
+                            fieldParts[1],
+                            matchType);
             }
             return Pair.of(fieldParts[0], matchType);
         }
@@ -456,6 +492,7 @@ public interface IFeatureCriterion extends ICriterion {
 
     static Optional<StringMatchType> parseStringMatchType(String matchTypeValue) {
         return Arrays.stream(StringMatchType.values())
-                .filter(t -> t.getMatchTypeValue().equalsIgnoreCase(matchTypeValue)).findFirst();
+                     .filter(t -> t.getMatchTypeValue().equalsIgnoreCase(matchTypeValue))
+                     .findFirst();
     }
 }

@@ -20,10 +20,9 @@ package fr.cnes.regards.framework.utils.parser.rule;
 
 /**
  * NOT USED at the moment ...
- * @author Marc SORDI
  *
+ * @author Marc SORDI
  */
 public enum MatchType {
-    EQUALS,
-    REGEXP
+    EQUALS, REGEXP
 }

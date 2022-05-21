@@ -147,8 +147,7 @@ public class AccountWorkflowManagerTest {
     /**
      * Check that the system prevents from deleting an account if it is still linked to project users.
      *
-     * @throws ModuleException
-     *             Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.
+     * @throws ModuleException Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.
      */
     @Test(expected = EntityOperationForbiddenException.class)
     @Purpose("Check that the system prevents from deleting an account if it is still linked to project users.")
@@ -162,10 +161,14 @@ public class AccountWorkflowManagerTest {
         Mockito.when(accountRepository.findById(ID)).thenReturn(Optional.of(account));
         Mockito.when(tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)).thenReturn(TENANTS);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(EMAIL))
-                .thenReturn(new ResponseEntity<>(EntityModel.of(new ProjectUser()), HttpStatus.OK));
+               .thenReturn(new ResponseEntity<>(EntityModel.of(new ProjectUser()), HttpStatus.OK));
         Mockito.when(accountStateProvider.getState(account))
-                .thenReturn(new ActiveState(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver,
-                        passwordResetService, accountUnlockTokenService));
+               .thenReturn(new ActiveState(projectUsersClient,
+                                           accountRepository,
+                                           tenantService,
+                                           runtimeTenantResolver,
+                                           passwordResetService,
+                                           accountUnlockTokenService));
 
         // Trigger the exception
         accountWorkflowManager.deleteAccount(account);
@@ -174,8 +177,7 @@ public class AccountWorkflowManagerTest {
     /**
      * Check that the system allows to delete an account.
      *
-     * @throws ModuleException
-     *             Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.
+     * @throws ModuleException Thrown if the {@link Account} is still linked to project users and therefore cannot be removed.
      */
     @Test
     @Purpose("Check that the system allows to delete an account.")
@@ -188,10 +190,14 @@ public class AccountWorkflowManagerTest {
         Mockito.when(accountRepository.findById(ID)).thenReturn(Optional.of(account));
         Mockito.when(tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)).thenReturn(TENANTS);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(EMAIL))
-                .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+               .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
         Mockito.when(accountStateProvider.getState(account))
-                .thenReturn(new ActiveState(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver,
-                        passwordResetService, accountUnlockTokenService));
+               .thenReturn(new ActiveState(projectUsersClient,
+                                           accountRepository,
+                                           tenantService,
+                                           runtimeTenantResolver,
+                                           passwordResetService,
+                                           accountUnlockTokenService));
 
         // Call the method
         accountWorkflowManager.deleteAccount(account);
@@ -217,10 +223,14 @@ public class AccountWorkflowManagerTest {
         Mockito.when(accountRepository.findById(ID)).thenReturn(Optional.of(account));
         Mockito.when(tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)).thenReturn(TENANTS);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(EMAIL))
-                .thenReturn(new ResponseEntity<>(EntityModel.of(new ProjectUser()), HttpStatus.OK));
+               .thenReturn(new ResponseEntity<>(EntityModel.of(new ProjectUser()), HttpStatus.OK));
         Mockito.when(accountStateProvider.getState(account))
-                .thenReturn(new ActiveState(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver,
-                        passwordResetService, accountUnlockTokenService));
+               .thenReturn(new ActiveState(projectUsersClient,
+                                           accountRepository,
+                                           tenantService,
+                                           runtimeTenantResolver,
+                                           passwordResetService,
+                                           accountUnlockTokenService));
 
         // Call the method
         final boolean result = accountWorkflowManager.canDelete(account);
@@ -244,10 +254,14 @@ public class AccountWorkflowManagerTest {
         Mockito.when(accountRepository.findById(ID)).thenReturn(Optional.of(account));
         Mockito.when(tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)).thenReturn(TENANTS);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(EMAIL))
-                .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+               .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
         Mockito.when(accountStateProvider.getState(account))
-                .thenReturn(new ActiveState(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver,
-                        passwordResetService, accountUnlockTokenService));
+               .thenReturn(new ActiveState(projectUsersClient,
+                                           accountRepository,
+                                           tenantService,
+                                           runtimeTenantResolver,
+                                           passwordResetService,
+                                           accountUnlockTokenService));
 
         // Call the method
         final boolean result = accountWorkflowManager.canDelete(account);

@@ -20,16 +20,20 @@ package fr.cnes.regards.framework.module.rest.exception;
 
 /**
  * Exception indicating a forbidden operation on an entity
+ *
  * @author Xavier-Alexandre Brochard
  * @author Sylvain Vissiere-Guerinet
  */
 @SuppressWarnings("serial")
 public class EntityOperationForbiddenException extends EntityException {
 
-    public EntityOperationForbiddenException(final String entityIdentifier, final Class<?> entityClass,
-            final String message) {
-        super(String.format("Operation on entity \"%s\" with id: \"%s\" is forbidden: %s", entityClass.getName(),
-                            entityIdentifier, message));
+    public EntityOperationForbiddenException(final String entityIdentifier,
+                                             final Class<?> entityClass,
+                                             final String message) {
+        super(String.format("Operation on entity \"%s\" with id: \"%s\" is forbidden: %s",
+                            entityClass.getName(),
+                            entityIdentifier,
+                            message));
     }
 
     public EntityOperationForbiddenException(String message) {

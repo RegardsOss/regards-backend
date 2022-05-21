@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.indexer.domain.criterion;
 
 /**
  * Defines a NOT criterion
+ *
  * @author oroussel
  */
 public class NotCriterion implements ICriterion {

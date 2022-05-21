@@ -25,9 +25,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * Enable Scheduling
  *
  * @author Marc SORDI
- *
  */
 @Configuration
 @EnableScheduling
 public class SchedulingConfiguration {
+
 }

@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
  * Extension thrown by open search extensions.
+ *
  * @author Sébastien Binda
  */
 @SuppressWarnings("serial")

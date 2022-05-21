@@ -29,12 +29,14 @@ import java.util.List;
 
 /**
  * Manage AIP storage
+ *
  * @author Léo Mieulet
  */
 public interface IAIPStorageService {
 
     /**
      * Store AIPs Files
+     *
      * @param aips
      * @param metadata
      * @return file storage event group_id list
@@ -44,14 +46,16 @@ public interface IAIPStorageService {
 
     /**
      * Update provided {@link AIPEntity} aips content info with files metadata
-     * @param aips to update
+     *
+     * @param aips              to update
      * @param storeRequestInfos storage events
      */
     void updateAIPsContentInfosAndLocations(List<AIPEntity> aips, Collection<RequestResultInfoDTO> storeRequestInfos);
 
     /**
      * Update provided {@link AIPEntity} aip with a list of new file storage locations
-     * @param aip to update
+     *
+     * @param aip               to update
      * @param storeRequestInfos storage events
      * @return true when aip have been impacted by these events
      */
@@ -59,7 +63,8 @@ public interface IAIPStorageService {
 
     /**
      * Update provided {@link AIPEntity} aip with a list of removed file storage locations
-     * @param aip to update
+     *
+     * @param aip               to update
      * @param storeRequestInfos storage events
      * @return true when aip have been impacted by these events
      */
@@ -67,6 +72,7 @@ public interface IAIPStorageService {
 
     /**
      * Remove a list of storage id from the AIP and retrieve the list of events to send
+     *
      * @param aip
      * @param removedStorages list of storage metadata that will be removed from the AIP
      * @return the list of events to sent to storage, empty if nothing have been done

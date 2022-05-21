@@ -34,8 +34,7 @@ public interface INotificationSettingsService {
      * Retrieve the notification configuration parameters for the logged user
      *
      * @return The {@link NotificationSettings}
-     * @throws EntityNotFoundException
-     *             thrown when no current user could be found
+     * @throws EntityNotFoundException thrown when no current user could be found
      */
     NotificationSettings retrieveNotificationSettings() throws EntityNotFoundException;
 
@@ -47,12 +46,10 @@ public interface INotificationSettingsService {
     /**
      * Define the endpoint for updating the {@link Notification#status}
      *
-     * @param pNotificationSettings
-     *            The notification settings
-     * @throws EntityNotFoundException
-     *             thrown when no current user could be found
+     * @param pNotificationSettings The notification settings
+     * @throws EntityNotFoundException thrown when no current user could be found
      */
     NotificationSettings updateNotificationSettings(NotificationSettingsDTO pNotificationSettings)
-            throws EntityNotFoundException;
+        throws EntityNotFoundException;
 
 }

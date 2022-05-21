@@ -18,6 +18,13 @@
  */
 package fr.cnes.regards.framework.test.aggregate;
 
+import fr.cnes.regards.framework.test.report.exception.ReportException;
+import fr.cnes.regards.framework.test.report.xls.XlsxHelper;
+import fr.cnes.regards.framework.test.report.xml.XmlHelper;
+import fr.cnes.regards.framework.test.report.xml.XmlRequirements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -27,18 +34,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import fr.cnes.regards.framework.test.report.exception.ReportException;
-import fr.cnes.regards.framework.test.report.xls.XlsxHelper;
-import fr.cnes.regards.framework.test.report.xml.XmlHelper;
-import fr.cnes.regards.framework.test.report.xml.XmlRequirements;
-
 /**
  * This class aggregates Junit reports per microservices. Each microservice reports has to be stored in its own
  * directory.<br/>
  * Aggregate reports are written in an XLSX document with each sheet representing a microservice.
+ *
  * @author Marc Sordi
  */
 public class Aggregator {

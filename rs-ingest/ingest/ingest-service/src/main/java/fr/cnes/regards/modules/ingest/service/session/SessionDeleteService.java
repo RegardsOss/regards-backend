@@ -44,11 +44,10 @@ public class SessionDeleteService implements ISessionDeleteService {
 
     @Override
     public void deleteSession(String source, String session) {
-        LOGGER.info("Event received to program the deletion of all SIP from session {} of source {}", session,
-                    source);
+        LOGGER.info("Event received to program the deletion of all SIP from session {} of source {}", session, source);
         // Run a SessionDeletionJob
-        deletionService.registerOAISDeletionCreator(
-                OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY).withSessionOwner(source)
-                        .withSession(session));
+        deletionService.registerOAISDeletionCreator(OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY)
+                                                                          .withSessionOwner(source)
+                                                                          .withSession(session));
     }
 }

@@ -18,13 +18,6 @@
  */
 package fr.cnes.regards.microservices.administration;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
@@ -37,14 +30,18 @@ import fr.cnes.regards.modules.project.service.IProjectConnectionService;
 import fr.cnes.regards.modules.project.service.IProjectService;
 import fr.cnes.regards.modules.project.service.ProjectConnectionService;
 import fr.cnes.regards.modules.project.service.ProjectService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
- *
  * Overrides the default method to initiate the list of connections for the multitenants database. The project
  * connections are read from the instance database through the ProjectService.
  *
  * @author Sébastien Binda
-
  */
 public class LocalTenantConnectionResolver implements ITenantConnectionResolver {
 
@@ -64,17 +61,13 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
     private final IProjectConnectionService projectConnectionService;
 
     /**
-     *
      * Constructor
      *
-     * @param pProjectService
-     *            the {@link ProjectService}
-     * @param pProjectConnectionService
-     *            the  {@link ProjectConnectionService}
-
+     * @param pProjectService           the {@link ProjectService}
+     * @param pProjectConnectionService the  {@link ProjectConnectionService}
      */
     public LocalTenantConnectionResolver(final IProjectService pProjectService,
-            final IProjectConnectionService pProjectConnectionService) {
+                                         final IProjectConnectionService pProjectConnectionService) {
         super();
         projectService = pProjectService;
         projectConnectionService = pProjectConnectionService;
@@ -97,7 +90,7 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
 
     @Override
     public void addTenantConnection(String microserviceName, final TenantConnection pTenantConnection)
-            throws JpaMultitenantException {
+        throws JpaMultitenantException {
         try {
             final Project project = projectService.retrieveProject(pTenantConnection.getTenant());
 
@@ -117,8 +110,10 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
     }
 
     @Override
-    public void updateState(String microservice, String tenant, TenantConnectionState state,
-            Optional<String> errorCause) throws JpaMultitenantException {
+    public void updateState(String microservice,
+                            String tenant,
+                            TenantConnectionState state,
+                            Optional<String> errorCause) throws JpaMultitenantException {
         try {
             projectConnectionService.updateState(microservice, tenant, state, errorCause);
         } catch (EntityNotFoundException e) {

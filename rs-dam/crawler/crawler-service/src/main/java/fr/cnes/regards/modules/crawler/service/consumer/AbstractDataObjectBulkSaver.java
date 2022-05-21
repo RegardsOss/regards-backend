@@ -1,18 +1,18 @@
 package fr.cnes.regards.modules.crawler.service.consumer;
 
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import fr.cnes.regards.modules.dam.domain.entities.DataObject;
-
 /**
  * An abstract data object saver manager
+ *
  * @author oroussel
  */
 public abstract class AbstractDataObjectBulkSaver {
@@ -51,8 +51,11 @@ public abstract class AbstractDataObjectBulkSaver {
 
     private final Integer maxBulkSize;
 
-    protected AbstractDataObjectBulkSaver(SaveDataObjectsCallable saveDataObjectsCallable, ExecutorService executor,
-            HashSet<DataObject> toSaveObjects, long datasetId, Integer maxBulkSize) {
+    protected AbstractDataObjectBulkSaver(SaveDataObjectsCallable saveDataObjectsCallable,
+                                          ExecutorService executor,
+                                          HashSet<DataObject> toSaveObjects,
+                                          long datasetId,
+                                          Integer maxBulkSize) {
         this.saveDataObjectsCallable = saveDataObjectsCallable;
         this.executor = executor;
         this.toSaveObjects = toSaveObjects;

@@ -18,23 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.dto.aip;
 
-import java.util.Set;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.urn.DataType;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.urn.DataType;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.util.Set;
 
 /**
  * Metadata for storage
  *
  * @author Marc SORDI
- *
  */
 public class StorageMetadata {
 
@@ -86,12 +82,14 @@ public class StorageMetadata {
 
     /**
      * Build storage metadata
+     *
      * @param pluginBusinessId storage identifier
-     * @param storePath path to the directory in which files have to be stored
-     * @param targetTypes list of data type this storage will handle
+     * @param storePath        path to the directory in which files have to be stored
+     * @param targetTypes      list of data type this storage will handle
      */
-    public static StorageMetadata build(String pluginBusinessId, @Nullable String storePath,
-            Set<DataType> targetTypes) {
+    public static StorageMetadata build(String pluginBusinessId,
+                                        @Nullable String storePath,
+                                        Set<DataType> targetTypes) {
         Assert.hasLength(pluginBusinessId, MISSING_STORAGE_ERROR);
         StorageMetadata m = new StorageMetadata();
         m.setPluginBusinessId(pluginBusinessId);
@@ -102,6 +100,7 @@ public class StorageMetadata {
 
     /**
      * Build storage metadata with empty target types and storage path
+     *
      * @param pluginBusinessId storage identifier
      */
     public static StorageMetadata build(String pluginBusinessId) {

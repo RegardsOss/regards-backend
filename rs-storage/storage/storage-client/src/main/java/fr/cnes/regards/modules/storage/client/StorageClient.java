@@ -18,29 +18,22 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.function.BiFunction;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
-import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
-import fr.cnes.regards.modules.storage.domain.flow.CopyFlowItem;
-import fr.cnes.regards.modules.storage.domain.flow.DeletionFlowItem;
-import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
-import fr.cnes.regards.modules.storage.domain.flow.RetryFlowItem;
-import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
+import fr.cnes.regards.modules.storage.domain.flow.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.BiFunction;
 
 /**
  * Asynchronous client implementation based on the message broker for requesting the file storage service.<br />
@@ -49,7 +42,6 @@ import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
  *
  * @author Marc SORDI
  * @author Sébastien Binda
- *
  */
 @Component
 public class StorageClient implements IStorageClient {
@@ -151,7 +143,8 @@ public class StorageClient implements IStorageClient {
     }
 
     private <T> Collection<RequestInfo> publish(BiFunction<Collection<T>, String, ISubscribable> func,
-            Collection<T> files, int maxFilesPerRequest) {
+                                                Collection<T> files,
+                                                int maxFilesPerRequest) {
         Collection<RequestInfo> requestInfos = Lists.newArrayList();
         // If number of files in the request is less than the maximum allowed by request then publish it
         if (files.size() <= maxFilesPerRequest) {

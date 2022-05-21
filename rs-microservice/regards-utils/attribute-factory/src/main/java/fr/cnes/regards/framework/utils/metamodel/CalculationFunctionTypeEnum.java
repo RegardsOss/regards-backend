@@ -20,9 +20,8 @@ package fr.cnes.regards.framework.utils.metamodel;
 
 /**
  * Cette classe modelise les enumeres definissant les types d'entite
- * 
- * @author Christophe Mertz
  *
+ * @author Christophe Mertz
  */
 public enum CalculationFunctionTypeEnum {
 
@@ -65,9 +64,8 @@ public enum CalculationFunctionTypeEnum {
 
     /**
      * Constructeur prive. Cette classe ne doit pas etre instanciee.
-     * 
-     * @param type
-     *            le type sous forme de chaine.
+     *
+     * @param type le type sous forme de chaine.
      */
     private CalculationFunctionTypeEnum(String type) {
         calculation = type;

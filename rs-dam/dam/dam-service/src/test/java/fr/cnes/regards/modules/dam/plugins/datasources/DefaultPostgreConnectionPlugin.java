@@ -1,20 +1,20 @@
 package fr.cnes.regards.modules.dam.plugins.datasources;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Map;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.dam.domain.datasources.Column;
 import fr.cnes.regards.modules.dam.domain.datasources.Table;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDBConnectionPlugin;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Map;
+
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
 @Plugin(id = "test-db-connection", version = "TEST", description = "Test implementation should not be used",
-        author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
+    url = "https://github.com/RegardsOss")
 public class DefaultPostgreConnectionPlugin implements IDBConnectionPlugin {
 
     @Override

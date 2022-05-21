@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.repository;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -22,7 +22,6 @@ import fr.cnes.regards.modules.processing.domain.PBatch;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
-
 
 /**
  * This interface defines a repository contract for PBatch entities.

@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
-
+import com.google.common.collect.Lists;
 import org.mockito.Mockito;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.google.common.collect.Lists;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
 
 /**
  * Global test configuration for ingest tests

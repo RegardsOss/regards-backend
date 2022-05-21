@@ -26,15 +26,12 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 
 /**
  * Class GatewayApplication
- *
+ * <p>
  * Spring boot starter class for Regards Gateway component
+ *
  * @author Sébastien Binda
  */
-@SpringBootApplication(
-    exclude = {
-        SecurityAutoConfiguration.class
-    }
-)
+@SpringBootApplication(exclude = { SecurityAutoConfiguration.class })
 public class Application { // NOSONAR
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);

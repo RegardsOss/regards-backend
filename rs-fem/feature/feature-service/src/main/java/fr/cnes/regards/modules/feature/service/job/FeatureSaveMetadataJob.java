@@ -41,6 +41,7 @@ import java.util.Map;
 
 /**
  * This job is used to dump features
+ *
  * @author Iliana Ghazali
  */
 
@@ -63,7 +64,7 @@ public class FeatureSaveMetadataJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         // Retrieve param
         Type type = new TypeToken<FeatureSaveMetadataRequest>() {
 
@@ -88,7 +89,8 @@ public class FeatureSaveMetadataJob extends AbstractJob<Void> {
             metadataService.writeZips(metadataRequest, getWorkspace());
             metadataService.writeDump(metadataRequest, dumpLocation, getWorkspace());
             logger.info("[FEATURE SAVE METADATA JOB] Dump successfully done between {} and {}",
-                        metadataRequest.getPreviousDumpDate(), metadataRequest.getRequestDate());
+                        metadataRequest.getPreviousDumpDate(),
+                        metadataRequest.getRequestDate());
             metadataService.handleSuccess(metadataRequest);
         } catch (IOException e) {
             String errorMessage = e.getClass().getSimpleName() + " " + e.getMessage();

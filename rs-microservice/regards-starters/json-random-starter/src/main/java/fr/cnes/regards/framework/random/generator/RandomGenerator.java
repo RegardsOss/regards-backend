@@ -31,6 +31,7 @@ public interface RandomGenerator<T> {
 
     /**
      * If the method return {@link Optional#empty()}, generator will call {@link #random()} method otherwise {@link #randomWithContext(Map)}.
+     *
      * @return list of dependent property paths the generator depends on.
      */
     default Optional<List<String>> getDependentProperties() {
@@ -49,6 +50,6 @@ public interface RandomGenerator<T> {
      */
     default T randomWithContext(Map<String, Object> context) {
         throw new UnsupportedOperationException(
-                "Random with context must be overridden for dependent property generation");
+            "Random with context must be overridden for dependent property generation");
     }
 }

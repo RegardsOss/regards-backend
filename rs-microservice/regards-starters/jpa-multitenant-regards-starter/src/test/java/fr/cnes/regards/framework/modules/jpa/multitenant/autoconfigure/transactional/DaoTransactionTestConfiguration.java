@@ -24,8 +24,9 @@ import org.springframework.context.annotation.PropertySource;
 
 /**
  * Class MultiTenancyDaoTestConfiguration
- *
+ * <p>
  * Configuration class for DAO unit tests
+ *
  * @author CS
  */
 @ComponentScan(basePackages = { "fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional" })

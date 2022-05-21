@@ -27,9 +27,10 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.manager.domain.Session;
 import fr.cnes.regards.framework.modules.session.manager.domain.Source;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.time.OffsetDateTime;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Job to create {@link Session}s and
@@ -61,7 +62,7 @@ public class ManagerSnapshotJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         this.snapshotProcess = getValue(parameters, SNAPSHOT_PROCESS, new TypeToken<SnapshotProcess>() {
 
         }.getType());
@@ -76,8 +77,10 @@ public class ManagerSnapshotJob extends AbstractJob<Void> {
         logger.debug("[{}] ManagerSnapshotJob job starts for source {}", jobInfoId, source);
         long start = System.currentTimeMillis();
         managerSnapshotService.generateSnapshots(snapshotProcess, freezeDate);
-        logger.debug("[{}] ManagerSnapshotJob job ends in {} ms for source {}", jobInfoId,
-                     System.currentTimeMillis() - start, source);
+        logger.debug("[{}] ManagerSnapshotJob job ends in {} ms for source {}",
+                     jobInfoId,
+                     System.currentTimeMillis() - start,
+                     source);
     }
 
 }

@@ -20,7 +20,6 @@
 
 package fr.cnes.regards.modules.ingest.service.settings;
 
-
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 
 public interface IAIPNotificationSettingsService {

@@ -44,7 +44,8 @@ import java.util.Optional;
  * @author Xavier-Alexandre Brochard
  */
 @Component
-public class WaitForQualificationListener implements ApplicationListener<ApplicationReadyEvent>, IHandler<AccountAcceptedEvent> {
+public class WaitForQualificationListener
+    implements ApplicationListener<ApplicationReadyEvent>, IHandler<AccountAcceptedEvent> {
 
     /**
      * Class logger
@@ -63,10 +64,12 @@ public class WaitForQualificationListener implements ApplicationListener<Applica
 
     private final AccessSettingsService accessSettingsService;
 
-    public WaitForQualificationListener(IProjectUserRepository projectUserRepository, ProjectUserWorkflowManager projectUserWorkflowManager,
-                                        AccessSettingsService accessSettingsService, ITenantResolver tenantResolver, IRuntimeTenantResolver runtimeTenantResolver,
-                                        IInstanceSubscriber instanceSubscriber
-    ) {
+    public WaitForQualificationListener(IProjectUserRepository projectUserRepository,
+                                        ProjectUserWorkflowManager projectUserWorkflowManager,
+                                        AccessSettingsService accessSettingsService,
+                                        ITenantResolver tenantResolver,
+                                        IRuntimeTenantResolver runtimeTenantResolver,
+                                        IInstanceSubscriber instanceSubscriber) {
         this.projectUserRepository = projectUserRepository;
         this.projectUserWorkflowManager = projectUserWorkflowManager;
         this.accessSettingsService = accessSettingsService;
@@ -82,6 +85,7 @@ public class WaitForQualificationListener implements ApplicationListener<Applica
 
     /**
      * Pass a {@link ProjectUser} from WAITING_ACCOUNT_ACTIVATION to WAITING_ACCESS
+     *
      * @param wrapper the event
      */
     @Override
@@ -109,8 +113,9 @@ public class WaitForQualificationListener implements ApplicationListener<Applica
                 projectUserRepository.save(projectUser);
             } catch (EntityException e) {
                 LOG.warn(String.format("The system tried to set the project user %s state to %s from %s but failed",
-                                       email, UserStatus.WAITING_ACCESS, UserStatus.WAITING_ACCOUNT_ACTIVE
-                ), e);
+                                       email,
+                                       UserStatus.WAITING_ACCESS,
+                                       UserStatus.WAITING_ACCOUNT_ACTIVE), e);
             }
         }
     }

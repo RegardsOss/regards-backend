@@ -18,23 +18,21 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import java.util.Optional;
-
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalIT;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalIT;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import java.util.Optional;
 
 /**
- *
  * Test retrieving plugin configuration by chain
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
 @Ignore("Just for testing @Query occasionally")
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema:ingest1" })
@@ -45,8 +43,7 @@ public class IIngestProcessingChainRepositoryIT extends AbstractDaoTransactional
 
     @Test
     public void findValidationPlugin() {
-        Optional<PluginConfiguration> conf = repo
-                .findOneValidationPluginByName(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
+        Optional<PluginConfiguration> conf = repo.findOneValidationPluginByName(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
         Assert.assertTrue(conf.isPresent());
     }
 }

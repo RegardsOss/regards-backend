@@ -44,7 +44,7 @@ import java.util.List;
 @Component
 @Profile("!noFemHandler")
 public class FeatureUpdateRequestEventHandler extends AbstractFeatureRequestEventHandler<FeatureUpdateRequestEvent>
-        implements IBatchHandler<FeatureUpdateRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
+    implements IBatchHandler<FeatureUpdateRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureUpdateRequestEventHandler.class);
 
@@ -74,7 +74,8 @@ public class FeatureUpdateRequestEventHandler extends AbstractFeatureRequestEven
         long start = System.currentTimeMillis();
         RequestInfo<FeatureUniformResourceName> requestInfo = featureService.registerRequests(messages);
         LOGGER.info("{} granted request(s) and {} denied update request(s) registered in {} ms",
-                    requestInfo.getGranted().size(), requestInfo.getDenied().keySet().size(),
+                    requestInfo.getGranted().size(),
+                    requestInfo.getDenied().keySet().size(),
                     System.currentTimeMillis() - start);
     }
 

@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service.passwordreset;
 
-import java.time.LocalDateTime;
-
+import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
+import fr.cnes.regards.modules.accessrights.instance.dao.IPasswordResetTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
-import fr.cnes.regards.modules.accessrights.instance.dao.IPasswordResetTokenRepository;
+import java.time.LocalDateTime;
 
 /**
  * Cron task purging the expired token repository.

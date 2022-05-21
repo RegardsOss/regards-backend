@@ -30,24 +30,31 @@ public class V1_7_0__ProjectUserMigration extends BaseJavaMigration {
     private static final Logger LOGGER = LoggerFactory.getLogger(V1_7_0__ProjectUserMigration.class);
 
     private static final int RETRY_DELAY = 30;
+
     private static final Instant NOW = Instant.now();
 
     private static final String EMAIL_COLUMN = "email";
+
     private static final String FIRSTNAME_COLUMN = "firstname";
+
     private static final String NAME_COLUMN = "lastname";
+
     private static final String CREATION_DATE_COLUMN = "created";
+
     private static final String SELECT_USERS = "SELECT " + EMAIL_COLUMN + " FROM t_project_user";
+
     private static final String UPDATE_USERS =
-            "UPDATE t_project_user SET " + FIRSTNAME_COLUMN + "=?, " + NAME_COLUMN + "=?, " + CREATION_DATE_COLUMN + "=? WHERE " + EMAIL_COLUMN + "=?";
+        "UPDATE t_project_user SET " + FIRSTNAME_COLUMN + "=?, " + NAME_COLUMN + "=?, " + CREATION_DATE_COLUMN
+            + "=? WHERE " + EMAIL_COLUMN + "=?";
 
     private final IAccountsClient accountsClient;
+
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     public V1_7_0__ProjectUserMigration(IAccountsClient accountsClient, IRuntimeTenantResolver runtimeTenantResolver) {
         this.accountsClient = accountsClient;
         this.runtimeTenantResolver = runtimeTenantResolver;
     }
-
 
     @Override
     public void migrate(Context context) throws InterruptedException {
@@ -76,7 +83,9 @@ public class V1_7_0__ProjectUserMigration extends BaseJavaMigration {
 
             try {
                 FeignSecurityManager.asSystem();
-                ResponseEntity<PagedModel<EntityModel<Account>>> response = accountsClient.retrieveAccountList(new AccountSearchParameters(), 0, 1);
+                ResponseEntity<PagedModel<EntityModel<Account>>> response = accountsClient.retrieveAccountList(new AccountSearchParameters(),
+                                                                                                               0,
+                                                                                                               1);
                 if (response != null && response.getStatusCode().is2xxSuccessful()) {
                     PagedModel<EntityModel<Account>> body = response.getBody();
                     if (body != null) {

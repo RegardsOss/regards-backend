@@ -17,16 +17,20 @@ import org.springframework.test.context.TestPropertySource;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
-@TestPropertySource(
-        properties = {"spring.jpa.properties.hibernate.default_schema=feature_session_delete", "regards.amqp.enabled=true"},
-        locations = {"classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties"})
-@ActiveProfiles(value = {"testAmqp", "noscheduler"})
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_session_delete",
+    "regards.amqp.enabled=true" },
+    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
+@ActiveProfiles(value = { "testAmqp", "noscheduler" })
 public class SessionDeleteIT extends AbstractFeatureMultitenantServiceIT {
 
     private static final String SESSION_STEP = "feature";
+
     private static final String SOURCE1 = "SOURCE 1";
+
     private static final String SOURCE2 = "SOURCE 2";
+
     private static final String SESSION1 = "SESSION 1";
+
     private static final String SESSION2 = "SESSION 2";
 
     @Autowired
@@ -41,10 +45,10 @@ public class SessionDeleteIT extends AbstractFeatureMultitenantServiceIT {
     }
 
     private void prepareData() throws InterruptedException {
-        prepareCreationTestData(true, 2, false, false, false,SOURCE2, SESSION1);
-        prepareCreationTestData(true, 2, false, false, false,SOURCE1, SESSION1);
-        prepareCreationTestData(true, 2, false, false, false,SOURCE2, SESSION2);
-        prepareCreationTestData(true, 2, false, false, false,SOURCE1, SESSION2);
+        prepareCreationTestData(true, 2, false, false, false, SOURCE2, SESSION1);
+        prepareCreationTestData(true, 2, false, false, false, SOURCE1, SESSION1);
+        prepareCreationTestData(true, 2, false, false, false, SOURCE2, SESSION2);
+        prepareCreationTestData(true, 2, false, false, false, SOURCE1, SESSION2);
 
         Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
             runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -75,11 +79,13 @@ public class SessionDeleteIT extends AbstractFeatureMultitenantServiceIT {
         });
 
         Assertions.assertEquals(4, featureEntityRepository.findAll().size());
-        Assertions.assertEquals(0, featureEntityRepository.findBySessionOwner(SOURCE1, Pageable.unpaged()).getTotalElements());
+        Assertions.assertEquals(0,
+                                featureEntityRepository.findBySessionOwner(SOURCE1, Pageable.unpaged())
+                                                       .getTotalElements());
         // Creation : 8 products *4steps (request+running+referenced+running)
         // Deletion : 4 products *5steps (deleteRequest+running+deleted+referenced+running)
-        computeSessionStep((8*4) + (4*5),SOURCE1, SESSION1);
-        computeSessionStep(0,SOURCE1, SESSION2);
+        computeSessionStep((8 * 4) + (4 * 5), SOURCE1, SESSION1);
+        computeSessionStep(0, SOURCE1, SESSION2);
         SessionStep sessionStep = getSessionStep(SOURCE1, SESSION1);
         checkKey(0, "referencedProducts", sessionStep.getProperties());
         checkKey(2, "deletedProducts", sessionStep.getProperties());
@@ -125,11 +131,15 @@ public class SessionDeleteIT extends AbstractFeatureMultitenantServiceIT {
         });
 
         Assertions.assertEquals(6, featureEntityRepository.findAll().size());
-        Assertions.assertEquals(0, featureEntityRepository.findBySessionOwnerAndSession(SOURCE1, SESSION1, Pageable.unpaged()).getTotalElements());
+        Assertions.assertEquals(0,
+                                featureEntityRepository.findBySessionOwnerAndSession(SOURCE1,
+                                                                                     SESSION1,
+                                                                                     Pageable.unpaged())
+                                                       .getTotalElements());
         // Creation : 8 products * 4 events (request+running+referenced+running)
         // Deletion : 2 products * 5 events (request+running+deleted+referenced+running)
-        computeSessionStep((8*4) + (2*5),SOURCE1, SESSION1);
-        computeSessionStep(0,SOURCE1, SESSION2);
+        computeSessionStep((8 * 4) + (2 * 5), SOURCE1, SESSION1);
+        computeSessionStep(0, SOURCE1, SESSION2);
         SessionStep sessionStep = getSessionStep(SOURCE1, SESSION1);
         checkKey(0, "referencedProducts", sessionStep.getProperties());
         checkKey(2, "deletedProducts", sessionStep.getProperties());

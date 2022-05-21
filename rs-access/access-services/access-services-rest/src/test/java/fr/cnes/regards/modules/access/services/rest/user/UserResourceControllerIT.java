@@ -33,8 +33,7 @@ import static fr.cnes.regards.modules.access.services.rest.user.mock.UserResourc
  * Integration tests for UserResource REST Controller.
  */
 @MultitenantTransactional
-@TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=access"},
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=access" },
     locations = { "classpath:application-test.properties" })
 public class UserResourceControllerIT extends AbstractRegardsTransactionalIT {
 
@@ -44,9 +43,7 @@ public class UserResourceControllerIT extends AbstractRegardsTransactionalIT {
     public void retrieveProjectUserResources() {
         String api = UserResourceController.TYPE_MAPPING;
 
-        RequestBuilderCustomizer customizer =
-            customizer()
-                .expectStatusOk();
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
 
         performDefaultGet(api, customizer, "Failed to retrieve project user resources", DUMMY_USER_LOGIN);
     }
@@ -55,20 +52,20 @@ public class UserResourceControllerIT extends AbstractRegardsTransactionalIT {
     public void updateProjectUserResources() {
         String api = UserResourceController.TYPE_MAPPING;
 
-        RequestBuilderCustomizer customizer =
-            customizer()
-                .expectStatusOk();
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
 
-        performDefaultPut(api, Collections.singleton(RESOURCES_ACCESS_STUB), customizer, "Failed to update project user resource", DUMMY_USER_LOGIN);
+        performDefaultPut(api,
+                          Collections.singleton(RESOURCES_ACCESS_STUB),
+                          customizer,
+                          "Failed to update project user resource",
+                          DUMMY_USER_LOGIN);
     }
 
     @Test
     public void removeProjectUserResources() {
         String api = UserResourceController.TYPE_MAPPING;
 
-        RequestBuilderCustomizer customizer =
-            customizer()
-                .expectStatusOk();
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
 
         performDefaultDelete(api, customizer, "Failed to remove project user resource", DUMMY_USER_LOGIN);
     }

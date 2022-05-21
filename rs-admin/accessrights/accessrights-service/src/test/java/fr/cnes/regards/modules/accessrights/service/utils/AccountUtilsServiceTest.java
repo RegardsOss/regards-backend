@@ -36,21 +36,33 @@ import static org.mockito.ArgumentMatchers.any;
 class AccountUtilsServiceTest {
 
     private static final String TENANT = "project";
+
     private static final String EMAIL = "email@test.com";
+
     private static final String FIRST_NAME = "Firstname";
+
     private static final String LAST_NAME = "Lirstname";
+
     private static final List<MetaData> META_DATA = new ArrayList<>();
+
     private static final String PASSWORD = "password";
+
     private static final Role ROLE = new Role("role name", null);
+
     private static final String ORIGIN_URL = "originUrl";
+
     private static final String REQUEST_LINK = "requestLink";
+
     private static final String ORIGIN = "origin";
+
     private static final Set<String> ACCESS_GROUPS = Collections.singleton("group");
 
     @Mock
     private IAccountsClient accountsClient;
+
     @Mock
     private IRuntimeTenantResolver runtimeTenantResolver;
+
     @Mock
     private Gson gson;
 
@@ -58,13 +70,24 @@ class AccountUtilsServiceTest {
     private AccountUtilsService accountUtilsService;
 
     private AccessRequestDto accessRequestDto;
+
     private Account expectedAccount;
 
     @BeforeEach
     void setUp() {
         Project project = new Project();
         project.setName(TENANT);
-        accessRequestDto = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, ROLE.getName(), META_DATA, PASSWORD, ORIGIN_URL, REQUEST_LINK, ORIGIN, ACCESS_GROUPS, 0L);
+        accessRequestDto = new AccessRequestDto(EMAIL,
+                                                FIRST_NAME,
+                                                LAST_NAME,
+                                                ROLE.getName(),
+                                                META_DATA,
+                                                PASSWORD,
+                                                ORIGIN_URL,
+                                                REQUEST_LINK,
+                                                ORIGIN,
+                                                ACCESS_GROUPS,
+                                                0L);
         expectedAccount = new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD);
         expectedAccount.setProjects(Collections.singleton(project));
     }
@@ -72,7 +95,8 @@ class AccountUtilsServiceTest {
     @Test
     void retrieveAccount() throws EntityInvalidException {
         // Given
-        Mockito.when(accountsClient.retrieveAccounByEmail(EMAIL)).thenReturn(ResponseEntity.ok(EntityModel.of(expectedAccount)));
+        Mockito.when(accountsClient.retrieveAccounByEmail(EMAIL))
+               .thenReturn(ResponseEntity.ok(EntityModel.of(expectedAccount)));
         // When
         Account retrievedAccount = accountUtilsService.retrieveAccount(EMAIL);
         // Then

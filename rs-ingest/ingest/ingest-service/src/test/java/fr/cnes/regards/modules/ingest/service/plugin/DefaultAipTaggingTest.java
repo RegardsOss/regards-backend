@@ -18,18 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.plugin;
 
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.oais.ContentInformation;
@@ -44,12 +32,16 @@ import fr.cnes.regards.modules.ingest.domain.exception.TagAIPException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipTagging;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.service.chain.plugin.DefaultAIPTagging;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.nio.file.Paths;
+import java.util.*;
 
 /**
  * Test {@link DefaultAIPTagging} plugin
  *
  * @author Marc Sordi
- *
  */
 public class DefaultAipTaggingTest {
 
@@ -69,11 +61,12 @@ public class DefaultAipTaggingTest {
     @Test
     public void addOnlyTags() throws TagAIPException, NotAvailablePluginConfigurationException {
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(DefaultAIPTagging.FIELD_NAME_TAGS, PluginParameterTransformer.toJson(TAGS)));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(DefaultAIPTagging.FIELD_NAME_TAGS,
+                                                                           PluginParameterTransformer.toJson(TAGS)));
 
-        DefaultAIPTagging plugin = PluginUtils
-                .getPlugin(PluginConfiguration.build(DefaultAIPTagging.class, null, parameters), null);
+        DefaultAIPTagging plugin = PluginUtils.getPlugin(PluginConfiguration.build(DefaultAIPTagging.class,
+                                                                                   null,
+                                                                                   parameters), null);
         Assert.assertNotNull(plugin);
         tag(plugin, TAGS, null);
     }
@@ -81,11 +74,12 @@ public class DefaultAipTaggingTest {
     @Test
     public void addOnlyLinks() throws TagAIPException, NotAvailablePluginConfigurationException {
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(DefaultAIPTagging.FIELD_NAME_LINKS, PluginParameterTransformer.toJson(LINKS)));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(DefaultAIPTagging.FIELD_NAME_LINKS,
+                                                                           PluginParameterTransformer.toJson(LINKS)));
 
-        DefaultAIPTagging plugin = PluginUtils
-                .getPlugin(PluginConfiguration.build(DefaultAIPTagging.class, null, parameters), null);
+        DefaultAIPTagging plugin = PluginUtils.getPlugin(PluginConfiguration.build(DefaultAIPTagging.class,
+                                                                                   null,
+                                                                                   parameters), null);
         Assert.assertNotNull(plugin);
         tag(plugin, null, LINKS);
     }
@@ -93,11 +87,13 @@ public class DefaultAipTaggingTest {
     @Test
     public void addTagsAndLinks() throws TagAIPException, NotAvailablePluginConfigurationException {
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(DefaultAIPTagging.FIELD_NAME_TAGS, PluginParameterTransformer.toJson(TAGS)),
-                     IPluginParam.build(DefaultAIPTagging.FIELD_NAME_LINKS, PluginParameterTransformer.toJson(LINKS)));
-        DefaultAIPTagging plugin = PluginUtils
-                .getPlugin(PluginConfiguration.build(DefaultAIPTagging.class, null, parameters), null);
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(DefaultAIPTagging.FIELD_NAME_TAGS,
+                                                                           PluginParameterTransformer.toJson(TAGS)),
+                                                        IPluginParam.build(DefaultAIPTagging.FIELD_NAME_LINKS,
+                                                                           PluginParameterTransformer.toJson(LINKS)));
+        DefaultAIPTagging plugin = PluginUtils.getPlugin(PluginConfiguration.build(DefaultAIPTagging.class,
+                                                                                   null,
+                                                                                   parameters), null);
         Assert.assertNotNull(plugin);
         tag(plugin, TAGS, LINKS);
     }
@@ -107,8 +103,9 @@ public class DefaultAipTaggingTest {
 
         Set<IPluginParam> parameters = IPluginParam.set();
         PluginUtils.setup(MODULE_PACKAGE);
-        DefaultAIPTagging plugin = PluginUtils
-                .getPlugin(PluginConfiguration.build(DefaultAIPTagging.class, null, parameters), null);
+        DefaultAIPTagging plugin = PluginUtils.getPlugin(PluginConfiguration.build(DefaultAIPTagging.class,
+                                                                                   null,
+                                                                                   parameters), null);
         Assert.assertNotNull(plugin);
         tag(plugin, null, null);
     }
@@ -120,8 +117,11 @@ public class DefaultAipTaggingTest {
         String filename = "test.netcdf";
         String md5 = "plifplafplouf";
 
-        AIP single = AIP.build(EntityType.DATA, OaisUniformResourceName.fromString(aipUrn),
-                               Optional.of(OaisUniformResourceName.fromString(sipUrn)), providerId, 1);
+        AIP single = AIP.build(EntityType.DATA,
+                               OaisUniformResourceName.fromString(aipUrn),
+                               Optional.of(OaisUniformResourceName.fromString(sipUrn)),
+                               providerId,
+                               1);
         single.withDataObject(DataType.RAWDATA, Paths.get("target", filename), md5);
         single.registerContentInformation();
 

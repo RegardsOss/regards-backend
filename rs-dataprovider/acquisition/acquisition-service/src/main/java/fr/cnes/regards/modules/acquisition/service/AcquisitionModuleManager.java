@@ -18,24 +18,24 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Configuration manager for current module
+ *
  * @author Marc Sordi
  */
 @Service
@@ -57,7 +57,8 @@ public class AcquisitionModuleManager extends AbstractModuleManager<Void> {
                 try {
                     processingService.createChain(apc);
                 } catch (ModuleException e) {
-                    importErrors.add(String.format("Skipping import of chain with label %s: %s", apc.getLabel(),
+                    importErrors.add(String.format("Skipping import of chain with label %s: %s",
+                                                   apc.getLabel(),
                                                    e.getMessage()));
                     LOGGER.error(e.getMessage(), e);
                 }

@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.utils.gson;
 
 import com.google.auto.service.AutoService;
@@ -26,7 +26,6 @@ import fr.cnes.regards.modules.processing.domain.step.PStepFinal;
 import fr.cnes.regards.modules.processing.domain.step.PStepIntermediary;
 
 import java.time.OffsetDateTime;
-
 
 /**
  * This class is a Gson type adapter for {@link PStep}.
@@ -53,7 +52,8 @@ public class PStepTypeAdapter implements TypedGsonTypeAdapter<PStep> {
 
     @Override
     public JsonSerializer<PStep> serializer() {
-        return (src, typeOfSrc, context) -> src instanceof PStepFinal ? context.serialize(src, PStepFinal.class)
-                : context.serialize(src, PStepIntermediary.class);
+        return (src, typeOfSrc, context) -> src instanceof PStepFinal ?
+            context.serialize(src, PStepFinal.class) :
+            context.serialize(src, PStepIntermediary.class);
     }
 }

@@ -18,25 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -76,14 +57,33 @@ import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceMetaInfoDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Test class to verify {@link IngestProcessingJob}.
+ *
  * @author Sébastien Binda
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=ingestjob", "eureka.client.enabled=false",
-                       "regards.ingest.aip.delete.bulk.delay=100" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=ingestjob", "eureka.client.enabled=false",
+        "regards.ingest.aip.delete.bulk.delay=100" })
 public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
 
     @SuppressWarnings("unused")
@@ -138,27 +138,34 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
 
     private void initFullProcessingChain() throws ModuleException {
         PluginConfiguration preProcessingPlugin = new PluginConfiguration("preProcessingPlugin",
-                PreprocessingTestPlugin.class.getAnnotation(Plugin.class).id());
+                                                                          PreprocessingTestPlugin.class.getAnnotation(
+                                                                              Plugin.class).id());
         pluginService.savePluginConfiguration(preProcessingPlugin);
 
         PluginConfiguration validationPlugin = new PluginConfiguration("validationPlugin",
-                ValidationTestPlugin.class.getAnnotation(Plugin.class).id());
+                                                                       ValidationTestPlugin.class.getAnnotation(Plugin.class)
+                                                                                                 .id());
         pluginService.savePluginConfiguration(validationPlugin);
 
         PluginConfiguration generationPlugin = new PluginConfiguration("generationPlugin",
-                AIPGenerationTestPlugin.class.getAnnotation(Plugin.class).id());
+                                                                       AIPGenerationTestPlugin.class.getAnnotation(
+                                                                           Plugin.class).id());
         pluginService.savePluginConfiguration(generationPlugin);
 
         PluginConfiguration taggingPlugin = new PluginConfiguration("taggingPlugin",
-                AIPTaggingTestPlugin.class.getAnnotation(Plugin.class).id());
+                                                                    AIPTaggingTestPlugin.class.getAnnotation(Plugin.class)
+                                                                                              .id());
         pluginService.savePluginConfiguration(taggingPlugin);
 
         PluginConfiguration postProcessingPlugin = new PluginConfiguration("postProcessingPlugin",
-                PostProcessingTestPlugin.class.getAnnotation(Plugin.class).id());
+                                                                           PostProcessingTestPlugin.class.getAnnotation(
+                                                                               Plugin.class).id());
         pluginService.savePluginConfiguration(postProcessingPlugin);
 
         IngestProcessingChain fullChain = new IngestProcessingChain(PROCESSING_CHAIN_TEST,
-                "Full test Ingestion processing chain", validationPlugin, generationPlugin);
+                                                                    "Full test Ingestion processing chain",
+                                                                    validationPlugin,
+                                                                    generationPlugin);
         fullChain.setPreProcessingPlugin(preProcessingPlugin);
         fullChain.setGenerationPlugin(generationPlugin);
         fullChain.setTagPlugin(taggingPlugin);
@@ -171,15 +178,18 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
     @Test
     public void testDefaultProcessingChain() {
         // Init a SIP in database with state CREATED and managed with default chain
-        SIPCollection sips = SIPCollection
-                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                               CATEGORIES, STORAGE_METADATA));
+        SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
+                                                                         SESSION,
+                                                                         IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                                                         CATEGORIES,
+                                                                         STORAGE_METADATA));
 
         Path filePath = Paths.get("data1.fits");
         String checksum = "sdsdfm1211vd";
         SIP sip = SIP.build(EntityType.DATA, SIP_DEFAULT_CHAIN_ID_TEST);
         sip.withDataObject(DataType.RAWDATA, filePath, checksum);
-        sip.withSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits",
+        sip.withSyntax("FITS(FlexibleImageTransport)",
+                       "http://www.iana.org/assignments/media-types/application/fits",
                        MediaType.valueOf("application/fits"));
         sip.registerContentInformation();
         sips.add(sip);
@@ -199,10 +209,15 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Collection<FileStorageRequestDTO>> storageArgs = ArgumentCaptor.forClass(Collection.class);
         Mockito.verify(storageClient, Mockito.times(1)).store(storageArgs.capture());
-        Assert.assertTrue("File storage url is not vali in storage request", storageArgs.getValue().stream()
-                .anyMatch(req -> req.getOriginUrl().equals(OAISDataObjectLocation.build(filePath).getUrl())));
-        Assert.assertTrue("File storage is not valid in storage request", storageArgs.getValue().stream()
-                .anyMatch(req -> req.getStorage().equals(STORAGE_METADATA.getPluginBusinessId())));
+        Assert.assertTrue("File storage url is not vali in storage request",
+                          storageArgs.getValue()
+                                     .stream()
+                                     .anyMatch(req -> req.getOriginUrl()
+                                                         .equals(OAISDataObjectLocation.build(filePath).getUrl())));
+        Assert.assertTrue("File storage is not valid in storage request",
+                          storageArgs.getValue()
+                                     .stream()
+                                     .anyMatch(req -> req.getStorage().equals(STORAGE_METADATA.getPluginBusinessId())));
 
         // Check status of IngestRequest
         List<IngestRequest> reqs = ingestRequestRepo.findByProviderId(resultSip.getProviderId());
@@ -214,23 +229,33 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         AIPEntity aip = req.getAips().get(0);
 
         String remoteStepGroupId = req.getRemoteStepGroupIds().get(0);
-        RequestResultInfoDTO success = RequestResultInfoDTO
-                .build(remoteStepGroupId, checksum, STORAGE_METADATA.getPluginBusinessId(), null,
-                       Sets.newHashSet(aip.getAipId()),
-                       FileReferenceDTO.build(OffsetDateTime.now(),
-                                              FileReferenceMetaInfoDTO.build(checksum, "MD5", "file.name", 10L, null,
-                                                                             null, MediaType.APPLICATION_JSON, "type"),
-                                              FileLocationDTO.build(STORAGE_METADATA.getPluginBusinessId(),
-                                                                    "file:///test/file.name"),
-                                              Sets.newHashSet(aip.getAipId())),
-                       null);
+        RequestResultInfoDTO success = RequestResultInfoDTO.build(remoteStepGroupId,
+                                                                  checksum,
+                                                                  STORAGE_METADATA.getPluginBusinessId(),
+                                                                  null,
+                                                                  Sets.newHashSet(aip.getAipId()),
+                                                                  FileReferenceDTO.build(OffsetDateTime.now(),
+                                                                                         FileReferenceMetaInfoDTO.build(
+                                                                                             checksum,
+                                                                                             "MD5",
+                                                                                             "file.name",
+                                                                                             10L,
+                                                                                             null,
+                                                                                             null,
+                                                                                             MediaType.APPLICATION_JSON,
+                                                                                             "type"),
+                                                                                         FileLocationDTO.build(
+                                                                                             STORAGE_METADATA.getPluginBusinessId(),
+                                                                                             "file:///test/file.name"),
+                                                                                         Sets.newHashSet(aip.getAipId())),
+                                                                  null);
         RequestInfo ri = RequestInfo.build(remoteStepGroupId, Sets.newHashSet(success), Sets.newHashSet());
         Set<RequestInfo> requestInfos = Sets.newHashSet(ri);
         // Simulate error response from storage
         storageResponseHandler.onStoreSuccess(requestInfos);
 
         // Check status of IngestRequest
-        if(initDefaultNotificationSettings()) {
+        if (initDefaultNotificationSettings()) {
             mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
         }
         reqs = ingestRequestRepo.findByProviderId(resultSip.getProviderId());
@@ -242,15 +267,18 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
     @Test
     public void testDefaultProcessingChainWithError() {
         // Init a SIP in database with state CREATED and managed with default chain
-        SIPCollection sips = SIPCollection
-                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                               CATEGORIES, STORAGE_METADATA));
+        SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
+                                                                         SESSION,
+                                                                         IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                                                         CATEGORIES,
+                                                                         STORAGE_METADATA));
 
         Path filePath = Paths.get("data1.fits");
         String checksum = "sdsdfm1211vd";
         SIP sip = SIP.build(EntityType.DATA, SIP_DEFAULT_CHAIN_ID_TEST);
         sip.withDataObject(DataType.RAWDATA, filePath, checksum);
-        sip.withSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits",
+        sip.withSyntax("FITS(FlexibleImageTransport)",
+                       "http://www.iana.org/assignments/media-types/application/fits",
                        MediaType.valueOf("application/fits"));
         sip.registerContentInformation();
         sips.add(sip);
@@ -270,10 +298,15 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Collection<FileStorageRequestDTO>> storageArgs = ArgumentCaptor.forClass(Collection.class);
         Mockito.verify(storageClient, Mockito.times(1)).store(storageArgs.capture());
-        Assert.assertTrue("File storage url is not vali in storage request", storageArgs.getValue().stream()
-                .anyMatch(req -> req.getOriginUrl().equals(OAISDataObjectLocation.build(filePath).getUrl())));
-        Assert.assertTrue("File storage is not valid in storage request", storageArgs.getValue().stream()
-                .anyMatch(req -> req.getStorage().equals(STORAGE_METADATA.getPluginBusinessId())));
+        Assert.assertTrue("File storage url is not vali in storage request",
+                          storageArgs.getValue()
+                                     .stream()
+                                     .anyMatch(req -> req.getOriginUrl()
+                                                         .equals(OAISDataObjectLocation.build(filePath).getUrl())));
+        Assert.assertTrue("File storage is not valid in storage request",
+                          storageArgs.getValue()
+                                     .stream()
+                                     .anyMatch(req -> req.getStorage().equals(STORAGE_METADATA.getPluginBusinessId())));
 
         // Check status of IngestRequest
         List<IngestRequest> reqs = ingestRequestRepo.findByProviderId(resultSip.getProviderId());
@@ -285,9 +318,13 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         AIPEntity aip = req.getAips().get(0);
 
         String remoteStepGroupId = req.getRemoteStepGroupIds().get(0);
-        RequestResultInfoDTO error = RequestResultInfoDTO
-                .build(remoteStepGroupId, checksum, STORAGE_METADATA.getPluginBusinessId(), null,
-                       Sets.newHashSet(aip.getAipId()), new FileReferenceDTO(), "simulated error");
+        RequestResultInfoDTO error = RequestResultInfoDTO.build(remoteStepGroupId,
+                                                                checksum,
+                                                                STORAGE_METADATA.getPluginBusinessId(),
+                                                                null,
+                                                                Sets.newHashSet(aip.getAipId()),
+                                                                new FileReferenceDTO(),
+                                                                "simulated error");
         RequestInfo ri = RequestInfo.build(remoteStepGroupId, Sets.newHashSet(), Sets.newHashSet(error));
         Set<RequestInfo> requestInfos = Sets.newHashSet(ri);
         // Simulate error response from storage
@@ -311,12 +348,16 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
     @Test
     public void testProcessingChain() {
 
-        SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN_TEST,
-                                                                         CATEGORIES, STORAGE_METADATA));
+        SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
+                                                                         SESSION,
+                                                                         PROCESSING_CHAIN_TEST,
+                                                                         CATEGORIES,
+                                                                         STORAGE_METADATA));
 
         SIP sip = SIP.build(EntityType.DATA, SIP_ID_TEST);
         sip.withDataObject(DataType.RAWDATA, Paths.get("data2.fits"), "sdsdfm1211vd");
-        sip.withSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits",
+        sip.withSyntax("FITS(FlexibleImageTransport)",
+                       "http://www.iana.org/assignments/media-types/application/fits",
                        MediaType.valueOf("application/fits"));
         sip.registerContentInformation();
         sips.add(sip);
@@ -364,8 +405,9 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         ArgumentCaptor<SIPEntity> sipCaptor = ArgumentCaptor.forClass(SIPEntity.class);
 
         Mockito.verify(ingestRequestService, Mockito.times(1))
-                .handleIngestJobFailed(ingestRequestCaptor.capture(), sipCaptor.capture(),
-                                       ArgumentCaptor.forClass(String.class).capture());
+               .handleIngestJobFailed(ingestRequestCaptor.capture(),
+                                      sipCaptor.capture(),
+                                      ArgumentCaptor.forClass(String.class).capture());
         Mockito.clearInvocations(ingestRequestService);
         IngestRequest request = ingestRequestCaptor.getValue();
         Assert.assertNotNull(request);
@@ -383,10 +425,15 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
     public void testProcessingChainByRef() {
 
         // Init a SIP with reference in database with state CREATED
-        SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER, SESSION, PROCESSING_CHAIN_TEST,
-                                                                         CATEGORIES, STORAGE_METADATA));
+        SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
+                                                                         SESSION,
+                                                                         PROCESSING_CHAIN_TEST,
+                                                                         CATEGORIES,
+                                                                         STORAGE_METADATA));
 
-        SIP sip = SIP.buildReference(EntityType.DATA, SIP_REF_ID_TEST, Paths.get("src/test/resources/file_ref.xml"),
+        SIP sip = SIP.buildReference(EntityType.DATA,
+                                     SIP_REF_ID_TEST,
+                                     Paths.get("src/test/resources/file_ref.xml"),
                                      "1e2d4ab665784e43243b9b07724cd483");
         sips.add(sip);
 
@@ -397,7 +444,8 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         SIPEntity resultSip = sipRepository.findTopByProviderIdOrderByCreationDateDesc(SIP_REF_ID_TEST);
         Assert.assertNotNull(resultSip);
         Assert.assertEquals("Has no files are associated to the SIP, the SIP is immediatly at STORED state",
-                            SIPState.STORED, resultSip.getState());
+                            SIPState.STORED,
+                            resultSip.getState());
         Assert.assertEquals(SESSION_OWNER, resultSip.getSessionOwner());
         Assert.assertEquals(SESSION, resultSip.getSession());
     }

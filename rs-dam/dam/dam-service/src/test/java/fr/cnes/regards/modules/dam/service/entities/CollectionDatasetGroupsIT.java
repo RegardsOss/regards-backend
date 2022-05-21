@@ -64,7 +64,8 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=cdgroups" }, locations = "classpath:es.properties")
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=cdgroups" },
+    locations = "classpath:es.properties")
 @MultitenantTransactional
 public class CollectionDatasetGroupsIT extends AbstractMultitenantServiceIT {
 
@@ -404,7 +405,8 @@ public class CollectionDatasetGroupsIT extends AbstractMultitenantServiceIT {
 
     @Requirement("REGARDS_DSL_DAM_COL_220")
     @Requirement("REGARDS_DSL_DAM_COL_040")
-    @Purpose("Le système doit permettre d’associer/dissocier des collections à la collection courante lors de la mise à jour."
+    @Purpose(
+        "Le système doit permettre d’associer/dissocier des collections à la collection courante lors de la mise à jour."
             + "Le système doit permettre de mettre à jour les valeurs d’une collection via son IP_ID et d’archiver ces "
             + "modifications dans son AIP au niveau du composant « Archival storage » si ce composant est déployé.")
     @Requirement("REGARDS_DSL_DAM_COL_210")
@@ -473,7 +475,8 @@ public class CollectionDatasetGroupsIT extends AbstractMultitenantServiceIT {
     }
 
     @Requirement("REGARDS_DSL_DAM_COL_120")
-    @Purpose("Si la suppression d’une collection est demandée, le système doit au préalable supprimer le tag correspondant de tout autre AIP (dissociation complète).")
+    @Purpose(
+        "Si la suppression d’une collection est demandée, le système doit au préalable supprimer le tag correspondant de tout autre AIP (dissociation complète).")
     @Test
     public void testDelete() throws ModuleException, IOException {
         buildData1();
@@ -543,15 +546,27 @@ public class CollectionDatasetGroupsIT extends AbstractMultitenantServiceIT {
         DataFile[] files = new DataFile[1];
         dataset1.getFeature().getFiles().values().toArray(files);
         RequestInfo creationResponse = RequestInfo.build(this.entityRequestRepos.findAll().get(0).getGroupId(),
-                                                         new HashSet<>(), new HashSet<>());
+                                                         new HashSet<>(),
+                                                         new HashSet<>());
 
-        FileReferenceDTO dto = FileReferenceDTO
-                .build(null,
-                       FileReferenceMetaInfoDTO.build(files[0].getChecksum(), files[0].getDigestAlgorithm(),
-                                                      files[0].getFilename(), 0l, 0, 0, null, null),
-                       FileLocationDTO.build("local", files[0].getUri()), new HashSet<>());
-        RequestResultInfoDTO info = RequestResultInfoDTO.build(creationResponse.getGroupId(), files[0].getChecksum(),
-                                                               "Local", files[0].getUri(), new HashSet<>(), dto, "");
+        FileReferenceDTO dto = FileReferenceDTO.build(null,
+                                                      FileReferenceMetaInfoDTO.build(files[0].getChecksum(),
+                                                                                     files[0].getDigestAlgorithm(),
+                                                                                     files[0].getFilename(),
+                                                                                     0l,
+                                                                                     0,
+                                                                                     0,
+                                                                                     null,
+                                                                                     null),
+                                                      FileLocationDTO.build("local", files[0].getUri()),
+                                                      new HashSet<>());
+        RequestResultInfoDTO info = RequestResultInfoDTO.build(creationResponse.getGroupId(),
+                                                               files[0].getChecksum(),
+                                                               "Local",
+                                                               files[0].getUri(),
+                                                               new HashSet<>(),
+                                                               dto,
+                                                               "");
         String locationBeforeStore = files[0].getUri();
         creationResponse.getSuccessRequests().add(info);
         // a reference request must be in database waiting for storage response
@@ -577,22 +592,39 @@ public class CollectionDatasetGroupsIT extends AbstractMultitenantServiceIT {
         dataset1.getFeature().getFiles().put(DataType.OTHER, file);
         dataset1 = dataSetService.update(dataset1);
         dto = FileReferenceDTO.build(null,
-                                     FileReferenceMetaInfoDTO.build(file.getChecksum(), file.getDigestAlgorithm(),
-                                                                    file.getFilename(), 0l, 0, 0, null, null),
-                                     FileLocationDTO.build("local", file.getUri()), new HashSet<>());
-        info = RequestResultInfoDTO.build(creationResponse.getGroupId(), file.getChecksum(), "Local", file.getUri(),
-                                          new HashSet<>(), dto, "");
+                                     FileReferenceMetaInfoDTO.build(file.getChecksum(),
+                                                                    file.getDigestAlgorithm(),
+                                                                    file.getFilename(),
+                                                                    0l,
+                                                                    0,
+                                                                    0,
+                                                                    null,
+                                                                    null),
+                                     FileLocationDTO.build("local", file.getUri()),
+                                     new HashSet<>());
+        info = RequestResultInfoDTO.build(creationResponse.getGroupId(),
+                                          file.getChecksum(),
+                                          "Local",
+                                          file.getUri(),
+                                          new HashSet<>(),
+                                          dto,
+                                          "");
 
         RequestInfo updateResponse = RequestInfo.build(this.entityRequestRepos.findAll().get(0).getGroupId(),
-                                                       new HashSet<>(), new HashSet<>());
+                                                       new HashSet<>(),
+                                                       new HashSet<>());
         updateResponse.getSuccessRequests().add(info);
         locationBeforeStore = file.getUri();
         dataSetService.storeSucces(Sets.newHashSet(updateResponse));
 
         DataFile[] filesAfterUpdate = new DataFile[0];
         // check that the location of the file has been updated
-        filesAfterUpdate = this.entityRepos.findById(dataset1.getId()).get().getFeature().getFiles().values()
-                .toArray(filesAfterUpdate);
+        filesAfterUpdate = this.entityRepos.findById(dataset1.getId())
+                                           .get()
+                                           .getFeature()
+                                           .getFiles()
+                                           .values()
+                                           .toArray(filesAfterUpdate);
 
         // the first file must be deleted and replace with the file with the checksum "checksum2"
         assertEquals(1, filesAfterUpdate.length);

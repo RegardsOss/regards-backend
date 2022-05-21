@@ -22,6 +22,7 @@ import java.io.IOException;
 
 /**
  * Microservice application manager
+ *
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet
  */

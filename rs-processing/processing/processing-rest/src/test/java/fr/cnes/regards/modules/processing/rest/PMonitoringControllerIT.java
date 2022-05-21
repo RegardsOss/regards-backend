@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.rest;
 
 import feign.*;
@@ -103,8 +103,9 @@ public class PMonitoringControllerIT extends AbstractProcessingIT {
         List<ExecutionEntity> entities = createExecutions(processId, batchAId, batchBId);
 
         // Check sorting
-        PagedModel<EntityModel<ExecutionMonitoringDTO>> response = client
-                .executions(TENANT_PROJECTA, asList(RUNNING, PREPARE), toMap(PageRequest.of(2, 10)));
+        PagedModel<EntityModel<ExecutionMonitoringDTO>> response = client.executions(TENANT_PROJECTA,
+                                                                                     asList(RUNNING, PREPARE),
+                                                                                     toMap(PageRequest.of(2, 10)));
 
         LOGGER.info("Resp: {}", response);
 
@@ -113,8 +114,9 @@ public class PMonitoringControllerIT extends AbstractProcessingIT {
         assertThat(response.getContent()).hasSize(10);
 
         // WHEN
-        PagedModel<EntityModel<ExecutionMonitoringDTO>> responseEmpty = client
-                .executions(TENANT_PROJECTA, asList(CANCELLED), toMap(PageRequest.of(2, 10)));
+        PagedModel<EntityModel<ExecutionMonitoringDTO>> responseEmpty = client.executions(TENANT_PROJECTA,
+                                                                                          asList(CANCELLED),
+                                                                                          toMap(PageRequest.of(2, 10)));
 
         LOGGER.info("Resp: {}", response);
 
@@ -125,12 +127,24 @@ public class PMonitoringControllerIT extends AbstractProcessingIT {
 
     private void createBatches(UUID batchAId, UUID batchBId) {
 
-        BatchEntity batchA = new BatchEntity(batchAId, UUID.randomUUID(), "", TENANT_PROJECTA, "a@a.a", "EXPLOIT",
-                new ParamValues(List.<ExecutionStringParameterValue> empty().asJava()),
-                new FileStatsByDataset(HashMap.<String, FileSetStatistics> empty().toJavaMap()));
-        BatchEntity batchB = new BatchEntity(batchBId, UUID.randomUUID(), "", TENANT_PROJECTB, "a@a.a", "EXPLOIT",
-                new ParamValues(List.<ExecutionStringParameterValue> empty().asJava()),
-                new FileStatsByDataset(HashMap.<String, FileSetStatistics> empty().toJavaMap()));
+        BatchEntity batchA = new BatchEntity(batchAId,
+                                             UUID.randomUUID(),
+                                             "",
+                                             TENANT_PROJECTA,
+                                             "a@a.a",
+                                             "EXPLOIT",
+                                             new ParamValues(List.<ExecutionStringParameterValue>empty().asJava()),
+                                             new FileStatsByDataset(HashMap.<String, FileSetStatistics>empty()
+                                                                           .toJavaMap()));
+        BatchEntity batchB = new BatchEntity(batchBId,
+                                             UUID.randomUUID(),
+                                             "",
+                                             TENANT_PROJECTB,
+                                             "a@a.a",
+                                             "EXPLOIT",
+                                             new ParamValues(List.<ExecutionStringParameterValue>empty().asJava()),
+                                             new FileStatsByDataset(HashMap.<String, FileSetStatistics>empty()
+                                                                           .toJavaMap()));
 
         batchRepo.saveAll(List.of(batchA, batchB)).collectList().block();
     }
@@ -140,20 +154,49 @@ public class PMonitoringControllerIT extends AbstractProcessingIT {
         Random r = new Random();
         long now = System.currentTimeMillis();
 
-        List<ExecutionEntity> failures = randomList(ExecutionEntity.class, 20)
-                .map(e -> e.withId(UUID.randomUUID()).withBatchId(batchAId).withProcessBusinessId(processId)
-                        .withTenant(TENANT_PROJECTA).withCurrentStatus(FAILURE).withVersion(0).withPersisted(false)
-                        .withSteps(new Steps(List.of(new StepEntity(FAILURE, now, "")).asJava())));
+        List<ExecutionEntity> failures = randomList(ExecutionEntity.class, 20).map(e -> e.withId(UUID.randomUUID())
+                                                                                         .withBatchId(batchAId)
+                                                                                         .withProcessBusinessId(
+                                                                                             processId)
+                                                                                         .withTenant(TENANT_PROJECTA)
+                                                                                         .withCurrentStatus(FAILURE)
+                                                                                         .withVersion(0)
+                                                                                         .withPersisted(false)
+                                                                                         .withSteps(new Steps(List.of(
+                                                                                                                      new StepEntity(FAILURE,
+                                                                                                                                     now,
+                                                                                                                                     ""))
+                                                                                                                  .asJava())));
 
         List<ExecutionEntity> entities = randomList(ExecutionEntity.class, 35).map(e -> e.withId(UUID.randomUUID())
-                .withBatchId(batchAId).withProcessBusinessId(processId).withTenant(TENANT_PROJECTA)
-                .withCurrentStatus(r.nextBoolean() ? RUNNING : PREPARE).withVersion(0).withPersisted(false)
-                .withSteps(new Steps(List.of(new StepEntity(RUNNING, now, "")).asJava())));
+                                                                                         .withBatchId(batchAId)
+                                                                                         .withProcessBusinessId(
+                                                                                             processId)
+                                                                                         .withTenant(TENANT_PROJECTA)
+                                                                                         .withCurrentStatus(r.nextBoolean() ?
+                                                                                                                RUNNING :
+                                                                                                                PREPARE)
+                                                                                         .withVersion(0)
+                                                                                         .withPersisted(false)
+                                                                                         .withSteps(new Steps(List.of(
+                                                                                                                      new StepEntity(RUNNING,
+                                                                                                                                     now,
+                                                                                                                                     ""))
+                                                                                                                  .asJava())));
 
-        List<ExecutionEntity> otherTenants = randomList(ExecutionEntity.class, 20)
-                .map(e -> e.withId(UUID.randomUUID()).withBatchId(batchBId).withProcessBusinessId(processId)
-                        .withTenant(TENANT_PROJECTB).withCurrentStatus(PREPARE).withVersion(0).withPersisted(false)
-                        .withSteps(new Steps(List.of(new StepEntity(PREPARE, now, "")).asJava())));
+        List<ExecutionEntity> otherTenants = randomList(ExecutionEntity.class, 20).map(e -> e.withId(UUID.randomUUID())
+                                                                                             .withBatchId(batchBId)
+                                                                                             .withProcessBusinessId(
+                                                                                                 processId)
+                                                                                             .withTenant(TENANT_PROJECTB)
+                                                                                             .withCurrentStatus(PREPARE)
+                                                                                             .withVersion(0)
+                                                                                             .withPersisted(false)
+                                                                                             .withSteps(new Steps(List.of(
+                                                                                                                          new StepEntity(PREPARE,
+                                                                                                                                         now,
+                                                                                                                                         ""))
+                                                                                                                      .asJava())));
 
         execRepo.saveAll(otherTenants.appendAll(failures).appendAll(entities)).collectList().block();
 
@@ -162,9 +205,9 @@ public class PMonitoringControllerIT extends AbstractProcessingIT {
 
     private Map<String, String> toMap(Pageable page, Tuple2<String, String>... rest) {
         return Stream.of(rest)
-                .foldLeft(HashMap.of(PAGE_PARAM, "" + page.getPageNumber(), SIZE_PARAM, "" + page.getPageSize()),
-                          (acc, t) -> acc.put(t))
-                .toJavaMap();
+                     .foldLeft(HashMap.of(PAGE_PARAM, "" + page.getPageNumber(), SIZE_PARAM, "" + page.getPageSize()),
+                               (acc, t) -> acc.put(t))
+                     .toJavaMap();
     }
 
     //==================================================================================================================
@@ -178,9 +221,12 @@ public class PMonitoringControllerIT extends AbstractProcessingIT {
 
     @Before
     public void init() throws IOException, ModuleException {
-        client = Feign.builder().decoder(new GsonLoggingDecoder(gson)).encoder(new GsonLoggingEncoder(gson))
-                .target(new TokenClientProvider<>(Client.class, "http://" + serverAddress + ":" + port,
-                        feignSecurityManager));
+        client = Feign.builder()
+                      .decoder(new GsonLoggingDecoder(gson))
+                      .encoder(new GsonLoggingEncoder(gson))
+                      .target(new TokenClientProvider<>(Client.class,
+                                                        "http://" + serverAddress + ":" + port,
+                                                        feignSecurityManager));
         runtimeTenantResolver.forceTenant(TENANT_PROJECTA);
         FeignSecurityManager.asUser("regards@cnes.fr", DefaultRole.ADMIN.name());
     }
@@ -191,7 +237,9 @@ public class PMonitoringControllerIT extends AbstractProcessingIT {
 
         @RequestLine("GET " + MONITORING_EXECUTIONS_PATH + "?tenant={tenant}&status={status}")
         PagedModel<EntityModel<ExecutionMonitoringDTO>> executions(@Param("tenant") String tenant,
-                @Param("status") java.util.List<ExecutionStatus> status, @QueryMap Map<String, String> params);
+                                                                   @Param("status")
+                                                                   java.util.List<ExecutionStatus> status,
+                                                                   @QueryMap Map<String, String> params);
     }
 
     @Configuration

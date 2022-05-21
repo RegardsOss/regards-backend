@@ -21,11 +21,9 @@ package fr.cnes.regards.modules.ingest.dto.request;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 
 /**
- *
  * Deletion mode
  *
  * @author Marc SORDI
- *
  */
 public enum SessionDeletionMode {
 

@@ -57,16 +57,15 @@ public class ServiceProvider {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o){
+        if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()){
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
         ServiceProvider that = (ServiceProvider) o;
-        return Objects.equals(name, that.name)
-            && Objects.equals(authUrl, that.authUrl)
-            && Objects.equals(configuration, that.configuration);
+        return Objects.equals(name, that.name) && Objects.equals(authUrl, that.authUrl) && Objects.equals(configuration,
+                                                                                                          that.configuration);
     }
 
     @Override

@@ -27,7 +27,6 @@ import fr.cnes.regards.framework.modules.session.manager.domain.Session;
 import fr.cnes.regards.framework.modules.session.manager.service.controllers.SessionManagerService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,13 +37,9 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 /**
  * Controller for {@link Session}
@@ -87,13 +82,15 @@ public class SessionManagerController implements IResourceController<Session> {
     @ResponseBody
     @ResourceAccess(description = "Endpoint to get sessions", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<Session>>> getSessions(
-            @RequestParam(value = "sessionName", required = false) String sessionName,
-            @RequestParam(value = "sessionState", required = false) String sessionState,
-            @RequestParam(value = "sourceName", required = false) String sourceName,
-            @PageableDefault(sort = "lastUpdateDate", direction = Sort.Direction.DESC, size = 20) Pageable pageable,
-            PagedResourcesAssembler<Session> assembler) {
-        Page<Session> sessions = this.sessionManagerService
-                .loadSessions(sessionName, sessionState, sourceName, pageable);
+        @RequestParam(value = "sessionName", required = false) String sessionName,
+        @RequestParam(value = "sessionState", required = false) String sessionState,
+        @RequestParam(value = "sourceName", required = false) String sourceName,
+        @PageableDefault(sort = "lastUpdateDate", direction = Sort.Direction.DESC, size = 20) Pageable pageable,
+        PagedResourcesAssembler<Session> assembler) {
+        Page<Session> sessions = this.sessionManagerService.loadSessions(sessionName,
+                                                                         sessionState,
+                                                                         sourceName,
+                                                                         pageable);
         return ResponseEntity.ok(toPagedResources(sessions, assembler));
     }
 
@@ -108,7 +105,7 @@ public class SessionManagerController implements IResourceController<Session> {
     @ResourceAccess(description = "Endpoint to retrieve a session by id", role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<Session>> getSessionById(@PathVariable("id") final long id) {
         try {
-           Session session = this.sessionManagerService.getSessionById(id);
+            Session session = this.sessionManagerService.getSessionById(id);
             return ResponseEntity.ok(toResource(session));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
@@ -130,15 +127,24 @@ public class SessionManagerController implements IResourceController<Session> {
     @Override
     public EntityModel<Session> toResource(Session session, Object... extras) {
         EntityModel<Session> resource = resourceService.toResource(session);
-        resourceService.addLink(resource, this.getClass(), "getSessions", LinkRels.LIST,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "getSessions",
+                                LinkRels.LIST,
                                 MethodParamFactory.build(String.class, session.getName()),
                                 MethodParamFactory.build(String.class),
                                 MethodParamFactory.build(String.class, session.getSource()),
                                 MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
-        resourceService.addLink(resource, this.getClass(), "getSessionById", LinkRels.SELF,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "getSessionById",
+                                LinkRels.SELF,
                                 MethodParamFactory.build(Long.TYPE, session.getId()));
-        resourceService.addLink(resource, this.getClass(), "deleteSession", LinkRels.DELETE,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "deleteSession",
+                                LinkRels.DELETE,
                                 MethodParamFactory.build(Long.TYPE, session.getId()));
         return resource;
     }

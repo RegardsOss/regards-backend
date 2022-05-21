@@ -13,9 +13,8 @@ public class IIndexableJsoniterConfig extends Config {
     }
 
     private static Builder getBuilder() {
-        return new Builder()
-            .decodingMode(DecodingMode.DYNAMIC_MODE_AND_MATCH_FIELD_WITH_HASH)
-            .encodingMode(EncodingMode.DYNAMIC_MODE);
+        return new Builder().decodingMode(DecodingMode.DYNAMIC_MODE_AND_MATCH_FIELD_WITH_HASH)
+                            .encodingMode(EncodingMode.DYNAMIC_MODE);
     }
 
 }

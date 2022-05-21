@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.search.domain;
 
 /**
  * Define specific constant query terms
+ *
  * @author Xavier-Alexandre Brochard
  */
 public enum Terms {

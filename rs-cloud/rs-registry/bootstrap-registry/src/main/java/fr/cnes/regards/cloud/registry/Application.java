@@ -9,8 +9,9 @@ import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
 
 /**
  * Class RegistryApplication
- *
+ * <p>
  * Eureka Registry server
+ *
  * @author Sébastien Binda
  */
 @SpringBootApplication

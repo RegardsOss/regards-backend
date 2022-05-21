@@ -25,15 +25,16 @@ import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.framework.modules.session.manager.service.AbstractManagerServiceUtilsIT;
 import fr.cnes.regards.framework.modules.session.manager.service.clean.snapshotprocess.ManagerCleanSnapshotProcessService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test for {@link ManagerCleanSnapshotProcessService}
@@ -41,7 +42,7 @@ import org.springframework.test.context.TestPropertySource;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_clean_process_it",
-        "regards.session.manager.clean.snapshot.process.limit.store=30" })
+    "regards.session.manager.clean.snapshot.process.limit.store=30" })
 @ActiveProfiles({ "noscheduler" })
 public class ManagerCleanSnapshotProcessServiceIT extends AbstractManagerServiceUtilsIT {
 
@@ -75,13 +76,13 @@ public class ManagerCleanSnapshotProcessServiceIT extends AbstractManagerService
                           snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(1)));
         Assert.assertTrue("Snapshot process should have been present. It is linked to a step request. ",
                           snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(2)));
-        Assert.assertTrue("Snapshot process should not be present. It is not yet expired (cf. "
-                                  + "limitStoreSnapshotProcess).",
-                          snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(3)));
+        Assert.assertTrue(
+            "Snapshot process should not be present. It is not yet expired (cf. " + "limitStoreSnapshotProcess).",
+            snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(3)));
 
         // SNAPSHOT linked to SOURCE_5, SOURCE_6 should be removed
         Assert.assertFalse("Snapshot process should not be present. It is not linked to any step requests and it is "
-                                   + "older than the maximum snapshot process storage date.",
+                               + "older than the maximum snapshot process storage date.",
                            snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(4)));
         Assert.assertFalse("Snapshot process should not be present. It is not linked to any step requests.",
                            snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(5)));

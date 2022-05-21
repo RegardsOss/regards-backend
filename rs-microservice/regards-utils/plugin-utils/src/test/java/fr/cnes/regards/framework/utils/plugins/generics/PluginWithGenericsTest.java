@@ -18,23 +18,8 @@
  */
 package fr.cnes.regards.framework.utils.plugins.generics;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import fr.cnes.regards.framework.gson.GsonCustomizer;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
@@ -46,9 +31,17 @@ import fr.cnes.regards.framework.utils.plugins.PluginParameterUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.*;
 
 /**
  * Test plugin containing collection as parameter
+ *
  * @author Marc Sordi
  */
 public class PluginWithGenericsTest {
@@ -64,13 +57,15 @@ public class PluginWithGenericsTest {
     @Test
     public void primitiveTest() throws NotAvailablePluginConfigurationException {
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(PluginWithBoolean.FIELD_NAME_OBJECT, true),
-                     IPluginParam.build(PluginWithBoolean.FIELD_NAME_PRIMITIVE, false),
-                     IPluginParam.build(PluginWithBoolean.FIELD_NAME_STRING, "string"));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(PluginWithBoolean.FIELD_NAME_OBJECT, true),
+                                                        IPluginParam.build(PluginWithBoolean.FIELD_NAME_PRIMITIVE,
+                                                                           false),
+                                                        IPluginParam.build(PluginWithBoolean.FIELD_NAME_STRING,
+                                                                           "string"));
 
-        IPluginWithGenerics plugin = PluginUtils
-                .getPlugin(PluginConfiguration.build(PluginWithBoolean.class, "", parameters), null);
+        IPluginWithGenerics plugin = PluginUtils.getPlugin(PluginConfiguration.build(PluginWithBoolean.class,
+                                                                                     "",
+                                                                                     parameters), null);
         Assert.assertNotNull(plugin);
         plugin.doIt();
     }
@@ -82,8 +77,9 @@ public class PluginWithGenericsTest {
         Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(PluginWithStringCollection.FIELD_NAME,
                                                                            PluginParameterTransformer.toJson(infos)));
 
-        IPluginWithGenerics plugin = PluginUtils
-                .getPlugin(PluginConfiguration.build(PluginWithStringCollection.class, "", parameters), null);
+        IPluginWithGenerics plugin = PluginUtils.getPlugin(PluginConfiguration.build(PluginWithStringCollection.class,
+                                                                                     "",
+                                                                                     parameters), null);
 
         Assert.assertNotNull(plugin);
         plugin.doIt();
@@ -106,13 +102,17 @@ public class PluginWithGenericsTest {
 
         String test = gson.toJson(infos);
         IPluginParam param = PluginParameterUtils.forType(PluginParamType.COLLECTION,
-                                                          PluginWithPojoCollection.FIELD_NAME, test, true);
+                                                          PluginWithPojoCollection.FIELD_NAME,
+                                                          test,
+                                                          true);
 
-        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam
-                .build(PluginWithPojoCollection.FIELD_NAME, PluginParameterTransformer.toJson(infos)).dynamic());
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(PluginWithPojoCollection.FIELD_NAME,
+                                                                           PluginParameterTransformer.toJson(infos))
+                                                                    .dynamic());
 
-        IPluginWithGenerics plugin = PluginUtils
-                .getPlugin(PluginConfiguration.build(PluginWithPojoCollection.class, "", parameters), null, param);
+        IPluginWithGenerics plugin = PluginUtils.getPlugin(PluginConfiguration.build(PluginWithPojoCollection.class,
+                                                                                     "",
+                                                                                     parameters), null, param);
 
         Assert.assertNotNull(plugin);
         plugin.doIt();
@@ -125,11 +125,12 @@ public class PluginWithGenericsTest {
         infos.put("info2", "info 2");
         infos.put("info3", "info 3");
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(PluginWithStringMap.FIELD_NAME, PluginParameterTransformer.toJson(infos)));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(PluginWithStringMap.FIELD_NAME,
+                                                                           PluginParameterTransformer.toJson(infos)));
 
-        IPluginWithGenerics plugin = PluginUtils
-                .getPlugin(PluginConfiguration.build(PluginWithStringMap.class, "", parameters), null);
+        IPluginWithGenerics plugin = PluginUtils.getPlugin(PluginConfiguration.build(PluginWithStringMap.class,
+                                                                                     "",
+                                                                                     parameters), null);
 
         Assert.assertNotNull(plugin);
         plugin.doIt();
@@ -148,11 +149,12 @@ public class PluginWithGenericsTest {
         infos.put("info2", info2);
         infos.put("info3", info3);
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(PluginWithPojoMap.PARAMETER_NAME, PluginParameterTransformer.toJson(infos)));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(PluginWithPojoMap.PARAMETER_NAME,
+                                                                           PluginParameterTransformer.toJson(infos)));
 
-        IPluginWithGenerics plugin = PluginUtils
-                .getPlugin(PluginConfiguration.build(PluginWithPojoMap.class, "", parameters), null);
+        IPluginWithGenerics plugin = PluginUtils.getPlugin(PluginConfiguration.build(PluginWithPojoMap.class,
+                                                                                     "",
+                                                                                     parameters), null);
 
         Assert.assertNotNull(plugin);
         plugin.doIt();

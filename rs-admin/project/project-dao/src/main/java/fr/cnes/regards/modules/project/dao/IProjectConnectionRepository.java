@@ -18,26 +18,23 @@
  */
 package fr.cnes.regards.modules.project.dao;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
+import fr.cnes.regards.modules.project.domain.ProjectConnection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
-import fr.cnes.regards.modules.project.domain.ProjectConnection;
+import java.util.List;
 
 /**
- *
  * Class IProjectConnectionRepository
- *
+ * <p>
  * JPA Repository to access ProjectConnection entities.
  *
  * @author CS
  * @author Xavier-Alexandre Brochard
  * @author Marc Sordi
-
  */
 @InstanceEntity
 public interface IProjectConnectionRepository extends JpaRepository<ProjectConnection, Long> {
@@ -52,24 +49,27 @@ public interface IProjectConnectionRepository extends JpaRepository<ProjectConne
 
     /**
      * Retrieve all enabled tenant connections for a specified microservice
+     *
      * @param microservice microservice name
      * @return all enabled microservice connections
      */
     List<ProjectConnection> findByMicroserviceAndStateAndProjectIsDeletedFalse(String microservice,
-            TenantConnectionState state);
+                                                                               TenantConnectionState state);
 
     /**
      * Retrieve all connections with same parameters as below
+     *
      * @param username database connection user name
      * @param password database connection password
-     * @param url database connection url
+     * @param url      database connection url
      * @return list of connections
      */
     List<ProjectConnection> findByUserNameAndPasswordAndUrl(String username, String password, String url);
 
     /**
      * Retrieve connection for project and microservice
-     * @param projectName project name
+     *
+     * @param projectName  project name
      * @param microservice microservice
      * @return {@link ProjectConnection}
      */
@@ -79,8 +79,7 @@ public interface IProjectConnectionRepository extends JpaRepository<ProjectConne
      * Find all {@link ProjectConnection}s whose project has given <code>name</code>.<br>
      * Custom query auto-implemented by JPA thanks to the method naming convention.
      *
-     * @param projectName
-     *            the project name
+     * @param projectName the project name
      * @return A {@link Page} of found {@link ProjectConnection}s
      */
     Page<ProjectConnection> findByProjectName(String projectName, Pageable pageable);
@@ -92,6 +91,7 @@ public interface IProjectConnectionRepository extends JpaRepository<ProjectConne
 
     /**
      * List all active connections for specified microservice. Connections from deleted projects are rejected.
+     *
      * @param microservice microservice
      * @return list of {@link ProjectConnection}
      */
@@ -101,7 +101,8 @@ public interface IProjectConnectionRepository extends JpaRepository<ProjectConne
 
     /**
      * Check if project connection exists
-     * @param projectName project name
+     *
+     * @param projectName  project name
      * @param microservice microservice
      * @return true if connection exists
      */

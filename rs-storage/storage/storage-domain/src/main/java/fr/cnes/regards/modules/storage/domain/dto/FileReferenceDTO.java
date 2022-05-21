@@ -18,14 +18,15 @@
  */
 package fr.cnes.regards.modules.storage.domain.dto;
 
+import com.google.common.collect.Lists;
+
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 
-import com.google.common.collect.Lists;
-
 /**
  * DTO to represent a file referenced in storage catalog.
+ *
  * @author Sébastien Binda
  */
 public class FileReferenceDTO {
@@ -50,8 +51,10 @@ public class FileReferenceDTO {
      */
     private FileLocationDTO location;
 
-    public static FileReferenceDTO build(OffsetDateTime storageDate, FileReferenceMetaInfoDTO metaInfo,
-            FileLocationDTO location, Collection<String> owners) {
+    public static FileReferenceDTO build(OffsetDateTime storageDate,
+                                         FileReferenceMetaInfoDTO metaInfo,
+                                         FileLocationDTO location,
+                                         Collection<String> owners) {
         FileReferenceDTO dto = new FileReferenceDTO();
         dto.storageDate = storageDate;
         dto.metaInfo = metaInfo;

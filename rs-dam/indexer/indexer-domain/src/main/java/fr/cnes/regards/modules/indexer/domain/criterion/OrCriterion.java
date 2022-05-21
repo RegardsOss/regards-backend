@@ -18,12 +18,13 @@
  */
 package fr.cnes.regards.modules.indexer.domain.criterion;
 
-import java.util.stream.Collectors;
-
 import com.google.common.collect.Lists;
+
+import java.util.stream.Collectors;
 
 /**
  * Defines a list of optional criterions (logicaly OR)
+ *
  * @author oroussel
  */
 public final class OrCriterion extends AbstractMultiCriterion implements ICriterion {

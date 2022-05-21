@@ -1,8 +1,5 @@
 package fr.cnes.regards.modules.storage.client;
 
-import java.util.Collection;
-import java.util.Set;
-
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
@@ -11,6 +8,9 @@ import fr.cnes.regards.modules.storage.domain.event.FileReferenceEventType;
 import fr.cnes.regards.modules.storage.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
+
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * @author Sylvain VISSIERE-GUERINET

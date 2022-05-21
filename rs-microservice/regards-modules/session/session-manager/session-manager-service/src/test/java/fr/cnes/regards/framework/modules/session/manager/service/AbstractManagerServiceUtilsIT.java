@@ -95,7 +95,7 @@ public abstract class AbstractManagerServiceUtilsIT extends AbstractMultitenantS
     // JOBS
     @Autowired
     protected IJobInfoRepository jobInfoRepo;
-    
+
     @Autowired
     private JobTestCleaner jobTestCleaner;
 
@@ -229,7 +229,8 @@ public abstract class AbstractManagerServiceUtilsIT extends AbstractMultitenantS
         } while (count != nbEvents && now <= end);
 
         if (count != nbEvents) {
-            Assert.fail(String.format("Events were not stored in database. Expected %d events but was %d.", nbEvents,
+            Assert.fail(String.format("Events were not stored in database. Expected %d events but was %d.",
+                                      nbEvents,
                                       count));
         }
     }
@@ -255,16 +256,18 @@ public abstract class AbstractManagerServiceUtilsIT extends AbstractMultitenantS
 
         if (count != processSize) {
             Assert.fail("Snapshot processes were not updated correctly. Check in the snapshot that the "
-                                + "lastUpdateDate is not null and jobId is null");
+                            + "lastUpdateDate is not null and jobId is null");
         }
 
     }
 
     protected void waitForJobStates(String jobName, int nbJobs, long timeout, JobStatus[] jobStatuses)
-            throws InterruptedException {
+        throws InterruptedException {
         long count, now = System.currentTimeMillis(), end = now + timeout;
-        LOGGER.info("Waiting for {} jobs of type {} to be in at least one of the following states {} ...", nbJobs,
-                    jobName, Arrays.toString(jobStatuses));
+        LOGGER.info("Waiting for {} jobs of type {} to be in at least one of the following states {} ...",
+                    nbJobs,
+                    jobName,
+                    Arrays.toString(jobStatuses));
         do {
             count = jobInfoService.retrieveJobsCount(jobName, jobStatuses);
             now = System.currentTimeMillis();
@@ -274,9 +277,9 @@ public abstract class AbstractManagerServiceUtilsIT extends AbstractMultitenantS
         } while (count != nbJobs && now <= end);
 
         if (count != nbJobs) {
-            Assert.fail(
-                    String.format("Unexpected number of snapshot jobs created. Expected %d jobs but was %d.", nbJobs,
-                                  this.jobInfoRepo.countByClassNameAndStatusStatusIn(jobName, jobStatuses)));
+            Assert.fail(String.format("Unexpected number of snapshot jobs created. Expected %d jobs but was %d.",
+                                      nbJobs,
+                                      this.jobInfoRepo.countByClassNameAndStatusStatusIn(jobName, jobStatuses)));
         }
     }
 }

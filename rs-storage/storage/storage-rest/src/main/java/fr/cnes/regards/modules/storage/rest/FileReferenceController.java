@@ -125,23 +125,29 @@ public class FileReferenceController {
     @RequestMapping(path = DOWNLOAD_PATH, method = RequestMethod.GET, produces = MediaType.ALL_VALUE)
     @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<StreamingResponseBody> downloadFile(@PathVariable("checksum") String checksum,
-            @RequestParam(name = "isContentInline", required = false) Boolean isContentInline,
-            HttpServletResponse response) {
-        return downloadWithQuota(checksum, isContentInline, response)
-                .recover(EntityOperationForbiddenException.class, t -> {
-                    LOGGER.error(String.format("File %s is not downloadable for now. Try again later.", checksum));
-                    LOGGER.debug(t.getMessage(), t);
-                    return new ResponseEntity<>(HttpStatus.ACCEPTED);
-                }).recover(EntityNotFoundException.class, t -> {
-                    LOGGER.warn(String.format(
-                            "Unable to download file with checksum=%s. Cause file does not exists on any known storage location",
-                            checksum));
-                    LOGGER.debug(t.getMessage(), t);
-                    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                }).recover(ModuleException.class, t -> {
-                    LOGGER.error(t.getMessage(), t);
-                    return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-                }).get();
+                                                              @RequestParam(name = "isContentInline", required = false)
+                                                              Boolean isContentInline,
+                                                              HttpServletResponse response) {
+        return downloadWithQuota(checksum, isContentInline, response).recover(EntityOperationForbiddenException.class,
+                                                                              t -> {
+                                                                                  LOGGER.error(String.format(
+                                                                                      "File %s is not downloadable for now. Try again later.",
+                                                                                      checksum));
+                                                                                  LOGGER.debug(t.getMessage(), t);
+                                                                                  return new ResponseEntity<>(HttpStatus.ACCEPTED);
+                                                                              })
+                                                                     .recover(EntityNotFoundException.class, t -> {
+                                                                         LOGGER.warn(String.format(
+                                                                             "Unable to download file with checksum=%s. Cause file does not exists on any known storage location",
+                                                                             checksum));
+                                                                         LOGGER.debug(t.getMessage(), t);
+                                                                         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                                                                     })
+                                                                     .recover(ModuleException.class, t -> {
+                                                                         LOGGER.error(t.getMessage(), t);
+                                                                         return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                                                                     })
+                                                                     .get();
     }
 
     /**
@@ -151,40 +157,53 @@ public class FileReferenceController {
      * @return {@link InputStreamResource}
      */
     @RequestMapping(path = FileDownloadService.DOWNLOAD_TOKEN_PATH, method = RequestMethod.GET,
-            produces = MediaType.ALL_VALUE)
+        produces = MediaType.ALL_VALUE)
     @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.PUBLIC)
     public ResponseEntity<StreamingResponseBody> downloadFileWithToken(@PathVariable("checksum") String checksum,
-            @RequestParam(name = FileDownloadService.TOKEN_PARAM, required = true) String token,
-            boolean isContentInline, HttpServletResponse response) {
+                                                                       @RequestParam(
+                                                                           name = FileDownloadService.TOKEN_PARAM,
+                                                                           required = true) String token,
+                                                                       boolean isContentInline,
+                                                                       HttpServletResponse response) {
         if (!downloadTokenService.checkToken(checksum, token)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         // Do not check for quota, because this endpoint needs to be used internally (storage -> storage) during copy process
         // with no specific users (public access).
-        return Try.of(() -> downloadService.downloadFile(checksum)).mapTry(Callable::call)
-                .flatMap(dlFile -> downloadFile(dlFile, isContentInline, response))
-                .recover(ModuleException.class, t -> {
-                    LOGGER.error(t.getMessage());
-                    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                }).get();
+        return Try.of(() -> downloadService.downloadFile(checksum))
+                  .mapTry(Callable::call)
+                  .flatMap(dlFile -> downloadFile(dlFile, isContentInline, response))
+                  .recover(ModuleException.class, t -> {
+                      LOGGER.error(t.getMessage());
+                      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                  })
+                  .get();
     }
 
     @VisibleForTesting
-    protected Try<ResponseEntity<StreamingResponseBody>> downloadWithQuota(String checksum, Boolean isContentInline,
-            HttpServletResponse response) {
+    protected Try<ResponseEntity<StreamingResponseBody>> downloadWithQuota(String checksum,
+                                                                           Boolean isContentInline,
+                                                                           HttpServletResponse response) {
         return Try.of(() -> downloadService.downloadFile(checksum)).mapTry(Callable::call).flatMap(dlFile -> {
             if (dlFile instanceof FileDownloadService.QuotaLimitedDownloadableFile) {
-                return downloadQuotaService.withQuota(authResolver.getUser(), (quotaHandler) -> Try
-                        .success((FileDownloadService.QuotaLimitedDownloadableFile) dlFile)
-                        .map(impureId(quotaHandler::start)) // map instead of peek to wrap potential errors
-                        .map(d -> DownloadableFileWrapper.wrap(d, quotaHandler)).flatMap(d -> downloadFile(d, isContentInline,
-                                                                                   response))) // idempotent close of stream (and quotaHandler) if anything failed, just in case
-                        .onFailure(ignored -> Try.run(dlFile::close))
-                        .recover(DownloadLimitExceededException.class, t -> {
-                            quotaExceededReporter.report(t, dlFile, authResolver.getUser(), tenantResolver.getTenant());
-                            return new ResponseEntity<>(outputStream -> outputStream.write(t.getMessage().getBytes()),
-                                                        HttpStatus.TOO_MANY_REQUESTS);
-                        });
+                return downloadQuotaService.withQuota(authResolver.getUser(),
+                                                      (quotaHandler) -> Try.success((FileDownloadService.QuotaLimitedDownloadableFile) dlFile)
+                                                                           .map(impureId(quotaHandler::start)) // map instead of peek to wrap potential errors
+                                                                           .map(d -> DownloadableFileWrapper.wrap(d,
+                                                                                                                  quotaHandler))
+                                                                           .flatMap(d -> downloadFile(d,
+                                                                                                      isContentInline,
+                                                                                                      response))) // idempotent close of stream (and quotaHandler) if anything failed, just in case
+                                           .onFailure(ignored -> Try.run(dlFile::close))
+                                           .recover(DownloadLimitExceededException.class, t -> {
+                                               quotaExceededReporter.report(t,
+                                                                            dlFile,
+                                                                            authResolver.getUser(),
+                                                                            tenantResolver.getTenant());
+                                               return new ResponseEntity<>(outputStream -> outputStream.write(t.getMessage()
+                                                                                                               .getBytes()),
+                                                                           HttpStatus.TOO_MANY_REQUESTS);
+                                           });
             }
             // no quota handling, just download
             return downloadFile(dlFile, isContentInline, response);
@@ -200,19 +219,26 @@ public class FileReferenceController {
 
     @VisibleForTesting
     protected Try<ResponseEntity<StreamingResponseBody>> downloadFile(DownloadableFile downloadFile,
-            Boolean isContentInline, HttpServletResponse response) {
+                                                                      Boolean isContentInline,
+                                                                      HttpServletResponse response) {
         return Try.of(() -> {
             response.setContentLength(downloadFile.getRealFileSize().intValue());
             response.setContentType(downloadFile.getMimeType().toString());
             // By default, return the attachment header, forcing browser to download the file
             if (isContentInline == null || !isContentInline) {
                 response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
-                                   ContentDisposition.builder("attachment").filename(downloadFile.getFileName())
-                                           .size(downloadFile.getRealFileSize()).build().toString());
+                                   ContentDisposition.builder("attachment")
+                                                     .filename(downloadFile.getFileName())
+                                                     .size(downloadFile.getRealFileSize())
+                                                     .build()
+                                                     .toString());
             } else {
                 response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
-                                   ContentDisposition.builder("inline").filename(downloadFile.getFileName())
-                                           .size(downloadFile.getRealFileSize()).build().toString());
+                                   ContentDisposition.builder("inline")
+                                                     .filename(downloadFile.getFileName())
+                                                     .size(downloadFile.getRealFileSize())
+                                                     .build()
+                                                     .toString());
                 // Allows iframe to display inside REGARDS interface
                 response.setHeader(HttpHeaders.X_FRAME_OPTIONS, "SAMEORIGIN");
             }
@@ -250,7 +276,9 @@ public class FileReferenceController {
             }
             results = fileRefService.searchWithOwners(page);
             for (FileReference fileRef : results.getContent()) {
-                printer.printRecord(fileRef.getId(), fileRef.getLocation().getUrl(), fileRef.getLocation().getStorage(),
+                printer.printRecord(fileRef.getId(),
+                                    fileRef.getLocation().getUrl(),
+                                    fileRef.getLocation().getStorage(),
                                     fileRef.getLazzyOwners().stream().collect(Collectors.joining(",")));
             }
         } while (results.hasNext());
@@ -259,13 +287,16 @@ public class FileReferenceController {
     }
 
     @RequestMapping(method = RequestMethod.POST, path = LOCATIONS_PATH)
-    @ResourceAccess(description = "Get file references with matching checksums on a storage", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Set<FileReferenceDTO>> getFileReferencesWithoutOwners(@PathVariable(name = "storage") final String storage,
-                                                                                @RequestBody final Set<String> checksums) {
+    @ResourceAccess(description = "Get file references with matching checksums on a storage",
+        role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Set<FileReferenceDTO>> getFileReferencesWithoutOwners(
+        @PathVariable(name = "storage") final String storage, @RequestBody final Set<String> checksums) {
         Set<FileReferenceDTO> fileRefDtos = Sets.newHashSet();
         Set<FileReference> fileRefs = fileRefService.search(storage, checksums);
         fileRefs.forEach(fileRef -> fileRefDtos.add(FileReferenceDTO.build(fileRef.getStorageDate(),
-                FileReferenceMetaInfoDTO.build(fileRef.getMetaInfo()), FileLocationDTO.build(fileRef.getLocation()), Lists.newArrayList())));
+                                                                           FileReferenceMetaInfoDTO.build(fileRef.getMetaInfo()),
+                                                                           FileLocationDTO.build(fileRef.getLocation()),
+                                                                           Lists.newArrayList())));
         return ResponseEntity.ok(fileRefDtos);
     }
 

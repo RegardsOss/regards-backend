@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.search.client;
 
+import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
+import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.hateoas.EntityModel;
@@ -28,12 +30,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.LinkedMultiValueMap;
 
-import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
-
 /**
  * @author Marc Sordi
- *
  */
 @TestPropertySource("classpath:test.properties")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
@@ -41,8 +39,11 @@ public class LegacySearchEngineClientIT extends AbstractSearchClientIT<ILegacySe
 
     @Test
     public void search() {
-        ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> result = client
-                .searchAllDataobjects(new HttpHeaders(), new LinkedMultiValueMap<>(), null, 0, 10000);
+        ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> result = client.searchAllDataobjects(new HttpHeaders(),
+                                                                                                            new LinkedMultiValueMap<>(),
+                                                                                                            null,
+                                                                                                            0,
+                                                                                                            10000);
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.OK));
     }
 }

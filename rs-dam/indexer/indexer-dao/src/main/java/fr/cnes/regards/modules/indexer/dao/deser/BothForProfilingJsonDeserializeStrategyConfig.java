@@ -12,12 +12,11 @@ public class BothForProfilingJsonDeserializeStrategyConfig implements JsonDeseri
     private static final Logger LOGGER = LoggerFactory.getLogger(BothForProfilingJsonDeserializeStrategyConfig.class);
 
     private final GsonDeserializeIIndexableStrategy withGson;
+
     private final JsoniterDeserializeIIndexableStrategy withJsoniter;
 
-    public BothForProfilingJsonDeserializeStrategyConfig(
-            GsonDeserializeIIndexableStrategy withGson,
-            JsoniterDeserializeIIndexableStrategy withJsoniter
-    ) {
+    public BothForProfilingJsonDeserializeStrategyConfig(GsonDeserializeIIndexableStrategy withGson,
+                                                         JsoniterDeserializeIIndexableStrategy withJsoniter) {
         this.withGson = withGson;
         this.withJsoniter = withJsoniter;
     }
@@ -28,8 +27,12 @@ public class BothForProfilingJsonDeserializeStrategyConfig implements JsonDeseri
 
         U jsoniterResult = null;
         U gsonResult = null;
-        StopWatch swG = new StopWatch();swG.start();swG.suspend();
-        StopWatch swJ = new StopWatch();swJ.start();swJ.suspend();
+        StopWatch swG = new StopWatch();
+        swG.start();
+        swG.suspend();
+        StopWatch swJ = new StopWatch();
+        swJ.start();
+        swJ.suspend();
         for (int i = 0; i < 500; i++) {
             //LOGGER.info("=== Before Jsoniter");
             swJ.resume();
@@ -44,8 +47,12 @@ public class BothForProfilingJsonDeserializeStrategyConfig implements JsonDeseri
             //LOGGER.info("=== After GSON: {}", gsonResult);
         }
 
-        LOGGER.info("===== Jsoniter: {}ms ; Gson: {}ms", swJ.getTime(TimeUnit.MILLISECONDS), swG.getTime(TimeUnit.MILLISECONDS));
+        LOGGER.info("===== Jsoniter: {}ms ; Gson: {}ms",
+                    swJ.getTime(TimeUnit.MILLISECONDS),
+                    swG.getTime(TimeUnit.MILLISECONDS));
 
-        return Math.random() < 0.5d ? gsonResult : jsoniterResult; // Avoid the JIT from detecting one of them is not used
+        return Math.random() < 0.5d ?
+            gsonResult :
+            jsoniterResult; // Avoid the JIT from detecting one of them is not used
     }
 }

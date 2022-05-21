@@ -35,12 +35,12 @@ public interface SmartDecoder extends Decoder {
 
     default String stringOrNull(Any a, Object... keys) {
         Any result = a.get(keys);
-        return isNull(result) ? null: result.toString();
+        return isNull(result) ? null : result.toString();
     }
 
     default <T> T asOrNull(Any a, Class<T> asType, Object... keys) {
         Any result = a.get(keys);
-        return isNull(result) ? null: result.as(asType);
+        return isNull(result) ? null : result.as(asType);
     }
 
 }

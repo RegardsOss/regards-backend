@@ -32,7 +32,8 @@ public class DefaultSessionDeleteService implements ISessionDeleteService {
 
     @Override
     public void deleteSession(String source, String session) {
-        LOGGER.warn("Bean missing to delete session, the session {} from source {} will not be deleted", session,
+        LOGGER.warn("Bean missing to delete session, the session {} from source {} will not be deleted",
+                    session,
                     source);
     }
 }

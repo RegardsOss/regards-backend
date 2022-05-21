@@ -19,9 +19,6 @@
 
 package fr.cnes.regards.modules.dam.service.datasources;
 
-import java.util.List;
-import java.util.Map;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
@@ -29,21 +26,27 @@ import fr.cnes.regards.modules.dam.domain.datasources.Column;
 import fr.cnes.regards.modules.dam.domain.datasources.Table;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDBConnectionPlugin;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * This class allows to the {@link PluginConfiguration} associated to the plugintype {@link IDBConnectionPlugin}.</br>
  * This type of plugin used a database connection pools.
+ *
  * @author Christophe Mertz
  */
 public interface IDBConnectionService {
 
     /**
      * Get all the {@link PluginConfiguration} for the plugin types {@link IDBConnectionPlugin}.
+     *
      * @return all the {@link PluginConfiguration}.
      */
     List<PluginConfiguration> getAllDBConnections();
 
     /**
      * Create a {@link PluginConfiguration} for the plugin types {@link IDBConnectionPlugin}.
+     *
      * @param dbConnection the {@link PluginConfiguration} to the database
      * @return the new {@link PluginConfiguration}
      * @throws ModuleException throw if an error occurs
@@ -52,6 +55,7 @@ public interface IDBConnectionService {
 
     /**
      * Get the {@link PluginConfiguration}.
+     *
      * @param businessId a {@link PluginConfiguration} identifier
      * @return a {@link PluginConfiguration}
      * @throws ModuleException throw if an error occurs
@@ -60,6 +64,7 @@ public interface IDBConnectionService {
 
     /**
      * Update a DB connection {@link PluginConfiguration}
+     *
      * @param connConfbusinessId the {@link PluginConfiguration} to update
      * @return the updated {@link PluginConfiguration}
      * @throws ModuleException throw if an error occurs
@@ -68,6 +73,7 @@ public interface IDBConnectionService {
 
     /**
      * Delete a DB connection {@link PluginConfiguration}
+     *
      * @param connConfbusinessId a {@link PluginConfiguration} business identifier
      * @throws ModuleException throw if an error occurs
      */
@@ -75,32 +81,35 @@ public interface IDBConnectionService {
 
     /**
      * Querying the status of a database connection pools.
+     *
      * @param connConfbusinessId a {@link PluginConfiguration} identifier
      * @return true success to the connection to the database.</br>
-     *         false unable to connect to the database
+     * false unable to connect to the database
      * @throws ModuleException throw if an error occurs
      */
     Boolean testDBConnection(String connConfbusinessId) throws ModuleException;
 
     /**
      * Retrieve all tables from DB connection plugin
+     *
      * @param connConfbusinessId identifier of DB connection plugin
      * @return a map of { table name, table }
      * @throws ModuleException
      * @throws NotAvailablePluginConfigurationException
      */
     Map<String, Table> getTables(String connConfbusinessId)
-            throws ModuleException, NotAvailablePluginConfigurationException;
+        throws ModuleException, NotAvailablePluginConfigurationException;
 
     /**
      * Retrieve all columns from DB connection plugin and given table name
+     *
      * @param connConfbusinessId identifier of DB connection plugin
-     * @param tableName table name whom columns belong to
+     * @param tableName          table name whom columns belong to
      * @return a map of { column name, column }
      * @throws ModuleException
      * @throws NotAvailablePluginConfigurationException
      */
     Map<String, Column> getColumns(String connConfbusinessId, String tableName)
-            throws ModuleException, NotAvailablePluginConfigurationException;
+        throws ModuleException, NotAvailablePluginConfigurationException;
 
 }

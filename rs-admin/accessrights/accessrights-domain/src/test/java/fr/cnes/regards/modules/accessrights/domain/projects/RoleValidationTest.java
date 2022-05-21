@@ -18,19 +18,18 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
-import java.util.Set;
-
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
+import java.util.Set;
 
 /**
  * Validate hibernate constraints on {@link Role}.

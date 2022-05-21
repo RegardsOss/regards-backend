@@ -20,12 +20,14 @@ package fr.cnes.regards.framework.utils.plugins.plugintypes;
 
 /**
  * INotInterfacePlugin
+ *
  * @author Christophe Mertz
  */
 public interface INotInterfacePlugin {
 
     /**
      * method foo
+     *
      * @return the result
      */
     int foo();

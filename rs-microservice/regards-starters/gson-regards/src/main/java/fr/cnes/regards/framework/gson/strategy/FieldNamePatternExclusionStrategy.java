@@ -18,14 +18,15 @@
  */
 package fr.cnes.regards.framework.gson.strategy;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Field exclusion strategy by name pattern
+ *
  * @author Marc Sordi *
  */
 public class FieldNamePatternExclusionStrategy implements ExclusionStrategy {

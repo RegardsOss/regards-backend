@@ -18,17 +18,7 @@
  */
 package fr.cnes.regards.framework.utils.file.compression.impl;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.text.Normalizer;
-import java.text.Normalizer.Form;
-import java.util.List;
-import java.util.regex.Pattern;
-
+import fr.cnes.regards.framework.utils.file.compression.*;
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -37,11 +27,12 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.utils.file.compression.AbstractRunnableCompression;
-import fr.cnes.regards.framework.utils.file.compression.CompressManager;
-import fr.cnes.regards.framework.utils.file.compression.CompressionException;
-import fr.cnes.regards.framework.utils.file.compression.CompressionTypeEnum;
-import fr.cnes.regards.framework.utils.file.compression.FileAlreadyExistException;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.text.Normalizer;
+import java.text.Normalizer.Form;
+import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Classe specialisee dans la compression de fichiers au format TAR. Elle prend en compte les particularites de l'outil
@@ -74,15 +65,20 @@ public class TarCompression extends AbstractRunnableCompression {
 
     /**
      * Permet de compression une liste de fichiers dans un seul.
-     * @param pFileList la liste de File a compresser
+     *
+     * @param pFileList       la liste de File a compresser
      * @param pCompressedFile définit le nom et le chemin du fichier compressé sans extension
-     * @param pRootDirectory le répertoire racine de tous les fichiers à compresser.
+     * @param pRootDirectory  le répertoire racine de tous les fichiers à compresser.
      * @return le fichier compressé avec l'extension
      * @throws CompressionException si l'un des paramètres est incorrect ou illisible
      */
     @Override
-    protected CompressManager runCompress(List<File> pFileList, File pCompressedFile, File pRootDirectory,
-            boolean pFlatArchive, Charset pCharset, CompressManager pCompressManager) throws CompressionException {
+    protected CompressManager runCompress(List<File> pFileList,
+                                          File pCompressedFile,
+                                          File pRootDirectory,
+                                          boolean pFlatArchive,
+                                          Charset pCharset,
+                                          CompressManager pCompressManager) throws CompressionException {
 
         // if the file has no tar extension, we add one.
         final Pattern pat = Pattern.compile(TAR_PATTERN);
@@ -109,8 +105,9 @@ public class TarCompression extends AbstractRunnableCompression {
         try (final FileOutputStream dest = new FileOutputStream(compressedFile)) {
 
             // Prepare streams
-            try (TarArchiveOutputStream os = (TarArchiveOutputStream) new ArchiveStreamFactory()
-                    .createArchiveOutputStream("tar", dest)) {
+            try (TarArchiveOutputStream os = (TarArchiveOutputStream) new ArchiveStreamFactory().createArchiveOutputStream(
+                "tar",
+                dest)) {
 
                 // Allow long file names
                 os.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
@@ -166,7 +163,8 @@ public class TarCompression extends AbstractRunnableCompression {
 
     /**
      * Permet de calculer le chemin relatif d'un fichier par rapport à un répertoire de plus haut niveau.
-     * @param pFile le fichier
+     *
+     * @param pFile    le fichier
      * @param pRootDir le répertoire racine.
      * @return une chaine sous forme de <code>String</code> contenant le chemin relatif.
      */
@@ -201,8 +199,9 @@ public class TarCompression extends AbstractRunnableCompression {
 
     /**
      * Permet de decompresser un fichier compresse dans un repertoire cible
+     *
      * @param pCompressedFile le fichier a decompresser
-     * @param pOutputDir le repertoire destination
+     * @param pOutputDir      le repertoire destination
      * @throws CompressionException si l'un des paramètres est incorrect ou illisible
      */
     @Override
@@ -212,8 +211,9 @@ public class TarCompression extends AbstractRunnableCompression {
 
     /**
      * Permet de decompresser un fichier compresse dans un repertoire cible
+     *
      * @param pCompressedFile le fichier a decompresser
-     * @param pOutputDir le repertoire destination
+     * @param pOutputDir      le repertoire destination
      * @throws CompressionException si l'un des paramètres est incorrect ou illisible
      */
     @Override
@@ -226,9 +226,9 @@ public class TarCompression extends AbstractRunnableCompression {
 
         // Write in this file
         try (InputStream is = new FileInputStream(pCompressedFile);
-                TarArchiveInputStream inputStream = charset != null ?
-                        new TarArchiveInputStream(is, charset.toString()) :
-                        new TarArchiveInputStream(is)) {
+            TarArchiveInputStream inputStream = charset != null ?
+                new TarArchiveInputStream(is, charset.toString()) :
+                new TarArchiveInputStream(is)) {
             final int bufsize = 8192;
             TarArchiveEntry entry;
             if (!pOutputDir.exists()) {
@@ -269,6 +269,7 @@ public class TarCompression extends AbstractRunnableCompression {
     /**
      * Les accents et caractères spéciaux sont mal interprétés par l'API java.util.zip, il faut donc transformer les
      * noms qui en contiennent.
+     *
      * @param pString le nom de fichier a convertir
      * @return la chaine convertie
      */

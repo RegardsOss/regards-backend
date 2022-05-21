@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.jpa.json.test.domain;
 
 /**
  * for testing purpose, class that will be stored as a jsonb field into a postgreSQL database
+ *
  * @author Sylvain Vissiere-Guerinet
  */
 public class JsonbEntity {
@@ -68,7 +69,7 @@ public class JsonbEntity {
     @Override
     public boolean equals(Object pOther) {
         return (pOther instanceof JsonbEntity) && ((JsonbEntity) pOther).name.equals(name)
-                && ((JsonbEntity) pOther).content.equals(content);
+            && ((JsonbEntity) pOther).content.equals(content);
     }
 
 }

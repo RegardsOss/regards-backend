@@ -24,8 +24,9 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
 
 /**
  * Class DisableInstanceCondition
- *
+ * <p>
  * Spring condition to disable instanceEntity filter for JPA entities and reposiroties
+ *
  * @author Sébastien Binda
  */
 public class DisableInstanceCondition implements Condition {
@@ -33,7 +34,7 @@ public class DisableInstanceCondition implements Condition {
     @Override
     public boolean matches(final ConditionContext pArg0, final AnnotatedTypeMetadata pArg1) {
         final String result = pArg0.getEnvironment()
-                .getProperty("regards.jpa.instance.disableInstanceEntityAnnotation");
+                                   .getProperty("regards.jpa.instance.disableInstanceEntityAnnotation");
         return Boolean.parseBoolean(result);
     }
 

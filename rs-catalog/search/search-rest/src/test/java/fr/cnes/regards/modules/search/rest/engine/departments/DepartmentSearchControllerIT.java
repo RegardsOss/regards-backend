@@ -70,10 +70,9 @@ import java.util.Random;
 
 /**
  * @author Marc Sordi
- *
  */
 @TestPropertySource(locations = { "classpath:test.properties" },
-        properties = { "regards.tenant=departments", "spring.jpa.properties.hibernate.default_schema=departments" })
+    properties = { "regards.tenant=departments", "spring.jpa.properties.hibernate.default_schema=departments" })
 public class DepartmentSearchControllerIT extends AbstractEngineIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DepartmentSearchControllerIT.class);
@@ -139,11 +138,10 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
             EntityType type = invocation.getArgument(0);
             return ResponseEntity.ok(modelService.getModelAttrAssocsFor(type));
         });
-        Mockito.when(datasetClientMock.getModelAttrAssocsForDataInDataset(Mockito.any()))
-                .thenAnswer(invocation -> {
-                    // UniformResourceName datasetUrn = invocation.getArgumentAt(0, UniformResourceName.class);
-                    return ResponseEntity.ok(modelService.getModelAttrAssocsFor(EntityType.DATA));
-                });
+        Mockito.when(datasetClientMock.getModelAttrAssocsForDataInDataset(Mockito.any())).thenAnswer(invocation -> {
+            // UniformResourceName datasetUrn = invocation.getArgumentAt(0, UniformResourceName.class);
+            return ResponseEntity.ok(modelService.getModelAttrAssocsFor(EntityType.DATA));
+        });
 
         // - Refresh attribute factory
         List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null);
@@ -167,8 +165,9 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
         indexerService.refresh(getDefaultTenant());
 
         // initPlugins();
-        try (JsonReader reader = new JsonReader(
-                new InputStreamReader(this.getClass().getResourceAsStream("config-rs-catalog.json"), "UTF-8"))) {
+        try (JsonReader reader = new JsonReader(new InputStreamReader(this.getClass()
+                                                                          .getResourceAsStream("config-rs-catalog.json"),
+                                                                      "UTF-8"))) {
             MicroserviceConfiguration microConfig = getConfigGson().fromJson(reader, MicroserviceConfiguration.class);
             for (ModuleConfiguration module : microConfig.getModules()) {
                 for (IModuleManager<?> manager : managers) {
@@ -206,8 +205,9 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
         List<DataObject> departments = new ArrayList<>();
         Random random = new Random();
 
-        try (JsonReader reader = new JsonReader(new InputStreamReader(
-                this.getClass().getResourceAsStream("departements-version-simplifiee.geojson")))) {
+        try (JsonReader reader = new JsonReader(new InputStreamReader(this.getClass()
+                                                                          .getResourceAsStream(
+                                                                              "departements-version-simplifiee.geojson")))) {
 
             FeatureCollection fc = gson.fromJson(reader, FeatureCollection.class);
             for (Feature feature : fc.getFeatures()) {
@@ -242,10 +242,13 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
         customizer.addParameter("token", "public_token");
 
         long startTime = System.currentTimeMillis();
-        performDefaultGet(SearchEngineMappings.TYPE_MAPPING
-                + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA, customizer,
-                          "open search description error", ENGINE_TYPE, france.getIpId().toString(),
-                          OpenSearchEngine.EXTRA_DESCRIPTION);
+        performDefaultGet(
+            SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA,
+            customizer,
+            "open search description error",
+            ENGINE_TYPE,
+            france.getIpId().toString(),
+            OpenSearchEngine.EXTRA_DESCRIPTION);
         logDuration(startTime);
     }
 
@@ -255,7 +258,9 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         long startTime = System.currentTimeMillis();
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
-                          customizer, "Search all error", ENGINE_TYPE);
+                          customizer,
+                          "Search all error",
+                          ENGINE_TYPE);
         logDuration(startTime);
     }
 

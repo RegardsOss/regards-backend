@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.rest;
 
 import fr.cnes.regards.modules.processing.domain.dto.PBatchRequest;
@@ -55,8 +55,10 @@ public class PBatchReactiveController {
     @PostMapping
     public Mono<PBatchResponse> createBatch(@RequestBody PBatchRequest data) {
         return ReactiveSecurityContextHolder.getContext()
-                .flatMap(ctx -> batchService.checkAndCreateBatch(authFactory.fromContext(ctx), data)
-                        .map(b -> new PBatchResponse(b.getId(), b.getCorrelationId())));
+                                            .flatMap(ctx -> batchService.checkAndCreateBatch(authFactory.fromContext(ctx),
+                                                                                             data)
+                                                                        .map(b -> new PBatchResponse(b.getId(),
+                                                                                                     b.getCorrelationId())));
     }
 
 }

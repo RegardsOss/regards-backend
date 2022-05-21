@@ -18,34 +18,26 @@
  */
 package fr.cnes.regards.modules.workermanager.rest;
 
-import java.time.OffsetDateTime;
-import java.util.*;
-
-import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.RequestBuilder;
-
-import org.assertj.core.util.Lists;
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.modules.workermanager.dao.IWorkerConfigRepository;
-import fr.cnes.regards.modules.workermanager.domain.config.WorkerConfig;
 import fr.cnes.regards.modules.workermanager.dto.WorkerConfigDto;
 import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerHeartBeatEvent;
 import fr.cnes.regards.modules.workermanager.service.cache.WorkerCacheService;
-import fr.cnes.regards.modules.workermanager.service.config.ConfigManager;
 import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigCacheService;
 import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigService;
+import org.assertj.core.util.Lists;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * @author Théo Lasserre
@@ -92,24 +84,34 @@ public class WorkerControllerIT extends AbstractRegardsIT {
         String workerId2 = UUID.randomUUID().toString();
         String workerId3 = UUID.randomUUID().toString();
 
-        workerCacheService.registerWorkers(
-                Lists.list(new WorkerHeartBeatEvent(workerId1, workerType1, OffsetDateTime.now()),
-                                                 new WorkerHeartBeatEvent(workerId2, workerType2, OffsetDateTime.now()),
-                                                 new WorkerHeartBeatEvent(workerId3, workerType3, OffsetDateTime.now())
-                ));
+        workerCacheService.registerWorkers(Lists.list(new WorkerHeartBeatEvent(workerId1,
+                                                                               workerType1,
+                                                                               OffsetDateTime.now()),
+                                                      new WorkerHeartBeatEvent(workerId2,
+                                                                               workerType2,
+                                                                               OffsetDateTime.now()),
+                                                      new WorkerHeartBeatEvent(workerId3,
+                                                                               workerType3,
+                                                                               OffsetDateTime.now())));
 
-        Assert.assertEquals("Invalid number of element in cache",3L,workerCacheService.getCache().asMap().keySet().size());
+        Assert.assertEquals("Invalid number of element in cache",
+                            3L,
+                            workerCacheService.getCache().asMap().keySet().size());
 
         // Without contentTypes parameters
         RequestBuilderCustomizer requestBuilderCustomizer = customizer();
         requestBuilderCustomizer.expectStatusOk();
         requestBuilderCustomizer.expectToHaveSize(JSON_PATH_STAR, 3);
-        performDefaultGet(WorkerController.TYPE_MAPPING, requestBuilderCustomizer, "Error retrieving workers without contentTypes parameter");
+        performDefaultGet(WorkerController.TYPE_MAPPING,
+                          requestBuilderCustomizer,
+                          "Error retrieving workers without contentTypes parameter");
         // With contentTypes parameters
         RequestBuilderCustomizer requestBuilderCustomizer2 = customizer();
         requestBuilderCustomizer2.expectStatusOk();
         requestBuilderCustomizer2.addParameter("contentTypes", "contentTypes1-1", "contentTypes1-2", "contentTypes2-1");
         requestBuilderCustomizer2.expectToHaveSize(JSON_PATH_STAR, 2);
-        performDefaultGet(WorkerController.TYPE_MAPPING, requestBuilderCustomizer2, "Error retrieving workers with contentTypes parameter");
+        performDefaultGet(WorkerController.TYPE_MAPPING,
+                          requestBuilderCustomizer2,
+                          "Error retrieving workers with contentTypes parameter");
     }
 }

@@ -30,14 +30,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.domain.event.StopJobEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +48,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 /**
  * @author oroussel
@@ -167,8 +163,9 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     @Override
     public List<JobInfo> updatePendingJobsToBeTriggered(OffsetDateTime startSearching, int maxJobsToRetrieve) {
         Pageable pageToRequest = PageRequest.of(0, maxJobsToRetrieve, Sort.by("status.statusDate"));
-        List<JobInfo> jobInfoToBeTriggered = jobInfoRepository.findByStatusStatusAndTriggerAfterDateLessThan(
-                JobStatus.PENDING, startSearching, pageToRequest);
+        List<JobInfo> jobInfoToBeTriggered = jobInfoRepository.findByStatusStatusAndTriggerAfterDateLessThan(JobStatus.PENDING,
+                                                                                                             startSearching,
+                                                                                                             pageToRequest);
         jobInfoToBeTriggered.forEach(jobInfo -> jobInfo.updateStatus(JobStatus.QUEUED));
         LOGGER.debug("{} jobs to be triggerred updated from PENDING to QUEUED.", jobInfoToBeTriggered.size());
         return jobInfoToBeTriggered;
@@ -215,8 +212,10 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     public void updateJobInfosCompletion(Iterable<JobInfo> jobInfos) {
         for (JobInfo jobInfo : jobInfos) {
             JobStatusInfo status = jobInfo.getStatus();
-            jobInfoRepository.updateCompletion(status.getPercentCompleted(), status.getEstimatedCompletion(),
-                                               jobInfo.getId(), OffsetDateTime.now());
+            jobInfoRepository.updateCompletion(status.getPercentCompleted(),
+                                               status.getEstimatedCompletion(),
+                                               jobInfo.getId(),
+                                               OffsetDateTime.now());
         }
     }
 
@@ -263,12 +262,15 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
         for (JobInfo job : jobs) {
             // if last heartbeat date is null it means job has been started but not yet pinged by job engine
             if ((job.getLastHeartbeatDate() != null) && job.getLastHeartbeatDate().isBefore(deadLimitDate)) {
-                job.getStatus().setStackTrace(String
-                        .format("This jobs has been considered dead because heartbeat has not responded for more than %s ms",
-                                deadAfter));
+                job.getStatus()
+                   .setStackTrace(String.format(
+                       "This jobs has been considered dead because heartbeat has not responded for more than %s ms",
+                       deadAfter));
                 job.updateStatus(JobStatus.FAILED);
                 LOGGER.warn("Job {} of type {} does not respond anymore after waiting activity ping for {} ms.",
-                            job.getId(), job.getClassName(), deadAfter);
+                            job.getId(),
+                            job.getClassName(),
+                            deadAfter);
                 failEvents.add(new JobEvent(job.getId(), JobEventType.FAILED));
             }
         }
@@ -277,10 +279,14 @@ public class JobInfoService implements IJobInfoService, ApplicationContextAware 
     }
 
     @Override
-    public Long countByClassAndParameterValueAndStatus(String className, String parameterName, String parameterValue, JobStatus... jobStatuses) {
-        return jobInfoRepository.countByClassNameAndParameters_NameAndParameters_ValueAndStatusStatusIn(
-                className, parameterName, parameterValue, jobStatuses
-        );
+    public Long countByClassAndParameterValueAndStatus(String className,
+                                                       String parameterName,
+                                                       String parameterValue,
+                                                       JobStatus... jobStatuses) {
+        return jobInfoRepository.countByClassNameAndParameters_NameAndParameters_ValueAndStatusStatusIn(className,
+                                                                                                        parameterName,
+                                                                                                        parameterValue,
+                                                                                                        jobStatuses);
     }
 
     @Override

@@ -30,21 +30,27 @@ public final class RawMessageBuilder {
 
     /**
      * Build raw AMQP message to send to workers
-     * @param tenant tenant for the request
+     *
+     * @param tenant      tenant for the request
      * @param contentType content type of the request to dispatch on worker
-     * @param source Request owner name
-     * @param session Request session name
-     * @param requestId Request unique identifier
-     * @param payload Request body
+     * @param source      Request owner name
+     * @param session     Request session name
+     * @param requestId   Request unique identifier
+     * @param payload     Request body
      * @return Message
      */
-    public static Message build(String tenant, String contentType, String source, String session, String requestId, byte[] payload) {
+    public static Message build(String tenant,
+                                String contentType,
+                                String source,
+                                String session,
+                                String requestId,
+                                byte[] payload) {
         MessageProperties properties = new MessageProperties();
-        properties.setHeader(EventHeadersHelper.TENANT_HEADER , tenant);
-        properties.setHeader(EventHeadersHelper.CONTENT_TYPE_HEADER , contentType);
-        properties.setHeader(EventHeadersHelper.OWNER_HEADER , source);
-        properties.setHeader(EventHeadersHelper.SESSION_HEADER , session);
-        properties.setHeader(EventHeadersHelper.REQUEST_ID_HEADER , requestId);
+        properties.setHeader(EventHeadersHelper.TENANT_HEADER, tenant);
+        properties.setHeader(EventHeadersHelper.CONTENT_TYPE_HEADER, contentType);
+        properties.setHeader(EventHeadersHelper.OWNER_HEADER, source);
+        properties.setHeader(EventHeadersHelper.SESSION_HEADER, session);
+        properties.setHeader(EventHeadersHelper.REQUEST_ID_HEADER, requestId);
         properties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
         return new Message(payload, properties);
     }

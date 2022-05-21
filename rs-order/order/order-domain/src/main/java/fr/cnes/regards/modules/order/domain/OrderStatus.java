@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.order.domain;
 
 /**
  * Order status
+ *
  * @author oroussel
  */
 public enum OrderStatus {

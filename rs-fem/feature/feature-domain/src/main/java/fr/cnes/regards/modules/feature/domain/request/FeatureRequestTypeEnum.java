@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.feature.domain.request;
  * Enumeration of possible discriminent type for {@link AbstractFeatureRequest}
  *
  * @author Sébastien Binda
- *
  */
 public enum FeatureRequestTypeEnum {
 

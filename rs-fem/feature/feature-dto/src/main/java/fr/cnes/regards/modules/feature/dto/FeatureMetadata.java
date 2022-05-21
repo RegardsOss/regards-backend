@@ -18,21 +18,18 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
+import org.springframework.util.Assert;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import org.springframework.util.Assert;
-
 /**
- *
  * The sessionOwner and session allows to make groups of features.
  *
  * @author Marc Sordi
- *
  */
 public class FeatureMetadata {
 
@@ -66,8 +63,8 @@ public class FeatureMetadata {
     }
 
     /**
-    
      * Build feature metadata
+     *
      * @param storages storage metadata
      */
     public static FeatureMetadata build(PriorityLevel priority, StorageMetadata... storages) {
@@ -76,6 +73,7 @@ public class FeatureMetadata {
 
     /**
      * Build feature metadata
+     *
      * @param storages storage metadata
      */
     public static FeatureMetadata build(PriorityLevel priority, List<StorageMetadata> storages) {

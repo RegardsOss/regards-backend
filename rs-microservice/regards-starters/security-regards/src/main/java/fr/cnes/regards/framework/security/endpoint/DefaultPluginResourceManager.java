@@ -18,18 +18,18 @@
  */
 package fr.cnes.regards.framework.security.endpoint;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class DefaultPluginResourceManager
- *
+ * <p>
  * Default implementation for Plugin resource endpoints management
+ *
  * @author CS
  */
 public class DefaultPluginResourceManager implements IPluginResourceManager {

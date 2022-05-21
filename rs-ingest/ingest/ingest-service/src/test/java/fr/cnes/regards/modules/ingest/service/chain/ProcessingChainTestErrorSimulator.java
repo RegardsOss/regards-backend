@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Component used by all test plugins used by processing chain to simulate errors during a given plugin.
+ *
  * @author Sébastien Binda
  */
 @Component

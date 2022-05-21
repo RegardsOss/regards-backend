@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
  * ISamplePlugin
+ *
  * @author Christophe Mertz
  */
 @PluginInterface(description = "hello sample plugin interface")
@@ -29,6 +30,7 @@ public interface ISamplePlugin {
 
     /**
      * method echo
+     *
      * @param pMessage message to display
      * @return the message
      */
@@ -36,7 +38,8 @@ public interface ISamplePlugin {
 
     /**
      * method add
-     * @param pFirst first element
+     *
+     * @param pFirst  first element
      * @param pSecond second item
      * @return the result
      */

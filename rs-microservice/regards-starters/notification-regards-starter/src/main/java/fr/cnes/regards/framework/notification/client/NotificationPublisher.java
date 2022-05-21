@@ -18,17 +18,15 @@
  */
 package fr.cnes.regards.framework.notification.client;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.IPublisherContract;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * An implementation of the notification client using asynchronous messaging
  *
  * @author Marc SORDI
- *
  */
 @Service
 public class NotificationPublisher extends AbstractNotificationPublisher implements INotificationClient {

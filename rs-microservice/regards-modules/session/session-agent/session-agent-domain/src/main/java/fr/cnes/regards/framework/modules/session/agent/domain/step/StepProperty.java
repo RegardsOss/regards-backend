@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.framework.modules.session.agent.domain.step;
 
-import java.util.Objects;
-
 /**
  * Step sent to create new
  * {@link fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest}s
@@ -90,6 +88,6 @@ public class StepProperty {
     @Override
     public String toString() {
         return "StepProperty{" + "stepId='" + stepId + '\'' + ", source='" + source + '\'' + ", session='" + session
-                + '\'' + ", stepPropertyInfo=" + stepPropertyInfo + '}';
+            + '\'' + ", stepPropertyInfo=" + stepPropertyInfo + '}';
     }
 }

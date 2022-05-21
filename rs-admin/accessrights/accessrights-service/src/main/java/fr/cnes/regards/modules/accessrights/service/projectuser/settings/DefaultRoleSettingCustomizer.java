@@ -6,7 +6,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import org.springframework.stereotype.Component;
 
-
 @Component
 public class DefaultRoleSettingCustomizer implements IDynamicTenantSettingCustomizer {
 
@@ -18,8 +17,8 @@ public class DefaultRoleSettingCustomizer implements IDynamicTenantSettingCustom
 
     @Override
     public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
-        return roleService.existByName(dynamicTenantSetting.getDefaultValue())
-                && (dynamicTenantSetting.getValue() == null || roleService.existByName(dynamicTenantSetting.getValue()));
+        return roleService.existByName(dynamicTenantSetting.getDefaultValue()) && (
+            dynamicTenantSetting.getValue() == null || roleService.existByName(dynamicTenantSetting.getValue()));
     }
 
     @Override

@@ -18,6 +18,24 @@
  */
 package fr.cnes.regards.framework.modules.plugins.service.gson;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.stream.JsonReader;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.JsonCollectionPluginParam;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.JsonMapPluginParam;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.JsonObjectPluginParam;
+import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -28,28 +46,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.stream.JsonReader;
-
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.JsonCollectionPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.JsonMapPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.JsonObjectPluginParam;
-import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
-
 /**
  * IT test class for IPluginService
+ *
  * @author Marc SORDI
  */
 @MultitenantTransactional
@@ -84,8 +83,8 @@ public class GsonIT extends AbstractMultitenantServiceIT {
         Assert.assertNotNull(conf);
 
         // Tranform JSON to POJO
-        Map<String, Object> map = PluginParameterTransformer
-                .transformValue((JsonMapPluginParam) conf.getParameter("simplemap"), SimplePojo.class);
+        Map<String, Object> map = PluginParameterTransformer.transformValue((JsonMapPluginParam) conf.getParameter(
+            "simplemap"), SimplePojo.class);
         Assert.assertNotNull(map);
         map.entrySet().forEach(e -> Assert.assertTrue(SimplePojo.class.isInstance(e.getValue())));
     }
@@ -96,8 +95,8 @@ public class GsonIT extends AbstractMultitenantServiceIT {
         Assert.assertNotNull(conf);
 
         // Tranform JSON to POJO
-        Collection<Object> collection = PluginParameterTransformer
-                .transformValue((JsonCollectionPluginParam) conf.getParameter("simplelist"), List.class, SimplePojo.class);
+        Collection<Object> collection = PluginParameterTransformer.transformValue((JsonCollectionPluginParam) conf.getParameter(
+            "simplelist"), List.class, SimplePojo.class);
         Assert.assertNotNull(collection);
         collection.forEach(e -> Assert.assertTrue(SimplePojo.class.isInstance(e)));
     }

@@ -18,12 +18,16 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
-import java.io.IOException;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
-
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,24 +44,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
-import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import java.io.IOException;
 
 @RestController
 @RequestMapping(IngestProcessingChainController.TYPE_MAPPING)
@@ -88,12 +81,12 @@ public class IngestProcessingChainController implements IResourceController<Inge
     private IResourceService resourceService;
 
     @ResourceAccess(description = "Search for IngestProcessingChain with optional criterion.",
-            role = DefaultRole.EXPLOIT)
+        role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PagedModel<EntityModel<IngestProcessingChain>>> search(
-            @RequestParam(name = "name", required = false) String name,
-            @PageableDefault(sort = "name", direction = Sort.Direction.DESC) Pageable pageable,
-            PagedResourcesAssembler<IngestProcessingChain> pAssembler) {
+        @RequestParam(name = "name", required = false) String name,
+        @PageableDefault(sort = "name", direction = Sort.Direction.DESC) Pageable pageable,
+        PagedResourcesAssembler<IngestProcessingChain> pAssembler) {
         Page<IngestProcessingChain> chains = ingestProcessingService.searchChains(name, pageable);
         PagedModel<EntityModel<IngestProcessingChain>> resources = toPagedResources(chains, pAssembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
@@ -102,7 +95,7 @@ public class IngestProcessingChainController implements IResourceController<Inge
     @ResourceAccess(description = "Retrieve an IngestProcessingChain by name.", role = DefaultRole.EXPLOIT)
     @RequestMapping(value = NAME_PATH, method = RequestMethod.GET)
     public ResponseEntity<EntityModel<IngestProcessingChain>> get(@PathVariable("name") String name)
-            throws ModuleException {
+        throws ModuleException {
         IngestProcessingChain chain = ingestProcessingService.getChain(name);
         return new ResponseEntity<>(toResource(chain), HttpStatus.OK);
     }
@@ -116,18 +109,19 @@ public class IngestProcessingChainController implements IResourceController<Inge
 
     @ResourceAccess(description = "Create a new ingestion processing chain", role = DefaultRole.ADMIN)
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<EntityModel<IngestProcessingChain>> create(
-            @Valid @RequestBody IngestProcessingChain processingChain) throws ModuleException {
+    public ResponseEntity<EntityModel<IngestProcessingChain>> create(@Valid @RequestBody
+                                                                     IngestProcessingChain processingChain)
+        throws ModuleException {
         IngestProcessingChain chain = ingestProcessingService.createNewChain(processingChain);
         return new ResponseEntity<>(toResource(chain), HttpStatus.CREATED);
 
     }
 
     @ResourceAccess(description = "Create a new ingestion processing chain importing JSON file",
-            role = DefaultRole.ADMIN)
+        role = DefaultRole.ADMIN)
     @RequestMapping(method = RequestMethod.POST, value = IMPORT_PATH)
     public ResponseEntity<EntityModel<IngestProcessingChain>> createByFile(@RequestParam("file") MultipartFile file)
-            throws ModuleException {
+        throws ModuleException {
         try {
             IngestProcessingChain chain = ingestProcessingService.createNewChain(file.getInputStream());
             return new ResponseEntity<>(toResource(chain), HttpStatus.CREATED);
@@ -141,7 +135,7 @@ public class IngestProcessingChainController implements IResourceController<Inge
     @ResourceAccess(description = "Export an ingestion processing chain in JSON format", role = DefaultRole.ADMIN)
     @RequestMapping(method = RequestMethod.GET, value = EXPORT_PATH)
     public void export(HttpServletRequest pRequest, HttpServletResponse pResponse, @PathVariable("name") String name)
-            throws ModuleException {
+        throws ModuleException {
         IngestProcessingChain chain = ingestProcessingService.getChain(name);
         String exportedFilename = applicationName + "-" + chain.getName() + ".json";
 
@@ -154,9 +148,9 @@ public class IngestProcessingChainController implements IResourceController<Inge
             // FIXME maybe already done!
             pResponse.getOutputStream().flush();
         } catch (IOException e) {
-            String message = String
-                    .format("Error with servlet output stream while exporting ingest processing chain %s.",
-                            chain.getName());
+            String message = String.format(
+                "Error with servlet output stream while exporting ingest processing chain %s.",
+                chain.getName());
             LOGGER.error(message, e);
             throw new ModuleException(e);
         }
@@ -165,7 +159,9 @@ public class IngestProcessingChainController implements IResourceController<Inge
     @ResourceAccess(description = "Update an existing IngestProcessingChain.", role = DefaultRole.ADMIN)
     @RequestMapping(value = NAME_PATH, method = RequestMethod.PUT)
     public ResponseEntity<EntityModel<IngestProcessingChain>> update(@PathVariable("name") String name,
-            @Valid @RequestBody IngestProcessingChain processingChain) throws ModuleException {
+                                                                     @Valid @RequestBody
+                                                                     IngestProcessingChain processingChain)
+        throws ModuleException {
         if (!name.equals(processingChain.getName())) {
             throw new EntityInvalidException("Name of entity to update does not match.");
         }
@@ -176,16 +172,28 @@ public class IngestProcessingChainController implements IResourceController<Inge
     @Override
     public EntityModel<IngestProcessingChain> toResource(IngestProcessingChain ingestChain, Object... pExtras) {
         final EntityModel<IngestProcessingChain> resource = resourceService.toResource(ingestChain);
-        resourceService.addLink(resource, this.getClass(), "get", LinkRels.SELF,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "get",
+                                LinkRels.SELF,
                                 MethodParamFactory.build(String.class, ingestChain.getName()));
         if (!ingestChain.getName().equals(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL)) {
-            resourceService.addLink(resource, this.getClass(), "delete", LinkRels.DELETE,
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "delete",
+                                    LinkRels.DELETE,
                                     MethodParamFactory.build(String.class, ingestChain.getName()));
         }
-        resourceService.addLink(resource, this.getClass(), "update", LinkRels.UPDATE,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "update",
+                                LinkRels.UPDATE,
                                 MethodParamFactory.build(String.class, ingestChain.getName()),
                                 MethodParamFactory.build(IngestProcessingChain.class));
-        resourceService.addLink(resource, this.getClass(), "export", LinkRelation.of("export"),
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "export",
+                                LinkRelation.of("export"),
                                 MethodParamFactory.build(HttpServletRequest.class),
                                 MethodParamFactory.build(HttpServletResponse.class),
                                 MethodParamFactory.build(String.class, ingestChain.getName()));

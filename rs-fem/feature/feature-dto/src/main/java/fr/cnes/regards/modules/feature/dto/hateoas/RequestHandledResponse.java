@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.feature.dto.hateoas;
  * DTO Pojo for requests treatments responses. Indicates if all requested requests has been handled or not.
  *
  * @author Sébastien Binda
- *
  */
 public class RequestHandledResponse {
 

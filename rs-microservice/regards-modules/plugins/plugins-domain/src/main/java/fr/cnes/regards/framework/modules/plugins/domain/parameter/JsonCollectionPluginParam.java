@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.framework.modules.plugins.domain.parameter;
 
-import java.util.Collection;
-
 import com.google.gson.JsonElement;
+
+import java.util.Collection;
 
 /**
  * JSON plugin parameter representation of {@link PluginParamType#COLLECTION}.
  * Its value will be transformed to target parameter type in plugin engine using GSON deserialization.
  *
  * @author Marc SORDI
- *
  */
 public class JsonCollectionPluginParam extends AbstractPluginParam<Collection<JsonElement>> {
 

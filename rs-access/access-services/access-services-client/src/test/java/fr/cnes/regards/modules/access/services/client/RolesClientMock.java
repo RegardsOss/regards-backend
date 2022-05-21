@@ -19,24 +19,26 @@
 package fr.cnes.regards.modules.access.services.client;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
-import java.util.List;
-import java.util.Set;
-import javax.validation.Valid;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Set;
+
 /**
  * Provide a bean to replace the behavior of the {@link IRolesClient} while testing
+ *
  * @author Léo Mieulet
  */
 @Component
 @Primary
 public class RolesClientMock implements IRolesClient {
+
     @Override
     public ResponseEntity<List<EntityModel<Role>>> getAllRoles() {
         return null;

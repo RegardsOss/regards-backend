@@ -1,5 +1,10 @@
 package fr.cnes.regards.framework.utils.file;
 
+import com.google.common.collect.Sets;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
@@ -13,17 +18,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import com.google.common.collect.Sets;
-
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
 @Ignore("those tests are ignored for now because it would need a lot of work to make all of them work all the time and"
-        + " they just are tests of java")
+    + " they just are tests of java")
 public class DownloadUtilsTests {
 
     /**

@@ -18,23 +18,14 @@
  */
 package fr.cnes.regards.modules.dam.domain.entities;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.urn.converters.UrnConverter;
 
+import javax.persistence.*;
+
 @Entity
 @Table(name = "t_entity_request", indexes = { @Index(name = "idx_group_id", columnList = "group_id") },
-        uniqueConstraints = { @UniqueConstraint(name = "uk_group_id", columnNames = { "group_id" }) })
+    uniqueConstraints = { @UniqueConstraint(name = "uk_group_id", columnNames = { "group_id" }) })
 public class AbstractEntityRequest {
 
     /**

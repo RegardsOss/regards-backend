@@ -155,8 +155,9 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public void handleVersioning(AIPEntity aipEntity, VersioningMode versioningMode,
-            Map<String, AIPEntity> lastVersions) {
+    public void handleVersioning(AIPEntity aipEntity,
+                                 VersioningMode versioningMode,
+                                 Map<String, AIPEntity> lastVersions) {
 
         // lets get the old last version
         AIPEntity dbLatest = lastVersions.get(aipEntity.getProviderId());
@@ -183,14 +184,18 @@ public class AIPService implements IAIPService {
                 sessionNotifier.incrementProductReplace(aipEntity);
                 if (aipEntity.isLast()) {
                     // we are the last aip so we need to delete the old latest
-                    oaisDeletionRequestService
-                            .registerOAISDeletionCreator(OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE)
-                                    .withAipId(dbLatest.getAipId()).withSelectionMode(SearchSelectionMode.INCLUDE));
+                    oaisDeletionRequestService.registerOAISDeletionCreator(OAISDeletionPayloadDto.build(
+                                                                                                     SessionDeletionMode.BY_STATE)
+                                                                                                 .withAipId(dbLatest.getAipId())
+                                                                                                 .withSelectionMode(
+                                                                                                     SearchSelectionMode.INCLUDE));
                 } else {
                     //we are not the last aip but we have been added at the same time than the latest, so we need to be removed
-                    oaisDeletionRequestService
-                            .registerOAISDeletionCreator(OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE)
-                                    .withAipId(aipEntity.getAipId()).withSelectionMode(SearchSelectionMode.INCLUDE));
+                    oaisDeletionRequestService.registerOAISDeletionCreator(OAISDeletionPayloadDto.build(
+                                                                                                     SessionDeletionMode.BY_STATE)
+                                                                                                 .withAipId(aipEntity.getAipId())
+                                                                                                 .withSelectionMode(
+                                                                                                     SearchSelectionMode.INCLUDE));
                 }
             }
         }

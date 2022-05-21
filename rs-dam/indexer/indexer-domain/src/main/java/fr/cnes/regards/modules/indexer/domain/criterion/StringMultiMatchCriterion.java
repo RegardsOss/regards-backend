@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.modules.indexer.domain.criterion;
 
+import org.elasticsearch.index.query.MultiMatchQueryBuilder;
+
 import java.util.HashSet;
 import java.util.Set;
 
-import org.elasticsearch.index.query.MultiMatchQueryBuilder;
-
 /**
  * String specialized {@link AbstractMultiMatchCriterion}
+ *
  * @author Marc SORDI
  */
 public class StringMultiMatchCriterion extends AbstractMultiMatchCriterion<String> {

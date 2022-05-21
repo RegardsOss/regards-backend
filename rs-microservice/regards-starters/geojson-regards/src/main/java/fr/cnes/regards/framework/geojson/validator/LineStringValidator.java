@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.framework.geojson.validator;
 
+import fr.cnes.regards.framework.geojson.geometry.LineString;
+
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-import fr.cnes.regards.framework.geojson.geometry.LineString;
-
 /**
  * Validate {@link LineString} structure
+ *
  * @author Marc Sordi
  */
 public class LineStringValidator implements ConstraintValidator<LineStringConstraints, LineString> {

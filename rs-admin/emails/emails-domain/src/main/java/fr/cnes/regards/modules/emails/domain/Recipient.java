@@ -25,7 +25,6 @@ import javax.validation.constraints.Email;
  * annotation.
  *
  * @author xbrochard
- *
  */
 public class Recipient {
 
@@ -47,8 +46,7 @@ public class Recipient {
     /**
      * Set <code>address</code>
      *
-     * @param pAddress
-     *            The address
+     * @param pAddress The address
      */
     public void setAddress(final String pAddress) {
         address = pAddress;

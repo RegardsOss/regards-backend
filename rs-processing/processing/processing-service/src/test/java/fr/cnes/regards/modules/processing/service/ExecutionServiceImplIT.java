@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.processing.service;
 
-
 import fr.cnes.regards.modules.processing.domain.PBatch;
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.PUserAuth;
@@ -25,23 +24,26 @@ public class ExecutionServiceImplIT extends AbstractProcessingServiceIT {
     public void testLaunchExecution() {
 
         AtomicReference<ExecutionContext> ctxRef = new AtomicReference<>();
-        configureProcessUpdater(p -> p.withExecutable(ctx -> { ctxRef.set(ctx); return Mono.just(ctx); }));
+        configureProcessUpdater(p -> p.withExecutable(ctx -> {
+            ctxRef.set(ctx);
+            return Mono.just(ctx);
+        }));
 
         UUID processBusinessId = UUID.randomUUID();
 
-        PBatchRequest batchRequest = new PBatchRequest(
-                "bcid",
-                processBusinessId,
-                THE_TENANT,
-                THE_USER,
-                THE_ROLE,
-                HashMap.empty(),
-                HashMap.of("dataset1", new FileSetStatistics("dataset1", 5, 123456L))
-        );
+        PBatchRequest batchRequest = new PBatchRequest("bcid",
+                                                       processBusinessId,
+                                                       THE_TENANT,
+                                                       THE_USER,
+                                                       THE_ROLE,
+                                                       HashMap.empty(),
+                                                       HashMap.of("dataset1",
+                                                                  new FileSetStatistics("dataset1", 5, 123456L)));
 
         AtomicReference<Throwable> throwableRef = new AtomicReference<>();
 
-        PBatch batch = batchService.checkAndCreateBatch(new PUserAuth(THE_TENANT, THE_USER, THE_ROLE, THE_TOKEN), batchRequest).block();
+        PBatch batch = batchService.checkAndCreateBatch(new PUserAuth(THE_TENANT, THE_USER, THE_ROLE, THE_TOKEN),
+                                                        batchRequest).block();
 
         PExecutionRequestEvent execReq = new PExecutionRequestEvent("ecid", batch.getId(), List.empty());
 

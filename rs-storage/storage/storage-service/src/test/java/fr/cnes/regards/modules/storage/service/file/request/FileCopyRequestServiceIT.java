@@ -56,11 +56,10 @@ import java.util.concurrent.ExecutionException;
  * Test class
  *
  * @author Sébastien Binda
- *
  */
 @ActiveProfiles({ "noscheduler", "nojobs" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_copy_tests" },
-        locations = { "classpath:application-test.properties" })
+    locations = { "classpath:application-test.properties" })
 public class FileCopyRequestServiceIT extends AbstractStorageIT {
 
     @Autowired
@@ -69,7 +68,7 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
     @Autowired
     private IDynamicTenantSettingService dynamicTenantSettingService;
 
-    private static final  String SESSION_OWNER = "SOURCE 1";
+    private static final String SESSION_OWNER = "SOURCE 1";
 
     private static final String SESSION = "SESSION 1";
 
@@ -87,18 +86,32 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
         String owner = "first-owner";
         Long nbFiles = 20L;
         for (int i = 0; i < nbFiles; i++) {
-            generateStoredFileReference(UUID.randomUUID().toString(), owner, String.format("file-%d.test", i),
-                                        ONLINE_CONF_LABEL, Optional.of("/rep/one"), Optional.of("plop"),
-                                        SESSION_OWNER, SESSION);
+            generateStoredFileReference(UUID.randomUUID().toString(),
+                                        owner,
+                                        String.format("file-%d.test", i),
+                                        ONLINE_CONF_LABEL,
+                                        Optional.of("/rep/one"),
+                                        Optional.of("plop"),
+                                        SESSION_OWNER,
+                                        SESSION);
         }
         for (int i = 0; i < 5; i++) {
-            generateStoredFileReference(UUID.randomUUID().toString(), owner, String.format("file-%d.test", i),
-                                        ONLINE_CONF_LABEL, Optional.of("/rep/two"), Optional.of("plop"),
-                                        SESSION_OWNER, SESSION);
+            generateStoredFileReference(UUID.randomUUID().toString(),
+                                        owner,
+                                        String.format("file-%d.test", i),
+                                        ONLINE_CONF_LABEL,
+                                        Optional.of("/rep/two"),
+                                        Optional.of("plop"),
+                                        SESSION_OWNER,
+                                        SESSION);
         }
-        JobInfo ji = fileCopyRequestService
-                .scheduleJob(ONLINE_CONF_LABEL, "rep/one", NEARLINE_CONF_LABEL,
-                             Optional.empty(), Sets.newHashSet("plop"), SESSION_OWNER, SESSION);
+        JobInfo ji = fileCopyRequestService.scheduleJob(ONLINE_CONF_LABEL,
+                                                        "rep/one",
+                                                        NEARLINE_CONF_LABEL,
+                                                        Optional.empty(),
+                                                        Sets.newHashSet("plop"),
+                                                        SESSION_OWNER,
+                                                        SESSION);
         Assert.assertNotNull("A job should be created", ji);
         Mockito.reset(publisher);
         jobService.runJob(ji, getDefaultTenant()).get();
@@ -124,12 +137,13 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
         String requestGroup = UUID.randomUUID().toString();
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file1.test", Optional.empty());
         Set<FileCopyRequestDTO> requests = Sets.newHashSet(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
-                                                                                    ONLINE_CONF_LABEL, SESSION_OWNER,
+                                                                                    ONLINE_CONF_LABEL,
+                                                                                    SESSION_OWNER,
                                                                                     SESSION));
         fileCopyRequestService.copy(Sets.newHashSet(CopyFlowItem.build(requests, requestGroup)));
         // A new copy request should be created
-        Optional<FileCopyRequest> oReq = fileCopyRequestService
-                .search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
+        Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(),
+                                                                       ONLINE_CONF_LABEL);
         Assert.assertTrue("There should be a copy request created", oReq.isPresent());
 
         // Now run copy schedule
@@ -196,18 +210,42 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
         // check copy request is correctly notified
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 10, stepEventList.size());
-        checkStepEvent(stepEventList.get(4), SessionNotifierPropertyEnum.COPY_REQUESTS, StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER, SESSION, "1");
-        checkStepEvent(stepEventList.get(5), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC, SESSION_OWNER, SESSION, "1");
-        checkStepEvent(stepEventList.get(6), SessionNotifierPropertyEnum.STORE_REQUESTS, StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER, SESSION, "1");
-        checkStepEvent(stepEventList.get(7), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC, SESSION_OWNER, SESSION, "1");
-        checkStepEvent(stepEventList.get(8), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER, SESSION, "1");
-        checkStepEvent(stepEventList.get(9), SessionNotifierPropertyEnum.STORED_FILES, StepPropertyEventTypeEnum.INC,
-                       SESSION_OWNER, SESSION, "1");
+        checkStepEvent(stepEventList.get(4),
+                       SessionNotifierPropertyEnum.COPY_REQUESTS,
+                       StepPropertyEventTypeEnum.INC,
+                       SESSION_OWNER,
+                       SESSION,
+                       "1");
+        checkStepEvent(stepEventList.get(5),
+                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.INC,
+                       SESSION_OWNER,
+                       SESSION,
+                       "1");
+        checkStepEvent(stepEventList.get(6),
+                       SessionNotifierPropertyEnum.STORE_REQUESTS,
+                       StepPropertyEventTypeEnum.INC,
+                       SESSION_OWNER,
+                       SESSION,
+                       "1");
+        checkStepEvent(stepEventList.get(7),
+                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.INC,
+                       SESSION_OWNER,
+                       SESSION,
+                       "1");
+        checkStepEvent(stepEventList.get(8),
+                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.DEC,
+                       SESSION_OWNER,
+                       SESSION,
+                       "1");
+        checkStepEvent(stepEventList.get(9),
+                       SessionNotifierPropertyEnum.STORED_FILES,
+                       StepPropertyEventTypeEnum.INC,
+                       SESSION_OWNER,
+                       SESSION,
+                       "1");
         Mockito.reset(publisher);
 
         // Simulate file stored event
@@ -227,8 +265,12 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
         stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 1, stepEventList.size());
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER, SESSION, "1");
+        checkStepEvent(stepEventList.get(0),
+                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.DEC,
+                       SESSION_OWNER,
+                       SESSION,
+                       "1");
 
         // Check request group is done
         Mockito.reset(publisher);
@@ -258,7 +300,8 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
         FileReference fileRef = this.generateRandomStoredNearlineFileReference("file1.test", Optional.empty());
         Set<FileCopyRequestDTO> requests = Sets.newHashSet(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
                                                                                     ONLINE_CONF_LABEL,
-                                                                                    copyDestinationPath, SESSION_OWNER,
+                                                                                    copyDestinationPath,
+                                                                                    SESSION_OWNER,
                                                                                     SESSION));
         fileCopyRequestService.handle(requests, UUID.randomUUID().toString());
         // A new copy request should be created
@@ -304,7 +347,8 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
                                                                           fileRef.getMetaInfo().getChecksum());
         oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(), ONLINE_CONF_LABEL);
         Assert.assertEquals("There should be a storage request created", 1, storageReqs.size());
-        Assert.assertEquals("The storage request should contains subdirectory to store to", copyDestinationPath,
+        Assert.assertEquals("The storage request should contains subdirectory to store to",
+                            copyDestinationPath,
                             storageReqs.stream().findFirst().get().getStorageSubDirectory());
         Assert.assertTrue("There should be a copy request", oReq.isPresent());
         Assert.assertTrue("There should be a copy request in pending state",
@@ -341,12 +385,19 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
     public void copyFile_error_offlineFile() {
         String storage = "somewhere";
         String storageCopyDest = "somewhereElse";
-        FileReference fileRef = referenceRandomFile("owner", "type", "file1.test", storage, SESSION_OWNER, SESSION).get();
-        Set<FileCopyRequestDTO> requests = Sets.newHashSet(
-                FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(), storageCopyDest, SESSION_OWNER, SESSION));
+        FileReference fileRef = referenceRandomFile("owner",
+                                                    "type",
+                                                    "file1.test",
+                                                    storage,
+                                                    SESSION_OWNER,
+                                                    SESSION).get();
+        Set<FileCopyRequestDTO> requests = Sets.newHashSet(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+                                                                                    storageCopyDest,
+                                                                                    SESSION_OWNER,
+                                                                                    SESSION));
         fileCopyRequestService.handle(requests, UUID.randomUUID().toString());
-        Optional<FileCopyRequest> oReq = fileCopyRequestService
-                .search(fileRef.getMetaInfo().getChecksum(), storageCopyDest);
+        Optional<FileCopyRequest> oReq = fileCopyRequestService.search(fileRef.getMetaInfo().getChecksum(),
+                                                                       storageCopyDest);
         Assert.assertTrue("There should be a copy request created", oReq.isPresent());
 
         // Now run copy schedule
@@ -385,8 +436,10 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
     public void copyFile_error_unknownFile() {
         String storage = "somewhere";
         String unknownChecksum = UUID.randomUUID().toString();
-        Set<FileCopyRequestDTO> requests = Sets
-                .newHashSet(FileCopyRequestDTO.build(unknownChecksum, storage, SESSION_OWNER, SESSION));
+        Set<FileCopyRequestDTO> requests = Sets.newHashSet(FileCopyRequestDTO.build(unknownChecksum,
+                                                                                    storage,
+                                                                                    SESSION_OWNER,
+                                                                                    SESSION));
         fileCopyRequestService.handle(requests, UUID.randomUUID().toString());
         Optional<FileCopyRequest> oReq = fileCopyRequestService.search(unknownChecksum, storage);
         Assert.assertFalse("There should not be a copy request created", oReq.isPresent());

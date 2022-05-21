@@ -54,8 +54,9 @@ import java.util.Set;
 
 /**
  * Class AbstractJpaAutoConfiguration
- *
+ * <p>
  * Configuration class to define hibernate/jpa instance database strategy
+ *
  * @author Sébastien Binda
  */
 public abstract class AbstractJpaAutoConfiguration {
@@ -81,10 +82,12 @@ public abstract class AbstractJpaAutoConfiguration {
     @Value("${spring.application.name}")
     private String microserviceName;
 
-    @Value("${spring.jpa.hibernate.naming.implicit-strategy:org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl}")
+    @Value(
+        "${spring.jpa.hibernate.naming.implicit-strategy:org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl}")
     private String implicitNamingStrategyName;
 
-    @Value("${spring.jpa.hibernate.naming.physical-strategy:org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl}")
+    @Value(
+        "${spring.jpa.hibernate.naming.physical-strategy:org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl}")
     private String physicalNamingStrategyName;
 
     /**
@@ -128,6 +131,7 @@ public abstract class AbstractJpaAutoConfiguration {
     /**
      * Use schema helper to migrate database schema.
      * {@link IDatasourceSchemaHelper#migrate()} is called immediatly after bean creation on instance datasource.
+     *
      * @return {@link IDatasourceSchemaHelper}
      * @throws JpaException if error occurs!
      */
@@ -138,13 +142,15 @@ public abstract class AbstractJpaAutoConfiguration {
 
         if (MigrationTool.HBM2DDL.equals(daoProperties.getMigrationTool())) {
             Hbm2ddlDatasourceSchemaHelper helper = new Hbm2ddlDatasourceSchemaHelper(hibernateProperties,
-                                                                                     getEntityAnnotationScan(), null);
+                                                                                     getEntityAnnotationScan(),
+                                                                                     null);
             helper.setDataSource(instanceDataSource);
             // Set output file, may be null.
             helper.setOutputFile(daoProperties.getOutputFile());
             return helper;
         } else {
-            FlywayDatasourceSchemaHelper helper = new FlywayDatasourceSchemaHelper(hibernateProperties, applicationContext);
+            FlywayDatasourceSchemaHelper helper = new FlywayDatasourceSchemaHelper(hibernateProperties,
+                                                                                   applicationContext);
             helper.setDataSource(instanceDataSource);
             return helper;
         }
@@ -152,6 +158,7 @@ public abstract class AbstractJpaAutoConfiguration {
 
     /**
      * Create TransactionManager for instance datasource
+     *
      * @return PlatformTransactionManager
      * @throws JpaException if error occurs
      */
@@ -164,6 +171,7 @@ public abstract class AbstractJpaAutoConfiguration {
 
     /**
      * Create EntityManagerFactory for instance datasource
+     *
      * @return LocalContainerEntityManagerFactoryBean
      * @throws JpaException if error occurs!
      */
@@ -183,8 +191,12 @@ public abstract class AbstractJpaAutoConfiguration {
         List<Class<?>> packages;
         packages = DaoUtils.scanPackagesForJpa(getEntityAnnotationScan(), null, packagesToScan);
 
-        return builder.dataSource(instanceDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)
-                .packages(packages.toArray(new Class[0])).properties(hibernateProps).jta(false).build();
+        return builder.dataSource(instanceDataSource)
+                      .persistenceUnit(PERSITENCE_UNIT_NAME)
+                      .packages(packages.toArray(new Class[0]))
+                      .properties(hibernateProps)
+                      .jta(false)
+                      .build();
 
     }
 
@@ -202,6 +214,7 @@ public abstract class AbstractJpaAutoConfiguration {
 
     /**
      * Compute database properties
+     *
      * @return database properties
      * @throws JpaException if error occurs!
      */
@@ -212,8 +225,8 @@ public abstract class AbstractJpaAutoConfiguration {
         // spring.jpa.properties.hibernate.default_schema
         // Before retrieving hibernate properties, set ddl auto to avoid the need of a datasource
         hb8Properties.setDdlAuto("none");
-        Map<String, Object> dbProperties = new HashMap<>(
-                hb8Properties.determineHibernateProperties(jpaProperties.getProperties(), new HibernateSettings()));
+        Map<String, Object> dbProperties = new HashMap<>(hb8Properties.determineHibernateProperties(jpaProperties.getProperties(),
+                                                                                                    new HibernateSettings()));
         // Remove hbm2ddl as schema update is done programmatically
         dbProperties.remove(Environment.HBM2DDL_AUTO);
 
@@ -228,11 +241,11 @@ public abstract class AbstractJpaAutoConfiguration {
         dbProperties.put(Environment.USE_NEW_ID_GENERATOR_MAPPINGS, true);
 
         try {
-            PhysicalNamingStrategy hibernatePhysicalNamingStrategy = (PhysicalNamingStrategy) Class
-                    .forName(physicalNamingStrategyName).newInstance();
+            PhysicalNamingStrategy hibernatePhysicalNamingStrategy = (PhysicalNamingStrategy) Class.forName(
+                physicalNamingStrategyName).newInstance();
             dbProperties.put(Environment.PHYSICAL_NAMING_STRATEGY, hibernatePhysicalNamingStrategy);
-            final ImplicitNamingStrategy hibernateImplicitNamingStrategy = (ImplicitNamingStrategy) Class
-                    .forName(implicitNamingStrategyName).newInstance();
+            final ImplicitNamingStrategy hibernateImplicitNamingStrategy = (ImplicitNamingStrategy) Class.forName(
+                implicitNamingStrategyName).newInstance();
             dbProperties.put(Environment.IMPLICIT_NAMING_STRATEGY, hibernateImplicitNamingStrategy);
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             LOGGER.error("Error occurs with naming strategy", e);

@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.framework.modules.jobs.domain.step;
 
+import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 
 import java.util.Optional;
 
 /**
  * Common processing step applied to job execution
+ *
  * @param <I> input object
  * @param <O> output object
  * @param <J> associated processing job
@@ -65,6 +65,7 @@ public abstract class AbstractProcessingStep<I, O, J extends IJob<?>> implements
 
     /**
      * Override this method to implement step execution algorithm
+     *
      * @param in input object
      * @return output object
      */
@@ -72,6 +73,7 @@ public abstract class AbstractProcessingStep<I, O, J extends IJob<?>> implements
 
     /**
      * Override this method to manage step execution error
+     *
      * @param in input object
      */
     protected abstract void doAfterError(I in, Optional<Exception> e);

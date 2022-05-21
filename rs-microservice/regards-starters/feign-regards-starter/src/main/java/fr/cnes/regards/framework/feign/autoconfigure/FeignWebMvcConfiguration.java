@@ -18,19 +18,19 @@
  */
 package fr.cnes.regards.framework.feign.autoconfigure;
 
+import fr.cnes.regards.framework.feign.security.FeignHandlerInterceptor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import fr.cnes.regards.framework.feign.security.FeignHandlerInterceptor;
-
 /**
  * Class FeignWebMvcConfiguration
- *
+ * <p>
  * Update Spring Web Mvc configuration to ignore RequestMapping on FeignClient implementations and to manage
  * FeignSecurity through an interceptor
+ *
  * @author CS
  */
 @Configuration

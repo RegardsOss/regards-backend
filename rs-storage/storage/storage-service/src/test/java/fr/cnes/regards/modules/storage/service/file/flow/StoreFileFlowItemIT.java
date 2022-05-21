@@ -61,7 +61,7 @@ import java.util.*;
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests" },
-        locations = { "classpath:application-test.properties" })
+    locations = { "classpath:application-test.properties" })
 public class StoreFileFlowItemIT extends AbstractStorageIT {
 
     private static final String SESSION_OWNER = "SOURCE 1";
@@ -201,11 +201,8 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
                                                   ONLINE_CONF_LABEL,
                                                   Optional.empty(),
                                                   groupId,
-                                                  Optional.of("File "
-                                                              + fileName
-                                                              + " (checksum: "
-                                                              + checksum
-                                                              + ") not handled by storage job. Storage job failed cause : For input string: \"Killed\""),
+                                                  Optional.of("File " + fileName + " (checksum: " + checksum
+                                                                  + ") not handled by storage job. Storage job failed cause : For input string: \"Killed\""),
                                                   Optional.of(oldRequestStatus),
                                                   SESSION_OWNER,
                                                   SESSION);

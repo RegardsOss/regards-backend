@@ -50,9 +50,10 @@ public class AccessSettingsService extends AbstractSettingService {
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    public AccessSettingsService(IDynamicTenantSettingService dynamicTenantSettingService, ITenantResolver tenantsResolver,
-                                 IRuntimeTenantResolver runtimeTenantResolver, AccessSettingsService accessSettingsService
-    ) {
+    public AccessSettingsService(IDynamicTenantSettingService dynamicTenantSettingService,
+                                 ITenantResolver tenantsResolver,
+                                 IRuntimeTenantResolver runtimeTenantResolver,
+                                 AccessSettingsService accessSettingsService) {
         super(dynamicTenantSettingService);
         this.tenantsResolver = tenantsResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;
@@ -79,6 +80,7 @@ public class AccessSettingsService extends AbstractSettingService {
 
     /**
      * {@link Order} : Initialization needs to be done after RoleService initialization from {@link fr.cnes.regards.modules.accessrights.service.role.RoleEventListener}
+     *
      * @param event
      * @throws EntityException
      */
@@ -103,7 +105,8 @@ public class AccessSettingsService extends AbstractSettingService {
     }
 
     public boolean isAutoAccept() {
-        return AccessSettings.AcceptanceMode.AUTO_ACCEPT.equals(AccessSettings.AcceptanceMode.fromName(getValue(AccessSettings.MODE)));
+        return AccessSettings.AcceptanceMode.AUTO_ACCEPT.equals(AccessSettings.AcceptanceMode.fromName(getValue(
+            AccessSettings.MODE)));
     }
 
     public Set<String> userCreationMailRecipients() {

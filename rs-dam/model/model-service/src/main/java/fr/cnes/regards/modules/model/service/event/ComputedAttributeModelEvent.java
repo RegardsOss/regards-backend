@@ -18,12 +18,12 @@
  */
 package fr.cnes.regards.modules.model.service.event;
 
-import org.springframework.context.ApplicationEvent;
-
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
+import org.springframework.context.ApplicationEvent;
 
 /**
  * Event sent when a plugin configuration is updated on a computed attribute
+ *
  * @author oroussel
  */
 @SuppressWarnings("serial")

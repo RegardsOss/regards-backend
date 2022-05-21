@@ -58,9 +58,9 @@ public class OpenIdTokenRequest {
             return false;
         }
         OpenIdTokenRequest that = (OpenIdTokenRequest) o;
-        return Objects.equals(grantType, that.grantType)
-            && Objects.equals(code, that.code)
-            && Objects.equals(redirectUri, that.redirectUri);
+        return Objects.equals(grantType, that.grantType) && Objects.equals(code, that.code) && Objects.equals(
+            redirectUri,
+            that.redirectUri);
     }
 
     @Override

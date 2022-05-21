@@ -18,16 +18,16 @@
  */
 package fr.cnes.regards.framework.security.autoconfigure;
 
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
-
 /**
  * Retrieve thread tenant according to security context
+ *
  * @author Marc Sordi
  */
 public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
@@ -64,7 +64,7 @@ public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
         }
         // Try to get tenant from JWT
         final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
-                .getAuthentication();
+                                                                                          .getAuthentication();
         if (authentication != null) {
             return authentication.getTenant();
         } else {

@@ -38,6 +38,7 @@ public class CompressionException extends Exception {
 
     /**
      * Constructeur de copie.
+     *
      * @param pException L'exception a copier.
      */
     public CompressionException(Throwable pException) {
@@ -46,7 +47,8 @@ public class CompressionException extends Exception {
 
     /**
      * Constructeur de copie permettant d'ajouter un message.
-     * @param pMessage Le message a ajouter
+     *
+     * @param pMessage   Le message a ajouter
      * @param pException L'exception a copier.
      */
     public CompressionException(String pMessage, Throwable pException) {
@@ -55,6 +57,7 @@ public class CompressionException extends Exception {
 
     /**
      * Constructeur.
+     *
      * @param pMessage Le message textuel a afficher, permettant d'ajouter de la semantique a l'erreur.
      */
     public CompressionException(String pMessage) {

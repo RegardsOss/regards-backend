@@ -18,16 +18,16 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
-import org.springframework.stereotype.Repository;
-
 import fr.cnes.regards.modules.feature.domain.request.FeatureNotificationRequest;
+import org.springframework.stereotype.Repository;
 
 /**
  * Repository to manipulate {@link FeatureNotificationRequest in database}
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
 @Repository
-public interface IFeatureNotificationRequestRepository extends IAbstractFeatureRequestRepository<FeatureNotificationRequest> {
+public interface IFeatureNotificationRequestRepository
+    extends IAbstractFeatureRequestRepository<FeatureNotificationRequest> {
 
 }

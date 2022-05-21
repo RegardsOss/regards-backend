@@ -18,21 +18,21 @@
  */
 package fr.cnes.regards.framework.security.controller;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.security.domain.ResourceMapping;
-import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import java.util.List;
 
 /**
  * Class ResourcesController
- *
+ * <p>
  * Common Resources RestController. This Controller manage the endpoint to retrieve all Resources of a microservice.
+ *
  * @author CS
  */
 @RestController
@@ -46,6 +46,7 @@ public class SecurityResourcesController {
 
     /**
      * Constructor
+     *
      * @param pService MethodeAutorizationService autowired by spring
      */
     public SecurityResourcesController(final MethodAuthorizationService pService) {
@@ -54,6 +55,7 @@ public class SecurityResourcesController {
 
     /**
      * Retrieve all enpoints annoted with @ResourceAccess
+     *
      * @return List<ResourceMapping>
      */
     @RequestMapping(value = "resources", method = RequestMethod.GET, produces = "application/json")

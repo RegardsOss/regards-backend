@@ -18,21 +18,14 @@
  */
 package fr.cnes.regards.modules.model.domain.attributes.restriction.validator;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 import javax.validation.Constraint;
 import javax.validation.Payload;
+import java.lang.annotation.*;
 
 /**
- *
  * Check that min and max are consistent
  *
  * @author oroussel
- *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })
@@ -46,7 +39,6 @@ public @interface CheckLongRange {
     String message() default "{fr.cnes.regards.modules.dam.domain.models.attributes.restriction.validator.CheckLongRange.message}";
 
     /**
-     *
      * @return validation groups
      */
     Class<?>[] groups() default {};

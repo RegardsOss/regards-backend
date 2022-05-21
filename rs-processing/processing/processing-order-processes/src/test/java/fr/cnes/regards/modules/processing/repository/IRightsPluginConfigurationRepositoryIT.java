@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.repository;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -58,14 +58,12 @@ public class IRightsPluginConfigurationRepositoryIT extends AbstractProcessingIT
         PluginConfiguration pc = makeConfig();
         UUID processBusinessId = UUID.fromString(pc.getBusinessId());
 
-        RightsPluginConfiguration rpc = new RightsPluginConfiguration(
-                null,
-                pc,
-                processBusinessId,
-                "EXPLOIT",
-                new String[] {},
-                true
-        );
+        RightsPluginConfiguration rpc = new RightsPluginConfiguration(null,
+                                                                      pc,
+                                                                      processBusinessId,
+                                                                      "EXPLOIT",
+                                                                      new String[] {},
+                                                                      true);
 
         RightsPluginConfiguration persistedAllDatasetsArrayEmpty = rightsRepo.save(rpc);
         rightsRepo.updateRoleToForProcessBusinessId("ADMIN", processBusinessId);
@@ -81,12 +79,16 @@ public class IRightsPluginConfigurationRepositoryIT extends AbstractProcessingIT
 
         PluginConfiguration configAllDatasetsArrayEmpty = makeConfig();
         RightsPluginConfiguration allDatasetsArrayEmpty = new RightsPluginConfiguration(null,
-                configAllDatasetsArrayEmpty, UUID.fromString(configAllDatasetsArrayEmpty.getBusinessId()), "EXPLOIT",
-                new String[] {}, true);
+                                                                                        configAllDatasetsArrayEmpty,
+                                                                                        UUID.fromString(
+                                                                                            configAllDatasetsArrayEmpty.getBusinessId()),
+                                                                                        "EXPLOIT",
+                                                                                        new String[] {},
+                                                                                        true);
         RightsPluginConfiguration persistedAllDatasetsArrayEmpty = rightsRepo.save(allDatasetsArrayEmpty);
 
-        java.util.List<RightsPluginConfiguration> referencingTargetBeforeUpdate = rightsRepo
-                .findByReferencedDataset(targetDataset);
+        java.util.List<RightsPluginConfiguration> referencingTargetBeforeUpdate = rightsRepo.findByReferencedDataset(
+            targetDataset);
         assertThat(referencingTargetBeforeUpdate).hasSize(1);
         assertThat(referencingTargetBeforeUpdate.get(0).getId()).isEqualTo(persistedAllDatasetsArrayEmpty.getId());
     }
@@ -97,25 +99,37 @@ public class IRightsPluginConfigurationRepositoryIT extends AbstractProcessingIT
         String targetDataset = randomDataset();
 
         PluginConfiguration confOne = makeConfig();
-        RightsPluginConfiguration rightsOne = new RightsPluginConfiguration(null, confOne,
-                UUID.fromString(confOne.getBusinessId()), "EXPLOIT", new String[] { targetDataset, randomDataset() },
-                false);
+        RightsPluginConfiguration rightsOne = new RightsPluginConfiguration(null,
+                                                                            confOne,
+                                                                            UUID.fromString(confOne.getBusinessId()),
+                                                                            "EXPLOIT",
+                                                                            new String[] { targetDataset,
+                                                                                randomDataset() },
+                                                                            false);
         RightsPluginConfiguration persistedOne = rightsRepo.save(rightsOne);
 
         PluginConfiguration confTwo = makeConfig();
-        RightsPluginConfiguration rightsTwo = new RightsPluginConfiguration(null, confTwo,
-                UUID.fromString(confTwo.getBusinessId()), "EXPLOIT", new String[] { randomDataset(), randomDataset() },
-                true);
+        RightsPluginConfiguration rightsTwo = new RightsPluginConfiguration(null,
+                                                                            confTwo,
+                                                                            UUID.fromString(confTwo.getBusinessId()),
+                                                                            "EXPLOIT",
+                                                                            new String[] { randomDataset(),
+                                                                                randomDataset() },
+                                                                            true);
         RightsPluginConfiguration persistedTwo = rightsRepo.save(rightsTwo);
 
         PluginConfiguration confThree = makeConfig();
-        RightsPluginConfiguration rightsThree = new RightsPluginConfiguration(null, confThree,
-                UUID.fromString(confThree.getBusinessId()), "EXPLOIT",
-                new String[] { randomDataset(), randomDataset() }, false);
+        RightsPluginConfiguration rightsThree = new RightsPluginConfiguration(null,
+                                                                              confThree,
+                                                                              UUID.fromString(confThree.getBusinessId()),
+                                                                              "EXPLOIT",
+                                                                              new String[] { randomDataset(),
+                                                                                  randomDataset() },
+                                                                              false);
         RightsPluginConfiguration persistedThree = rightsRepo.save(rightsThree);
 
-        java.util.List<RightsPluginConfiguration> referencingTargetBeforeUpdate = rightsRepo
-                .findByReferencedDataset(targetDataset);
+        java.util.List<RightsPluginConfiguration> referencingTargetBeforeUpdate = rightsRepo.findByReferencedDataset(
+            targetDataset);
         assertThat(referencingTargetBeforeUpdate).hasSize(2);
         assertThat(referencingTargetBeforeUpdate.get(0).getId()).isEqualTo(persistedOne.getId());
         assertThat(referencingTargetBeforeUpdate.get(1).getId()).isEqualTo(persistedTwo.getId());
@@ -123,10 +137,11 @@ public class IRightsPluginConfigurationRepositoryIT extends AbstractProcessingIT
         rightsRepo.updateAllAddDatasetOnlyForIds(List.of(UUID.fromString(confThree.getBusinessId())).toJavaList(),
                                                  targetDataset);
 
-        java.util.List<RightsPluginConfiguration> referencingTargetAfterUpdate = rightsRepo
-                .findByReferencedDataset(targetDataset);
+        java.util.List<RightsPluginConfiguration> referencingTargetAfterUpdate = rightsRepo.findByReferencedDataset(
+            targetDataset);
         assertThat(referencingTargetAfterUpdate).hasSize(2);
-        assertThat(referencingTargetAfterUpdate.get(0).getId()).isEqualTo(persistedTwo.getId()); // Because applicable to all datasets, has not been changed
+        assertThat(referencingTargetAfterUpdate.get(0)
+                                               .getId()).isEqualTo(persistedTwo.getId()); // Because applicable to all datasets, has not been changed
         assertThat(referencingTargetAfterUpdate.get(1).getId()).isEqualTo(persistedThree.getId());
 
     }

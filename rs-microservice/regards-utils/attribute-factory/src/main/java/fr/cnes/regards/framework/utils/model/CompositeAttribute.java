@@ -18,18 +18,17 @@
  */
 package fr.cnes.regards.framework.utils.model;
 
+import fr.cnes.regards.framework.utils.metamodel.MetaAttribute;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import fr.cnes.regards.framework.utils.metamodel.MetaAttribute;
 
 /**
  * Cette classe represente un bloc d'attributs: c'est à dire une instance d'atribut compose. Un attribut compose peut
  * etre n fois definie au niveau d'une entite cette classe correspond a un bloc definissant l'attribut compose. Un
  * identifiant permet de distinguer les différentes instances d'un même méta-attribut composé au niveau d'une entité.
- * 
- * @author Christophe Mertz
  *
+ * @author Christophe Mertz
  */
 public class CompositeAttribute extends Attribute {
 
@@ -74,9 +73,8 @@ public class CompositeAttribute extends Attribute {
 
     /**
      * Ajoute un attribut a la liste d'attribut de l'attribut compose
-     * 
-     * @param attribute
-     *            l'attribut a ajouter
+     *
+     * @param attribute l'attribut a ajouter
      */
     public void addAttribute(Attribute attribute) {
         attributeList.add(attribute);

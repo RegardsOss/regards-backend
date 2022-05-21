@@ -18,18 +18,8 @@
  */
 package fr.cnes.regards.modules.access.services.rest.ui;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -43,11 +33,18 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.model.domain.Model;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- *
  * Class UIPluginConfigurationControllerIT
- *
+ * <p>
  * IT Tests for REST Controller
  *
  * @author Sébastien Binda
@@ -85,8 +82,7 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
     }
 
     private UIPluginDefinition createPlugin(final UIPluginTypesEnum pType) {
-        final UIPluginDefinition plugin = UIPluginDefinition.build("PluginTest",
-                "plugins/test/bundle.js", pType);
+        final UIPluginDefinition plugin = UIPluginDefinition.build("PluginTest", "plugins/test/bundle.js", pType);
         if (UIPluginTypesEnum.SERVICE.equals(pType)) {
             plugin.setApplicationModes(Sets.newHashSet(ServiceScope.ONE, ServiceScope.MANY));
             plugin.setEntityTypes(Sets.newHashSet(EntityType.COLLECTION, EntityType.DATA));
@@ -94,8 +90,9 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
         return plugin;
     }
 
-    private UIPluginConfiguration createPluginConf(final UIPluginDefinition pPluginDef, final Boolean pIsActive,
-            final Boolean pIsLinked) {
+    private UIPluginConfiguration createPluginConf(final UIPluginDefinition pPluginDef,
+                                                   final Boolean pIsActive,
+                                                   final Boolean pIsLinked) {
         final UIPluginConfiguration conf = new UIPluginConfiguration();
         conf.setActive(pIsActive);
         conf.setLinkedToAllEntities(pIsLinked);
@@ -120,7 +117,6 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
     }
 
     /**
-     *
      * Test endpoint to retrieve UIPluginConfigurations with parameters isActive or/and isLinkedToAllEntities
      *
      * @since 1.0-SNAPSHOT
@@ -128,38 +124,42 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
     @Test
     public void retrieveConfigurations() {
         performDefaultGet(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
-                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS,
+                              + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS,
                           customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 4),
                           "Error getting all plugins");
 
         performDefaultGet(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
-                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS,
-                          customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 2)
-                                  .addParameter("isActive", "true"),
+                              + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS,
+                          customizer().expectStatusOk()
+                                      .expectToHaveSize(JSON_PATH_CONTENT, 2)
+                                      .addParameter("isActive", "true"),
                           "Error getting all active plugins");
 
         performDefaultGet(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
-                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS,
-                          customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 2)
-                                  .addParameter("isLinkedToAllEntities", "true"),
+                              + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS,
+                          customizer().expectStatusOk()
+                                      .expectToHaveSize(JSON_PATH_CONTENT, 2)
+                                      .addParameter("isLinkedToAllEntities", "true"),
                           "Error getting all linked plugins");
 
         performDefaultGet(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
-                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS,
-                          customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 1)
-                                  .addParameter("isActive", "true").addParameter("isLinkedToAllEntities", "true"),
+                              + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS,
+                          customizer().expectStatusOk()
+                                      .expectToHaveSize(JSON_PATH_CONTENT, 1)
+                                      .addParameter("isActive", "true")
+                                      .addParameter("isLinkedToAllEntities", "true"),
                           "Error getting all active and linked plugins");
 
         performDefaultGet(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
-                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS,
-                          customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 1)
-                                  .addParameter("type", UIPluginTypesEnum.SERVICE.toString()),
+                              + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS,
+                          customizer().expectStatusOk()
+                                      .expectToHaveSize(JSON_PATH_CONTENT, 1)
+                                      .addParameter("type", UIPluginTypesEnum.SERVICE.toString()),
                           "Error getting all active and linked plugins");
 
     }
 
     /**
-     *
      * Test endpoint to retrieve all UIPluginConfiguration associated to a ginve UIPluginDefinition
      *
      * @since 1.0-SNAPSHOT
@@ -167,13 +167,13 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
     @Test
     public void retrieveConfigurationByPluginDefinition() {
         performDefaultGet(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
-                + UIPluginConfigurationController.REQUEST_PLUGIN_DEFINITION,
+                              + UIPluginConfigurationController.REQUEST_PLUGIN_DEFINITION,
                           customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 3),
-                          "Error getting all plugins", plugin.getId());
+                          "Error getting all plugins",
+                          plugin.getId());
     }
 
     /**
-     *
      * Test endpoint to update a UIPluginConfiguration
      *
      * @since 1.0-SNAPSHOT
@@ -185,17 +185,19 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
         conf.setId(pluginConf.getId());
 
         performDefaultPut(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
-                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATION, conf,
-                          customizer().expectStatusOk().expectValue(JSON_PATH_CONTENT + ".id", conf.getId().intValue())
-                                  .expectValue(JSON_PATH_CONTENT + ".active", conf.getActive().booleanValue())
-                                  .expectValue(JSON_PATH_CONTENT + ".linkedToAllEntities",
-                                               conf.getLinkedToAllEntities().booleanValue()),
-                          "Error getting all plugins", conf.getId());
+                              + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATION,
+                          conf,
+                          customizer().expectStatusOk()
+                                      .expectValue(JSON_PATH_CONTENT + ".id", conf.getId().intValue())
+                                      .expectValue(JSON_PATH_CONTENT + ".active", conf.getActive().booleanValue())
+                                      .expectValue(JSON_PATH_CONTENT + ".linkedToAllEntities",
+                                                   conf.getLinkedToAllEntities().booleanValue()),
+                          "Error getting all plugins",
+                          conf.getId());
 
     }
 
     /**
-     *
      * Test endpoint to create a new UIPluginConfiguration
      *
      * @since 1.0-SNAPSHOT
@@ -207,18 +209,18 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
         conf.setConf("{\"param\":\"value\"}");
 
         performDefaultPost(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
-                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS, conf,
+                               + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS,
+                           conf,
                            customizer().expectStatusOk()
-                                   .expectValue(JSON_PATH_CONTENT + ".active", conf.getActive().booleanValue())
-                                   .expectValue(JSON_PATH_CONTENT + ".conf", conf.getConf())
-                                   .expectValue(JSON_PATH_CONTENT + ".linkedToAllEntities",
-                                                conf.getLinkedToAllEntities().booleanValue()),
+                                       .expectValue(JSON_PATH_CONTENT + ".active", conf.getActive().booleanValue())
+                                       .expectValue(JSON_PATH_CONTENT + ".conf", conf.getConf())
+                                       .expectValue(JSON_PATH_CONTENT + ".linkedToAllEntities",
+                                                    conf.getLinkedToAllEntities().booleanValue()),
                            "Error getting all plugins");
 
     }
 
     /**
-     *
      * Test endpoint to delete a UIPluginConfiguration
      *
      * @since 1.0-SNAPSHOT
@@ -226,12 +228,13 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
     @Test
     public void deletePluginConfiguration() {
         performDefaultDelete(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
-                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATION, customizer().expectStatusOk(),
-                             "Error getting all plugins", pluginConf.getId());
+                                 + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATION,
+                             customizer().expectStatusOk(),
+                             "Error getting all plugins",
+                             pluginConf.getId());
     }
 
     /**
-     *
      * Test endpoint to delete a UIPluginConfiguration
      *
      * @since 1.0-SNAPSHOT
@@ -240,16 +243,19 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
     public void deletePluginConfiguration_shouldSucceedWhenLinkedToDataset() {
         Dataset dataset = new Dataset(new Model(), "tenant", "providerId", "label");
         LinkUIPluginsDatasets link = new LinkUIPluginsDatasets(dataset.getIpId().toString(),
-                Lists.newArrayList(pluginConf, pluginConf1, pluginConf2));
+                                                               Lists.newArrayList(pluginConf,
+                                                                                  pluginConf1,
+                                                                                  pluginConf2));
         linkRepository.save(link);
 
         performDefaultDelete(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
-                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATION, customizer().expectStatusOk(),
-                             "Error getting all plugins", pluginConf.getId());
+                                 + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATION,
+                             customizer().expectStatusOk(),
+                             "Error getting all plugins",
+                             pluginConf.getId());
     }
 
     /**
-     *
      * Test endpoint to check that bad JSON format are refused.
      *
      * @since 1.0-SNAPSHOT
@@ -260,8 +266,10 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
         final UIPluginConfiguration conf = createPluginConf(plugin, true, true);
         conf.setConf("{invalidJson");
         performDefaultPost(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
-                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS, conf,
-                           customizer().expect(status().is(422)), "Error getting all plugins");
+                               + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS,
+                           conf,
+                           customizer().expect(status().is(422)),
+                           "Error getting all plugins");
 
     }
 

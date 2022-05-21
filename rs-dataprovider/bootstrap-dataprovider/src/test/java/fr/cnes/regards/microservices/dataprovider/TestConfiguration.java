@@ -21,9 +21,7 @@ package fr.cnes.regards.microservices.dataprovider;
 import org.springframework.context.annotation.Configuration;
 
 /**
- *
  * @author Sébastien Binda
- *
  */
 @Configuration
 public class TestConfiguration {

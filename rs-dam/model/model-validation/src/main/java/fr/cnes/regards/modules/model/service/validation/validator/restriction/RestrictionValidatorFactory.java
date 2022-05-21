@@ -18,22 +18,15 @@
  */
 package fr.cnes.regards.modules.model.service.validation.validator.restriction;
 
+import fr.cnes.regards.modules.model.domain.attributes.restriction.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.validation.Validator;
-
-import fr.cnes.regards.modules.model.domain.attributes.restriction.AbstractRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.DoubleRangeRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.EnumerationRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.IntegerRangeRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.JsonSchemaRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.PatternRestriction;
 
 /**
  * Restriction validator factory
  *
  * @author Marc Sordi
- *
  */
 public final class RestrictionValidatorFactory {
 
@@ -62,7 +55,8 @@ public final class RestrictionValidatorFactory {
             return getValidator((JsonSchemaRestriction) restriction, attributeKey);
         }
         String errorMessage = String.format("No validator found for restriction type %s and attribute %s.",
-                                            restriction.getType(), attributeKey);
+                                            restriction.getType(),
+                                            attributeKey);
         LOGGER.debug(errorMessage);
         throw new UnsupportedOperationException(errorMessage);
     }

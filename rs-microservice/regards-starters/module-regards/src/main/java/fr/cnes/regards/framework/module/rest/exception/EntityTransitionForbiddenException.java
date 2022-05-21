@@ -27,10 +27,14 @@ package fr.cnes.regards.framework.module.rest.exception;
 @SuppressWarnings("serial")
 public class EntityTransitionForbiddenException extends EntityOperationForbiddenException {
 
-    public <T> EntityTransitionForbiddenException(final String entityIdentifier, final Class<?> entityClass,
-            final String state, final String transition) {
-        super(entityIdentifier, entityClass, "The transition " + transition
-                + " called on this state-managed entity is illegal for its current state " + state);
+    public <T> EntityTransitionForbiddenException(final String entityIdentifier,
+                                                  final Class<?> entityClass,
+                                                  final String state,
+                                                  final String transition) {
+        super(entityIdentifier,
+              entityClass,
+              "The transition " + transition + " called on this state-managed entity is illegal for its current state "
+                  + state);
     }
 
 }

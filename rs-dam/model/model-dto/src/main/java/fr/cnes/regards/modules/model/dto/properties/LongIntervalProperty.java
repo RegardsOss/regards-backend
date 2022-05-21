@@ -2,7 +2,6 @@ package fr.cnes.regards.modules.model.dto.properties;
 
 import com.google.common.collect.Range;
 import com.google.gson.annotations.JsonAdapter;
-
 import fr.cnes.regards.modules.model.dto.properties.adapter.LongIntervalAttributeAdapter;
 
 /**

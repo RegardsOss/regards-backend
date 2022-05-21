@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.geojson.geometry;
 
 /**
  * IGeometry visitor
+ *
  * @param <T> return type of all methods
  * @author oroussel
  */

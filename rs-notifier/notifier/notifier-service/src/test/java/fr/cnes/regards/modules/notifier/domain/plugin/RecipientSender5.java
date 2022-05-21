@@ -19,16 +19,14 @@
 package fr.cnes.regards.modules.notifier.domain.plugin;
 
 import com.google.gson.JsonElement;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.notifier.dto.NotificationEvent5;
 
 /**
  * @author kevin
- *
  */
 @Plugin(author = "REGARDS Team", description = "Recipient sender 5", id = RecipientSender5.PLUGIN_ID, version = "1.0.0",
-        contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
+    contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
 public class RecipientSender5 extends AbstractRecipientSender<NotificationEvent5> {
 
     public static final String PLUGIN_ID = "RecipientSender5";

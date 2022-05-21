@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.ingest.domain.chain;
 
 /**
  * @author Marc SORDI
- *
  */
 public interface IngestProcessingChainView {
 

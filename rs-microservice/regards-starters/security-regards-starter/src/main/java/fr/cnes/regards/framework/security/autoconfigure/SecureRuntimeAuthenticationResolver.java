@@ -18,13 +18,13 @@
  */
 package fr.cnes.regards.framework.security.autoconfigure;
 
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * Retrieve user and role according to security context
+ *
  * @author Marc Sordi
  */
 public class SecureRuntimeAuthenticationResolver implements IAuthenticationResolver {

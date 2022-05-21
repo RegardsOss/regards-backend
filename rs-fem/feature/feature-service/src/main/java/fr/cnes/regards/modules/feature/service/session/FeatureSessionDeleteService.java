@@ -38,7 +38,9 @@ public class FeatureSessionDeleteService implements ISessionDeleteService {
 
     @Override
     public void deleteSession(String source, String session) {
-        LOGGER.info("Event received to schedule the deletion of all features of session {} and source {}", session, source);
+        LOGGER.info("Event received to schedule the deletion of all features of session {} and source {}",
+                    session,
+                    source);
         featureDeleteService.scheduleDeletion(source, Optional.of(session));
     }
 

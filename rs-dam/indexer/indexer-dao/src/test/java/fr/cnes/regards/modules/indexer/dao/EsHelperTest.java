@@ -34,6 +34,5 @@ public class EsHelperTest {
         Assert.assertEquals(255.0, EsHelper.toMeters("255 m"), 0.1);
         Assert.assertEquals(25450.0, EsHelper.toMeters("25.45 km"), 0.1);
 
-
     }
 }

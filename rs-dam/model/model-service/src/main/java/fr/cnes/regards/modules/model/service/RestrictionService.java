@@ -31,7 +31,6 @@ import java.util.List;
  * Restriction service
  *
  * @author Marc Sordi
- *
  */
 @Service
 public class RestrictionService implements InitializingBean {
@@ -57,8 +56,7 @@ public class RestrictionService implements InitializingBean {
      * Regarding the list of available restriction, this method computes the list of applicable ones for a particular
      * type of attribute.
      *
-     * @param pType
-     *            attribute type
+     * @param pType attribute type
      * @return list of restriction supported by the attribute type
      */
     public List<String> getRestrictions(PropertyType pType) {

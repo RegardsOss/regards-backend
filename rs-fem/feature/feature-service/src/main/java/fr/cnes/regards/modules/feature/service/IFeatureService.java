@@ -18,20 +18,19 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.FeaturesSearchParameters;
 import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Factory for {@link FeatureEntityDto} to init according {@link FeatureEntity}
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
 public interface IFeatureService {
 
@@ -47,6 +46,7 @@ public interface IFeatureService {
 
     /**
      * Get a {@link FeatureEntityDto} by its urn
+     *
      * @param urn {@link FeatureUniformResourceName}
      * @return {@link FeatureEntityDto}
      */
@@ -54,12 +54,14 @@ public interface IFeatureService {
 
     /**
      * Creates a job to creates new notification requests for all features matching selection parameters
+     *
      * @param selection {@link FeaturesSelectionDTO}
      */
     JobInfo scheduleNotificationsJob(FeaturesSelectionDTO selection);
 
     /**
      * Creates a job to creates new deletion requests for all features matching selection parameters
+     *
      * @param selection {@link FeaturesSelectionDTO}
      */
     JobInfo scheduleDeletionJob(FeaturesSelectionDTO selection);

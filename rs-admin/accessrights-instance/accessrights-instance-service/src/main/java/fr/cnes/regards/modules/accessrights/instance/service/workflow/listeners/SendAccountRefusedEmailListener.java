@@ -18,14 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service.workflow.listeners;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationListener;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.service.workflow.AccessRightTemplateConf;
@@ -33,6 +25,13 @@ import fr.cnes.regards.modules.accessrights.instance.service.workflow.events.OnR
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Listen to {@link OnRefuseAccountEvent} in order to warn the user its account request was refused.
@@ -75,8 +74,7 @@ public class SendAccountRefusedEmailListener implements ApplicationListener<OnRe
     /**
      * Send a password reset email based on information stored in the passed event
      *
-     * @param pEvent
-     *            the init event
+     * @param pEvent the init event
      */
     private void sendAccountRefusedEmail(final OnRefuseAccountEvent pEvent) {
         // Retrieve the account
@@ -91,8 +89,8 @@ public class SendAccountRefusedEmailListener implements ApplicationListener<OnRe
             message = templateService.render(AccessRightTemplateConf.ACCOUNT_REFUSED_TEMPLATE_NAME, data);
         } catch (final TemplateException e) {
             LOG.error(
-                    "Could not find the template to generate the email notifying the account refusal. Falling back to default.",
-                    e);
+                "Could not find the template to generate the email notifying the account refusal. Falling back to default.",
+                e);
             message = "Your access request was refused by admin.";
         }
 

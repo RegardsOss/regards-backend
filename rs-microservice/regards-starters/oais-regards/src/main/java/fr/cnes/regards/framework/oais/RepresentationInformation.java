@@ -23,6 +23,7 @@ import javax.validation.constraints.NotNull;
 
 /**
  * OAIS representation information
+ *
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
  */

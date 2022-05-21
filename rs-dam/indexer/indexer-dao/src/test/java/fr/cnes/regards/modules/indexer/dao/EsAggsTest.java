@@ -1,18 +1,21 @@
 package fr.cnes.regards.modules.indexer.dao;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
-import java.util.stream.Stream;
-
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import fr.cnes.regards.framework.gson.adapters.MultimapAdapter;
 import fr.cnes.regards.framework.jsoniter.IIndexableJsoniterConfig;
-import fr.cnes.regards.modules.indexer.dao.deser.GsonDeserializeIIndexableStrategy;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor;
 import fr.cnes.regards.modules.indexer.dao.deser.JsoniterDeserializeIIndexableStrategy;
+import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
+import fr.cnes.regards.modules.indexer.domain.IDocFiles;
+import fr.cnes.regards.modules.indexer.domain.IIndexable;
+import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
+import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -21,24 +24,15 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import fr.cnes.regards.framework.gson.adapters.MultimapAdapter;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.modules.indexer.dao.builder.AggregationBuilderFacetTypeVisitor;
-import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
-import fr.cnes.regards.modules.indexer.domain.IDocFiles;
-import fr.cnes.regards.modules.indexer.domain.IIndexable;
-import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
-import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Test on complex aggs
+ *
  * @author oroussel
  */
 public class EsAggsTest {
@@ -61,6 +55,7 @@ public class EsAggsTest {
 
     /**
      * Before class setting up method
+     *
      * @throws Exception exception
      */
     @BeforeClass
@@ -76,8 +71,11 @@ public class EsAggsTest {
         });
         try {
             gson = new GsonBuilder().registerTypeAdapter(Multimap.class, new MultimapAdapter()).create();
-            repository = new EsRepository(gson, null, propMap.get("regards.elasticsearch.address"),
-                                          Integer.parseInt(propMap.get("regards.elasticsearch.http.port")), 0,
+            repository = new EsRepository(gson,
+                                          null,
+                                          propMap.get("regards.elasticsearch.address"),
+                                          Integer.parseInt(propMap.get("regards.elasticsearch.http.port")),
+                                          0,
                                           new JsoniterDeserializeIIndexableStrategy(new IIndexableJsoniterConfig()),
                                           new AggregationBuilderFacetTypeVisitor(10, 1),
                                           new AttrDescToJsonMapping(AttrDescToJsonMapping.RangeAliasStrategy.GTELTE));
@@ -133,7 +131,12 @@ public class EsAggsTest {
         DocFilesSummary summary = new DocFilesSummary();
         SimpleSearchKey<Data> searchKey = new SimpleSearchKey<>(TYPE, Data.class);
         searchKey.setSearchIndex(INDEX);
-        repository.computeInternalDataFilesSummary(searchKey, null, "tags", Optional.empty(), summary, "RAWDATA",
+        repository.computeInternalDataFilesSummary(searchKey,
+                                                   null,
+                                                   "tags",
+                                                   Optional.empty(),
+                                                   summary,
+                                                   "RAWDATA",
                                                    "QUICKLOOK_HD");
         System.out.println(summary);
         Assert.assertEquals(12, summary.getDocumentsCount());

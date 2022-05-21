@@ -20,18 +20,15 @@
 
 package fr.cnes.regards.modules.ingest.dto.request.event;
 
-import java.util.Set;
-
-import org.springframework.lang.Nullable;
-
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
+import org.springframework.lang.Nullable;
 
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import java.util.Set;
 
 /**
- *
  * @author Iliana Ghazali
  */
 
@@ -64,7 +61,7 @@ public class RequestEvent {
 
     /**
      * Specific to AIPs
-     *
+     * <p>
      * {@link AIPEntity#getAipId()}}
      * {@link AIPEntity#getAipIdUrn()}
      */
@@ -72,9 +69,13 @@ public class RequestEvent {
 
     private OaisUniformResourceName urn;
 
-
-    public static RequestEvent build(RequestTypeEnum type, String requestId, String requestOwner, @Nullable String aipId,
-            @Nullable OaisUniformResourceName urn, RequestState state, Set<String> errors) {
+    public static RequestEvent build(RequestTypeEnum type,
+                                     String requestId,
+                                     String requestOwner,
+                                     @Nullable String aipId,
+                                     @Nullable OaisUniformResourceName urn,
+                                     RequestState state,
+                                     Set<String> errors) {
         RequestEvent event = new RequestEvent();
         event.setType(type);
         //event.setRequestId(requestId);

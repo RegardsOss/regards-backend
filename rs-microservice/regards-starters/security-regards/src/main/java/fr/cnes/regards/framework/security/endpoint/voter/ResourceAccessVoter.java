@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.framework.security.endpoint.voter;
 
-import java.util.Collection;
-
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import org.aopalliance.intercept.MethodInvocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,8 +27,7 @@ import org.springframework.security.access.AccessDecisionVoter;
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.core.Authentication;
 
-import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import java.util.Collection;
 
 /**
  * REGARDS endpoint security voter to manage resource access dynamically at method level.
@@ -49,6 +48,7 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
 
     /**
      * Constructor
+     *
      * @param methodAuthService the method authoization service
      */
     public ResourceAccessVoter(MethodAuthorizationService methodAuthService) {
@@ -62,6 +62,7 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
 
     /**
      * This implementation supports any type of class, because it does not query the presented secure object.
+     *
      * @param clazz the secure object
      * @return always <code>true</code>
      */

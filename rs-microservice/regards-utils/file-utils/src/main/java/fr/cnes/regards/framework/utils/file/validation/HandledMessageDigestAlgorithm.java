@@ -2,11 +2,7 @@ package fr.cnes.regards.framework.utils.file.validation;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 import java.security.MessageDigest;
 
 /**
@@ -14,6 +10,7 @@ import java.security.MessageDigest;
  * a handled algorithm by the current jvm.
  * <br/>
  * See for more information {@link MessageDigest}
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Target({ ElementType.FIELD, ElementType.PARAMETER })
@@ -31,7 +28,7 @@ public @interface HandledMessageDigestAlgorithm {
      * @return error message key
      */
     String message() default "{Validation annotation @" + CLASS_NAME
-            + " validating %s: it is not an handled algorithm for checksum computation";
+        + " validating %s: it is not an handled algorithm for checksum computation";
 
     /**
      * @return validation groups

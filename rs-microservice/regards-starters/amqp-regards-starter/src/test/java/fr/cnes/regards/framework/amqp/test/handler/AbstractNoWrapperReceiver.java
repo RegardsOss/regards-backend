@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.framework.amqp.test.handler;
 
+import fr.cnes.regards.framework.amqp.domain.IHandler;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-
 /**
  * Event counter
+ *
  * @author Marc Sordi
  */
 public abstract class AbstractNoWrapperReceiver<T> implements IHandler<T> {
@@ -46,6 +46,7 @@ public abstract class AbstractNoWrapperReceiver<T> implements IHandler<T> {
 
     /**
      * Override this method to do custom stuff!
+     *
      * @param wrapper message wrappe
      */
     protected void doHandle(String tenant, T message) {

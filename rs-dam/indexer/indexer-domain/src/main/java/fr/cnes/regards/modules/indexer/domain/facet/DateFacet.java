@@ -18,13 +18,12 @@
  */
 package fr.cnes.regards.modules.indexer.domain.facet;
 
-import java.time.OffsetDateTime;
-import java.util.Map;
-
 import com.google.common.collect.Range;
 import com.google.gson.annotations.JsonAdapter;
-
 import fr.cnes.regards.modules.indexer.domain.facet.adapters.gson.DateFacetSerializer;
+
+import java.time.OffsetDateTime;
+import java.util.Map;
 
 /**
  * Date facet. It represents a sorted map whose keys are date ranges (eventually opened for first and last ranges) and

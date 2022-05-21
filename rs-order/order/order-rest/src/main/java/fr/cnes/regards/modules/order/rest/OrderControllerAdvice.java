@@ -48,7 +48,8 @@ public class OrderControllerAdvice {
     }
 
     @ExceptionHandler(TooManyItemsSelectedInBasketException.class)
-    public ResponseEntity<ServerErrorResponse> handleTooManyItemsSelectedInBasketException(TooManyItemsSelectedInBasketException e) {
+    public ResponseEntity<ServerErrorResponse> handleTooManyItemsSelectedInBasketException(
+        TooManyItemsSelectedInBasketException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(e.getMessage(), e));
     }
 
@@ -57,17 +58,16 @@ public class OrderControllerAdvice {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(new ServerErrorResponse(e.getMessage(), e));
     }
 
-    @ExceptionHandler({
-            CannotPauseOrderException.class, CannotResumeOrderException.class,
-            CannotRestartOrderException.class, CannotRetryOrderException.class,
-            CannotDeleteOrderException.class, CannotRemoveOrderException.class
-    })
+    @ExceptionHandler(
+        { CannotPauseOrderException.class, CannotResumeOrderException.class, CannotRestartOrderException.class,
+            CannotRetryOrderException.class, CannotDeleteOrderException.class, CannotRemoveOrderException.class })
     public ResponseEntity<ServerErrorResponse> handleUnauthorizedOrderActionException(ModuleException e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServerErrorResponse(e.getMessage(), e));
     }
 
     @ExceptionHandler(BadBasketSelectionRequestException.class)
-    public ResponseEntity<ServerErrorResponse> handleBadBasketSelectionRequestException(BadBasketSelectionRequestException e) {
+    public ResponseEntity<ServerErrorResponse> handleBadBasketSelectionRequestException(
+        BadBasketSelectionRequestException e) {
         return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new ServerErrorResponse(e.getMessage(), e));
     }
 

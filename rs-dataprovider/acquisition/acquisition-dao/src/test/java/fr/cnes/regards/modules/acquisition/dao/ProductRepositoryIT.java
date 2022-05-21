@@ -18,10 +18,12 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoIT;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -30,17 +32,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoIT;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Test complex queries
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
 @Ignore("Development testing for complex queries")
 // @TestPropertySource(properties = "spring.jpa.properties.hibernate.default_schema=jason2idgr")
@@ -66,9 +65,11 @@ public class ProductRepositoryIT extends AbstractDaoIT {
 
         Collection<ISipState> states = new ArrayList<>();
         states.add(ProductSIPState.SUBMITTED);
-        Page<Product> productByState = productRepository
-                .findByProcessingChainIngestChainAndSessionAndSipStateIn("DefaultIngestChain", "NO_SESSION", states,
-                                                                         PageRequest.of(0, 10));
+        Page<Product> productByState = productRepository.findByProcessingChainIngestChainAndSessionAndSipStateIn(
+            "DefaultIngestChain",
+            "NO_SESSION",
+            states,
+            PageRequest.of(0, 10));
         Assert.assertNotNull(productByState);
 
     }

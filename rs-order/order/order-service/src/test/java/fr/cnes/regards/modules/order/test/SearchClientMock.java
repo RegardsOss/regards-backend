@@ -54,19 +54,29 @@ import java.util.*;
 
 /**
  * Mock of ISearchClient to be used by ServiceConfiguration
+ *
  * @author oroussel
  * @author Sébastien Binda
  */
 public class SearchClientMock implements IComplexSearchClient {
 
-    public static final UniformResourceName DS1_IP_ID = UniformResourceName
-            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DS1_IP_ID = UniformResourceName.build(OAISIdentifier.AIP,
+                                                                                  EntityType.DATASET,
+                                                                                  "ORDER",
+                                                                                  UUID.randomUUID(),
+                                                                                  1);
 
-    public static final UniformResourceName DS2_IP_ID = UniformResourceName
-            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DS2_IP_ID = UniformResourceName.build(OAISIdentifier.AIP,
+                                                                                  EntityType.DATASET,
+                                                                                  "ORDER",
+                                                                                  UUID.randomUUID(),
+                                                                                  1);
 
-    public static final UniformResourceName DS3_IP_ID = UniformResourceName
-            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DS3_IP_ID = UniformResourceName.build(OAISIdentifier.AIP,
+                                                                                  EntityType.DATASET,
+                                                                                  "ORDER",
+                                                                                  UUID.randomUUID(),
+                                                                                  1);
 
     protected static Dataset ds1;
 
@@ -93,8 +103,9 @@ public class SearchClientMock implements IComplexSearchClient {
 
     public static final String QUERY_DS2_DS3 = "tags:(" + DS2_IP_ID + " OR " + DS3_IP_ID + ")";
 
-    public static final Map<UniformResourceName, DatasetFeature> DS_MAP = new ImmutableMap.Builder<UniformResourceName, DatasetFeature>()
-            .put(DS1_IP_ID, ds1.getFeature()).put(DS2_IP_ID, ds2.getFeature()).put(DS3_IP_ID, ds3.getFeature()).build();
+    public static final Map<UniformResourceName, DatasetFeature> DS_MAP = new ImmutableMap.Builder<UniformResourceName, DatasetFeature>().put(
+        DS1_IP_ID,
+        ds1.getFeature()).put(DS2_IP_ID, ds2.getFeature()).put(DS3_IP_ID, ds3.getFeature()).build();
 
     /**
      * DS1 => 2 documents, 2 RAWDATA files (+ 6 QUICKLOOKS 2 x 3 of each size), 1 Mb each RAW file
@@ -119,7 +130,6 @@ public class SearchClientMock implements IComplexSearchClient {
         dsSummary.addFilesSize(rawSize);
         summary.addFilesCount(rawCount);
         summary.addFilesSize(rawSize);
-
 
         long qlHdCount = 2L;
         long qlHdSize = 1_000_000L;
@@ -642,28 +652,31 @@ public class SearchClientMock implements IComplexSearchClient {
     }
 
     @Override
-    public ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchDataObjects(
-            ComplexSearchRequest complexSearchRequest) {
+    public ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchDataObjects(ComplexSearchRequest complexSearchRequest) {
         if (complexSearchRequest.getPage() == 0) {
             try {
                 List<EntityModel<EntityFeature>> list = new ArrayList<>();
                 registerFilesIn("src/test/resources/files", list);
-                return ResponseEntity.ok(new FacettedPagedModel<>(Sets.newHashSet(), list,
-                        new PagedModel.PageMetadata(list.size(), 0, list.size())));
+                return ResponseEntity.ok(new FacettedPagedModel<>(Sets.newHashSet(),
+                                                                  list,
+                                                                  new PagedModel.PageMetadata(list.size(),
+                                                                                              0,
+                                                                                              list.size())));
             } catch (URISyntaxException e) {
                 throw new RsRuntimeException(e);
             }
         }
-        return ResponseEntity.ok(new FacettedPagedModel<>(Sets.newHashSet(), Collections.emptyList(),
-                new PagedModel.PageMetadata(0, 0, 0)));
+        return ResponseEntity.ok(new FacettedPagedModel<>(Sets.newHashSet(),
+                                                          Collections.emptyList(),
+                                                          new PagedModel.PageMetadata(0, 0, 0)));
     }
-
 
     protected void registerFilesIn(String path, List<EntityModel<EntityFeature>> list) throws URISyntaxException {
         File testDir = new File(path);
         for (File dir : Objects.requireNonNull(testDir.listFiles())) {
             EntityFeature feature = new DataObjectFeature(UniformResourceName.fromString(dir.getName()),
-                    dir.getName(), dir.getName());
+                                                          dir.getName(),
+                                                          dir.getName());
             Multimap<DataType, DataFile> fileMultimap = ArrayListMultimap.create();
             for (File file : Objects.requireNonNull(dir.listFiles())) {
                 DataFile dataFile = new DataFile();
@@ -674,8 +687,9 @@ public class SearchClientMock implements IComplexSearchClient {
                 dataFile.setReference(false);
                 dataFile.setChecksum(file.getName());
                 dataFile.setDigestAlgorithm("MD5");
-                dataFile.setMimeType(file.getName().endsWith("txt") ? MediaType.TEXT_PLAIN
-                        : MediaType.APPLICATION_OCTET_STREAM);
+                dataFile.setMimeType(file.getName().endsWith("txt") ?
+                                         MediaType.TEXT_PLAIN :
+                                         MediaType.APPLICATION_OCTET_STREAM);
                 dataFile.setDataType(getDataType(file.getName()));
                 fileMultimap.put(getDataType(file.getName()), dataFile);
             }

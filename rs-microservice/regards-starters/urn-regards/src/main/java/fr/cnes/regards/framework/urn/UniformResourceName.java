@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.framework.urn;
 
+import fr.cnes.regards.framework.urn.converters.UrnConverter;
+import fr.cnes.regards.framework.urn.validator.RegardsUrn;
+import org.springframework.lang.Nullable;
+
 import javax.persistence.Convert;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -27,21 +31,17 @@ import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import org.springframework.lang.Nullable;
-
-import fr.cnes.regards.framework.urn.converters.UrnConverter;
-import fr.cnes.regards.framework.urn.validator.RegardsUrn;
-
 /**
  * allow us to create URN with the following format:
  * URN:StringId:entityType:tenant:UUID(entityId):Vversion[,order][:REVrevision]
- *
+ * <p>
  * <br/>
  * Example:
  * <ul>
  * <li>URN:SIP:Collection:CDPP::1</li>
  * <li>URN:AIP:Collection:CDPP::1,5:REV2</li>
  * </ul>
+ *
  * @author Sylvain Vissiere-Guerinet
  */
 @Convert(converter = UrnConverter.class)
@@ -56,7 +56,7 @@ public class UniformResourceName {
      * URN pattern
      */
     public static final String URN_PATTERN =
-            "URN:[^:]+:[^:]+:[^:]+:[^:]+:(V\\d{1,3}|" + LAST_VALUE + ")(,\\d+)?(:REV.+)?";
+        "URN:[^:]+:[^:]+:[^:]+:[^:]+:(V\\d{1,3}|" + LAST_VALUE + ")(,\\d+)?(:REV.+)?";
 
     /**
      * Version prefix
@@ -136,8 +136,13 @@ public class UniformResourceName {
     /**
      * Constructor setting the given parameters as attributes
      */
-    protected UniformResourceName(String identifier, EntityType entityType, String tenant, UUID entityId,
-            Integer version, @Nullable Long order, @Nullable String revision) {
+    protected UniformResourceName(String identifier,
+                                  EntityType entityType,
+                                  String tenant,
+                                  UUID entityId,
+                                  Integer version,
+                                  @Nullable Long order,
+                                  @Nullable String revision) {
         this.identifier = identifier;
         this.entityType = entityType;
         this.tenant = tenant;
@@ -150,8 +155,12 @@ public class UniformResourceName {
     /**
      * Constructor setting the given parameters as attributes
      */
-    protected UniformResourceName(String identifier, EntityType entityType, String tenant, UUID entityId,
-            @Nullable Long order, @Nullable String revision) {
+    protected UniformResourceName(String identifier,
+                                  EntityType entityType,
+                                  String tenant,
+                                  UUID entityId,
+                                  @Nullable Long order,
+                                  @Nullable String revision) {
         this.identifier = identifier;
         this.entityType = entityType;
         this.tenant = tenant;
@@ -165,8 +174,13 @@ public class UniformResourceName {
         // Deserialization
     }
 
-    public static UniformResourceName build(String identifier, EntityType entityType, String tenant, UUID entityId,
-            @Nullable Integer version, @Nullable Long order, @Nullable String revision) {
+    public static UniformResourceName build(String identifier,
+                                            EntityType entityType,
+                                            String tenant,
+                                            UUID entityId,
+                                            @Nullable Integer version,
+                                            @Nullable Long order,
+                                            @Nullable String revision) {
         UniformResourceName urn = new UniformResourceName();
         urn.setIdentifier(identifier);
         urn.setEntityType(entityType);
@@ -178,13 +192,19 @@ public class UniformResourceName {
         return urn;
     }
 
-    public static UniformResourceName build(String identifier, EntityType entityType, String tenant, UUID entityId,
-            int version) {
+    public static UniformResourceName build(String identifier,
+                                            EntityType entityType,
+                                            String tenant,
+                                            UUID entityId,
+                                            int version) {
         return build(identifier, entityType, tenant, entityId, version, null, null);
     }
 
-    public static UniformResourceName build(Enum<?> identifier, EntityType entityType, String tenant, UUID entityId,
-            int version) {
+    public static UniformResourceName build(Enum<?> identifier,
+                                            EntityType entityType,
+                                            String tenant,
+                                            UUID entityId,
+                                            int version) {
         return build(identifier.toString(), entityType, tenant, entityId, version, null, null);
     }
 
@@ -375,7 +395,8 @@ public class UniformResourceName {
         return revision;
     }
 
-    /**    public
+    /**
+     * public
      * Set the revision
      */
     public void setRevision(String revision) {
@@ -400,9 +421,9 @@ public class UniformResourceName {
         }
         UniformResourceName that = (UniformResourceName) o;
         return last == that.last && Objects.equals(identifier, that.identifier) && entityType == that.entityType
-                && Objects.equals(tenant, that.tenant) && Objects.equals(entityId, that.entityId) && Objects
-                .equals(version, that.version) && Objects.equals(order, that.order) && Objects
-                .equals(revision, that.revision);
+            && Objects.equals(tenant, that.tenant) && Objects.equals(entityId, that.entityId) && Objects.equals(version,
+                                                                                                                that.version)
+            && Objects.equals(order, that.order) && Objects.equals(revision, that.revision);
     }
 
     @Override

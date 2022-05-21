@@ -18,24 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.validation.Valid;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.LinkRelation;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -52,9 +34,22 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.service.role.RoleService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Role management API
+ *
  * @author Sébastien Binda
  * @author Marc Sordi
  */
@@ -106,6 +101,7 @@ public class RoleController implements IResourceController<Role> {
 
     /**
      * Define the endpoint for retrieving the list of all roles.
+     *
      * @return A {@link List} of roles as {@link Role} wrapped in an {@link ResponseEntity}
      */
     @RequestMapping(method = RequestMethod.GET)
@@ -118,30 +114,33 @@ public class RoleController implements IResourceController<Role> {
     /**
      * Define the endpoint for retrieving the list of borrowable Roles for the current user.
      * The borowalble roles contains at least the authenticated user own role.
+     *
      * @return list of borrowable roles for current authenticated user
      */
     @RequestMapping(method = RequestMethod.GET, path = BORROWABLE_MAPPING)
     @ResourceAccess(description = "Retrieve the list of borrowable roles for the current user",
-            role = DefaultRole.PUBLIC)
+        role = DefaultRole.PUBLIC)
     public ResponseEntity<List<EntityModel<Role>>> getBorrowableRoles() {
         return new ResponseEntity<>(toResources(roleService.retrieveBorrowableRoles()), HttpStatus.OK);
     }
 
     /**
      * Define the endpoint for retrieving the list of roles that can access the specified resource.
+     *
      * @param resourceId
      * @return list of borrowable roles for current authenticated user
      */
     @RequestMapping(method = RequestMethod.GET, path = ROLE_WITH_RESOURCE_MAPPING)
     @ResourceAccess(description = "Retrieve the list of roles associated to the given resource",
-            role = DefaultRole.EXPLOIT)
+        role = DefaultRole.EXPLOIT)
     public ResponseEntity<List<EntityModel<Role>>> getRolesAccesingResource(
-            @PathVariable("resourceId") Long resourceId) {
+        @PathVariable("resourceId") Long resourceId) {
         return new ResponseEntity<>(toResources(roleService.retrieveRolesWithResource(resourceId)), HttpStatus.OK);
     }
 
     /**
      * Define the endpoint for creating a new {@link Role}.
+     *
      * @param newRole The new {@link Role} values
      * @return The created {@link Role}
      * @throws EntityException Thrown if a {@link Role} with same <code>id</code> already exists
@@ -154,6 +153,7 @@ public class RoleController implements IResourceController<Role> {
 
     /**
      * Define the endpoint for retrieving the {@link Role} of passed <code>id</code>.
+     *
      * @param roleName The {@link Role}'s <code>name</code>
      * @return The {@link Role} wrapped in an {@link ResponseEntity}
      * @throws EntityNotFoundException when no role with passed name could be found
@@ -161,12 +161,13 @@ public class RoleController implements IResourceController<Role> {
     @RequestMapping(method = RequestMethod.GET, value = ROLE_MAPPING)
     @ResourceAccess(description = "Retrieve a role by name", role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<Role>> retrieveRole(@PathVariable("role_name") final String roleName)
-            throws EntityNotFoundException {
+        throws EntityNotFoundException {
         return new ResponseEntity<>(toResource(roleService.retrieveRole(roleName)), HttpStatus.OK);
     }
 
     /**
      * Define the endpoint for retrieving the descendnats {@link Role}s of passed role through its name
+     *
      * @param roleName
      * @return the ascendants wrapped into a {@link ResponseEntity}
      * @throws EntityNotFoundException if given role does not exists
@@ -174,21 +175,22 @@ public class RoleController implements IResourceController<Role> {
     @ResourceAccess(description = "Retrieve a role descendants", role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.GET, path = ROLE_DESCENDANTS)
     public ResponseEntity<Set<Role>> retrieveRoleDescendants(@PathVariable("role_name") String roleName)
-            throws EntityNotFoundException {
+        throws EntityNotFoundException {
         return new ResponseEntity<>(roleService.getDescendants(roleService.retrieveRole(roleName)), HttpStatus.OK);
     }
 
     /**
      * Define the endpoint to determine if the provided ${@link Role} is inferior to the one brought by the current request
+     *
      * @param roleName that should be inferior
      * @return true when the current role should have access to something requiring at least the provided role
      * @throws EntityNotFoundException if some role does not exists
      */
     @ResourceAccess(description = "Return true if the role provided is included by the current role",
-            role = DefaultRole.PUBLIC)
+        role = DefaultRole.PUBLIC)
     @RequestMapping(method = RequestMethod.GET, path = SHOULD_ACCESS_TO_RESOURCE)
     public ResponseEntity<Boolean> shouldAccessToResourceRequiring(@PathVariable("role_name") String roleName)
-            throws EntityNotFoundException {
+        throws EntityNotFoundException {
         Optional<Role> cr = roleService.getCurrentRole();
         boolean result = false;
         if (cr.isPresent()) {
@@ -199,7 +201,8 @@ public class RoleController implements IResourceController<Role> {
 
     /**
      * Define the endpoint for updating the {@link Role} of id <code>pRoleId</code>.
-     * @param roleName The {@link Role}
+     *
+     * @param roleName    The {@link Role}
      * @param updatedRole The new {@link Role}
      * @return Updated {@link Role}
      * @throws ModuleException <br>
@@ -210,12 +213,13 @@ public class RoleController implements IResourceController<Role> {
     @RequestMapping(method = RequestMethod.PUT, value = ROLE_MAPPING)
     @ResourceAccess(description = "Update the role of role_name with passed body", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<EntityModel<Role>> updateRole(@PathVariable("role_name") String roleName,
-            @Valid @RequestBody Role updatedRole) throws ModuleException {
+                                                        @Valid @RequestBody Role updatedRole) throws ModuleException {
         return new ResponseEntity<>(toResource(roleService.updateRole(roleName, updatedRole)), HttpStatus.OK);
     }
 
     /**
      * Define the endpoint for deleting the {@link Role} of passed <code>id</code>.
+     *
      * @param roleName The {@link Role}'s <code>name</code>
      * @return {@link Void} wrapped in an {@link ResponseEntity}
      * @throws ModuleException if the updated role is native. Native roles should not be modified.
@@ -232,23 +236,34 @@ public class RoleController implements IResourceController<Role> {
         EntityModel<Role> resource = null;
         if ((role != null) && (role.getId() != null)) {
             resource = resourceService.toResource(role);
-            resourceService.addLink(resource, this.getClass(), "retrieveRole", LinkRels.SELF,
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "retrieveRole",
+                                    LinkRels.SELF,
                                     MethodParamFactory.build(String.class, role.getName()));
             // Disable eddition and deletion of native roles.
             if (!role.isNative()) {
-                resourceService.addLink(resource, this.getClass(), "updateRole", LinkRels.UPDATE,
+                resourceService.addLink(resource,
+                                        this.getClass(),
+                                        "updateRole",
+                                        LinkRels.UPDATE,
                                         MethodParamFactory.build(String.class, role.getName()),
                                         MethodParamFactory.build(Role.class));
                 if (isDeletable(role)) {
-                    resourceService.addLink(resource, this.getClass(), "removeRole", LinkRels.DELETE,
+                    resourceService.addLink(resource,
+                                            this.getClass(),
+                                            "removeRole",
+                                            LinkRels.DELETE,
                                             MethodParamFactory.build(String.class, role.getName()));
                 }
             }
             if (!(RoleAuthority.isProjectAdminRole(role.getName())
-                    || RoleAuthority.isInstanceAdminRole(role.getName()))) {
+                || RoleAuthority.isInstanceAdminRole(role.getName()))) {
 
                 //we add the link to manage a role resources accesses except for PROJECT_ADMIN and INSTANCE_ADMIN
-                resourceService.addLink(resource, RoleResourceController.class, "getRoleResources",
+                resourceService.addLink(resource,
+                                        RoleResourceController.class,
+                                        "getRoleResources",
                                         LinkRelation.of("manage-resource-access"),
                                         MethodParamFactory.build(String.class, role.getName()));
             }

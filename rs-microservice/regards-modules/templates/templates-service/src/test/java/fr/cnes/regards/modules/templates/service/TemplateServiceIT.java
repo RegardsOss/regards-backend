@@ -18,12 +18,18 @@
  */
 package fr.cnes.regards.modules.templates.service;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
+import fr.cnes.regards.framework.amqp.InstanceSubscriber;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.templates.dao.ITemplateRepository;
+import fr.cnes.regards.modules.templates.domain.Template;
+import freemarker.template.TemplateException;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -38,28 +44,18 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
-import fr.cnes.regards.framework.amqp.InstanceSubscriber;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.templates.dao.ITemplateRepository;
-import fr.cnes.regards.modules.templates.domain.Template;
-import freemarker.template.TemplateException;
+import java.util.*;
 
 /**
  * Test suite for {@link TemplateService}.
+ *
  * @author Xavier-Alexandre Brochard
  * @author oroussel
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(properties = { "spring.application.name=rs-admin", "regards.jpa.multitenant.enabled=false",
-        "regards.amqp.enabled=false", "regards.cipher.key-location=src/test/resources/testKey",
-        "regards.cipher.iv=1234567812345678" })
+    "regards.amqp.enabled=false", "regards.cipher.key-location=src/test/resources/testKey",
+    "regards.cipher.iv=1234567812345678" })
 @ContextConfiguration
 public class TemplateServiceIT {
 
@@ -201,6 +197,7 @@ public class TemplateServiceIT {
 
     /**
      * Test method for {@link fr.cnes.regards.modules.templates.service.TemplateService#findById(Long)}.
+     *
      * @throws EntityNotFoundException if no template with passed id could be found
      */
     @Test
@@ -223,6 +220,7 @@ public class TemplateServiceIT {
 
     /**
      * Test method for {@link TemplateService#findById(java.lang.Long)}.
+     *
      * @throws EntityNotFoundException if no template with passed id could be found
      */
     @Test(expected = EntityNotFoundException.class)
@@ -241,6 +239,7 @@ public class TemplateServiceIT {
 
     /**
      * Test method for {@link TemplateService#update(Long, Template)}.
+     *
      * @throws EntityException <br>
      *                         {@link EntityNotFoundException} if no template with passed id could be found<br>
      *                         {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
@@ -267,6 +266,7 @@ public class TemplateServiceIT {
 
     /**
      * Test method for {@link TemplateService#update(Long, Template)}.
+     *
      * @throws EntityException <br>
      *                         {@link EntityNotFoundException} if no template with passed id could be found<br>
      *                         {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
@@ -290,6 +290,7 @@ public class TemplateServiceIT {
 
     /**
      * Test method for {@link TemplateService#update(Long, Template)}.
+     *
      * @throws EntityException <br>
      *                         {@link EntityNotFoundException} if no template with passed id could be found<br>
      *                         {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>

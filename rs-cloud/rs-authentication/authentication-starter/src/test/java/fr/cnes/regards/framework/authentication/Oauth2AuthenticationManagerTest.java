@@ -56,8 +56,9 @@ import static org.mockito.ArgumentMatchers.any;
 
 /**
  * Class Oauth2AuthenticationManagerTest
- *
+ * <p>
  * Test Regards Oauth2 authentication process
+ *
  * @author Sébastien Binda
  */
 public class Oauth2AuthenticationManagerTest {
@@ -116,7 +117,7 @@ public class Oauth2AuthenticationManagerTest {
         // Create mock for default authentication plugin
         plugin = Mockito.mock(IAuthenticationPlugin.class);
         Mockito.when(plugin.authenticate(Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
-                .thenReturn(new AuthenticationPluginResponse(true, "test@regards.fr"));
+               .thenReturn(new AuthenticationPluginResponse(true, "test@regards.fr"));
 
         // Create mock for default jwt service
         final IRuntimeTenantResolver service = Mockito.mock(IRuntimeTenantResolver.class);
@@ -152,7 +153,7 @@ public class Oauth2AuthenticationManagerTest {
         accountsClientMock = Mockito.mock(IAccountsClient.class);
         final EntityModel<Account> entityModel = EntityModel.of(validAccount);
         Mockito.when(accountsClientMock.retrieveAccounByEmail(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(entityModel, HttpStatus.OK));
+               .thenReturn(new ResponseEntity<>(entityModel, HttpStatus.OK));
 
         userAccountManagerMock = Mockito.mock(IUserAccountManager.class);
 
@@ -190,7 +191,7 @@ public class Oauth2AuthenticationManagerTest {
 
         // Mock return a valid account
         Mockito.when(accountsClientMock.retrieveAccounByEmail(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+               .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
 
         try {
             manager.authenticate(auth);
@@ -229,7 +230,7 @@ public class Oauth2AuthenticationManagerTest {
         // Mock a valid account
         final EntityModel<Account> entityModel = EntityModel.of(validAccount);
         Mockito.when(accountsClientMock.retrieveAccounByEmail(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(entityModel, HttpStatus.OK));
+               .thenReturn(new ResponseEntity<>(entityModel, HttpStatus.OK));
 
         // Run authentication process
         manager.authenticate(auth);
@@ -253,7 +254,7 @@ public class Oauth2AuthenticationManagerTest {
 
         // Mock unknown user
         Mockito.when(projectUsersClientMock.retrieveProjectUserByEmail(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+               .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
 
         // Run authentication process
         try {
@@ -289,7 +290,7 @@ public class Oauth2AuthenticationManagerTest {
 
         final EntityModel<ProjectUser> entityModel = EntityModel.of(user);
         Mockito.when(projectUsersClientMock.retrieveProjectUserByEmail(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(entityModel, HttpStatus.OK));
+               .thenReturn(new ResponseEntity<>(entityModel, HttpStatus.OK));
 
         // Run authentication process
         try {

@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * Class containing the knowledge about projects which are in maintenance
+ *
  * @author Sylvain Vissiere-Guerinet
  */
 public final class MaintenanceManager {
@@ -68,16 +69,18 @@ public final class MaintenanceManager {
      * Set the tenant in maintenance mode
      */
     public static void setMaintenance(String pTenant) {
-        maintenanceMap.put(pTenant, new MaintenanceInfo(Boolean.TRUE,
-                                                        OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)));
+        maintenanceMap.put(pTenant,
+                           new MaintenanceInfo(Boolean.TRUE,
+                                               OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)));
     }
 
     /**
      * Set the tenant not in maintenance mode
      */
     public static void unSetMaintenance(String pTenant) {
-        maintenanceMap.put(pTenant, new MaintenanceInfo(Boolean.FALSE,
-                                                        OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)));
+        maintenanceMap.put(pTenant,
+                           new MaintenanceInfo(Boolean.FALSE,
+                                               OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)));
     }
 
 }

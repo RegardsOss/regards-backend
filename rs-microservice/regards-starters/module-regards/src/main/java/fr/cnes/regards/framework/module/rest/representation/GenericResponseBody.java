@@ -18,13 +18,13 @@
  */
 package fr.cnes.regards.framework.module.rest.representation;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
  * Generic response body with containing a single message and key value pairs
+ *
  * @author Marc Sordi
  */
 public class GenericResponseBody {

@@ -14,35 +14,25 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.controller;
 
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.BY_DATASETS_SUFFIX;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.LINKDATASET_SUFFIX;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.PROCESSPLUGIN_PATH;
-import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.DATASET_PARAM;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.processing.dto.ProcessLabelDTO;
 import fr.cnes.regards.modules.processing.service.IProcessPluginConfigService;
 import io.vavr.collection.Map;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.*;
+import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.DATASET_PARAM;
 
 /**
  * This class is the controller for manipulating {@link fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration}
@@ -58,13 +48,13 @@ public class ProcessPluginDatasetController {
 
     @Autowired
     public ProcessPluginDatasetController(IRuntimeTenantResolver runtimeTenantResolver,
-            IProcessPluginConfigService rightsConfigService) {
+                                          IProcessPluginConfigService rightsConfigService) {
         this.rightsConfigService = rightsConfigService;
     }
 
     @GetMapping(path = LINKDATASET_SUFFIX)
     @ResourceAccess(description = "Find processes attached to any of the given dataset",
-            role = DefaultRole.REGISTERED_USER)
+        role = DefaultRole.REGISTERED_USER)
     public Collection<ProcessLabelDTO> findProcessesByDataset(@PathVariable(DATASET_PARAM) String dataset) {
         return rightsConfigService.getDatasetLinkedProcesses(dataset);
     }
@@ -72,7 +62,7 @@ public class ProcessPluginDatasetController {
     @PutMapping(path = LINKDATASET_SUFFIX)
     @ResourceAccess(description = "Attach the given dataset to all the given processes", role = DefaultRole.ADMIN)
     public void attachDatasetToProcesses(@RequestBody(required = false) List<UUID> processBusinessIds,
-            @PathVariable(DATASET_PARAM) String dataset) {
+                                         @PathVariable(DATASET_PARAM) String dataset) {
         if (processBusinessIds != null) {
             rightsConfigService.putDatasetLinkedProcesses(processBusinessIds, dataset);
         } else {
@@ -82,10 +72,11 @@ public class ProcessPluginDatasetController {
 
     @PostMapping(path = BY_DATASETS_SUFFIX)
     @ResourceAccess(description = "Find processes attached to any of the given datasets",
-            role = DefaultRole.REGISTERED_USER)
+        role = DefaultRole.REGISTERED_USER)
     public Map<String, List<ProcessLabelDTO>> findProcessesByDatasets(@RequestBody List<String> datasets) {
-        return rightsConfigService.findProcessesByDatasets(datasets).getMap()
-                .mapValues(io.vavr.collection.List::asJava);
+        return rightsConfigService.findProcessesByDatasets(datasets)
+                                  .getMap()
+                                  .mapValues(io.vavr.collection.List::asJava);
     }
 
 }

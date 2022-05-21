@@ -60,6 +60,7 @@ import java.util.stream.Collectors;
 
 /**
  * see {@link IFeatureMetadataService}
+ *
  * @author Iliana Ghazali
  */
 
@@ -85,14 +86,16 @@ public class FeatureMetadataService implements IFeatureMetadataService {
     private IFeatureEntityRepository featureRepository;
 
     private DumpService dumpService;
-    
+
     private IFeatureMetadataService self;
-    
+
     private INotificationClient notificationClient;
 
-    public FeatureMetadataService(IFeatureSaveMetadataRequestRepository featureSaveMetadataRepository, 
-                                  IFeatureEntityRepository featureRepository, DumpService dumpService, 
-                                  IFeatureMetadataService featureMetadataService, INotificationClient notificationClient) {
+    public FeatureMetadataService(IFeatureSaveMetadataRequestRepository featureSaveMetadataRepository,
+                                  IFeatureEntityRepository featureRepository,
+                                  DumpService dumpService,
+                                  IFeatureMetadataService featureMetadataService,
+                                  INotificationClient notificationClient) {
         this.featureSaveMetadataRepository = featureSaveMetadataRepository;
         this.featureRepository = featureRepository;
         this.dumpService = dumpService;
@@ -102,7 +105,7 @@ public class FeatureMetadataService implements IFeatureMetadataService {
 
     @Override
     public void writeDump(FeatureSaveMetadataRequest metadataRequest, Path dumpLocation, Path tmpZipLocation)
-            throws IOException {
+        throws IOException {
         // Write dump (create a zip of multiple zips)
         dumpService.generateDump(dumpLocation, tmpZipLocation, metadataRequest.getRequestDate());
     }
@@ -110,7 +113,7 @@ public class FeatureMetadataService implements IFeatureMetadataService {
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void writeZips(FeatureSaveMetadataRequest metadataRequest, Path tmpZipLocation)
-            throws NothingToDoException, IOException {
+        throws NothingToDoException, IOException {
         Pageable pageToRequest = PageRequest.of(0, zipLimit, Sort.by(Sort.Order.asc("creationDate")));
         try {
             do {
@@ -125,7 +128,7 @@ public class FeatureMetadataService implements IFeatureMetadataService {
 
     @Override
     public Pageable dumpOnePage(FeatureSaveMetadataRequest metadataRequest, Pageable pageToRequest, Path tmpZipLocation)
-            throws IOException, DuplicateUniqueNameException, NothingToDoException {
+        throws IOException, DuplicateUniqueNameException, NothingToDoException {
         // Find features to zip
         Page<FeatureEntity> featureToDump;
         OffsetDateTime previousDumpDate = metadataRequest.getPreviousDumpDate();
@@ -143,8 +146,9 @@ public class FeatureMetadataService implements IFeatureMetadataService {
 
         // If no feature was found, throw NothingToDoException
         if (objectDumps.isEmpty()) {
-            throw new NothingToDoException(
-                    String.format("There is nothing to dump between %s and %s", previousDumpDate, dumpDate));
+            throw new NothingToDoException(String.format("There is nothing to dump between %s and %s",
+                                                         previousDumpDate,
+                                                         dumpDate));
         }
 
         // Check if json names <id_feature>-<version> are unique in the collection
@@ -152,11 +156,12 @@ public class FeatureMetadataService implements IFeatureMetadataService {
         List<ObjectDump> duplicatedJsonNames;
         duplicatedJsonNames = dumpService.checkUniqueJsonNames(objectDumps);
         if (!duplicatedJsonNames.isEmpty()) {
-            String errorMessage = duplicatedJsonNames.stream().map(ObjectDump::getJsonName)
-                    .collect(Collectors.joining(", ",
-                                                "Some features to dump had the same generated names "
-                                                        + "(providerId-version.json) should be unique: ",
-                                                ". Please edit your features so there is no duplicates."));
+            String errorMessage = duplicatedJsonNames.stream()
+                                                     .map(ObjectDump::getJsonName)
+                                                     .collect(Collectors.joining(", ",
+                                                                                 "Some features to dump had the same generated names "
+                                                                                     + "(providerId-version.json) should be unique: ",
+                                                                                 ". Please edit your features so there is no duplicates."));
             handleError(metadataRequest, errorMessage);
             throw new DuplicateUniqueNameException(errorMessage);
         }
@@ -173,19 +178,22 @@ public class FeatureMetadataService implements IFeatureMetadataService {
 
     private List<ObjectDump> convertFeatureToObjectDump(Collection<FeatureEntity> featureEntities) {
         return featureEntities.stream()
-                .map(featureEntity -> new ObjectDump(featureEntity.getCreationDate(),
-                        featureEntity.getProviderId() + "-" + featureEntity.getVersion(), featureEntity.getFeature(),
-                        featureEntity.getId().toString()))
-                .collect(Collectors.toList());
+                              .map(featureEntity -> new ObjectDump(featureEntity.getCreationDate(),
+                                                                   featureEntity.getProviderId() + "-"
+                                                                       + featureEntity.getVersion(),
+                                                                   featureEntity.getFeature(),
+                                                                   featureEntity.getId().toString()))
+                              .collect(Collectors.toList());
     }
 
     @Override
     public void handleError(FeatureSaveMetadataRequest metadataRequest, String errorMessage) {
-        notificationClient
-                .notify(errorMessage,
-                        String.format("Error while dumping features for period %s to %s",
-                                      metadataRequest.getPreviousDumpDate(), metadataRequest.getRequestDate()),
-                        NotificationLevel.ERROR, DefaultRole.ADMIN);
+        notificationClient.notify(errorMessage,
+                                  String.format("Error while dumping features for period %s to %s",
+                                                metadataRequest.getPreviousDumpDate(),
+                                                metadataRequest.getRequestDate()),
+                                  NotificationLevel.ERROR,
+                                  DefaultRole.ADMIN);
         metadataRequest.addError(errorMessage);
         metadataRequest.setState(RequestState.ERROR);
         featureSaveMetadataRepository.save(metadataRequest);
@@ -200,19 +208,21 @@ public class FeatureMetadataService implements IFeatureMetadataService {
 
     @Override
     public Page<FeatureSaveMetadataRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page) {
-        return featureSaveMetadataRepository
-                .findAll(FeatureSaveMetadataRequestSpecification.searchAllByFilters(selection, page), page);
+        return featureSaveMetadataRepository.findAll(FeatureSaveMetadataRequestSpecification.searchAllByFilters(
+            selection,
+            page), page);
     }
 
     @Override
     public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
-        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null)
-                && (selection.getFilters().getState() != RequestState.ERROR))) {
+        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null) && (
+            selection.getFilters().getState() != RequestState.ERROR))) {
             return RequestsInfo.build(0L);
         } else {
             selection.getFilters().withState(RequestState.ERROR);
-            return RequestsInfo.build(featureSaveMetadataRepository.count(FeatureSaveMetadataRequestSpecification
-                    .searchAllByFilters(selection, PageRequest.of(0, 1))));
+            return RequestsInfo.build(featureSaveMetadataRepository.count(FeatureSaveMetadataRequestSpecification.searchAllByFilters(
+                selection,
+                PageRequest.of(0, 1))));
         }
     }
 
@@ -223,8 +233,8 @@ public class FeatureMetadataService implements IFeatureMetadataService {
         long nbHandled = 0;
         long total = 0;
         String message;
-        if ((selection.getFilters() != null) && (selection.getFilters().getState() != null)
-                && (selection.getFilters().getState() != RequestState.ERROR)) {
+        if ((selection.getFilters() != null) && (selection.getFilters().getState() != null) && (
+            selection.getFilters().getState() != RequestState.ERROR)) {
             message = String.format("Requests in state %s are not deletable", selection.getFilters().getState());
         } else {
             boolean stop = false;
@@ -260,8 +270,8 @@ public class FeatureMetadataService implements IFeatureMetadataService {
         String message;
         Pageable page = PageRequest.of(0, MAX_ENTITY_PER_PAGE);
         Page<FeatureSaveMetadataRequest> requestsPage;
-        if ((selection.getFilters() != null) && (selection.getFilters().getState() != null)
-                && (selection.getFilters().getState() != RequestState.ERROR)) {
+        if ((selection.getFilters() != null) && (selection.getFilters().getState() != null) && (
+            selection.getFilters().getState() != RequestState.ERROR)) {
             message = String.format("Requests in state %s are not retryable", selection.getFilters().getState());
         } else {
             boolean stop = false;
@@ -273,7 +283,8 @@ public class FeatureMetadataService implements IFeatureMetadataService {
                     total = requestsPage.getTotalElements();
                 }
                 List<FeatureSaveMetadataRequest> toUpdate = requestsPage.filter(r -> r.isRetryable())
-                        .map(this::updateForRetry).toList();
+                                                                        .map(this::updateForRetry)
+                                                                        .toList();
                 nbHandled += toUpdate.size();
                 featureSaveMetadataRepository.saveAll(toUpdate);
                 if ((requestsPage.getNumber() < MAX_PAGE_TO_RETRY) && requestsPage.hasNext()) {

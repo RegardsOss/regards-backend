@@ -18,15 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.step;
 
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.validation.Errors;
-import org.springframework.validation.MapBindingResult;
-
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -35,6 +26,14 @@ import fr.cnes.regards.modules.ingest.domain.plugin.ISipValidation;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Validation step is used to validate {@link SIP} calling {@link ISipValidation#validate(SIP, Errors)}.

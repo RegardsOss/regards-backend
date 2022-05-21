@@ -1,12 +1,13 @@
 package fr.cnes.regards.framework.oais;
 
-import java.util.Map;
-
 import com.google.common.collect.Maps;
+
+import java.util.Map;
 
 /**
  * TODO: please add some doc on what information can/should/should not be there
  * when the todo was added noone in the team had any idea of which kind of information should be there!!!!
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class EnvironmentDescription {

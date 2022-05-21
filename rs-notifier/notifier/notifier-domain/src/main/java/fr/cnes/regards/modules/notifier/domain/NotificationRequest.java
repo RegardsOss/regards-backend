@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.notifier.domain;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
@@ -32,14 +31,15 @@ import java.util.Set;
 
 /**
  * Entity to store notification action
+ *
  * @author Kevin Marchois
  * @author Sylvain Vissiere-Guerinet
  */
 @Entity
 @Table(name = "t_notification_request",
-        indexes = { @Index(name = "idx_t_notification_request_version", columnList = "version"),
-                @Index(name = "idx_t_notification_request_state", columnList = "state"),
-                @Index(name = "idx_t_notification_request_request_id", columnList = "request_id")})
+    indexes = { @Index(name = "idx_t_notification_request_version", columnList = "version"),
+        @Index(name = "idx_t_notification_request_state", columnList = "state"),
+        @Index(name = "idx_t_notification_request_request_id", columnList = "request_id") })
 public class NotificationRequest {
 
     /**
@@ -52,11 +52,11 @@ public class NotificationRequest {
      */
     @ManyToMany
     @JoinTable(name = "ta_notif_request_recipients_toschedule",
-            joinColumns = @JoinColumn(name = "notification_request_id"),
-            inverseJoinColumns = @JoinColumn(name = "recipient_id"),
-            foreignKey = @ForeignKey(name = "fk_notification_request_id_recipients_toschedule"),
-            inverseForeignKey = @ForeignKey(name = "fk_notification_request_recipients_toschedule_id"), indexes = {
-            @Index(name = "idx_ta_notif_request_recipients_toschedule_recipient_id", columnList = "recipient_id") })
+        joinColumns = @JoinColumn(name = "notification_request_id"),
+        inverseJoinColumns = @JoinColumn(name = "recipient_id"),
+        foreignKey = @ForeignKey(name = "fk_notification_request_id_recipients_toschedule"),
+        inverseForeignKey = @ForeignKey(name = "fk_notification_request_recipients_toschedule_id"), indexes = {
+        @Index(name = "idx_ta_notif_request_recipients_toschedule_recipient_id", columnList = "recipient_id") })
     private final Set<PluginConfiguration> recipientsToSchedule = new HashSet<>();
 
     /**
@@ -64,44 +64,42 @@ public class NotificationRequest {
      */
     @ManyToMany
     @JoinTable(name = "ta_notif_request_recipients_scheduled",
-            joinColumns = @JoinColumn(name = "notification_request_id"),
-            inverseJoinColumns = @JoinColumn(name = "recipient_id"),
-            foreignKey = @ForeignKey(name = "fk_notification_request_id_recipients_scheduled"),
-            inverseForeignKey = @ForeignKey(name = "fk_notification_request_recipients_scheduled_id"), indexes = {
-            @Index(name = "idx_ta_notif_request_recipients_scheduled_recipient_id", columnList = "recipient_id") })
+        joinColumns = @JoinColumn(name = "notification_request_id"),
+        inverseJoinColumns = @JoinColumn(name = "recipient_id"),
+        foreignKey = @ForeignKey(name = "fk_notification_request_id_recipients_scheduled"),
+        inverseForeignKey = @ForeignKey(name = "fk_notification_request_recipients_scheduled_id"), indexes = {
+        @Index(name = "idx_ta_notif_request_recipients_scheduled_recipient_id", columnList = "recipient_id") })
     private final Set<PluginConfiguration> recipientsScheduled = new HashSet<>();
 
     /**
      * Allows to know which recipient could not be successfully handled. This allows to know which recipient are to retry for a request.
      */
     @ManyToMany
-    @JoinTable(name = "ta_notif_request_recipients_error",
-            joinColumns = @JoinColumn(name = "notification_request_id"),
-            inverseJoinColumns = @JoinColumn(name = "recipient_id"),
-            foreignKey = @ForeignKey(name = "fk_notification_request_id_recipients_error"),
-            inverseForeignKey = @ForeignKey(name = "fk_notification_request_recipients_error_id"), indexes = {
-            @Index(name = "idx_ta_notif_request_recipients_error_recipient_id", columnList = "recipient_id")})
+    @JoinTable(name = "ta_notif_request_recipients_error", joinColumns = @JoinColumn(name = "notification_request_id"),
+        inverseJoinColumns = @JoinColumn(name = "recipient_id"),
+        foreignKey = @ForeignKey(name = "fk_notification_request_id_recipients_error"),
+        inverseForeignKey = @ForeignKey(name = "fk_notification_request_recipients_error_id"),
+        indexes = { @Index(name = "idx_ta_notif_request_recipients_error_recipient_id", columnList = "recipient_id") })
     private final Set<PluginConfiguration> recipientsInError = new HashSet<>();
 
     @ManyToMany
     @JoinTable(name = "ta_notif_request_recipients_success",
-            joinColumns = @JoinColumn(name = "notification_request_id"),
-            inverseJoinColumns = @JoinColumn(name = "recipient_id"),
-            foreignKey = @ForeignKey(name = "fk_notification_request_id_recipients_success"),
-            inverseForeignKey = @ForeignKey(name = "fk_notification_request_recipients_success_id"), indexes = {
-            @Index(name = "idx_ta_notif_request_recipients_success_recipient_id", columnList = "recipient_id")})
+        joinColumns = @JoinColumn(name = "notification_request_id"),
+        inverseJoinColumns = @JoinColumn(name = "recipient_id"),
+        foreignKey = @ForeignKey(name = "fk_notification_request_id_recipients_success"),
+        inverseForeignKey = @ForeignKey(name = "fk_notification_request_recipients_success_id"), indexes = {
+        @Index(name = "idx_ta_notif_request_recipients_success_recipient_id", columnList = "recipient_id") })
     private final Set<PluginConfiguration> successRecipients = new HashSet<>();
 
     /**
      * Allows to know which rules are to be matched during matching phase.
      */
     @ManyToMany
-    @JoinTable(name = "ta_notif_request_rules_to_match",
-            joinColumns = @JoinColumn(name = "notification_request_id"),
-            inverseJoinColumns = @JoinColumn(name = "rule_id"),
-            foreignKey = @ForeignKey(name = "fk_notification_request_id_rules_to_match"),
-            inverseForeignKey = @ForeignKey(name = "fk_notification_request_rules_to_match_id"),
-            indexes = {@Index(name = "idx_ta_notif_request_rules_to_match_rule_id", columnList = "rule_id")})
+    @JoinTable(name = "ta_notif_request_rules_to_match", joinColumns = @JoinColumn(name = "notification_request_id"),
+        inverseJoinColumns = @JoinColumn(name = "rule_id"),
+        foreignKey = @ForeignKey(name = "fk_notification_request_id_rules_to_match"),
+        inverseForeignKey = @ForeignKey(name = "fk_notification_request_rules_to_match_id"),
+        indexes = { @Index(name = "idx_ta_notif_request_rules_to_match_rule_id", columnList = "rule_id") })
     private final Set<Rule> rulesToMatch = new HashSet<>();
 
     @Id
@@ -120,7 +118,9 @@ public class NotificationRequest {
     @Type(type = "jsonb")
     private JsonObject metadata;
 
-    /** creation date of the instance */
+    /**
+     * creation date of the instance
+     */
     @Column(name = "request_date", nullable = false)
     private OffsetDateTime requestDate;
 
@@ -138,8 +138,13 @@ public class NotificationRequest {
     @Column(name = "version")
     private long version;
 
-    public NotificationRequest(JsonObject payload, JsonObject metadata, String requestId, String requestOwner,
-            OffsetDateTime requestDate, NotificationState state, Set<Rule> rulesToMatch) {
+    public NotificationRequest(JsonObject payload,
+                               JsonObject metadata,
+                               String requestId,
+                               String requestOwner,
+                               OffsetDateTime requestDate,
+                               NotificationState state,
+                               Set<Rule> rulesToMatch) {
         this.payload = payload;
         this.requestDate = requestDate;
         this.metadata = metadata;

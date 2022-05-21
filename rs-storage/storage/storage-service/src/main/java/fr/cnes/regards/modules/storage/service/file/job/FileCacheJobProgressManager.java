@@ -18,18 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file.job;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
@@ -37,6 +26,15 @@ import fr.cnes.regards.modules.storage.domain.plugin.IRestorationProgressManager
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageProgressManager;
 import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Set;
 
 /**
  * Implementation of {@link IStorageProgressManager} used by {@link IStorageLocation} plugins.<br>
@@ -68,13 +66,19 @@ public class FileCacheJobProgressManager implements IRestorationProgressManager 
         if (Files.exists(resoredFilePath)) {
             try {
                 URL cacheFileLocation = new URL("file", null, resoredFilePath.toString());
-                String successMessage = String
-                        .format("File %s (checksum=%s, size=%s) successfully restored from %s to %s.",
-                                fileRef.getMetaInfo().getFileName(), fileRef.getMetaInfo().getChecksum(),
-                                resoredFilePath.toFile().length(), fileRef.getLocation().toString(), resoredFilePath);
+                String successMessage = String.format(
+                    "File %s (checksum=%s, size=%s) successfully restored from %s to %s.",
+                    fileRef.getMetaInfo().getFileName(),
+                    fileRef.getMetaInfo().getChecksum(),
+                    resoredFilePath.toFile().length(),
+                    fileRef.getLocation().toString(),
+                    resoredFilePath);
                 job.advanceCompletion();
-                fileCacheRequestService.handleSuccess(fileReq, cacheFileLocation, fileRef.getLazzyOwners(),
-                                                      resoredFilePath.toFile().length(), successMessage);
+                fileCacheRequestService.handleSuccess(fileReq,
+                                                      cacheFileLocation,
+                                                      fileRef.getLazzyOwners(),
+                                                      resoredFilePath.toFile().length(),
+                                                      successMessage);
                 handled.add(fileReq);
             } catch (MalformedURLException e) {
                 LOGGER.error(e.getMessage(), e);
@@ -87,9 +91,10 @@ public class FileCacheJobProgressManager implements IRestorationProgressManager 
                 }
             }
         } else {
-            String errorCause = String
-                    .format("Unknown error during file %s restoration in cache. Storage location plugin indicates that the file is restored but file does not exists at %s.",
-                            fileReq.getChecksum(), resoredFilePath);
+            String errorCause = String.format(
+                "Unknown error during file %s restoration in cache. Storage location plugin indicates that the file is restored but file does not exists at %s.",
+                fileReq.getChecksum(),
+                resoredFilePath);
             restoreFailed(fileReq, errorCause);
         }
     }

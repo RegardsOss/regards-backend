@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.indexer.domain.criterion;
 
 /**
  * Property criterion. Provides a property name
+ *
  * @author oroussel
  */
 public abstract class AbstractPropertyCriterion implements ICriterion {

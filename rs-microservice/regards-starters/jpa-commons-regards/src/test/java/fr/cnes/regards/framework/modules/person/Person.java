@@ -18,16 +18,11 @@
  */
 package fr.cnes.regards.framework.modules.person;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * {@link Person} test entity with a generated sequence
+ *
  * @author Marc Sordi
  */
 @Entity

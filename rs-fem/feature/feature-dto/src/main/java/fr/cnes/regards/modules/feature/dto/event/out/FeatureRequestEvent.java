@@ -18,22 +18,20 @@
  */
 package fr.cnes.regards.modules.feature.dto.event.out;
 
-import java.util.Set;
-
-import org.springframework.lang.Nullable;
-
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import org.springframework.lang.Nullable;
+
+import java.util.Set;
 
 /**
  * Ingest request event
  *
  * @author Marc SORDI
- *
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class FeatureRequestEvent implements ISubscribable {
@@ -67,13 +65,22 @@ public class FeatureRequestEvent implements ISubscribable {
 
     private Set<String> errors;
 
-    public static FeatureRequestEvent build(FeatureRequestType type, String requestId, String requestOwner,
-            @Nullable String id, @Nullable FeatureUniformResourceName urn, RequestState state) {
+    public static FeatureRequestEvent build(FeatureRequestType type,
+                                            String requestId,
+                                            String requestOwner,
+                                            @Nullable String id,
+                                            @Nullable FeatureUniformResourceName urn,
+                                            RequestState state) {
         return build(type, requestId, requestOwner, id, urn, state, null);
     }
 
-    public static FeatureRequestEvent build(FeatureRequestType type, String requestId, String requestOwner,
-            @Nullable String id, @Nullable FeatureUniformResourceName urn, RequestState state, Set<String> errors) {
+    public static FeatureRequestEvent build(FeatureRequestType type,
+                                            String requestId,
+                                            String requestOwner,
+                                            @Nullable String id,
+                                            @Nullable FeatureUniformResourceName urn,
+                                            RequestState state,
+                                            Set<String> errors) {
         FeatureRequestEvent event = new FeatureRequestEvent();
         event.setType(type);
         event.setRequestId(requestId);

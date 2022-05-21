@@ -42,11 +42,9 @@ public class BackendForFrontendTestConfiguration {
     public IServiceAggregatorClient serviceAggregatorClient() {
         IServiceAggregatorClient mock = Mockito.mock(IServiceAggregatorClient.class);
         Mockito.when(mock.retrieveServices(Arrays.asList(BackendForFrontendTestUtils.DATASET_0.getIpId().toString()),
-                                           null))
-                .thenReturn(BackendForFrontendTestUtils.SERVICES_FOR_DATASET_0);
+                                           null)).thenReturn(BackendForFrontendTestUtils.SERVICES_FOR_DATASET_0);
         Mockito.when(mock.retrieveServices(Arrays.asList(BackendForFrontendTestUtils.DATASET_1.getIpId().toString()),
-                                           null))
-                .thenReturn(BackendForFrontendTestUtils.SERVICES_FOR_DATASET_1);
+                                           null)).thenReturn(BackendForFrontendTestUtils.SERVICES_FOR_DATASET_1);
         return mock;
     }
 
@@ -61,12 +59,12 @@ public class BackendForFrontendTestConfiguration {
         Mockito.when(mock.searchAll(Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_ALL_RESULT);
         Mockito.when(mock.searchAll(Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_ALL_RESULT);
         Mockito.when(mock.searchCollections(Mockito.any()))
-                .thenReturn(BackendForFrontendTestUtils.SEARCH_COLLECTIONS_RESULT);
+               .thenReturn(BackendForFrontendTestUtils.SEARCH_COLLECTIONS_RESULT);
         Mockito.when(mock.searchDatasets(Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_DATASETS_RESULT);
         Mockito.when(mock.searchDataObjects(Mockito.any()))
-                .thenReturn(BackendForFrontendTestUtils.SEARCH_DATAOBJECTS_RESULT);
+               .thenReturn(BackendForFrontendTestUtils.SEARCH_DATAOBJECTS_RESULT);
         Mockito.when(mock.searchDataobjectsReturnDatasets(Mockito.any()))
-                .thenReturn(BackendForFrontendTestUtils.SEARCH_DATASETS_RESULT);
+               .thenReturn(BackendForFrontendTestUtils.SEARCH_DATASETS_RESULT);
         return mock;
     }
 

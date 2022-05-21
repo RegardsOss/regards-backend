@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.utils.random;
 
 import io.vavr.control.Try;
@@ -32,8 +32,7 @@ public class VavrTryRandomizer<T> extends AbstractRandomizer<Try<T>> {
 
     private Randomizer<? extends T> valueRandomizer;
 
-    public VavrTryRandomizer(Randomizer<Boolean> booleanRandomizer,
-            Randomizer<? extends T> valueRandomizer) {
+    public VavrTryRandomizer(Randomizer<Boolean> booleanRandomizer, Randomizer<? extends T> valueRandomizer) {
         super();
         this.booleanRandomizer = booleanRandomizer;
         this.valueRandomizer = valueRandomizer;
@@ -58,7 +57,8 @@ public class VavrTryRandomizer<T> extends AbstractRandomizer<Try<T>> {
         this.valueRandomizer = valueRandomizer;
     }
 
-    @Override public Try<T> getRandomValue() {
+    @Override
+    public Try<T> getRandomValue() {
         if (booleanRandomizer.getRandomValue()) {
             return Try.success(valueRandomizer.getRandomValue());
         } else {
@@ -66,5 +66,7 @@ public class VavrTryRandomizer<T> extends AbstractRandomizer<Try<T>> {
         }
     }
 
-    public static final class RandomTryCreationException extends Exception {}
+    public static final class RandomTryCreationException extends Exception {
+
+    }
 }

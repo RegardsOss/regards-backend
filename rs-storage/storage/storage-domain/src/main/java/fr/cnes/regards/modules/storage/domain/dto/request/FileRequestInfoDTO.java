@@ -25,7 +25,6 @@ import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
  * DTO to handle common informations about file requests of all types {@link FileRequestType}s
  *
  * @author Sébastien Binda
- *
  */
 public class FileRequestInfoDTO {
 
@@ -48,8 +47,11 @@ public class FileRequestInfoDTO {
      */
     private String errorCause;
 
-    public static FileRequestInfoDTO build(Long requestId, String fileName, FileRequestType type,
-            FileRequestStatus status, String errorCause) {
+    public static FileRequestInfoDTO build(Long requestId,
+                                           String fileName,
+                                           FileRequestType type,
+                                           FileRequestStatus status,
+                                           String errorCause) {
         FileRequestInfoDTO dto = new FileRequestInfoDTO();
         dto.id = requestId;
         dto.type = type;

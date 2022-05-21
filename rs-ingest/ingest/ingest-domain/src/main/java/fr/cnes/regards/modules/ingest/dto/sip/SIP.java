@@ -18,33 +18,29 @@
  */
 package fr.cnes.regards.modules.ingest.dto.sip;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.security.MessageDigest;
-
-import javax.validation.Valid;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
-
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.dto.sip.validator.CheckSIP;
 import fr.cnes.regards.modules.ingest.dto.sip.validator.CheckSIPId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
+
+import javax.validation.Valid;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.security.MessageDigest;
 
 /**
- *
  * SIP representation based on OAIS information package standard structure as well as GeoJson structure.<br/>
  * Base representation is used for SIP passed by value.<br/>
  * "ref" extension attribute is used for SIP passed by reference.<br/>
- *
+ * <p>
  * To build a {@link SIP}, you have to use a {@link SIPBuilder}.
  *
  * @author Marc Sordi
- *
  */
 @CheckSIP(message = "The SIP must be sent either by reference or by value")
 @CheckSIPId(message = "The SIP identifier is required")
@@ -74,7 +70,8 @@ public class SIP extends AbstractInformationPackage<String> {
 
     /**
      * Build a new {@link SIP}
-     * @param type {@link EntityType}
+     *
+     * @param type       {@link EntityType}
      * @param providerId the provider id
      */
     public static SIP build(EntityType type, String providerId) {
@@ -85,11 +82,12 @@ public class SIP extends AbstractInformationPackage<String> {
 
     /**
      * Use this method to build a referenced SIP.
-     * @param type {@link EntityType}
+     *
+     * @param type       {@link EntityType}
      * @param providerId the provider id
-     * @param url URL of the SIP file
-     * @param algorithm {@link MessageDigest} checksum algorithm
-     * @param checksum checksum for current SIP file
+     * @param url        URL of the SIP file
+     * @param algorithm  {@link MessageDigest} checksum algorithm
+     * @param checksum   checksum for current SIP file
      */
     public static SIP buildReference(EntityType type, String providerId, URL url, String algorithm, String checksum) {
 
@@ -110,14 +108,18 @@ public class SIP extends AbstractInformationPackage<String> {
     /**
      * Alias of method {@link #buildReference(EntityType, String, URL, String)} with a {@link Path} reference instead of
      * {@link URL}.
-     * @param type {@link EntityType}
+     *
+     * @param type       {@link EntityType}
      * @param providerId the provider id
-     * @param filePath path to the SIP file
-     * @param algorithm {@link MessageDigest} checksum algorithm
-     * @param checksum checksum for current SIP file
+     * @param filePath   path to the SIP file
+     * @param algorithm  {@link MessageDigest} checksum algorithm
+     * @param checksum   checksum for current SIP file
      */
-    public static SIP buildReference(EntityType type, String providerId, Path filePath, String algorithm,
-            String checksum) {
+    public static SIP buildReference(EntityType type,
+                                     String providerId,
+                                     Path filePath,
+                                     String algorithm,
+                                     String checksum) {
         Assert.notNull(filePath, "File path is required");
         try {
             return buildReference(type, providerId, filePath.toUri().toURL(), algorithm, checksum);
@@ -131,10 +133,11 @@ public class SIP extends AbstractInformationPackage<String> {
 
     /**
      * Alias for method {@link #buildReference(EntityType, String, URL, String, String)} with MD5 default checksum algorithm
-     * @param type {@link EntityType}
+     *
+     * @param type       {@link EntityType}
      * @param providerId the provider id
-     * @param url URL of the SIP file
-     * @param checksum checksum for current SIP file
+     * @param url        URL of the SIP file
+     * @param checksum   checksum for current SIP file
      */
     public static SIP buildReference(EntityType type, String providerId, URL url, String checksum) {
         return buildReference(type, providerId, url, ContentInformation.MD5_ALGORITHM, checksum);
@@ -142,9 +145,10 @@ public class SIP extends AbstractInformationPackage<String> {
 
     /**
      * Alias for method {@link #buildReference(EntityType, String, Path, String)} with MD5 default checksum algorithm
-     * @param type {@link EntityType}
+     *
+     * @param type       {@link EntityType}
      * @param providerId the provider id
-     * @param filePath path to the SIP file
+     * @param filePath   path to the SIP file
      */
     public static SIP buildReference(EntityType type, String providerId, Path filePath, String checksum) {
         return buildReference(type, providerId, filePath, ContentInformation.MD5_ALGORITHM, checksum);

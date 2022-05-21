@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.utils.gson;
 
 import com.google.gson.TypeAdapter;
@@ -29,13 +29,15 @@ import java.time.Duration;
  *
  * @author gandrieu
  */
-public class GsonDurationAdapter  extends TypeAdapter<Duration> {
+public class GsonDurationAdapter extends TypeAdapter<Duration> {
 
-    @Override public void write(JsonWriter out, Duration value) throws IOException {
+    @Override
+    public void write(JsonWriter out, Duration value) throws IOException {
         out.value(value.toNanos());
     }
 
-    @Override public Duration read(JsonReader in) throws IOException {
+    @Override
+    public Duration read(JsonReader in) throws IOException {
         return Duration.ofNanos(in.nextLong());
     }
 }

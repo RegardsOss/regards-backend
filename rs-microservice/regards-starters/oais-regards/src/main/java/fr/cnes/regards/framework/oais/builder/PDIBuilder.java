@@ -18,22 +18,19 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
-import java.time.OffsetDateTime;
-import java.util.Collection;
-
-import javax.annotation.Nullable;
-
-import org.springframework.util.Assert;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.InformationPackageProperties;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
+import org.springframework.util.Assert;
+
+import javax.annotation.Nullable;
+import java.time.OffsetDateTime;
+import java.util.Collection;
 
 /**
  * Preservation Description Information Builder.<br/>
- *
+ * <p>
  * A {@link PreservationDescriptionInformation} contains exactly five information objects :
  * <ul>
  * <li>A context information object</li>
@@ -88,8 +85,8 @@ import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
  * <li>{@link PDIBuilder#setAccessRightInformation(String, String, OffsetDateTime)}</li>
  * </ul>
  * <br/>
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  * @deprecated {@link InformationPackageProperties} fluent API
  */
 @Deprecated
@@ -122,6 +119,7 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
 
     /**
      * Add tags
+     *
      * @param tags tags to add
      */
     public void addTags(String... tags) {
@@ -153,7 +151,8 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
 
     /**
      * Add an <b>optional</b> context information
-     * @param key information key
+     *
+     * @param key   information key
      * @param value information
      */
     public void addContextInformation(String key, Object value) {
@@ -166,6 +165,7 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
 
     /**
      * Add categories to context information (repeatable)
+     *
      * @param categories list of category
      */
     public void addContextCategories(String... categories) {
@@ -186,7 +186,8 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
 
     /**
      * Add optional reference information
-     * @param key information key
+     *
+     * @param key   information key
      * @param value information
      */
     public void addReferenceInformation(String key, String value) {
@@ -197,7 +198,8 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
 
     /**
      * add additional provenance information
-     * @param key name of the information
+     *
+     * @param key   name of the information
      * @param value value of the information
      */
     public void addAdditionalProvenanceInformation(String key, Object value) {
@@ -243,6 +245,7 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
 
     /**
      * Add information object events
+     *
      * @param events events to add
      */
     public void addProvenanceInformationEvents(Event... events) {
@@ -256,9 +259,10 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
 
     /**
      * Add an information object event
-     * @param type optional event type key (may be null)
+     *
+     * @param type    optional event type key (may be null)
      * @param comment event comment
-     * @param date event date
+     * @param date    event date
      */
     public void addProvenanceInformationEvent(@Nullable String type, String comment, OffsetDateTime date) {
         Event event = new Event();
@@ -270,8 +274,9 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
 
     /**
      * Add an information object event
+     *
      * @param comment event comment
-     * @param date event date
+     * @param date    event date
      */
     public void addProvenanceInformationEvent(String comment, OffsetDateTime date) {
         addProvenanceInformationEvent(null, comment, date);
@@ -279,6 +284,7 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
 
     /**
      * Add an information object event
+     *
      * @param comment event comment
      */
     public void addProvenanceInformationEvent(String comment) {
@@ -287,7 +293,8 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
 
     /**
      * Add an <b>optional</b> fixity information
-     * @param key information key
+     *
+     * @param key   information key
      * @param value information
      */
     public void addFixityInformation(String key, Object value) {
@@ -298,12 +305,14 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
 
     /**
      * Set <b>required</b> access right information
-     * @param licence optional licence
-     * @param dataRights secure key
+     *
+     * @param licence           optional licence
+     * @param dataRights        secure key
      * @param publicReleaseDate optional public release date (may be null)
      */
-    public void setAccessRightInformation(String licence, String dataRights,
-            @Nullable OffsetDateTime publicReleaseDate) {
+    public void setAccessRightInformation(String licence,
+                                          String dataRights,
+                                          @Nullable OffsetDateTime publicReleaseDate) {
         Assert.hasLength(dataRights, "Data rights is required");
         pdi.getAccessRightInformation().setDataRights(dataRights);
         pdi.getAccessRightInformation().setPublicReleaseDate(publicReleaseDate);
@@ -313,6 +322,7 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
     /**
      * Alias for {@link PDIBuilder#setAccessRightInformation(String, String, OffsetDateTime)} (no public release
      * date)
+     *
      * @param dataRights secure key
      */
     public void setAccessRightInformation(String dataRights) {

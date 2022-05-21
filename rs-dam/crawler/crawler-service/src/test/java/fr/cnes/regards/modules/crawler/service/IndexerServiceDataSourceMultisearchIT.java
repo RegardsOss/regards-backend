@@ -140,14 +140,25 @@ public class IndexerServiceDataSourceMultisearchIT extends AbstractIndexerServic
         // check that computed attribute were correclty done
         checkDatasetComputedAttribute(dataset1, objectSearchKey, summary1.getSavedObjectsCount());
         // Search for DataObjects tagging dataset1
-        Page<DataObject> objectsPage = searchService.search(objectSearchKey, 10000,
-                                                            ICriterion.eq("tags", dataset1.getIpId().toString(), StringMatchType.KEYWORD));
+        Page<DataObject> objectsPage = searchService.search(objectSearchKey,
+                                                            10000,
+                                                            ICriterion.eq("tags",
+                                                                          dataset1.getIpId().toString(),
+                                                                          StringMatchType.KEYWORD));
         Assert.assertTrue(objectsPage.getContent().size() > 0);
         Assert.assertEquals(summary1.getSavedObjectsCount(), objectsPage.getContent().size());
-        IProperty<JsonObject> rawFeature = (IProperty<JsonObject>) objectsPage.getContent().get(0).getFeature()
-                .getProperties().stream().filter(p -> p.getName().equals("raw_feature")).findFirst().get();
+        IProperty<JsonObject> rawFeature = (IProperty<JsonObject>) objectsPage.getContent()
+                                                                              .get(0)
+                                                                              .getFeature()
+                                                                              .getProperties()
+                                                                              .stream()
+                                                                              .filter(p -> p.getName()
+                                                                                            .equals("raw_feature"))
+                                                                              .findFirst()
+                                                                              .get();
         Assert.assertNotNull(rawFeature);
-        Assert.assertEquals("Expted value for property in JsonObject attribute is not found", "ici",
+        Assert.assertEquals("Expted value for property in JsonObject attribute is not found",
+                            "ici",
                             rawFeature.getValue().get("street_address").getAsString());
 
         crawlerService.startWork();
@@ -158,8 +169,11 @@ public class IndexerServiceDataSourceMultisearchIT extends AbstractIndexerServic
         crawlerService.waitForEndOfWork();
 
         // Search again for DataObjects tagging this dataset
-        objectsPage = searchService.search(objectSearchKey, 10000,
-                                           ICriterion.eq("tags", dataset1.getIpId().toString(), StringMatchType.KEYWORD));
+        objectsPage = searchService.search(objectSearchKey,
+                                           10000,
+                                           ICriterion.eq("tags",
+                                                         dataset1.getIpId().toString(),
+                                                         StringMatchType.KEYWORD));
         Assert.assertTrue(objectsPage.getContent().isEmpty());
         // Adding some free tag
         objectsPage.getContent().forEach(object -> object.addTags("TOTO"));
@@ -168,24 +182,32 @@ public class IndexerServiceDataSourceMultisearchIT extends AbstractIndexerServic
         esRepos.refresh(tenant);
 
         // Search for DataObjects tagging dataset2
-        objectsPage = searchService.search(objectSearchKey, 10000,
-                                           ICriterion.eq("tags", dataset2.getIpId().toString(), StringMatchType.KEYWORD));
+        objectsPage = searchService.search(objectSearchKey,
+                                           10000,
+                                           ICriterion.eq("tags",
+                                                         dataset2.getIpId().toString(),
+                                                         StringMatchType.KEYWORD));
         Assert.assertTrue(objectsPage.getContent().size() > 0);
         Assert.assertEquals(summary1.getSavedObjectsCount(), objectsPage.getContent().size());
 
         // Search for Dataset but with criterion on DataObjects
         // SearchKey<Dataset> dsSearchKey = new SearchKey<>(tenant, EntityType.DATA.toString(), Dataset.class);
-        JoinEntitySearchKey<DataObject, Dataset> dsSearchKey = Searches
-                .onSingleEntityReturningJoinEntity(EntityType.DATA, EntityType.DATASET);
+        JoinEntitySearchKey<DataObject, Dataset> dsSearchKey = Searches.onSingleEntityReturningJoinEntity(EntityType.DATA,
+                                                                                                          EntityType.DATASET);
         dsSearchKey.setSearchIndex(tenant);
-        Map<String, FacetType> facetsMap = new ImmutableMap.Builder<String, FacetType>()
-                .put("feature.properties.DATASET_VALIDATION_TYPE", FacetType.STRING)
-                .put("feature.properties.weight", FacetType.NUMERIC).put("feature.properties.vdate", FacetType.DATE)
-                .build();
+        Map<String, FacetType> facetsMap = new ImmutableMap.Builder<String, FacetType>().put(
+                                                                                            "feature.properties.DATASET_VALIDATION_TYPE",
+                                                                                            FacetType.STRING)
+                                                                                        .put("feature.properties.weight",
+                                                                                             FacetType.NUMERIC)
+                                                                                        .put("feature.properties.vdate",
+                                                                                             FacetType.DATE)
+                                                                                        .build();
         FacetPage<Dataset> dsPage = searchService.search(dsSearchKey, 1, ICriterion.all(), facetsMap);
         Assert.assertNotNull(dsPage);
         Assert.assertFalse(dsPage.getContent().isEmpty());
-        Assert.assertEquals("There should be 3 facets. Yes we have to compute data facets when looking for datasets", 3,
+        Assert.assertEquals("There should be 3 facets. Yes we have to compute data facets when looking for datasets",
+                            3,
                             dsPage.getFacets().size());
         Assert.assertEquals(1, dsPage.getContent().size());
 
@@ -198,8 +220,8 @@ public class IndexerServiceDataSourceMultisearchIT extends AbstractIndexerServic
         // Search for Dataset but with criterion on everything
         // SearchKey<Dataset> dsSearchKey2 = new SearchKey<>(tenant, EntityType.DATA.toString(), Dataset.class);
         @SuppressWarnings("rawtypes")
-        final JoinEntitySearchKey<AbstractEntity, Dataset> dsSearchKey2 = Searches
-                .onAllEntitiesReturningJoinEntity(EntityType.DATASET);
+        final JoinEntitySearchKey<AbstractEntity, Dataset> dsSearchKey2 = Searches.onAllEntitiesReturningJoinEntity(
+            EntityType.DATASET);
         dsSearchKey2.setSearchIndex(tenant);
         dsPage = searchService.search(dsSearchKey, 1, ICriterion.all(), null);
         Assert.assertNotNull(dsPage);
@@ -226,20 +248,25 @@ public class IndexerServiceDataSourceMultisearchIT extends AbstractIndexerServic
             case 1:
                 return ICriterion.and(ICriterion.eq("type", types[0], StringMatchType.KEYWORD), criterion);
             default:
-                ICriterion orCrit = ICriterion.or(Arrays.stream(types).map(type -> ICriterion.eq("type", type, StringMatchType.KEYWORD))
-                        .toArray(n -> new ICriterion[n]));
+                ICriterion orCrit = ICriterion.or(Arrays.stream(types)
+                                                        .map(type -> ICriterion.eq("type",
+                                                                                   type,
+                                                                                   StringMatchType.KEYWORD))
+                                                        .toArray(n -> new ICriterion[n]));
                 return ICriterion.and(orCrit, criterion);
         }
 
     }
 
-    private void checkDatasetComputedAttribute(Dataset dataset, SimpleSearchKey<DataObject> objectSearchKey,
-            long objectsCreationCount) throws IOException {
+    private void checkDatasetComputedAttribute(Dataset dataset,
+                                               SimpleSearchKey<DataObject> objectSearchKey,
+                                               long objectsCreationCount) throws IOException {
         RestClientBuilder restClientBuilder;
         RestHighLevelClient client;
         try {
-            restClientBuilder = RestClient.builder(new HttpHost(
-                    InetAddress.getByName(!Strings.isNullOrEmpty(esHost) ? esHost : esAddress), esPort));
+            restClientBuilder = RestClient.builder(new HttpHost(InetAddress.getByName(!Strings.isNullOrEmpty(esHost) ?
+                                                                                          esHost :
+                                                                                          esAddress), esPort));
             client = new RestHighLevelClient(restClientBuilder);
 
         } catch (final UnknownHostException e) {
@@ -253,21 +280,22 @@ public class IndexerServiceDataSourceMultisearchIT extends AbstractIndexerServic
         QueryBuilderCriterionVisitor critVisitor = new QueryBuilderCriterionVisitor();
         ICriterion crit = ICriterion.eq("tags", dataset.getIpId().toString(), StringMatchType.KEYWORD);
         crit = addTypes(crit, objectSearchKey.getSearchTypes());
-        QueryBuilder qb = QueryBuilders.boolQuery().must(QueryBuilders.matchAllQuery())
-                .filter(crit.accept(critVisitor));
+        QueryBuilder qb = QueryBuilders.boolQuery()
+                                       .must(QueryBuilders.matchAllQuery())
+                                       .filter(crit.accept(critVisitor));
         // now we have a request on the right data
         SearchSourceBuilder builder = new SearchSourceBuilder();
         builder.query(qb).size(0);
         // lets build the aggregations
         // aggregation for the min
         builder.aggregation(AggregationBuilders.min("min_start_date")
-                .field(StaticProperties.FEATURE_PROPERTIES_PATH + ".vdate"));
+                                               .field(StaticProperties.FEATURE_PROPERTIES_PATH + ".vdate"));
         // aggregation for the max
         builder.aggregation(AggregationBuilders.max("max_stop_date")
-                .field(StaticProperties.FEATURE_PROPERTIES_PATH + ".vdate"));
+                                               .field(StaticProperties.FEATURE_PROPERTIES_PATH + ".vdate"));
         // aggregation for the sum
         builder.aggregation(AggregationBuilders.sum("sum_values_l1")
-                .field(StaticProperties.FEATURE_PROPERTIES_PATH + ".value_l1"));
+                                               .field(StaticProperties.FEATURE_PROPERTIES_PATH + ".value_l1"));
         SearchRequest request = new SearchRequest(objectSearchKey.getSearchIndex().toLowerCase()).source(builder);
 
         // get the results computed by ElasticSearch

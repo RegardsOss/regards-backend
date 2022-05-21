@@ -18,21 +18,18 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
-import java.util.HashSet;
-import java.util.Set;
+import com.google.common.collect.Sets;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-
-import com.google.common.collect.Sets;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- *
  * File description
  *
  * @author Marc SORDI
- *
  */
 public class FeatureFile {
 

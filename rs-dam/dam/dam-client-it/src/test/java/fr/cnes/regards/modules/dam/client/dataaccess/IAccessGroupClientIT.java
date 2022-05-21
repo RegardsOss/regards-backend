@@ -18,6 +18,12 @@
  */
 package fr.cnes.regards.modules.dam.client.dataaccess;
 
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.feign.FeignClientBuilder;
+import fr.cnes.regards.framework.feign.TokenClientProvider;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,20 +39,9 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.gson.Gson;
-
-import fr.cnes.regards.framework.feign.FeignClientBuilder;
-import fr.cnes.regards.framework.feign.TokenClientProvider;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
-
 /**
- *
- * @DirtiesContext is mandatory, we have issue with context cleaning because of MockMvc
- *
  * @author Sylvain Vissiere-Guerinet
- *
+ * @DirtiesContext is mandatory, we have issue with context cleaning because of MockMvc
  */
 @TestPropertySource("classpath:test.properties")
 @DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
@@ -74,23 +69,22 @@ public class IAccessGroupClientIT extends AbstractRegardsWebIT {
     @Before
     public void init() {
         jwtService.injectMockToken(getDefaultTenant(), DEFAULT_ROLE);
-        client = FeignClientBuilder.build(
-                                          new TokenClientProvider<>(IAccessGroupClient.class,
-                                                  "http://" + serverAddress + ":" + getPort(), feignSecurityManager),
-                                          gson);
+        client = FeignClientBuilder.build(new TokenClientProvider<>(IAccessGroupClient.class,
+                                                                    "http://" + serverAddress + ":" + getPort(),
+                                                                    feignSecurityManager), gson);
         FeignSecurityManager.asSystem();
     }
 
     /**
-     *
      * Check that the access group Feign Client handle the pagination parameters.
      *
      * @since 1.0-SNAPSHOT
      */
     @Test
     public void testRetrieveAccessGroupsList() {
-        final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> accessGroups = client
-                .retrieveAccessGroupsList(null, 0, 10);
+        final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> accessGroups = client.retrieveAccessGroupsList(null,
+                                                                                                                  0,
+                                                                                                                  10);
         Assert.assertTrue(accessGroups.getStatusCode().equals(HttpStatus.OK));
     }
 

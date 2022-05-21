@@ -35,7 +35,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Marc SORDI
- *
  */
 public class LockingTaskExecutors {
 
@@ -55,8 +54,9 @@ public class LockingTaskExecutors {
         if (taskExecutors.containsKey(tenant)) {
             return taskExecutors.get(tenant);
         }
-        throw new IllegalArgumentException(
-                String.format("Unexpected tenant %s or lock provider not initialized for this tenant", tenant));
+        throw new IllegalArgumentException(String.format(
+            "Unexpected tenant %s or lock provider not initialized for this tenant",
+            tenant));
     }
 
     public void registerLockingTaskExecutor(String tenant, DataSource datasource) {

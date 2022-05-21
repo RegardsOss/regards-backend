@@ -18,19 +18,17 @@
  */
 package fr.cnes.regards.modules.opensearch.service.builder;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.core.builders.QueryTreeBuilder;
 import org.apache.lucene.queryparser.flexible.core.nodes.AndQueryNode;
 import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
 
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Marc Sordi
- *
  */
 public class AndQueryNodeBuilder implements ICriterionQueryBuilder {
 

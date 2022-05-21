@@ -41,11 +41,12 @@ import java.util.Optional;
  *
  * @author Iliana Ghazali
  **/
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_session_service_it"})
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_session_service_it" })
 @ActiveProfiles({ "testAmqp", "noscheduler" })
 public class SessionManagerHandlerIT extends AbstractManagerServiceUtilsIT {
 
-    private static final OffsetDateTime LAST_UPDATED = OffsetDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS);
+    private static final OffsetDateTime LAST_UPDATED = OffsetDateTime.now(ZoneOffset.UTC)
+                                                                     .truncatedTo(ChronoUnit.MICROS);
 
     @Test
     @Purpose("Test if session step is stored with its associated snapshot process")
@@ -54,27 +55,31 @@ public class SessionManagerHandlerIT extends AbstractManagerServiceUtilsIT {
         createRunStepEvents();
         Thread.sleep(10000L);
         // check first event is created
-        Optional<SessionStep> sessionStep1Opt = this.sessionStepRepo
-                .findBySourceAndSessionAndStepId(SOURCE_1, SESSION_1, "scan");
+        Optional<SessionStep> sessionStep1Opt = this.sessionStepRepo.findBySourceAndSessionAndStepId(SOURCE_1,
+                                                                                                     SESSION_1,
+                                                                                                     "scan");
         Assert.assertTrue("Session step should have been created", sessionStep1Opt.isPresent());
         SessionStep sessionStep1 = sessionStep1Opt.get();
         Assert.assertEquals("Wrong property", 2L, sessionStep1.getState().getRunning());
         // check second event is created
-        Optional<SessionStep> sessionStep2Opt = this.sessionStepRepo
-                .findBySourceAndSessionAndStepId(SOURCE_2, SESSION_1, "scan");
+        Optional<SessionStep> sessionStep2Opt = this.sessionStepRepo.findBySourceAndSessionAndStepId(SOURCE_2,
+                                                                                                     SESSION_1,
+                                                                                                     "scan");
         Assert.assertTrue("Session step should have been created", sessionStep2Opt.isPresent());
 
         // UPDATE FIRST SESSION STEP EVENT
         createRun2StepEvents();
         Thread.sleep(10000L);
         // check same event is updated
-        Optional<SessionStep> sessionStep1UpdatedOpt = this.sessionStepRepo
-                .findBySourceAndSessionAndStepId(SOURCE_1, SESSION_1, "scan");
+        Optional<SessionStep> sessionStep1UpdatedOpt = this.sessionStepRepo.findBySourceAndSessionAndStepId(SOURCE_1,
+                                                                                                            SESSION_1,
+                                                                                                            "scan");
         Assert.assertTrue("Session step should have been present", sessionStep1UpdatedOpt.isPresent());
         SessionStep sessionStep1Updated = sessionStep1UpdatedOpt.get();
         Assert.assertEquals("Wrong property", 0L, sessionStep1Updated.getState().getRunning());
         Assert.assertEquals("Wrong property", 2L, sessionStep1Updated.getState().getErrors());
-        Assert.assertNotEquals("Wrong lastUpdateDate", sessionStep1.getLastUpdateDate(),
+        Assert.assertNotEquals("Wrong lastUpdateDate",
+                               sessionStep1.getLastUpdateDate(),
                                sessionStep1Updated.getLastUpdateDate());
         // check values of second event are not changed
         sessionStep2Opt = this.sessionStepRepo.findBySourceAndSessionAndStepId(SOURCE_2, SESSION_1, "scan");
@@ -82,7 +87,8 @@ public class SessionManagerHandlerIT extends AbstractManagerServiceUtilsIT {
         SessionStep sessionStep2 = sessionStep2Opt.get();
         Assert.assertEquals("Wrong property", 2L, sessionStep2.getState().getRunning());
         Assert.assertEquals("Wrong property", 0L, sessionStep2.getState().getErrors());
-        Assert.assertNotEquals("Wrong lastUpdateDate", sessionStep2.getLastUpdateDate(),
+        Assert.assertNotEquals("Wrong lastUpdateDate",
+                               sessionStep2.getLastUpdateDate(),
                                sessionStep1Updated.getLastUpdateDate());
 
     }
@@ -91,14 +97,20 @@ public class SessionManagerHandlerIT extends AbstractManagerServiceUtilsIT {
         List<SessionStep> sessionStepList = new ArrayList<>();
 
         // SOURCE 1 -  SESSION 1
-        SessionStep sessionStep0 = new SessionStep("scan", SOURCE_1, SESSION_1, StepTypeEnum.ACQUISITION,
+        SessionStep sessionStep0 = new SessionStep("scan",
+                                                   SOURCE_1,
+                                                   SESSION_1,
+                                                   StepTypeEnum.ACQUISITION,
                                                    new StepState(0, 0, 2));
         sessionStep0.setInputRelated(2);
         sessionStep0.setLastUpdateDate(LAST_UPDATED.minusMinutes(3));
         sessionStepList.add(sessionStep0);
 
         // SOURCE 1 -  SESSION 2
-        SessionStep sessionStep2 = new SessionStep("scan", SOURCE_2, SESSION_1, StepTypeEnum.ACQUISITION,
+        SessionStep sessionStep2 = new SessionStep("scan",
+                                                   SOURCE_2,
+                                                   SESSION_1,
+                                                   StepTypeEnum.ACQUISITION,
                                                    new StepState(0, 0, 2));
         sessionStep2.setInputRelated(2);
         sessionStep2.setLastUpdateDate(LAST_UPDATED.minusMinutes(3));
@@ -114,7 +126,10 @@ public class SessionManagerHandlerIT extends AbstractManagerServiceUtilsIT {
         List<SessionStep> sessionStepList = new ArrayList<>();
 
         // SOURCE 1 -  SESSION 1
-        SessionStep sessionStep0 = new SessionStep("scan", SOURCE_1, SESSION_1, StepTypeEnum.ACQUISITION,
+        SessionStep sessionStep0 = new SessionStep("scan",
+                                                   SOURCE_1,
+                                                   SESSION_1,
+                                                   StepTypeEnum.ACQUISITION,
                                                    new StepState(2, 0, 0));
         sessionStep0.setInputRelated(2);
         sessionStep0.setLastUpdateDate(LAST_UPDATED.minusMinutes(2));

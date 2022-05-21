@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.modules.search.domain;
 
-import java.util.List;
-
-import org.apache.commons.compress.utils.Lists;
-
 import fr.cnes.regards.framework.urn.DataType;
+import org.apache.commons.compress.utils.Lists;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
+import java.util.List;
 
 /**
  * POJO Containig information to handle a new search on catalog from complex search system controller
+ *
  * @author Sébastien Binda
  */
 public class ComplexSearchRequest {
@@ -37,7 +36,7 @@ public class ComplexSearchRequest {
      * Search requests to handle
      */
     @Valid
-    @Size(min=0, max=100, message = "Number of requests in one Complex search request must be between 0 and 100")
+    @Size(min = 0, max = 100, message = "Number of requests in one Complex search request must be between 0 and 100")
     private List<SearchRequest> requests;
 
     /**

@@ -26,6 +26,7 @@ public interface IDataObjectAccessFilterPlugin {
 
     /**
      * Get the {@link ICriterion} search filters to select accessible dataObjects of the current dataset.
+     *
      * @return {@link ICriterion}
      */
     ICriterion getSearchFilter();
@@ -33,6 +34,7 @@ public interface IDataObjectAccessFilterPlugin {
     /**
      * Dynamic IDataObjectAccessFilterPlugin are used to recalculated dataObjects groups every day.
      * A dynamic plugin is a plugin that can return different criterion without any changes in his parameters.
+     *
      * @return boolean
      */
     boolean isDynamic();

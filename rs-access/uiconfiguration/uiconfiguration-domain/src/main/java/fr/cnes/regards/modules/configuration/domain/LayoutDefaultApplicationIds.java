@@ -19,17 +19,15 @@
 package fr.cnes.regards.modules.configuration.domain;
 
 /**
- *
  * Class LayoutDefaultApplicationIds
- *
+ * <p>
  * Enumeration for know IHM applications that needs to configure a layout.
  *
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 public enum LayoutDefaultApplicationIds {
-    USER("user"),
-    PORTAL("portal");
+    USER("user"), PORTAL("portal");
 
     private String value;
 

@@ -18,25 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.rest.plugin;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import org.apache.commons.compress.utils.Lists;
-import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
@@ -46,21 +29,29 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
-import fr.cnes.regards.modules.storage.domain.plugin.FileDeletionWorkingSubset;
-import fr.cnes.regards.modules.storage.domain.plugin.FileRestorationWorkingSubset;
-import fr.cnes.regards.modules.storage.domain.plugin.FileStorageWorkingSubset;
-import fr.cnes.regards.modules.storage.domain.plugin.IDeletionProgressManager;
-import fr.cnes.regards.modules.storage.domain.plugin.IOnlineStorageLocation;
-import fr.cnes.regards.modules.storage.domain.plugin.IStorageProgressManager;
-import fr.cnes.regards.modules.storage.domain.plugin.PreparationResponse;
+import fr.cnes.regards.modules.storage.domain.plugin.*;
+import org.apache.commons.compress.utils.Lists;
+import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * @author Binda sébastien
- *
  */
 @Plugin(author = "REGARDS Team", description = "Plugin handling the storage on local file system",
-        id = "SimpleOnlineTest", version = "1.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-        url = "https://regardsoss.github.io/")
+    id = "SimpleOnlineTest", version = "1.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
+    url = "https://regardsoss.github.io/")
 public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleOnlineDataStorage.class);
@@ -84,21 +75,22 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
      * Base storage location url
      */
     @PluginParameter(name = BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, description = "Base storage location url to use",
-            label = "Base storage location url")
+        label = "Base storage location url")
     private String baseStorageLocationAsString;
 
     @PluginParameter(name = HANDLE_STORAGE_ERROR_FILE_PATTERN, description = "Error file pattern",
-            label = "Error file pattern")
+        label = "Error file pattern")
     private String errorFilePattern;
 
     @PluginParameter(name = HANDLE_DELETE_ERROR_FILE_PATTERN, description = "Delete Error file pattern",
-            label = "Delete Error file pattern")
+        label = "Delete Error file pattern")
     private String deleteErrorFilePattern;
 
     private final String doNotHandlePattern = "doNotHandle.*";
 
     /**
      * Plugin init method
+     *
      * @throws IOException
      */
     @PluginInit
@@ -108,8 +100,7 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
     }
 
     @Override
-    public PreparationResponse<FileStorageWorkingSubset, FileStorageRequest> prepareForStorage(
-            Collection<FileStorageRequest> fileReferenceRequests) {
+    public PreparationResponse<FileStorageWorkingSubset, FileStorageRequest> prepareForStorage(Collection<FileStorageRequest> fileReferenceRequests) {
         Collection<FileStorageWorkingSubset> workingSubSets = Lists.newArrayList();
         workingSubSets.add(new FileStorageWorkingSubset(fileReferenceRequests));
         return PreparationResponse.build(workingSubSets, Maps.newHashMap());
@@ -149,9 +140,10 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
             } else {
                 directory = fileRefRequest.getStorageSubDirectory();
             }
-            String storedUrl = String
-                    .format("%s%s", baseStorageLocationAsString,
-                            Paths.get("/", directory, fileRefRequest.getMetaInfo().getChecksum()).toString());
+            String storedUrl = String.format("%s%s",
+                                             baseStorageLocationAsString,
+                                             Paths.get("/", directory, fileRefRequest.getMetaInfo().getChecksum())
+                                                  .toString());
 
             try {
                 String originFilePath = new URL(fileRefRequest.getOriginUrl()).getPath();
@@ -159,10 +151,10 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
                     Files.createDirectories(Paths.get(storedUrl).getParent());
                 }
                 if (Files.notExists(Paths.get(originFilePath))) {
-                    progressManager
-                            .storageFailed(fileRefRequest,
-                                           String.format("Origine file %s to store does not exists or is not readable.",
-                                                         fileRefRequest.getOriginUrl()));
+                    progressManager.storageFailed(fileRefRequest,
+                                                  String.format(
+                                                      "Origine file %s to store does not exists or is not readable.",
+                                                      fileRefRequest.getOriginUrl()));
                 } else {
                     if (Files.notExists(Paths.get(storedUrl))) {
                         Files.copy(Paths.get(originFilePath), Paths.get(storedUrl));
@@ -177,8 +169,7 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
     }
 
     @Override
-    public PreparationResponse<FileDeletionWorkingSubset, FileDeletionRequest> prepareForDeletion(
-            Collection<FileDeletionRequest> fileDeletionRequests) {
+    public PreparationResponse<FileDeletionWorkingSubset, FileDeletionRequest> prepareForDeletion(Collection<FileDeletionRequest> fileDeletionRequests) {
         Collection<FileDeletionWorkingSubset> workingSubSets = Lists.newArrayList();
         workingSubSets.add(new FileDeletionWorkingSubset(Sets.newHashSet(fileDeletionRequests)));
         return PreparationResponse.build(workingSubSets, Maps.newHashMap());
@@ -209,8 +200,7 @@ public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
     }
 
     @Override
-    public PreparationResponse<FileRestorationWorkingSubset, FileCacheRequest> prepareForRestoration(
-            Collection<FileCacheRequest> requests) {
+    public PreparationResponse<FileRestorationWorkingSubset, FileCacheRequest> prepareForRestoration(Collection<FileCacheRequest> requests) {
         Collection<FileRestorationWorkingSubset> workingSubSets = Lists.newArrayList();
         workingSubSets.add(new FileRestorationWorkingSubset(Sets.newHashSet(requests)));
         return PreparationResponse.build(workingSubSets, Maps.newHashMap());

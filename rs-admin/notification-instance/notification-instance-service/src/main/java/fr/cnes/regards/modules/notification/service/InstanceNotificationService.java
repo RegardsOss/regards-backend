@@ -50,6 +50,7 @@ import java.util.stream.Collectors;
 
 /**
  * {@link IInstanceNotificationService} implementation
+ *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
@@ -76,8 +77,10 @@ public class InstanceNotificationService implements IInstanceNotificationService
 
     private IInstanceNotificationService self;
 
-    public InstanceNotificationService(INotificationRepository notificationRepository, ApplicationEventPublisher applicationEventPublisher,
-                                       IAuthenticationResolver authenticationResolver, IInstanceNotificationService instanceNotificationService) {
+    public InstanceNotificationService(INotificationRepository notificationRepository,
+                                       ApplicationEventPublisher applicationEventPublisher,
+                                       IAuthenticationResolver authenticationResolver,
+                                       IInstanceNotificationService instanceNotificationService) {
         this.notificationRepository = notificationRepository;
         this.applicationEventPublisher = applicationEventPublisher;
         this.authenticationResolver = authenticationResolver;
@@ -99,8 +102,8 @@ public class InstanceNotificationService implements IInstanceNotificationService
         notification.setRoleRecipients(Sets.newHashSet(DefaultRole.INSTANCE_ADMIN.toString()));
 
         // check the notification type and send it immediately if FATAL or ERROR
-        if ((notification.getLevel() == NotificationLevel.FATAL)
-                || (notification.getLevel() == NotificationLevel.ERROR)) {
+        if ((notification.getLevel() == NotificationLevel.FATAL) || (notification.getLevel()
+            == NotificationLevel.ERROR)) {
             applicationEventPublisher.publishEvent(new NotificationToSendEvent(notification));
         }
 
@@ -156,8 +159,10 @@ public class InstanceNotificationService implements IInstanceNotificationService
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Page<INotificationWithoutMessage> deleteReadNotificationsPage(Pageable page) {
         Page<INotificationWithoutMessage> results = this.retrieveNotifications(page, NotificationStatus.READ);
-        Set<Long> idsToDelete = results.getContent().stream().map(INotificationWithoutMessage::getId)
-                .collect(Collectors.toSet());
+        Set<Long> idsToDelete = results.getContent()
+                                       .stream()
+                                       .map(INotificationWithoutMessage::getId)
+                                       .collect(Collectors.toSet());
         notificationRepository.deleteByIdIn(idsToDelete);
         return results;
     }

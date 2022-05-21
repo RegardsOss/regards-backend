@@ -18,18 +18,18 @@
  */
 package fr.cnes.regards.modules.indexer.domain.facet.adapters.gson;
 
-import java.lang.reflect.Type;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.Range;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import fr.cnes.regards.modules.indexer.domain.facet.DateFacet;
 import fr.cnes.regards.modules.indexer.domain.facet.StringFacet;
+
+import java.lang.reflect.Type;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * Simplify the serialization of {@link StringFacet#valueMap}.
@@ -57,8 +57,11 @@ public class DateFacetSerializer implements JsonSerializer<DateFacet> {
         public AdaptedFacet(DateFacet pFacet) {
             super();
             attributeName = pFacet.getAttributeName();
-            values = pFacet.getValues().entrySet().stream()
-                    .map(entry -> new AdaptedFacetValue(entry, pFacet.getAttributeName())).collect(Collectors.toList());
+            values = pFacet.getValues()
+                           .entrySet()
+                           .stream()
+                           .map(entry -> new AdaptedFacetValue(entry, pFacet.getAttributeName()))
+                           .collect(Collectors.toList());
         }
 
     }
@@ -82,6 +85,7 @@ public class DateFacetSerializer implements JsonSerializer<DateFacet> {
 
         /**
          * Be careful, the range must be closed-opened => [ date1 TO date2 }
+         *
          * @param entry
          * @param attributeName
          */

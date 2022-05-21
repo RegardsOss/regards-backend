@@ -49,10 +49,9 @@ import java.util.UUID;
  * @author Sébastien Binda
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=feature_geode", "regards.amqp.enabled=true",
-                "spring.task.scheduling.pool.size=2", "regards.feature.metrics.enabled=true" },
-        locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
-                "classpath:metrics.properties" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=feature_geode", "regards.amqp.enabled=true",
+        "spring.task.scheduling.pool.size=2", "regards.feature.metrics.enabled=true" },
+    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp" })
 // Clean all context (schedulers)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
@@ -71,8 +70,11 @@ public class FeatureGeodeIT extends AbstractFeatureMultitenantServiceIT {
     @Before
     public void prepareContext() throws Exception {
         super.before();
-        modelName = mockModelClient(GeodeProperties.getGeodeModel(), this.getCps(), this.getFactory(),
-                                    this.getDefaultTenant(), this.getModelAttrAssocClientMock());
+        modelName = mockModelClient(GeodeProperties.getGeodeModel(),
+                                    this.getCps(),
+                                    this.getFactory(),
+                                    this.getDefaultTenant(),
+                                    this.getModelAttrAssocClientMock());
         Thread.sleep(5_000);
     }
 
@@ -85,40 +87,51 @@ public class FeatureGeodeIT extends AbstractFeatureMultitenantServiceIT {
         // Wait for request handling and feature creation
         waitFeature(NB_FEATURES, null, 60_000);
         waitForStep(featureCreationRequestRepo, FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED, NB_FEATURES, 30_000);
-        LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests done in {} ms", NB_FEATURES,
+        LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests done in {} ms",
+                    NB_FEATURES,
                     System.currentTimeMillis() - creationStart);
 
         mockNotificationResponseSuccess();
-        waitRequest(featureCreationRequestRepo, 0,5_000);
+        waitRequest(featureCreationRequestRepo, 0, 5_000);
 
         // Request update
         long updateStart = System.currentTimeMillis();
         OffsetDateTime requestDate = requestUpdate();
         // Wait for request handling and feature update
         waitFeature(NB_FEATURES, requestDate, 30_000);
-        LOGGER.info(">>>>>>>>>>>>>>>>> {} update requests done in {} ms", NB_FEATURES,
+        LOGGER.info(">>>>>>>>>>>>>>>>> {} update requests done in {} ms",
+                    NB_FEATURES,
                     System.currentTimeMillis() - updateStart);
 
         waitForStep(featureUpdateRequestRepo, FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED, NB_FEATURES, 30_000);
         mockNotificationResponseSuccess();
-        waitRequest(featureUpdateRequestRepo, 0,5_000);
+        waitRequest(featureUpdateRequestRepo, 0, 5_000);
 
-        LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests and {} update requests done in {} ms", NB_FEATURES,
-                    NB_FEATURES, System.currentTimeMillis() - creationStart);
+        LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests and {} update requests done in {} ms",
+                    NB_FEATURES,
+                    NB_FEATURES,
+                    System.currentTimeMillis() - creationStart);
     }
 
     public void requestCreation() {
-        FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata.build("sessionOwner", "session",
+        FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata.build("sessionOwner",
+                                                                                       "session",
                                                                                        PriorityLevel.NORMAL,
-                                                                                       Lists.emptyList(), true, false);
+                                                                                       Lists.emptyList(),
+                                                                                       true,
+                                                                                       false);
 
         long creationStart = System.currentTimeMillis();
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
         int bulk = 0;
         for (int i = 1; i <= NB_FEATURES; i++) {
             bulk++;
-            Feature feature = Feature.build(String.format(PROVIDER_ID_FORMAT, i), "owner", null, IGeometry.unlocated(),
-                                            EntityType.DATA, modelName);
+            Feature feature = Feature.build(String.format(PROVIDER_ID_FORMAT, i),
+                                            "owner",
+                                            null,
+                                            IGeometry.unlocated(),
+                                            EntityType.DATA,
+                                            modelName);
             GeodeProperties.addGeodeProperties(feature);
             events.add(FeatureCreationRequestEvent.build("sessionOwner", metadata, feature));
 
@@ -133,7 +146,8 @@ public class FeatureGeodeIT extends AbstractFeatureMultitenantServiceIT {
             publish(events, "creation", NB_FEATURES, NB_FEATURES);
         }
 
-        LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests published in {} ms", NB_FEATURES,
+        LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests published in {} ms",
+                    NB_FEATURES,
                     System.currentTimeMillis() - creationStart);
     }
 
@@ -161,7 +175,8 @@ public class FeatureGeodeIT extends AbstractFeatureMultitenantServiceIT {
             publish(uEvents, "update", NB_FEATURES, NB_FEATURES);
         }
 
-        LOGGER.info(">>>>>>>>>>>>>>>>> {} update requests published in {} ms", NB_FEATURES,
+        LOGGER.info(">>>>>>>>>>>>>>>>> {} update requests published in {} ms",
+                    NB_FEATURES,
                     System.currentTimeMillis() - updateStart);
 
         return requestDate;
@@ -170,13 +185,20 @@ public class FeatureGeodeIT extends AbstractFeatureMultitenantServiceIT {
     private void publish(List<? extends ISubscribable> events, String type, int count, int total) {
         long creationStart = System.currentTimeMillis();
         publisher.publish(events);
-        LOGGER.info(">>>>>>>>>>>>>>>>> {} {} events published in {} ms ({}/{})", events.size(), type,
-                    System.currentTimeMillis() - creationStart, count, total);
+        LOGGER.info(">>>>>>>>>>>>>>>>> {} {} events published in {} ms ({}/{})",
+                    events.size(),
+                    type,
+                    System.currentTimeMillis() - creationStart,
+                    count,
+                    total);
     }
 
     private FeatureUniformResourceName getURN(String id) {
         UUID uuid = UUID.nameUUIDFromBytes(id.getBytes());
-        return FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA, getDefaultTenant(), uuid,
+        return FeatureUniformResourceName.build(FeatureIdentifier.FEATURE,
+                                                EntityType.DATA,
+                                                getDefaultTenant(),
+                                                uuid,
                                                 1);
     }
 }

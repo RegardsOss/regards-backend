@@ -18,21 +18,20 @@
  */
 package fr.cnes.regards.modules.feature.dto.urn.converter;
 
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
-
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 /**
  * This adapter is used by Gson on {@link FeatureUniformResourceName}
+ *
  * @author Sylvain Vissiere-Guerinet
  */
 @GsonTypeAdapter(adapted = FeatureUniformResourceName.class)

@@ -38,13 +38,15 @@ import java.util.*;
 
 /**
  * AIP Service interface. Service to handle business around {@link AIPEntity}s
+ *
  * @author Sébastien Binda
  */
 public interface IAIPService {
 
     /**
      * Create and save {@link AIPEntity} from list of {@link AIP}
-     * @param sip linked {@link SIPEntity}
+     *
+     * @param sip  linked {@link SIPEntity}
      * @param aips list of {@link AIP}
      * @return list of related {@link AIPEntity}
      */
@@ -52,6 +54,7 @@ public interface IAIPService {
 
     /**
      * Save an AIPUpdatesCreatorRequest and try to schedule it in a job
+     *
      * @param params the AIPUpdateParametersDto payload
      */
     void registerUpdatesCreator(AIPUpdateParametersDto params);
@@ -73,6 +76,7 @@ public interface IAIPService {
 
     /**
      * Calculate checksum of an AIP as it will be written when AIP file is downloaded
+     *
      * @param aip
      * @throws NoSuchAlgorithmException
      * @throws IOException
@@ -88,6 +92,7 @@ public interface IAIPService {
 
     /**
      * Retrieve all tags used by a set of AIPS matching provided filters
+     *
      * @param filters
      * @return list of tags
      */
@@ -95,6 +100,7 @@ public interface IAIPService {
 
     /**
      * Retrieve all storages used by a set of AIPS matching provided filters
+     *
      * @param filters
      * @return list of storage business id
      */
@@ -102,6 +108,7 @@ public interface IAIPService {
 
     /**
      * Retrieve all storages used by a set of AIPS matching provided filters
+     *
      * @param filters
      * @return list of storage business id
      */
@@ -114,6 +121,7 @@ public interface IAIPService {
 
     /**
      * Retrieve a set of aip using a sip id
+     *
      * @param sipId
      */
     Set<AIPEntity> findBySipId(String sipId);
@@ -122,12 +130,14 @@ public interface IAIPService {
 
     /**
      * Retrieve {@link AIPEntity}s from given aip ids
+     *
      * @param aipIds
      */
     Collection<AIPEntity> findByAipIds(Collection<String> aipIds);
 
     Set<AIPEntity> findLastByProviderIds(Collection<String> providerIds);
 
-    void handleVersioning(AIPEntity aipEntity, VersioningMode versioningMode,
-            Map<String, AIPEntity> currentLatestPerProviderId);
+    void handleVersioning(AIPEntity aipEntity,
+                          VersioningMode versioningMode,
+                          Map<String, AIPEntity> currentLatestPerProviderId);
 }

@@ -4,9 +4,13 @@ package fr.cnes.regards.framework.modules.tenant.settings.domain;
  * @author Sylvain VISSIERE-GUERINET
  */
 public class DynamicTenantSettingDto<T> {
+
     private String name;
+
     private String description;
+
     private T value;
+
     private T defaultValue;
 
     public DynamicTenantSettingDto(DynamicTenantSetting setting) {
@@ -19,7 +23,8 @@ public class DynamicTenantSettingDto<T> {
     /**
      * Constructor for (de)serialization
      */
-    public DynamicTenantSettingDto() {}
+    public DynamicTenantSettingDto() {
+    }
 
     public String getName() {
         return name;

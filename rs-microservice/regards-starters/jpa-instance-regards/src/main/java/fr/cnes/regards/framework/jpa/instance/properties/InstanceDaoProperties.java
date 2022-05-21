@@ -18,16 +18,16 @@
  */
 package fr.cnes.regards.framework.jpa.instance.properties;
 
+import fr.cnes.regards.framework.jpa.utils.MigrationTool;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
-import fr.cnes.regards.framework.jpa.utils.MigrationTool;
-
 /**
  * Class InstanceDaoProperties
- *
+ * <p>
  * DAO Instance database configuration
+ *
  * @author Sébastien Binda
  */
 @ConfigurationProperties("regards.jpa.instance")
@@ -91,6 +91,7 @@ public class InstanceDaoProperties {
 
     /**
      * Setter
+     *
      * @param pDatasource instance JPA datasource
      */
     public void setDatasource(final DataSourceProperties pDatasource) {
@@ -99,6 +100,7 @@ public class InstanceDaoProperties {
 
     /**
      * Getter
+     *
      * @return instance JPA Datasource
      */
     public DataSourceProperties getDatasource() {
@@ -107,6 +109,7 @@ public class InstanceDaoProperties {
 
     /**
      * Getter
+     *
      * @return Is Instance database enabled ?
      * @since 1.0 SNAPSHOT
      */
@@ -116,6 +119,7 @@ public class InstanceDaoProperties {
 
     /**
      * Setter
+     *
      * @param pEnabled Is Instance database enabled ?
      * @since 1.0 SNAPSHOT
      */

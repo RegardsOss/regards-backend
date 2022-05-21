@@ -66,8 +66,14 @@ public class AmqpClientPublisher {
     /**
      * Publish a single message loaded from specified JSON file
      */
-    public void publish(String exchangeName, Optional<String> queueName, Optional<String> routingKey, Optional<String> dlk,
-            Integer priority, Map<String, Object> headers, String jsonPathString, Integer iterations) {
+    public void publish(String exchangeName,
+                        Optional<String> queueName,
+                        Optional<String> routingKey,
+                        Optional<String> dlk,
+                        Integer priority,
+                        Map<String, Object> headers,
+                        String jsonPathString,
+                        Integer iterations) {
 
         Path path = Paths.get(jsonPathString);
         if (!Files.exists(path)) {
@@ -93,8 +99,14 @@ public class AmqpClientPublisher {
     /**
      * Publish all messages generated from specified template.
      */
-    private void doPublishWithTemplate(String exchangeName, Optional<String> queueName, Optional<String> routingKey,
-            Optional<String> dlk, Integer priority, Map<String, Object> headers, Path templatePath, Integer iterations) {
+    private void doPublishWithTemplate(String exchangeName,
+                                       Optional<String> queueName,
+                                       Optional<String> routingKey,
+                                       Optional<String> dlk,
+                                       Integer priority,
+                                       Map<String, Object> headers,
+                                       Path templatePath,
+                                       Integer iterations) {
         // Generate messages
         Generator randomGenerator = generatorBuilder.build(templatePath, propertyGetter);
 
@@ -115,8 +127,14 @@ public class AmqpClientPublisher {
     /**
      * Publish all messages load from specified directory.
      */
-    private void doPublishAll(String exchangeName, Optional<String> queueName, Optional<String> routingKey,
-            Optional<String> dlk, Integer priority, Map<String, Object> headers, Path jsonPath, Integer iterations) {
+    private void doPublishAll(String exchangeName,
+                              Optional<String> queueName,
+                              Optional<String> routingKey,
+                              Optional<String> dlk,
+                              Integer priority,
+                              Map<String, Object> headers,
+                              Path jsonPath,
+                              Integer iterations) {
 
         PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*.json");
 
@@ -140,8 +158,13 @@ public class AmqpClientPublisher {
 
     }
 
-    private void doPublish(String exchangeName, Optional<String> queueName, Optional<String> routingKey, Optional<String> dlk,Integer priority,
-            Map<String, Object> headers, Path jsonPath) {
+    private void doPublish(String exchangeName,
+                           Optional<String> queueName,
+                           Optional<String> routingKey,
+                           Optional<String> dlk,
+                           Integer priority,
+                           Map<String, Object> headers,
+                           Path jsonPath) {
         try {
             LOGGER.info("Loading JSON from {}", jsonPath);
             // Load JSON message

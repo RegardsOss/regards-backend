@@ -18,6 +18,11 @@
  */
 package fr.cnes.regards.modules.configuration.rest;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.modules.configuration.dao.IModuleRepository;
+import fr.cnes.regards.modules.configuration.domain.Module;
+import fr.cnes.regards.modules.configuration.domain.UIPage;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -25,16 +30,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.modules.configuration.dao.IModuleRepository;
-import fr.cnes.regards.modules.configuration.domain.Module;
-import fr.cnes.regards.modules.configuration.domain.UIPage;
-
 /**
- *
  * Class InstanceLayoutControllerIT
- *
+ * <p>
  * IT Tests for REST Controller
  *
  * @author Sébastien Binda
@@ -89,42 +87,53 @@ public class ModuleControllerIT extends AbstractRegardsTransactionalIT {
     public void getUserApplicationModules() {
         performDefaultGet("/applications/{applicationId}/modules",
                           customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 2),
-                          "The module list of TEST application should contains two modules", APPLICATION_TEST);
+                          "The module list of TEST application should contains two modules",
+                          APPLICATION_TEST);
 
         performDefaultGet("/applications/{applicationId}/modules",
                           customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 0),
-                          "The module list of TEST2 application should be empty", "TEST2");
+                          "The module list of TEST2 application should be empty",
+                          "TEST2");
     }
 
     @Test
     public void getUserApplicationActiveModules() {
         performDefaultGet("/applications/{applicationId}/modules",
-                          customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 1).addParameter("active",
-                                                                                                            "true"),
-                          "The active module list should contains only one module", APPLICATION_TEST);
+                          customizer().expectStatusOk()
+                                      .expectToHaveSize(JSON_PATH_CONTENT, 1)
+                                      .addParameter("active", "true"),
+                          "The active module list should contains only one module",
+                          APPLICATION_TEST);
     }
 
     @Test
     public void saveNewModule() {
         final Module module = createModule(true, new UIPage(true, null, null, null));
-        performDefaultPost("/applications/{applicationId}/modules", module, customizer().expectStatusOk(),
-                           "The POST to save a new module should be a success", APPLICATION_TEST);
+        performDefaultPost("/applications/{applicationId}/modules",
+                           module,
+                           customizer().expectStatusOk(),
+                           "The POST to save a new module should be a success",
+                           APPLICATION_TEST);
 
         performDefaultGet("/applications/{applicationId}/modules",
                           customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 3),
-                          "The previously created module should be retrieved", APPLICATION_TEST);
+                          "The previously created module should be retrieved",
+                          APPLICATION_TEST);
     }
 
     @Test
     public void deleteModule() {
         performDefaultDelete(ModuleController.ROOT_MAPPING + ModuleController.MODULE_ID_MAPPING,
                              customizer().expectStatusOk(),
-                             "The deletion of a given existing module should be a success", APPLICATION_TEST,
+                             "The deletion of a given existing module should be a success",
+                             APPLICATION_TEST,
                              moduleTest.getId());
 
         performDefaultGet(ModuleController.ROOT_MAPPING + ModuleController.MODULE_ID_MAPPING,
-                          customizer().expectStatusNotFound(), "The previously deleted module should not exist anymore",
-                          APPLICATION_TEST, moduleTest.getId().toString());
+                          customizer().expectStatusNotFound(),
+                          "The previously deleted module should not exist anymore",
+                          APPLICATION_TEST,
+                          moduleTest.getId().toString());
     }
 
 }

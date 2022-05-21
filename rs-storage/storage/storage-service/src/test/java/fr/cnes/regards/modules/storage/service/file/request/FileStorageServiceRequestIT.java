@@ -58,18 +58,17 @@ import java.util.concurrent.ExecutionException;
  * Test class
  *
  * @author Sébastien Binda
- *
  */
 @ActiveProfiles({ "noscheduler" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_storage_tests"},
-        locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_storage_tests" },
+    locations = { "classpath:application-test.properties" })
 public class FileStorageServiceRequestIT extends AbstractStorageIT {
 
-    private static final  String SESSION_OWNER_1 = "SOURCE 1";
+    private static final String SESSION_OWNER_1 = "SOURCE 1";
 
     private static final String SESSION_1 = "SESSION 1";
 
-    private static final  String SESSION_OWNER_2 = "SOURCE 2";
+    private static final String SESSION_OWNER_2 = "SOURCE 2";
 
     @Before
     @Override
@@ -79,7 +78,9 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
 
     @Test
     public void retryMultipleStoreErrors() throws InterruptedException, ExecutionException, ModuleException {
-        FileStorageRequest fileRefReq = this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1,
+        FileStorageRequest fileRefReq = this.generateStoreFileError("someone",
+                                                                    ONLINE_CONF_LABEL,
+                                                                    SESSION_OWNER_1,
                                                                     SESSION_1);
         this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
         this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
@@ -107,10 +108,14 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
         this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
         this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
         this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
-        FileStorageRequest fileRefReq1 = this.generateStoreFileError("someone-else", ONLINE_CONF_LABEL,
-                                                                     SESSION_OWNER_2, SESSION_1);
-        FileStorageRequest fileRefReq2 = this.generateStoreFileError("someone-else", ONLINE_CONF_LABEL,
-                                                                     SESSION_OWNER_2, SESSION_1);
+        FileStorageRequest fileRefReq1 = this.generateStoreFileError("someone-else",
+                                                                     ONLINE_CONF_LABEL,
+                                                                     SESSION_OWNER_2,
+                                                                     SESSION_1);
+        FileStorageRequest fileRefReq2 = this.generateStoreFileError("someone-else",
+                                                                     ONLINE_CONF_LABEL,
+                                                                     SESSION_OWNER_2,
+                                                                     SESSION_1);
         // Update plugin conf to now accept error files
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
@@ -126,15 +131,23 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
                                                                     PageRequest.of(0, 1000, Direction.ASC, "id"));
         Page<FileReference> fileRefs = fileRefService.search(ONLINE_CONF_LABEL,
                                                              PageRequest.of(0, 1000, Direction.ASC, "id"));
-        Assert.assertEquals("File references should have been created for the given owner.", 2,
+        Assert.assertEquals("File references should have been created for the given owner.",
+                            2,
                             fileRefs.getContent().size());
-        Assert.assertTrue("File references should have been created for the given owner.", fileRefs.getContent()
-                .stream()
-                .anyMatch(fr -> fr.getMetaInfo().getChecksum().equals(fileRefReq1.getMetaInfo().getChecksum())));
-        Assert.assertTrue("File references should have been created for the given owner.", fileRefs.getContent()
-                .stream()
-                .anyMatch(fr -> fr.getMetaInfo().getChecksum().equals(fileRefReq2.getMetaInfo().getChecksum())));
-        Assert.assertEquals("File reference requests should not exists anymore for the given owner", 3,
+        Assert.assertTrue("File references should have been created for the given owner.",
+                          fileRefs.getContent()
+                                  .stream()
+                                  .anyMatch(fr -> fr.getMetaInfo()
+                                                    .getChecksum()
+                                                    .equals(fileRefReq1.getMetaInfo().getChecksum())));
+        Assert.assertTrue("File references should have been created for the given owner.",
+                          fileRefs.getContent()
+                                  .stream()
+                                  .anyMatch(fr -> fr.getMetaInfo()
+                                                    .getChecksum()
+                                                    .equals(fileRefReq2.getMetaInfo().getChecksum())));
+        Assert.assertEquals("File reference requests should not exists anymore for the given owner",
+                            3,
                             fileRefReqs.getContent().size());
     }
 
@@ -142,7 +155,9 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
     public void retryMultipleStoreErrorsByStorage() throws InterruptedException, ExecutionException, ModuleException {
         this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
         this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
-        FileStorageRequest fileRefReqOther = this.generateStoreFileError("someone", "other-target", SESSION_OWNER_1,
+        FileStorageRequest fileRefReqOther = this.generateStoreFileError("someone",
+                                                                         "other-target",
+                                                                         SESSION_OWNER_1,
                                                                          SESSION_1);
         // Update plugin conf to now accept error files
         this.updatePluginConfForError("unknown.*");
@@ -158,16 +173,23 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
         Page<FileStorageRequest> fileRefReqs = stoReqService.search(PageRequest.of(0, 1000, Direction.ASC, "id"));
         Page<FileReference> fileRefs = fileRefService.search(PageRequest.of(0, 1000, Direction.ASC, "id"));
         Assert.assertEquals("File references should have been created.", 2, fileRefs.getContent().size());
-        Assert.assertEquals("File reference requests should not exists anymore for given storage", 1,
+        Assert.assertEquals("File reference requests should not exists anymore for given storage",
+                            1,
                             fileRefReqs.getContent().size());
-        Assert.assertTrue("File references request should still exists for other storage.", fileRefReqs.getContent()
-                .stream()
-                .anyMatch(frr -> frr.getMetaInfo().getChecksum().equals(fileRefReqOther.getMetaInfo().getChecksum())));
+        Assert.assertTrue("File references request should still exists for other storage.",
+                          fileRefReqs.getContent()
+                                     .stream()
+                                     .anyMatch(frr -> frr.getMetaInfo()
+                                                         .getChecksum()
+                                                         .equals(fileRefReqOther.getMetaInfo().getChecksum())));
     }
 
     @Test
     public void retryStoreErrors() throws InterruptedException, ExecutionException, ModuleException {
-        FileStorageRequest fileRefReq = this.generateStoreFileError("someone", ONLINE_CONF_LABEL, SESSION_OWNER_1, SESSION_1);
+        FileStorageRequest fileRefReq = this.generateStoreFileError("someone",
+                                                                    ONLINE_CONF_LABEL,
+                                                                    SESSION_OWNER_1,
+                                                                    SESSION_1);
         // Update plugin conf to now accept error files
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
@@ -191,58 +213,91 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
         String owner = "owner";
         String fileName = "error.file.test";
         String errorUrl = "file://somewhere/plop.test";
-        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", fileName, 132L,
-                MediaType.APPLICATION_OCTET_STREAM);
+        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum,
+                                                                       "MD5",
+                                                                       fileName,
+                                                                       132L,
+                                                                       MediaType.APPLICATION_OCTET_STREAM);
         FileLocation destination = new FileLocation(storageDestination, "/in/this/directory");
         // Run file reference creation.
-        stoReqService.handleRequest(owner, SESSION_OWNER_1, SESSION_1, fileMetaInfo, errorUrl, storageDestination,
-                                    Optional.of("/in/this/directory"), UUID.randomUUID().toString());
+        stoReqService.handleRequest(owner,
+                                    SESSION_OWNER_1,
+                                    SESSION_1,
+                                    fileMetaInfo,
+                                    errorUrl,
+                                    storageDestination,
+                                    Optional.of("/in/this/directory"),
+                                    UUID.randomUUID().toString());
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
         Collection<FileStorageRequest> fileRefReqs = stoReqService.search(destination.getStorage(),
                                                                           fileMetaInfo.getChecksum());
         Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
         Assert.assertEquals("File reference request should exists", 1, fileRefReqs.size());
-        Assert.assertEquals("File reference request should be in STORE_ERROR status", FileRequestStatus.ERROR,
+        Assert.assertEquals("File reference request should be in STORE_ERROR status",
+                            FileRequestStatus.ERROR,
                             fileRefReqs.stream().findFirst().get().getStatus());
-        Assert.assertEquals("File reference request should be in STORE_ERROR status", fileName,
+        Assert.assertEquals("File reference request should be in STORE_ERROR status",
+                            fileName,
                             fileRefReqs.stream().findFirst().get().getMetaInfo().getFileName());
-        Assert.assertEquals("File reference request should be in STORE_ERROR status", errorUrl,
+        Assert.assertEquals("File reference request should be in STORE_ERROR status",
+                            errorUrl,
                             fileRefReqs.stream().findFirst().get().getOriginUrl());
 
         String newFileName = "ok.file.test";
-        fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", "ok.file.test", 132L,
-                MediaType.APPLICATION_OCTET_STREAM);
+        fileMetaInfo = new FileReferenceMetaInfo(checksum,
+                                                 "MD5",
+                                                 "ok.file.test",
+                                                 132L,
+                                                 MediaType.APPLICATION_OCTET_STREAM);
         // Run file reference creation.
-        stoReqService.handleRequest(owner, SESSION_OWNER_1, SESSION_1, fileMetaInfo, originUrl, storageDestination,
-                                    Optional.of("/in/this/directory"), UUID.randomUUID().toString());
+        stoReqService.handleRequest(owner,
+                                    SESSION_OWNER_1,
+                                    SESSION_1,
+                                    fileMetaInfo,
+                                    originUrl,
+                                    storageDestination,
+                                    Optional.of("/in/this/directory"),
+                                    UUID.randomUUID().toString());
 
         fileRefReqs = stoReqService.search(destination.getStorage(), fileMetaInfo.getChecksum());
         Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
         Assert.assertEquals("File reference request should exists", 1, fileRefReqs.size());
-        Assert.assertEquals("File reference request should be in STORE_ERROR status", FileRequestStatus.TO_DO,
+        Assert.assertEquals("File reference request should be in STORE_ERROR status",
+                            FileRequestStatus.TO_DO,
                             fileRefReqs.stream().findFirst().get().getStatus());
-        Assert.assertEquals("File reference request should be in STORE_ERROR status", newFileName,
+        Assert.assertEquals("File reference request should be in STORE_ERROR status",
+                            newFileName,
                             fileRefReqs.stream().findFirst().get().getMetaInfo().getFileName());
-        Assert.assertEquals("File reference request should be in STORE_ERROR status", originUrl,
+        Assert.assertEquals("File reference request should be in STORE_ERROR status",
+                            originUrl,
                             fileRefReqs.stream().findFirst().get().getOriginUrl());
     }
 
     @Test
     public void storeImageWithOnlinePlugin()
-            throws InterruptedException, ExecutionException, IOException, NoSuchAlgorithmException {
+        throws InterruptedException, ExecutionException, IOException, NoSuchAlgorithmException {
         File inputImage = Paths.get("src/test/resources/input/cnes.png").toFile();
         InputStream stream = com.google.common.io.Files.asByteSource(inputImage).openStream();
         String checksum = ChecksumUtils.computeHexChecksum(stream, "MD5");
         stream.close();
         String owner = "someone";
-        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", inputImage.getName(),
-                inputImage.getTotalSpace(), MediaType.IMAGE_PNG);
+        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum,
+                                                                       "MD5",
+                                                                       inputImage.getName(),
+                                                                       inputImage.getTotalSpace(),
+                                                                       MediaType.IMAGE_PNG);
         URL origin = new URL("file", "localhost", inputImage.getAbsolutePath());
         FileLocation destination = new FileLocation(ONLINE_CONF_LABEL, "/in/this/directory");
         // Run file reference creation.
-        stoReqService.handleRequest(owner, SESSION_OWNER_1, SESSION_1, fileMetaInfo, origin.toString(), ONLINE_CONF_LABEL,
-                                    Optional.of("/in/this/directory"), UUID.randomUUID().toString());
+        stoReqService.handleRequest(owner,
+                                    SESSION_OWNER_1,
+                                    SESSION_1,
+                                    fileMetaInfo,
+                                    origin.toString(),
+                                    ONLINE_CONF_LABEL,
+                                    Optional.of("/in/this/directory"),
+                                    UUID.randomUUID().toString());
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
         Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
@@ -251,9 +306,11 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
 
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), checksum);
         Assert.assertTrue("File reference should have been created.", oFileRef.isPresent());
-        Assert.assertEquals("File reference should have been created.", 499,
+        Assert.assertEquals("File reference should have been created.",
+                            499,
                             oFileRef.get().getMetaInfo().getWidth().intValue());
-        Assert.assertEquals("File reference should have been created.", 362,
+        Assert.assertEquals("File reference should have been created.",
+                            362,
                             oFileRef.get().getMetaInfo().getHeight().intValue());
     }
 
@@ -276,17 +333,35 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
         // Add a file reference request for a file that will not be handled by the storage plugin (ignored by his name in the test plugin)
         String checksumNotHandled = UUID.randomUUID().toString();
         String fileNameNotHandled = "doNotHandle.file.test";
-        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksumNotHandled, "MD5", fileNameNotHandled,
-                132L, MediaType.APPLICATION_OCTET_STREAM);
-        stoReqService.handleRequest(owner, SESSION_OWNER_1, SESSION_1, fileMetaInfo, originUrl, ONLINE_CONF_LABEL,
-                                    Optional.of("/in/this/directory"), UUID.randomUUID().toString());
+        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksumNotHandled,
+                                                                       "MD5",
+                                                                       fileNameNotHandled,
+                                                                       132L,
+                                                                       MediaType.APPLICATION_OCTET_STREAM);
+        stoReqService.handleRequest(owner,
+                                    SESSION_OWNER_1,
+                                    SESSION_1,
+                                    fileMetaInfo,
+                                    originUrl,
+                                    ONLINE_CONF_LABEL,
+                                    Optional.of("/in/this/directory"),
+                                    UUID.randomUUID().toString());
         // Add a valid one for storage
         String fileNameHandled = "file.test";
         String checksumHandled = UUID.randomUUID().toString();
-        fileMetaInfo = new FileReferenceMetaInfo(checksumHandled, "MD5", fileNameHandled, 132L,
-                MediaType.APPLICATION_OCTET_STREAM);
-        stoReqService.handleRequest(owner, SESSION_OWNER_1, SESSION_1, fileMetaInfo, originUrl, ONLINE_CONF_LABEL,
-                                    Optional.of("/in/this/directory"), UUID.randomUUID().toString());
+        fileMetaInfo = new FileReferenceMetaInfo(checksumHandled,
+                                                 "MD5",
+                                                 fileNameHandled,
+                                                 132L,
+                                                 MediaType.APPLICATION_OCTET_STREAM);
+        stoReqService.handleRequest(owner,
+                                    SESSION_OWNER_1,
+                                    SESSION_1,
+                                    fileMetaInfo,
+                                    originUrl,
+                                    ONLINE_CONF_LABEL,
+                                    Optional.of("/in/this/directory"),
+                                    UUID.randomUUID().toString());
 
         Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
@@ -297,7 +372,8 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
         Collection<FileStorageRequest> storageReqs = stoReqService.search(ONLINE_CONF_LABEL, checksumNotHandled);
         Assert.assertFalse("File reference should not exists has the file to store has not been handled",
                            fileRef.isPresent());
-        Assert.assertEquals("File reference request should still exists has the file to store has not been handled", 1,
+        Assert.assertEquals("File reference request should still exists has the file to store has not been handled",
+                            1,
                             storageReqs.size());
         fileRef = fileRefService.search(ONLINE_CONF_LABEL, checksumHandled);
         storageReqs = stoReqService.search(ONLINE_CONF_LABEL, checksumHandled);
@@ -318,16 +394,25 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
     @Test
     public void storeWithInvalidUrl() throws MalformedURLException {
         String checksum = UUID.randomUUID().toString();
-        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", "invalid.test", 1024L,
-                MediaType.APPLICATION_OCTET_STREAM);
+        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum,
+                                                                       "MD5",
+                                                                       "invalid.test",
+                                                                       1024L,
+                                                                       MediaType.APPLICATION_OCTET_STREAM);
         // Run file reference creation.
-        stoReqService.handleRequest("someone", SESSION_OWNER_1, SESSION_1, fileMetaInfo, "invalid:/plop/file@.file",
+        stoReqService.handleRequest("someone",
+                                    SESSION_OWNER_1,
+                                    SESSION_1,
+                                    fileMetaInfo,
+                                    "invalid:/plop/file@.file",
                                     ONLINE_CONF_LABEL,
-                                    Optional.empty(), UUID.randomUUID().toString());
+                                    Optional.empty(),
+                                    UUID.randomUUID().toString());
         Collection<FileStorageRequest> storageReqs = stoReqService.search(ONLINE_CONF_LABEL,
                                                                           fileMetaInfo.getChecksum());
         Assert.assertEquals("Request sould be in error status as file url is not valid",
-                            storageReqs.stream().findFirst().get().getStatus(), FileRequestStatus.ERROR);
+                            storageReqs.stream().findFirst().get().getStatus(),
+                            FileRequestStatus.ERROR);
     }
 
     @Test
@@ -338,18 +423,27 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
     @Test
     public void storeWithUnknownStorageLocation() throws MalformedURLException {
         String owner = "someone";
-        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo("invalid_checksum", "MD5", "file.test", 132L,
-                MediaType.APPLICATION_OCTET_STREAM);
+        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo("invalid_checksum",
+                                                                       "MD5",
+                                                                       "file.test",
+                                                                       132L,
+                                                                       MediaType.APPLICATION_OCTET_STREAM);
         URL originUrl = new URL("file://in/this/directory/file.test");
         FileLocation destination = new FileLocation("elsewhere", "elsewhere://in/this/directory/file.test");
-        stoReqService.handleRequest(owner, SESSION_OWNER_1, SESSION_1, fileMetaInfo, originUrl.toString(), "elsewhere",
+        stoReqService.handleRequest(owner,
+                                    SESSION_OWNER_1,
+                                    SESSION_1,
+                                    fileMetaInfo,
+                                    originUrl.toString(),
+                                    "elsewhere",
                                     Optional.of("elsewhere://in/this/directory/file.test"),
                                     UUID.randomUUID().toString());
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
         Collection<FileStorageRequest> storageReqs = stoReqService.search(destination.getStorage(),
                                                                           fileMetaInfo.getChecksum());
-        Assert.assertFalse("File reference should not have been created. As storage is not possible into an unkown storage location",
-                           oFileRef.isPresent());
+        Assert.assertFalse(
+            "File reference should not have been created. As storage is not possible into an unkown storage location",
+            oFileRef.isPresent());
         Assert.assertEquals("File reference request should exists", 1, storageReqs.size());
         Assert.assertTrue("File reference request should be in STORE_ERROR status",
                           storageReqs.stream().findFirst().get().getStatus().equals(FileRequestStatus.ERROR));

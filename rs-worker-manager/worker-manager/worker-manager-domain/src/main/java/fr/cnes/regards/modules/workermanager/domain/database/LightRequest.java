@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.workermanager.domain.database;
 
-import java.time.OffsetDateTime;
-
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
+
+import java.time.OffsetDateTime;
 
 /**
  * LightRequest is a {@link Request} without its content
@@ -31,17 +31,32 @@ import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 public class LightRequest {
 
     private final Long id;
+
     private final String requestId;
+
     private final OffsetDateTime creationDate;
+
     private final String contentType;
+
     private final String source;
+
     private final String session;
+
     private final RequestStatus status;
+
     private final String dispatchedWorkerType;
+
     private final String error;
 
-    public LightRequest(Long id, String requestId, OffsetDateTime creationDate, String contentType, String source,
-            String session, RequestStatus status, String dispatchedWorkerType, String error) {
+    public LightRequest(Long id,
+                        String requestId,
+                        OffsetDateTime creationDate,
+                        String contentType,
+                        String source,
+                        String session,
+                        RequestStatus status,
+                        String dispatchedWorkerType,
+                        String error) {
         this.id = id;
         this.requestId = requestId;
         this.creationDate = creationDate;

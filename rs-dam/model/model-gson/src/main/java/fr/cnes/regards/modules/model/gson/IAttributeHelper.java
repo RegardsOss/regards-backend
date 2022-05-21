@@ -18,18 +18,17 @@
  */
 package fr.cnes.regards.modules.model.gson;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 
 /**
  * Helper class to retrieve attribute list from different microservices with different implementations
  *
  * @author Marc Sordi
- *
  */
 public interface IAttributeHelper {
 

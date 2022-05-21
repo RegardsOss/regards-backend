@@ -25,11 +25,12 @@ import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionDe
 import fr.cnes.regards.framework.modules.session.manager.dao.ISessionManagerRepository;
 import fr.cnes.regards.framework.modules.session.manager.dao.SessionManagerSpecifications;
 import fr.cnes.regards.framework.modules.session.manager.domain.Session;
-import java.util.Optional;
-import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Service for session controller

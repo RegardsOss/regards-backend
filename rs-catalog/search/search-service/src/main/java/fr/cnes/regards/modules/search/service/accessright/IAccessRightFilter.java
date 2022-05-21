@@ -1,8 +1,8 @@
 package fr.cnes.regards.modules.search.service.accessright;
 
-import java.util.Set;
-
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+
+import java.util.Set;
 
 /**
  * This service adds adds user group and data access filters to an ElasticSearch request.
@@ -29,9 +29,9 @@ public interface IAccessRightFilter {
      */
     ICriterion addDataAccessRights(ICriterion criterion) throws AccessRightFilterException;
 
-
     /**
      * Retrieve current user access groups or null if superuser
+     *
      * @return access groups names
      * @throws AccessRightFilterException in case user has no group access
      */

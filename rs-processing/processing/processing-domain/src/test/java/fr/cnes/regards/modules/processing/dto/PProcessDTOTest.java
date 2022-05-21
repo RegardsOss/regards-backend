@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.dto;
 
 import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
@@ -22,7 +22,8 @@ import fr.cnes.regards.modules.processing.testutils.AbstractMarshallingTest;
 
 public class PProcessDTOTest extends AbstractMarshallingTest<PProcessDTO> {
 
-    @Override public Class<PProcessDTO> testedType() {
+    @Override
+    public Class<PProcessDTO> testedType() {
         return PProcessDTO.class;
     }
 }

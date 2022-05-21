@@ -26,15 +26,13 @@ public class DatasetJsoniterDecoder implements AbstractEntityDecoder<DatasetFeat
         Any dataset = iter.readAny();
         DatasetFeature feature = asOrNull(dataset, DatasetFeature.class, "feature");
 
-        Dataset result = new Dataset(
-                dataset.as(Model.class, "model"),
-                feature,
-                asOrNull(dataset, PluginConfiguration.class, "plgConfDataSource"),
-                dataset.toString("dataModel"),
-                asOrNull(dataset, ICriterion.class, "subsettingClause"),
-                dataset.toString("openSearchSubsettingClause"),
-                asOrNull(dataset, DatasetMetadata.class, "metadata")
-        );
+        Dataset result = new Dataset(dataset.as(Model.class, "model"),
+                                     feature,
+                                     asOrNull(dataset, PluginConfiguration.class, "plgConfDataSource"),
+                                     dataset.toString("dataModel"),
+                                     asOrNull(dataset, ICriterion.class, "subsettingClause"),
+                                     dataset.toString("openSearchSubsettingClause"),
+                                     asOrNull(dataset, DatasetMetadata.class, "metadata"));
 
         readCommonFields(dataset, feature, result);
 

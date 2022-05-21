@@ -18,26 +18,25 @@
  */
 package fr.cnes.regards.modules.storage.domain.dto.request;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
+import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 
-import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 /**
  * Information about a file for a reference request.<br/>
  * Mandatory information are : <ul>
- *  <li> Filename</li>
- *  <li> Checksum</li>
- *  <li> Checksum algorithm </li>
- *  <li> mimeType </li>
- *  <li> FileSize as the file is not accessible </li>
- *  <li> Storage location where to delete the file</li>
- *  <li> Owner of the file who ask for deletion </li>
- *  <li> Url to access file in the storage location </li>
+ * <li> Filename</li>
+ * <li> Checksum</li>
+ * <li> Checksum algorithm </li>
+ * <li> mimeType </li>
+ * <li> FileSize as the file is not accessible </li>
+ * <li> Storage location where to delete the file</li>
+ * <li> Owner of the file who ask for deletion </li>
+ * <li> Url to access file in the storage location </li>
  * </ul>
  * See {@link ReferenceFlowItem} for more information about reference request process.
  *
@@ -131,8 +130,16 @@ public class FileReferenceRequestDTO {
         return session;
     }
 
-    public static FileReferenceRequestDTO build(String fileName, String checksum, String algorithm, String mimeType,
-            Long fileSize, String owner, String storage, String url, String sessionOwner, String session) {
+    public static FileReferenceRequestDTO build(String fileName,
+                                                String checksum,
+                                                String algorithm,
+                                                String mimeType,
+                                                Long fileSize,
+                                                String owner,
+                                                String storage,
+                                                String url,
+                                                String sessionOwner,
+                                                String session) {
 
         Assert.notNull(fileName, "File name is mandatory.");
         Assert.notNull(checksum, "Checksum is mandatory.");
@@ -173,8 +180,11 @@ public class FileReferenceRequestDTO {
     }
 
     public FileReferenceMetaInfo buildMetaInfo() {
-        FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(checksum, algorithm, fileName, fileSize,
-                MediaType.valueOf(mimeType));
+        FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(checksum,
+                                                                   algorithm,
+                                                                   fileName,
+                                                                   fileSize,
+                                                                   MediaType.valueOf(mimeType));
         metaInfo.setHeight(height);
         metaInfo.setWidth(width);
         metaInfo.setType(type);

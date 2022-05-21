@@ -28,8 +28,8 @@ public class RevokeBody {
     private String token;
 
     public static RevokeBody build(String token) {
-        RevokeBody body =  new RevokeBody();
-        body.token=token;
+        RevokeBody body = new RevokeBody();
+        body.token = token;
         return body;
     }
 

@@ -22,7 +22,7 @@ import java.io.File;
 
 /**
  * Class CompressManager
- *
+ * <p>
  * Gestionnaire de compression
  */
 public class CompressManager {

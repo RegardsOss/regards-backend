@@ -18,37 +18,18 @@
  */
 package fr.cnes.regards.modules.indexer.dao.builder;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.common.base.Preconditions;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.modules.indexer.dao.EsHelper;
+import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
+import fr.cnes.regards.modules.indexer.domain.criterion.*;
+import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
 import org.hipparchus.util.FastMath;
 import org.opengis.referencing.operation.TransformException;
 import org.springframework.data.util.Pair;
 
-import com.google.common.base.Preconditions;
-
-import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.modules.indexer.dao.EsHelper;
-import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
-import fr.cnes.regards.modules.indexer.domain.criterion.AbstractMultiCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.BooleanMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.BoundaryBoxCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.CircleCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.DateMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.DateRangeCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.EmptyCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.FieldExistsCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterionVisitor;
-import fr.cnes.regards.modules.indexer.domain.criterion.IntMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.LongMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.NotCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.PolygonCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchAnyCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMultiMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Criterion visitor implementation to manage a criterion containing geometric criterions on other CRS (as Mars or Astro
@@ -59,6 +40,7 @@ import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
  * Geotools to know if they are taken or not).<br/>
  * Be careful: in case inner and outer circles are the same (circle center on equator or pole for example), both
  * resulted criterions tree are the same (first one).<br/>
+ *
  * @author oroussel
  */
 public class GeoCriterionWithCircleVisitor implements ICriterionVisitor<Pair<ICriterion, ICriterion>> {
@@ -145,8 +127,7 @@ public class GeoCriterionWithCircleVisitor implements ICriterionVisitor<Pair<ICr
     }
 
     @Override
-    public <U extends Comparable<? super U>> Pair<ICriterion, ICriterion> visitRangeCriterion(
-            RangeCriterion<U> criterion) {
+    public <U extends Comparable<? super U>> Pair<ICriterion, ICriterion> visitRangeCriterion(RangeCriterion<U> criterion) {
         return Pair.of(criterion.copy(), criterion.copy());
     }
 
@@ -163,13 +144,13 @@ public class GeoCriterionWithCircleVisitor implements ICriterionVisitor<Pair<ICr
     @Override
     public Pair<ICriterion, ICriterion> visitPolygonCriterion(PolygonCriterion criterion) {
         throw new IllegalArgumentException(
-                "GeoCriterionWithCircleVisitor shouldn't visit a criterion tree with PolygonCriterion");
+            "GeoCriterionWithCircleVisitor shouldn't visit a criterion tree with PolygonCriterion");
     }
 
     @Override
     public Pair<ICriterion, ICriterion> visitBoundaryBoxCriterion(BoundaryBoxCriterion criterion) {
         throw new IllegalArgumentException(
-                "GeoCriterionWithCircleVisitor shouldn't visit a criterion tree with BoundaryBoxCriterion");
+            "GeoCriterionWithCircleVisitor shouldn't visit a criterion tree with BoundaryBoxCriterion");
     }
 
     @Override
@@ -179,11 +160,15 @@ public class GeoCriterionWithCircleVisitor implements ICriterionVisitor<Pair<ICr
             // Get the center
             double[] centerOnCrs = criterion.getCoordinates();
             // Get the northernmost point at given radius
-            double[] northernmostPointOnCrs = GeoHelper
-                    .getPointAtDirection(centerOnCrs, 0.0, EsHelper.toMeters(criterion.getRadius()), crs);
+            double[] northernmostPointOnCrs = GeoHelper.getPointAtDirection(centerOnCrs,
+                                                                            0.0,
+                                                                            EsHelper.toMeters(criterion.getRadius()),
+                                                                            crs);
             // Get the southernmostPoint at given radius
-            double[] southernmostPointOnCrs = GeoHelper
-                    .getPointAtDirection(centerOnCrs, 180.0, EsHelper.toMeters(criterion.getRadius()), crs);
+            double[] southernmostPointOnCrs = GeoHelper.getPointAtDirection(centerOnCrs,
+                                                                            180.0,
+                                                                            EsHelper.toMeters(criterion.getRadius()),
+                                                                            crs);
             // Get center on WGS84 projection
             double[] centerOnWgs84 = GeoHelper.transform(centerOnCrs, crs, Crs.WGS_84);
             // Get northermost point on WGS84 projection
@@ -208,9 +193,10 @@ public class GeoCriterionWithCircleVisitor implements ICriterionVisitor<Pair<ICr
             // In this case, we return same CircleCriterion to make both criterion trees equals and so avoiding
             // executing two requests
             // Because of maxDistance increase due to error precision, this case should never occur
-            ICriterion betweenBothCirclesCriterion = minDistance.equals(maxDistance) ? inMinCircleCrit
-                    : ICriterion.and(ICriterion.not(inMinCircleCrit),
-                                     ICriterion.intersectsCircle(centerOnWgs84, maxDistance));
+            ICriterion betweenBothCirclesCriterion = minDistance.equals(maxDistance) ?
+                inMinCircleCrit :
+                ICriterion.and(ICriterion.not(inMinCircleCrit),
+                               ICriterion.intersectsCircle(centerOnWgs84, maxDistance));
             return Pair.of(inMinCircleCrit, betweenBothCirclesCriterion);
         } catch (TransformException e) {
             throw new RsRuntimeException(e);

@@ -29,102 +29,71 @@ public class ICriterionJsoniterDecoder implements NullSafeDecoderBuilder {
         String type = criterion.toString("@type@");
         try {
             Class<?> critType = Class.forName(type);
-            if (critType.equals(EmptyCriterion.class)) { return ICriterion.all(); }
-            else if (critType.equals(AndCriterion.class)) {
+            if (critType.equals(EmptyCriterion.class)) {
+                return ICriterion.all();
+            } else if (critType.equals(AndCriterion.class)) {
                 return ICriterion.and(List.ofAll(criterion.get("criterions").asList())
-                    .map(c -> c.as(ICriterion.class)));
-            }
-            else if (critType.equals(OrCriterion.class)) {
-                return ICriterion.or(List.ofAll(criterion.get("criterions").asList())
-                        .map(c -> c.as(ICriterion.class)));
-            }
-            else if (critType.equals(NotCriterion.class)) {
+                                          .map(c -> c.as(ICriterion.class)));
+            } else if (critType.equals(OrCriterion.class)) {
+                return ICriterion.or(List.ofAll(criterion.get("criterions").asList()).map(c -> c.as(ICriterion.class)));
+            } else if (critType.equals(NotCriterion.class)) {
                 return ICriterion.not(criterion.as(ICriterion.class, "criterion"));
-            }
-            else if (critType.equals(StringMatchCriterion.class)) {
+            } else if (critType.equals(StringMatchCriterion.class)) {
                 Any name = criterion.get("name");
                 Any stringMatchCriterionType = criterion.get("type");
                 Any value = criterion.get(VALUE);
                 Any matchType = criterion.get("matchType");
-                if(isNull(matchType)) {
+                if (isNull(matchType)) {
                     matchType = Any.wrap(StringMatchType.KEYWORD);
                 }
-                return new StringMatchCriterion(
-                        name.toString(),
-                        stringMatchCriterionType.as(MatchType.class),
-                        value.toString(),
-                        StringMatchType.valueOf(matchType.toString())
-                );
-            }
-            else if (critType.equals(StringMatchAnyCriterion.class)) {
-                return new StringMatchAnyCriterion(
-                        criterion.toString("name"),
-                        criterion.as(StringMatchType.class, "matchType"),
-                        List.ofAll(criterion.get(VALUE).asList()).map(Any::toString).toJavaArray(String[]::new)
-                );
-            }
-            else if (critType.equals(StringMultiMatchCriterion.class)) {
-                return new StringMultiMatchCriterion(
-                        List.ofAll(criterion.get("names").asList()).map(Any::toString).toJavaSet(),
-                        MultiMatchQueryBuilder.Type.valueOf(criterion.toString("type")),
-                        criterion.toString(VALUE)
-                );
-            }
-            else if (critType.equals(DateMatchCriterion.class)) {
-                return new DateMatchCriterion(
-                        criterion.toString("name"),
-                        OffsetDateTimeAdapter.parse(criterion.toString(VALUE))
-                );
-            }
-            else if (critType.equals(DateRangeCriterion.class)) {
+                return new StringMatchCriterion(name.toString(),
+                                                stringMatchCriterionType.as(MatchType.class),
+                                                value.toString(),
+                                                StringMatchType.valueOf(matchType.toString()));
+            } else if (critType.equals(StringMatchAnyCriterion.class)) {
+                return new StringMatchAnyCriterion(criterion.toString("name"),
+                                                   criterion.as(StringMatchType.class, "matchType"),
+                                                   List.ofAll(criterion.get(VALUE).asList())
+                                                       .map(Any::toString)
+                                                       .toJavaArray(String[]::new));
+            } else if (critType.equals(StringMultiMatchCriterion.class)) {
+                return new StringMultiMatchCriterion(List.ofAll(criterion.get("names").asList())
+                                                         .map(Any::toString)
+                                                         .toJavaSet(),
+                                                     MultiMatchQueryBuilder.Type.valueOf(criterion.toString("type")),
+                                                     criterion.toString(VALUE));
+            } else if (critType.equals(DateMatchCriterion.class)) {
+                return new DateMatchCriterion(criterion.toString("name"),
+                                              OffsetDateTimeAdapter.parse(criterion.toString(VALUE)));
+            } else if (critType.equals(DateRangeCriterion.class)) {
                 DateRangeCriterion result = new DateRangeCriterion(criterion.toString("name"));
-                criterion.get("valueComparisons").asList().forEach(vc ->
-                        result.addValueComparison(vc.as(new TypeLiteral<ValueComparison<OffsetDateTime>>(){})));
+                criterion.get("valueComparisons")
+                         .asList()
+                         .forEach(vc -> result.addValueComparison(vc.as(new TypeLiteral<ValueComparison<OffsetDateTime>>() {
+
+                         })));
                 return result;
-            }
-            else if (critType.equals(IntMatchCriterion.class)) {
-                return new IntMatchCriterion(
-                        criterion.toString("name"),
-                        criterion.toInt(VALUE)
-                );
-            }
-            else if (critType.equals(LongMatchCriterion.class)) {
-                return new LongMatchCriterion(
-                        criterion.toString("name"),
-                        criterion.toLong(VALUE)
-                );
-            }
-            else if (critType.equals(BooleanMatchCriterion.class)) {
-                return new BooleanMatchCriterion(
-                        criterion.toString("name"),
-                        criterion.toBoolean(VALUE)
-                );
-            }
-            else if (critType.equals(FieldExistsCriterion.class)) {
+            } else if (critType.equals(IntMatchCriterion.class)) {
+                return new IntMatchCriterion(criterion.toString("name"), criterion.toInt(VALUE));
+            } else if (critType.equals(LongMatchCriterion.class)) {
+                return new LongMatchCriterion(criterion.toString("name"), criterion.toLong(VALUE));
+            } else if (critType.equals(BooleanMatchCriterion.class)) {
+                return new BooleanMatchCriterion(criterion.toString("name"), criterion.toBoolean(VALUE));
+            } else if (critType.equals(FieldExistsCriterion.class)) {
                 return new FieldExistsCriterion(criterion.toString("name"));
-            }
-            else if (critType.equals(BoundaryBoxCriterion.class)) {
-                return new BoundaryBoxCriterion(
-                        criterion.toDouble("minX"),
-                        criterion.toDouble("minY"),
-                        criterion.toDouble("maxX"),
-                        criterion.toDouble("maxY")
-                );
-            }
-            else if (critType.equals(CircleCriterion.class)) {
-                return new CircleCriterion(
-                        criterion.as(double[].class, "coordinates"),
-                        criterion.toString("radius")
-                );
-            }
-            else if (critType.equals(PolygonCriterion.class)) {
+            } else if (critType.equals(BoundaryBoxCriterion.class)) {
+                return new BoundaryBoxCriterion(criterion.toDouble("minX"),
+                                                criterion.toDouble("minY"),
+                                                criterion.toDouble("maxX"),
+                                                criterion.toDouble("maxY"));
+            } else if (critType.equals(CircleCriterion.class)) {
+                return new CircleCriterion(criterion.as(double[].class, "coordinates"), criterion.toString("radius"));
+            } else if (critType.equals(PolygonCriterion.class)) {
                 return new PolygonCriterion(criterion.as(double[][][].class, "coordinates"));
-            }
-            else {
+            } else {
                 return criterion.as(critType);
             }
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             throw new IOException(e);
         }
     }

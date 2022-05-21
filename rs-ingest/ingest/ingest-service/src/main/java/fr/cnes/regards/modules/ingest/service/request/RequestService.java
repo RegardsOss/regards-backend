@@ -171,17 +171,24 @@ public class RequestService implements IRequestService {
         if (request instanceof OAISDeletionCreatorRequest) {
             // Schedule OAIS Deletion job
             jobParameters.add(new JobParameter(OAISDeletionsCreatorJob.REQUEST_ID, request.getId()));
-            jobInfo = new JobInfo(false, IngestJobPriority.SESSION_DELETION_JOB_PRIORITY, jobParameters,
-                    authResolver.getUser(), OAISDeletionsCreatorJob.class.getName());
+            jobInfo = new JobInfo(false,
+                                  IngestJobPriority.SESSION_DELETION_JOB_PRIORITY,
+                                  jobParameters,
+                                  authResolver.getUser(),
+                                  OAISDeletionsCreatorJob.class.getName());
             // Lock job to avoid automatic deletion. The job must be unlock when the link to the request is removed.
         } else if (request instanceof AIPUpdatesCreatorRequest) {
             // Schedule Updates Creator job
             jobParameters.add(new JobParameter(AIPUpdatesCreatorJob.REQUEST_ID, request.getId()));
-            jobInfo = new JobInfo(false, IngestJobPriority.UPDATE_AIP_SCAN_JOB_PRIORITY, jobParameters,
-                    authResolver.getUser(), AIPUpdatesCreatorJob.class.getName());
+            jobInfo = new JobInfo(false,
+                                  IngestJobPriority.UPDATE_AIP_SCAN_JOB_PRIORITY,
+                                  jobParameters,
+                                  authResolver.getUser(),
+                                  AIPUpdatesCreatorJob.class.getName());
         } else {
-            throw new IllegalArgumentException(
-                    String.format("You should not use this method for requests having [%s] type", request.getDtype()));
+            throw new IllegalArgumentException(String.format(
+                "You should not use this method for requests having [%s] type",
+                request.getDtype()));
         }
 
         jobInfo.setLocked(true);
@@ -193,22 +200,28 @@ public class RequestService implements IRequestService {
 
     @Override
     public void scheduleRequestDeletionJob(SearchRequestsParameters filters) {
-        Set<JobParameter> jobParameters = Sets
-                .newHashSet(new JobParameter(RequestDeletionJob.CRITERIA_JOB_PARAM_NAME, filters));
+        Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(RequestDeletionJob.CRITERIA_JOB_PARAM_NAME,
+                                                                           filters));
         // Schedule request deletion job
-        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.REQUEST_DELETION_JOB_PRIORITY,
-                jobParameters, authResolver.getUser(), RequestDeletionJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false,
+                                      IngestJobPriority.REQUEST_DELETION_JOB_PRIORITY,
+                                      jobParameters,
+                                      authResolver.getUser(),
+                                      RequestDeletionJob.class.getName());
         jobInfo = jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("Schedule {} job with id {}", RequestDeletionJob.class.getName(), jobInfo.getId());
     }
 
     @Override
     public void scheduleRequestRetryJob(SearchRequestsParameters filters) {
-        Set<JobParameter> jobParameters = Sets
-                .newHashSet(new JobParameter(RequestRetryJob.CRITERIA_JOB_PARAM_NAME, filters));
+        Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(RequestRetryJob.CRITERIA_JOB_PARAM_NAME,
+                                                                           filters));
         // Schedule request retry job
-        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.REQUEST_RETRY_JOB_PRIORITY, jobParameters,
-                authResolver.getUser(), RequestRetryJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false,
+                                      IngestJobPriority.REQUEST_RETRY_JOB_PRIORITY,
+                                      jobParameters,
+                                      authResolver.getUser(),
+                                      RequestRetryJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("Schedule {} job with id {}", RequestRetryJob.class.getName(), jobInfo.getId());
     }
@@ -231,8 +244,9 @@ public class RequestService implements IRequestService {
 
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
     @Override
-    public Page<AbstractRequest> abortCurrentRequestPage(SearchRequestsParameters filters, Pageable pageRequest,
-            Set<UUID> jobIdsAlreadyStopped) {
+    public Page<AbstractRequest> abortCurrentRequestPage(SearchRequestsParameters filters,
+                                                         Pageable pageRequest,
+                                                         Set<UUID> jobIdsAlreadyStopped) {
         Page<AbstractRequest> requestsPage;
         requestsPage = findRequests(filters, pageRequest);
         for (AbstractRequest request : requestsPage.getContent()) {
@@ -261,8 +275,9 @@ public class RequestService implements IRequestService {
     @Override
     public void unblockRequests(RequestTypeEnum requestType) {
         // Build search filters
-        SearchRequestsParameters searchFilters = SearchRequestsParameters.build().withRequestType(requestType)
-                .withState(InternalRequestState.BLOCKED);
+        SearchRequestsParameters searchFilters = SearchRequestsParameters.build()
+                                                                         .withRequestType(requestType)
+                                                                         .withState(InternalRequestState.BLOCKED);
         // Retrieve PENDING requests
         Page<AbstractRequest> pageRequests = findRequests(searchFilters, PageRequest.of(0, 500));
         List<AbstractRequest> requests = pageRequests.getContent();
@@ -285,6 +300,7 @@ public class RequestService implements IRequestService {
 
     /**
      * Notify if necessary the sessionNotifier, then switch the state
+     *
      * @param request
      */
     @Override
@@ -332,6 +348,7 @@ public class RequestService implements IRequestService {
      * Schedule a list of requests and save them into repository
      * Use the history to predict the state of a request having the same type
      * You must call this method only with a list of requests having the same {@link AbstractRequest#getDtype()}
+     *
      * @param requests to schedule
      */
     @Override
@@ -383,7 +400,7 @@ public class RequestService implements IRequestService {
     /**
      * @param request
      * @return true when the concrete {@link AbstractRequest} is run in a job
-     *         false when the request is processed by bulk
+     * false when the request is processed by bulk
      */
     @Override
     public boolean isJobRequest(AbstractRequest request) {
@@ -392,7 +409,7 @@ public class RequestService implements IRequestService {
 
     private boolean isJobRequest(RequestTypeEnum requestType) {
         return Lists.newArrayList(RequestTypeEnum.OAIS_DELETION_CREATOR, RequestTypeEnum.AIP_UPDATES_CREATOR)
-                .contains(requestType);
+                    .contains(requestType);
     }
 
     /**
@@ -413,17 +430,18 @@ public class RequestService implements IRequestService {
                                                                                               sessionOp);
                 break;
             case RequestTypeConstant.OAIS_DELETION_VALUE:
-                if(((OAISDeletionRequest) request).getStep() != DeletionRequestStep.REMOTE_NOTIFICATION_ERROR) {
-                    spec = AbstractRequestSpecifications
-                            .searchRequestBlockingOAISDeletion(sessionOwnerOp, sessionOp,
-                                                               ((OAISDeletionRequest) request).getAip().getId());
+                if (((OAISDeletionRequest) request).getStep() != DeletionRequestStep.REMOTE_NOTIFICATION_ERROR) {
+                    spec = AbstractRequestSpecifications.searchRequestBlockingOAISDeletion(sessionOwnerOp,
+                                                                                           sessionOp,
+                                                                                           ((OAISDeletionRequest) request).getAip()
+                                                                                                                          .getId());
                 } else {
                     // In case of notification error, aip has already been deleted so do not delay request.
                     return false;
                 }
                 break;
             case RequestTypeConstant.UPDATE_VALUE:
-                if(((AIPUpdateRequest) request).getStep() != AIPUpdateRequestStep.REMOTE_NOTIFICATION_ERROR) {
+                if (((AIPUpdateRequest) request).getStep() != AIPUpdateRequestStep.REMOTE_NOTIFICATION_ERROR) {
                     spec = AbstractRequestSpecifications.searchRequestBlockingUpdate(sessionOwnerOp, sessionOp);
                 } else {
                     // In case of notification error, aip has already been updated so do not delay request
@@ -440,8 +458,9 @@ public class RequestService implements IRequestService {
                 // Save metadata cannot be blocked
                 return false;
             default:
-                throw new IllegalArgumentException(String
-                        .format("You should not use this method for requests having [%s] type", request.getDtype()));
+                throw new IllegalArgumentException(String.format(
+                    "You should not use this method for requests having [%s] type",
+                    request.getDtype()));
         }
         return abstractRequestRepository.exists(spec);
     }
@@ -454,7 +473,9 @@ public class RequestService implements IRequestService {
         final int chunkSize = 100;
         if (groupIds.size() > chunkSize) {
             final AtomicInteger counter = new AtomicInteger();
-            groupIds.stream().collect(Collectors.groupingBy(it -> counter.getAndIncrement() / chunkSize)).values()
+            groupIds.stream()
+                    .collect(Collectors.groupingBy(it -> counter.getAndIncrement() / chunkSize))
+                    .values()
                     .forEach(list -> {
                         requests.addAll(findRequestsByGroupIdIn(list));
                     });

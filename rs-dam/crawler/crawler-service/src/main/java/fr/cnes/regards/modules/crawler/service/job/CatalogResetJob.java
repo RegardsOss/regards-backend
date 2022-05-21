@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * This job is used to reset the catalog
+ *
  * @author Iliana Ghazali
  */
 
@@ -45,7 +46,8 @@ public class CatalogResetJob extends AbstractJob<Void> {
             logger.error("[CATALOG RESET JOB] An error occured during the reset of the catalog", e);
             throw new RsRuntimeException(e);
         }
-        logger.debug("[CATALOG RESET JOB] Job handled for the catalog reset in {}ms", System.currentTimeMillis() - start);
+        logger.debug("[CATALOG RESET JOB] Job handled for the catalog reset in {}ms",
+                     System.currentTimeMillis() - start);
     }
 
 }

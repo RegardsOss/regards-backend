@@ -1,8 +1,11 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
-import java.time.OffsetDateTime;
-import java.util.Map;
-
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.jpa.json.GsonUtil;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.jobs.domain.*;
+import fr.cnes.regards.framework.modules.jobs.test.JobTestConfiguration;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -15,23 +18,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.google.gson.Gson;
-
-import fr.cnes.regards.framework.jpa.json.GsonUtil;
-import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
-import fr.cnes.regards.framework.modules.jobs.domain.RandomFloatJob;
-import fr.cnes.regards.framework.modules.jobs.domain.TotoJob;
-import fr.cnes.regards.framework.modules.jobs.domain.DoubleJob;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.domain.LongJob;
-import fr.cnes.regards.framework.modules.jobs.domain.Titi;
-import fr.cnes.regards.framework.modules.jobs.domain.Toto;
-import fr.cnes.regards.framework.modules.jobs.test.JobTestConfiguration;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import java.time.OffsetDateTime;
+import java.util.Map;
 
 /**
  * Test completion compute and update, result transmission, etc...
+ *
  * @author oroussel
  */
 @RunWith(SpringRunner.class)
@@ -104,7 +96,7 @@ public class JobEndIT {
         do {
             randomFloatJob = jobInfoRepos.findById(randomFloatJob.getId()).get();
         } while (randomFloatJob.getStatus().getStatus() != JobStatus.SUCCEEDED
-                && randomFloatJob.getStatus().getStatus() != JobStatus.FAILED);
+            && randomFloatJob.getStatus().getStatus() != JobStatus.FAILED);
         Assert.assertEquals(JobStatus.SUCCEEDED, randomFloatJob.getStatus().getStatus());
         Assert.assertNotNull(randomFloatJob.getResult());
         Assert.assertTrue(randomFloatJob.getResult() instanceof Float);
@@ -124,7 +116,7 @@ public class JobEndIT {
         do {
             doubleJob = jobInfoRepos.findById(doubleJob.getId()).get();
         } while (doubleJob.getStatus().getStatus() != JobStatus.SUCCEEDED
-                && doubleJob.getStatus().getStatus() != JobStatus.FAILED);
+            && doubleJob.getStatus().getStatus() != JobStatus.FAILED);
         Assert.assertEquals(JobStatus.SUCCEEDED, doubleJob.getStatus().getStatus());
         Assert.assertNotNull(doubleJob.getResult());
         Assert.assertTrue(doubleJob.getResult() instanceof Map);
@@ -149,7 +141,7 @@ public class JobEndIT {
         do {
             totoJob = jobInfoRepos.findById(totoJob.getId()).get();
         } while (totoJob.getStatus().getStatus() != JobStatus.SUCCEEDED
-                && totoJob.getStatus().getStatus() != JobStatus.FAILED);
+            && totoJob.getStatus().getStatus() != JobStatus.FAILED);
         Assert.assertEquals(JobStatus.SUCCEEDED, totoJob.getStatus().getStatus());
         Assert.assertNotNull(totoJob.getResult());
         Assert.assertTrue(totoJob.getResult() instanceof Toto);
@@ -175,7 +167,7 @@ public class JobEndIT {
         do {
             jobSnow = jobInfoRepos.findById(jobSnow.getId()).get();
         } while (jobSnow.getStatus().getStatus() != JobStatus.SUCCEEDED
-                && jobSnow.getStatus().getStatus() != JobStatus.FAILED);
+            && jobSnow.getStatus().getStatus() != JobStatus.FAILED);
         Assert.assertEquals(JobStatus.FAILED, jobSnow.getStatus().getStatus());
         Assert.assertEquals("Expiration date reached", jobSnow.getStatus().getStackTrace());
     }

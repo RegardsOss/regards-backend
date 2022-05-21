@@ -26,13 +26,13 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
  * Acquisition chain post processing plugin
  *
  * @author Christophe Mertz
- *
  */
 @PluginInterface(description = "Plugin to process treatement after the SIP is stored")
 public interface ISipPostProcessingPlugin {
 
     /**
      * Post process product on SIP event handling
+     *
      * @param product related product
      * @throws ModuleException if error occurs!
      */

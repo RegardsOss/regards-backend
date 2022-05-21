@@ -27,14 +27,10 @@ public class JsonDeserializeStrategyConfig {
 
     @Bean
     @ConditionalOnExpression("'${regards.elasticsearch.deserialize.hits.strategy}'.equals('BOTH')")
-    public JsonDeserializeStrategy<IIndexable> bothDeserializeHitsStrategyIIndexable(
-            IIndexableJsoniterConfig config,
-            Gson gson
-    ) {
-        BothForProfilingJsonDeserializeStrategyConfig result = new BothForProfilingJsonDeserializeStrategyConfig(
-                new GsonDeserializeIIndexableStrategy(gson),
-                new JsoniterDeserializeIIndexableStrategy(config)
-        );
+    public JsonDeserializeStrategy<IIndexable> bothDeserializeHitsStrategyIIndexable(IIndexableJsoniterConfig config,
+                                                                                     Gson gson) {
+        BothForProfilingJsonDeserializeStrategyConfig result = new BothForProfilingJsonDeserializeStrategyConfig(new GsonDeserializeIIndexableStrategy(
+            gson), new JsoniterDeserializeIIndexableStrategy(config));
         LOGGER.info(JSON_DESERIALIZE_STRATEGY_INSTANCE_IS, result);
         return result;
     }

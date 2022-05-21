@@ -39,9 +39,13 @@ import java.util.stream.Collectors;
 public class DownloadQuotaRepositoryImpl implements IDownloadQuotaRepository {
 
     public static final String INSTANCE = "instance";
+
     public static final String EMAIL = "email";
+
     public static final String COUNTER = "counter";
+
     public static final String GAUGE = "gauge";
+
     public static final String EXPIRY = "expiry";
 
     @Autowired
@@ -61,20 +65,20 @@ public class DownloadQuotaRepositoryImpl implements IDownloadQuotaRepository {
 
     @Override
     public DownloadQuotaLimits save(DownloadQuotaLimits quota) {
-        return mapper.toDomain(
-            delegateQuotaLimitsRepo.save(
-                mapper.toEntity(quota)));
+        return mapper.toDomain(delegateQuotaLimitsRepo.save(mapper.toEntity(quota)));
     }
 
     @Override
     public Optional<DownloadQuotaLimits> findByEmail(String email) {
-        return delegateQuotaLimitsRepo.findByEmail(email)
-            .map(mapper::toDomain);
+        return delegateQuotaLimitsRepo.findByEmail(email).map(mapper::toDomain);
     }
 
     @Override
     public Map<String, Long> fetchMaxQuotaByUser() {
-        return delegateQuotaLimitsRepo.findAll().stream().collect(Collectors.toMap(DownloadQuotaLimitsEntity::getEmail, DownloadQuotaLimitsEntity::getMaxQuota));
+        return delegateQuotaLimitsRepo.findAll()
+                                      .stream()
+                                      .collect(Collectors.toMap(DownloadQuotaLimitsEntity::getEmail,
+                                                                DownloadQuotaLimitsEntity::getMaxQuota));
     }
 
     @Override
@@ -85,81 +89,77 @@ public class DownloadQuotaRepositoryImpl implements IDownloadQuotaRepository {
     @Override
     public UserQuotaAggregate fetchDownloadQuotaSum(String email) {
         return delegateQuotaRepo.findByEmail(email)
-            .stream()
-            .reduce(
-                new UserQuotaAggregate(0L),
-                (userQuotaAggregate, userDownloadQuotaEntity) ->
-                    new UserQuotaAggregate(userQuotaAggregate.getCounter() + userDownloadQuotaEntity.getCounter()),
-                (left, right) -> left
-            );
+                                .stream()
+                                .reduce(new UserQuotaAggregate(0L),
+                                        (userQuotaAggregate, userDownloadQuotaEntity) -> new UserQuotaAggregate(
+                                            userQuotaAggregate.getCounter() + userDownloadQuotaEntity.getCounter()),
+                                        (left, right) -> left);
     }
 
     @Override
     public UserRateAggregate fetchDownloadRatesSum(String email) {
         return delegateRateRepo.findByEmail(email)
-            .stream()
-            .reduce(
-                new UserRateAggregate(0L),
-                (userRateAggregate, userDownloadRateEntity) ->
-                    new UserRateAggregate(userRateAggregate.getGauge() + userDownloadRateEntity.getGauge()),
-                (left, right) -> left
-            );
+                               .stream()
+                               .reduce(new UserRateAggregate(0L),
+                                       (userRateAggregate, userDownloadRateEntity) -> new UserRateAggregate(
+                                           userRateAggregate.getGauge() + userDownloadRateEntity.getGauge()),
+                                       (left, right) -> left);
     }
 
     @Override
     public UserDownloadQuota upsertOrCombineDownloadQuota(String instanceId, String email, Long diff) {
         // rather than implementing sync issues in code, we use DB to manage sync conflict as it is the only truth source (INSERT ... ON CONFLICT ... DO UPDATE)
         entityManager.createNativeQuery(
-            "INSERT INTO {h-schema}t_user_download_quota_counter AS c " +
-                " (id, instance_id, email, counter) " +
-                " VALUES (nextval('{h-schema}seq_download_quota_counter'), :instance, :email, :counter) " + // FIXME:Right now nextval increment by 50 each time. Check if we can update existing sequence in flyway sql to change increment from 50 to 1.
-                " ON CONFLICT (instance_id, email) " +
-                " DO UPDATE " +
-                " SET counter  = c.counter + EXCLUDED.counter " + // c.counter is value in DB right now, EXCLUDED.counter is value we wanted to set
-                " RETURNING *", UserDownloadQuotaEntity.class)
-            .setParameter(INSTANCE, instanceId)
-            .setParameter(EMAIL, email)
-            .setParameter(COUNTER, diff)
-            .getSingleResult();
+                         "INSERT INTO {h-schema}t_user_download_quota_counter AS c " + " (id, instance_id, email, counter) "
+                             + " VALUES (nextval('{h-schema}seq_download_quota_counter'), :instance, :email, :counter) " +
+                             // FIXME:Right now nextval increment by 50 each time. Check if we can update existing sequence in flyway sql to change increment from 50 to 1.
+                             " ON CONFLICT (instance_id, email) " + " DO UPDATE " + " SET counter  = c.counter + EXCLUDED.counter " +
+                             // c.counter is value in DB right now, EXCLUDED.counter is value we wanted to set
+                             " RETURNING *", UserDownloadQuotaEntity.class)
+                     .setParameter(INSTANCE, instanceId)
+                     .setParameter(EMAIL, email)
+                     .setParameter(COUNTER, diff)
+                     .getSingleResult();
 
         // RETURNING(from previous query) returns only id so we have to query the actual value
         UserDownloadQuotaEntity entity = (UserDownloadQuotaEntity) entityManager.createNativeQuery(
-            "SELECT * FROM {h-schema}t_user_download_quota_counter " +
-                " WHERE instance_id  = :instance " +
-                "   AND email        = :email", UserDownloadQuotaEntity.class)
-            .setParameter(INSTANCE, instanceId)
-            .setParameter(EMAIL, email)
-            .getSingleResult();
+                                                                                    "SELECT * FROM {h-schema}t_user_download_quota_counter " + " WHERE instance_id  = :instance "
+                                                                                        + "   AND email        = :email",
+                                                                                    UserDownloadQuotaEntity.class)
+                                                                                .setParameter(INSTANCE, instanceId)
+                                                                                .setParameter(EMAIL, email)
+                                                                                .getSingleResult();
 
         return mapper.toDomain(entity);
     }
 
     @Override
-    public UserDownloadRate upsertOrCombineDownloadRate(String instanceId, String email, Long diff, LocalDateTime expiry) {
+    public UserDownloadRate upsertOrCombineDownloadRate(String instanceId,
+                                                        String email,
+                                                        Long diff,
+                                                        LocalDateTime expiry) {
         // rather than implementing sync issues in code, we use DB to manage sync conflict as it is the only truth source (INSERT ... ON CONFLICT ... DO UPDATE)
         entityManager.createNativeQuery(
-            "INSERT INTO {h-schema}t_user_download_rate_gauge AS r " +
-                " (id, instance_id, email, gauge, expiry) " +
-                " VALUES (nextval('{h-schema}seq_download_rate_gauge'), :instance, :email, :gauge, :expiry) " + // FIXME:Right now nextval increment by 50 each time. Check if we can update existing sequence in flyway sql to change increment from 50 to 1.
-                " ON CONFLICT (instance_id, email) " +
-                " DO UPDATE " +
-                " SET gauge  = r.gauge + EXCLUDED.gauge " + // r.gauge is value in DB right now, EXCLUDED.gauge is value we wanted to set
-                "   , expiry = EXCLUDED.expiry " +
-                " RETURNING *", UserDownloadRateEntity.class)
-            .setParameter(INSTANCE, instanceId)
-            .setParameter(EMAIL, email)
-            .setParameter(GAUGE, diff)
-            .setParameter(EXPIRY, expiry)
-            .getSingleResult();
+                         "INSERT INTO {h-schema}t_user_download_rate_gauge AS r " + " (id, instance_id, email, gauge, expiry) "
+                             + " VALUES (nextval('{h-schema}seq_download_rate_gauge'), :instance, :email, :gauge, :expiry) " +
+                             // FIXME:Right now nextval increment by 50 each time. Check if we can update existing sequence in flyway sql to change increment from 50 to 1.
+                             " ON CONFLICT (instance_id, email) " + " DO UPDATE " + " SET gauge  = r.gauge + EXCLUDED.gauge " +
+                             // r.gauge is value in DB right now, EXCLUDED.gauge is value we wanted to set
+                             "   , expiry = EXCLUDED.expiry " + " RETURNING *", UserDownloadRateEntity.class)
+                     .setParameter(INSTANCE, instanceId)
+                     .setParameter(EMAIL, email)
+                     .setParameter(GAUGE, diff)
+                     .setParameter(EXPIRY, expiry)
+                     .getSingleResult();
 
         // RETURNING(from previous query) returns only id so we have to query the actual value
         UserDownloadRateEntity entity = (UserDownloadRateEntity) entityManager.createNativeQuery(
-            "SELECT * FROM {h-schema}t_user_download_rate_gauge " +
-                " WHERE instance_id  = :instance " +
-                "   AND email        = :email", UserDownloadRateEntity.class)
-            .setParameter(INSTANCE, instanceId)
-            .setParameter(EMAIL, email)
-            .getSingleResult();
+                                                                                  "SELECT * FROM {h-schema}t_user_download_rate_gauge " + " WHERE instance_id  = :instance "
+                                                                                      + "   AND email        = :email",
+                                                                                  UserDownloadRateEntity.class)
+                                                                              .setParameter(INSTANCE, instanceId)
+                                                                              .setParameter(EMAIL, email)
+                                                                              .getSingleResult();
 
         return mapper.toDomain(entity);
     }

@@ -31,7 +31,6 @@ import java.util.Collection;
  * used in  to be able to modify the sending behaviour during tests.
  *
  * @author Guillaume Andrieu
- *
  */
 public interface IProcessingEventSender {
 

@@ -46,9 +46,10 @@ public interface ICatalogServicesClient {
      * @param serviceScope the applicable mode. Can be <code>null</code>.
      * @return the list of services
      */
-    @GetMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<EntityModel<PluginConfigurationDto>>> retrieveServices(
-            @RequestParam(value = "datasetIpIds", required = false) final List<String> datasetIds,
-            @RequestParam(value = "applicationModes", required = false) final List<ServiceScope> serviceScopes);
+        @RequestParam(value = "datasetIpIds", required = false) final List<String> datasetIds,
+        @RequestParam(value = "applicationModes", required = false) final List<ServiceScope> serviceScopes);
 
 }

@@ -19,11 +19,9 @@
 package fr.cnes.regards.modules.model.domain.attributes.restriction;
 
 /**
- *
  * Restriction factory
  *
  * @author msordi
- *
  */
 public final class RestrictionFactory {
 
@@ -40,8 +38,10 @@ public final class RestrictionFactory {
         return er;
     }
 
-    public static DoubleRangeRestriction buildFloatRangeRestriction(Double pMin, Double pMax, boolean pMinExcluded,
-            boolean pMaxExcluded) {
+    public static DoubleRangeRestriction buildFloatRangeRestriction(Double pMin,
+                                                                    Double pMax,
+                                                                    boolean pMinExcluded,
+                                                                    boolean pMaxExcluded) {
         final DoubleRangeRestriction frr = new DoubleRangeRestriction();
         frr.setMin(pMin);
         frr.setMax(pMax);
@@ -50,8 +50,10 @@ public final class RestrictionFactory {
         return frr;
     }
 
-    public static IntegerRangeRestriction buildIntegerRangeRestriction(Integer pMin, Integer pMax, boolean pMinExcluded,
-            boolean pMaxExcluded) {
+    public static IntegerRangeRestriction buildIntegerRangeRestriction(Integer pMin,
+                                                                       Integer pMax,
+                                                                       boolean pMinExcluded,
+                                                                       boolean pMaxExcluded) {
         final IntegerRangeRestriction irr = new IntegerRangeRestriction();
         irr.setMin(pMin);
         irr.setMax(pMax);
@@ -60,8 +62,10 @@ public final class RestrictionFactory {
         return irr;
     }
 
-    public static LongRangeRestriction buildLongRangeRestriction(Long pMin, Long pMax, boolean pMinExcluded,
-            boolean pMaxExcluded) {
+    public static LongRangeRestriction buildLongRangeRestriction(Long pMin,
+                                                                 Long pMax,
+                                                                 boolean pMinExcluded,
+                                                                 boolean pMaxExcluded) {
         final LongRangeRestriction irr = new LongRangeRestriction();
         irr.setMin(pMin);
         irr.setMax(pMax);

@@ -18,7 +18,16 @@
  */
 package fr.cnes.regards.framework.amqp.test.batch;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
+import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
+import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
+import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,16 +43,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
-import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
-import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,13 +50,12 @@ import java.util.Optional;
 
 /**
  * @author Marc SORDI
- *
  */
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration
 @TestPropertySource(properties = { "regards.amqp.management.mode=SINGLE",
-        "regards.tenants=" + BatchTestIT.PROJECT + ", " + BatchTestIT.PROJECT1, "regards.tenant=" + BatchTestIT.PROJECT,
-        "regards.amqp.internal.transaction=true", "spring.jmx.enabled=false" }, locations = "classpath:amqp.properties")
+    "regards.tenants=" + BatchTestIT.PROJECT + ", " + BatchTestIT.PROJECT1, "regards.tenant=" + BatchTestIT.PROJECT,
+    "regards.amqp.internal.transaction=true", "spring.jmx.enabled=false" }, locations = "classpath:amqp.properties")
 public class BatchTestIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BatchTestIT.class);
@@ -182,7 +180,13 @@ public class BatchTestIT {
         }
         try {
             tenantResolver.forceTenant(PROJECT);
-            publisher.broadcastAll(EXCHANGE_NAME, Optional.empty(), Optional.empty(), Optional.empty(), 0,messages,new HashMap<>());
+            publisher.broadcastAll(EXCHANGE_NAME,
+                                   Optional.empty(),
+                                   Optional.empty(),
+                                   Optional.empty(),
+                                   0,
+                                   messages,
+                                   new HashMap<>());
         } finally {
             tenantResolver.clearTenant();
         }
@@ -197,14 +201,24 @@ public class BatchTestIT {
         }
         try {
             tenantResolver.forceTenant(PROJECT1);
-            publisher.broadcastAll(EXCHANGE_NAME, Optional.empty(), Optional.empty(),Optional.empty(),0,messages,new HashMap<>());
+            publisher.broadcastAll(EXCHANGE_NAME,
+                                   Optional.empty(),
+                                   Optional.empty(),
+                                   Optional.empty(),
+                                   0,
+                                   messages,
+                                   new HashMap<>());
         } finally {
             tenantResolver.clearTenant();
         }
         Thread.sleep(5000);
-        Assert.assertEquals("Invalid number of message received",MESSAGE_NB_PROJECT, batchHandlerTers.getCountByTenant(PROJECT));
-        Assert.assertEquals("Invalid number of message received",MESSAGE_NB_PROJECT1, batchHandlerTers.getCountByTenant(PROJECT1));
-        Assert.assertEquals("Invalid number of calls", 2,batchHandlerTers.getCalls().intValue());
+        Assert.assertEquals("Invalid number of message received",
+                            MESSAGE_NB_PROJECT,
+                            batchHandlerTers.getCountByTenant(PROJECT));
+        Assert.assertEquals("Invalid number of message received",
+                            MESSAGE_NB_PROJECT1,
+                            batchHandlerTers.getCountByTenant(PROJECT1));
+        Assert.assertEquals("Invalid number of calls", 2, batchHandlerTers.getCalls().intValue());
     }
 
     @Test

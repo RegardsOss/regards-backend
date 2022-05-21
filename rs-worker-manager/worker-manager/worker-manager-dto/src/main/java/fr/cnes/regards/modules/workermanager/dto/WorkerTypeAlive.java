@@ -24,6 +24,7 @@ package fr.cnes.regards.modules.workermanager.dto;
 public class WorkerTypeAlive {
 
     private String workerType;
+
     private Long nbInstance;
 
     public WorkerTypeAlive(String workerType, Long nbInstance) {

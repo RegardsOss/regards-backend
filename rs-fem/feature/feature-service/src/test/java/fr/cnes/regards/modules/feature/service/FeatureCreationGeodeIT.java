@@ -53,9 +53,12 @@ public class FeatureCreationGeodeIT extends AbstractFeatureMultitenantServiceIT 
 
     @Test
     public void parseGeodeRequest() throws UnsupportedEncodingException, IOException {
-        try (JsonReader reader = new JsonReader(new InputStreamReader(
-                Files.newInputStream(Paths.get("src", "test", "resources", "GEODE", "2321-feature-request.json")),
-                "UTF-8"))) {
+        try (JsonReader reader = new JsonReader(new InputStreamReader(Files.newInputStream(Paths.get("src",
+                                                                                                     "test",
+                                                                                                     "resources",
+                                                                                                     "GEODE",
+                                                                                                     "2321-feature-request.json")),
+                                                                      "UTF-8"))) {
             FeatureCreationRequestEvent request = gson.fromJson(reader, FeatureCreationRequestEvent.class);
             LOGGER.debug(request.toString());
         }

@@ -70,12 +70,12 @@ import java.util.stream.Collectors;
  * Test class for REST Client
  *
  * @author Sébastien Binda
- *
  */
 @ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_rest_tests",
-        "regards.amqp.enabled=true","regards.storage.cache.path:target/cache" })
+@TestPropertySource(
+    properties = { "spring.jpa.properties.hibernate.default_schema=storage_rest_tests", "regards.amqp.enabled=true",
+        "regards.storage.cache.path:target/cache" })
 public class StorageRestClientIT extends AbstractRegardsWebIT {
 
     @Value("${server.address}")
@@ -107,10 +107,12 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
     public void init() throws IOException, ModuleException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         fileRepo.deleteAll();
-        client = FeignClientBuilder.build(
-                new TokenClientProvider<>(IStorageRestClient.class,
-                        "http://" + serverAddress + ":" + getPort(), feignSecurityManager),
-                gson, requestTemplate -> requestTemplate.header("Content-Type", MediaType.APPLICATION_JSON_VALUE));
+        client = FeignClientBuilder.build(new TokenClientProvider<>(IStorageRestClient.class,
+                                                                    "http://" + serverAddress + ":" + getPort(),
+                                                                    feignSecurityManager),
+                                          gson,
+                                          requestTemplate -> requestTemplate.header("Content-Type",
+                                                                                    MediaType.APPLICATION_JSON_VALUE));
         if (!storageLocationConfService.search(ONLINE_CONF).isPresent()) {
             initDataStoragePluginConfiguration();
         }
@@ -129,9 +131,13 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
         // Create an entity for test
         for (int i = 0; i < 100; i++) {
             fileRefService.create(Sets.newHashSet("someone", "someone-else"),
-                                  new FileReferenceMetaInfo("123456" + i, "MD5", "file.test_" + i, 10L,
+                                  new FileReferenceMetaInfo("123456" + i,
+                                                            "MD5",
+                                                            "file.test_" + i,
+                                                            10L,
                                                             MediaType.APPLICATION_JSON),
-                                  new FileLocation("somewhere", "file://plop/plip.file_" + i), false);
+                                  new FileLocation("somewhere", "file://plop/plip.file_" + i),
+                                  false);
         }
         Response response = client.export();
         Assert.assertNotNull(response);
@@ -153,8 +159,9 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
         // Expected 2 storages. One created in init method and 1 cache system
         Assert.assertEquals(2, response.getBody().size());
         Assert.assertTrue(response.getBody().stream().anyMatch(s -> s.getContent().getName().equals(ONLINE_CONF)));
-        Assert.assertTrue(response.getBody().stream()
-                .anyMatch(s -> s.getContent().getName().equals(CacheService.CACHE_NAME)));
+        Assert.assertTrue(response.getBody()
+                                  .stream()
+                                  .anyMatch(s -> s.getContent().getName().equals(CacheService.CACHE_NAME)));
     }
 
     @Test
@@ -163,14 +170,25 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
         Set<String> checksums = Sets.newHashSet(UUID.randomUUID().toString(), UUID.randomUUID().toString());
         for (String checksum : checksums) {
             fileRefService.create(Sets.newHashSet("someone", "someone-else"),
-                    new FileReferenceMetaInfo(checksum, "MD5", "file_ref.txt", 1L,
-                            MediaType.APPLICATION_JSON),
-                    new FileLocation("somewhere", "file://sample/file_ref.txt"), true);
+                                  new FileReferenceMetaInfo(checksum,
+                                                            "MD5",
+                                                            "file_ref.txt",
+                                                            1L,
+                                                            MediaType.APPLICATION_JSON),
+                                  new FileLocation("somewhere", "file://sample/file_ref.txt"),
+                                  true);
         }
         ResponseEntity<Set<FileReferenceDTO>> response = client.getFileReferencesWithoutOwners(storageName, checksums);
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
-        Assert.assertEquals("Unexpected number of file references found", checksums.size(), Objects.requireNonNull(response.getBody()).size());
-        Assert.assertEquals("Unexpected checksums retrieved", checksums, response.getBody().stream().map(f -> f.getMetaInfo().getChecksum()).collect(Collectors.toSet()));
+        Assert.assertEquals("Unexpected number of file references found",
+                            checksums.size(),
+                            Objects.requireNonNull(response.getBody()).size());
+        Assert.assertEquals("Unexpected checksums retrieved",
+                            checksums,
+                            response.getBody()
+                                    .stream()
+                                    .map(f -> f.getMetaInfo().getChecksum())
+                                    .collect(Collectors.toSet()));
     }
 
     private StorageLocationConfiguration initDataStoragePluginConfiguration() {
@@ -178,13 +196,16 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineTestClient.class);
             Files.createDirectories(Paths.get("target/online-storage/"));
 
-            Set<IPluginParam> parameters = IPluginParam
-                    .set(IPluginParam.build(SimpleOnlineTestClient.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                                            "target/online-storage/"),
-                         IPluginParam.build(SimpleOnlineTestClient.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*"),
-                         IPluginParam.build(SimpleOnlineTestClient.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*"));
-            PluginConfiguration dataStorageConf = new PluginConfiguration(ONLINE_CONF, parameters, 0,
-                    dataStoMeta.getPluginId());
+            Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SimpleOnlineTestClient.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                                                                               "target/online-storage/"),
+                                                            IPluginParam.build(SimpleOnlineTestClient.HANDLE_STORAGE_ERROR_FILE_PATTERN,
+                                                                               "error.*"),
+                                                            IPluginParam.build(SimpleOnlineTestClient.HANDLE_DELETE_ERROR_FILE_PATTERN,
+                                                                               "delErr.*"));
+            PluginConfiguration dataStorageConf = new PluginConfiguration(ONLINE_CONF,
+                                                                          parameters,
+                                                                          0,
+                                                                          dataStoMeta.getPluginId());
             return storageLocationConfService.create(ONLINE_CONF, dataStorageConf, 1_000_000L);
         } catch (IOException | ModuleException e) {
             Assert.fail(e.getMessage());

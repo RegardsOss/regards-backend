@@ -57,23 +57,36 @@ import static org.mockito.Mockito.verify;
 public class RegistrationServiceTest {
 
     private static final String EMAIL = "email@test.com";
+
     private static final String FIRST_NAME = "Firstname";
+
     private static final String LAST_NAME = "Lirstname";
+
     private static final Set<MetaData> META_DATA = new HashSet<>();
+
     private static final String PASSWORD = "password";
+
     private static final List<ResourcesAccess> PERMISSIONS = new ArrayList<>();
+
     private static final Role ROLE = new Role("role name", null);
+
     private static final String ORIGIN_URL = "originUrl";
+
     private static final String REQUEST_LINK = "requestLink";
+
     private static final String ORIGIN = "origin";
+
     private static final Set<String> ACCESS_GROUPS = Collections.singleton("group");
 
     @Mock
     private IProjectUserService projectUserService;
+
     @Mock
     private IEmailVerificationTokenService tokenService;
+
     @Mock
     private WaitForQualificationListener listener;
+
     @Mock
     private AccountUtilsService accountUtilsService;
 
@@ -81,24 +94,34 @@ public class RegistrationServiceTest {
     private RegistrationService registrationService;
 
     private AccessRequestDto accessRequestDto;
+
     private ProjectUser expectedProjectUser;
+
     private Account account;
 
     @Before
     public void setUp() throws EntityException {
 
-        accessRequestDto = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, ROLE.getName(), new ArrayList<>(META_DATA), PASSWORD, ORIGIN_URL, REQUEST_LINK, ORIGIN,
-                ACCESS_GROUPS, 0L);
+        accessRequestDto = new AccessRequestDto(EMAIL,
+                                                FIRST_NAME,
+                                                LAST_NAME,
+                                                ROLE.getName(),
+                                                new ArrayList<>(META_DATA),
+                                                PASSWORD,
+                                                ORIGIN_URL,
+                                                REQUEST_LINK,
+                                                ORIGIN,
+                                                ACCESS_GROUPS,
+                                                0L);
         account = new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD);
-        expectedProjectUser = new ProjectUser()
-                .setEmail(EMAIL)
-                .setLastName(LAST_NAME)
-                .setFirstName(FIRST_NAME)
-                .setPermissions(PERMISSIONS)
-                .setRole(ROLE)
-                .setMetadata(META_DATA)
-                .setAccessGroups(ACCESS_GROUPS)
-                .setStatus(UserStatus.WAITING_ACCOUNT_ACTIVE);
+        expectedProjectUser = new ProjectUser().setEmail(EMAIL)
+                                               .setLastName(LAST_NAME)
+                                               .setFirstName(FIRST_NAME)
+                                               .setPermissions(PERMISSIONS)
+                                               .setRole(ROLE)
+                                               .setMetadata(META_DATA)
+                                               .setAccessGroups(ACCESS_GROUPS)
+                                               .setStatus(UserStatus.WAITING_ACCOUNT_ACTIVE);
 
         Mockito.when(accountUtilsService.retrieveAccount(EMAIL)).thenReturn(account);
         Mockito.when(projectUserService.create(accessRequestDto, false, null, null))
@@ -112,9 +135,11 @@ public class RegistrationServiceTest {
     @Purpose("Check that the system fails when receiving an access request with an already used email.")
     public void requestAccessEmailAlreadyInUse() throws EntityException {
         // Given
-        Mockito.when(projectUserService.create(accessRequestDto, false, null, null)).thenThrow(new EntityAlreadyExistsException("Nope"));
+        Mockito.when(projectUserService.create(accessRequestDto, false, null, null))
+               .thenThrow(new EntityAlreadyExistsException("Nope"));
         // When - Then
-        assertThrows(EntityAlreadyExistsException.class, () -> registrationService.requestAccess(accessRequestDto, false));
+        assertThrows(EntityAlreadyExistsException.class,
+                     () -> registrationService.requestAccess(accessRequestDto, false));
     }
 
     @Test
@@ -126,33 +151,41 @@ public class RegistrationServiceTest {
         // When
         ProjectUser createdProjectUser = registrationService.requestAccess(accessRequestDto, false);
         // Then
-        assertThat(createdProjectUser).usingRecursiveComparison().ignoringFields("id", "lastConnection", "lastUpdate").isEqualTo(expectedProjectUser);
+        assertThat(createdProjectUser).usingRecursiveComparison()
+                                      .ignoringFields("id", "lastConnection", "lastUpdate")
+                                      .isEqualTo(expectedProjectUser);
         verify(tokenService).create(createdProjectUser, ORIGIN_URL, REQUEST_LINK);
         verify(listener).onAccountActivation(EMAIL);
     }
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_510")
-    @Purpose("Check that the system allows the user to request a registration by creating a new project user for external accounts.")
+    @Purpose(
+        "Check that the system allows the user to request a registration by creating a new project user for external accounts.")
     public void requestExternalAccess() throws EntityException {
         // When
         ProjectUser createdProjectUser = registrationService.requestAccess(accessRequestDto, true);
         // Then
         expectedProjectUser.setStatus(UserStatus.ACCESS_GRANTED);
         expectedProjectUser.setOrigin(ORIGIN);
-        assertThat(createdProjectUser).usingRecursiveComparison().ignoringFields("id", "lastConnection", "lastUpdate").isEqualTo(expectedProjectUser);
+        assertThat(createdProjectUser).usingRecursiveComparison()
+                                      .ignoringFields("id", "lastConnection", "lastUpdate")
+                                      .isEqualTo(expectedProjectUser);
     }
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_510")
-    @Purpose("Check that the system allows the user to request a registration by creating a new project user and account for external accounts.")
+    @Purpose(
+        "Check that the system allows the user to request a registration by creating a new project user and account for external accounts.")
     public void requestExternalAccessWithAccountCreation() throws EntityException {
         // When
         ProjectUser createdProjectUser = registrationService.requestAccess(accessRequestDto, true);
         // Then
         expectedProjectUser.setStatus(UserStatus.ACCESS_GRANTED);
         expectedProjectUser.setOrigin(ORIGIN);
-        assertThat(createdProjectUser).usingRecursiveComparison().ignoringFields("id", "lastConnection", "lastUpdate").isEqualTo(expectedProjectUser);
+        assertThat(createdProjectUser).usingRecursiveComparison()
+                                      .ignoringFields("id", "lastConnection", "lastUpdate")
+                                      .isEqualTo(expectedProjectUser);
     }
 
     @Test
@@ -162,7 +195,9 @@ public class RegistrationServiceTest {
         // When
         ProjectUser createdProjectUser = registrationService.requestAccess(accessRequestDto, false);
         // Then
-        assertThat(createdProjectUser).usingRecursiveComparison().ignoringFields("id", "lastConnection", "lastUpdate").isEqualTo(expectedProjectUser);
+        assertThat(createdProjectUser).usingRecursiveComparison()
+                                      .ignoringFields("id", "lastConnection", "lastUpdate")
+                                      .isEqualTo(expectedProjectUser);
     }
 
 }

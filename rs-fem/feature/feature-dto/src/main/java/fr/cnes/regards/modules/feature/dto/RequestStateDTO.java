@@ -18,11 +18,8 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
-
 /**
- * 
  * @author Sébastien Binda
- *
  */
 public class RequestStateDTO {
 

@@ -69,21 +69,20 @@ public class FeatureUpdateDisseminationService {
 
     private static final int PAGE_SIZE = 400;
 
-    
     private IFeatureEntityWithDisseminationRepository featureWithDisseminationRepo;
-    
+
     private IFeatureUpdateDisseminationRequestRepository featureUpdateDisseminationRequestRepository;
 
     private IFeatureEntityRepository featureEntityRepository;
-    
+
     private FeatureUpdateDisseminationService self;
-    
+
     private ISessionAgentClient sessionNotificationClient;
 
-    public FeatureUpdateDisseminationService(IFeatureEntityWithDisseminationRepository featureWithDisseminationRepo, 
-                                             IFeatureUpdateDisseminationRequestRepository featureUpdateDisseminationRequestRepository, 
-                                             IFeatureEntityRepository featureEntityRepository, 
-                                             FeatureUpdateDisseminationService featureUpdateDisseminationService, 
+    public FeatureUpdateDisseminationService(IFeatureEntityWithDisseminationRepository featureWithDisseminationRepo,
+                                             IFeatureUpdateDisseminationRequestRepository featureUpdateDisseminationRequestRepository,
+                                             IFeatureEntityRepository featureEntityRepository,
+                                             FeatureUpdateDisseminationService featureUpdateDisseminationService,
                                              ISessionAgentClient sessionNotificationClient) {
         this.featureWithDisseminationRepo = featureWithDisseminationRepo;
         this.featureUpdateDisseminationRequestRepository = featureUpdateDisseminationRequestRepository;
@@ -100,13 +99,15 @@ public class FeatureUpdateDisseminationService {
         do {
             // Search requests to process
             results = featureUpdateDisseminationRequestRepository.getFeatureUpdateDisseminationRequestsProcessable(
-                    startDate, page);
+                startDate,
+                page);
             if (!results.isEmpty()) {
                 self.handleFeatureUpdateDisseminationRequests(results);
             }
             totalHandled += results.getNumberOfElements();
             if (results.getNumberOfElements() > 0) {
-                LOG.info("Handled {} update dissemination request (remaining {}).", results.getNumberOfElements(),
+                LOG.info("Handled {} update dissemination request (remaining {}).",
+                         results.getNumberOfElements(),
                          results.getTotalElements() - results.getNumberOfElements());
             }
         } while (results.hasNext());
@@ -142,17 +143,22 @@ public class FeatureUpdateDisseminationService {
     }
 
     private List<FeatureEntity> getFeatureEntities(Page<FeatureUpdateDisseminationRequest> results) {
-        Set<FeatureUniformResourceName> urnList = results.stream().map(FeatureUpdateDisseminationRequest::getUrn)
-                .collect(Collectors.toSet());
+        Set<FeatureUniformResourceName> urnList = results.stream()
+                                                         .map(FeatureUpdateDisseminationRequest::getUrn)
+                                                         .collect(Collectors.toSet());
         return featureWithDisseminationRepo.findByUrnIn(urnList);
     }
 
     private SessionFeatureDisseminationInfos updateFeatureRecipientsWithPutRequest(FeatureEntity featureEntity,
-            FeatureUpdateDisseminationRequest request, SessionFeatureDisseminationInfos sessionInfos) {
+                                                                                   FeatureUpdateDisseminationRequest request,
+                                                                                   SessionFeatureDisseminationInfos sessionInfos) {
         // Check if a featureRecipient exists with same recipient label
-        Optional<FeatureDisseminationInfo> featureRecipientToUpdate = featureEntity.getDisseminationsInfo().stream()
-                .filter(featureRecipient -> featureRecipient.getLabel().equals(request.getRecipientLabel()))
-                .findFirst();
+        Optional<FeatureDisseminationInfo> featureRecipientToUpdate = featureEntity.getDisseminationsInfo()
+                                                                                   .stream()
+                                                                                   .filter(featureRecipient -> featureRecipient.getLabel()
+                                                                                                                               .equals(
+                                                                                                                                   request.getRecipientLabel()))
+                                                                                   .findFirst();
         if (featureRecipientToUpdate.isPresent()) {
             // Reset an existing feature recipient as this recipient has been re-notified
             featureRecipientToUpdate.get().setRequestDate(request.getCreationDate());
@@ -160,18 +166,22 @@ public class FeatureUpdateDisseminationService {
         } else {
             // Add new recipient
             featureEntity.getDisseminationsInfo()
-                    .add(new FeatureDisseminationInfo(request.getRecipientLabel(), request.getAckRequired()));
+                         .add(new FeatureDisseminationInfo(request.getRecipientLabel(), request.getAckRequired()));
         }
         sessionInfos.addRequest(featureEntity, request);
         return sessionInfos;
     }
 
     private SessionFeatureDisseminationInfos updateFeatureRecipientsWithAckRequest(FeatureEntity featureEntity,
-            FeatureUpdateDisseminationRequest request, SessionFeatureDisseminationInfos sessionInfos) {
+                                                                                   FeatureUpdateDisseminationRequest request,
+                                                                                   SessionFeatureDisseminationInfos sessionInfos) {
         // Check if a featureRecipient exists with same recipient label
-        Optional<FeatureDisseminationInfo> featureRecipientToUpdate = featureEntity.getDisseminationsInfo().stream()
-                .filter(featureRecipient -> featureRecipient.getLabel().equals(request.getRecipientLabel()))
-                .findFirst();
+        Optional<FeatureDisseminationInfo> featureRecipientToUpdate = featureEntity.getDisseminationsInfo()
+                                                                                   .stream()
+                                                                                   .filter(featureRecipient -> featureRecipient.getLabel()
+                                                                                                                               .equals(
+                                                                                                                                   request.getRecipientLabel()))
+                                                                                   .findFirst();
         if (featureRecipientToUpdate.isPresent()) {
             // Update existing feature recipient ack date
             featureRecipientToUpdate.get().setAckDate(request.getCreationDate());
@@ -183,8 +193,8 @@ public class FeatureUpdateDisseminationService {
     public void saveAckRequests(List<DisseminationAckEvent> messages) {
         // Retrieve features related to these events
         Collection<FeatureUniformResourceName> urnList = messages.stream()
-                .map(f -> FeatureUniformResourceName.fromString(f.getUrn()))
-                .collect(Collectors.toList());
+                                                                 .map(f -> FeatureUniformResourceName.fromString(f.getUrn()))
+                                                                 .collect(Collectors.toList());
 
         List<ILightFeatureEntity> lightFeatureEntities = featureEntityRepository.findLightByUrnIn(urnList);
         List<FeatureUpdateDisseminationRequest> updateAckRequests = new ArrayList<>();
@@ -192,8 +202,11 @@ public class FeatureUpdateDisseminationService {
         for (DisseminationAckEvent disseminationAckEvent : messages) {
             // Retrieve the FeatureEntity this event refers to
             Optional<ILightFeatureEntity> lightFeatureEntityOpt = lightFeatureEntities.stream()
-                    .filter(urnAndSessionById -> urnAndSessionById.getUrn().toString().equals(disseminationAckEvent.getUrn()))
-                    .findFirst();
+                                                                                      .filter(urnAndSessionById -> urnAndSessionById.getUrn()
+                                                                                                                                    .toString()
+                                                                                                                                    .equals(
+                                                                                                                                        disseminationAckEvent.getUrn()))
+                                                                                      .findFirst();
             if (lightFeatureEntityOpt.isPresent()) {
                 // Add an ACK request
                 FeatureUniformResourceName urn = FeatureUniformResourceName.fromString(disseminationAckEvent.getUrn());
@@ -208,24 +221,26 @@ public class FeatureUpdateDisseminationService {
     }
 
     public void savePutRequests(List<NotifierEvent> notifierEvents,
-            Set<AbstractFeatureRequest> associatedFeatureRequest) {
+                                Set<AbstractFeatureRequest> associatedFeatureRequest) {
         // Retrieve features related to these events
         Collection<FeatureUniformResourceName> urnList = associatedFeatureRequest.stream()
-                .map(AbstractFeatureRequest::getUrn).collect(Collectors.toSet());
+                                                                                 .map(AbstractFeatureRequest::getUrn)
+                                                                                 .collect(Collectors.toSet());
         List<ILightFeatureEntity> lightFeatureEntities = featureEntityRepository.findLightByUrnIn(urnList);
         List<FeatureUpdateDisseminationRequest> putAckRequests = new ArrayList<>();
 
         // Update features recipients
         for (ILightFeatureEntity featureEntity : lightFeatureEntities) {
             // Retrieve requests associated to the featureEntity
-            List<NotifierEvent> associatedNotifierEvents = getNotifierEvents(featureEntity, notifierEvents,
+            List<NotifierEvent> associatedNotifierEvents = getNotifierEvents(featureEntity,
+                                                                             notifierEvents,
                                                                              associatedFeatureRequest);
             for (NotifierEvent notifierEvent : associatedNotifierEvents) {
                 for (Recipient recipient : notifierEvent.getRecipients()) {
-                    putAckRequests.add(
-                            new FeatureUpdateDisseminationRequest(featureEntity.getUrn(), recipient.getLabel(),
-                                                                  FeatureUpdateDisseminationInfoType.PUT,
-                                                                  Optional.of(recipient.isAckRequired())));
+                    putAckRequests.add(new FeatureUpdateDisseminationRequest(featureEntity.getUrn(),
+                                                                             recipient.getLabel(),
+                                                                             FeatureUpdateDisseminationInfoType.PUT,
+                                                                             Optional.of(recipient.isAckRequired())));
                 }
             }
         }
@@ -233,19 +248,27 @@ public class FeatureUpdateDisseminationService {
         featureUpdateDisseminationRequestRepository.saveAll(putAckRequests);
     }
 
-    private List<NotifierEvent> getNotifierEvents(ILightFeatureEntity featureEntity, List<NotifierEvent> notifierEvents,
-            Set<AbstractFeatureRequest> associatedFeatureRequest) {
+    private List<NotifierEvent> getNotifierEvents(ILightFeatureEntity featureEntity,
+                                                  List<NotifierEvent> notifierEvents,
+                                                  Set<AbstractFeatureRequest> associatedFeatureRequest) {
         List<AbstractFeatureRequest> featureRequests = associatedFeatureRequest.stream()
-                .filter(request -> request.getUrn().equals(featureEntity.getUrn())).collect(Collectors.toList());
-        return notifierEvents.stream().filter(notifierEvent -> featureRequests.stream()
-                        .anyMatch(featureRequest -> featureRequest.getRequestId().equals(notifierEvent.getRequestId())))
-                .collect(Collectors.toList());
+                                                                               .filter(request -> request.getUrn()
+                                                                                                         .equals(
+                                                                                                             featureEntity.getUrn()))
+                                                                               .collect(Collectors.toList());
+        return notifierEvents.stream()
+                             .filter(notifierEvent -> featureRequests.stream()
+                                                                     .anyMatch(featureRequest -> featureRequest.getRequestId()
+                                                                                                               .equals(
+                                                                                                                   notifierEvent.getRequestId())))
+                             .collect(Collectors.toList());
     }
 
     private List<FeatureUpdateDisseminationRequest> getRequestsByFeatureEntity(FeatureEntity featureEntity,
-            Page<FeatureUpdateDisseminationRequest> results) {
-        return results.stream().filter(request -> request.getUrn().equals(featureEntity.getUrn()))
-                .collect(Collectors.toList());
+                                                                               Page<FeatureUpdateDisseminationRequest> results) {
+        return results.stream()
+                      .filter(request -> request.getUrn().equals(featureEntity.getUrn()))
+                      .collect(Collectors.toList());
     }
 
     private void notifySessions(SessionFeatureDisseminationInfos sessionInfos) {
@@ -257,11 +280,14 @@ public class FeatureUpdateDisseminationService {
             FeatureDisseminationInfos featureDisseminationInfos = sessionInfos.get(key);
 
             Set<FeatureUpdateDisseminationRequest> featureUpdateDisseminationRequestPUT = featureDisseminationInfos.get(
-                    FeatureUpdateDisseminationInfoType.PUT);
+                FeatureUpdateDisseminationInfoType.PUT);
             Set<FeatureUpdateDisseminationRequest> featureUpdateDisseminationRequestACK = featureDisseminationInfos.get(
-                    FeatureUpdateDisseminationInfoType.ACK);
+                FeatureUpdateDisseminationInfoType.ACK);
             Set<FeatureUpdateDisseminationRequest> putRequestNoAckRequired = featureUpdateDisseminationRequestPUT.stream()
-                    .filter(request -> !request.getAckRequired()).collect(Collectors.toSet());
+                                                                                                                 .filter(
+                                                                                                                     request -> !request.getAckRequired())
+                                                                                                                 .collect(
+                                                                                                                     Collectors.toSet());
 
             // Pending requests are only ACKRequired requests
             int nbPending = featureUpdateDisseminationRequestPUT.size() - putRequestNoAckRequired.size();
@@ -282,18 +308,29 @@ public class FeatureUpdateDisseminationService {
             }
             if (nbPendingToRemove > 0) {
                 FeatureSessionProperty property = FeatureSessionProperty.RUNNING_DISSEMINATION_PRODUCTS;
-                StepProperty stepProperty = getStepProperty(source, session, property, recipientLabel, nbPendingToRemove);
+                StepProperty stepProperty = getStepProperty(source,
+                                                            session,
+                                                            property,
+                                                            recipientLabel,
+                                                            nbPendingToRemove);
                 sessionNotificationClient.decrement(stepProperty);
             }
         });
     }
 
-    private StepProperty getStepProperty(String source, String session, FeatureSessionProperty property,
-            String recipientLabel, int nbProducts) {
-        return new StepProperty(DISSEMINATION_SESSION_STEP, source, session,
-                                new StepPropertyInfo(StepTypeEnum.DISSEMINATION, property.getState(),
+    private StepProperty getStepProperty(String source,
+                                         String session,
+                                         FeatureSessionProperty property,
+                                         String recipientLabel,
+                                         int nbProducts) {
+        return new StepProperty(DISSEMINATION_SESSION_STEP,
+                                source,
+                                session,
+                                new StepPropertyInfo(StepTypeEnum.DISSEMINATION,
+                                                     property.getState(),
                                                      getSessionPropertyName(property, recipientLabel),
-                                                     String.valueOf(nbProducts), property.isInputRelated(),
+                                                     String.valueOf(nbProducts),
+                                                     property.isInputRelated(),
                                                      property.isOutputRelated()));
     }
 

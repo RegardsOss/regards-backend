@@ -23,6 +23,7 @@ import fr.cnes.regards.modules.indexer.dao.BulkSaveLightResult;
 /**
  * Exception used to manage a problem with datasource plugin or Elasticsearch during an ingestion by permitting
  * throwing some useful data upper.
+ *
  * @author Olivier Rousselot
  */
 public class NotFinishedException extends Exception {

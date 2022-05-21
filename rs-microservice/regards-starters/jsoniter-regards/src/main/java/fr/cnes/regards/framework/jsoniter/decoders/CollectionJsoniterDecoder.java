@@ -11,7 +11,7 @@ import fr.cnes.regards.modules.model.domain.Model;
 import java.io.IOException;
 
 public class CollectionJsoniterDecoder implements AbstractEntityDecoder<CollectionFeature, Collection> {
-    
+
     public static Decoder selfRegister() {
         Decoder decoder = new CollectionJsoniterDecoder().nullSafe();
         JsoniterSpi.registerTypeDecoder(Collection.class, decoder);
@@ -23,10 +23,7 @@ public class CollectionJsoniterDecoder implements AbstractEntityDecoder<Collecti
         Any collection = iter.readAny();
         CollectionFeature feature = collection.as(CollectionFeature.class, "feature");
 
-        Collection result = new Collection(
-                collection.as(Model.class, "model"),
-                feature
-        );
+        Collection result = new Collection(collection.as(Model.class, "model"), feature);
 
         readCommonFields(collection, feature, result);
 

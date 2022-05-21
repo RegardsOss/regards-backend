@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.dam.service.dataaccess;
 
+import fr.cnes.regards.framework.amqp.IInstancePublisher;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionFailed;
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
@@ -26,16 +30,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.amqp.IInstancePublisher;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionFailed;
-import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-
 /**
  * Listener for {@link IAccessGroupService} on a new {@link TenantConnectionReady}.
  * Initialize the default Roles for a new tenant.
- * @author Sébastien Binda
  *
+ * @author Sébastien Binda
  */
 @Component
 public class AccessGroupEventListener {

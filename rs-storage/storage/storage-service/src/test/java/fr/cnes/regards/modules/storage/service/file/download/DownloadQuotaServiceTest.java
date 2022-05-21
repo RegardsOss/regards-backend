@@ -48,24 +48,34 @@ import static org.mockito.Mockito.*;
 public class DownloadQuotaServiceTest {
 
     private static final String TENANT = "default";
+
     private static final long DEFAULT_QUOTA = 20;
+
     private static final long DEFAULT_RATE = 20;
 
-    @Mock private IDownloadQuotaRepository quotaRepository;
+    @Mock
+    private IDownloadQuotaRepository quotaRepository;
 
-    @Mock private IQuotaManager quotaManager;
+    @Mock
+    private IQuotaManager quotaManager;
 
-    @Mock private ITenantResolver tenantResolver;
+    @Mock
+    private ITenantResolver tenantResolver;
 
-    @Mock private IRuntimeTenantResolver runtimeTenantResolver;
+    @Mock
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
-    @Mock private ISubscriber subscriber;
+    @Mock
+    private ISubscriber subscriber;
 
-    @Mock private ApplicationContext applicationContext;
+    @Mock
+    private ApplicationContext applicationContext;
 
-    @Mock private IDynamicTenantSettingService dynamicTenantSettingService;
+    @Mock
+    private IDynamicTenantSettingService dynamicTenantSettingService;
 
-    @Mock private StorageSettingService storageSettinService;
+    @Mock
+    private StorageSettingService storageSettinService;
 
     private DownloadQuotaService<Unit> quotaService;
 
@@ -75,25 +85,22 @@ public class DownloadQuotaServiceTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        doNothing()
-            .when(runtimeTenantResolver)
-            .forceTenant(anyString());
-        doReturn(TENANT)
-            .when(runtimeTenantResolver)
-            .getTenant();
+        doNothing().when(runtimeTenantResolver).forceTenant(anyString());
+        doReturn(TENANT).when(runtimeTenantResolver).getTenant();
 
-        quotaService = spy(
-            new DownloadQuotaService<>(
-                quotaRepository,
-                quotaManager,
-                tenantResolver,
-                runtimeTenantResolver,
-                subscriber,
-                applicationContext, dynamicTenantSettingService, storageSettinService)
-        );
+        quotaService = spy(new DownloadQuotaService<>(quotaRepository,
+                                                      quotaManager,
+                                                      tenantResolver,
+                                                      runtimeTenantResolver,
+                                                      subscriber,
+                                                      applicationContext,
+                                                      dynamicTenantSettingService,
+                                                      storageSettinService));
         quotaService.setSelf(quotaService);
         quotaService.setCache(Caffeine.newBuilder().build());
-        quotaService.setDefaultLimits(new AtomicReference<>(HashMap.of(TENANT, new DefaultDownloadQuotaLimits(DEFAULT_QUOTA, DEFAULT_RATE))));
+        quotaService.setDefaultLimits(new AtomicReference<>(HashMap.of(TENANT,
+                                                                       new DefaultDownloadQuotaLimits(DEFAULT_QUOTA,
+                                                                                                      DEFAULT_RATE))));
     }
 
     @After
@@ -109,11 +116,8 @@ public class DownloadQuotaServiceTest {
 
         // when
         DownloadQuotaLimits stub = new DownloadQuotaLimits(TENANT, userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
-        doReturn(stub)
-            .when(quotaRepository)
-            .save(any());
-        DownloadQuotaLimits downloadQuota =
-            quotaService.createDownloadQuota(userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
+        doReturn(stub).when(quotaRepository).save(any());
+        DownloadQuotaLimits downloadQuota = quotaService.createDownloadQuota(userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
 
         // then
         assertEquals(stub, downloadQuota);
@@ -126,15 +130,13 @@ public class DownloadQuotaServiceTest {
         Exception expected = new RuntimeException("expected");
 
         // when
-        doThrow(expected)
-            .when(quotaRepository)
-            .save(any());
-        ThrowableAssert.ThrowingCallable throwing =
-            () -> quotaService.createDownloadQuota(userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
+        doThrow(expected).when(quotaRepository).save(any());
+        ThrowableAssert.ThrowingCallable throwing = () -> quotaService.createDownloadQuota(userEmail,
+                                                                                           DEFAULT_QUOTA,
+                                                                                           DEFAULT_RATE);
 
         // then
-        assertThatThrownBy(throwing)
-            .isEqualTo(expected);
+        assertThatThrownBy(throwing).isEqualTo(expected);
     }
 
     @Test
@@ -144,14 +146,13 @@ public class DownloadQuotaServiceTest {
         DownloadQuotaLimits stub = new DownloadQuotaLimits(TENANT, userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
 
         // there exist a quota for the target user
-        doReturn(Optional.of(stub))
-            .when(quotaRepository)
-            .findByEmail(userEmail);
+        doReturn(Optional.of(stub)).when(quotaRepository).findByEmail(userEmail);
 
         // when
         // we search for it
-        DownloadQuotaLimits downloadQuota =
-            quotaService.findOrCreateDownloadQuota(userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
+        DownloadQuotaLimits downloadQuota = quotaService.findOrCreateDownloadQuota(userEmail,
+                                                                                   DEFAULT_QUOTA,
+                                                                                   DEFAULT_RATE);
 
         // then
         // we find it
@@ -167,18 +168,15 @@ public class DownloadQuotaServiceTest {
         // given
         String userEmail = "foo@bar.com";
         // there is no quota for the target user
-        doReturn(Optional.empty())
-            .when(quotaRepository)
-            .findByEmail(userEmail);
+        doReturn(Optional.empty()).when(quotaRepository).findByEmail(userEmail);
 
         // when
         // we search for it
         DownloadQuotaLimits stub = new DownloadQuotaLimits(TENANT, userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
-        doReturn(stub)
-            .when(quotaRepository)
-            .save(any());
-        DownloadQuotaLimits downloadQuota =
-            quotaService.findOrCreateDownloadQuota(userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
+        doReturn(stub).when(quotaRepository).save(any());
+        DownloadQuotaLimits downloadQuota = quotaService.findOrCreateDownloadQuota(userEmail,
+                                                                                   DEFAULT_QUOTA,
+                                                                                   DEFAULT_RATE);
 
         // then
         // we don't find it
@@ -198,22 +196,17 @@ public class DownloadQuotaServiceTest {
         String userEmail = "foo@bar.com";
         DownloadQuotaLimits stub = new DownloadQuotaLimits(TENANT, userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
         // there is no quota for the target user at first
-        doReturn(Optional.empty())
-            .doReturn(Optional.of(stub))
-            .when(quotaRepository)
-            .findByEmail(userEmail);
+        doReturn(Optional.empty()).doReturn(Optional.of(stub)).when(quotaRepository).findByEmail(userEmail);
 
         // when
         // we search for it
-        doThrow(
-            new DataIntegrityViolationException(
-                "expected",
-                new PSQLException(UK_DOWNLOAD_QUOTA_LIMITS_EMAIL, PSQLState.UNKNOWN_STATE)
-            ))
-            .when(quotaRepository)
-            .save(any());
-        DownloadQuotaLimits downloadQuota =
-            quotaService.findOrCreateDownloadQuota(userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
+        doThrow(new DataIntegrityViolationException("expected",
+                                                    new PSQLException(UK_DOWNLOAD_QUOTA_LIMITS_EMAIL,
+                                                                      PSQLState.UNKNOWN_STATE))).when(quotaRepository)
+                                                                                                .save(any());
+        DownloadQuotaLimits downloadQuota = quotaService.findOrCreateDownloadQuota(userEmail,
+                                                                                   DEFAULT_QUOTA,
+                                                                                   DEFAULT_RATE);
 
         // then
         // we didn't find it at first but we retried
@@ -232,28 +225,23 @@ public class DownloadQuotaServiceTest {
         // given
         String userEmail = "foo@bar.com";
         // there is no quota for the target user at first
-        doReturn(Optional.empty())
-            .when(quotaRepository)
-            .findByEmail(userEmail);
+        doReturn(Optional.empty()).when(quotaRepository).findByEmail(userEmail);
 
         {
             // when
             // we search for it
-            DataIntegrityViolationException expected =
-                new DataIntegrityViolationException(
-                    "expected",
-                    new PSQLException("anything but UK error", PSQLState.UNKNOWN_STATE)
-                );
-            doThrow(expected)
-                .when(quotaRepository)
-                .save(any());
-            ThrowableAssert.ThrowingCallable throwing =
-                () -> quotaService.findOrCreateDownloadQuota(userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
+            DataIntegrityViolationException expected = new DataIntegrityViolationException("expected",
+                                                                                           new PSQLException(
+                                                                                               "anything but UK error",
+                                                                                               PSQLState.UNKNOWN_STATE));
+            doThrow(expected).when(quotaRepository).save(any());
+            ThrowableAssert.ThrowingCallable throwing = () -> quotaService.findOrCreateDownloadQuota(userEmail,
+                                                                                                     DEFAULT_QUOTA,
+                                                                                                     DEFAULT_RATE);
 
             // then
             // we didn't find it at first so we tried to create it but failed
-            assertThatThrownBy(throwing)
-                .isEqualTo(expected);
+            assertThatThrownBy(throwing).isEqualTo(expected);
             verify(quotaRepository).findByEmail(userEmail);
             verify(quotaRepository).save(any());
 
@@ -266,16 +254,14 @@ public class DownloadQuotaServiceTest {
             // when
             // we search for it
             Exception expected = new RuntimeException("expected");
-            doThrow(expected)
-                .when(quotaRepository)
-                .save(any());
-            ThrowableAssert.ThrowingCallable throwing =
-                () -> quotaService.findOrCreateDownloadQuota(userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
+            doThrow(expected).when(quotaRepository).save(any());
+            ThrowableAssert.ThrowingCallable throwing = () -> quotaService.findOrCreateDownloadQuota(userEmail,
+                                                                                                     DEFAULT_QUOTA,
+                                                                                                     DEFAULT_RATE);
 
             // then
             // we didn't find it at first so we tried to create it but failed
-            assertThatThrownBy(throwing)
-                .isEqualTo(expected);
+            assertThatThrownBy(throwing).isEqualTo(expected);
             verify(quotaRepository).findByEmail(userEmail);
             verify(quotaRepository).save(any());
 
@@ -298,9 +284,10 @@ public class DownloadQuotaServiceTest {
         // we pretend to insert it in DB
         long quotaStub = random.nextInt(Integer.MAX_VALUE);
         long rateStub = random.nextInt(Integer.MAX_VALUE);
-        doReturn(new DownloadQuotaLimits(TENANT, userEmail, quotaStub, rateStub))
-            .when(quotaService)
-            .findOrCreateDownloadQuota(userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
+        doReturn(new DownloadQuotaLimits(TENANT, userEmail, quotaStub, rateStub)).when(quotaService)
+                                                                                 .findOrCreateDownloadQuota(userEmail,
+                                                                                                            DEFAULT_QUOTA,
+                                                                                                            DEFAULT_RATE);
         Try<DownloadQuotaLimits> result = quotaService.cacheUserQuota(userEmail, key);
 
         // then
@@ -320,32 +307,26 @@ public class DownloadQuotaServiceTest {
         long rateLimit = random.nextInt(Integer.MAX_VALUE);
         DownloadQuotaLimits quota = new DownloadQuotaLimits(TENANT, userEmail, maxQuota, rateLimit);
 
-        IntStream.range(0, 1_000)
-            .forEach(ignored -> {
-                long stubQuotaCounter = random.nextInt(Integer.MAX_VALUE);
-                long stubRateGauge = random.nextInt(Integer.MAX_VALUE);
-                doReturn(
-                    Tuple.of(
-                        new UserQuotaAggregate(stubQuotaCounter),
-                        new UserRateAggregate(stubRateGauge)
-                    )
-                ).when(quotaManager).get(quota);
+        IntStream.range(0, 1_000).forEach(ignored -> {
+            long stubQuotaCounter = random.nextInt(Integer.MAX_VALUE);
+            long stubRateGauge = random.nextInt(Integer.MAX_VALUE);
+            doReturn(Tuple.of(new UserQuotaAggregate(stubQuotaCounter), new UserRateAggregate(stubRateGauge))).when(
+                quotaManager).get(quota);
 
-                // when we try get it
-                Try<Tuple3<DownloadQuotaLimits, Long, Long>> result = quotaService.getUserQuotaAndRate(quota);
+            // when we try get it
+            Try<Tuple3<DownloadQuotaLimits, Long, Long>> result = quotaService.getUserQuotaAndRate(quota);
 
-                // then
-                if (stubQuotaCounter < maxQuota && stubRateGauge < rateLimit) {
-                    assertTrue(result.isSuccess());
-                    assertEquals(quota, result.get()._1);
-                    assertEquals(stubQuotaCounter, result.get()._2.longValue());
-                    assertEquals(stubRateGauge, result.get()._3.longValue());
-                } else {
-                    assertTrue(result.isFailure());
-                    assertThat(result.getCause())
-                        .isInstanceOf(DownloadLimitExceededException.class);
-                }
-            });
+            // then
+            if (stubQuotaCounter < maxQuota && stubRateGauge < rateLimit) {
+                assertTrue(result.isSuccess());
+                assertEquals(quota, result.get()._1);
+                assertEquals(stubQuotaCounter, result.get()._2.longValue());
+                assertEquals(stubRateGauge, result.get()._3.longValue());
+            } else {
+                assertTrue(result.isFailure());
+                assertThat(result.getCause()).isInstanceOf(DownloadLimitExceededException.class);
+            }
+        });
     }
 
     @Test
@@ -357,29 +338,21 @@ public class DownloadQuotaServiceTest {
         QuotaKey key = QuotaKey.make(TENANT, userEmail);
         DownloadQuotaLimits quota = new DownloadQuotaLimits(TENANT, userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
 
-        doReturn(Try.success(quota))
-            .when(quotaService)
-            .cacheUserQuota(eq(userEmail), eq(key));
+        doReturn(Try.success(quota)).when(quotaService).cacheUserQuota(eq(userEmail), eq(key));
 
         long stubQuotaCounter = random.nextInt(Integer.MAX_VALUE);
         long stubRateGauge = random.nextInt(Integer.MAX_VALUE);
 
-        doReturn(
-            Tuple.of(
-                new UserQuotaAggregate(stubQuotaCounter),
-                new UserRateAggregate(stubRateGauge)
-            )
-        ).when(quotaManager).get(quota);
+        doReturn(Tuple.of(new UserQuotaAggregate(stubQuotaCounter), new UserRateAggregate(stubRateGauge))).when(
+            quotaManager).get(quota);
 
         UserCurrentQuotas result = quotaService.getCurrentQuotas(userEmail);
 
-        UserCurrentQuotas expected = new UserCurrentQuotas(
-            userEmail,
-            quota.getMaxQuota(),
-            quota.getRateLimit(),
-            stubQuotaCounter,
-            stubRateGauge
-        );
+        UserCurrentQuotas expected = new UserCurrentQuotas(userEmail,
+                                                           quota.getMaxQuota(),
+                                                           quota.getRateLimit(),
+                                                           stubQuotaCounter,
+                                                           stubRateGauge);
         assertEquals(expected, result);
     }
 
@@ -391,9 +364,7 @@ public class DownloadQuotaServiceTest {
         QuotaKey key = QuotaKey.make(TENANT, userEmail);
         DownloadQuotaLimits quota = new DownloadQuotaLimits(TENANT, userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
 
-        doReturn(Try.success(quota))
-            .when(quotaService)
-            .cacheUserQuota(eq(userEmail), eq(key));
+        doReturn(Try.success(quota)).when(quotaService).cacheUserQuota(eq(userEmail), eq(key));
 
         Try<DownloadQuotaLimitsDto> result = quotaService.getDownloadQuotaLimits(userEmail);
 
@@ -414,13 +385,9 @@ public class DownloadQuotaServiceTest {
             // there exist a quota for the target user
             DownloadQuotaLimits stub = new DownloadQuotaLimits(TENANT, userEmail, DEFAULT_QUOTA, DEFAULT_RATE);
 
-            doReturn(Optional.of(stub))
-                .when(quotaRepository)
-                .findByEmail(anyString());
+            doReturn(Optional.of(stub)).when(quotaRepository).findByEmail(anyString());
 
-            doAnswer(a -> a.getArgument(0))
-                .when(quotaRepository)
-                .save(any());
+            doAnswer(a -> a.getArgument(0)).when(quotaRepository).save(any());
 
             Try<DownloadQuotaLimitsDto> result = quotaService.upsertDownloadQuotaLimits(limits);
 
@@ -428,20 +395,16 @@ public class DownloadQuotaServiceTest {
         }
         {
             // there exist no quota for the target user
-            doReturn(Optional.empty())
-                .when(quotaRepository)
-                .findByEmail(anyString());
+            doReturn(Optional.empty()).when(quotaRepository).findByEmail(anyString());
 
-            doAnswer(a -> a.getArgument(0))
-                .when(quotaRepository)
-                .save(any());
+            doAnswer(a -> a.getArgument(0)).when(quotaRepository).save(any());
 
             Try<DownloadQuotaLimitsDto> result = quotaService.upsertDownloadQuotaLimits(limits);
 
             assertEquals(limits, result.get());
         }
     }
-    
+
     @Test
     public void upsertDownloadQuotaLimits_should_update_cache() {
         // given
@@ -455,13 +418,9 @@ public class DownloadQuotaServiceTest {
         quotaService.setCache(cache);
 
         // there exist a quota for the target user
-        doReturn(Optional.empty())
-            .when(quotaRepository)
-            .findByEmail(anyString());
+        doReturn(Optional.empty()).when(quotaRepository).findByEmail(anyString());
 
-        doAnswer(a -> a.getArgument(0))
-            .when(quotaRepository)
-            .save(any());
+        doAnswer(a -> a.getArgument(0)).when(quotaRepository).save(any());
 
         long maxQuota = random.nextInt(Integer.MAX_VALUE);
         long rateLimit = random.nextInt(Integer.MAX_VALUE);
@@ -482,20 +441,13 @@ public class DownloadQuotaServiceTest {
         long stub = random.nextInt(Integer.MAX_VALUE);
         DownloadQuotaLimits quota = new DownloadQuotaLimits(TENANT, userEmail, stub, DEFAULT_RATE);
         AtomicLong stubGauge = new AtomicLong(stub);
-        doAnswer(a -> stubGauge.incrementAndGet())
-            .when(quotaManager)
-            .increment(quota);
-        doAnswer(a -> stubGauge.decrementAndGet())
-            .when(quotaManager)
-            .decrement(quota);
+        doAnswer(a -> stubGauge.incrementAndGet()).when(quotaManager).increment(quota);
+        doAnswer(a -> stubGauge.decrementAndGet()).when(quotaManager).decrement(quota);
 
         // when
-        Try<Unit> result = quotaService.apply(quotaHandler ->
-                Try.success(Unit.UNIT)
-                    .peek(__ -> quotaHandler.start())
-                    .peek(__ -> quotaHandler.stop()),
-            quota
-        );
+        Try<Unit> result = quotaService.apply(quotaHandler -> Try.success(Unit.UNIT)
+                                                                 .peek(__ -> quotaHandler.start())
+                                                                 .peek(__ -> quotaHandler.stop()), quota);
 
         // then
         // we get the operation's result
@@ -519,11 +471,7 @@ public class DownloadQuotaServiceTest {
 
             // when
             // the caller doesn't respect the contract and forgets to call start/stop
-            Try<Unit> result = quotaService.apply(
-                quotaHandler ->
-                    Try.success(Unit.UNIT),
-                quota
-            );
+            Try<Unit> result = quotaService.apply(quotaHandler -> Try.success(Unit.UNIT), quota);
 
             // then
             // we get the operation's result
@@ -539,13 +487,9 @@ public class DownloadQuotaServiceTest {
             // when
             // the caller doesn't handle failure at all
             Exception expected = new Exception("expected");
-            Try<Unit> result = quotaService.apply(
-                quotaHandler ->
-                    Try.<Unit>failure(expected)
-                        .peek(__ -> quotaHandler.start())
-                        .peek(__ -> quotaHandler.stop()),
-                quota
-            );
+            Try<Unit> result = quotaService.apply(quotaHandler -> Try.<Unit>failure(expected)
+                                                                     .peek(__ -> quotaHandler.start())
+                                                                     .peek(__ -> quotaHandler.stop()), quota);
 
             // then
             // we get the operation's result
@@ -559,21 +503,17 @@ public class DownloadQuotaServiceTest {
             long stub = random.nextInt(Integer.MAX_VALUE);
             DownloadQuotaLimits quota = new DownloadQuotaLimits(TENANT, userEmail, stub, DEFAULT_RATE);
             AtomicLong stubGauge = new AtomicLong(stub);
-            doAnswer(a -> stubGauge.incrementAndGet())
-                .when(quotaManager)
-                .increment(quota);
+            doAnswer(a -> stubGauge.incrementAndGet()).when(quotaManager).increment(quota);
 
             // when
             // the caller call start but then doesn't handle failure properly
             Exception expected = new Exception("expected");
-            Try<Unit> result = quotaService.apply(
-                quotaHandler ->
-                    Try.success(Unit.UNIT)
-                        .peek(__ -> quotaHandler.start())
-                        .<Unit>mapTry(__ -> { throw expected; })
-                        .peek(__ -> quotaHandler.stop()),
-                quota
-            );
+            Try<Unit> result = quotaService.apply(quotaHandler -> Try.success(Unit.UNIT)
+                                                                     .peek(__ -> quotaHandler.start())
+                                                                     .<Unit>mapTry(__ -> {
+                                                                         throw expected;
+                                                                     })
+                                                                     .peek(__ -> quotaHandler.stop()), quota);
 
             // then
             // we get the operation's result
@@ -599,15 +539,10 @@ public class DownloadQuotaServiceTest {
         cache.put(key, quota);
         quotaService.setCache(cache);
 
-        doNothing()
-            .when(quotaRepository)
-            .deleteByEmail(userEmail);
+        doNothing().when(quotaRepository).deleteByEmail(userEmail);
 
         // when
-        quotaService.handleBatch(
-            Lists.newArrayList(
-                new ProjectUserEvent(userEmail, ProjectUserAction.DELETE))
-        );
+        quotaService.handleBatch(Lists.newArrayList(new ProjectUserEvent(userEmail, ProjectUserAction.DELETE)));
 
         // then
         assertTrue(Option.of(cache.getIfPresent(key)).isEmpty());

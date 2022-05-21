@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.utils;
 
 /**
  * Specific Regards RuntimeException
+ *
  * @author oroussel
  */
 @SuppressWarnings("serial")

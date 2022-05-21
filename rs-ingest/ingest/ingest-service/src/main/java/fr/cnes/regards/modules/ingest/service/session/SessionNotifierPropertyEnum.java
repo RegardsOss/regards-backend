@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyS
 
 /**
  * Enumeration of notification properties in ingest
- * 
+ *
  * @author Iliana Ghazali
  **/
 public enum SessionNotifierPropertyEnum {

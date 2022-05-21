@@ -1,15 +1,15 @@
 package fr.cnes.regards.modules.model.domain.attributes.restriction.validator;
 
+import fr.cnes.regards.modules.model.domain.attributes.restriction.LongRangeRestriction;
+
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-import fr.cnes.regards.modules.model.domain.attributes.restriction.LongRangeRestriction;
-
 /**
-* Validate range
-*
-* @author oroussel
-*/
+ * Validate range
+ *
+ * @author oroussel
+ */
 public class CheckLongRangeValidator implements ConstraintValidator<CheckLongRange, LongRangeRestriction> {
 
     @Override

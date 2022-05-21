@@ -29,8 +29,8 @@ import javax.persistence.*;
  * POJO for Toponym object
  * Geometry field is handled by hibernate-spatial and postgres POSTGIS extension.
  * *
- * @author Sébastien Binda
  *
+ * @author Sébastien Binda
  */
 @InstanceEntity
 @Entity
@@ -66,7 +66,7 @@ public class Toponym {
     @Column(name = "description")
     String description;
 
-    @Column(name= "visible")
+    @Column(name = "visible")
     boolean visible;
 
     @Embedded
@@ -135,8 +135,14 @@ public class Toponym {
     public Toponym() {
     }
 
-    public Toponym(String businessId, String label, String labelFr, Geometry<Position> geometry, String copyright,
-            String description, boolean visible, ToponymMetadata toponymMetadata) {
+    public Toponym(String businessId,
+                   String label,
+                   String labelFr,
+                   Geometry<Position> geometry,
+                   String copyright,
+                   String description,
+                   boolean visible,
+                   ToponymMetadata toponymMetadata) {
         this.businessId = businessId;
         this.label = label;
         this.labelFr = labelFr;

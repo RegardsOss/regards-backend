@@ -18,20 +18,15 @@
  */
 package fr.cnes.regards.framework.modules.jpa.instance.autoconfigure.pojo;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+
+import javax.persistence.*;
 
 /**
  * Class Project
- *
+ * <p>
  * JPA Project Entity. For instance database.
+ *
  * @author CS
  */
 @Entity
@@ -56,6 +51,7 @@ public class TestProject {
 
     /**
      * Getter
+     *
      * @return Project identifier
      */
     public Long getId() {
@@ -64,6 +60,7 @@ public class TestProject {
 
     /**
      * Setter
+     *
      * @param pId Project identifier
      */
     public void setId(Long pId) {
@@ -72,6 +69,7 @@ public class TestProject {
 
     /**
      * Getter
+     *
      * @return Project name
      */
     public String getName() {
@@ -80,6 +78,7 @@ public class TestProject {
 
     /**
      * Setter
+     *
      * @param pName Project name
      */
     public void setName(String pName) {

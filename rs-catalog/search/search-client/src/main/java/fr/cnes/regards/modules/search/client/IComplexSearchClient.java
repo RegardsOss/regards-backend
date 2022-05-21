@@ -32,14 +32,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 /**
  * Complex search client. Handle complex searches on catalog with :
- *  - Multiple search request
- *  - Handling search engine implementations (legacy, opensearch, ...)
- *  - Handling a dataset on which apply search
- *  - Handling search date limit
- *  - Handling includes entity by ids
- *  - Handling excludes entity by ids
- * @author Sébastien Binda
+ * - Multiple search request
+ * - Handling search engine implementations (legacy, opensearch, ...)
+ * - Handling a dataset on which apply search
+ * - Handling search date limit
+ * - Handling includes entity by ids
+ * - Handling excludes entity by ids
  *
+ * @author Sébastien Binda
  */
 @RestClient(name = "rs-catalog", contextId = "rs-catalog.complex-search.client")
 public interface IComplexSearchClient {
@@ -52,15 +52,17 @@ public interface IComplexSearchClient {
      * Compute a DocFileSummary for current user, for specified request context, for asked file types (see
      * {@link DataType})
      */
-    @PostMapping(path = ROOT_TYPE_MAPPING + SUMMARY_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = ROOT_TYPE_MAPPING + SUMMARY_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE,
+        consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<DocFilesSummary> computeDatasetsSummary(@RequestBody ComplexSearchRequest complexSearchRequest);
 
     /**
      * Compute a complex search
      * {@link DataType})
      */
-    @PostMapping(path = ROOT_TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = ROOT_TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE,
+        consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchDataObjects(
-            @RequestBody ComplexSearchRequest complexSearchRequest);
+        @RequestBody ComplexSearchRequest complexSearchRequest);
 
 }

@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Helper class for building Feign client programmatically
+ *
  * @author Marc Sordi
  */
 public final class FeignClientBuilder {
@@ -42,75 +43,95 @@ public final class FeignClientBuilder {
 
     /**
      * Generate client
+     *
      * @param pTarget Target to add informations in header like Autorization.
      * @return IResourcesClient a client instance
      */
     public static <T> T build(final Target<T> pTarget) {
         return Feign.builder() // Feign customization
-                .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 600000, TimeUnit.MILLISECONDS, false))
-                .encoder(new GsonEncoder()).decoder(new ResponseEntityDecoder(new GsonDecoder()))
-                .queryMapEncoder(new PageableSpringQueryMapEncoder())
-                .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
-                .target(pTarget);
+                    .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 600000, TimeUnit.MILLISECONDS, false))
+                    .encoder(new GsonEncoder())
+                    .decoder(new ResponseEntityDecoder(new GsonDecoder()))
+                    .queryMapEncoder(new PageableSpringQueryMapEncoder())
+                    .errorDecoder(new ClientErrorDecoder())
+                    .decode404()
+                    .contract(new FeignContractSupplier().get())
+                    .target(pTarget);
     }
 
     /**
      * Generate client
+     *
      * @param pTarget Target to add informations in header like Autorization.
      * @return IResourcesClient a client instance
      */
     public static <T> T build(final Target<T> pTarget, Gson gson) {
         return Feign.builder() // Feign customization
-                .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 600000, TimeUnit.MILLISECONDS, false))
-                .encoder(new GsonEncoder(gson)).decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
-                .queryMapEncoder(new PageableSpringQueryMapEncoder())
-                .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
-                .target(pTarget);
+                    .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 600000, TimeUnit.MILLISECONDS, false))
+                    .encoder(new GsonEncoder(gson))
+                    .decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
+                    .queryMapEncoder(new PageableSpringQueryMapEncoder())
+                    .errorDecoder(new ClientErrorDecoder())
+                    .decode404()
+                    .contract(new FeignContractSupplier().get())
+                    .target(pTarget);
     }
 
     /**
      * Generate client
-     * @param pTarget Target to add informations in header like Autorization.
+     *
+     * @param pTarget             Target to add informations in header like Autorization.
      * @param requestInterceptors Add custom headers to all requests
      * @return IResourcesClient a client instance
      */
     public static <T> T build(final Target<T> pTarget, Gson gson, RequestInterceptor... requestInterceptors) {
         return Feign.builder()
-                .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 600000, TimeUnit.MILLISECONDS, false))
-                .requestInterceptors(Arrays.asList(requestInterceptors)) // Feign customization
-                .encoder(new GsonEncoder(gson)).decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
-                .queryMapEncoder(new PageableSpringQueryMapEncoder())
-                .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
-                .target(pTarget);
+                    .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 600000, TimeUnit.MILLISECONDS, false))
+                    .requestInterceptors(Arrays.asList(requestInterceptors)) // Feign customization
+                    .encoder(new GsonEncoder(gson))
+                    .decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
+                    .queryMapEncoder(new PageableSpringQueryMapEncoder())
+                    .errorDecoder(new ClientErrorDecoder())
+                    .decode404()
+                    .contract(new FeignContractSupplier().get())
+                    .target(pTarget);
     }
 
     /**
      * Generate client
+     *
      * @param pTarget Target to add informations in header like Autorization.
      * @return IResourcesClient a client instance
      */
     public static <T> T build(final Target<T> pTarget, Client client, Gson gson) {
         return Feign.builder()
-                .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 600000, TimeUnit.MILLISECONDS, false))
-                .client(client) // Feign customization
-                .encoder(new GsonEncoder(gson)).decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
-                .queryMapEncoder(new PageableSpringQueryMapEncoder())
-                .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
-                .target(pTarget);
+                    .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 600000, TimeUnit.MILLISECONDS, false))
+                    .client(client) // Feign customization
+                    .encoder(new GsonEncoder(gson))
+                    .decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
+                    .queryMapEncoder(new PageableSpringQueryMapEncoder())
+                    .errorDecoder(new ClientErrorDecoder())
+                    .decode404()
+                    .contract(new FeignContractSupplier().get())
+                    .target(pTarget);
     }
 
     /**
      * Generate client
+     *
      * @param pTarget Target to add informations in header like Autorization.
      * @return IResourcesClient a client instance
      */
     public static <T> T buildXml(final Target<T> pTarget, Client client) {
         JAXBContextFactory jaxbFactory = new JAXBContextFactory.Builder().withMarshallerJAXBEncoding("UTF-8").build();
         return Feign.builder()
-                .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 600000, TimeUnit.MILLISECONDS, false))
-                .client(client) // Feign customization
-                .encoder(new JAXBEncoder(jaxbFactory)).decoder(new ResponseEntityDecoder(new JAXBDecoder(jaxbFactory)))
-                .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
-                .target(pTarget);
+                    .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 600000, TimeUnit.MILLISECONDS, false))
+                    .client(client) // Feign customization
+                    .encoder(new JAXBEncoder(jaxbFactory))
+                    .decoder(new ResponseEntityDecoder(new JAXBDecoder(jaxbFactory)))
+                    .errorDecoder(new ClientErrorDecoder())
+                    .decode404()
+                    .contract(new FeignContractSupplier().get())
+                    .target(pTarget);
     }
 }

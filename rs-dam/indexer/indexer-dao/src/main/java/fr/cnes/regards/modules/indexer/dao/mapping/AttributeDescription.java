@@ -1,11 +1,11 @@
 package fr.cnes.regards.modules.indexer.dao.mapping;
 
-import java.util.Map;
-import java.util.Objects;
-
 import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionType;
 import fr.cnes.regards.modules.model.domain.event.AbstractAttributeModelEvent;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+
+import java.util.Map;
+import java.util.Objects;
 
 public class AttributeDescription {
 
@@ -19,8 +19,11 @@ public class AttributeDescription {
 
     private final String fixedMapping;
 
-    public AttributeDescription(String path, PropertyType type, RestrictionType restriction,
-            Map<String, String> attributeProperties, String fixedMapping) {
+    public AttributeDescription(String path,
+                                PropertyType type,
+                                RestrictionType restriction,
+                                Map<String, String> attributeProperties,
+                                String fixedMapping) {
         this.path = path;
         this.type = type;
         this.restriction = restriction;

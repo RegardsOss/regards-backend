@@ -22,8 +22,8 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.service.exception.UnsupportedRestrictionException;
-import javax.transaction.Transactional;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Set;
 
@@ -31,7 +31,6 @@ import java.util.Set;
  * Attribute management service
  *
  * @author msordi
- *
  */
 public interface IAttributeModelService {
 
@@ -42,23 +41,19 @@ public interface IAttributeModelService {
     /**
      * Add an attribute in a {@link Transactional} context
      *
-     * @param pAttributeModel
-     *            {@link AttributeModel} to add
+     * @param pAttributeModel {@link AttributeModel} to add
      * @param duringImport
      * @return {@link AttributeModel}
-     * @throws ModuleException
-     *             if error occurs!
+     * @throws ModuleException if error occurs!
      */
     AttributeModel addAttribute(AttributeModel pAttributeModel, boolean duringImport) throws ModuleException;
 
     /**
      * Add a list of attributes in a {@link Transactional} context
      *
-     * @param pAttributeModels
-     *            list of {@link AttributeModel} to add
+     * @param pAttributeModels list of {@link AttributeModel} to add
      * @return list of {@link AttributeModel}
-     * @throws ModuleException
-     *             if error occurs!
+     * @throws ModuleException if error occurs!
      */
     Iterable<AttributeModel> addAllAttributes(Iterable<AttributeModel> pAttributeModels) throws ModuleException;
 
@@ -67,11 +62,9 @@ public interface IAttributeModelService {
      * {@link IAttributeModelService#addAttribute(AttributeModel, boolean)} and
      * {@link IAttributeModelService#addAllAttributes(Iterable)}.
      *
-     * @param pAttributeModel
-     *            {@link AttributeModel} to create
+     * @param pAttributeModel {@link AttributeModel} to create
      * @return {@link AttributeModel}
-     * @throws ModuleException
-     *             if error occurs!
+     * @throws ModuleException if error occurs!
      */
     AttributeModel createAttribute(AttributeModel pAttributeModel) throws ModuleException;
 
@@ -83,6 +76,7 @@ public interface IAttributeModelService {
 
     /**
      * Check if attribute not already linked to any entity.
+     *
      * @param attributeId
      * @return {@link Boolean}
      */
@@ -91,16 +85,15 @@ public interface IAttributeModelService {
     /**
      * Check if attribute is linked to a particular fragment (not default one)
      *
-     * @param pAttributeId
-     *            attribute to check
+     * @param pAttributeId attribute to check
      * @return true if attribute linked to a particular fragment
-     * @throws ModuleException
-     *             if fragment does not exist
+     * @throws ModuleException if fragment does not exist
      */
     boolean isFragmentAttribute(Long pAttributeId) throws ModuleException;
 
     /**
      * Find attributes by fragment id
+     *
      * @param pFragmentId
      * @return attribute which fragment id is the given one
      */
@@ -108,6 +101,7 @@ public interface IAttributeModelService {
 
     /**
      * Find attributes by fragment name
+     *
      * @param pFragmentName
      * @return attribute which fragment name is the given one
      */
@@ -119,6 +113,7 @@ public interface IAttributeModelService {
 
     /**
      * Determines whether a fragment can be created without conflicting name with any existing attribute
+     *
      * @param fragmentName
      * @return {@link Boolean}
      */

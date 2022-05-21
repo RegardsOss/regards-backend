@@ -55,7 +55,7 @@ import java.util.Map;
  */
 @RunWith(SpringRunner.class)
 @ActiveProfiles("feign")
-@EnableAutoConfiguration(exclude = {SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class})
+@EnableAutoConfiguration(exclude = { SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class })
 @SpringBootTest(classes = FeignClientTests.Application.class, webEnvironment = WebEnvironment.DEFINED_PORT)
 public class FeignClientTests {
 
@@ -69,7 +69,6 @@ public class FeignClientTests {
 
     @Autowired
     private IHelloClient helloClient;
-
 
     @SpringBootApplication(exclude = SecurityAutoConfiguration.class)
     @RestController

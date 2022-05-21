@@ -18,13 +18,6 @@
  */
 package fr.cnes.regards.modules.search.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -37,9 +30,16 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Business search service
+ *
  * @author Marc Sordi
  */
 @Service
@@ -54,8 +54,11 @@ public class BusinessSearchService implements IBusinessSearchService {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <F extends EntityFeature> FacetPage<F> search(ICriterion criterion, SearchType searchType,
-            List<String> facets, Pageable pageable) throws SearchException, OpenSearchUnknownParameter {
+    public <F extends EntityFeature> FacetPage<F> search(ICriterion criterion,
+                                                         SearchType searchType,
+                                                         List<String> facets,
+                                                         Pageable pageable)
+        throws SearchException, OpenSearchUnknownParameter {
         FacetPage<AbstractEntity<?>> facetPage = searchService.search(criterion, searchType, facets, pageable);
 
         // Extract feature(s) from entity(ies)
@@ -63,29 +66,36 @@ public class BusinessSearchService implements IBusinessSearchService {
         facetPage.getContent().forEach(entity -> features.add((F) entity.getFeature()));
 
         // Build facet page with features
-        return new FacetPage<>(features, facetPage.getFacets(), facetPage.getPageable(),
-                facetPage.getTotalElements());
+        return new FacetPage<>(features, facetPage.getFacets(), facetPage.getPageable(), facetPage.getTotalElements());
     }
 
     @Override
     public <F extends EntityFeature> F get(UniformResourceName urn)
-            throws EntityOperationForbiddenException, EntityNotFoundException {
+        throws EntityOperationForbiddenException, EntityNotFoundException {
         AbstractEntity<F> entity = searchService.get(urn);
         return entity.getFeature();
     }
 
     @Override
-    public DocFilesSummary computeDatasetsSummary(ICriterion criterion, SearchType searchType,
-            UniformResourceName dataset, List<DataType> dataTypes) {
+    public DocFilesSummary computeDatasetsSummary(ICriterion criterion,
+                                                  SearchType searchType,
+                                                  UniformResourceName dataset,
+                                                  List<DataType> dataTypes) {
         // Just delegate to entity search service
         return searchService.computeDatasetsSummary(criterion, searchType, dataset, dataTypes);
     }
 
     @Override
-    public List<String> retrieveEnumeratedPropertyValues(ICriterion criterion, SearchType searchType,
-            String propertyPath, int maxCount, String partialText) {
+    public List<String> retrieveEnumeratedPropertyValues(ICriterion criterion,
+                                                         SearchType searchType,
+                                                         String propertyPath,
+                                                         int maxCount,
+                                                         String partialText) {
         // Just delegate to entity search service
-        return searchService.retrieveEnumeratedPropertyValues(criterion, searchType, propertyPath, maxCount,
+        return searchService.retrieveEnumeratedPropertyValues(criterion,
+                                                              searchType,
+                                                              propertyPath,
+                                                              maxCount,
                                                               partialText);
     }
 

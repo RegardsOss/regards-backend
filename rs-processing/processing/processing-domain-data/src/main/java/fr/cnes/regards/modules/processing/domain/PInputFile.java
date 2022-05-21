@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain;
 
 import io.vavr.collection.Map;
@@ -32,37 +32,65 @@ import java.net.URL;
  *
  * @author gandrieu
  */
-@Data @With
+@Data
+@With
 @AllArgsConstructor
 @NoArgsConstructor
 public class PInputFile {
 
-    /** Parameter name in the dynamic execution parameters for this file. */
-    @Nullable String parameterName;
+    /**
+     * Parameter name in the dynamic execution parameters for this file.
+     */
+    @Nullable
+    String parameterName;
 
-    /** Where to put the file once downloaded so that the execution finds it.
-     * The path is relative to the 'input' workdir folder. */
-    @NonNull String localRelativePath;
+    /**
+     * Where to put the file once downloaded so that the execution finds it.
+     * The path is relative to the 'input' workdir folder.
+     */
+    @NonNull
+    String localRelativePath;
 
-    /** Optional content type of the file, may determine what to do with it. */
-    @Nullable String contentType;
+    /**
+     * Optional content type of the file, may determine what to do with it.
+     */
+    @Nullable
+    String contentType;
 
-    /** If the descriptor is a file, this is its location. */
-    @NonNull URL url;
+    /**
+     * If the descriptor is a file, this is its location.
+     */
+    @NonNull
+    URL url;
 
-    /** File content length in bytes */
-    @NonNull Long bytes;
+    /**
+     * File content length in bytes
+     */
+    @NonNull
+    Long bytes;
 
-    /** The file checksum */
-    @NonNull String checksum;
+    /**
+     * The file checksum
+     */
+    @NonNull
+    String checksum;
 
-    /** The original file name (can be different to the real stored file **/
-    @NonNull String fileName;
+    /**
+     * The original file name (can be different to the real stored file
+     **/
+    @NonNull
+    String fileName;
 
-    /** Free metadata corresponding to the input */
-    @NonNull Map<String,String> metadata;
+    /**
+     * Free metadata corresponding to the input
+     */
+    @NonNull
+    Map<String, String> metadata;
 
-    /** Allows to provide some correlationId for this input file. Output files can refer to this correlationId. */
-    @Nullable String inputCorrelationId;
+    /**
+     * Allows to provide some correlationId for this input file. Output files can refer to this correlationId.
+     */
+    @Nullable
+    String inputCorrelationId;
 
 }

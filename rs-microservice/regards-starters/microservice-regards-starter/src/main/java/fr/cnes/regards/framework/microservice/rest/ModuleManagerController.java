@@ -18,16 +18,20 @@
  */
 package fr.cnes.regards.framework.microservice.rest;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+import fr.cnes.regards.framework.gson.GsonBuilderFactory;
+import fr.cnes.regards.framework.gson.adapters.ClassAdapter;
+import fr.cnes.regards.framework.gson.strategy.SerializationExclusionStrategy;
+import fr.cnes.regards.framework.microservice.manager.MicroserviceConfiguration;
+import fr.cnes.regards.framework.module.manager.*;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,30 +48,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import fr.cnes.regards.framework.gson.GsonBuilderFactory;
-import fr.cnes.regards.framework.gson.adapters.ClassAdapter;
-import fr.cnes.regards.framework.gson.strategy.SerializationExclusionStrategy;
-import fr.cnes.regards.framework.microservice.manager.MicroserviceConfiguration;
-import fr.cnes.regards.framework.module.manager.ConfigIgnore;
-import fr.cnes.regards.framework.module.manager.IModuleManager;
-import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
-import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
-import fr.cnes.regards.framework.module.manager.ModuleConfigurationItemAdapter;
-import fr.cnes.regards.framework.module.manager.ModuleImportReport;
-import fr.cnes.regards.framework.module.manager.ModuleReadinessReport;
-import fr.cnes.regards.framework.module.manager.ModuleRestartReport;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Module manager controller
+ *
  * @author Marc Sordi
  */
 @RestController
@@ -156,7 +149,7 @@ public class ModuleManagerController {
     @RequestMapping(method = RequestMethod.POST, value = CONFIGURATION_MAPPING)
     @ResourceAccess(description = "Import microservice configuration", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Set<ModuleImportReport>> importConfiguration(@RequestParam("file") MultipartFile file)
-            throws ModuleException {
+        throws ModuleException {
 
         try (JsonReader reader = new JsonReader(new InputStreamReader(file.getInputStream(), "UTF-8"))) {
             MicroserviceConfiguration microConfig = configGson.fromJson(reader, MicroserviceConfiguration.class);
@@ -177,8 +170,9 @@ public class ModuleManagerController {
                     }
                 }
                 Set<ModuleImportReport> modulesInError = importReports.stream()
-                        .filter(mir -> mir.isOnlyErrors() || !mir.getImportErrors().isEmpty())
-                        .collect(Collectors.toSet());
+                                                                      .filter(mir -> mir.isOnlyErrors()
+                                                                          || !mir.getImportErrors().isEmpty())
+                                                                      .collect(Collectors.toSet());
                 // if there is no error at all
                 if (modulesInError.isEmpty()) {
                     return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -189,7 +183,8 @@ public class ModuleManagerController {
                     } else {
                         // now that we know that every module has errors, lets check if any configuration at all could be imported
                         long numberModulesInTotalError = modulesInError.stream()
-                                .filter(ModuleImportReport::isOnlyErrors).count();
+                                                                       .filter(ModuleImportReport::isOnlyErrors)
+                                                                       .count();
                         if (numberModulesInTotalError == modulesInError.size()) {
                             return new ResponseEntity<>(importReports, HttpStatus.CONFLICT);
                         } else {
@@ -231,7 +226,7 @@ public class ModuleManagerController {
      */
     @RequestMapping(method = RequestMethod.GET, value = READY_MAPPING)
     @ResourceAccess(description = "allows to known if the microservice is ready to work",
-            role = DefaultRole.PROJECT_ADMIN)
+        role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<ModuleReadinessReport<?>> isReady() {
         ModuleReadinessReport<Object> microserviceReadiness = new ModuleReadinessReport<>(Boolean.TRUE,
                                                                                           Lists.newArrayList(),
@@ -253,7 +248,7 @@ public class ModuleManagerController {
 
     @RequestMapping(method = RequestMethod.GET, value = READY_ENABLED_MAPPING)
     @ResourceAccess(description = "Check if microservice modules ready feature is enabled",
-            role = DefaultRole.PROJECT_ADMIN)
+        role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> isReadyEnabled() {
         if ((managers != null) && !managers.isEmpty()) {
             for (IModuleManager<?> manager : managers) {

@@ -22,24 +22,17 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+
+import javax.persistence.*;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
 /**
  * A session is an aggregation of {@link SessionStep}
@@ -95,7 +88,7 @@ public class Session {
     @NotNull
     @Column(name = "steps", columnDefinition = "jsonb")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
-            value = "fr.cnes.regards.framework.modules.session.commons.domain.SessionStep") })
+        value = "fr.cnes.regards.framework.modules.session.commons.domain.SessionStep") })
     private Set<SessionStep> steps = new HashSet<>();
 
     @Embedded
@@ -107,7 +100,7 @@ public class Session {
         this.name = name;
     }
 
-    public Session(){
+    public Session() {
     }
 
     public Long getId() {
@@ -153,7 +146,7 @@ public class Session {
     public void setSteps(Set<SessionStep> pSteps) {
         // This method is used to prevent the override of the set that Hibernate is tracking
         this.steps.clear();
-        if(pSteps !=null) {
+        if (pSteps != null) {
             this.steps.addAll(pSteps);
         }
     }
@@ -186,7 +179,7 @@ public class Session {
     @Override
     public String toString() {
         return "Session{" + "id=" + id + ", name='" + name + '\'' + ", source='" + source + '\'' + ", creationDate="
-                + creationDate + ", lastUpdateDate=" + lastUpdateDate + ", steps=" + steps + ", managerState="
-                + managerState + '}';
+            + creationDate + ", lastUpdateDate=" + lastUpdateDate + ", steps=" + steps + ", managerState="
+            + managerState + '}';
     }
 }

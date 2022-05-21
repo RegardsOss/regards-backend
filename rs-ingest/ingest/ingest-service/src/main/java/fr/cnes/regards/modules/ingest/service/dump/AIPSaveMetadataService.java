@@ -39,6 +39,7 @@ import java.time.OffsetDateTime;
 
 /**
  * Service to handle {@link AIPSaveMetadataJob}. Create {@link AIPSaveMetadataRequest} to dump aips between two dates.
+ *
  * @author Iliana Ghazali
  * @author Sylvain VISSIERE-GUERINET
  */
@@ -57,7 +58,6 @@ public class AIPSaveMetadataService {
     @Autowired
     private JobInfoService jobInfoService;
 
-
     /**
      * Schedule Jobs
      */
@@ -71,22 +71,22 @@ public class AIPSaveMetadataService {
         dumpSettingsService.setLastDumpReqDate(OffsetDateTime.now());
 
         // Create request
-        AIPSaveMetadataRequest aipSaveMetadataRequest = new AIPSaveMetadataRequest(lastDumpDate, dumpSettingsService.getDumpParameters().getDumpLocation());
+        AIPSaveMetadataRequest aipSaveMetadataRequest = new AIPSaveMetadataRequest(lastDumpDate,
+                                                                                   dumpSettingsService.getDumpParameters()
+                                                                                                      .getDumpLocation());
         aipSaveMetadataRequest.setState(InternalRequestState.RUNNING);
         metadataRequestRepository.save(aipSaveMetadataRequest);
 
         // Schedule save metadata job
-        jobInfo = new JobInfo(
-                false,
-                IngestJobPriority.AIP_SAVE_METADATA_RUNNER_PRIORITY,
-                Sets.newHashSet(new JobParameter(AIPSaveMetadataJob.SAVE_METADATA_REQUEST, aipSaveMetadataRequest)),
-                null,
-                AIPSaveMetadataJob.class.getName()
-        );
+        jobInfo = new JobInfo(false,
+                              IngestJobPriority.AIP_SAVE_METADATA_RUNNER_PRIORITY,
+                              Sets.newHashSet(new JobParameter(AIPSaveMetadataJob.SAVE_METADATA_REQUEST,
+                                                               aipSaveMetadataRequest)),
+                              null,
+                              AIPSaveMetadataJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("[SAVE METADATA SCHEDULER] 1 Job scheduled for 1 AIPSaveMetaDataRequest(s) in {} ms",
-                     System.currentTimeMillis() - start
-        );
+                     System.currentTimeMillis() - start);
         return jobInfo;
     }
 }

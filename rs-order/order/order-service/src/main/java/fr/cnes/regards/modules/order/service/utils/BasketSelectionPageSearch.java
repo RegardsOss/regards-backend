@@ -40,7 +40,6 @@ import java.util.stream.Collectors;
  * used also in case of dataset selections with processsing.
  *
  * @author Guillaume Andrieu
- *
  */
 @Component
 public class BasketSelectionPageSearch {
@@ -51,8 +50,8 @@ public class BasketSelectionPageSearch {
     private IComplexSearchClient searchClient;
 
     public List<EntityFeature> searchDataObjects(BasketDatasetSelection dsSel, int page) {
-        ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> pagedResourcesResponseEntity = searchClient
-                .searchDataObjects(BasketService.buildSearchRequest(dsSel, page, MAX_PAGE_SIZE));
+        ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> pagedResourcesResponseEntity = searchClient.searchDataObjects(
+            BasketService.buildSearchRequest(dsSel, page, MAX_PAGE_SIZE));
         // It is mandatory to check NOW, at creation instant of order from basket, if data object files are still downloadable
         Collection<EntityModel<EntityFeature>> objects = pagedResourcesResponseEntity.getBody().getContent();
         // If a lot of objects, parallelisation is very useful, if not we don't really care

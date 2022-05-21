@@ -8,7 +8,6 @@ import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
 
 import java.io.IOException;
 
-
 @GsonTypeAdapter(adapted = INotificationWithoutMessage.class)
 public class NotificationAdapter extends TypeAdapter<INotificationWithoutMessage> {
 

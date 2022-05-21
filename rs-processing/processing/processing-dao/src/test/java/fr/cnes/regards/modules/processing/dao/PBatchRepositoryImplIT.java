@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.dao;
 
 import fr.cnes.regards.modules.processing.domain.PBatch;
@@ -37,7 +37,6 @@ import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
 import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomInstance;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
-
 
 public class PBatchRepositoryImplIT extends AbstractRepoIT {
 
@@ -70,9 +69,9 @@ public class PBatchRepositoryImplIT extends AbstractRepoIT {
                     // TESTING EXEC SAVE/FIND
                     //////////////////////////
                     // GIVEN
-                    PExecution newExec = asNew(randomInstance(PExecution.class))
-                            .withBatchId(persistedBatch.getId())
-                            .withExpectedDuration(Duration.ofSeconds(10));
+                    PExecution newExec = asNew(randomInstance(PExecution.class)).withBatchId(persistedBatch.getId())
+                                                                                .withExpectedDuration(Duration.ofSeconds(
+                                                                                    10));
 
                     // WHEN
                     return saveExec(i, newExec).flatMap(persistedExec -> {
@@ -101,16 +100,14 @@ public class PBatchRepositoryImplIT extends AbstractRepoIT {
                         });
                     });
                 });
-            })
-            .doOnTerminate(latch::countDown);
-        })
-        .doOnError(t -> {
+            }).doOnTerminate(latch::countDown);
+        }).doOnError(t -> {
             asserts.add(() -> {
-                LOGGER.error(t.getMessage(), t); fail(t.getMessage());
+                LOGGER.error(t.getMessage(), t);
+                fail(t.getMessage());
             });
             Stream.range(0, latch.getCount()).forEach(j -> latch.countDown());
-        })
-        .subscribe();
+        }).subscribe();
 
         latch.await(20L, TimeUnit.SECONDS);
 

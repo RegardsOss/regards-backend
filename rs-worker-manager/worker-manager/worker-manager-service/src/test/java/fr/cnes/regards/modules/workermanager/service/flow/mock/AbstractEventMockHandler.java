@@ -22,7 +22,6 @@ import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.modules.workermanager.dto.events.out.WorkerRequestEvent;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,8 +35,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-public abstract class AbstractEventMockHandler<T extends ISubscribable> implements IBatchHandler<T>,
-        ApplicationListener<ApplicationReadyEvent> {
+public abstract class AbstractEventMockHandler<T extends ISubscribable>
+    implements IBatchHandler<T>, ApplicationListener<ApplicationReadyEvent> {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractEventMockHandler.class);
 
@@ -60,7 +59,7 @@ public abstract class AbstractEventMockHandler<T extends ISubscribable> implemen
         this.queueName = queueName;
     }
 
-    protected AbstractEventMockHandler(Class<T> eventType, String workerType,RequestService requestService) {
+    protected AbstractEventMockHandler(Class<T> eventType, String workerType, RequestService requestService) {
         this.eventType = eventType;
         this.exchangeName = Optional.of(requestService.getExchangeName(workerType));
         this.queueName = Optional.of(requestService.getExchangeName(workerType));
@@ -78,7 +77,7 @@ public abstract class AbstractEventMockHandler<T extends ISubscribable> implemen
 
     @Override
     public void handleBatchWithRaw(List<T> messages, List<Message> rawMessages) {
-        LOGGER.info("[{}}] {} new message received.",this.getClass().getName(), events.size());
+        LOGGER.info("[{}}] {} new message received.", this.getClass().getName(), events.size());
         this.events.addAll(messages);
         this.rawEvents.addAll(rawMessages);
     }

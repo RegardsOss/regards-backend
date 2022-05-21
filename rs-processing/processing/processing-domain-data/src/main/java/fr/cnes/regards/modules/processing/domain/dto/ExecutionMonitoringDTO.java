@@ -33,16 +33,20 @@ public class ExecutionMonitoringDTO extends PExecution {
     protected String processName;
 
     public ExecutionMonitoringDTO(PExecution exec, String processName) {
-        super(exec.getId(), exec.getExecutionCorrelationId(),
-            exec.getBatchId(), exec.getBatchCorrelationId(),
-            exec.getExpectedDuration(),
-            exec.getInputFiles(),
-            exec.getSteps(),
-            exec.getTenant(), exec.getUserName(),
-            exec.getProcessBusinessId(),
-            exec.getCreated(),
-            exec.getLastUpdated(),
-            exec.getVersion(), exec.isPersisted());
+        super(exec.getId(),
+              exec.getExecutionCorrelationId(),
+              exec.getBatchId(),
+              exec.getBatchCorrelationId(),
+              exec.getExpectedDuration(),
+              exec.getInputFiles(),
+              exec.getSteps(),
+              exec.getTenant(),
+              exec.getUserName(),
+              exec.getProcessBusinessId(),
+              exec.getCreated(),
+              exec.getLastUpdated(),
+              exec.getVersion(),
+              exec.isPersisted());
         this.processName = processName;
     }
 }

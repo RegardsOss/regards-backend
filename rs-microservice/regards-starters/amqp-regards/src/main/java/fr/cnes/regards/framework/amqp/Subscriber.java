@@ -18,24 +18,24 @@
  */
 package fr.cnes.regards.framework.amqp;
 
-import java.util.Map;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
-import org.springframework.amqp.support.converter.MessageConverter;
-
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsErrorHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
+import org.springframework.amqp.support.converter.MessageConverter;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
  * {@link Subscriber} uses {@link ITenantResolver} to resolve tenants in multitenant context. On listener will be
  * created for each tenant.
+ *
  * @author svissier
  * @author Marc Sordi
  */
@@ -52,12 +52,24 @@ public class Subscriber extends AbstractSubscriber implements ISubscriber {
      */
     private final ITenantResolver tenantResolver;
 
-    public Subscriber(IRabbitVirtualHostAdmin pVirtualHostAdmin, IAmqpAdmin amqpAdmin,
-            MessageConverter jsonMessageConverters, ITenantResolver pTenantResolver, RegardsErrorHandler errorHandler,
-            String microserviceName, IInstancePublisher instancePublisher, IPublisher publisher,
-            IRuntimeTenantResolver runtimeTenantResolver) {
-        super(pVirtualHostAdmin, amqpAdmin, jsonMessageConverters, errorHandler, microserviceName, instancePublisher,
-              publisher, runtimeTenantResolver, pTenantResolver);
+    public Subscriber(IRabbitVirtualHostAdmin pVirtualHostAdmin,
+                      IAmqpAdmin amqpAdmin,
+                      MessageConverter jsonMessageConverters,
+                      ITenantResolver pTenantResolver,
+                      RegardsErrorHandler errorHandler,
+                      String microserviceName,
+                      IInstancePublisher instancePublisher,
+                      IPublisher publisher,
+                      IRuntimeTenantResolver runtimeTenantResolver) {
+        super(pVirtualHostAdmin,
+              amqpAdmin,
+              jsonMessageConverters,
+              errorHandler,
+              microserviceName,
+              instancePublisher,
+              publisher,
+              runtimeTenantResolver,
+              pTenantResolver);
         tenantResolver = pTenantResolver;
     }
 

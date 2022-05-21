@@ -44,8 +44,9 @@ public class Generator {
 
     private ObjectRandomGenerator root;
 
-    protected Generator(RandomGeneratorResolver randomGeneratorResolver, Path templatePath,
-            IPropertyGetter propertyGetter) {
+    protected Generator(RandomGeneratorResolver randomGeneratorResolver,
+                        Path templatePath,
+                        IPropertyGetter propertyGetter) {
         this.randomGeneratorResolver = randomGeneratorResolver;
         initGenerators(templatePath, propertyGetter);
     }
@@ -57,8 +58,8 @@ public class Generator {
         try {
             LOGGER.info("Loading JSON template from {}", templatePath);
             // Load JSON template
-            @SuppressWarnings("unchecked") Map<String, Object> template = mapper
-                    .readValue(templatePath.toFile(), Map.class);
+            @SuppressWarnings("unchecked") Map<String, Object> template = mapper.readValue(templatePath.toFile(),
+                                                                                           Map.class);
             // Initialize generators
             root = new ObjectRandomGenerator();
             doInitGenerators(template, root, propertyGetter);
@@ -70,8 +71,9 @@ public class Generator {
     }
 
     @SuppressWarnings("unchecked")
-    private void doInitGenerators(Map<String, Object> template, ObjectRandomGenerator generator,
-            IPropertyGetter propertyGetter) {
+    private void doInitGenerators(Map<String, Object> template,
+                                  ObjectRandomGenerator generator,
+                                  IPropertyGetter propertyGetter) {
         for (Entry<String, Object> entry : template.entrySet()) {
             if ((entry.getValue() != null) && Map.class.isAssignableFrom(entry.getValue().getClass())) {
                 // Propagate
@@ -95,7 +97,7 @@ public class Generator {
         // Assert generators are ready!
         if (root == null) {
             throw new UnsupportedOperationException(
-                    "Generators not ready! Call initGenerators before calling this method!");
+                "Generators not ready! Call initGenerators before calling this method!");
         }
 
         // Generated messages

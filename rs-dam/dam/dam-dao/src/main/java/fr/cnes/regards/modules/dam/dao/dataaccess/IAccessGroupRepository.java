@@ -41,6 +41,7 @@ public interface IAccessGroupRepository extends JpaRepository<AccessGroup, Long>
 
     /**
      * find an access group by its name
+     *
      * @param pName
      * @return the access group or null if none found
      */
@@ -53,18 +54,23 @@ public interface IAccessGroupRepository extends JpaRepository<AccessGroup, Long>
 
     /**
      * Find all public or non public group
+     *
      * @param isPublic whether we have to select public or non public groups
      * @param pageable {@link Pageable}
      * @return list of public or non public groups
      */
     default Page<AccessGroup> findAllByIsPublic(Boolean isPublic, Pageable pageable) {
         Page<BigInteger> idPage = findIdPageByIsPublic(isPublic, pageable);
-        List<AccessGroup> accessGroups = findAllById(idPage.getContent().stream().map(BigInteger::longValue).collect(Collectors.toList()));
+        List<AccessGroup> accessGroups = findAllById(idPage.getContent()
+                                                           .stream()
+                                                           .map(BigInteger::longValue)
+                                                           .collect(Collectors.toList()));
         return new PageImpl<>(accessGroups, idPage.getPageable(), idPage.getTotalElements());
     }
 
-    @Query(value = "SELECT ag.id FROM {h-schema}t_access_group ag LEFT JOIN {h-schema}ta_access_group_users agu on ag.id=agu.access_group_id WHERE ag.public=:isPublic",
-            nativeQuery = true)
+    @Query(
+        value = "SELECT ag.id FROM {h-schema}t_access_group ag LEFT JOIN {h-schema}ta_access_group_users agu on ag.id=agu.access_group_id WHERE ag.public=:isPublic",
+        nativeQuery = true)
     Page<BigInteger> findIdPageByIsPublic(@Param("isPublic") Boolean isPublic, Pageable pageable);
 
     @Override

@@ -18,21 +18,7 @@
  */
 package fr.cnes.regards.modules.model.gson.helper;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -42,13 +28,24 @@ import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.gson.AbstractAttributeHelper;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
-*
-* Helper class to retrieve model attributes
-* @author Kevin Marchois
-*
-*/
+ * Helper class to retrieve model attributes
+ *
+ * @author Kevin Marchois
+ */
 @ConditionalOnMissingClass("fr.cnes.regards.modules.dam.service.entities.DamAttributeHelper")
 @Service
 public class AttributeHelper extends AbstractAttributeHelper {
@@ -67,8 +64,9 @@ public class AttributeHelper extends AbstractAttributeHelper {
 
     public final static String MODEL_ATTRIBUTE = "model.name";
 
-    public AttributeHelper(IRuntimeTenantResolver runtimeTenantResolver, IAttributeModelClient attributeModelClient,
-            IModelAttrAssocClient modelAttrAssocClient) {
+    public AttributeHelper(IRuntimeTenantResolver runtimeTenantResolver,
+                           IAttributeModelClient attributeModelClient,
+                           IModelAttrAssocClient modelAttrAssocClient) {
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.attributeModelClient = attributeModelClient;
         this.modelAttrAssocClient = modelAttrAssocClient;
@@ -98,16 +96,19 @@ public class AttributeHelper extends AbstractAttributeHelper {
         boolean first = true;
         for (String modelName : modelNames) {
             try {
-                ResponseEntity<List<EntityModel<ModelAttrAssoc>>> resources = modelAttrAssocClient
-                        .getModelAttrAssocs(modelName);
+                ResponseEntity<List<EntityModel<ModelAttrAssoc>>> resources = modelAttrAssocClient.getModelAttrAssocs(
+                    modelName);
                 if ((resources != null) && resources.hasBody()) {
-                    Set<AttributeModel> modelAttributes = resources.getBody().stream()
-                            .map(f -> f.getContent().getAttribute()).collect(Collectors.toSet());
+                    Set<AttributeModel> modelAttributes = resources.getBody()
+                                                                   .stream()
+                                                                   .map(f -> f.getContent().getAttribute())
+                                                                   .collect(Collectors.toSet());
                     if (first) {
                         commonAttributes.addAll(modelAttributes);
                     } else {
-                        commonAttributes = commonAttributes.stream().filter(f -> modelAttributes.contains(f))
-                                .collect(Collectors.toSet());
+                        commonAttributes = commonAttributes.stream()
+                                                           .filter(f -> modelAttributes.contains(f))
+                                                           .collect(Collectors.toSet());
                     }
                     first = false;
                 }

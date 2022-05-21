@@ -32,24 +32,30 @@ import java.util.Random;
 public class ProjectUsersClientMock implements IProjectUsersClient, IResourceController<ProjectUser> {
 
     public static final Random r = new Random();
+
     public static final Long ROLE_STUB_ID = (long) r.nextInt(10_000);
+
     public static final String ROLE_STUB_NAME = "role";
+
     private static final Role ROLE_STUB;
+
     public static final Long PROJECT_USER_STUB_ID = (long) r.nextInt(10_000);
+
     public static final String PROJECT_USER_STUB_EMAIL = "foo@bar.com";
+
     public static final ProjectUser PROJECT_USER_STUB;
+
     public static final String FIRST_NAME = "firstName";
+
     public static final String LAST_NAME = "lastName";
 
     static {
         ROLE_STUB = new Role(ROLE_STUB_NAME);
         ROLE_STUB.setId(ROLE_STUB_ID);
-        PROJECT_USER_STUB = new ProjectUser(
-                PROJECT_USER_STUB_EMAIL,
-                ROLE_STUB,
-                Collections.emptyList(),
-                Collections.emptySet()
-        );
+        PROJECT_USER_STUB = new ProjectUser(PROJECT_USER_STUB_EMAIL,
+                                            ROLE_STUB,
+                                            Collections.emptyList(),
+                                            Collections.emptySet());
         PROJECT_USER_STUB.setMaxQuota(StorageRestClientMock.USER_QUOTA_LIMITS_STUB_MAX_QUOTA);
         PROJECT_USER_STUB.setCurrentQuota(StorageRestClientMock.CURRENT_USER_QUOTA_STUB);
         PROJECT_USER_STUB.setFirstName(FIRST_NAME);
@@ -59,8 +65,11 @@ public class ProjectUsersClientMock implements IProjectUsersClient, IResourceCon
     }
 
     public static final int TOTAL_ELEMENTS_STUB = 1;
+
     public static final int TOTAL_PAGES_STUB = 1;
+
     public static final int PAGE_NUMBER_STUB = 0;
+
     public static final int PAGE_SIZE_STUB = 1;
 
     @Autowired
@@ -70,7 +79,8 @@ public class ProjectUsersClientMock implements IProjectUsersClient, IResourceCon
     private PagedResourcesAssembler<ProjectUser> assembler;
 
     @Override
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(ProjectUserSearchParameters parameters, Pageable pageable) {
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(ProjectUserSearchParameters parameters,
+                                                                                        Pageable pageable) {
         return singleProjectUserPagedResponse();
     }
 
@@ -120,12 +130,14 @@ public class ProjectUsersClientMock implements IProjectUsersClient, IResourceCon
     }
 
     @Override
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUserList(Long pRoleId, Pageable pageable) {
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUserList(Long pRoleId,
+                                                                                            Pageable pageable) {
         return singleProjectUserPagedResponse();
     }
 
     @Override
-    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUsersList(String pRole, Pageable pageable) {
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveRoleProjectUsersList(String pRole,
+                                                                                             Pageable pageable) {
         return singleProjectUserPagedResponse();
     }
 
@@ -154,20 +166,12 @@ public class ProjectUsersClientMock implements IProjectUsersClient, IResourceCon
     }
 
     protected ResponseEntity<PagedModel<EntityModel<ProjectUser>>> singleProjectUserPagedResponse() {
-        return new ResponseEntity<>(
-            toPagedResources(
-                new PageImpl<>(
-                    Arrays.asList(
-                        makeFoobarProjectUser()
-                    ),
-                    new MockedPageable(PAGE_NUMBER_STUB, PAGE_SIZE_STUB),
-                    TOTAL_PAGES_STUB
-                ),
-                assembler)
-            ,
-            HttpHeaders.EMPTY,
-            HttpStatus.OK
-        );
+        return new ResponseEntity<>(toPagedResources(new PageImpl<>(Arrays.asList(makeFoobarProjectUser()),
+                                                                    new MockedPageable(PAGE_NUMBER_STUB,
+                                                                                       PAGE_SIZE_STUB),
+                                                                    TOTAL_PAGES_STUB), assembler),
+                                    HttpHeaders.EMPTY,
+                                    HttpStatus.OK);
     }
 
     private ProjectUser makeFoobarProjectUser() {
@@ -192,7 +196,9 @@ public class ProjectUsersClientMock implements IProjectUsersClient, IResourceCon
 
         @Override
         public MockedPageable previous() {
-            return getPageNumber() == 0 ? new MockedPageable(getPageNumber(), getPageSize()) : new MockedPageable(getPageNumber() - 1, getPageSize());
+            return getPageNumber() == 0 ?
+                new MockedPageable(getPageNumber(), getPageSize()) :
+                new MockedPageable(getPageNumber() - 1, getPageSize());
         }
 
         @Override

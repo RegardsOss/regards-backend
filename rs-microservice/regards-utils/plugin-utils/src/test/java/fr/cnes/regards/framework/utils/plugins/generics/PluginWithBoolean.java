@@ -18,18 +18,18 @@
  */
 package fr.cnes.regards.framework.utils.plugins.generics;
 
-import org.junit.Assert;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import org.junit.Assert;
 
 /**
  * Test with primitive
+ *
  * @author Marc Sordi
  */
 @Plugin(author = "REGARDS Team", description = "Plugin with boolean as primitive and object", id = "PluginWithBoolean",
-        version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-        url = "https://regardsoss.github.io/")
+    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
+    url = "https://regardsoss.github.io/")
 public class PluginWithBoolean implements IPluginWithGenerics {
 
     // Attribute names

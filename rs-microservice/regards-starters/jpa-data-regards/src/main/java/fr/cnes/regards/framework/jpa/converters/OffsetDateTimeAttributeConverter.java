@@ -27,6 +27,7 @@ import java.time.temporal.ChronoUnit;
 
 /**
  * This {@link AttributeConverter} allows to convert a {@link OffsetDateTime} to persist with JPA.
+ *
  * @author Christophe Mertz
  * @author oroussel
  */
@@ -36,17 +37,19 @@ public class OffsetDateTimeAttributeConverter implements AttributeConverter<Offs
     @Override
     public Timestamp convertToDatabaseColumn(OffsetDateTime offsetDateTime) {
         return (offsetDateTime == null) ? null :
-                // Take UTC date as local date to have an UTC date into database
-                // truncate to microseconds because postgres timestamp has a resolution of 1 microsecond
-                Timestamp.valueOf(offsetDateTime.truncatedTo(ChronoUnit.MICROS).atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime());
+            // Take UTC date as local date to have an UTC date into database
+            // truncate to microseconds because postgres timestamp has a resolution of 1 microsecond
+            Timestamp.valueOf(offsetDateTime.truncatedTo(ChronoUnit.MICROS)
+                                            .atZoneSameInstant(ZoneOffset.UTC)
+                                            .toLocalDateTime());
     }
 
     @Override
     public OffsetDateTime convertToEntityAttribute(Timestamp pSqlTimestamp) {
         return (pSqlTimestamp == null) ? null :
-                // Read Timestamp, transform to Local Date as it is an UTC data (which is the case in DB) and transform
-                // to OffsetDateTime, keeping it as UTC (ouch !)
-                OffsetDateTime.ofInstant(pSqlTimestamp.toLocalDateTime().toInstant(ZoneOffset.UTC), ZoneOffset.UTC)
-                        .withOffsetSameInstant(ZoneOffset.UTC);
+            // Read Timestamp, transform to Local Date as it is an UTC data (which is the case in DB) and transform
+            // to OffsetDateTime, keeping it as UTC (ouch !)
+            OffsetDateTime.ofInstant(pSqlTimestamp.toLocalDateTime().toInstant(ZoneOffset.UTC), ZoneOffset.UTC)
+                          .withOffsetSameInstant(ZoneOffset.UTC);
     }
 }

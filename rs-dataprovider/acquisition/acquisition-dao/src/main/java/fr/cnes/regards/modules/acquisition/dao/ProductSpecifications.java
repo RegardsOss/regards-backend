@@ -18,24 +18,22 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Set;
-
-import javax.persistence.criteria.Predicate;
-
-import org.springframework.data.jpa.domain.Specification;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import org.springframework.data.jpa.domain.Specification;
+
+import javax.persistence.criteria.Predicate;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Specification class to filter DAO searches on {@link Product} entities.
+ *
  * @author Sébastien Binda
  */
 public final class ProductSpecifications {
@@ -47,16 +45,22 @@ public final class ProductSpecifications {
 
     /**
      * Filter on the given attributes (sessionId, owner, ingestDate and state) and return result ordered by descending ingestDate
-     * @param states {@link ProductState}
-     * @param sipStates {@link SIPState}
-     * @param productName {@link String}
-     * @param session {@link String}
+     *
+     * @param states            {@link ProductState}
+     * @param sipStates         {@link SIPState}
+     * @param productName       {@link String}
+     * @param session           {@link String}
      * @param processingChainId {@likn Long} id of {@link AcquisitionProcessingChain}
-     * @param from {@link OffsetDateTime}
+     * @param from              {@link OffsetDateTime}
      * @return {@link Specification}<{@link Product}>
      */
-    public static Specification<Product> search(List<ProductState> states, List<ISipState> sipStates,
-            String productName, String session, Long processingChainId, OffsetDateTime from, Boolean noSession) {
+    public static Specification<Product> search(List<ProductState> states,
+                                                List<ISipState> sipStates,
+                                                String productName,
+                                                String session,
+                                                Long processingChainId,
+                                                OffsetDateTime from,
+                                                Boolean noSession) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             Set<Predicate> statePredicates = Sets.newHashSet();

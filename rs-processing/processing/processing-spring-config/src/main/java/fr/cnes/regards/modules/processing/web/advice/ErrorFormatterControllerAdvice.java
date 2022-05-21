@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.web.advice;
 
 import fr.cnes.regards.modules.processing.exceptions.ProcessingException;
@@ -30,6 +30,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
+
 /**
  * This class is the configuration for error formatting in the http layer.
  *
@@ -40,8 +41,11 @@ public class ErrorFormatterControllerAdvice {
 
     @Value
     static class ErrorStructure {
+
         UUID errorId;
+
         String message;
+
         OffsetDateTime time;
     }
 
@@ -49,13 +53,7 @@ public class ErrorFormatterControllerAdvice {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ResponseBody
     public ResponseEntity<ErrorStructure> processValidationError(ProcessingException e) {
-        return new ResponseEntity<>(
-            new ErrorStructure(
-                e.getExceptionId(),
-                e.getMessage(),
-                nowUtc()
-            ),
-            e.getType().getStatus()
-        );
+        return new ResponseEntity<>(new ErrorStructure(e.getExceptionId(), e.getMessage(), nowUtc()),
+                                    e.getType().getStatus());
     }
 }

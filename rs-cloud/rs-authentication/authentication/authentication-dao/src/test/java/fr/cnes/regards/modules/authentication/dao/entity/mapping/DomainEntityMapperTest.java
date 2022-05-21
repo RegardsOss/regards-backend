@@ -41,35 +41,23 @@ public class DomainEntityMapperTest {
 
     @Test
     public void fromDomain() {
-        LongStream.range(0, random.nextInt(150)+50)
-            .forEach(i -> {
-                ServiceProvider domain = new ServiceProvider(
-                    randomStr(),
-                    randomStr(),
-                    randomStr(),
-                    new PluginConfiguration(
-                        randomStr(),
-                        randomStr()
-                    )
-                );
-                assertEquals(domain, mapper.toDomain(mapper.toEntity(domain)));
-            });
+        LongStream.range(0, random.nextInt(150) + 50).forEach(i -> {
+            ServiceProvider domain = new ServiceProvider(randomStr(),
+                                                         randomStr(),
+                                                         randomStr(),
+                                                         new PluginConfiguration(randomStr(), randomStr()));
+            assertEquals(domain, mapper.toDomain(mapper.toEntity(domain)));
+        });
     }
 
     @Test
     public void fromEntity() {
-        LongStream.range(0, random.nextInt(150)+50)
-            .forEach(i -> {
-                ServiceProviderEntity entity = new ServiceProviderEntity(
-                    randomStr(),
-                    randomStr(),
-                    randomStr(),
-                    new PluginConfiguration(
-                        randomStr(),
-                        randomStr()
-                    )
-                );
-                assertEquals(entity, mapper.toEntity(mapper.toDomain(entity)));
-            });
+        LongStream.range(0, random.nextInt(150) + 50).forEach(i -> {
+            ServiceProviderEntity entity = new ServiceProviderEntity(randomStr(),
+                                                                     randomStr(),
+                                                                     randomStr(),
+                                                                     new PluginConfiguration(randomStr(), randomStr()));
+            assertEquals(entity, mapper.toEntity(mapper.toDomain(entity)));
+        });
     }
 }

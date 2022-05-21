@@ -18,30 +18,23 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
+import com.google.common.collect.Maps;
+import fr.cnes.regards.framework.oais.*;
+import fr.cnes.regards.framework.urn.DataType;
+import org.springframework.util.Assert;
+import org.springframework.util.MimeType;
+
+import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
-import org.springframework.util.Assert;
-import org.springframework.util.MimeType;
-
-import com.google.common.collect.Maps;
-
-import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.Event;
-import fr.cnes.regards.framework.oais.InformationPackageProperties;
-import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
-import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
-import fr.cnes.regards.framework.urn.DataType;
-
 /**
  * Information package properties builder
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  * @deprecated {@link InformationPackageProperties} fluent API
  */
 @Deprecated
@@ -163,6 +156,7 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Add categories to context information (repeatable)
+     *
      * @param categories list of category
      */
     public void addContextCategories(String... categories) {
@@ -263,8 +257,9 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
     /**
      * Set the access right information to the information package thanks to the given parameters
      */
-    public void setAccessRightInformation(String licence, String dataRights,
-            @Nullable OffsetDateTime publicReleaseDate) {
+    public void setAccessRightInformation(String licence,
+                                          String dataRights,
+                                          @Nullable OffsetDateTime publicReleaseDate) {
         pdiBuilder.setAccessRightInformation(licence, dataRights, publicReleaseDate);
     }
 
@@ -277,39 +272,50 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Set <b>required</b> data object properties<br/>
-     * @param dataType {@link DataType}
-     * @param filename filename
+     *
+     * @param dataType  {@link DataType}
+     * @param filename  filename
      * @param algorithm checksum algorithm
-     * @param checksum the checksum
-     * @param fileSize <b>optional</b> file size
+     * @param checksum  the checksum
+     * @param fileSize  <b>optional</b> file size
      * @param locations references to the physical file. Use {@link OAISDataObjectLocation} build methods to create location!
      */
-    public void setDataObject(DataType dataType, String filename, String algorithm, String checksum, Long fileSize,
-            OAISDataObjectLocation... locations) {
+    public void setDataObject(DataType dataType,
+                              String filename,
+                              String algorithm,
+                              String checksum,
+                              Long fileSize,
+                              OAISDataObjectLocation... locations) {
         contentInformationBuilder.setDataObject(dataType, filename, algorithm, checksum, fileSize, locations);
     }
 
     /**
      * Set <b>required</b> data object properties
-     * @param dataType {@link DataType}
-     * @param filePath reference to the physical file
-     * @param filename filename
+     *
+     * @param dataType  {@link DataType}
+     * @param filePath  reference to the physical file
+     * @param filename  filename
      * @param algorithm checksum algorithm
-     * @param checksum the checksum
-     * @param fileSize file size
+     * @param checksum  the checksum
+     * @param fileSize  file size
      */
-    public void setDataObject(DataType dataType, Path filePath, String filename, String algorithm, String checksum,
-            Long fileSize) {
+    public void setDataObject(DataType dataType,
+                              Path filePath,
+                              String filename,
+                              String algorithm,
+                              String checksum,
+                              Long fileSize) {
         contentInformationBuilder.setDataObject(dataType, filePath, filename, algorithm, checksum, fileSize);
     }
 
     /**
      * Alias for {@link ContentInformationBuilder#setDataObject(DataType, Path, String, String, String, Long)} (no
      * file size)
-     * @param dataType {@link DataType}
-     * @param filePath reference to the physical file
+     *
+     * @param dataType  {@link DataType}
+     * @param filePath  reference to the physical file
      * @param algorithm checksum algorithm
-     * @param checksum the checksum
+     * @param checksum  the checksum
      */
     public void setDataObject(DataType dataType, Path filePath, String algorithm, String checksum) {
         contentInformationBuilder.setDataObject(dataType, filePath, algorithm, checksum);
@@ -318,6 +324,7 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
     /**
      * Alias for {@link ContentInformationBuilder#setDataObject(DataType, Path, String, String, String, Long)} (no file
      * size and MD5 default checksum algorithm)
+     *
      * @param dataType {@link DataType}
      * @param filePath reference to the physical file
      * @param checksum the checksum
@@ -336,8 +343,10 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
     /**
      * Set the syntax and semantic to the information package thanks to the given parameters
      */
-    public void setSyntaxAndSemantic(String mimeName, String mimeDescription, MimeType mimeType,
-            String semanticDescription) {
+    public void setSyntaxAndSemantic(String mimeName,
+                                     String mimeDescription,
+                                     MimeType mimeType,
+                                     String semanticDescription) {
         contentInformationBuilder.setSyntaxAndSemantic(mimeName, mimeDescription, mimeType, semanticDescription);
     }
 

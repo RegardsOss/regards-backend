@@ -55,8 +55,9 @@ import java.util.UUID;
  *
  * @author Marc SORDI
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingestclient",
-        "regards.amqp.enabled=true", "regards.aips.save-metadata.bulk.delay=100" })
+@TestPropertySource(
+    properties = { "spring.jpa.properties.hibernate.default_schema=ingestclient", "regards.amqp.enabled=true",
+        "regards.aips.save-metadata.bulk.delay=100" })
 @ContextConfiguration(classes = { IngestClientIT.IngestConfiguration.class })
 @ActiveProfiles(value = { "default", "test", "testAmqp", "StorageClientMock" }, inheritProfiles = false)
 public class IngestClientIT extends AbstractRegardsWebIT {
@@ -95,6 +96,7 @@ public class IngestClientIT extends AbstractRegardsWebIT {
     @Configuration
     @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
     static class IngestConfiguration {
+
     }
 
     @Test
@@ -103,23 +105,32 @@ public class IngestClientIT extends AbstractRegardsWebIT {
         String providerId = "sipFromClient";
         Mockito.clearInvocations(listener);
         Mockito.verify(listener, Mockito.times(0)).onGranted(Mockito.anyCollection());
-        RequestInfo clientInfo = ingestClient.ingest(IngestMetadataDto
-                .build("sessionOwner", "session", IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                       Sets.newHashSet("cat 1"), StorageMetadata.build("disk")), create(providerId));
+        RequestInfo clientInfo = ingestClient.ingest(IngestMetadataDto.build("sessionOwner",
+                                                                             "session",
+                                                                             IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                                                             Sets.newHashSet("cat 1"),
+                                                                             StorageMetadata.build("disk")),
+                                                     create(providerId));
         ingestServiceTest.waitForIngestion(1, 15_000, SIPState.STORED);
 
         Thread.sleep(5_000);
-        Assert.assertTrue("Missing granted request response", listener.getGranted().stream()
-                .anyMatch(r -> r.getRequestId().equals(clientInfo.getRequestId())));
-        Assert.assertTrue("Missing success request response", listener.getSuccess().stream()
-                .anyMatch(r -> r.getRequestId().equals(clientInfo.getRequestId())));
+        Assert.assertTrue("Missing granted request response",
+                          listener.getGranted()
+                                  .stream()
+                                  .anyMatch(r -> r.getRequestId().equals(clientInfo.getRequestId())));
+        Assert.assertTrue("Missing success request response",
+                          listener.getSuccess()
+                                  .stream()
+                                  .anyMatch(r -> r.getRequestId().equals(clientInfo.getRequestId())));
     }
 
     private SIP create(String providerId) {
 
         String fileName = String.format("file-%s.dat", providerId);
         SIP sip = SIP.build(EntityType.DATA, providerId);
-        sip.withDataObject(DataType.RAWDATA, Paths.get("src", "main", "test", "resources", "data", fileName), "MD5",
+        sip.withDataObject(DataType.RAWDATA,
+                           Paths.get("src", "main", "test", "resources", "data", fileName),
+                           "MD5",
                            UUID.randomUUID().toString());
         sip.withSyntax(MediaType.APPLICATION_JSON_UTF8);
         sip.registerContentInformation();

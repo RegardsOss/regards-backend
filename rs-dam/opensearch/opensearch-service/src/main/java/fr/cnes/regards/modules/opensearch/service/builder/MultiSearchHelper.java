@@ -18,20 +18,18 @@
  */
 package fr.cnes.regards.modules.opensearch.service.builder;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
- *
  * Help to define target fields for multi search queries
  *
  * @author Marc SORDI
- *
  */
 public final class MultiSearchHelper {
 
@@ -46,7 +44,7 @@ public final class MultiSearchHelper {
      * @throws OpenSearchUnknownParameter
      */
     public static Set<AttributeModel> discoverFields(final IAttributeFinder finder, String value)
-            throws OpenSearchUnknownParameter {
+        throws OpenSearchUnknownParameter {
         // TODO test with number, date, etc. so we can add fields with this type. Value has to be "castable" to this type.
         Set<AttributeModel> result = new HashSet<>();
         result.addAll(finder.findByType(PropertyType.STRING));

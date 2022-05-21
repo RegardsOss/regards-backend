@@ -14,14 +14,13 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.entity;
 
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParameterValue;
 import lombok.Value;
 
 import java.util.List;
-
 
 /**
  * This class is a database wrapper around a list of execution parameters.

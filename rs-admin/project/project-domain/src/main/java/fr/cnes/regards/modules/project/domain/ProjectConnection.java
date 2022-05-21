@@ -18,31 +18,21 @@
  */
 package fr.cnes.regards.modules.project.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
-import javax.validation.executable.ValidateOnExecution;
-import java.util.Optional;
-
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.executable.ValidateOnExecution;
+import java.util.Optional;
+
 /**
  * Class ProjectConnection
- *
+ * <p>
  * ProjectConnection Entity. Describe a database connection for a couple project/microservice
+ *
  * @author CS
  */
 @ValidateOnExecution
@@ -50,8 +40,8 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionStat
 @Entity
 @SequenceGenerator(name = "projectConnectionSequence", initialValue = 1, sequenceName = "seq_project_connection")
 @Table(name = "t_project_connection", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_project_connection_project_microservice",
-                columnNames = { "project_id", "microservice" }) })
+    @UniqueConstraint(name = "uk_project_connection_project_microservice",
+        columnNames = { "project_id", "microservice" }) })
 public class ProjectConnection implements IIdentifiable<Long> {
 
     public static final int ERROR_MAX_LENGTH = 255;
@@ -130,18 +120,24 @@ public class ProjectConnection implements IIdentifiable<Long> {
 
     /**
      * Constructor
-     * @param id Identifier
-     * @param project Associated project
-     * @param microservice Microservice name
-     * @param username Database username
-     * @param password Database password
+     *
+     * @param id              Identifier
+     * @param project         Associated project
+     * @param microservice    Microservice name
+     * @param username        Database username
+     * @param password        Database password
      * @param driverClassName Database driver class name
-     * @param url Database url
+     * @param url             Database url
      * @deprecated giving id is totally nonsense (and is not taken into account)
      */
     @Deprecated
-    public ProjectConnection(Long id, Project project, String microservice, String username, String password,
-            String driverClassName, String url) {
+    public ProjectConnection(Long id,
+                             Project project,
+                             String microservice,
+                             String username,
+                             String password,
+                             String driverClassName,
+                             String url) {
         this.id = id;
         this.project = project;
         this.microservice = microservice;
@@ -153,15 +149,20 @@ public class ProjectConnection implements IIdentifiable<Long> {
 
     /**
      * Constructor
-     * @param project Associated project
-     * @param microservice Microservice name
-     * @param username Database username
-     * @param password Database password
+     *
+     * @param project         Associated project
+     * @param microservice    Microservice name
+     * @param username        Database username
+     * @param password        Database password
      * @param driverClassName Database driver class name
-     * @param url Database url
+     * @param url             Database url
      */
-    public ProjectConnection(Project project, String microservice, String username, String password,
-            String driverClassName, String url) {
+    public ProjectConnection(Project project,
+                             String microservice,
+                             String username,
+                             String password,
+                             String driverClassName,
+                             String url) {
         super();
         this.project = project;
         this.microservice = microservice;
@@ -246,6 +247,7 @@ public class ProjectConnection implements IIdentifiable<Long> {
 
     /**
      * Transform a ProjectConnection in TenantConnection
+     *
      * @return TenantConnection
      */
     public TenantConnection toTenantConnection() {

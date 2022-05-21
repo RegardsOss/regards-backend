@@ -18,26 +18,24 @@
  */
 package fr.cnes.regards.modules.search.service;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
-import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * The converter retrieves attributes regarding their names. It may be internal, static or dynamic attributes.
  * And then build sort properties according to attribute properties.
  *
  * @author Marc Sordi
- *
  */
 @Service
 public class PageableConverter implements IPageableConverter {

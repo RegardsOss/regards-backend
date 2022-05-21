@@ -35,8 +35,10 @@ public class AttrDescToJsonMapping {
     static JsonObject nestedPropertiesStructure(String path, JsonObject propMapping) {
         String[] parts = path.split("\\.");
         ArrayUtils.reverse(parts);
-        return Arrays.stream(parts).reduce(propMapping, (acc, part) -> object("properties", object(part, acc)),
-                                           (a, b) -> merge(a, b));
+        return Arrays.stream(parts)
+                     .reduce(propMapping,
+                             (acc, part) -> object("properties", object(part, acc)),
+                             (a, b) -> merge(a, b));
     }
 
     private static JsonObject type(String type) {
@@ -48,7 +50,9 @@ public class AttrDescToJsonMapping {
     }
 
     public static JsonObject stringMapping() {
-        return object(kv("type", "text"), kv("fielddata", true), kv("fields", object("keyword", object(kv("type", "keyword")))));
+        return object(kv("type", "text"),
+                      kv("fielddata", true),
+                      kv("fields", object("keyword", object(kv("type", "keyword")))));
     }
 
     public JsonObject toJsonMapping(AttributeDescription attrDescOrNull) {
@@ -56,8 +60,10 @@ public class AttrDescToJsonMapping {
     }
 
     private Option<JsonObject> attemptConversion(AttributeDescription attrDesc) {
-        return Option.of(attrDesc.getAttributeProperties()).map(ps -> Option.of(ps.get(ELASTICSEARCH_MAPPING_PROP_NAME))
-                .map(mapping -> reuseExistingMappingProperty(attrDesc, mapping)).getOrElse(() -> dispatch(attrDesc)));
+        return Option.of(attrDesc.getAttributeProperties())
+                     .map(ps -> Option.of(ps.get(ELASTICSEARCH_MAPPING_PROP_NAME))
+                                      .map(mapping -> reuseExistingMappingProperty(attrDesc, mapping))
+                                      .getOrElse(() -> dispatch(attrDesc)));
     }
 
     private JsonObject dispatch(AttributeDescription a) {
@@ -106,8 +112,10 @@ public class AttrDescToJsonMapping {
         try {
             return nestedPropertiesStructure(attrDesc.getPath(), new JsonParser().parse(mapping).getAsJsonObject());
         } catch (IllegalStateException e) {
-            LOGGER.warn("Impossible to parse declared {} property for attribute {}", ELASTICSEARCH_MAPPING_PROP_NAME,
-                        attrDesc.getPath(), e);
+            LOGGER.warn("Impossible to parse declared {} property for attribute {}",
+                        ELASTICSEARCH_MAPPING_PROP_NAME,
+                        attrDesc.getPath(),
+                        e);
             return new JsonObject();
         }
     }
@@ -179,16 +187,13 @@ public class AttrDescToJsonMapping {
     public enum RangeAliasStrategy {
 
         NO_ALIAS {
-
             @Override
             JsonObject nestedSimpleRange(AttributeDescription attrDesc, JsonObject type) {
                 String path = attrDesc.getPath();
                 return merge(nestedPropertiesStructure(fullLowPath(path), type),
                              nestedPropertiesStructure(fullHighPath(path), type));
             }
-        },
-        GTELTE {
-
+        }, GTELTE {
             @Override
             JsonObject nestedSimpleRange(AttributeDescription attrDesc, JsonObject type) {
                 String path = attrDesc.getPath();

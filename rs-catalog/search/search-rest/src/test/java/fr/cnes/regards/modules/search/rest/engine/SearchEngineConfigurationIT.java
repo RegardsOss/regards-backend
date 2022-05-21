@@ -38,10 +38,11 @@ import java.util.UUID;
 
 /**
  * {@link SearchEngineConfiguration} tests
+ *
  * @author Sébastien Binda
  */
 @TestPropertySource(locations = { "classpath:test.properties" },
-        properties = { "regards.tenant=opensearch", "spring.jpa.properties.hibernate.default_schema=opensearch" })
+    properties = { "regards.tenant=opensearch", "spring.jpa.properties.hibernate.default_schema=opensearch" })
 @MultitenantTransactional
 public class SearchEngineConfigurationIT extends AbstractEngineIT {
 
@@ -79,13 +80,17 @@ public class SearchEngineConfigurationIT extends AbstractEngineIT {
         conf.setLabel("Test create new search engine");
         conf.setConfiguration(pluginConf);
         conf.setDatasetUrn("URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:" + UUID.randomUUID() + ":V1");
-        performDefaultPost(SearchEngineConfigurationController.TYPE_MAPPING, conf, customizer,
+        performDefaultPost(SearchEngineConfigurationController.TYPE_MAPPING,
+                           conf,
+                           customizer,
                            "Search by engine type error");
 
         // Try to create same conf. Should be error.
         customizer = customizer();
         customizer.expect(MockMvcResultMatchers.status().isUnprocessableEntity());
-        performDefaultPost(SearchEngineConfigurationController.TYPE_MAPPING, conf, customizer,
+        performDefaultPost(SearchEngineConfigurationController.TYPE_MAPPING,
+                           conf,
+                           customizer,
                            "The service must not allow to create two same conf.");
     }
 
@@ -93,32 +98,42 @@ public class SearchEngineConfigurationIT extends AbstractEngineIT {
     public void updateConf() {
         RequestBuilderCustomizer customizer = customizer();
         customizer.expect(MockMvcResultMatchers.status().isOk());
-        openSearchEngineConf
-                .setDatasetUrn("URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:" + UUID.randomUUID() + ":V2");
-        performDefaultPut(SearchEngineConfigurationController.TYPE_MAPPING
-                + SearchEngineConfigurationController.CONF_ID_PATH, openSearchEngineConf, customizer,
-                          "Search by engine type error", openSearchEngineConf.getId());
+        openSearchEngineConf.setDatasetUrn(
+            "URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:" + UUID.randomUUID() + ":V2");
+        performDefaultPut(
+            SearchEngineConfigurationController.TYPE_MAPPING + SearchEngineConfigurationController.CONF_ID_PATH,
+            openSearchEngineConf,
+            customizer,
+            "Search by engine type error",
+            openSearchEngineConf.getId());
 
         customizer = customizer();
         customizer.expect(MockMvcResultMatchers.status().isUnprocessableEntity());
-        performDefaultPut(SearchEngineConfigurationController.TYPE_MAPPING
-                + SearchEngineConfigurationController.CONF_ID_PATH, openSearchEngineConf, customizer,
-                          "Search by engine type error", 0L);
+        performDefaultPut(
+            SearchEngineConfigurationController.TYPE_MAPPING + SearchEngineConfigurationController.CONF_ID_PATH,
+            openSearchEngineConf,
+            customizer,
+            "Search by engine type error",
+            0L);
     }
 
     @Test
     public void deleteConf() {
         RequestBuilderCustomizer customizer = customizer();
         customizer.expect(MockMvcResultMatchers.status().isOk());
-        performDefaultDelete(SearchEngineConfigurationController.TYPE_MAPPING
-                + SearchEngineConfigurationController.CONF_ID_PATH, customizer, "Search all error",
-                             openSearchEngineConf.getId());
+        performDefaultDelete(
+            SearchEngineConfigurationController.TYPE_MAPPING + SearchEngineConfigurationController.CONF_ID_PATH,
+            customizer,
+            "Search all error",
+            openSearchEngineConf.getId());
 
         customizer = customizer();
         customizer.expect(MockMvcResultMatchers.status().isNotFound());
-        performDefaultGet(SearchEngineConfigurationController.TYPE_MAPPING
-                + SearchEngineConfigurationController.CONF_ID_PATH, customizer, "Conf should deleted",
-                          openSearchEngineConf.getId());
+        performDefaultGet(
+            SearchEngineConfigurationController.TYPE_MAPPING + SearchEngineConfigurationController.CONF_ID_PATH,
+            customizer,
+            "Conf should deleted",
+            openSearchEngineConf.getId());
 
         // Check plugin configuration is also delete
         try {

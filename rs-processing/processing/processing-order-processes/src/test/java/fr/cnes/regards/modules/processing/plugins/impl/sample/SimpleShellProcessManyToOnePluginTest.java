@@ -14,26 +14,18 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.plugins.impl.sample;
 
-import fr.cnes.regards.modules.processing.domain.PBatch;
-import fr.cnes.regards.modules.processing.domain.PExecution;
-import fr.cnes.regards.modules.processing.domain.POutputFile;
-import fr.cnes.regards.modules.processing.domain.PProcess;
-import fr.cnes.regards.modules.processing.domain.PStep;
+import fr.cnes.regards.modules.processing.domain.*;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
 import fr.cnes.regards.modules.processing.domain.engine.IWorkloadEngine;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
-import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.PREPARE;
-import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.RUNNING;
-import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.SUCCESS;
 import fr.cnes.regards.modules.processing.domain.repository.IWorkloadEngineRepository;
 import fr.cnes.regards.modules.processing.domain.service.IDownloadService;
 import fr.cnes.regards.modules.processing.entity.RightsPluginConfiguration;
 import fr.cnes.regards.modules.processing.order.Cardinality;
 import fr.cnes.regards.modules.processing.order.Scope;
-import static fr.cnes.regards.modules.processing.plugins.impl.sample.SimpleProcessPluginTestUtils.*;
 import fr.cnes.regards.modules.processing.repository.OrderProcessRepositoryImpl;
 import fr.cnes.regards.modules.processing.storage.ExecutionLocalWorkdirService;
 import fr.cnes.regards.modules.processing.storage.IExecutionLocalWorkdirService;
@@ -41,21 +33,25 @@ import fr.cnes.regards.modules.processing.storage.ISharedStorageService;
 import fr.cnes.regards.modules.processing.storage.SharedStorageService;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
+import org.apache.commons.io.FileUtils;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
-import static java.util.concurrent.TimeUnit.MINUTES;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.commons.io.FileUtils;
+
+import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.*;
+import static fr.cnes.regards.modules.processing.plugins.impl.sample.SimpleProcessPluginTestUtils.*;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.assertj.core.api.Assertions.assertThat;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 public class SimpleShellProcessManyToOnePluginTest {
 
@@ -73,7 +69,8 @@ public class SimpleShellProcessManyToOnePluginTest {
             FileUtils.copyFile(new File(file.getUrl().toURI().toString().replace("file:", "")), dest.toFile());
             return dest;
         });
-        IExecutionLocalWorkdirService workdirService = new ExecutionLocalWorkdirService(tempWorkdirBase, downloadService);
+        IExecutionLocalWorkdirService workdirService = new ExecutionLocalWorkdirService(tempWorkdirBase,
+                                                                                        downloadService);
         ISharedStorageService storageService = new SharedStorageService(tempStorageBase);
 
         IWorkloadEngine engine = makeEngine();
@@ -91,30 +88,22 @@ public class SimpleShellProcessManyToOnePluginTest {
         AtomicReference<PExecution> execRef = new AtomicReference<>(exec);
         AtomicReference<ExecutionContext> finalContext = new AtomicReference<>();
 
-        ExecutionContext ctx = new ExecutionContext(
-                exec,
-                batch,
-                process,
-                s -> {
-                    Seq<POutputFile> execOutFiles = s.outputFiles();
-                    if (!execOutFiles.isEmpty()) { outputFiles.set(execOutFiles); }
-                    return Mono
-                            .fromCallable(() -> steps.updateAndGet(ss -> s.step().map(ss::append).getOrElse(ss)))
-                            .map(ss -> execRef.updateAndGet(e -> e.withSteps(ss)));
-                }
-        );
+        ExecutionContext ctx = new ExecutionContext(exec, batch, process, s -> {
+            Seq<POutputFile> execOutFiles = s.outputFiles();
+            if (!execOutFiles.isEmpty()) {
+                outputFiles.set(execOutFiles);
+            }
+            return Mono.fromCallable(() -> steps.updateAndGet(ss -> s.step().map(ss::append).getOrElse(ss)))
+                       .map(ss -> execRef.updateAndGet(e -> e.withSteps(ss)));
+        });
 
         CountDownLatch subscriptionLatch = new CountDownLatch(1);
 
         IExecutable executable = shellProcessPlugin.executable();
-        executable
-                .execute(ctx)
-                .subscribeOn(Schedulers.immediate())
-                .subscribe(
-                        c -> { LOGGER.info("Success: {}", c); finalContext.set(c); },
-                        e -> LOGGER.error("Failure", e),
-                        subscriptionLatch::countDown
-                );
+        executable.execute(ctx).subscribeOn(Schedulers.immediate()).subscribe(c -> {
+            LOGGER.info("Success: {}", c);
+            finalContext.set(c);
+        }, e -> LOGGER.error("Failure", e), subscriptionLatch::countDown);
 
         subscriptionLatch.await(1L, MINUTES);
 
@@ -134,7 +123,7 @@ public class SimpleShellProcessManyToOnePluginTest {
     }
 
     private SimpleShellProcessPlugin makePlugin(IExecutionLocalWorkdirService workdirService,
-            ISharedStorageService storageService) {
+                                                ISharedStorageService storageService) {
         SimpleShellProcessPlugin shellProcessPlugin = new SimpleShellProcessPlugin();
 
         shellProcessPlugin.setWorkdirService(workdirService);

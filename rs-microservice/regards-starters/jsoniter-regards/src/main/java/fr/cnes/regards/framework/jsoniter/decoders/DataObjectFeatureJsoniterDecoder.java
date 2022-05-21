@@ -14,6 +14,7 @@ import java.io.IOException;
 public class DataObjectFeatureJsoniterDecoder implements EntityFeatureDecoder, NullSafeDecoderBuilder {
 
     private final Gson gson;
+
     private final AttributeModelPropertyTypeFinder propTypeFinder;
 
     public DataObjectFeatureJsoniterDecoder(Gson gson, AttributeModelPropertyTypeFinder propTypeFinder) {
@@ -38,14 +39,12 @@ public class DataObjectFeatureJsoniterDecoder implements EntityFeatureDecoder, N
     @Override
     public Object decode(JsonIterator iter) throws IOException {
         Any feature = iter.readAny();
-        DataObjectFeature result = new DataObjectFeature(
-            UniformResourceName.fromString(feature.toString("id")),
-            stringOrNull(feature, "providerId"),
-            stringOrNull(feature, "label"),
-            stringOrNull(feature, "sessionOwner"),
-            stringOrNull(feature, "session"),
-            stringOrNull(feature, "model")
-        );
+        DataObjectFeature result = new DataObjectFeature(UniformResourceName.fromString(feature.toString("id")),
+                                                         stringOrNull(feature, "providerId"),
+                                                         stringOrNull(feature, "label"),
+                                                         stringOrNull(feature, "sessionOwner"),
+                                                         stringOrNull(feature, "session"),
+                                                         stringOrNull(feature, "model"));
 
         readBasicFields(feature, result);
         readGeometries(feature, result);

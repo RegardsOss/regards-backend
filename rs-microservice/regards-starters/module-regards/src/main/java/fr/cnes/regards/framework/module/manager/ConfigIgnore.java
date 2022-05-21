@@ -25,6 +25,7 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation for ignoring field serialization during configuration export
+ *
  * @author Marc Sordi
  */
 @Retention(RetentionPolicy.RUNTIME)

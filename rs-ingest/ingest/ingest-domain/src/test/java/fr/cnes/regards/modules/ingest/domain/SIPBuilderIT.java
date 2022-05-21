@@ -18,10 +18,17 @@
  */
 package fr.cnes.regards.modules.ingest.domain;
 
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.Sets;
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
+import fr.cnes.regards.framework.oais.ContentInformation;
+import fr.cnes.regards.framework.oais.OAISDataObject;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,28 +39,19 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.google.common.collect.Sets;
-import com.google.gson.Gson;
-
-import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
-import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.OAISDataObject;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Test building, serializing and deserializing SIP feature.
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = GsonAutoConfiguration.class)
 @TestPropertySource(
-        properties = { "regards.cipher.iv=1234567812345678", "regards.cipher.keyLocation=src/test/resources/testKey" })
+    properties = { "regards.cipher.iv=1234567812345678", "regards.cipher.keyLocation=src/test/resources/testKey" })
 public class SIPBuilderIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPBuilderIT.class);
@@ -79,8 +77,11 @@ public class SIPBuilderIT {
         String algorithm = "checksumAlgorithm";
 
         // Initialize a SIP Collection builder
-        SIPCollection collection = SIPCollection.build(IngestMetadataDto
-                .build(sessionOwner, session, ingestChain, CATEGORIES, StorageMetadata.build("test")));
+        SIPCollection collection = SIPCollection.build(IngestMetadataDto.build(sessionOwner,
+                                                                               session,
+                                                                               ingestChain,
+                                                                               CATEGORIES,
+                                                                               StorageMetadata.build("test")));
 
         // Create a SIP builder
         String providerId = "SIP_001";

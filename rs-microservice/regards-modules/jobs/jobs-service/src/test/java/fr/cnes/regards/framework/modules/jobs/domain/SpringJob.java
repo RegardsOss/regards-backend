@@ -1,8 +1,7 @@
 package fr.cnes.regards.framework.modules.jobs.domain;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author oroussel

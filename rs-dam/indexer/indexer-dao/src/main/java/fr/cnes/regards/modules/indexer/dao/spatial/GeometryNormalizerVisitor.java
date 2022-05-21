@@ -19,19 +19,11 @@
 package fr.cnes.regards.modules.indexer.dao.spatial;
 
 import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
-import fr.cnes.regards.framework.geojson.geometry.GeometryCollection;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.geojson.geometry.IGeometryVisitor;
-import fr.cnes.regards.framework.geojson.geometry.LineString;
-import fr.cnes.regards.framework.geojson.geometry.MultiLineString;
-import fr.cnes.regards.framework.geojson.geometry.MultiPoint;
-import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
-import fr.cnes.regards.framework.geojson.geometry.Point;
-import fr.cnes.regards.framework.geojson.geometry.Polygon;
-import fr.cnes.regards.framework.geojson.geometry.Unlocated;
+import fr.cnes.regards.framework.geojson.geometry.*;
 
 /**
  * IGeometryVisitor permitting to normalize a Geometry
+ *
  * @author oroussel
  */
 public class GeometryNormalizerVisitor implements IGeometryVisitor<IGeometry> {

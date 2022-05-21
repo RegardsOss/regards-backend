@@ -14,12 +14,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.handlers;
 
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionRequestEvent;
-
 
 /**
  * This interface defines a handler for {@link PExecutionRequestEvent}.

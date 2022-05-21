@@ -18,24 +18,21 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
-import java.util.Set;
-
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.util.Set;
 
 /**
  * JPA {@link Specification} to search for {@link AbstractRequest}s
@@ -47,16 +44,21 @@ public final class FeatureRequestSpecificationsHelper {
 
     /**
      * Creates search {@link Predicate}s for {@link Specification} search request about {@link AbstractFeatureRequest}s
-     * @param filters {@link FeatureRequestsSelectionDTO}
+     *
+     * @param filters                            {@link FeatureRequestsSelectionDTO}
      * @param searchFiltersFromAssociatedFeature boolean
      * @param root
      * @param query
      * @param cb
-     * @param page {@link Pageable}
+     * @param page                               {@link Pageable}
      * @return {@link Specification}
      */
-    public static Set<Predicate> init(FeatureRequestsSelectionDTO selection, boolean searchFiltersFromAssociatedFeature,
-            Root<?> root, CriteriaQuery<?> query, CriteriaBuilder cb, Pageable page) {
+    public static Set<Predicate> init(FeatureRequestsSelectionDTO selection,
+                                      boolean searchFiltersFromAssociatedFeature,
+                                      Root<?> root,
+                                      CriteriaQuery<?> query,
+                                      CriteriaBuilder cb,
+                                      Pageable page) {
         Set<Predicate> predicates = Sets.newHashSet();
 
         if (selection.getFilters() != null) {
@@ -71,8 +73,9 @@ public final class FeatureRequestSpecificationsHelper {
             }
             if ((selection.getFilters().getSteps() != null) && !selection.getFilters().getSteps().isEmpty()) {
                 Set<Predicate> stepsPredicates = Sets.newHashSet();
-                selection.getFilters().getSteps()
-                        .forEach(step -> stepsPredicates.add(cb.equal(root.get("step"), step)));
+                selection.getFilters()
+                         .getSteps()
+                         .forEach(step -> stepsPredicates.add(cb.equal(root.get("step"), step)));
                 if (!stepsPredicates.isEmpty()) {
                     predicates.add(cb.or(stepsPredicates.toArray(new Predicate[stepsPredicates.size()])));
                 }
@@ -101,12 +104,12 @@ public final class FeatureRequestSpecificationsHelper {
                 switch (selection.getRequestIdSelectionMode()) {
                     case EXCLUDE:
                         selection.getRequestIds()
-                                .forEach(requestId -> idsPredicates.add(cb.notEqual(root.get("id"), requestId)));
+                                 .forEach(requestId -> idsPredicates.add(cb.notEqual(root.get("id"), requestId)));
                         predicates.add(cb.and(idsPredicates.toArray(new Predicate[idsPredicates.size()])));
                         break;
                     case INCLUDE:
                         selection.getRequestIds()
-                                .forEach(requestId -> idsPredicates.add(cb.equal(root.get("id"), requestId)));
+                                 .forEach(requestId -> idsPredicates.add(cb.equal(root.get("id"), requestId)));
                         predicates.add(cb.or(idsPredicates.toArray(new Predicate[idsPredicates.size()])));
                         break;
                     default:

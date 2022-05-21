@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.order;
 
 import lombok.AllArgsConstructor;
@@ -26,7 +26,9 @@ import lombok.With;
  *
  * @author gandrieu
  */
-@With @Value @AllArgsConstructor
+@With
+@Value
+@AllArgsConstructor
 public class SizeLimit {
 
     public enum Type {
@@ -34,6 +36,7 @@ public class SizeLimit {
     }
 
     Type type;
+
     Long limit;
 
     public boolean isExceededBy(long value) {

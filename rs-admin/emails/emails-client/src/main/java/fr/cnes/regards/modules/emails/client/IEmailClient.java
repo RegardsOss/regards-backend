@@ -23,12 +23,16 @@ import fr.cnes.regards.modules.emails.domain.Email;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 
 import java.util.List;
 
 /**
  * Feign client exposing the emails module endpoints to other microservices plugged through Eureka.
+ *
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
  */
@@ -40,24 +44,29 @@ public interface IEmailClient {
 
     /**
      * Define the endpoint for retrieving the list of sent emails
+     *
      * @return A {@link List} of emails as {@link Email} wrapped in an {@link ResponseEntity}
      */
-    @GetMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<Email>> retrieveEmails();
 
     /**
      * Define the endpoint for sending an email to recipients.<br>Prefer using {@link #sendEmail(String, String, String, String...)}
+     *
      * @param pMessage The email in a simple representation.
      */
-    @PostMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> sendEmail(SimpleMailMessage pMessage);
 
     /**
      * Helper method to send mail without creating SimpleMailMessage before call
+     *
      * @param message email message
      * @param subject email subject
-     * @param from email sender, if you don't care about who is sending, set null to use default.
-     * @param to recipients
+     * @param from    email sender, if you don't care about who is sending, set null to use default.
+     * @param to      recipients
      */
     default ResponseEntity<Void> sendEmail(String message, String subject, String from, String... to) {
         SimpleMailMessage mail = new SimpleMailMessage();
@@ -70,22 +79,27 @@ public interface IEmailClient {
 
     /**
      * Define the endpoint for retrieving an email
+     *
      * @param pId The email id
      * @return The email as a {@link Email} wrapped in an {@link ResponseEntity}
      */
-    @GetMapping(path = ROOT_PATH + "/{mail_id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH + "/{mail_id}", consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Email> retrieveEmail(Long pId);
 
     /**
      * Define the endpoint for re-sending an email
      */
-    @PutMapping(path =  ROOT_PATH + "/{mail_id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = ROOT_PATH + "/{mail_id}", consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     void resendEmail(Long pId);
 
     /**
      * Define the endpoint for deleting an email
+     *
      * @param pId The email id
      */
-    @DeleteMapping(path = ROOT_PATH + "/{mail_id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(path = ROOT_PATH + "/{mail_id}", consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     void deleteEmail(Long pId);
 }

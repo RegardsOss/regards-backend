@@ -40,8 +40,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @TestPropertySource(locations = { "classpath:test.properties" },
-                    properties = { "regards.tenant=opensearch",
-                        "spring.jpa.properties.hibernate.default_schema=opensearch" })
+    properties = { "regards.tenant=opensearch", "spring.jpa.properties.hibernate.default_schema=opensearch" })
 public class CatalogDownloadControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final String DOWNLOAD_AIP_FILE = "/downloads/{aip_id}/files/{checksum}";

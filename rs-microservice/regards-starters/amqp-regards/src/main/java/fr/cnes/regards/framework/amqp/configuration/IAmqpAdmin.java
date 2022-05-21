@@ -40,6 +40,7 @@ public interface IAmqpAdmin {
      *     <li>{@link WorkerMode#UNICAST} : creates a {@link org.springframework.amqp.core.DirectExchange} with {@link IAmqpAdmin#getUnicastExchangeName}</li>
      *     <li>{@link WorkerMode#BROADCAST} : creates a {@link org.springframework.amqp.core.FanoutExchange} with {@link IAmqpAdmin#getBroadcastExchangeName}</li>
      * </ul>
+     *
      * @param channel Channel configuration for exchange/queue/binding
      * @return a new {@link Exchange} related to current tenant and event
      */
@@ -51,12 +52,14 @@ public interface IAmqpAdmin {
      *   <li>{@link Target#MICROSERVICE} : regards.broadcast.microserviceType.EventType</li>
      *   <li>{@link Target#ALL}/{@link Target#ONE_PER_MICROSERVICE_TYPE} : regards.broadcast..EventType</li>
      * </ul>
+     *
      * @return exchange name
      */
     String getBroadcastExchangeName(String eventType, Target target);
 
     /**
      * Return common unicast exchange name : regards.unicast
+     *
      * @return
      */
     String getUnicastExchangeName();
@@ -73,7 +76,8 @@ public interface IAmqpAdmin {
      *     <li>{@link WorkerMode#UNICAST} : {@link IAmqpAdmin#getUnicastQueueName}</li>
      *     <li>{@link WorkerMode#BROADCAST} : {@link IAmqpAdmin#getSubscriptionQueueName}</li>
      * </ul>
-     * @param tenant tenant for which the queue is created
+     *
+     * @param tenant  tenant for which the queue is created
      * @param channel Channel configuration for exchange/queue/binding
      * @return declared {@link Queue}
      */
@@ -86,6 +90,7 @@ public interface IAmqpAdmin {
      *  <li>{@link Target#ALL}/{@link Target#MICROSERVICE} : regards.unicast.tenant.EventType</li>
      *  <li>{@link Target#ONE_PER_MICROSERVICE_TYPE}/{@link Target#MICROSERVICE} : {@link IllegalArgumentException}</li>
      * </ul>
+     *
      * @param tenant
      * @param eventType
      * @param target
@@ -99,6 +104,7 @@ public interface IAmqpAdmin {
      *   <li>{@link Target#ONE_PER_MICROSERVICE_TYPE} : regards.broadcast.microserviceType.handlerType</li>
      *   <li>{@link Target#ALL}/{@link Target#MICROSERVICE} : regards.broadcast.microserviceType.microserviceId.handlerType</li>
      * </ul>
+     *
      * @param handlerType
      * @param target
      * @return
@@ -111,9 +117,10 @@ public interface IAmqpAdmin {
 
     /**
      * Declare binding to link {@link Queue} and {@link Exchange} with an optional routing key
-     * @param queue {@link Queue} to bind
-     * @param exchange {@link Exchange} to bind
-     * @param workerMode {@link WorkerMode} to compute routing key
+     *
+     * @param queue               {@link Queue} to bind
+     * @param exchange            {@link Exchange} to bind
+     * @param workerMode          {@link WorkerMode} to compute routing key
      * @param broadcastRoutingKey optional routing key in case of broadcast. Default is {@link RegardsAmqpAdmin#DEFAULT_ROUTING_KEY}.
      * @return {@link Binding}
      */
@@ -121,8 +128,9 @@ public interface IAmqpAdmin {
 
     /**
      * Routing key build according to {@link WorkerMode}.
-     * @param queue queue
-     * @param workerMode worker mode
+     *
+     * @param queue               queue
+     * @param workerMode          worker mode
      * @param broadcastRoutingKey optional routing key in case of broadcast. Default is {@link RegardsAmqpAdmin#DEFAULT_ROUTING_KEY}.
      * @return routing key
      */
@@ -130,12 +138,14 @@ public interface IAmqpAdmin {
 
     /**
      * Purge the queue that manages the specified event
+     *
      * @param noWait true to not await completion of the purge
      */
     void purgeQueue(String queueName, boolean noWait);
 
     /**
      * Check if a queue has messages on it
+     *
      * @param queueName the name of the queue
      * @return true when the queue is empty
      */
@@ -143,6 +153,7 @@ public interface IAmqpAdmin {
 
     /**
      * Get queue properties
+     *
      * @param queueName queue name
      * @return properties
      */
@@ -156,8 +167,8 @@ public interface IAmqpAdmin {
 
     /**
      * @param queueName queue name
-     * @param unused true if the queue should be deleted only if not in use
-     * @param empty true if the queue should be deleted only if not in use
+     * @param unused    true if the queue should be deleted only if not in use
+     * @param empty     true if the queue should be deleted only if not in use
      */
     void deleteQueue(String queueName, boolean unused, boolean empty);
 

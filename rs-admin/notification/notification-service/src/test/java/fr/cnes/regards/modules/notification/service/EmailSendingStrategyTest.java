@@ -18,15 +18,14 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.mail.SimpleMailMessage;
-
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.emails.service.IEmailService;
 import fr.cnes.regards.modules.notification.domain.Notification;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.mail.SimpleMailMessage;
 
 /**
  * Test class for {@link IEmailService}.

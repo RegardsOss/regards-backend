@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.modules.dam.dao.entities;
 
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntityRequest;
+import org.springframework.data.jpa.repository.JpaRepository;
+
 import java.util.Optional;
 import java.util.Set;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import fr.cnes.regards.modules.dam.domain.entities.AbstractEntityRequest;
-
 /**
  * Repository to manipulate {@link AbstractEntityRequest}
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
 public interface IAbstractEntityRequestRepository extends JpaRepository<AbstractEntityRequest, Long> {
 

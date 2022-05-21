@@ -24,7 +24,6 @@ import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParamet
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -46,7 +45,11 @@ public class SessionDeleteService implements ISessionDeleteService {
 
     @Override
     public void deleteSession(String source, String session) {
-        LOGGER.info("Event received to program the deletion of all requests from session {} of source {}", session, source);
-        requestService.scheduleRequestDeletionJob(SearchRequestParameters.build().withSession(session).withSource(source));
+        LOGGER.info("Event received to program the deletion of all requests from session {} of source {}",
+                    session,
+                    source);
+        requestService.scheduleRequestDeletionJob(SearchRequestParameters.build()
+                                                                         .withSession(session)
+                                                                         .withSource(source));
     }
 }

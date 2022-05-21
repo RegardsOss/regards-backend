@@ -18,32 +18,29 @@
  */
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
-import java.util.Set;
-import java.util.SortedMap;
-
-import fr.cnes.regards.framework.utils.model.Attribute;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.oais.builder.PDIBuilder;
+import fr.cnes.regards.framework.utils.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.plugins.ISIPGenerationPluginWithMetadataToolbox;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Set;
+import java.util.SortedMap;
 
 /**
  * Common SIP generation tools
  *
  * @author Christophe Mertz
- *
  */
 public abstract class AbstractGenerateSIPPlugin extends AbstractStorageInformation
-        implements ISIPGenerationPluginWithMetadataToolbox {
+    implements ISIPGenerationPluginWithMetadataToolbox {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGenerateSIPPlugin.class);
 
@@ -52,7 +49,7 @@ public abstract class AbstractGenerateSIPPlugin extends AbstractStorageInformati
     public static final String CONFIGURATION_FILE = "configurationFile";
 
     @PluginParameter(name = CONFIGURATION_FILE, label = "Name of the XML configuration file",
-            description = "SSALTO plugins configuration file names are <DATASET>_PluginConfiguration.xml like <DA_TC_JASON2_PluginConfiguration.xml>")
+        description = "SSALTO plugins configuration file names are <DATASET>_PluginConfiguration.xml like <DA_TC_JASON2_PluginConfiguration.xml>")
     protected String configurationFile;
 
     @Override
@@ -97,8 +94,8 @@ public abstract class AbstractGenerateSIPPlugin extends AbstractStorageInformati
     }
 
     public abstract void addAttributesTopSip(SIPBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs)
-            throws ModuleException;
+        throws ModuleException;
 
     protected abstract void addDataObjectsToSip(SIPBuilder sipBuilder, Set<AcquisitionFile> acqFiles)
-            throws ModuleException;
+        throws ModuleException;
 }

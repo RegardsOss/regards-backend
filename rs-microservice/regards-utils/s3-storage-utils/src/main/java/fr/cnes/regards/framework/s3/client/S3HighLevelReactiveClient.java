@@ -44,7 +44,9 @@ public class S3HighLevelReactiveClient {
     protected final int maxBytesPerPart;
 
     private final Cache<StorageConfig, S3AsyncClientReactorWrapper> configManagers = Caffeine.newBuilder()
-            .expireAfterAccess(Duration.ofMinutes(30)).build();
+                                                                                             .expireAfterAccess(Duration.ofMinutes(
+                                                                                                 30))
+                                                                                             .build();
 
     public S3HighLevelReactiveClient(Scheduler scheduler, int maxBytesPerPart) {
         this.scheduler = scheduler;
@@ -57,8 +59,14 @@ public class S3HighLevelReactiveClient {
 
     public Mono<ReadResult> read(Read readCmd) {
         return readingCallableMono(readCmd).subscribeOn(scheduler)
-                .onErrorResume(t -> Mono.just(new StorageCommandResult.UnreachableStorage(readCmd, t)))
-                .log("storage.s3.read", Level.FINE, SignalType.ON_SUBSCRIBE, SignalType.ON_NEXT, SignalType.ON_ERROR);
+                                           .onErrorResume(t -> Mono.just(new StorageCommandResult.UnreachableStorage(
+                                               readCmd,
+                                               t)))
+                                           .log("storage.s3.read",
+                                                Level.FINE,
+                                                SignalType.ON_SUBSCRIBE,
+                                                SignalType.ON_NEXT,
+                                                SignalType.ON_ERROR);
     }
 
     public Mono<WriteResult> write(Write writeCmd) {
@@ -67,18 +75,25 @@ public class S3HighLevelReactiveClient {
 
     public Mono<DeleteResult> delete(Delete deleteCmd) {
         return deleteMono(deleteCmd).subscribeOn(scheduler)
-                .onErrorResume(t -> Mono.just(new StorageCommandResult.UnreachableStorage(deleteCmd, t)))
-                .log("storage.s3.delete", Level.FINE, SignalType.ON_SUBSCRIBE, SignalType.ON_NEXT, SignalType.ON_ERROR);
+                                    .onErrorResume(t -> Mono.just(new StorageCommandResult.UnreachableStorage(deleteCmd,
+                                                                                                              t)))
+                                    .log("storage.s3.delete",
+                                         Level.FINE,
+                                         SignalType.ON_SUBSCRIBE,
+                                         SignalType.ON_NEXT,
+                                         SignalType.ON_ERROR);
     }
 
     public Mono<CheckResult> check(Check checkCmd) {
         StorageConfig config = checkCmd.getConfig();
         String archivePath = checkCmd.getEntryKey();
         String bucket = config.getBucket();
-        return getClient(config).exists(bucket, archivePath).<CheckResult>map(exists -> exists ?
-                        new StorageCommandResult.CheckPresent(checkCmd) :
-                        new StorageCommandResult.CheckAbsent(checkCmd))
-                .onErrorResume(t -> Mono.just(new StorageCommandResult.UnreachableStorage(checkCmd, t)));
+        return getClient(config).exists(bucket, archivePath)
+                                .<CheckResult>map(exists -> exists ?
+                                    new StorageCommandResult.CheckPresent(checkCmd) :
+                                    new StorageCommandResult.CheckAbsent(checkCmd))
+                                .onErrorResume(t -> Mono.just(new StorageCommandResult.UnreachableStorage(checkCmd,
+                                                                                                          t)));
     }
 
     protected Mono<ReadResult> readingCallableMono(Read readCmd) {
@@ -90,33 +105,51 @@ public class S3HighLevelReactiveClient {
         String bucket = config.getBucket();
         String entryKey = readCmd.getEntryKey();
         return getClient(config).readContentFlux(bucket, entryKey, true)
-                .retryWhen(Retry.backoff(5, Duration.ofSeconds(5)).jitter(0.2d).maxBackoff(Duration.ofMinutes(5)))
-                .map(ras -> {
-                    Long size = ras.getResponse().contentLength();
-                    String etag = ras.getResponse().eTag();
-                    LOGGER.debug("Reading entry={} size={} eTag={}", entryKey, size, etag);
-                    return StorageEntry.builder().config(config).fullPath(entryKey)
-                            .checksum(Option.of(Tuple.of("eTag", etag))).size(Option.of(size)).data(ras.getStream())
-                            .build();
-                });
+                                .retryWhen(Retry.backoff(5, Duration.ofSeconds(5))
+                                                .jitter(0.2d)
+                                                .maxBackoff(Duration.ofMinutes(5)))
+                                .map(ras -> {
+                                    Long size = ras.getResponse().contentLength();
+                                    String etag = ras.getResponse().eTag();
+                                    LOGGER.debug("Reading entry={} size={} eTag={}", entryKey, size, etag);
+                                    return StorageEntry.builder()
+                                                       .config(config)
+                                                       .fullPath(entryKey)
+                                                       .checksum(Option.of(Tuple.of("eTag", etag)))
+                                                       .size(Option.of(size))
+                                                       .data(ras.getStream())
+                                                       .build();
+                                });
     }
 
     public Mono<WriteResult> writeMono(Write writeCmd) {
         return Mono.defer(() -> {
             StorageEntry entry = writeCmd.getEntry();
-            return entry.getSize().filter(s -> s <= maxBytesPerPart).map(size -> storeSmallEntry(writeCmd))
-                    .getOrElse(() -> storeMultipartEntry(writeCmd)).log("storage.s3.write", Level.FINE)
-                    .flatMap(size -> Mono.<WriteResult>just(new WriteSuccess(writeCmd, size)))
-                    .transform(dealWithWriteEntryErrors(writeCmd));
+            return entry.getSize()
+                        .filter(s -> s <= maxBytesPerPart)
+                        .map(size -> storeSmallEntry(writeCmd))
+                        .getOrElse(() -> storeMultipartEntry(writeCmd))
+                        .log("storage.s3.write", Level.FINE)
+                        .flatMap(size -> Mono.<WriteResult>just(new WriteSuccess(writeCmd, size)))
+                        .transform(dealWithWriteEntryErrors(writeCmd));
         });
     }
 
     protected Function<Mono<WriteResult>, Mono<WriteResult>> dealWithWriteEntryErrors(Write writeCmd) {
-        return writeResultMono -> writeResultMono.doOnError(
-                        t -> LOGGER.error("Command {} - error {}", writeCmd.getCmdId(), t.getMessage(), t))
-                .onErrorResume(MultipartException.class, cme -> Mono.just(new WriteFailure(writeCmd)))
-                .onErrorResume(t -> Mono.just(new StorageCommandResult.UnreachableStorage(writeCmd, t)))
-                .log("storage.s3.write", Level.FINE, SignalType.ON_SUBSCRIBE, SignalType.ON_NEXT, SignalType.ON_ERROR);
+        return writeResultMono -> writeResultMono.doOnError(t -> LOGGER.error("Command {} - error {}",
+                                                                              writeCmd.getCmdId(),
+                                                                              t.getMessage(),
+                                                                              t))
+                                                 .onErrorResume(MultipartException.class,
+                                                                cme -> Mono.just(new WriteFailure(writeCmd)))
+                                                 .onErrorResume(t -> Mono.just(new StorageCommandResult.UnreachableStorage(
+                                                     writeCmd,
+                                                     t)))
+                                                 .log("storage.s3.write",
+                                                      Level.FINE,
+                                                      SignalType.ON_SUBSCRIBE,
+                                                      SignalType.ON_NEXT,
+                                                      SignalType.ON_ERROR);
     }
 
     protected Mono<Long> storeMultipartEntry(Write writeCmd) {
@@ -126,29 +159,44 @@ public class S3HighLevelReactiveClient {
         String key = entry.getFullPath();
 
         return Mono.defer(() -> getClient(config).initiateMultipartUpload(bucket, key)
-                        .flatMap(uploadId -> uploadThenCompleteMultipartEntry(entry, config, bucket, key, uploadId)))
-                .subscribeOn(scheduler);
+                                                 .flatMap(uploadId -> uploadThenCompleteMultipartEntry(entry,
+                                                                                                       config,
+                                                                                                       bucket,
+                                                                                                       key,
+                                                                                                       uploadId)))
+                   .subscribeOn(scheduler);
     }
 
-    protected Mono<Long> uploadThenCompleteMultipartEntry(StorageEntry entry, StorageConfig config, String bucket,
-            String key, String uploadId) {
-        return entry.getData().publishOn(scheduler).transform(harmonize(maxBytesPerPart))
-                .zipWithIterable(Stream.range(1, Integer.MAX_VALUE))
-                .flatMap(part -> uploadPart(config, bucket, key, uploadId, part))
-                .reduce(new MultipartReport(), MultipartReport::accumulate)
-                .flatMap(report -> completeMultipartEntry(config, bucket, key, uploadId, report)).onErrorResume(
-                        t -> getClient(config).abortMultipartUpload(bucket, key, uploadId)
-                                .flatMap(any -> Mono.error(new MultipartException(t, entry))));
+    protected Mono<Long> uploadThenCompleteMultipartEntry(StorageEntry entry,
+                                                          StorageConfig config,
+                                                          String bucket,
+                                                          String key,
+                                                          String uploadId) {
+        return entry.getData()
+                    .publishOn(scheduler)
+                    .transform(harmonize(maxBytesPerPart))
+                    .zipWithIterable(Stream.range(1, Integer.MAX_VALUE))
+                    .flatMap(part -> uploadPart(config, bucket, key, uploadId, part))
+                    .reduce(new MultipartReport(), MultipartReport::accumulate)
+                    .flatMap(report -> completeMultipartEntry(config, bucket, key, uploadId, report))
+                    .onErrorResume(t -> getClient(config).abortMultipartUpload(bucket, key, uploadId)
+                                                         .flatMap(any -> Mono.error(new MultipartException(t, entry))));
     }
 
-    private Mono<Long> completeMultipartEntry(StorageConfig config, String bucket, String key, String uploadId,
-            MultipartReport report) {
+    private Mono<Long> completeMultipartEntry(StorageConfig config,
+                                              String bucket,
+                                              String key,
+                                              String uploadId,
+                                              MultipartReport report) {
         return getClient(config).completeMultipartUpload(bucket, key, uploadId, report.getCompleted())
-                .map(any -> report.getAccumulatedSize());
+                                .map(any -> report.getAccumulatedSize());
     }
 
-    private Publisher<? extends UploadedPart> uploadPart(StorageConfig config, String bucket, String key,
-            String uploadId, Tuple2<ByteBuffer, Integer> part) {
+    private Publisher<? extends UploadedPart> uploadPart(StorageConfig config,
+                                                         String bucket,
+                                                         String key,
+                                                         String uploadId,
+                                                         Tuple2<ByteBuffer, Integer> part) {
         int partNum = part.getT2();
         byte[] partData = bufToArr(part.getT1());
         return getClient(config).uploadMultipartFilePart(bucket, key, uploadId, partNum, partData);
@@ -160,17 +208,18 @@ public class S3HighLevelReactiveClient {
         StorageEntry entry = writeCmd.getEntry();
         String key = entry.getFullPath();
 
-        return dataToByteArray(entry.getData()).flatMap(
-                bytes -> getClient(config).putContent(bucket, key, bytes).map(r -> (long) bytes.length));
+        return dataToByteArray(entry.getData()).flatMap(bytes -> getClient(config).putContent(bucket, key, bytes)
+                                                                                  .map(r -> (long) bytes.length));
     }
 
     /**
      * Must be used only for small entries, because it will load all the data in RAM
      */
     private Mono<byte[]> dataToByteArray(Flux<ByteBuffer> data) {
-        return data.publishOn(scheduler).collect(List.collector())
-                .map(bbs -> bbs.foldLeft(new ByteArrayOutputStream(), this::appendByteBufferToOutputStream)
-                        .toByteArray());
+        return data.publishOn(scheduler)
+                   .collect(List.collector())
+                   .map(bbs -> bbs.foldLeft(new ByteArrayOutputStream(), this::appendByteBufferToOutputStream)
+                                  .toByteArray());
     }
 
     private ByteArrayOutputStream appendByteBufferToOutputStream(ByteArrayOutputStream out, ByteBuffer bb) {
@@ -187,22 +236,25 @@ public class S3HighLevelReactiveClient {
 
             IS3ClientReactorWrapper client = getClient(config);
 
-            return deleteArchiveContent(deleteCmd, bucket, archivePath, client).transform(
-                    deleteErrorManagement(deleteCmd));
+            return deleteArchiveContent(deleteCmd, bucket, archivePath, client).transform(deleteErrorManagement(
+                deleteCmd));
         });
     }
 
     private Function<Mono<DeleteResult>, Publisher<DeleteResult>> deleteErrorManagement(Delete deleteCmd) {
-        return mdr -> mdr.retryWhen(
-                        Retry.backoff(5, Duration.ofSeconds(5)).jitter(0.2d).maxBackoff(Duration.ofMinutes(5)))
-                .onErrorResume(t -> Mono.just(new DeleteFailure(deleteCmd)));
+        return mdr -> mdr.retryWhen(Retry.backoff(5, Duration.ofSeconds(5))
+                                         .jitter(0.2d)
+                                         .maxBackoff(Duration.ofMinutes(5)))
+                         .onErrorResume(t -> Mono.just(new DeleteFailure(deleteCmd)));
     }
 
-    private Mono<DeleteResult> deleteArchiveContent(Delete deleteCmd, String bucket, String key,
-            IS3ClientReactorWrapper client) {
+    private Mono<DeleteResult> deleteArchiveContent(Delete deleteCmd,
+                                                    String bucket,
+                                                    String key,
+                                                    IS3ClientReactorWrapper client) {
         return client.deleteContentWithPrefix(bucket, key)
-                .log("storage.s3.delete", Level.FINER, SignalType.ON_NEXT, SignalType.ON_ERROR)
-                .then(Mono.just(new DeleteSuccess(deleteCmd)));
+                     .log("storage.s3.delete", Level.FINER, SignalType.ON_NEXT, SignalType.ON_ERROR)
+                     .then(Mono.just(new DeleteSuccess(deleteCmd)));
     }
 
     protected byte[] bufToArr(ByteBuffer bb) {

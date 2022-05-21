@@ -20,8 +20,6 @@
 
 package fr.cnes.regards.modules.ingest.service.plugin;
 
-import java.util.Collection;
-
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -29,14 +27,15 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipPostprocessing;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.PostProcessResult;
 
+import java.util.Collection;
+
 /**
- *
  * @author Iliana Ghazali
  */
 
-@Plugin(id = "PostProcessFailTestPlugin", version = "1.0.0-SNAPSHOT",
-        description = "Test plugin", author = "REGARDS Team",
-        contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
+@Plugin(id = "PostProcessFailTestPlugin", version = "1.0.0-SNAPSHOT", description = "Test plugin",
+    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
+    url = "https://github.com/RegardsOss")
 public class AIPPostProcessFailTestPlugin implements ISipPostprocessing {
 
     @Override
@@ -47,10 +46,10 @@ public class AIPPostProcessFailTestPlugin implements ISipPostprocessing {
         for (AIPEntity aip : aipEntities) {
             if (setError) {
                 ppr.addSuccess(aip.getAipId());
-                setError=false;
+                setError = false;
             } else {
                 ppr.addError(aip.getAipId(), Sets.newHashSet("Simulated test error !!!!"));
-                setError=true;
+                setError = true;
             }
         }
         return ppr;

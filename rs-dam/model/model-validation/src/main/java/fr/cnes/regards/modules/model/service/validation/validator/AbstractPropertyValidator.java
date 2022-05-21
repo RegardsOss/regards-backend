@@ -18,14 +18,12 @@
  */
 package fr.cnes.regards.modules.model.service.validation.validator;
 
+import fr.cnes.regards.modules.model.dto.properties.AbstractProperty;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
-import fr.cnes.regards.modules.model.dto.properties.AbstractProperty;
-
 /**
  * @author Marc Sordi
- *
  */
 public abstract class AbstractPropertyValidator implements Validator {
 
@@ -39,8 +37,10 @@ public abstract class AbstractPropertyValidator implements Validator {
     }
 
     protected void rejectUnsupported(Errors errors) {
-        errors.reject("error.unsupported.property.type.message", String
-                .format("Unsupported property \"%s\" for validator \"%s\".", attributeKey, this.getClass().getName()));
+        errors.reject("error.unsupported.property.type.message",
+                      String.format("Unsupported property \"%s\" for validator \"%s\".",
+                                    attributeKey,
+                                    this.getClass().getName()));
     }
 
     @Override

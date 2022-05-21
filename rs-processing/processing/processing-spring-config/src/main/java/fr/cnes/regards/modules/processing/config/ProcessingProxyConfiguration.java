@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.config;
 
 import com.google.common.base.Strings;
@@ -36,22 +36,21 @@ import java.util.stream.Stream;
 @Configuration
 public class ProcessingProxyConfiguration {
 
-    @Bean public Proxy proxy(HttpProxyProperties config) {
-        Proxy proxy = Strings.isNullOrEmpty(config.getHost())
-                ? Proxy.NO_PROXY
-                : new Proxy(Proxy.Type.HTTP, new InetSocketAddress(config.getHost(), Option.of(config.getPort()).getOrElse(80)));
+    @Bean
+    public Proxy proxy(HttpProxyProperties config) {
+        Proxy proxy = Strings.isNullOrEmpty(config.getHost()) ?
+            Proxy.NO_PROXY :
+            new Proxy(Proxy.Type.HTTP,
+                      new InetSocketAddress(config.getHost(), Option.of(config.getPort()).getOrElse(80)));
         return proxy;
     }
 
-    @Bean("nonProxyHosts") public Set<String> nonProxyHosts(HttpProxyProperties config) {
-        return Stream
-            .of(Option.of(config.getNoproxy())
-                .getOrElse(() -> "")
-                .split(",")
-            )
-            .filter(s -> !s.isEmpty())
-            .map(String::trim)
-            .collect(HashSet.collector());
+    @Bean("nonProxyHosts")
+    public Set<String> nonProxyHosts(HttpProxyProperties config) {
+        return Stream.of(Option.of(config.getNoproxy()).getOrElse(() -> "").split(","))
+                     .filter(s -> !s.isEmpty())
+                     .map(String::trim)
+                     .collect(HashSet.collector());
     }
 }
 

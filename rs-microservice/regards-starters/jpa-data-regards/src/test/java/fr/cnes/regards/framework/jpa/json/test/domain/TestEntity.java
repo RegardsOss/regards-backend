@@ -18,19 +18,12 @@
  */
 package fr.cnes.regards.framework.jpa.json.test.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import javax.persistence.*;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -93,7 +86,7 @@ public class TestEntity {
     @Override
     public boolean equals(Object pOther) {
         return (pOther instanceof TestEntity) && ((TestEntity) pOther).id.equals(id)
-                && ((TestEntity) pOther).jsonbEntity.equals(jsonbEntity);
+            && ((TestEntity) pOther).jsonbEntity.equals(jsonbEntity);
     }
 
     @Override

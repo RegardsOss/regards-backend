@@ -18,35 +18,20 @@
  */
 package fr.cnes.regards.modules.ingest.domain.aip;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Type;
-
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+
 @Entity
 @Table(name = "t_aip", indexes = { @Index(name = "idx_aip_id", columnList = "id,aip_id,sip_id"),
-        @Index(name = "idx_search_aip", columnList = "session_owner,session_name,state,last_update"),
-        @Index(name = "idx_aip_provider_id", columnList = "provider_id"),
-        @Index(name = "idx_aip_storage", columnList = "storages"), @Index(name = "idx_aip_tags", columnList = "tags"),
-        @Index(name = "idx_aip_categories", columnList = "categories"),
-        @Index(name = "idx_aip_sip_id", columnList = "sip_id"), @Index(name = "idx_aip_state", columnList = "state"),
-        @Index(name = "idx_aipid", columnList = "aip_id") })
+    @Index(name = "idx_search_aip", columnList = "session_owner,session_name,state,last_update"),
+    @Index(name = "idx_aip_provider_id", columnList = "provider_id"),
+    @Index(name = "idx_aip_storage", columnList = "storages"), @Index(name = "idx_aip_tags", columnList = "tags"),
+    @Index(name = "idx_aip_categories", columnList = "categories"),
+    @Index(name = "idx_aip_sip_id", columnList = "sip_id"), @Index(name = "idx_aip_state", columnList = "state"),
+    @Index(name = "idx_aipid", columnList = "aip_id") })
 // There cannot be any unique constraint on last because there will always be multiple value with false!!!!
 public class AIPEntity extends AbstractAIPEntity {
 

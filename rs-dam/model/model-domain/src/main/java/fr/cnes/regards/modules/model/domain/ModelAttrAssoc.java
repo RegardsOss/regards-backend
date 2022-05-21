@@ -18,20 +18,6 @@
  */
 package fr.cnes.regards.modules.model.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
-
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -45,6 +31,9 @@ import fr.cnes.regards.modules.model.domain.schema.NoParamPluginType;
 import fr.cnes.regards.modules.model.domain.schema.ParamPluginType;
 import fr.cnes.regards.modules.model.domain.validator.ComputedAttribute;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+
 /**
  * Model - attribute association.</br>
  * A ModelAttrAssoc is linked to a {@link Model}.<br/>
@@ -52,11 +41,12 @@ import fr.cnes.regards.modules.model.domain.validator.ComputedAttribute;
  * manually or calculated through a calculation plugin.<<br/>
  * Thus, a same {@link AttributeModel} may be linked to different model and can either be set manually or calculated
  * depending on the model.
+ *
  * @author msordi
  */
 @Entity
 @Table(name = "ta_model_att_att", uniqueConstraints = @UniqueConstraint(name = "uk_model_att_att_id_model_id",
-        columnNames = { "attribute_id", "model_id" }))
+    columnNames = { "attribute_id", "model_id" }))
 @SequenceGenerator(name = "modelAttSequence", initialValue = 1, sequenceName = "seq_model_att")
 @ComputedAttribute
 public class ModelAttrAssoc implements Comparable<ModelAttrAssoc>, IIdentifiable<Long>, IXmlisable<Attribute> {
@@ -103,12 +93,16 @@ public class ModelAttrAssoc implements Comparable<ModelAttrAssoc>, IIdentifiable
 
     /**
      * Constructor
+     *
      * @param pAttributeModel {@link Model}
      * @param pModel
      * @param pPosition
      * @param pIsCalculated
      */
-    public ModelAttrAssoc(AttributeModel pAttributeModel, Model pModel, Integer pPosition, Boolean pIsCalculated) {// NOSONAR
+    public ModelAttrAssoc(AttributeModel pAttributeModel,
+                          Model pModel,
+                          Integer pPosition,
+                          Boolean pIsCalculated) {// NOSONAR
         attribute = pAttributeModel;
         model = pModel;
         pos = pPosition;
@@ -173,8 +167,7 @@ public class ModelAttrAssoc implements Comparable<ModelAttrAssoc>, IIdentifiable
             // Cyclic dependency between dam-plugin and dam-domain
             // TODO : Find a good idea to avoid this shit
             // Count plugin are really something different from others, lets treat them apart
-            PluginComputationIdentifierEnum pluginId = PluginComputationIdentifierEnum
-                    .parse(computationConf.getPluginId());
+            PluginComputationIdentifierEnum pluginId = PluginComputationIdentifierEnum.parse(computationConf.getPluginId());
             if (pluginId == PluginComputationIdentifierEnum.COUNT) {
                 computation.setCount(new NoParamPluginType());
             } else {
@@ -182,7 +175,7 @@ public class ModelAttrAssoc implements Comparable<ModelAttrAssoc>, IIdentifiable
                 // then the type
                 ParamPluginType paramPluginType = new ParamPluginType();
                 String parameterAttributeName = (String) computationConf.getParameter("parameterAttributeName")
-                        .getValue();
+                                                                        .getValue();
                 if (parameterAttributeName.matches("^\"[^\"]*\"$")) {
                     parameterAttributeName = parameterAttributeName.substring(1, parameterAttributeName.length() - 1);
                 }
@@ -236,7 +229,8 @@ public class ModelAttrAssoc implements Comparable<ModelAttrAssoc>, IIdentifiable
 
     /**
      * Set the computation plugin configuration
-     * @param pComputationConf  {@link PluginConfiguration}
+     *
+     * @param pComputationConf {@link PluginConfiguration}
      */
     public void setComputationConf(PluginConfiguration pComputationConf) {
         computationConf = pComputationConf;
@@ -269,6 +263,6 @@ public class ModelAttrAssoc implements Comparable<ModelAttrAssoc>, IIdentifiable
     @Override
     public String toString() {
         return "ModelAttrAssoc{" + "id=" + id + ", attribute=" + attribute + ", computationConf=" + computationConf
-                + ", model=" + model + '}';
+            + ", model=" + model + '}';
     }
 }

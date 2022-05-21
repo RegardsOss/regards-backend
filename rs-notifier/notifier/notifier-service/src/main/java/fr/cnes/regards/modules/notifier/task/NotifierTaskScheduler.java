@@ -123,34 +123,40 @@ public class NotifierTaskScheduler extends AbstractTaskScheduler {
         long stop = System.currentTimeMillis() - start;
         int total = result.getFirst() + result.getSecond();
         if (total != 0) {
-            LOGGER.info("{} completed notification requests have been detected in {} ms. Successes : {} - Errors : {}", total, stop, result.getFirst(), result.getSecond());
+            LOGGER.info("{} completed notification requests have been detected in {} ms. Successes : {} - Errors : {}",
+                        total,
+                        stop,
+                        result.getFirst(),
+                        result.getSecond());
         }
     };
-
 
     @Override
     protected Logger getLogger() {
         return LOGGER;
     }
 
-    @Scheduled(initialDelayString = "${regards.notification.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-            fixedDelayString = "${regards.notification.request.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+    @Scheduled(
+        initialDelayString = "${regards.notification.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
+        fixedDelayString = "${regards.notification.request.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleMatchingRequests() {
 
         schedule(NOTIFICATION_MATCHING, notificationMatchingTask, NOTIFICATION_MATCHING_LOCK);
 
     }
 
-    @Scheduled(initialDelayString = "${regards.notification.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-            fixedDelayString = "${regards.notification.request.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+    @Scheduled(
+        initialDelayString = "${regards.notification.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
+        fixedDelayString = "${regards.notification.request.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleNotificationJobs() {
 
         schedule(NOTIFICATION_ACTIONS, notificationTask, NOTIFICATION_LOCK);
 
     }
 
-    @Scheduled(initialDelayString = "${regards.notification.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-            fixedDelayString = "${regards.notification.request.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+    @Scheduled(
+        initialDelayString = "${regards.notification.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
+        fixedDelayString = "${regards.notification.request.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleNotificationRequestCheckCompleted() {
 
         schedule(NOTIFICATION_CHECK_COMPLETED, notificationCheckCompletedTask, NOTIFICATION_LOCK);

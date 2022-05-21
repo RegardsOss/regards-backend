@@ -18,22 +18,19 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
-import java.util.Set;
-
-import javax.persistence.criteria.Predicate;
-
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-
 import fr.cnes.regards.modules.feature.domain.request.FeatureCopyRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+
+import javax.persistence.criteria.Predicate;
+import java.util.Set;
 
 /**
  * JPA Specification to search for {@link FeatureCopyRequest} from {@link IFeatureSaveMetadataRequestRepository}
  *
  * @author Sébastien Binda
- *
  */
 public class FeatureSaveMetadataRequestSpecification {
 
@@ -43,12 +40,13 @@ public class FeatureSaveMetadataRequestSpecification {
 
     /**
      * Creates search {@link Specification} for {@link FeatureSaveMetadataRequest}s
+     *
      * @param selection {@link FeatureRequestsSelectionDTO}
-     * @param page {@link Pageable}
+     * @param page      {@link Pageable}
      * @return {@link Specification}
      */
     public static Specification<FeatureSaveMetadataRequest> searchAllByFilters(FeatureRequestsSelectionDTO selection,
-            Pageable page) {
+                                                                               Pageable page) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(selection, true, root, query, cb, page);
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));

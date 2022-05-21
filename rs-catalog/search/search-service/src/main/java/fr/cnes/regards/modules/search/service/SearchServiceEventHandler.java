@@ -62,7 +62,7 @@ public class SearchServiceEventHandler implements ApplicationListener<Applicatio
         @Override
         public void handle(TenantWrapper<ProjectUserEvent> wrapper) {
             if (Arrays.asList(ProjectUserAction.UPDATE, ProjectUserAction.DELETE)
-                .contains(wrapper.getContent().getAction())) {
+                      .contains(wrapper.getContent().getAction())) {
                 try {
                     runtimeTenantResolver.forceTenant(wrapper.getTenant());
                     accessGroupCache.cleanAccessGroups(wrapper.getContent().getEmail(), wrapper.getTenant());
@@ -80,7 +80,7 @@ public class SearchServiceEventHandler implements ApplicationListener<Applicatio
             try {
                 runtimeTenantResolver.forceTenant(wrapper.getTenant());
                 if (Arrays.asList(AccessGroupAction.DELETE, AccessGroupAction.CREATE)
-                    .contains(wrapper.getContent().getAction())) {
+                          .contains(wrapper.getContent().getAction())) {
                     accessGroupCache.cleanAccessGroups(PublicAuthenticationFilter.PUBLIC_USER_EMAIL,
                                                        wrapper.getTenant());
                 }

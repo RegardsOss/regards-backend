@@ -18,17 +18,17 @@
  */
 package fr.cnes.regards.framework.feign;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.feign.FeignClientTests.Hello;
+import fr.cnes.regards.framework.feign.annotation.RestClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.feign.FeignClientTests.Hello;
-import fr.cnes.regards.framework.feign.annotation.RestClient;
+import java.util.List;
 
 /**
  * TODO
+ *
  * @author Marc Sordi
  */
 @RestClient(name = "localapp", url = "http://localhost:30333")

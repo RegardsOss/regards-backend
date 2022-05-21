@@ -18,10 +18,6 @@
  */
 package fr.cnes.regards.modules.crawler.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -30,12 +26,14 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.dam.dto.FeatureEvent;
 import fr.cnes.regards.modules.dam.dto.FeatureEventType;
 import fr.cnes.regards.modules.model.gson.ModelJsonReadyEvent;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
 
 /**
  * Handle {@link FeatureEvent}s to delete features from index.
  *
  * @author Sébastien Binda
- *
  */
 @Component
 public class FeatureEventHandler implements IHandler<FeatureEvent> {

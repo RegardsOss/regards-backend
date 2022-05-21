@@ -18,21 +18,18 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
-import java.net.MalformedURLException;
-import java.nio.file.Path;
-
-import javax.validation.constraints.NotNull;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
+import javax.validation.constraints.NotNull;
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+
 /**
- *
  * {@link FeatureFile} storage location information
  *
  * @author Marc SORDI
- *
  */
 public class FeatureFileLocation {
 

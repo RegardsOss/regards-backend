@@ -18,6 +18,13 @@
  */
 package fr.cnes.regards.modules.project.rest;
 
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.feign.FeignClientBuilder;
+import fr.cnes.regards.framework.feign.TokenClientProvider;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
+import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
+import fr.cnes.regards.modules.project.domain.ProjectConnection;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,19 +38,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 
-import com.google.gson.Gson;
-
-import fr.cnes.regards.framework.feign.FeignClientBuilder;
-import fr.cnes.regards.framework.feign.TokenClientProvider;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
-import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
-import fr.cnes.regards.modules.project.domain.ProjectConnection;
-
 /**
  * Class ProjectsFeignClientsIT
- *
+ * <p>
  * {@link ProjectConnection} feign client test.
+ *
  * @author Sébastien Binda
  */
 @ContextConfiguration(classes = { LicenseConfiguration.class })
@@ -73,10 +72,9 @@ public class ProjectConnectionsFeignClientsIT extends AbstractRegardsWebIT {
 
     @Before
     public void init() {
-        client = FeignClientBuilder.build(
-                                          new TokenClientProvider<>(IProjectConnectionClient.class,
-                                                  "http://" + serverAddress + ":" + getPort(), feignSecurityManager),
-                                          gson);
+        client = FeignClientBuilder.build(new TokenClientProvider<>(IProjectConnectionClient.class,
+                                                                    "http://" + serverAddress + ":" + getPort(),
+                                                                    feignSecurityManager), gson);
         FeignSecurityManager.asSystem();
     }
 
@@ -85,8 +83,7 @@ public class ProjectConnectionsFeignClientsIT extends AbstractRegardsWebIT {
      */
     @Test
     public void retrieveAllProjectsByPageFromFeignClient() {
-        ResponseEntity<PagedModel<EntityModel<ProjectConnection>>> connections = client
-                .getAllProjectConnections("test");
+        ResponseEntity<PagedModel<EntityModel<ProjectConnection>>> connections = client.getAllProjectConnections("test");
         Assert.assertEquals(connections.getStatusCode(), HttpStatus.OK);
     }
 

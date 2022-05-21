@@ -18,13 +18,12 @@
  */
 package fr.cnes.regards.modules.catalog.services.helper;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.search.domain.SearchRequest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.search.domain.SearchRequest;
 
 public class CatalogServicesHelperTest {
 

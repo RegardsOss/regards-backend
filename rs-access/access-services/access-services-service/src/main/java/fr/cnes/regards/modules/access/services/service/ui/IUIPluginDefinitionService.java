@@ -18,23 +18,21 @@
  */
 package fr.cnes.regards.modules.access.services.service.ui;
 
-import java.util.Optional;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.Optional;
 
 @RegardsTransactional
 public interface IUIPluginDefinitionService {
 
     /**
-     *
      * Retreive a Plugin by is id.
      *
      * @param pluginId
@@ -45,31 +43,28 @@ public interface IUIPluginDefinitionService {
     UIPluginDefinition retrievePlugin(Long pluginId) throws EntityNotFoundException;
 
     /**
-     *
      * Retrieve all plugins
-     * @param pageable
      *
+     * @param pageable
      * @return Paged list of {@link UIPluginDefinition}
      * @since 1.0-SNAPSHOT
      */
     Page<UIPluginDefinition> retrievePlugins(Pageable pageable);
 
     /**
-     *
      * Retrieve all plugins for the given type
+     *
      * @param type
      * @param pageable
-     *
      * @return Paged list of {@link UIPluginDefinition}
      * @since 1.0-SNAPSHOT
      */
     Page<UIPluginDefinition> retrievePlugins(UIPluginTypesEnum type, Pageable pageable);
 
     /**
-     *
      * Save a new plugin
-     * @param plugin
      *
+     * @param plugin
      * @return saved {@link UIPluginDefinition}
      * @throws EntityInvalidException
      * @since 1.0-SNAPSHOT
@@ -77,10 +72,9 @@ public interface IUIPluginDefinitionService {
     UIPluginDefinition savePlugin(UIPluginDefinition plugin) throws EntityInvalidException;
 
     /**
-     *
      * Update a plugin
-     * @param plugin
      *
+     * @param plugin
      * @return updated {@link UIPluginDefinition}
      * @throws EntityNotFoundException
      * @throws EntityInvalidException
@@ -89,19 +83,17 @@ public interface IUIPluginDefinitionService {
     UIPluginDefinition updatePlugin(UIPluginDefinition plugin) throws EntityNotFoundException, EntityInvalidException;
 
     /**
-     *
      * Delete a plugin
      *
-     * @param pluginId
-     *            {@link UIPluginDefinition} id to delete
+     * @param pluginId {@link UIPluginDefinition} id to delete
      * @throws ModuleException
-     *
      * @since 1.0-SNAPSHOT
      */
     void deletePlugin(Long pluginId) throws ModuleException;
 
     /**
      * Retrieve a plugin definition by its name
+     *
      * @param name
      * @return {@link UIPluginDefinition}
      */

@@ -18,8 +18,13 @@
  */
 package fr.cnes.regards.modules.crawler.rest;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
+import fr.cnes.regards.modules.crawler.service.ICrawlerAndIngesterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.LinkRelation;
@@ -30,16 +35,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
-import fr.cnes.regards.modules.crawler.service.ICrawlerAndIngesterService;
+import java.util.List;
 
 /**
  * Crawler rest controller
+ *
  * @author Sébastien Binda
  */
 @RestController
@@ -64,6 +64,7 @@ public class CrawlerController implements IResourceController<DatasourceIngestio
 
     /**
      * Retrieve all DatasourceIngestion.
+     *
      * @return a list of DatasourceIngestion
      */
     @ResourceAccess(description = "List all crawler datasources.")
@@ -74,6 +75,7 @@ public class CrawlerController implements IResourceController<DatasourceIngestio
 
     /**
      * Delete a DatasourceIngestion.
+     *
      * @param ingestionId {@link DatasourceIngestion} id
      * @return {@link Void}
      */
@@ -86,6 +88,7 @@ public class CrawlerController implements IResourceController<DatasourceIngestio
 
     /**
      * Schedule datasource ingestion to be executed as soon as possible
+     *
      * @param ingestionId {@link DatasourceIngestion} id
      * @return {@link Void}
      */
@@ -99,10 +102,16 @@ public class CrawlerController implements IResourceController<DatasourceIngestio
     @Override
     public EntityModel<DatasourceIngestion> toResource(DatasourceIngestion element, Object... extras) {
         EntityModel<DatasourceIngestion> resource = resourceService.toResource(element);
-        resourceService.addLink(resource, this.getClass(), "deleteDatasourceIngestion", LinkRels.DELETE,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "deleteDatasourceIngestion",
+                                LinkRels.DELETE,
                                 MethodParamFactory.build(String.class, element.getId()));
-        resourceService.addLink(resource, this.getClass(), "scheduleNowDatasourceIngestion",
-                                LinkRelation.of("SCHEDULE"), MethodParamFactory.build(String.class, element.getId()));
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "scheduleNowDatasourceIngestion",
+                                LinkRelation.of("SCHEDULE"),
+                                MethodParamFactory.build(String.class, element.getId()));
         return resource;
     }
 

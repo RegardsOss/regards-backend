@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 /**
  * Exception indicating an entity is invalid
+ *
  * @author CS
  * @author Sylvain Vissiere-Guerinet
  */

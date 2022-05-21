@@ -39,6 +39,7 @@ import java.time.temporal.TemporalAccessor;
  * This TypeAdapter is used in method GsonAutoConfiguration#customizeBuilder.
  * The aim is to be able to read a date time with or without Time zone specified and to format date time with UTC Time
  * Zone (ie. Z)
+ *
  * @author Marc Sordi
  * @author oroussel
  */
@@ -50,7 +51,10 @@ public class OffsetDateTimeAdapter extends TypeAdapter<OffsetDateTime> {
      * When formatting, Z as offset if UTC or +HH:mm
      */
     public static final DateTimeFormatter ISO_DATE_TIME_UTC = new DateTimeFormatterBuilder().parseCaseInsensitive()
-            .append(DateTimeFormatter.ISO_LOCAL_DATE_TIME).optionalStart().appendOffset("+HH:MM", "Z").toFormatter();
+                                                                                            .append(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                                                                                            .optionalStart()
+                                                                                            .appendOffset("+HH:MM", "Z")
+                                                                                            .toFormatter();
 
     /**
      * Writing date with UTC ISO 8601 format
@@ -84,7 +88,8 @@ public class OffsetDateTimeAdapter extends TypeAdapter<OffsetDateTime> {
         String formattedDate = null;
         if (date != null) {
             // truncate to a resolution of 1 microsecond
-            formattedDate = ISO_DATE_TIME_UTC.format(date.withOffsetSameInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS));
+            formattedDate = ISO_DATE_TIME_UTC.format(date.withOffsetSameInstant(ZoneOffset.UTC)
+                                                         .truncatedTo(ChronoUnit.MICROS));
         }
         return formattedDate;
     }

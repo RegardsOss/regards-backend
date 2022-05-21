@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.order.dao;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalIT;
@@ -33,9 +33,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestPropertySource(locations = { "classpath:test.properties" })
 public class IBasketDatasetSelectionRepositoryIT extends AbstractDaoTransactionalIT {
 
-    @Autowired private IBasketDatasetSelectionRepository dsSelRepo;
+    @Autowired
+    private IBasketDatasetSelectionRepository dsSelRepo;
 
-    @Test public void testFindByProcessId () {
+    @Test
+    public void testFindByProcessId() {
         UUID processBusinessId = UUID.randomUUID();
 
         BasketDatasetSelection dsSelWithoutProcess = new BasketDatasetSelection();
@@ -46,7 +48,8 @@ public class IBasketDatasetSelectionRepositoryIT extends AbstractDaoTransactiona
         BasketDatasetSelection dsSelWithProcess = new BasketDatasetSelection();
         dsSelWithProcess.setDatasetIpid("some ip id");
         dsSelWithProcess.setDatasetLabel("process");
-        dsSelWithProcess.setProcessDatasetDescription(new ProcessDatasetDescription(processBusinessId, new HashMap<>()));
+        dsSelWithProcess.setProcessDatasetDescription(new ProcessDatasetDescription(processBusinessId,
+                                                                                    new HashMap<>()));
         Long withProcessId = dsSelRepo.saveAndFlush(dsSelWithProcess).getId();
 
         List<BasketDatasetSelection> result = dsSelRepo.findByProcessBusinessId(processBusinessId.toString());

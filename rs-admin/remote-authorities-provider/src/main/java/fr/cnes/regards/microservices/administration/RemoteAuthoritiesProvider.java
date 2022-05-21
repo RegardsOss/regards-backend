@@ -28,10 +28,10 @@ import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
-import fr.cnes.regards.modules.accessrights.client.cache.CacheableRolesClient;
 import fr.cnes.regards.modules.accessrights.client.IMicroserviceResourceClient;
 import fr.cnes.regards.modules.accessrights.client.IRoleResourceClient;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
+import fr.cnes.regards.modules.accessrights.client.cache.CacheableRolesClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import org.slf4j.Logger;
@@ -177,8 +177,8 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
             final List<EntityModel<ResourcesAccess>> body = resourcesResponse.getBody();
             final List<ResourcesAccess> resources = HateoasUtils.unwrapList(body);
             return resources.stream()
-                .map(resource -> buildResourceMapping(resource, Collections.singleton(new Role(roleName))))
-                .collect(Collectors.toSet());
+                            .map(resource -> buildResourceMapping(resource, Collections.singleton(new Role(roleName))))
+                            .collect(Collectors.toSet());
         }
         LOGGER.warn("Role {} seems to have been deleted. We are skipping the resource update", roleName);
         return Sets.newHashSet();
@@ -203,8 +203,8 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
                                                             pRa.getControllerSimpleName(),
                                                             RequestMethod.valueOf(pRa.getVerb().toString()));
         mapping.setAutorizedRoles(pRoles.stream()
-                                      .map(role -> new RoleAuthority(role.getName()))
-                                      .collect(Collectors.toList()));
+                                        .map(role -> new RoleAuthority(role.getName()))
+                                        .collect(Collectors.toList()));
         return mapping;
     }
 }

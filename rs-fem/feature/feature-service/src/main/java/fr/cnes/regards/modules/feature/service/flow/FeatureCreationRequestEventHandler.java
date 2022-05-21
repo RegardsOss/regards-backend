@@ -61,8 +61,10 @@ public class FeatureCreationRequestEventHandler extends AbstractFeatureRequestEv
     private ITenantResolver tenantResolver;
 
     public FeatureCreationRequestEventHandler(FeatureConfigurationProperties confProperties,
-                                              ISubscriber subscriber, IPublisher publisher,
-                                              IFeatureCreationService featureService, ITenantResolver tenantResolver,
+                                              ISubscriber subscriber,
+                                              IPublisher publisher,
+                                              IFeatureCreationService featureService,
+                                              ITenantResolver tenantResolver,
                                               Validator validator) {
         super(FeatureCreationRequestEvent.class, validator);
         this.confProperties = confProperties;

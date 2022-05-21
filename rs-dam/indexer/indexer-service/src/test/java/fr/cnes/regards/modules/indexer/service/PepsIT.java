@@ -18,34 +18,11 @@
  */
 package fr.cnes.regards.modules.indexer.service;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.jillesvangurp.geo.GeoGeometry;
-
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
@@ -59,6 +36,23 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
 import fr.cnes.regards.modules.indexer.service.test.SearchConfiguration;
 import fr.cnes.regards.modules.model.domain.Model;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * @author oroussel
@@ -119,6 +113,7 @@ public class PepsIT {
 
     /**
      * Select data from Peps giving a bbox
+     *
      * @param bbox format : min Longitude,min latitude,max longitude,max latitude
      * @return Data objects created from Peps (geometry and title as label)
      */
@@ -129,11 +124,15 @@ public class PepsIT {
         int page = 0;
         while (!ended) {
             page++;
-            URL pepsRequestURL = new URL(
-                    String.format("https://peps.cnes.fr/resto/api/collections/S1/search.json?box=%s"
-                            + "&instrument=SAR-C+SAR&lang=fr&maxRecords=500&page=%d&platform=S1A&polarisation=HH"
-                            + "&processingLevel=LEVEL1&productType=GRD&q="
-                            + "&startDate=%sT00:00:00&completionDate=%sT00:00:00", bbox, page, startDate, endDate));
+            URL pepsRequestURL = new URL(String.format(
+                "https://peps.cnes.fr/resto/api/collections/S1/search.json?box=%s"
+                    + "&instrument=SAR-C+SAR&lang=fr&maxRecords=500&page=%d&platform=S1A&polarisation=HH"
+                    + "&processingLevel=LEVEL1&productType=GRD&q="
+                    + "&startDate=%sT00:00:00&completionDate=%sT00:00:00",
+                bbox,
+                page,
+                startDate,
+                endDate));
             URLConnection ctx = pepsRequestURL.openConnection();
             ctx.setRequestProperty("Accept",
                                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
@@ -157,11 +156,23 @@ public class PepsIT {
                 for (int i = 0; i < features.size(); i++) {
                     JsonObject feature = features.get(i).getAsJsonObject();
                     IGeometry geometry = gson.fromJson(feature.get("geometry"), IGeometry.class);
-                    DataObject object = new DataObject(model, TENANT,
-                            feature.get("properties").getAsJsonObject().get("title").getAsString(),
-                            feature.get("properties").getAsJsonObject().get("title").getAsString());
-                    object.setIpId(new OaisUniformResourceName(OAISIdentifier.SIP, EntityType.DATA, TENANT,
-                            UUID.randomUUID(), 1, null, null));
+                    DataObject object = new DataObject(model,
+                                                       TENANT,
+                                                       feature.get("properties")
+                                                              .getAsJsonObject()
+                                                              .get("title")
+                                                              .getAsString(),
+                                                       feature.get("properties")
+                                                              .getAsJsonObject()
+                                                              .get("title")
+                                                              .getAsString());
+                    object.setIpId(new OaisUniformResourceName(OAISIdentifier.SIP,
+                                                               EntityType.DATA,
+                                                               TENANT,
+                                                               UUID.randomUUID(),
+                                                               1,
+                                                               null,
+                                                               null));
                     object.setNormalizedGeometry(geometry);
                     object.setWgs84(geometry);
                     objects.add(object);
@@ -172,13 +183,13 @@ public class PepsIT {
     }
 
     private void test(double left, double bottom, double right, double top, String startDate, String endDate)
-            throws InvalidGeometryException, IOException {
+        throws InvalidGeometryException, IOException {
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(EntityType.DATA);
         searchKey.setSearchIndex(TENANT);
 
         if (right < 180) {
             double[][] bboxPolygon = new double[][] { { left, bottom }, { right, bottom }, { right, top },
-                    { left, top }, { left, bottom } };
+                { left, top }, { left, bottom } };
             ICriterion bboxCrit = ICriterion.intersectsBbox(left, bottom, right, top);
             // ES execution
             long start = System.currentTimeMillis();
@@ -187,19 +198,23 @@ public class PepsIT {
 
             // PEPS execution
             start = System.currentTimeMillis();
-            List<DataObject> objectsFromPeps = selectFromPeps(String.format(Locale.ENGLISH, "%f,%f,%f,%f", left, bottom,
-                                                                            right, top),
-                                                              startDate, endDate);
+            List<DataObject> objectsFromPeps = selectFromPeps(String.format(Locale.ENGLISH,
+                                                                            "%f,%f,%f,%f",
+                                                                            left,
+                                                                            bottom,
+                                                                            right,
+                                                                            top), startDate, endDate);
             long durationPeps = System.currentTimeMillis() - start;
 
             checkResults(bboxPolygon, new ArrayList<>(objectsFromEs), objectsFromPeps);
-            System.out
-                    .println(String.format("Durations Peps - %d ms, Elasticsearch - %d ms", durationPeps, durationEs));
+            System.out.println(String.format("Durations Peps - %d ms, Elasticsearch - %d ms",
+                                             durationPeps,
+                                             durationEs));
         } else { // left > 180 must cut bbox because Elasticsearch doesn't want a longitude > 180
             double[][] leftBboxPolygon = new double[][] { { left, bottom }, { 180, bottom }, { 180, top },
-                    { left, top }, { left, bottom } };
+                { left, top }, { left, bottom } };
             double[][] rightBboxPolygon = new double[][] { { -180, bottom }, { 360 - right, bottom },
-                    { 360 - right, top }, { -180, top }, { -180, bottom } };
+                { 360 - right, top }, { -180, top }, { -180, bottom } };
             ICriterion bboxCrit = ICriterion.intersectsBbox(left, bottom, right, top);
             // ES execution
             long start = System.currentTimeMillis();
@@ -208,26 +223,30 @@ public class PepsIT {
 
             // PEPS execution
             start = System.currentTimeMillis();
-            List<DataObject> objectsFromPeps = selectFromPeps(String.format(Locale.ENGLISH, "%f,%f,%f,%f", left, bottom,
-                                                                            right, top),
-                                                              startDate, endDate);
+            List<DataObject> objectsFromPeps = selectFromPeps(String.format(Locale.ENGLISH,
+                                                                            "%f,%f,%f,%f",
+                                                                            left,
+                                                                            bottom,
+                                                                            right,
+                                                                            top), startDate, endDate);
             long durationPeps = System.currentTimeMillis() - start;
 
             checkResults(leftBboxPolygon, rightBboxPolygon, new ArrayList<>(objectsFromEs), objectsFromPeps);
-            System.out
-                    .println(String.format("Durations Peps - %d ms, Elasticsearch - %d ms", durationPeps, durationEs));
+            System.out.println(String.format("Durations Peps - %d ms, Elasticsearch - %d ms",
+                                             durationPeps,
+                                             durationEs));
 
         }
 
     }
 
     private void testNegativeLatitude(double left, double bottom, double right, double top)
-            throws InvalidGeometryException, IOException {
+        throws InvalidGeometryException, IOException {
         test(left, bottom, right, top, "2018-06-01", "2018-07-01");
     }
 
     private void testPositiveLatitude(double left, double bottom, double right, double top)
-            throws InvalidGeometryException, IOException {
+        throws InvalidGeometryException, IOException {
         test(left, bottom, right, top, "2017-12-01", "2018-04-01");
     }
 
@@ -304,43 +323,51 @@ public class PepsIT {
     // public void testInnerAroundLatitude0OnDateline2Bbox() throws InvalidGeometryException, IOException {
     // testAroundLatitude0(150, -1, 210, 1);
     // }
-
-    private void checkResults(double[][] bboxPolygon, List<DataObject> objectsFromEs,
-            List<DataObject> objectsFromPeps) {
+    private void checkResults(double[][] bboxPolygon,
+                              List<DataObject> objectsFromEs,
+                              List<DataObject> objectsFromPeps) {
         // most polygons from Peps have an area betwwen 1e10 and 1e11
         // A polygon with an area > 1e12 means there is a problem (polygon crossing dateline)
         checkResults(o -> (GeoGeometry.area(GeoUtil.toArray(o.getNormalizedGeometry())) > 1.e12)
-                || !GeoGeometry.overlap(GeoUtil.toArray(o.getNormalizedGeometry()), bboxPolygon), objectsFromEs,
+                         || !GeoGeometry.overlap(GeoUtil.toArray(o.getNormalizedGeometry()), bboxPolygon),
+                     objectsFromEs,
                      objectsFromPeps);
     }
 
-    private void checkResults(double[][] bbox1Polygon, double[][] bbox2Polygon, List<DataObject> objectsFromEs,
-            List<DataObject> objectsFromPeps) {
-        checkResults(o -> (GeoGeometry.area(GeoUtil.toArray(o.getNormalizedGeometry())) > 1.e12)
-                || (!GeoGeometry.overlap(GeoUtil.toArray(o.getNormalizedGeometry()), bbox1Polygon)
-                        && !GeoGeometry.overlap(GeoUtil.toArray(o.getNormalizedGeometry()), bbox2Polygon)),
-                     objectsFromEs, objectsFromPeps);
+    private void checkResults(double[][] bbox1Polygon,
+                              double[][] bbox2Polygon,
+                              List<DataObject> objectsFromEs,
+                              List<DataObject> objectsFromPeps) {
+        checkResults(o -> (GeoGeometry.area(GeoUtil.toArray(o.getNormalizedGeometry())) > 1.e12) || (
+            !GeoGeometry.overlap(GeoUtil.toArray(o.getNormalizedGeometry()), bbox1Polygon) && !GeoGeometry.overlap(
+                GeoUtil.toArray(o.getNormalizedGeometry()),
+                bbox2Polygon)), objectsFromEs, objectsFromPeps);
     }
 
-    private void checkResults(Predicate<DataObject> intersectPredicate, List<DataObject> objectsFromEs,
-            List<DataObject> objectsFromPeps) {
+    private void checkResults(Predicate<DataObject> intersectPredicate,
+                              List<DataObject> objectsFromEs,
+                              List<DataObject> objectsFromPeps) {
         // Check all objects from Peps
-        Set<DataObject> badPepsResults = objectsFromPeps.stream().filter(intersectPredicate)
-                .collect(Collectors.toSet());
+        Set<DataObject> badPepsResults = objectsFromPeps.stream()
+                                                        .filter(intersectPredicate)
+                                                        .collect(Collectors.toSet());
         if (!badPepsResults.isEmpty()) {
-            System.out.printf("Peps returned %d false positive data objects: %s\n", badPepsResults.size(),
+            System.out.printf("Peps returned %d false positive data objects: %s\n",
+                              badPepsResults.size(),
                               badPepsResults.stream()
-                                      .map(o -> o.toString() + ", " + o.getNormalizedGeometry().toString())
-                                      .collect(Collectors.joining("\n")));
+                                            .map(o -> o.toString() + ", " + o.getNormalizedGeometry().toString())
+                                            .collect(Collectors.joining("\n")));
             objectsFromPeps.removeAll(badPepsResults);
         }
 
         // Check all objects from Elasticsearch
         Set<DataObject> badEsResults = objectsFromEs.stream().filter(intersectPredicate).collect(Collectors.toSet());
         if (!badEsResults.isEmpty()) {
-            System.out.printf("Elasticsearch returned %d false positive data objects: %s\n", badEsResults.size(),
-                              badEsResults.stream().map(o -> o.toString() + ", " + o.getNormalizedGeometry().toString())
-                                      .collect(Collectors.joining("\n")));
+            System.out.printf("Elasticsearch returned %d false positive data objects: %s\n",
+                              badEsResults.size(),
+                              badEsResults.stream()
+                                          .map(o -> o.toString() + ", " + o.getNormalizedGeometry().toString())
+                                          .collect(Collectors.joining("\n")));
             objectsFromEs.removeAll(badEsResults);
         }
         // Check all bad objects from ES are also bad objects from Peps

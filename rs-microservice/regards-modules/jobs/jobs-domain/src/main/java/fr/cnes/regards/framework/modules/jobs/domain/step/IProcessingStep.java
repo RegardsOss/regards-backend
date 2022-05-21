@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.modules.jobs.domain.step;
 
 /**
  * Step interface
+ *
  * @param <I> input object
  * @param <O> output object
  * @author Marc Sordi

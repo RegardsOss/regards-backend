@@ -19,19 +19,20 @@
 package fr.cnes.regards.framework.amqp;
 
 import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 /**
  * {@link InstancePoller} uses a fixed tenant to poll instance events.
+ *
  * @author Marc Sordi
  */
 public class InstancePoller extends AbstractPoller implements IInstancePoller {
 
-    public InstancePoller(IRabbitVirtualHostAdmin pVirtualHostAdmin, RabbitTemplate rabbitTemplate,
-            IAmqpAdmin amqpAdmin) {
+    public InstancePoller(IRabbitVirtualHostAdmin pVirtualHostAdmin,
+                          RabbitTemplate rabbitTemplate,
+                          IAmqpAdmin amqpAdmin) {
         super(pVirtualHostAdmin, rabbitTemplate, amqpAdmin);
     }
 

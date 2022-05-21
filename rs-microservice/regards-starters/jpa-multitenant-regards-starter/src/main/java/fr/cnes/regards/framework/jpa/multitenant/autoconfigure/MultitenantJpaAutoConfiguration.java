@@ -62,14 +62,15 @@ import java.util.Set;
 
 /**
  * Configuration class to define hibernate/jpa multitenancy databases strategy
+ *
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
  */
 @Configuration
 @EnableJpaRepositories(
-        excludeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
-        basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "multitenantsEntityManagerFactory",
-        transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
+    excludeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
+    basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "multitenantsEntityManagerFactory",
+    transactionManagerRef = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
 @EnableTransactionManagement
 @EnableConfigurationProperties({ JpaProperties.class })
 @AutoConfigureAfter({ GsonAutoConfiguration.class, AmqpAutoConfiguration.class })
@@ -113,16 +114,17 @@ public class MultitenantJpaAutoConfiguration {
 
     /**
      * Create the tenant resolver. Select the tenant when a connection is needed.
+     *
      * @return {@link CurrentTenantIdentifierResolverImpl}
      */
     @Bean
-    public CurrentTenantIdentifierResolver currentTenantIdentifierResolver(
-            IRuntimeTenantResolver threadTenantResolver) {
+    public CurrentTenantIdentifierResolver currentTenantIdentifierResolver(IRuntimeTenantResolver threadTenantResolver) {
         return new CurrentTenantIdentifierResolverImpl(threadTenantResolver);
     }
 
     /**
      * Create the connection provider. Used to select datasource for a given tenant
+     *
      * @return {@link DataSourceBasedMultiTenantConnectionProviderImpl}
      */
     @Bean
@@ -132,20 +134,24 @@ public class MultitenantJpaAutoConfiguration {
 
     /**
      * Create Transaction manager for multitenancy projects datasources
+     *
      * @return {@link PlatformTransactionManager}
      */
     @Bean(name = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
     @Order(Ordered.HIGHEST_PRECEDENCE)
     @Primary
     public PlatformTransactionManager multitenantsJpaTransactionManager(MultiTenantConnectionProvider multiTenantConnectionProvider,
-                                                                        CurrentTenantIdentifierResolver currentTenantIdentifierResolver) throws JpaMultitenantException {
+                                                                        CurrentTenantIdentifierResolver currentTenantIdentifierResolver)
+        throws JpaMultitenantException {
         final JpaTransactionManager jtm = new JpaTransactionManager();
-        jtm.setEntityManagerFactory(multitenantsEntityManagerFactory(multiTenantConnectionProvider, currentTenantIdentifierResolver).getObject());
+        jtm.setEntityManagerFactory(multitenantsEntityManagerFactory(multiTenantConnectionProvider,
+                                                                     currentTenantIdentifierResolver).getObject());
         return jtm;
     }
 
     /**
      * Create EntityManagerFactory for multitenancy datasources
+     *
      * @return {@link LocalContainerEntityManagerFactoryBean}
      */
     @Bean(name = "multitenantsEntityManagerFactory")
@@ -154,7 +160,7 @@ public class MultitenantJpaAutoConfiguration {
         // Use the first dataSource configuration to init the entityManagerFactory
         if (dataSources.isEmpty()) {
             throw new ApplicationContextException("No datasource defined. JPA is not able to start."
-                                                          + " You should define a datasource in the application.properties of the current microservice");
+                                                      + " You should define a datasource in the application.properties of the current microservice");
         }
         final DataSource defaultDataSource = dataSources.values().iterator().next();
 
@@ -170,11 +176,13 @@ public class MultitenantJpaAutoConfiguration {
         final Set<String> packagesToScan = DaoUtils.findPackagesForJpa(DaoUtils.ROOT_PACKAGE);
         final List<Class<?>> packages = DaoUtils.scanPackagesForJpa(Entity.class, InstanceEntity.class, packagesToScan);
 
-        return builder.dataSource(defaultDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)
-                .packages(packages.toArray(new Class[0])).properties(hibernateProps).jta(false).build();
+        return builder.dataSource(defaultDataSource)
+                      .persistenceUnit(PERSITENCE_UNIT_NAME)
+                      .packages(packages.toArray(new Class[0]))
+                      .properties(hibernateProps)
+                      .jta(false)
+                      .build();
     }
-
-
 
     /**
      * this bean allow us to set <b>our</b> instance of Gson, customized for the serialization of any data as jsonb into

@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
  * Aip specialization of data source plugin
+ *
  * @author oroussel
  */
 @PluginInterface(description = "Plugin to search in an internal data source that managed both data and metadata")

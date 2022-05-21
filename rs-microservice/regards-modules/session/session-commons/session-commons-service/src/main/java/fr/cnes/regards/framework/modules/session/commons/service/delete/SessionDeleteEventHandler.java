@@ -22,12 +22,13 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionDeleteEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+
+import java.util.List;
 
 /**
  * Handle deletion of a session
@@ -35,7 +36,7 @@ import org.springframework.context.ApplicationListener;
  * @author Iliana Ghazali
  **/
 public class SessionDeleteEventHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IHandler<SessionDeleteEvent> {
+    implements ApplicationListener<ApplicationReadyEvent>, IHandler<SessionDeleteEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SessionDeleteEventHandler.class);
 
@@ -65,7 +66,10 @@ public class SessionDeleteEventHandler
             for (ISessionDeleteService sessionDeleteService : sessionDeleteServices) {
                 sessionDeleteService.deleteSession(message.getSource(), message.getSession());
             }
-            LOGGER.trace("Deleting of session {} from source {} for tenant {} handled in {}ms", source, session, tenant,
+            LOGGER.trace("Deleting of session {} from source {} for tenant {} handled in {}ms",
+                         source,
+                         session,
+                         tenant,
                          start - System.currentTimeMillis());
         } finally {
             runtimeTenantResolver.clearTenant();

@@ -41,7 +41,7 @@ import java.util.List;
 @Profile("!test")
 @Component("clientFileRefEventHandler")
 public class FileReferenceEventHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FileReferenceEvent> {
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FileReferenceEvent> {
 
     @Autowired(required = false)
     private IStorageFileListener listener;
@@ -68,7 +68,8 @@ public class FileReferenceEventHandler
         LOGGER.debug("[STORAGE RESPONSES HANDLER] Handling {} FileReferenceEvent...", messages.size());
         long start = System.currentTimeMillis();
         handle(messages);
-        LOGGER.debug("[STORAGE RESPONSES HANDLER] {} FileReferenceEvent handled in {} ms", messages.size(),
+        LOGGER.debug("[STORAGE RESPONSES HANDLER] {} FileReferenceEvent handled in {} ms",
+                     messages.size(),
                      System.currentTimeMillis() - start);
     }
 
@@ -134,7 +135,8 @@ public class FileReferenceEventHandler
             }
         }
         deletedForOwnerPerOwner.keySet()
-                .forEach(owner -> listener.onFileDeletedForOwner(owner, deletedForOwnerPerOwner.get(owner)));
+                               .forEach(owner -> listener.onFileDeletedForOwner(owner,
+                                                                                deletedForOwnerPerOwner.get(owner)));
     }
 
     private void handleAvailabilityError(List<FileReferenceEventDTO> availabilityError) {

@@ -18,36 +18,25 @@
  */
 package fr.cnes.regards.modules.model.domain.attributes;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
-
-import org.hibernate.annotations.Type;
-
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.modules.model.domain.IXmlisable;
 import fr.cnes.regards.modules.model.domain.Model;
+import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 /**
  * Fragment : gathers a set of attributes and acts as a name space.
  *
  * @author msordi
- *
  */
 @Entity
 @Table(name = "t_fragment", indexes = { @Index(name = "idx_name", columnList = "name") },
-        uniqueConstraints = @UniqueConstraint(name = "uk_fragment_name", columnNames = { "name" }))
+    uniqueConstraints = @UniqueConstraint(name = "uk_fragment_name", columnNames = { "name" }))
 @SequenceGenerator(name = "fragmentSequence", initialValue = 1, sequenceName = "seq_fragment")
 public class Fragment implements IIdentifiable<Long>, IXmlisable<fr.cnes.regards.modules.model.domain.schema.Fragment> {
 
@@ -74,9 +63,9 @@ public class Fragment implements IIdentifiable<Long>, IXmlisable<fr.cnes.regards
      */
     @NotNull
     @Pattern(regexp = Model.NAME_REGEXP,
-            message = "Fragment name must conform to regular expression \"" + Model.NAME_REGEXP + "\".")
-    @Size(min = Model.NAME_MIN_SIZE, max = Model.NAME_MAX_SIZE, message = "Fragment name must be between "
-            + Model.NAME_MIN_SIZE + " and " + Model.NAME_MAX_SIZE + " length.")
+        message = "Fragment name must conform to regular expression \"" + Model.NAME_REGEXP + "\".")
+    @Size(min = Model.NAME_MIN_SIZE, max = Model.NAME_MAX_SIZE,
+        message = "Fragment name must be between " + Model.NAME_MIN_SIZE + " and " + Model.NAME_MAX_SIZE + " length.")
     @Column(nullable = false, updatable = false, length = Model.NAME_MAX_SIZE)
     private String name;
 
@@ -96,6 +85,7 @@ public class Fragment implements IIdentifiable<Long>, IXmlisable<fr.cnes.regards
 
     /**
      * Indicates if this fragment is a real fragment from the model or if it is a generated fragement for JsonObject attributes.
+     *
      * @see AbstractAttributeHelper class. Generates attributes from a JsonObject attribute type thanks to JsonSchema associated in restriction.
      */
     @Transient

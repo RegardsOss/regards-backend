@@ -38,7 +38,6 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
  * An implementation of the notification client using asynchronous messaging
  *
  * @author Marc SORDI
- *
  */
 @Service
 @RegardsTransactional
@@ -50,21 +49,32 @@ public abstract class AbstractNotificationPublisher implements INotificationClie
     @Override
     public void notify(String message, String title, NotificationLevel level, MimeType mimeType, DefaultRole... roles) {
         publish(new NotificationDtoBuilder(message, title, level, applicationName).withMimeType(mimeType)
-                .toRoles(Arrays.stream(roles).map(Enum::name).collect(Collectors.toSet())));
+                                                                                  .toRoles(Arrays.stream(roles)
+                                                                                                 .map(Enum::name)
+                                                                                                 .collect(Collectors.toSet())));
     }
 
     @Override
     public void notify(String message, String title, NotificationLevel level, MimeType mimeType, String... users) {
         publish(new NotificationDtoBuilder(message, title, level, applicationName).withMimeType(mimeType)
-                .toUsers(Arrays.stream(users).collect(Collectors.toSet())));
+                                                                                  .toUsers(Arrays.stream(users)
+                                                                                                 .collect(Collectors.toSet())));
     }
 
     @Override
-    public void notify(String message, String title, NotificationLevel level, MimeType mimeType, String user,
-            DefaultRole... roles) {
+    public void notify(String message,
+                       String title,
+                       NotificationLevel level,
+                       MimeType mimeType,
+                       String user,
+                       DefaultRole... roles) {
         publish(new NotificationDtoBuilder(message, title, level, applicationName).withMimeType(mimeType)
-                .toRolesAndUsers(Arrays.stream(roles).map(Enum::name).collect(Collectors.toSet()),
-                                 new HashSet<>(Arrays.asList(user))));
+                                                                                  .toRolesAndUsers(Arrays.stream(roles)
+                                                                                                         .map(Enum::name)
+                                                                                                         .collect(
+                                                                                                             Collectors.toSet()),
+                                                                                                   new HashSet<>(Arrays.asList(
+                                                                                                       user))));
     }
 
     private void publish(NotificationDTO notification) {

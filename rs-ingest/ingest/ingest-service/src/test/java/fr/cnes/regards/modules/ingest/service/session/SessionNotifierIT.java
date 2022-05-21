@@ -34,13 +34,6 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.assertj.core.util.Sets;
 import org.junit.Assert;
@@ -55,10 +48,12 @@ import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.TestPropertySource;
 
+import java.util.*;
+
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=session_notif", "eureka.client.enabled=false" },
-        locations = { "classpath:application-test.properties" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=session_notif", "eureka.client.enabled=false" },
+    locations = { "classpath:application-test.properties" })
 public class SessionNotifierIT extends AbstractMultitenantServiceIT {
 
     @Autowired
@@ -89,26 +84,35 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
 
     @Before
     public void init() {
-        sipEntity = SIPEntity.build(getDefaultTenant(), IngestMetadata
-                                            .build(sessionOwner, session, ingestChain, categories,
-                                                   StorageMetadata.build("AWS", "/dir1/dir2/", new HashSet<>())),
-                                    SIP.build(EntityType.DATA, providerId), 1, SIPState.INGESTED);
-        aipEntity1 = AIPEntity.build(sipEntity, AIPState.GENERATED, AIP.build(sipEntity.getSip(),
-                                                                              OaisUniformResourceName.pseudoRandomUrn(
-                                                                                      OAISIdentifier.AIP,
-                                                                                      EntityType.COLLECTION,
-                                                                                      getDefaultTenant(), 1),
-                                                                              Optional.ofNullable(
-                                                                                      sipEntity.getSipIdUrn()),
-                                                                              providerId, sipEntity.getVersion()));
-        aipEntity2 = AIPEntity.build(sipEntity, AIPState.GENERATED, AIP.build(sipEntity.getSip(),
-                                                                              OaisUniformResourceName.pseudoRandomUrn(
-                                                                                      OAISIdentifier.AIP,
-                                                                                      EntityType.COLLECTION,
-                                                                                      getDefaultTenant(), 1),
-                                                                              Optional.ofNullable(
-                                                                                      sipEntity.getSipIdUrn()),
-                                                                              providerId, sipEntity.getVersion()));
+        sipEntity = SIPEntity.build(getDefaultTenant(),
+                                    IngestMetadata.build(sessionOwner,
+                                                         session,
+                                                         ingestChain,
+                                                         categories,
+                                                         StorageMetadata.build("AWS", "/dir1/dir2/", new HashSet<>())),
+                                    SIP.build(EntityType.DATA, providerId),
+                                    1,
+                                    SIPState.INGESTED);
+        aipEntity1 = AIPEntity.build(sipEntity,
+                                     AIPState.GENERATED,
+                                     AIP.build(sipEntity.getSip(),
+                                               OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP,
+                                                                                       EntityType.COLLECTION,
+                                                                                       getDefaultTenant(),
+                                                                                       1),
+                                               Optional.ofNullable(sipEntity.getSipIdUrn()),
+                                               providerId,
+                                               sipEntity.getVersion()));
+        aipEntity2 = AIPEntity.build(sipEntity,
+                                     AIPState.GENERATED,
+                                     AIP.build(sipEntity.getSip(),
+                                               OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP,
+                                                                                       EntityType.COLLECTION,
+                                                                                       getDefaultTenant(),
+                                                                                       1),
+                                               Optional.ofNullable(sipEntity.getSipIdUrn()),
+                                               providerId,
+                                               sipEntity.getVersion()));
         aips.add(aipEntity1);
         aips.add(aipEntity2);
         Mockito.clearInvocations(publisher);
@@ -143,7 +147,8 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
         sessionNotifier.incrementRequestCount(sessionOwner, session, 1);
         sessionNotifier.incrementProductGenerationPending(ingestRequest);
         // check results
-        ArgumentCaptor<StepPropertyUpdateRequestEvent> argumentCaptor = ArgumentCaptor.forClass(StepPropertyUpdateRequestEvent.class);
+        ArgumentCaptor<StepPropertyUpdateRequestEvent> argumentCaptor = ArgumentCaptor.forClass(
+            StepPropertyUpdateRequestEvent.class);
         Mockito.verify(publisher, Mockito.times(2)).publish(argumentCaptor.capture());
         Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
         Assert.assertEquals(1, (long) result.get(SessionNotifierPropertyEnum.TOTAL_REQUESTS.getName()));
@@ -157,7 +162,8 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
         sessionNotifier.decrementProductGenerationPending(ingestRequest);
         sessionNotifier.incrementProductStoreSuccess(ingestRequest);
 
-        ArgumentCaptor<StepPropertyUpdateRequestEvent> argumentCaptor = ArgumentCaptor.forClass(StepPropertyUpdateRequestEvent.class);
+        ArgumentCaptor<StepPropertyUpdateRequestEvent> argumentCaptor = ArgumentCaptor.forClass(
+            StepPropertyUpdateRequestEvent.class);
         Mockito.verify(publisher, Mockito.times(4)).publish(argumentCaptor.capture());
         Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
         Assert.assertEquals(1, (long) result.get(SessionNotifierPropertyEnum.TOTAL_REQUESTS.getName()));
@@ -172,7 +178,8 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
         sessionNotifier.decrementProductGenerationPending(ingestRequest);
         sessionNotifier.incrementProductGenerationError(ingestRequest);
 
-        ArgumentCaptor<StepPropertyUpdateRequestEvent> argumentCaptor = ArgumentCaptor.forClass(StepPropertyUpdateRequestEvent.class);
+        ArgumentCaptor<StepPropertyUpdateRequestEvent> argumentCaptor = ArgumentCaptor.forClass(
+            StepPropertyUpdateRequestEvent.class);
         Mockito.verify(publisher, Mockito.times(4)).publish(argumentCaptor.capture());
         Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
         Assert.assertEquals(1, (long) result.get(SessionNotifierPropertyEnum.TOTAL_REQUESTS.getName()));
@@ -189,7 +196,8 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
         sessionNotifier.decrementProductStorePending(ingestRequest);
         sessionNotifier.incrementProductStoreError(ingestRequest);
 
-        ArgumentCaptor<StepPropertyUpdateRequestEvent> argumentCaptor = ArgumentCaptor.forClass(StepPropertyUpdateRequestEvent.class);
+        ArgumentCaptor<StepPropertyUpdateRequestEvent> argumentCaptor = ArgumentCaptor.forClass(
+            StepPropertyUpdateRequestEvent.class);
         Mockito.verify(publisher, Mockito.times(6)).publish(argumentCaptor.capture());
         Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
         Assert.assertEquals(1, (long) result.get(SessionNotifierPropertyEnum.TOTAL_REQUESTS.getName()));
@@ -206,7 +214,8 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
         sessionNotifier.decrementProductStorePending(ingestRequest);
         sessionNotifier.incrementProductStoreSuccess(ingestRequest);
 
-        ArgumentCaptor<StepPropertyUpdateRequestEvent> argumentCaptor = ArgumentCaptor.forClass(StepPropertyUpdateRequestEvent.class);
+        ArgumentCaptor<StepPropertyUpdateRequestEvent> argumentCaptor = ArgumentCaptor.forClass(
+            StepPropertyUpdateRequestEvent.class);
         Mockito.verify(publisher, Mockito.times(6)).publish(argumentCaptor.capture());
         Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
         Assert.assertEquals(1, (long) result.get(SessionNotifierPropertyEnum.TOTAL_REQUESTS.getName()));
@@ -229,7 +238,8 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
         sipEntity.setState(SIPState.STORED);
         sessionNotifier.productDeleted(sessionOwner, session, aips);
 
-        ArgumentCaptor<StepPropertyUpdateRequestEvent> argumentCaptor = ArgumentCaptor.forClass(StepPropertyUpdateRequestEvent.class);
+        ArgumentCaptor<StepPropertyUpdateRequestEvent> argumentCaptor = ArgumentCaptor.forClass(
+            StepPropertyUpdateRequestEvent.class);
         Mockito.verify(publisher, Mockito.times(8)).publish(argumentCaptor.capture());
         Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
         Assert.assertEquals(1, (long) result.get(SessionNotifierPropertyEnum.TOTAL_REQUESTS.getName()));

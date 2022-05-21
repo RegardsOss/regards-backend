@@ -18,20 +18,19 @@
  */
 package fr.cnes.regards.modules.accessrights.service;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
+import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
+import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
+import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.stereotype.Service;
-
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
-import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
-import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
-
 /**
  * Configuration manager for current module
+ *
  * @author Marc Sordi
  */
 @Service

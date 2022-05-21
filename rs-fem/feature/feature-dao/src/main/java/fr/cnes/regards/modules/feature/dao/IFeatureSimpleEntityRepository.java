@@ -27,7 +27,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface IFeatureSimpleEntityRepository extends JpaRepository<FeatureSimpleEntity, Long>, JpaSpecificationExecutor<FeatureSimpleEntity> {
+public interface IFeatureSimpleEntityRepository
+    extends JpaRepository<FeatureSimpleEntity, Long>, JpaSpecificationExecutor<FeatureSimpleEntity> {
 
     Page<FeatureSimpleEntity> findAll(Specification<FeatureSimpleEntity> spec, Pageable page);
 

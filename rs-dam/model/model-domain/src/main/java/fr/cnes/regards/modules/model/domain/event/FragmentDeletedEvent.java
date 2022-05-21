@@ -25,6 +25,7 @@ public class FragmentDeletedEvent implements ISubscribable {
 
     /**
      * Constructor setting the parameter as attribute
+     *
      * @param fragmentName
      */
     public FragmentDeletedEvent(String fragmentName) {
@@ -40,6 +41,7 @@ public class FragmentDeletedEvent implements ISubscribable {
 
     /**
      * Set the fragment name
+     *
      * @param fragmentName
      */
     public void setFragmentName(String fragmentName) {

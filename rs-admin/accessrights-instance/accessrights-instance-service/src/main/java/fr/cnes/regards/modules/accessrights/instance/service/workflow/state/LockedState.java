@@ -18,14 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service.workflow.state;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -46,6 +38,13 @@ import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.project.service.ITenantService;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * State class of the State Pattern implementing the available actions on a {@link Account} in status LOCKED.
@@ -76,10 +75,15 @@ public class LockedState extends AbstractDeletableState {
      */
     private final IEmailClient emailClient;
 
-    public LockedState(IProjectUsersClient projectUsersClient, IAccountRepository accountRepository,
-            ITenantService tenantService, IRuntimeTenantResolver runtimeTenantResolver,
-            IPasswordResetService passwordResetService, IAccountUnlockTokenService accountUnlockTokenService,
-            IAccountService accountService, ITemplateService templateService, IEmailClient emailClient) {
+    public LockedState(IProjectUsersClient projectUsersClient,
+                       IAccountRepository accountRepository,
+                       ITenantService tenantService,
+                       IRuntimeTenantResolver runtimeTenantResolver,
+                       IPasswordResetService passwordResetService,
+                       IAccountUnlockTokenService accountUnlockTokenService,
+                       IAccountService accountService,
+                       ITemplateService templateService,
+                       IEmailClient emailClient) {
         super(projectUsersClient,
               accountRepository,
               tenantService,
@@ -147,15 +151,12 @@ public class LockedState extends AbstractDeletableState {
     /**
      * Validate the token
      *
-     * @param pAccountEmail
-     *            the account email
-     * @param pToken
-     *            the token to validate
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityOperationForbiddenException} when the token is not linked to the passed account or is
-     *             expired<br>
-     *             {@link EntityNotFoundException} when the token dos not exist
+     * @param pAccountEmail the account email
+     * @param pToken        the token to validate
+     * @throws EntityException <br>
+     *                         {@link EntityOperationForbiddenException} when the token is not linked to the passed account or is
+     *                         expired<br>
+     *                         {@link EntityNotFoundException} when the token dos not exist
      */
     private void validateToken(final String pAccountEmail, final String pToken) throws EntityException {
         // Retrieve the token object

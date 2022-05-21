@@ -18,20 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
@@ -40,6 +28,16 @@ import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Service to handle {@link AIPUpdateRequest} entities.
@@ -62,8 +60,8 @@ public class AIPUpdateRequestService {
     /**
      * Creates new {@link AIPUpdateRequest}s for the given {@link AIPEntity}s and each given {@link AbstractAIPUpdateTask}
      *
-     * @param aips {@link AIPEntity}s to update
-     * @param updateTasks  {@link AbstractAIPUpdateTask}s update tasks
+     * @param aips        {@link AIPEntity}s to update
+     * @param updateTasks {@link AbstractAIPUpdateTask}s update tasks
      */
     public int create(Collection<AIPEntity> aips, Collection<AbstractAIPUpdateTask> updateTasks) {
         int nbScheduled = 0;
@@ -99,13 +97,15 @@ public class AIPUpdateRequestService {
 
     /**
      * Generates  {@link AbstractRequest}s from list of {@link AIPEntity}s with same list of {@link AbstractAIPUpdateTask}s
+     *
      * @param aips
      * @param updateTasks
      * @param runningRequests
      * @return {@link AbstractRequest}s created
      */
     private List<AbstractRequest> createRequests(Collection<AIPEntity> aips,
-            Collection<AbstractAIPUpdateTask> updateTasks, List<AIPUpdateRequest> runningRequests) {
+                                                 Collection<AbstractAIPUpdateTask> updateTasks,
+                                                 List<AIPUpdateRequest> runningRequests) {
         List<AbstractRequest> requests = new ArrayList<>();
         // Test if there is some AIPs referenced by some running requests
         // Create the list of AIP id (and not aipId!)
@@ -137,12 +137,13 @@ public class AIPUpdateRequestService {
      * Allow to update state of given {@link AIPUpdateRequest}s
      *
      * @param requests {@link AIPUpdateRequest}s to update
-     * @param state new {@link InternalRequestState} to set for each request
+     * @param state    new {@link InternalRequestState} to set for each request
      */
     public void updateState(Collection<AIPUpdateRequest> requests, InternalRequestState state) {
         if ((requests != null) && !requests.isEmpty()) {
-            abstractRequestRepository.updateStates(Lists
-                    .newArrayList(requests.stream().map(AIPUpdateRequest::getId).collect(Collectors.toList())), state);
+            abstractRequestRepository.updateStates(Lists.newArrayList(requests.stream()
+                                                                              .map(AIPUpdateRequest::getId)
+                                                                              .collect(Collectors.toList())), state);
         }
     }
 }

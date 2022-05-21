@@ -18,15 +18,16 @@
  */
 package fr.cnes.regards.modules.ingest.domain.job;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * During a AIPJob update, we detect if the task have done some update on the entity to avoid
  * unecessary metadata save
+ *
  * @author Léo Mieulet
  */
 public class AIPEntityUpdateWrapper {

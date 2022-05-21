@@ -26,7 +26,6 @@ import java.util.Set;
  * two-parameters "sendEmail" endpoint requirement.
  *
  * @author CS SI
- *
  */
 public class EmailWithRecipientsDTO {
 
@@ -53,8 +52,7 @@ public class EmailWithRecipientsDTO {
     /**
      * Set recipients
      *
-     * @param pRecipients
-     *            The set of recipients' email addresses
+     * @param pRecipients The set of recipients' email addresses
      */
     public void setRecipients(final Set<Recipient> pRecipients) {
         recipients = pRecipients;
@@ -72,8 +70,7 @@ public class EmailWithRecipientsDTO {
     /**
      * Set email
      *
-     * @param pEmail
-     *            The email
+     * @param pEmail The email
      */
     public void setEmail(final Email pEmail) {
         email = pEmail;

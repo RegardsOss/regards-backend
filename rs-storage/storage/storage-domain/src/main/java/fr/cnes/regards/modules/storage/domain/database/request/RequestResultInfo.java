@@ -18,39 +18,24 @@
  */
 package fr.cnes.regards.modules.storage.domain.database.request;
 
-import java.util.Collection;
-import java.util.Set;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-
-import org.hibernate.annotations.Type;
-import org.springframework.util.Assert;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
+import org.hibernate.annotations.Type;
+import org.springframework.util.Assert;
+
+import javax.persistence.*;
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * @author sbinda
- *
  */
 @Entity
 @Table(name = "t_request_result_info", indexes = { @Index(name = "idx_group_id", columnList = "group_id"),
-        @Index(name = "idx_group_file_ref_id", columnList = "result_file_ref_id") })
+    @Index(name = "idx_group_file_ref_id", columnList = "result_file_ref_id") })
 public class RequestResultInfo {
 
     @Id
@@ -101,8 +86,12 @@ public class RequestResultInfo {
         super();
     }
 
-    public RequestResultInfo(String groupId, FileRequestType requestType, String checksum, String storage,
-            String storePath, Collection<String> requestOwners) {
+    public RequestResultInfo(String groupId,
+                             FileRequestType requestType,
+                             String checksum,
+                             String storage,
+                             String storePath,
+                             Collection<String> requestOwners) {
         Assert.notNull(groupId, "groupId can not be null");
         Assert.notNull(checksum, "checksum can not be null");
         Assert.notNull(requestType, "requestType can not be null");

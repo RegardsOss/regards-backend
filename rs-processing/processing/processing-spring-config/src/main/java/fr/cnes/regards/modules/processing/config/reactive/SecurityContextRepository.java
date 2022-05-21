@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.config.reactive;
 
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
@@ -29,8 +29,10 @@ import org.springframework.security.web.server.context.ServerSecurityContextRepo
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+
 /**
  * This class is the SecurityContext config for reactive application.
+ *
  * @author gandrieu
  */
 @Component
@@ -58,8 +60,7 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String authToken = authHeader.substring(7);
                 Authentication auth = new JWTAuthentication(authToken);
-                return authenticationManager.authenticate(auth)
-                        .map(SecurityContextImpl::new);
+                return authenticationManager.authenticate(auth).map(SecurityContextImpl::new);
             } else {
                 return Mono.empty();
             }

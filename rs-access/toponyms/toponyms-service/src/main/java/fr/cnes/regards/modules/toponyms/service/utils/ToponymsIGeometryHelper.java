@@ -5,13 +5,14 @@ import fr.cnes.regards.framework.geojson.coordinates.Positions;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
-import java.util.ArrayList;
-import java.util.List;
 import org.geolatte.geom.Geometry;
 import org.geolatte.geom.Position;
 import org.geolatte.geom.PositionSequence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Utility to convert a {@link Geometry} to a {@link IGeometry}
@@ -25,9 +26,9 @@ public class ToponymsIGeometryHelper {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(ToponymsIGeometryHelper.class);
 
-
     /**
      * Parse a {@link Geometry} to build a {@link IGeometry}
+     *
      * @param geometry
      * @param samplingMax Maximum number of points to retrieve for each polygon of a geometry
      * @return {@link IGeometry}
@@ -39,8 +40,8 @@ public class ToponymsIGeometryHelper {
                 case POLYGON:
                     geo = new Polygon();
                     geo.setCrs(geometry.getCoordinateReferenceSystem().getName());
-                    ((Polygon) geo)
-                            .setCoordinates(parsePolygon((org.geolatte.geom.Polygon<Position>) geometry, samplingMax));
+                    ((Polygon) geo).setCoordinates(parsePolygon((org.geolatte.geom.Polygon<Position>) geometry,
+                                                                samplingMax));
                     break;
                 case MULTIPOLYGON:
                     geo = new MultiPolygon();
@@ -70,9 +71,9 @@ public class ToponymsIGeometryHelper {
         return geo;
     }
 
-
     /**
      * Parse a {@link org.geolatte.geom.Polygon} to build a {@link PolygonPositions}
+     *
      * @param polygon
      * @param samplingMax Maximum number of points to retrieve for each polygon of a geometry
      * @return {@link PolygonPositions}
@@ -96,8 +97,9 @@ public class ToponymsIGeometryHelper {
 
     /**
      * Parse a {@link PositionSequence} to add each included {@link Position} in the given {@link Positions}
-     * @param positions {@link PositionSequence} to  parse
-     * @param ring {@link Positions}
+     *
+     * @param positions   {@link PositionSequence} to  parse
+     * @param ring        {@link Positions}
      * @param maxSampling Maximum number of points to retrieve for each polygon of a geometry
      */
     private static void addPositionsToRing(PositionSequence<Position> positions, Positions ring, int maxSampling) {
@@ -117,17 +119,19 @@ public class ToponymsIGeometryHelper {
 
     /**
      * Parse a {@link Position} to build a {@link fr.cnes.regards.framework.geojson.coordinates.Position} and add it in the given {@link Positions}
-     * @param position {@link Position} to parse
+     *
+     * @param position     {@link Position} to parse
      * @param ringPosition {@link Positions} to add the built {@link fr.cnes.regards.framework.geojson.coordinates.Position}
      */
     private static void addPositionToRing(Position position, Positions ringPosition) {
         // Add  positions with right dimension
         if (position.getCoordinateDimension() == 2) {
             ringPosition.add(new fr.cnes.regards.framework.geojson.coordinates.Position(position.getCoordinate(0),
-                    position.getCoordinate(1)));
+                                                                                        position.getCoordinate(1)));
         } else if (position.getCoordinateDimension() == 3) {
             ringPosition.add(new fr.cnes.regards.framework.geojson.coordinates.Position(position.getCoordinate(0),
-                    position.getCoordinate(1), position.getCoordinate(2)));
+                                                                                        position.getCoordinate(1),
+                                                                                        position.getCoordinate(2)));
         } else {
             LOGGER.error("Invalid dimension size " + position.getCoordinateDimension());
         }

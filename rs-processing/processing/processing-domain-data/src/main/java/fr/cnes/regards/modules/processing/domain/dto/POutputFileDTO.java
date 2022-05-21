@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.dto;
 
 import fr.cnes.regards.modules.processing.domain.POutputFile;
@@ -23,6 +23,7 @@ import lombok.Value;
 
 import java.net.URL;
 import java.util.UUID;
+
 /**
  * This class defines a DTO for execution output files.
  *
@@ -42,21 +43,20 @@ public class POutputFileDTO {
     long size;
 
     String checksumMethod;
+
     String checksumValue;
 
     List<String> inputCorrelationIds;
 
     public static POutputFileDTO toDto(POutputFile outFile) {
-        return new POutputFileDTO(
-            outFile.getId(),
-            outFile.getExecId(),
-            outFile.getUrl(),
-            outFile.getName(),
-            outFile.getSize(),
-            outFile.getChecksum().getMethod(),
-            outFile.getChecksum().getValue(),
-            outFile.getInputCorrelationIds()
-        );
+        return new POutputFileDTO(outFile.getId(),
+                                  outFile.getExecId(),
+                                  outFile.getUrl(),
+                                  outFile.getName(),
+                                  outFile.getSize(),
+                                  outFile.getChecksum().getMethod(),
+                                  outFile.getChecksum().getValue(),
+                                  outFile.getInputCorrelationIds());
     }
 
 }

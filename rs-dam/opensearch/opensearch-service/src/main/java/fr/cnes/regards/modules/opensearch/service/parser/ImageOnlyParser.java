@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.modules.opensearch.service.parser;
 
-import org.springframework.util.MultiValueMap;
-
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import org.springframework.util.MultiValueMap;
 
 /**
  * This {@link IParser} implementation only handles the "exists" parameter (exists doesn't seem to exist in openSearch)
  * and returns an {@link ICriterion} testing that given field exists.
+ *
  * @author oroussel
  */
 public class ImageOnlyParser implements IParser {
@@ -38,12 +38,16 @@ public class ImageOnlyParser implements IParser {
         // either imageOnly is set or not
         if (parameters.containsKey(IMAGE_ONLY_PARAM)) {
             // add a criterion only if asked
-            return Boolean.parseBoolean(parameters.getFirst(IMAGE_ONLY_PARAM)) ? ICriterion
-                    .or(ICriterion.attributeExists(StaticProperties.FEATURE_FILES_PATH + "." + DataType.THUMBNAIL),
-                        ICriterion.attributeExists(StaticProperties.FEATURE_FILES_PATH + "." + DataType.QUICKLOOK_HD),
-                        ICriterion.attributeExists(StaticProperties.FEATURE_FILES_PATH + "." + DataType.QUICKLOOK_MD),
-                        ICriterion.attributeExists(StaticProperties.FEATURE_FILES_PATH + "." + DataType.QUICKLOOK_SD))
-                    : null;
+            return Boolean.parseBoolean(parameters.getFirst(IMAGE_ONLY_PARAM)) ?
+                ICriterion.or(ICriterion.attributeExists(
+                                  StaticProperties.FEATURE_FILES_PATH + "." + DataType.THUMBNAIL),
+                              ICriterion.attributeExists(
+                                  StaticProperties.FEATURE_FILES_PATH + "." + DataType.QUICKLOOK_HD),
+                              ICriterion.attributeExists(
+                                  StaticProperties.FEATURE_FILES_PATH + "." + DataType.QUICKLOOK_MD),
+                              ICriterion.attributeExists(
+                                  StaticProperties.FEATURE_FILES_PATH + "." + DataType.QUICKLOOK_SD)) :
+                null;
         } else {
             // if it is not set no criterion to add
             return null;

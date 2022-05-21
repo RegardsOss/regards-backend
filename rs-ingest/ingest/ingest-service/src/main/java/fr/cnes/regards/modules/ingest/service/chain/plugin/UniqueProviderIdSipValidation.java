@@ -18,21 +18,21 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.plugin;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.Errors;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipValidation;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.Errors;
 
 /**
  * Validation plugin rejecting a SIP if a version of it already exists.
+ *
  * @author Olivier Rousselot
  */
 @Plugin(author = "REGARDS Team", description = "Unique provider id SIP validation plugin",
-        id = "UniqueProviderIdSipValidation", version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3",
-        owner = "CNES", url = "https://regardsoss.github.io/")
+    id = "UniqueProviderIdSipValidation", version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3",
+    owner = "CNES", url = "https://regardsoss.github.io/")
 public class UniqueProviderIdSipValidation implements ISipValidation {
 
     @Autowired

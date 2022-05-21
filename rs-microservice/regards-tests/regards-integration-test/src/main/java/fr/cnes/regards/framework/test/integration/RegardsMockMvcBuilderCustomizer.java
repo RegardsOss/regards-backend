@@ -10,6 +10,7 @@ import org.springframework.restdocs.templates.TemplateFormats;
  * Customization: <br/>
  * - usage of markdown to generate API documentation instead of Asciidoctor<br>
  * Best see following doc than spring-restdocs in case of API change
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 @TestConfiguration
@@ -24,9 +25,10 @@ public class RegardsMockMvcBuilderCustomizer implements RestDocsMockMvcConfigura
      */
     @Override
     public void customize(MockMvcRestDocumentationConfigurer configurer) {
-        configurer
-                .snippets().withDefaults(new RegardsHttpRequestSnippet(), new RegardsHttpResponseSnippet(),
-                                         new RegardsRequestBodySnippet())
-                .withTemplateFormat(TemplateFormats.markdown());
+        configurer.snippets()
+                  .withDefaults(new RegardsHttpRequestSnippet(),
+                                new RegardsHttpResponseSnippet(),
+                                new RegardsRequestBodySnippet())
+                  .withTemplateFormat(TemplateFormats.markdown());
     }
 }

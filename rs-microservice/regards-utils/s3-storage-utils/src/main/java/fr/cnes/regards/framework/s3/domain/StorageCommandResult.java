@@ -10,7 +10,8 @@ public interface StorageCommandResult {
     interface CheckResult extends StorageCommandResult {
 
         default <R> R matchCheckResult(Function1<? super CheckPresent, R> present,
-                Function1<? super CheckAbsent, R> absent, Function1<? super UnreachableStorage, R> unreachable) {
+                                       Function1<? super CheckAbsent, R> absent,
+                                       Function1<? super UnreachableStorage, R> unreachable) {
             if (this instanceof UnreachableStorage) {
                 return unreachable.apply((UnreachableStorage) this);
             } else if (this instanceof CheckPresent) {
@@ -26,7 +27,8 @@ public interface StorageCommandResult {
     interface ReadResult extends StorageCommandResult {
 
         default <R> R matchReadResult(Function1<? super ReadingPipe, R> pipe,
-                Function1<? super UnreachableStorage, R> unreachable, Function1<? super ReadNotFound, R> notFound) {
+                                      Function1<? super UnreachableStorage, R> unreachable,
+                                      Function1<? super ReadNotFound, R> notFound) {
             if (this instanceof UnreachableStorage) {
                 return unreachable.apply((UnreachableStorage) this);
             } else if (this instanceof ReadingPipe) {
@@ -42,7 +44,8 @@ public interface StorageCommandResult {
     interface WriteResult extends StorageCommandResult {
 
         default <R> R matchWriteResult(Function1<? super WriteSuccess, R> success,
-                Function1<? super UnreachableStorage, R> unreachable, Function1<? super WriteFailure, R> failure) {
+                                       Function1<? super UnreachableStorage, R> unreachable,
+                                       Function1<? super WriteFailure, R> failure) {
             if (this instanceof UnreachableStorage) {
                 return unreachable.apply((UnreachableStorage) this);
             } else if (this instanceof WriteSuccess) {
@@ -58,7 +61,8 @@ public interface StorageCommandResult {
     interface DeleteResult extends StorageCommandResult {
 
         default <R> R matchDeleteResult(Function1<? super DeleteSuccess, R> success,
-                Function1<? super UnreachableStorage, R> unreachable, Function1<? super DeleteFailure, R> failure) {
+                                        Function1<? super UnreachableStorage, R> unreachable,
+                                        Function1<? super DeleteFailure, R> failure) {
             if (this instanceof UnreachableStorage) {
                 return unreachable.apply((UnreachableStorage) this);
             } else if (this instanceof DeleteSuccess) {

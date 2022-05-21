@@ -82,18 +82,29 @@ public class AttachmentController {
     @ResourceAccess(description = "Attach files of a same data type to an entity")
     public ResponseEntity<EntityModel<AbstractEntity<?>>> attachFiles(@Valid @PathVariable UniformResourceName urn,
                                                                       @PathVariable DataType dataType,
-                                                                      @Valid @RequestPart(name = "refs", required = false) List<DataFileReference> refs,
-                                                                      @RequestPart(value = "file", required = false) MultipartFile[] attachments)
-            throws ModuleException, NoSuchMethodException, SecurityException {
+                                                                      @Valid
+                                                                      @RequestPart(name = "refs", required = false)
+                                                                      List<DataFileReference> refs,
+                                                                      @RequestPart(value = "file", required = false)
+                                                                      MultipartFile[] attachments)
+        throws ModuleException, NoSuchMethodException, SecurityException {
 
         LOGGER.debug("Attaching files of type \"{}\" to entity \"{}\"", dataType, urn.toString());
 
         // Build local URI template
-        WebMvcLinkBuilder controllerLinkBuilder = WebMvcLinkBuilder
-                .linkTo(this.getClass(),
-                        this.getClass().getMethod("getFile", UniformResourceName.class, String.class, String.class,
-                                Boolean.class, HttpServletResponse.class),
-                        urn, LocalStorageService.FILE_CHECKSUM_URL_TEMPLATE, null, null, null);
+        WebMvcLinkBuilder controllerLinkBuilder = WebMvcLinkBuilder.linkTo(this.getClass(),
+                                                                           this.getClass()
+                                                                               .getMethod("getFile",
+                                                                                          UniformResourceName.class,
+                                                                                          String.class,
+                                                                                          String.class,
+                                                                                          Boolean.class,
+                                                                                          HttpServletResponse.class),
+                                                                           urn,
+                                                                           LocalStorageService.FILE_CHECKSUM_URL_TEMPLATE,
+                                                                           null,
+                                                                           null,
+                                                                           null);
 
         // Manage reference
         List<DataFile> dataFileRefs = new ArrayList<>();
@@ -102,8 +113,11 @@ public class AttachmentController {
         }
 
         // Attach files to the entity
-        AbstractEntity<?> entity = getEntityService(urn).attachFiles(urn, dataType, attachments, dataFileRefs,
-                controllerLinkBuilder.toUri().toString());
+        AbstractEntity<?> entity = getEntityService(urn).attachFiles(urn,
+                                                                     dataType,
+                                                                     attachments,
+                                                                     dataFileRefs,
+                                                                     controllerLinkBuilder.toUri().toString());
         return ResponseEntity.ok(EntityModel.of(entity));
     }
 
@@ -112,7 +126,8 @@ public class AttachmentController {
     public void getFile(@Valid @PathVariable UniformResourceName urn,
                         @PathVariable String checksum,
                         @RequestParam(required = false) String origin,
-                        @RequestParam(name = "isContentInline", required = false) Boolean isContentInline, HttpServletResponse response) throws ModuleException, IOException {
+                        @RequestParam(name = "isContentInline", required = false) Boolean isContentInline,
+                        HttpServletResponse response) throws ModuleException, IOException {
 
         LOGGER.debug("Downloading file with checksum \"{}\" for entity \"{}\"", checksum, urn.toString());
 
@@ -125,10 +140,16 @@ public class AttachmentController {
         // By default, return the attachment header, forcing browser to download the file
         if (isContentInline == null || !isContentInline) {
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
-                    ContentDisposition.builder("attachment").filename(dataFile.getFilename()).build().toString());
+                               ContentDisposition.builder("attachment")
+                                                 .filename(dataFile.getFilename())
+                                                 .build()
+                                                 .toString());
         } else {
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
-                    ContentDisposition.builder("inline").filename(dataFile.getFilename()).build().toString());
+                               ContentDisposition.builder("inline")
+                                                 .filename(dataFile.getFilename())
+                                                 .build()
+                                                 .toString());
             // Allows iframe to display inside REGARDS interface
             response.setHeader(HttpHeaders.X_FRAME_OPTIONS, "SAMEORIGIN");
         }
@@ -158,7 +179,8 @@ public class AttachmentController {
     @RequestMapping(method = RequestMethod.DELETE, value = ATTACHMENT_MAPPING)
     @ResourceAccess(description = "delete the document file using its id")
     public ResponseEntity<EntityModel<AbstractEntity<?>>> removeFile(@Valid @PathVariable UniformResourceName urn,
-                                                                     @PathVariable String checksum) throws ModuleException {
+                                                                     @PathVariable String checksum)
+        throws ModuleException {
 
         LOGGER.debug("Removing file with checksum \"{}\" from entity \"{}\"", checksum, urn.toString());
 

@@ -30,11 +30,7 @@ import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnaps
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
-import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
-import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
-import fr.cnes.regards.modules.acquisition.dao.IScanDirectoriesInfoRepository;
+import fr.cnes.regards.modules.acquisition.dao.*;
 import org.junit.After;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -47,7 +43,8 @@ import org.springframework.test.annotation.DirtiesContext;
  *
  * @author Iliana Ghazali
  **/
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS, hierarchyMode = DirtiesContext.HierarchyMode.EXHAUSTIVE)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS,
+    hierarchyMode = DirtiesContext.HierarchyMode.EXHAUSTIVE)
 public abstract class DataproviderMultitenantServiceIT extends AbstractMultitenantServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataproviderMultitenantServiceIT.class);
@@ -123,7 +120,6 @@ public abstract class DataproviderMultitenantServiceIT extends AbstractMultitena
     @Autowired
     protected IAcquisitionFileRepository acqFileRepository;
 
-
     // -------------
     // BEFORE METHODS
     // -------------
@@ -164,6 +160,7 @@ public abstract class DataproviderMultitenantServiceIT extends AbstractMultitena
 
     /**
      * Custom test cleaning to override
+     *
      * @throws Exception
      */
     protected void doAfter() throws Exception {

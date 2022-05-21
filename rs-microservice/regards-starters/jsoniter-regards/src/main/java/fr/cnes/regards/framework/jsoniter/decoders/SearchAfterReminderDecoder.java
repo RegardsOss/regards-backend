@@ -20,12 +20,11 @@ public class SearchAfterReminderDecoder implements NullSafeDecoderBuilder {
     @Override
     public Object decode(JsonIterator jsonIterator) throws IOException {
         Any param = jsonIterator.readAny();
-        return new SearchAfterReminder(
-                param.toString("searchAfterSortValues"),
-                param.toLong("nextOffset"),
-                param.toInt("nextPageSize"),
-                param.toString("docId"),
-                param.as(OffsetDateTime.class, "expirationDate"));
+        return new SearchAfterReminder(param.toString("searchAfterSortValues"),
+                                       param.toLong("nextOffset"),
+                                       param.toInt("nextPageSize"),
+                                       param.toString("docId"),
+                                       param.as(OffsetDateTime.class, "expirationDate"));
     }
 
 }

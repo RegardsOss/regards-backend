@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
-import java.util.List;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 /**
  * Strategy interface to handle CRUD operations on Notification entities
@@ -40,17 +39,15 @@ public interface IInstanceNotificationService {
      * Retrieve the list of notifications intended for the logged user, trough the project user or their role.
      *
      * @return A {@link List} of {@link Notification}
-     * @throws EntityNotFoundException
-     *             thrown when no current user could be found
+     * @throws EntityNotFoundException thrown when no current user could be found
      */
     Page<INotificationWithoutMessage> retrieveNotifications(Pageable page) throws EntityNotFoundException;
 
     /**
      * Save a new notification in db for later sending by a scheluder.
      *
-     * @param pDto
-     *            A DTO for easy parsing of the response body. Mapping to true {@link Notification} is expected to be
-     *            done here.
+     * @param pDto A DTO for easy parsing of the response body. Mapping to true {@link Notification} is expected to be
+     *             done here.
      * @return The sent {@link Notification}
      */
     Notification createNotification(NotificationDTO pDto);
@@ -58,24 +55,19 @@ public interface IInstanceNotificationService {
     /**
      * Retrieve a notification
      *
-     * @param pId
-     *            The notification <code>id</code>
+     * @param pId The notification <code>id</code>
      * @return The {@link Notification}
-     * @throws EntityNotFoundException
-     *             Thrown when no notification with passed <code>id</code> could be found
+     * @throws EntityNotFoundException Thrown when no notification with passed <code>id</code> could be found
      */
     Notification retrieveNotification(Long pId) throws EntityNotFoundException;
 
     /**
      * Update the {@link Notification#getStatus()}
      *
-     * @param pId
-     *            The notification <code>id</code>
-     * @param pStatus
-     *            The new status value
+     * @param pId     The notification <code>id</code>
+     * @param pStatus The new status value
      * @return The {@link Notification}
-     * @throws EntityNotFoundException
-     *             Thrown when no notification with passed <code>id</code> could be found
+     * @throws EntityNotFoundException Thrown when no notification with passed <code>id</code> could be found
      */
     Notification updateNotificationStatus(Long pId, NotificationStatus pStatus) throws EntityNotFoundException;
 
@@ -84,10 +76,8 @@ public interface IInstanceNotificationService {
     /**
      * Delete a notification
      *
-     * @param pId
-     *            The notification <code>id</code>
-     * @throws EntityNotFoundException
-     *             Thrown when no notification with passed <code>id</code> could be found
+     * @param pId The notification <code>id</code>
+     * @throws EntityNotFoundException Thrown when no notification with passed <code>id</code> could be found
      */
     void deleteNotification(Long pId) throws EntityNotFoundException;
 
@@ -99,7 +89,7 @@ public interface IInstanceNotificationService {
     Page<Notification> retrieveNotificationsToSend(Pageable page);
 
     Page<INotificationWithoutMessage> retrieveNotifications(Pageable page, NotificationStatus state)
-            throws EntityNotFoundException;
+        throws EntityNotFoundException;
 
     /**
      * Delete read notifications for current user

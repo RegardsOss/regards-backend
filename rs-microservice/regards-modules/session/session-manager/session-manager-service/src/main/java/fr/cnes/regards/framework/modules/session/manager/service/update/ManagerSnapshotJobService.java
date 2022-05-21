@@ -26,13 +26,14 @@ import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.function.Predicate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Create {@link ManagerSnapshotJob} to create sources and sessions from session steps
@@ -63,11 +64,13 @@ public class ManagerSnapshotJobService {
 
         // Filter out all snapshot processes currently running or with no step events to update
         Predicate<SnapshotProcess> predicateAlreadyProcessed = process -> (process.getJobId() != null) || (
-                (process.getLastUpdateDate() == null && sessionStepRepo
-                        .countBySourceAndRegistrationDateBefore(process.getSource(), schedulerStartDate) == 0) || (
-                        process.getLastUpdateDate() != null && sessionStepRepo
-                                .countBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(process.getSource(), process.getLastUpdateDate(),
-                                                                                                        schedulerStartDate) == 0));
+            (process.getLastUpdateDate() == null
+                && sessionStepRepo.countBySourceAndRegistrationDateBefore(process.getSource(), schedulerStartDate) == 0)
+                || (process.getLastUpdateDate() != null &&
+                sessionStepRepo.countBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(process.getSource(),
+                                                                                                       process.getLastUpdateDate(),
+                                                                                                       schedulerStartDate)
+                    == 0));
 
         snapshotProcessesRetrieved.removeIf(predicateAlreadyProcessed);
 
@@ -76,9 +79,10 @@ public class ManagerSnapshotJobService {
         if (!snapshotProcessesRetrieved.isEmpty()) {
             for (SnapshotProcess snapshotProcessToUpdate : snapshotProcessesRetrieved) {
                 // create one job per each source
-                HashSet<JobParameter> jobParameters = Sets
-                        .newHashSet(new JobParameter(ManagerSnapshotJob.SNAPSHOT_PROCESS, snapshotProcessToUpdate),
-                                    new JobParameter(ManagerSnapshotJob.FREEZE_DATE, schedulerStartDate));
+                HashSet<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(ManagerSnapshotJob.SNAPSHOT_PROCESS,
+                                                                                       snapshotProcessToUpdate),
+                                                                      new JobParameter(ManagerSnapshotJob.FREEZE_DATE,
+                                                                                       schedulerStartDate));
                 JobInfo jobInfo = new JobInfo(false, 1000, jobParameters, null, ManagerSnapshotJob.class.getName());
 
                 // create job
@@ -89,11 +93,12 @@ public class ManagerSnapshotJobService {
                 this.snapshotProcessRepo.save(snapshotProcessToUpdate);
 
                 LOGGER.trace("[MANAGER SNAPSHOT SCHEDULER] ManagerSnapshotJob scheduled in {} ms for source {}",
-                            System.currentTimeMillis() - start, snapshotProcessToUpdate.getSource());
+                             System.currentTimeMillis() - start,
+                             snapshotProcessToUpdate.getSource());
             }
         } else {
             LOGGER.trace("[MANAGER SNAPSHOT SCHEDULER] No sessionSteps found to be updated. Handled in {} ms",
-                        System.currentTimeMillis() - start);
+                         System.currentTimeMillis() - start);
         }
     }
 }

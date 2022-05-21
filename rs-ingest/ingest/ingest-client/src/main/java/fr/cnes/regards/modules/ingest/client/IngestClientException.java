@@ -19,11 +19,9 @@
 package fr.cnes.regards.modules.ingest.client;
 
 /**
- *
  * Generic client exception
  *
  * @author Marc SORDI
- *
  */
 public class IngestClientException extends Exception {
 

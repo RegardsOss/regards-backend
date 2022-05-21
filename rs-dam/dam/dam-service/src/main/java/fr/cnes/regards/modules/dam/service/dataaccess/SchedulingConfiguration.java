@@ -27,11 +27,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * Scheduling configuration for {@link AccessRightService}
  *
  * @author Sébastien Binda
- *
  */
 @Configuration
 @EnableScheduling
 @EnableAsync
 @Profile("!noscheduler")
 public class SchedulingConfiguration {
+
 }

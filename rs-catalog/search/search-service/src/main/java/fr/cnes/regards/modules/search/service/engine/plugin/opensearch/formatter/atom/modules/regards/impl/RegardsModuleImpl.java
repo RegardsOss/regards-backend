@@ -18,22 +18,21 @@
  */
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.atom.modules.regards.impl;
 
-import java.io.Serializable;
-
 import com.google.gson.Gson;
 import com.rometools.rome.feed.CopyFrom;
 import com.rometools.rome.feed.module.ModuleImpl;
-
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.atom.modules.regards.RegardsModule;
+
+import java.io.Serializable;
 
 /**
  * Module to handle specific REGARDS models opensearch parameters into ATOM format responses.
  * com.rometools.rome module implementation to handle specifics regards model attributes.
  * This module handles all Opensearch parameters with regards namespace or not configured.
  *
- * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  * @author Sébastien Binda
+ * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  */
 public class RegardsModuleImpl extends ModuleImpl implements RegardsModule, Serializable {
 

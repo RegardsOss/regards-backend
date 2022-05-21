@@ -46,14 +46,14 @@ public interface IAccountRepository extends JpaRepository<Account, Long>, JpaSpe
      * Find the single {@link Account} with passed <code>email</code>.<br>
      * Custom query auto-implemented by JPA thanks to the method naming convention.
      *
-     * @param pEmail
-     *            The {@link Account}'s <code>email</code>
+     * @param pEmail The {@link Account}'s <code>email</code>
      * @return An optional account
      */
     Optional<Account> findOneByEmail(String pEmail);
 
     /**
      * Find all Account which status is not the one provided.
+     *
      * @param pStatus the status we do not want
      * @return the set of matching accounts
      */
@@ -61,7 +61,8 @@ public interface IAccountRepository extends JpaRepository<Account, Long>, JpaSpe
 
     /**
      * Find all Account which status is the one provided.
-     * @param pStatus the status we want
+     *
+     * @param pStatus   the status we want
      * @param pPageable the pageable object used by Spring for building the page of result
      * @return the page of matching accounts
      */

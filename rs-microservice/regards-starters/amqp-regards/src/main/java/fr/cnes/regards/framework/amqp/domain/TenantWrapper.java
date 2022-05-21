@@ -18,18 +18,18 @@
  */
 package fr.cnes.regards.framework.amqp.domain;
 
-import java.util.Date;
-
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
-
 import fr.cnes.regards.framework.utils.RsRuntimeException;
+
+import java.util.Date;
 
 /**
  * Tenant wrapper.
  * FIXME: This class is Cloneable because of rs-order ForwardingDataFileEventHandlerService class. See this class for more
  * FIXME: information. This class no longer exist and has been replaced but new storage communication logic.
  * FIXME: Cloneable seems no longer necessary. Being 1 week before delivery, lets just hold on on remove and do this latter
+ *
  * @param <T> type of event that is wrapped
  * @author svissier
  * @author oroussel
@@ -106,6 +106,7 @@ public class TenantWrapper<T> implements Cloneable {
 
     /**
      * See header for more informations
+     *
      * @return a TenantWrapper clone
      */
     @Override

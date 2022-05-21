@@ -14,8 +14,20 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.dao;
+
+import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
+import fr.cnes.regards.modules.processing.entity.BatchEntity;
+import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
+import reactor.core.publisher.Flux;
+
+import java.util.List;
+import java.util.UUID;
 
 import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.RUNNING;
 import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.SUCCESS;
@@ -23,19 +35,6 @@ import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
 import static fr.cnes.regards.modules.processing.utils.random.RandomUtils.randomInstance;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-import java.util.UUID;
-
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
-
-import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
-import fr.cnes.regards.modules.processing.entity.BatchEntity;
-import fr.cnes.regards.modules.processing.entity.ExecutionEntity;
-import reactor.core.publisher.Flux;
 
 public class IExecutionEntityRepositoryIT extends AbstractRepoIT {
 
@@ -55,37 +54,56 @@ public class IExecutionEntityRepositoryIT extends AbstractRepoIT {
 
         // This execution has succeeded, and so, it will not be found as timed out.
         ExecutionEntity finishedExec = randomInstance(ExecutionEntity.class).withBatchId(batch.getId())
-                .withTenant(batch.getTenant()).withUserEmail(batch.getUserEmail())
-                .withProcessBusinessId(batch.getProcessBusinessId()).withCurrentStatus(SUCCESS)
-                .withLastUpdated(nowUtc().minusMinutes(3)).withTimeoutAfterMillis(1_000L).withPersisted(false);
+                                                                            .withTenant(batch.getTenant())
+                                                                            .withUserEmail(batch.getUserEmail())
+                                                                            .withProcessBusinessId(batch.getProcessBusinessId())
+                                                                            .withCurrentStatus(SUCCESS)
+                                                                            .withLastUpdated(nowUtc().minusMinutes(3))
+                                                                            .withTimeoutAfterMillis(1_000L)
+                                                                            .withPersisted(false);
 
         // This execution has not terminated and has short timeout, and so, it will be found as timed out.
         ExecutionEntity shortUnfinishedExec = randomInstance(ExecutionEntity.class).withBatchId(batch.getId())
-                .withTenant(batch.getTenant()).withUserEmail(batch.getUserEmail())
-                .withProcessBusinessId(batch.getProcessBusinessId()).withCurrentStatus(RUNNING)
-                .withLastUpdated(nowUtc().minusMinutes(4)).withTimeoutAfterMillis(1_000L).withPersisted(false);
+                                                                                   .withTenant(batch.getTenant())
+                                                                                   .withUserEmail(batch.getUserEmail())
+                                                                                   .withProcessBusinessId(batch.getProcessBusinessId())
+                                                                                   .withCurrentStatus(RUNNING)
+                                                                                   .withLastUpdated(nowUtc().minusMinutes(
+                                                                                       4))
+                                                                                   .withTimeoutAfterMillis(1_000L)
+                                                                                   .withPersisted(false);
         LOGGER.info("Test should find this execution as timedout: {}", shortUnfinishedExec.getId());
 
         // This execution has not terminated but has long timeout, and so, it will not be found as timed out.
         ExecutionEntity longUnfinishedExec = randomInstance(ExecutionEntity.class).withBatchId(batch.getId())
-                .withTenant(batch.getTenant()).withUserEmail(batch.getUserEmail())
-                .withProcessBusinessId(batch.getProcessBusinessId()).withCurrentStatus(RUNNING)
-                .withLastUpdated(nowUtc().minusMinutes(4)).withTimeoutAfterMillis(1_000_000L).withPersisted(false);
+                                                                                  .withTenant(batch.getTenant())
+                                                                                  .withUserEmail(batch.getUserEmail())
+                                                                                  .withProcessBusinessId(batch.getProcessBusinessId())
+                                                                                  .withCurrentStatus(RUNNING)
+                                                                                  .withLastUpdated(nowUtc().minusMinutes(
+                                                                                      4))
+                                                                                  .withTimeoutAfterMillis(1_000_000L)
+                                                                                  .withPersisted(false);
 
         // WHEN
         List<ExecutionEntity> timedoutExecs =
-                // Save all entities in database
-                entityBatchRepo.save(batch).doOnError(t -> LOGGER.error("Could not save batch", t))
-                        .flatMapMany(persistedBatch -> entityExecRepo
-                                .saveAll(Flux.just(finishedExec, shortUnfinishedExec, longUnfinishedExec))
-                                .doOnError(t -> LOGGER.error("Could not save execs", t)))
-                        .last()
-                        // find timed out executions
-                        .flatMapMany(s -> {
-                            return entityExecRepo.getTimedOutExecutions();
-                        })
-                        // retrieve synchronously
-                        .collectList().block();
+            // Save all entities in database
+            entityBatchRepo.save(batch)
+                           .doOnError(t -> LOGGER.error("Could not save batch", t))
+                           .flatMapMany(persistedBatch -> entityExecRepo.saveAll(Flux.just(finishedExec,
+                                                                                           shortUnfinishedExec,
+                                                                                           longUnfinishedExec))
+                                                                        .doOnError(t -> LOGGER.error(
+                                                                            "Could not save execs",
+                                                                            t)))
+                           .last()
+                           // find timed out executions
+                           .flatMapMany(s -> {
+                               return entityExecRepo.getTimedOutExecutions();
+                           })
+                           // retrieve synchronously
+                           .collectList()
+                           .block();
 
         // THEN
         LOGGER.info("Timedout executions: {}", timedoutExecs);
@@ -102,24 +120,33 @@ public class IExecutionEntityRepositoryIT extends AbstractRepoIT {
 
         List<ExecutionEntity> execs = entityExecRepo.saveAll(Flux.create(sink -> {
             for (int i = 0; i < 100; i++) {
-                sink.next(randomInstance(ExecutionEntity.class).withId(UUID.randomUUID()).withBatchId(batch.getId())
-                        .withTenant(batch.getTenant()).withUserEmail(batch.getUserEmail())
-                        .withProcessBusinessId(batch.getProcessBusinessId()).withVersion(0).withPersisted(false)
-                        .withCreated(nowUtc()).withLastUpdated(nowUtc())
-                        .withCurrentStatus(randomInstance(ExecutionStatus.class)));
+                sink.next(randomInstance(ExecutionEntity.class).withId(UUID.randomUUID())
+                                                               .withBatchId(batch.getId())
+                                                               .withTenant(batch.getTenant())
+                                                               .withUserEmail(batch.getUserEmail())
+                                                               .withProcessBusinessId(batch.getProcessBusinessId())
+                                                               .withVersion(0)
+                                                               .withPersisted(false)
+                                                               .withCreated(nowUtc())
+                                                               .withLastUpdated(nowUtc())
+                                                               .withCurrentStatus(randomInstance(ExecutionStatus.class)));
             }
             sink.complete();
         })).collectList().block();
 
-        List<ExecutionEntity> foundExecs1010 = entityExecRepo
-                .findByTenantAndCurrentStatusIn(batch.getTenant(), singletonList(RUNNING), PageRequest.of(0, 10))
-                .collectList().block();
+        List<ExecutionEntity> foundExecs1010 = entityExecRepo.findByTenantAndCurrentStatusIn(batch.getTenant(),
+                                                                                             singletonList(RUNNING),
+                                                                                             PageRequest.of(0, 10))
+                                                             .collectList()
+                                                             .block();
 
         LOGGER.info("Found execs page(10,10): {}", foundExecs1010);
 
-        List<ExecutionEntity> foundExecs1020 = entityExecRepo
-                .findByTenantAndCurrentStatusIn(batch.getTenant(), singletonList(RUNNING), PageRequest.of(1, 10))
-                .collectList().block();
+        List<ExecutionEntity> foundExecs1020 = entityExecRepo.findByTenantAndCurrentStatusIn(batch.getTenant(),
+                                                                                             singletonList(RUNNING),
+                                                                                             PageRequest.of(1, 10))
+                                                             .collectList()
+                                                             .block();
 
         LOGGER.info("Found execs page(10,10): {}", foundExecs1020);
         LOGGER.info("Done");

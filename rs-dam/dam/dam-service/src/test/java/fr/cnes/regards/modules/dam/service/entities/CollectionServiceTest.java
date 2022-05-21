@@ -107,7 +107,7 @@ public class CollectionServiceTest {
         List<AbstractEntity<?>> findByTagsValueCol2IpId = new ArrayList<>();
         findByTagsValueCol2IpId.add(collection1);
         Mockito.when(entitiesRepositoryMocked.findByTags(collection2.getIpId().toString()))
-                .thenReturn(findByTagsValueCol2IpId);
+               .thenReturn(findByTagsValueCol2IpId);
         Mockito.when(entitiesRepositoryMocked.findById(collection1.getId())).thenReturn(Optional.of(collection1));
         Mockito.when(entitiesRepositoryMocked.findById(collection2.getId())).thenReturn(Optional.of(collection2));
         Mockito.when(entitiesRepositoryMocked.findById(collection3.getId())).thenReturn(Optional.of(collection3));
@@ -122,9 +122,17 @@ public class CollectionServiceTest {
         IRuntimeTenantResolver runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         Mockito.when(runtimeTenantResolver.getTenant()).thenReturn("Tenant");
 
-        collectionServiceMocked = new CollectionService(Mockito.mock(IModelFinder.class), entitiesRepositoryMocked,
-                pModelService, damSettingsService, deletedEntityRepositoryMocked, collectionRepositoryMocked, null, null, publisherMocked,
-                runtimeTenantResolver, Mockito.mock(IAbstractEntityRequestRepository.class));
+        collectionServiceMocked = new CollectionService(Mockito.mock(IModelFinder.class),
+                                                        entitiesRepositoryMocked,
+                                                        pModelService,
+                                                        damSettingsService,
+                                                        deletedEntityRepositoryMocked,
+                                                        collectionRepositoryMocked,
+                                                        null,
+                                                        null,
+                                                        publisherMocked,
+                                                        runtimeTenantResolver,
+                                                        Mockito.mock(IAbstractEntityRequestRepository.class));
     }
 
     @Test

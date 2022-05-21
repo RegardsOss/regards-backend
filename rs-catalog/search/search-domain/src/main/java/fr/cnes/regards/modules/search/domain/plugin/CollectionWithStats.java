@@ -28,7 +28,9 @@ import java.util.Objects;
  * This POJO wrap stac collection informations found with URN and DataObjects' aggregation data contained in this collection
  */
 public final class CollectionWithStats {
+
     private final AbstractEntity collection;
+
     private final List<Aggregation> aggregationList;
 
     public CollectionWithStats(AbstractEntity collection, List<Aggregation> aggregationList) {
@@ -45,8 +47,12 @@ public final class CollectionWithStats {
     }
 
     public boolean equals(final Object o) {
-        if (o == this) { return true; }
-        if (!(o instanceof CollectionWithStats)) { return false; }
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof CollectionWithStats)) {
+            return false;
+        }
         final CollectionWithStats other = (CollectionWithStats) o;
         if (!Objects.equals(this.getCollection(), other.getCollection())) {
             return false;
@@ -66,6 +72,7 @@ public final class CollectionWithStats {
     }
 
     public String toString() {
-        return "CollectionWithStats(collection=" + this.getCollection() + ", aggregationList=" + this.getAggregationList() + ")";
+        return "CollectionWithStats(collection=" + this.getCollection() + ", aggregationList="
+            + this.getAggregationList() + ")";
     }
 }

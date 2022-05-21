@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.feature.dto.urn.converter;
 
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
-
-import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
 /**
  * Converter used by Hibernate (see AbstractEntity)

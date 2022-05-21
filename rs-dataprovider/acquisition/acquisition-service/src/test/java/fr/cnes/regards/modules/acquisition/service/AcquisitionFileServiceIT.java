@@ -30,23 +30,12 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
-import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
+import fr.cnes.regards.modules.acquisition.domain.chain.*;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,12 +48,19 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+
 /**
  * Test {@link AcquisitionFileService}
  *
  * @author Sébastien Binda
  * @author Marc Sordi
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_product" })
 @MultitenantTransactional
@@ -128,7 +124,6 @@ public class AcquisitionFileServiceIT extends AbstractMultitenantServiceIT {
         fileInfo.setDataType(DataType.RAWDATA);
         fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoryInfo(searchDir, null)));
 
-
         PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null, null);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin - " + label);
@@ -137,21 +132,24 @@ public class AcquisitionFileServiceIT extends AbstractMultitenantServiceIT {
         processingChain.addFileInfo(fileInfo);
 
         // Validation
-        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class, null,
+        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class,
+                                                                         null,
                                                                          new HashSet<IPluginParam>());
         validationPlugin.setIsActive(true);
         validationPlugin.setLabel("Validation plugin " + label);
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
-        PluginConfiguration productPlugin = PluginConfiguration.build(DefaultProductPlugin.class, null,
+        PluginConfiguration productPlugin = PluginConfiguration.build(DefaultProductPlugin.class,
+                                                                      null,
                                                                       new HashSet<IPluginParam>());
         productPlugin.setIsActive(true);
         productPlugin.setLabel("Product plugin" + label);
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginConfiguration.build(DefaultSIPGeneration.class, null,
+        PluginConfiguration sipGenPlugin = PluginConfiguration.build(DefaultSIPGeneration.class,
+                                                                     null,
                                                                      new HashSet<IPluginParam>());
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin" + label);
@@ -231,8 +229,11 @@ public class AcquisitionFileServiceIT extends AbstractMultitenantServiceIT {
         results = fileService.search(null, null, null, processingChain2.getId(), null, PageRequest.of(0, 100));
         Assert.assertTrue(results.getNumberOfElements() == AcquisitionFileState.values().length);
 
-        results = fileService.search("file", Arrays.asList(AcquisitionFileState.ACQUIRED), product.getId(),
-                                     processingChain.getId(), OffsetDateTime.now().minusDays(1),
+        results = fileService.search("file",
+                                     Arrays.asList(AcquisitionFileState.ACQUIRED),
+                                     product.getId(),
+                                     processingChain.getId(),
+                                     OffsetDateTime.now().minusDays(1),
                                      PageRequest.of(0, 100));
         Assert.assertTrue(results.getNumberOfElements() == 1);
     }

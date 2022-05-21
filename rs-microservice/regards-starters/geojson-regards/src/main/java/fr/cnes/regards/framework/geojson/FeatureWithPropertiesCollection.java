@@ -26,6 +26,7 @@ import java.util.Map;
  * This class represents a default GeoJson feature collection containing default {@link Feature}
  * identifier.<br/>
  * You can define your own extending {@link AbstractFeatureCollection}.
+ *
  * @author Sébastien Binda
  */
 public class FeatureWithPropertiesCollection extends FeatureCollection {

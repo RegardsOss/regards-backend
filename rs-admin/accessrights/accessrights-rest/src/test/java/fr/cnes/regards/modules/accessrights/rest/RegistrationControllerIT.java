@@ -49,6 +49,7 @@ import java.util.*;
 
 /**
  * Integration tests for the accesses functionalities.
+ *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  */
@@ -158,30 +159,51 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         MetaData metadata = new MetaData("plop", "test", UserVisibility.READABLE);
         List<MetaData> metas = new ArrayList<>();
         metas.add(metadata);
-        AccessRequestDto newAccessRequest = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, null, metas, PASSWORD, ORIGIN_URL, REQUEST_LINK, ORIGIN, ACCESS_GROUPS, 0L);
+        AccessRequestDto newAccessRequest = new AccessRequestDto(EMAIL,
+                                                                 FIRST_NAME,
+                                                                 LAST_NAME,
+                                                                 null,
+                                                                 metas,
+                                                                 PASSWORD,
+                                                                 ORIGIN_URL,
+                                                                 REQUEST_LINK,
+                                                                 ORIGIN,
+                                                                 ACCESS_GROUPS,
+                                                                 0L);
         requestAccess(newAccessRequest);
 
     }
 
     private void requestAccess(AccessRequestDto newAccessRequest) {
         //lets mock the feign clients
-        Account account = new Account(newAccessRequest.getEmail(), newAccessRequest.getFirstName(),
-                newAccessRequest.getLastName(), newAccessRequest.getPassword());
+        Account account = new Account(newAccessRequest.getEmail(),
+                                      newAccessRequest.getFirstName(),
+                                      newAccessRequest.getLastName(),
+                                      newAccessRequest.getPassword());
 
         Mockito.when(accountsClient.retrieveAccounByEmail(newAccessRequest.getEmail()))
-                .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND),
-                            new ResponseEntity<>(EntityModel.of(account), HttpStatus.OK));
+               .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND),
+                           new ResponseEntity<>(EntityModel.of(account), HttpStatus.OK));
         AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
         Mockito.when(accountsClient.createAccount(accountNPassword))
-                .thenReturn(new ResponseEntity<>(EntityModel.of(account), HttpStatus.CREATED));
+               .thenReturn(new ResponseEntity<>(EntityModel.of(account), HttpStatus.CREATED));
 
         performDefaultPost(apiAccesses, newAccessRequest, customizer().expectStatusCreated(), ERROR_MESSAGE);
     }
 
     @Test
     public void requestAccessConflict() {
-        AccessRequestDto newAccessRequest = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, null, new ArrayList<>(), PASSWORD, ORIGIN_URL, REQUEST_LINK, ORIGIN, ACCESS_GROUPS
-                , 0L);
+        AccessRequestDto newAccessRequest = new AccessRequestDto(EMAIL,
+                                                                 FIRST_NAME,
+                                                                 LAST_NAME,
+                                                                 null,
+                                                                 new ArrayList<>(),
+                                                                 PASSWORD,
+                                                                 ORIGIN_URL,
+                                                                 REQUEST_LINK,
+                                                                 ORIGIN,
+                                                                 ACCESS_GROUPS,
+                                                                 0L);
         requestAccess(newAccessRequest);
         performDefaultPost(apiAccesses, newAccessRequest, customizer().expectStatusConflict(), ERROR_MESSAGE);
     }
@@ -194,15 +216,20 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the system allows to reactivate access to an access denied project user.")
     public void acceptAccessRequest() {
         // Prepare the test conditions
-        projectUser = projectUserRepository
-                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new HashSet<>()));
+        projectUser = projectUserRepository.save(new ProjectUser(EMAIL,
+                                                                 publicRole,
+                                                                 new ArrayList<>(),
+                                                                 new HashSet<>()));
         projectUser.setStatus(UserStatus.ACCESS_DENIED);
         projectUserRepository.save(projectUser);
 
         performDefaultPut(apiAccessAccept, null, customizer().expectStatusOk(), ERROR_MESSAGE, projectUser.getId());
 
         // Now the project user is ACCESS_GRANTED, so trying to re-accept will fail
-        performDefaultPut(apiAccessAccept, null, customizer().expectStatusForbidden(), ERROR_MESSAGE,
+        performDefaultPut(apiAccessAccept,
+                          null,
+                          customizer().expectStatusForbidden(),
+                          ERROR_MESSAGE,
                           projectUser.getId());
 
         // something that does not exist
@@ -217,8 +244,10 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the system allows to refuse an access request.")
     public void denyAccessRequest() {
         // Prepare the test conditions
-        projectUser = projectUserRepository
-                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new HashSet<>()));
+        projectUser = projectUserRepository.save(new ProjectUser(EMAIL,
+                                                                 publicRole,
+                                                                 new ArrayList<>(),
+                                                                 new HashSet<>()));
         projectUser.setStatus(UserStatus.WAITING_ACCESS);
         projectUserRepository.save(projectUser);
 
@@ -226,7 +255,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         Account account = new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD);
 
         Mockito.when(accountsClient.retrieveAccounByEmail(account.getEmail()))
-                .thenReturn(new ResponseEntity<>(EntityModel.of(account), HttpStatus.OK));
+               .thenReturn(new ResponseEntity<>(EntityModel.of(account), HttpStatus.OK));
 
         performDefaultPut(apiAccessDeny, null, customizer().expectStatusOk(), ERROR_MESSAGE, projectUser.getId());
     }
@@ -235,7 +264,10 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     public void denyAccessRequestTwice() {
         denyAccessRequest();
         // Now the project user is ACCESS_DENIED, so trying to re-deny it will fail
-        performDefaultPut(apiAccessDeny, null, customizer().expectStatusForbidden(), ERROR_MESSAGE,
+        performDefaultPut(apiAccessDeny,
+                          null,
+                          customizer().expectStatusForbidden(),
+                          ERROR_MESSAGE,
                           projectUser.getId());
     }
 
@@ -253,8 +285,10 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the system allows to delete a registration request.")
     public void deleteAccessRequest() {
         // Prepare the test
-        projectUser = projectUserRepository
-                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new HashSet<>()));
+        projectUser = projectUserRepository.save(new ProjectUser(EMAIL,
+                                                                 publicRole,
+                                                                 new ArrayList<>(),
+                                                                 new HashSet<>()));
 
         // Case not found
         performDefaultDelete(apiAccessId, customizer().expectStatusNotFound(), ERROR_MESSAGE, 12345678L);
@@ -270,21 +304,25 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the system allows to activate an inactive project user.")
     public void activeAccess() {
         // Prepare the test conditions
-        projectUser = projectUserRepository
-                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new HashSet<>()));
+        projectUser = projectUserRepository.save(new ProjectUser(EMAIL,
+                                                                 publicRole,
+                                                                 new ArrayList<>(),
+                                                                 new HashSet<>()));
         projectUser.setStatus(UserStatus.ACCESS_INACTIVE);
         projectUserRepository.save(projectUser);
 
         //lets mock the feign clients
-        Account account = new Account(projectUser.getEmail(), "projectUser.getFirstName()", "projectUser.getLastName()",
-                "projectUser.getPassword()");
+        Account account = new Account(projectUser.getEmail(),
+                                      "projectUser.getFirstName()",
+                                      "projectUser.getLastName()",
+                                      "projectUser.getPassword()");
 
         Mockito.when(accountsClient.retrieveAccounByEmail(projectUser.getEmail()))
-                .thenReturn(new ResponseEntity<>(EntityModel.of(account), HttpStatus.OK));
+               .thenReturn(new ResponseEntity<>(EntityModel.of(account), HttpStatus.OK));
 
         // Endpoint
-        String endpoint = RegistrationController.REQUEST_MAPPING_ROOT
-                + RegistrationController.ACTIVE_ACCESS_RELATIVE_PATH;
+        String endpoint =
+            RegistrationController.REQUEST_MAPPING_ROOT + RegistrationController.ACTIVE_ACCESS_RELATIVE_PATH;
 
         performDefaultPut(endpoint, null, customizer().expectStatusOk(), ERROR_MESSAGE, projectUser.getId());
     }
@@ -297,14 +335,16 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the system allows to deactivate an active project user.")
     public void inactiveAccess() {
         // Prepare the test conditions
-        projectUser = projectUserRepository
-                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new HashSet<>()));
+        projectUser = projectUserRepository.save(new ProjectUser(EMAIL,
+                                                                 publicRole,
+                                                                 new ArrayList<>(),
+                                                                 new HashSet<>()));
         projectUser.setStatus(UserStatus.ACCESS_GRANTED);
         projectUserRepository.save(projectUser);
 
         // Endpoint
-        String endpoint = RegistrationController.REQUEST_MAPPING_ROOT
-                + RegistrationController.INACTIVE_ACCESS_RELATIVE_PATH;
+        String endpoint =
+            RegistrationController.REQUEST_MAPPING_ROOT + RegistrationController.INACTIVE_ACCESS_RELATIVE_PATH;
 
         performDefaultPut(endpoint, null, customizer().expectStatusOk(), ERROR_MESSAGE, projectUser.getId());
     }

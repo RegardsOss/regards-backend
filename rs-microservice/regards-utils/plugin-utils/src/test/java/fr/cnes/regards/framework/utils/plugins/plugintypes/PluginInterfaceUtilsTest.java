@@ -18,17 +18,6 @@
  */
 package fr.cnes.regards.framework.utils.plugins.plugintypes;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -37,6 +26,12 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.basic.PluginUtilsTestConstants;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.*;
 
 /**
  * @author Christophe Mertz
@@ -68,9 +63,9 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     /**
      * A {@link List} of not existing plugin package
      */
-    private static final List<String> PLUGIN_EMPTY_PACKAGES = Arrays
-            .asList(PLUGIN_EMPTY_PACKAGE, "fr.cnes.regards.plugins.utils.plugintypes.empty.sub",
-                    "fr.cnes.regards.plugins.utils.plugintypes.empty.sub2");
+    private static final List<String> PLUGIN_EMPTY_PACKAGES = Arrays.asList(PLUGIN_EMPTY_PACKAGE,
+                                                                            "fr.cnes.regards.plugins.utils.plugintypes.empty.sub",
+                                                                            "fr.cnes.regards.plugins.utils.plugintypes.empty.sub2");
 
     /**
      * Load all plugins
@@ -132,6 +127,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
 
     /**
      * Get a {@link ComplexPlugin} with a specific parameters
+     *
      * @throws NotAvailablePluginConfigurationException
      */
     @Test
@@ -142,20 +138,23 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
         LOGGER.debug(STARTING + toString());
         PluginUtils.setup(PLUGIN_CURRENT_PACKAGE);
 
-        Set<IPluginParam> interfaceParameters = IPluginParam.set(IPluginParam
-                .build(AParameterPluginImplementation.FIELD_NAME, PluginInterfaceUtilsTest.LONG_STR_VALUE));
-        PluginConfiguration pluginConfigurationInterface = PluginConfiguration
-                .build(AParameterPluginImplementation.class, "", interfaceParameters);
+        Set<IPluginParam> interfaceParameters = IPluginParam.set(IPluginParam.build(AParameterPluginImplementation.FIELD_NAME,
+                                                                                    PluginInterfaceUtilsTest.LONG_STR_VALUE));
+        PluginConfiguration pluginConfigurationInterface = PluginConfiguration.build(AParameterPluginImplementation.class,
+                                                                                     "",
+                                                                                     interfaceParameters);
         Assert.assertNotNull(pluginConfigurationInterface);
         pluginConfigurationInterface.setId(100L);
 
         /*
          * Get the configuration for the complex Plugin (ie the parent)
          */
-        final Set<IPluginParam> complexParameters = IPluginParam
-                .set(IPluginParam.plugin(ComplexPlugin.FIELD_NAME_PLUGIN, pluginConfigurationInterface.getBusinessId()),
-                     IPluginParam.build(ComplexPlugin.FIELD_NAME_ACTIVE, TRUE),
-                     IPluginParam.build(ComplexPlugin.FIELD_NAME_COEF, PluginInterfaceUtilsTest.CINQ));
+        final Set<IPluginParam> complexParameters = IPluginParam.set(IPluginParam.plugin(ComplexPlugin.FIELD_NAME_PLUGIN,
+                                                                                         pluginConfigurationInterface.getBusinessId()),
+                                                                     IPluginParam.build(ComplexPlugin.FIELD_NAME_ACTIVE,
+                                                                                        TRUE),
+                                                                     IPluginParam.build(ComplexPlugin.FIELD_NAME_COEF,
+                                                                                        PluginInterfaceUtilsTest.CINQ));
 
         Map<String, Object> instantiatedPluginMap = new HashMap<>();
         instantiatedPluginMap.put(pluginConfigurationInterface.getBusinessId(),
@@ -171,7 +170,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
 
         Assert.assertTrue(complexPlugin.add(PluginInterfaceUtilsTest.CINQ, PluginInterfaceUtilsTest.QUATRE) > 0);
         Assert.assertTrue(complexPlugin.echo(PluginInterfaceUtilsTest.HELLO_WORLD)
-                .contains(PluginInterfaceUtilsTest.HELLO_WORLD));
+                                       .contains(PluginInterfaceUtilsTest.HELLO_WORLD));
 
         LOGGER.info("plugin parameter:" + complexPlugin.echoPluginParameter());
 
@@ -183,9 +182,10 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     @Purpose("Error to load a plugin from with an incompatible interface parameter.")
     public void incompatibleInterfaceError() throws NotAvailablePluginConfigurationException {
         LOGGER.debug(STARTING + toString());
-        Set<IPluginParam> complexParameters = IPluginParam
-                .set(IPluginParam.build(ComplexErrorPlugin.FIELD_NAME_COEF, PluginInterfaceUtilsTest.CINQ),
-                     IPluginParam.build(ComplexErrorPlugin.FIELD_NAME_PLUGIN, "coucou"));
+        Set<IPluginParam> complexParameters = IPluginParam.set(IPluginParam.build(ComplexErrorPlugin.FIELD_NAME_COEF,
+                                                                                  PluginInterfaceUtilsTest.CINQ),
+                                                               IPluginParam.build(ComplexErrorPlugin.FIELD_NAME_PLUGIN,
+                                                                                  "coucou"));
 
         // instantiate plugin
         PluginUtils.setup(PLUGIN_CURRENT_PACKAGE);
@@ -198,9 +198,10 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     @Purpose("Error to load a plugin from with an incompatible interface parameter.")
     public void incompatibleParameterError() throws NotAvailablePluginConfigurationException {
         LOGGER.debug(STARTING + toString());
-        Set<IPluginParam> complexParameters = IPluginParam
-                .set(IPluginParam.build(ComplexErrorPlugin.FIELD_NAME_COEF, "allo"),
-                     IPluginParam.build(ComplexErrorPlugin.FIELD_NAME_PLUGIN, "lorem ipsum"));
+        Set<IPluginParam> complexParameters = IPluginParam.set(IPluginParam.build(ComplexErrorPlugin.FIELD_NAME_COEF,
+                                                                                  "allo"),
+                                                               IPluginParam.build(ComplexErrorPlugin.FIELD_NAME_PLUGIN,
+                                                                                  "lorem ipsum"));
 
         // instantiate plugin
         PluginUtils.setup(PLUGIN_CURRENT_PACKAGE);

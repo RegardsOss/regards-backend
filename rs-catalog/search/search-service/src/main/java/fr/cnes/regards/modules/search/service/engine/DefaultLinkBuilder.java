@@ -18,24 +18,22 @@
  */
 package fr.cnes.regards.modules.search.service.engine;
 
-import java.util.List;
-
-import org.apache.commons.compress.utils.Lists;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkRelation;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.search.domain.plugin.IEntityLinkBuilder;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
+import org.apache.commons.compress.utils.Lists;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author sbinda
- *
  */
 @Component
 public class DefaultLinkBuilder implements IEntityLinkBuilder {
@@ -46,20 +44,27 @@ public class DefaultLinkBuilder implements IEntityLinkBuilder {
     }
 
     @Override
-    public List<Link> buildEntityLinks(IResourceService resourceService, SearchContext context, EntityType entityType,
-            UniformResourceName id) {
+    public List<Link> buildEntityLinks(IResourceService resourceService,
+                                       SearchContext context,
+                                       EntityType entityType,
+                                       UniformResourceName id) {
         return Lists.newArrayList();
     }
 
     @Override
-    public Link buildExtraLink(IResourceService resourceService, SearchContext context, LinkRelation rel,
-            String extra) {
+    public Link buildExtraLink(IResourceService resourceService,
+                               SearchContext context,
+                               LinkRelation rel,
+                               String extra) {
         return null;
     }
 
     @Override
-    public Link buildPaginationLink(IResourceService resourceService, SearchContext context, int pageSize,
-            int pageNumber, LinkRelation rel) {
+    public Link buildPaginationLink(IResourceService resourceService,
+                                    SearchContext context,
+                                    int pageSize,
+                                    int pageNumber,
+                                    LinkRelation rel) {
         return null;
     }
 

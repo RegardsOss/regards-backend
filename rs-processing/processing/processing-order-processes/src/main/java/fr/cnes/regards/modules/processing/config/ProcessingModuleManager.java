@@ -14,25 +14,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.config;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
@@ -43,6 +28,13 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.processing.dto.ProcessPluginConfigurationRightsDTO;
 import fr.cnes.regards.modules.processing.service.IProcessPluginConfigService;
 import fr.cnes.regards.modules.processing.service.ProcessPluginConfigService.DeleteAttemptOnUsedProcessException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class is the module manager for the processing module when used in REGARDS in conjunction with rs-order.
@@ -101,15 +93,17 @@ public class ProcessingModuleManager extends AbstractModuleManager<Void> {
         }
 
         for (ProcessConfigurationDTO process : processes) {
-            plugins.stream().filter(p -> p.getBusinessId().equals(process.getPluginConfBid())).findFirst()
-                    .ifPresent(pc -> {
-                        try {
-                            processService.create(new ProcessPluginConfigurationRightsDTO(pc, process.getRights()));
-                        } catch (EntityNotFoundException e) {
-                            LOGGER.error(e.getMessage(), e);
-                            importErrors.add(e.getMessage());
-                        }
-                    });
+            plugins.stream()
+                   .filter(p -> p.getBusinessId().equals(process.getPluginConfBid()))
+                   .findFirst()
+                   .ifPresent(pc -> {
+                       try {
+                           processService.create(new ProcessPluginConfigurationRightsDTO(pc, process.getRights()));
+                       } catch (EntityNotFoundException e) {
+                           LOGGER.error(e.getMessage(), e);
+                           importErrors.add(e.getMessage());
+                       }
+                   });
         }
 
         return importErrors;
@@ -136,23 +130,31 @@ public class ProcessingModuleManager extends AbstractModuleManager<Void> {
             exportedConf.setIsActive(true);
             configurations.add(ModuleConfigurationItem.build(exportedConf));
         }
-        processService.findAllRightsPluginConfigs().stream().forEach(c -> configurations.add(ModuleConfigurationItem
-                .build(new ProcessConfigurationDTO(c.getPluginConfiguration().getBusinessId(), c.getRights()))));
+        processService.findAllRightsPluginConfigs()
+                      .stream()
+                      .forEach(c -> configurations.add(ModuleConfigurationItem.build(new ProcessConfigurationDTO(c.getPluginConfiguration()
+                                                                                                                  .getBusinessId(),
+                                                                                                                 c.getRights()))));
         return ModuleConfiguration.build(info, true, configurations);
     }
 
     /**
      * Get all {@link PluginConfiguration}s of the {@link ModuleConfigurationItem}s
+     *
      * @param items {@link ModuleConfigurationItem}s
-     * @return  {@link PluginConfiguration}s
+     * @return {@link PluginConfiguration}s
      */
     private Set<PluginConfiguration> getPluginConfs(Collection<ModuleConfigurationItem<?>> items) {
-        return items.stream().filter(i -> PluginConfiguration.class.isAssignableFrom(i.getKey()))
-                .map(i -> (PluginConfiguration) i.getTypedValue()).collect(Collectors.toSet());
+        return items.stream()
+                    .filter(i -> PluginConfiguration.class.isAssignableFrom(i.getKey()))
+                    .map(i -> (PluginConfiguration) i.getTypedValue())
+                    .collect(Collectors.toSet());
     }
 
     private Set<ProcessConfigurationDTO> getProcessConfs(Collection<ModuleConfigurationItem<?>> items) {
-        return items.stream().filter(i -> ProcessConfigurationDTO.class.isAssignableFrom(i.getKey()))
-                .map(i -> (ProcessConfigurationDTO) i.getTypedValue()).collect(Collectors.toSet());
+        return items.stream()
+                    .filter(i -> ProcessConfigurationDTO.class.isAssignableFrom(i.getKey()))
+                    .map(i -> (ProcessConfigurationDTO) i.getTypedValue())
+                    .collect(Collectors.toSet());
     }
 }

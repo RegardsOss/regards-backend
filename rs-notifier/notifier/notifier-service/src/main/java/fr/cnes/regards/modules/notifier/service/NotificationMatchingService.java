@@ -150,7 +150,8 @@ public class NotificationMatchingService {
                     }
                     notificationRequest.setState(NotificationState.TO_SCHEDULE_BY_RECIPIENT);
                     couldBeMatched.add(rule);
-                } catch (ModuleException | NotAvailablePluginConfigurationException | PluginMetadataNotFoundRuntimeException | PluginUtilsRuntimeException e) {
+                } catch (ModuleException | NotAvailablePluginConfigurationException |
+                         PluginMetadataNotFoundRuntimeException | PluginUtilsRuntimeException e) {
                     // exception from rule plugin instantiation
                     LOGGER.error(String.format("Error while get plugin with id %S",
                                                rule.getRulePlugin().getBusinessId()), e);

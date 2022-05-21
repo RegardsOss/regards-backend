@@ -22,77 +22,91 @@ import java.util.Set;
 
 /**
  * Listener to implements to handle storage group requests results.
+ *
  * @author Sébastien Binda
  */
 public interface IStorageRequestListener {
 
     /**
      * Callback when a group request is granted.
+     *
      * @param requests
      */
     void onRequestGranted(Set<RequestInfo> requests);
 
     /**
      * Callback when a group request is denied
+     *
      * @param requests
      */
     void onRequestDenied(Set<RequestInfo> requests);
 
     /**
      * Callback when a copy group request is successfully done.
+     *
      * @param requests
      */
     void onCopySuccess(Set<RequestInfo> requests);
 
     /**
      * Callback when a copy group request is terminated with errors.
+     *
      * @param requests
      */
     void onCopyError(Set<RequestInfo> requests);
 
     /**
      * Callback when a availability group request is successfully done.
+     *
      * @param requests
      */
     void onAvailable(Set<RequestInfo> requests);
 
     /**
      * Callback when a availability group request is terminated with errors.
+     *
      * @param requests
      */
     void onAvailabilityError(Set<RequestInfo> requests);
 
     /**
      * Callback when a deletion group request is successfully done.
+     *
      * @param requests
      */
     void onDeletionSuccess(Set<RequestInfo> requests);
 
-    /** Callback when a deletion group request is terminated with errors.
+    /**
+     * Callback when a deletion group request is terminated with errors.
+     *
      * @param requests
      */
     void onDeletionError(Set<RequestInfo> requests);
 
     /**
      * Callback when a reference group request is successfully done.
+     *
      * @param requests
      */
     void onReferenceSuccess(Set<RequestInfo> requests);
 
     /**
      * Callback when a reference group request is terminated with errors.
+     *
      * @param requests
      */
     void onReferenceError(Set<RequestInfo> requests);
 
     /**
      * Callback when a storage group request is successfully done.
+     *
      * @param requests
      */
     void onStoreSuccess(Set<RequestInfo> requests);
 
     /**
      * Callback when a storage group request is terminated with errors.
+     *
      * @param requests
      */
     void onStoreError(Set<RequestInfo> requests);

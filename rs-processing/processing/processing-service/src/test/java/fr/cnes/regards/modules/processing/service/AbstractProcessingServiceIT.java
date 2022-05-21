@@ -66,18 +66,36 @@ import static org.mockito.Mockito.when;
 public abstract class AbstractProcessingServiceIT extends AbstractProcessingIT implements InitializingBean {
 
     public static final String THE_TENANT = "the-tenant";
+
     public static final String THE_USER = "the-user";
+
     public static final String THE_ROLE = "the-role";
+
     public static final String THE_TOKEN = "the-token";
 
-    @Autowired protected BatchServiceImpl batchService;
-    @Autowired protected ProcessUpdater processUpdater;
-    @Autowired protected IPBatchRepository batchRepo;
-    @Autowired protected IBatchEntityRepository batchEntityRepo;
-    @Autowired protected ExecutionServiceImpl executionService;
-    @Autowired protected IPExecutionRepository execRepo;
-    @Autowired protected IExecutionEntityRepository execEntityRepo;
-    @Autowired protected ITenantResolver tenantResolver;
+    @Autowired
+    protected BatchServiceImpl batchService;
+
+    @Autowired
+    protected ProcessUpdater processUpdater;
+
+    @Autowired
+    protected IPBatchRepository batchRepo;
+
+    @Autowired
+    protected IBatchEntityRepository batchEntityRepo;
+
+    @Autowired
+    protected ExecutionServiceImpl executionService;
+
+    @Autowired
+    protected IPExecutionRepository execRepo;
+
+    @Autowired
+    protected IExecutionEntityRepository execEntityRepo;
+
+    @Autowired
+    protected ITenantResolver tenantResolver;
 
     @Override
     public void afterPropertiesSet() {
@@ -91,11 +109,12 @@ public abstract class AbstractProcessingServiceIT extends AbstractProcessingIT i
 
     @After
     public void cleanUp() {
-            execRepo.deleteAll().block();
-            batchRepo.deleteAll().block();
+        execRepo.deleteAll().block();
+        batchRepo.deleteAll().block();
     }
 
     public interface ProcessUpdater {
+
         PProcess.ConcretePProcess update(PProcess.ConcretePProcess p);
     }
 
@@ -112,21 +131,31 @@ public abstract class AbstractProcessingServiceIT extends AbstractProcessingIT i
         @Bean
         public IWorkloadEngineRepository workloadEngineRepository() {
             return new IWorkloadEngineRepository() {
-                @Override public Mono<IWorkloadEngine> findByName(String name) { return Mono.just(makeWorkloadEngine()); }
-                @Override public Mono<IWorkloadEngine> register(IWorkloadEngine engine) { return Mono.just(engine); }
+
+                @Override
+                public Mono<IWorkloadEngine> findByName(String name) {
+                    return Mono.just(makeWorkloadEngine());
+                }
+
+                @Override
+                public Mono<IWorkloadEngine> register(IWorkloadEngine engine) {
+                    return Mono.just(engine);
+                }
             };
         }
 
         @NotNull
         private IWorkloadEngine makeWorkloadEngine() {
             return new IWorkloadEngine() {
-                @Override public String name() { return "TEST"; }
-                @Override public Mono<PExecution> run(ExecutionContext context) {
-                    return context
-                        .getProcess()
-                        .getExecutable()
-                        .execute(context)
-                        .map(ExecutionContext::getExec);
+
+                @Override
+                public String name() {
+                    return "TEST";
+                }
+
+                @Override
+                public Mono<PExecution> run(ExecutionContext context) {
+                    return context.getProcess().getExecutable().execute(context).map(ExecutionContext::getExec);
                 }
             };
         }
@@ -135,10 +164,17 @@ public abstract class AbstractProcessingServiceIT extends AbstractProcessingIT i
         @Bean
         public IPProcessRepository processRepo(ProcessUpdater processUpdater) {
             return new IPProcessRepository() {
-                @Override public Flux<PProcess> findAllByTenant(String tenant) { return Flux.empty(); }
-                @Override public Mono<PProcess> findByTenantAndProcessBusinessID(String tenant, UUID processId) {
+
+                @Override
+                public Flux<PProcess> findAllByTenant(String tenant) {
+                    return Flux.empty();
+                }
+
+                @Override
+                public Mono<PProcess> findByTenantAndProcessBusinessID(String tenant, UUID processId) {
                     return Mono.just(processUpdater.update(makeProcess(processId)));
                 }
+
                 @Override
                 public Mono<PProcess> findByBatch(PBatch batch) {
                     return Mono.just(processUpdater.update(makeProcess(batch.getProcessBusinessId())));
@@ -146,8 +182,11 @@ public abstract class AbstractProcessingServiceIT extends AbstractProcessingIT i
             };
         }
 
-        @Primary @Bean public IDownloadService downloadService() {
+        @Primary
+        @Bean
+        public IDownloadService downloadService() {
             return new IDownloadService() {
+
                 @Override
                 public Mono<Path> download(PInputFile file, Path dest) {
                     return Mono.just(dest);
@@ -156,20 +195,29 @@ public abstract class AbstractProcessingServiceIT extends AbstractProcessingIT i
         }
 
         protected PProcess.ConcretePProcess makeProcess(UUID processUuid) {
-            return new PProcess.ConcretePProcess(
-                    processUuid, processName,
-                    HashMap.empty(), true,
-                    ConstraintChecker.noViolation(), ConstraintChecker.noViolation(),
-                    List.empty(),
-                    new IResultSizeForecast() {
-                        @Override public long expectedResultSizeInBytes(long inputSizeInBytes) { return inputSizeInBytes; }
-                        @Override public String format() { return "*1"; }
-                    },
-                    inputSizeInBytes -> Duration.ofMillis(inputSizeInBytes),
-                    makeWorkloadEngine(),
-                    Mono::just,
-                    IOutputToInputMapper.allMappings()
-            );
+            return new PProcess.ConcretePProcess(processUuid,
+                                                 processName,
+                                                 HashMap.empty(),
+                                                 true,
+                                                 ConstraintChecker.noViolation(),
+                                                 ConstraintChecker.noViolation(),
+                                                 List.empty(),
+                                                 new IResultSizeForecast() {
+
+                                                     @Override
+                                                     public long expectedResultSizeInBytes(long inputSizeInBytes) {
+                                                         return inputSizeInBytes;
+                                                     }
+
+                                                     @Override
+                                                     public String format() {
+                                                         return "*1";
+                                                     }
+                                                 },
+                                                 inputSizeInBytes -> Duration.ofMillis(inputSizeInBytes),
+                                                 makeWorkloadEngine(),
+                                                 Mono::just,
+                                                 IOutputToInputMapper.allMappings());
         }
     }
 

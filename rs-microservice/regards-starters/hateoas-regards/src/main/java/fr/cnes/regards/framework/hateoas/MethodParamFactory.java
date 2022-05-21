@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.hateoas;
 
 /**
  * Method parameter factory
+ *
  * @author msordi
  */
 public final class MethodParamFactory {

@@ -18,20 +18,8 @@
  */
 package fr.cnes.regards.modules.dam.rest.entities;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import fr.cnes.regards.framework.jsoniter.property.JsoniterAttributeModelPropertyTypeFinder;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.jsoniter.property.JsoniterAttributeModelPropertyTypeFinder;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -45,13 +33,22 @@ import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFa
 import fr.cnes.regards.modules.model.rest.ModelController;
 import fr.cnes.regards.modules.model.service.IAttributeModelService;
 import fr.cnes.regards.modules.model.service.IModelService;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
- *
  * Test collection validation
  *
  * @author Marc Sordi
- *
  */
 @DirtiesContext
 @MultitenantTransactional
@@ -79,15 +76,13 @@ public class CollectionValidationIT extends AbstractRegardsTransactionalIT {
     @Autowired
     protected JsoniterAttributeModelPropertyTypeFinder jsoniterAttributeFactory;
 
-
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
     /**
      * Import a model
      *
-     * @param pFilename
-     *            model to import from resources folder
+     * @param pFilename model to import from resources folder
      */
     private void importModel(final String pFilename) {
 
@@ -96,7 +91,9 @@ public class CollectionValidationIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer customizer = customizer();
         customizer.expect(MockMvcResultMatchers.status().isCreated());
 
-        performDefaultFileUpload(ModelController.TYPE_MAPPING + "/import", filePath, customizer,
+        performDefaultFileUpload(ModelController.TYPE_MAPPING + "/import",
+                                 filePath,
+                                 customizer,
                                  "Should be able to import a fragment");
 
         final List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null);
@@ -107,8 +104,7 @@ public class CollectionValidationIT extends AbstractRegardsTransactionalIT {
     /**
      * Instance with a simple single root attribute
      *
-     * @throws ModuleException
-     *             if error occurs!
+     * @throws ModuleException if error occurs!
      */
     @Test(expected = AssertionError.class)
     public void testSimpleModel() throws ModuleException {
@@ -145,7 +141,9 @@ public class CollectionValidationIT extends AbstractRegardsTransactionalIT {
 
         RequestBuilderCustomizer customizer = customizer();
         customizer.expect(MockMvcResultMatchers.status().isCreated());
-        performDefaultPost(CollectionController.TYPE_MAPPING, collection, customizer,
+        performDefaultPost(CollectionController.TYPE_MAPPING,
+                           collection,
+                           customizer,
                            "Failed to create a new collection");
     }
 }

@@ -10,10 +10,8 @@ import org.springframework.data.domain.Pageable;
 
 import java.time.OffsetDateTime;
 
-@Plugin(id = "FakeDatasourcePlugin", version = "beta",
-        description = "For test only",
-        author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+@Plugin(id = "FakeDatasourcePlugin", version = "beta", description = "For test only", author = "REGARDS Team",
+    contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class FakeDatasourcePlugin implements IDataSourcePlugin {
 
     public static final String MODEL_PARAM = "model";
@@ -32,7 +30,8 @@ public class FakeDatasourcePlugin implements IDataSourcePlugin {
     }
 
     @Override
-    public Page<DataObjectFeature> findAll(String tenant, Pageable pageable, OffsetDateTime date) throws DataSourceException {
+    public Page<DataObjectFeature> findAll(String tenant, Pageable pageable, OffsetDateTime date)
+        throws DataSourceException {
         return null;
     }
 }

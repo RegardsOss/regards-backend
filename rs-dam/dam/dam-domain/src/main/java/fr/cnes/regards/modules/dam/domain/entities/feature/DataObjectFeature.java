@@ -23,8 +23,8 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
 
 /**
  * Specific feature properties for data objects
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
 public class DataObjectFeature extends EntityFeature {
 
@@ -39,8 +39,12 @@ public class DataObjectFeature extends EntityFeature {
         super(id, providerId, EntityType.DATA, label);
     }
 
-    public DataObjectFeature(UniformResourceName id, String providerId, String label, String sessionOwner,
-            String session, String model) {
+    public DataObjectFeature(UniformResourceName id,
+                             String providerId,
+                             String label,
+                             String sessionOwner,
+                             String session,
+                             String model) {
         super(id, providerId, EntityType.DATA, label);
         this.sessionOwner = sessionOwner;
         this.session = session;

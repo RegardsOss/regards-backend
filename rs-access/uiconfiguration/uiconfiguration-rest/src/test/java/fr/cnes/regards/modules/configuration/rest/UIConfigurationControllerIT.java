@@ -1,21 +1,20 @@
 package fr.cnes.regards.modules.configuration.rest;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.modules.configuration.dao.IUIConfigurationRepository;
 import fr.cnes.regards.modules.configuration.domain.ConfigurationDTO;
 import fr.cnes.regards.modules.configuration.domain.UIConfiguration;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
+
 import static org.junit.Assert.assertEquals;
 
 /**
- *
  * Class InstanceLayoutControllerIT
- *
+ * <p>
  * IT Tests for REST Controller
  *
  * @author Kevin Marchois

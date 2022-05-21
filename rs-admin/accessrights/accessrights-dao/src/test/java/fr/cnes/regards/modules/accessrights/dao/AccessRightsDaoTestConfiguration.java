@@ -18,25 +18,22 @@
  */
 package fr.cnes.regards.modules.accessrights.dao;
 
+import fr.cnes.regards.framework.amqp.IInstancePublisher;
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.ISubscriber;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-import fr.cnes.regards.framework.amqp.IInstancePublisher;
-import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.ISubscriber;
-
 /**
- *
  * Class AccessRightsDaoTestConfiguration
- *
+ * <p>
  * Test Configuration class
  *
  * @author CS
-
  */
 @Configuration
 @EnableAutoConfiguration
@@ -44,11 +41,9 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 public class AccessRightsDaoTestConfiguration {
 
     /**
-     *
      * Mock AMQP
      *
      * @return {@link IPublisher}
-
      */
     @Bean
     public IPublisher eventPublisher() {
@@ -56,11 +51,9 @@ public class AccessRightsDaoTestConfiguration {
     }
 
     /**
-     *
      * Mock AMQP
      *
      * @return {@link ISubscriber}
-
      */
     @Bean
     public ISubscriber eventSubscriber() {
@@ -68,11 +61,9 @@ public class AccessRightsDaoTestConfiguration {
     }
 
     /**
-     *
      * Mock AMQP
      *
      * @return {@link IPublisher}
-
      */
     @Bean
     public IInstanceSubscriber eventInstanceSubscriber() {
@@ -80,11 +71,9 @@ public class AccessRightsDaoTestConfiguration {
     }
 
     /**
-     *
      * Mock AMQP
      *
      * @return {@link IPublisher}
-
      */
     @Bean
     public IInstancePublisher eventInstancePublisher() {

@@ -18,19 +18,17 @@
  */
 package fr.cnes.regards.modules.opensearch.rest;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-
 /**
  * @author sbinda
- *
  */
 @MultitenantTransactional
 @TestPropertySource("classpath:test.properties")
@@ -44,8 +42,10 @@ public class OpensearchControllerIT extends AbstractRegardsTransactionalIT {
     @Ignore("Replace peps URL by an http mock")
     public void testRetrieveAccessGroupsListOfUser() {
         performDefaultGet(OpensearchController.TYPE_MAPPING + "/descriptor",
-                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT)
-                                  .addParameter("url", "https://peps.cnes.fr/resto/api/collections/S1/describe.xml"),
+                          customizer().expectStatusOk()
+                                      .expectIsNotEmpty(JSON_PATH_ROOT)
+                                      .addParameter("url",
+                                                    "https://peps.cnes.fr/resto/api/collections/S1/describe.xml"),
                           "error");
     }
 

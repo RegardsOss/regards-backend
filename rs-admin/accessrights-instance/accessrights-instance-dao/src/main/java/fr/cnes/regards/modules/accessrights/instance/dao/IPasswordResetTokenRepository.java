@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.dao;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.stream.Stream;
-
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PasswordResetToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-import fr.cnes.regards.modules.accessrights.instance.domain.Account;
-import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PasswordResetToken;
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * Interface for a JPA auto-generated CRUD repository managing {@link PasswordResetToken}s.<br>

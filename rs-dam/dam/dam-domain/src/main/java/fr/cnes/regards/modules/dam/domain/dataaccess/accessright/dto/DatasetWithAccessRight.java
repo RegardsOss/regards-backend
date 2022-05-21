@@ -24,8 +24,8 @@ import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 
 /**
  * DTO To handle association between a {@link Dataset} and a {@link AccessRight}
- * @author Sébastien Binda
  *
+ * @author Sébastien Binda
  */
 public class DatasetWithAccessRight {
 

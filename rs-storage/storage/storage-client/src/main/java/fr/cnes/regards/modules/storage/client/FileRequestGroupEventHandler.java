@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
  */
 @Component("clientRequestEventHandler")
 public class FileRequestGroupEventHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FileRequestsGroupEvent> {
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FileRequestsGroupEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileRequestGroupEventHandler.class);
 
@@ -79,7 +79,8 @@ public class FileRequestGroupEventHandler
         LOGGER.debug("[STORAGE RESPONSES HANDLER] Handling {} FileRequestsGroupEvent...", messages.size());
         long start = System.currentTimeMillis();
         handle(messages);
-        LOGGER.debug("[STORAGE RESPONSES HANDLER] {} FileRequestsGroupEvent handled in {} ms", messages.size(),
+        LOGGER.debug("[STORAGE RESPONSES HANDLER] {} FileRequestsGroupEvent handled in {} ms",
+                     messages.size(),
                      System.currentTimeMillis() - start);
     }
 
@@ -104,8 +105,11 @@ public class FileRequestGroupEventHandler
             }
         }
         LOGGER.trace(
-                "[STORAGE RESPONSES HANDLER] handling {} FileRequestsGroupEvent(s) dispatch by {} dones, {} granted, {} denied",
-                events.size(), dones.size(), granted.size(), denied.size());
+            "[STORAGE RESPONSES HANDLER] handling {} FileRequestsGroupEvent(s) dispatch by {} dones, {} granted, {} denied",
+            events.size(),
+            dones.size(),
+            granted.size(),
+            denied.size());
         handleDone(dones);
         handleGranted(granted);
         handleDenied(denied);
@@ -113,17 +117,17 @@ public class FileRequestGroupEventHandler
 
     private void handleDenied(Set<FileRequestsGroupEvent> denied) {
         if ((denied != null) && !denied.isEmpty()) {
-            listener.onRequestDenied(
-                    denied.stream().map(e -> RequestInfo.build(e.getGroupId(), e.getSuccess(), e.getErrors()))
-                            .collect(Collectors.toSet()));
+            listener.onRequestDenied(denied.stream()
+                                           .map(e -> RequestInfo.build(e.getGroupId(), e.getSuccess(), e.getErrors()))
+                                           .collect(Collectors.toSet()));
         }
     }
 
     private void handleGranted(Set<FileRequestsGroupEvent> granted) {
         if ((granted != null) && !granted.isEmpty()) {
-            listener.onRequestGranted(
-                    granted.stream().map(e -> RequestInfo.build(e.getGroupId(), e.getSuccess(), e.getErrors()))
-                            .collect(Collectors.toSet()));
+            listener.onRequestGranted(granted.stream()
+                                             .map(e -> RequestInfo.build(e.getGroupId(), e.getSuccess(), e.getErrors()))
+                                             .collect(Collectors.toSet()));
         }
 
     }

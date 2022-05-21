@@ -156,18 +156,28 @@ public class DatasetServiceTest {
         List<AbstractEntity<?>> findByTagsValueCol2IpId = new ArrayList<>();
         findByTagsValueCol2IpId.add(dataSet1);
         Mockito.when(entitiesRepositoryMocked.findByTags(dataSet2.getIpId().toString()))
-                .thenReturn(findByTagsValueCol2IpId);
+               .thenReturn(findByTagsValueCol2IpId);
         Mockito.when(entitiesRepositoryMocked.findById(dataSet1.getId())).thenReturn(Optional.of(dataSet1));
         Mockito.when(entitiesRepositoryMocked.findById(dataSet2.getId())).thenReturn(Optional.of(dataSet2));
 
         IDeletedEntityRepository deletedEntityRepositoryMocked = Mockito.mock(IDeletedEntityRepository.class);
 
         publisherMocked = Mockito.mock(IPublisher.class);
-        dataSetServiceMocked = new DatasetService(Mockito.mock(IModelFinder.class), dataSetRepositoryMocked,
-                pAttributeModelService, pModelAttributeService, entitiesRepositoryMocked, modelService,
-                deletedEntityRepositoryMocked, null, emMocked, publisherMocked, runtimeTenantResolver,
-                Mockito.mock(IOpenSearchService.class), Mockito.mock(IPluginService.class),
-                Mockito.mock(IAbstractEntityRequestRepository.class), damSettingsService);
+        dataSetServiceMocked = new DatasetService(Mockito.mock(IModelFinder.class),
+                                                  dataSetRepositoryMocked,
+                                                  pAttributeModelService,
+                                                  pModelAttributeService,
+                                                  entitiesRepositoryMocked,
+                                                  modelService,
+                                                  deletedEntityRepositoryMocked,
+                                                  null,
+                                                  emMocked,
+                                                  publisherMocked,
+                                                  runtimeTenantResolver,
+                                                  Mockito.mock(IOpenSearchService.class),
+                                                  Mockito.mock(IPluginService.class),
+                                                  Mockito.mock(IAbstractEntityRequestRepository.class),
+                                                  damSettingsService);
 
     }
 
@@ -178,45 +188,64 @@ public class DatasetServiceTest {
         modelOfObjects = modelAttrAssocs.get(0).getModel();
         modelOfObjects.setId(3L);
         ModelAttrAssoc attStringModelAtt = modelAttrAssocs.stream()
-                .filter(ma -> ma.getAttribute().getFragment().getName().equals(Fragment.getDefaultName())
-                        && ma.getAttribute().getName().equals("att_string"))
-                .findAny().get();
+                                                          .filter(ma -> ma.getAttribute()
+                                                                          .getFragment()
+                                                                          .getName()
+                                                                          .equals(Fragment.getDefaultName())
+                                                              && ma.getAttribute().getName().equals("att_string"))
+                                                          .findAny()
+                                                          .get();
         attString = attStringModelAtt.getAttribute();
         attString.setId(1L);
         Mockito.when(pAttributeModelService.findByNameAndFragmentName(attString.getName(), null)).thenReturn(attString);
         Mockito.when(pModelAttributeService.getModelAttrAssoc(modelOfObjects.getId(), attString))
-                .thenReturn(attStringModelAtt);
+               .thenReturn(attStringModelAtt);
         ModelAttrAssoc attBooleanModelAtt = modelAttrAssocs.stream()
-                .filter(ma -> ma.getAttribute().getFragment().getName().equals(Fragment.getDefaultName())
-                        && ma.getAttribute().getName().equals("att_boolean"))
-                .findAny().get();
+                                                           .filter(ma -> ma.getAttribute()
+                                                                           .getFragment()
+                                                                           .getName()
+                                                                           .equals(Fragment.getDefaultName())
+                                                               && ma.getAttribute().getName().equals("att_boolean"))
+                                                           .findAny()
+                                                           .get();
         attBoolean = attBooleanModelAtt.getAttribute();
         attBoolean.setId(2L);
         Mockito.when(pAttributeModelService.findByNameAndFragmentName(attBoolean.getName(), null))
-                .thenReturn(attBoolean);
+               .thenReturn(attBoolean);
         Mockito.when(pModelAttributeService.getModelAttrAssoc(modelOfObjects.getId(), attBoolean))
-                .thenReturn(attBooleanModelAtt);
+               .thenReturn(attBooleanModelAtt);
         ModelAttrAssoc CRS_CRSModelAtt = modelAttrAssocs.stream()
-                .filter(ma -> ma.getAttribute().getFragment().getName().equals("GEO")
-                        && ma.getAttribute().getName().equals("CRS"))
-                .findAny().get();
+                                                        .filter(ma -> ma.getAttribute()
+                                                                        .getFragment()
+                                                                        .getName()
+                                                                        .equals("GEO") && ma.getAttribute()
+                                                                                            .getName()
+                                                                                            .equals("CRS"))
+                                                        .findAny()
+                                                        .get();
         GEO_CRS = CRS_CRSModelAtt.getAttribute();
         GEO_CRS.setId(3L);
-        Mockito.when(pAttributeModelService
-                .findByNameAndFragmentName(GEO_CRS.getName(), GEO_CRS.getFragment().getName())).thenReturn(GEO_CRS);
+        Mockito.when(pAttributeModelService.findByNameAndFragmentName(GEO_CRS.getName(),
+                                                                      GEO_CRS.getFragment().getName()))
+               .thenReturn(GEO_CRS);
         Mockito.when(pModelAttributeService.getModelAttrAssoc(modelOfObjects.getId(), GEO_CRS))
-                .thenReturn(CRS_CRSModelAtt);
+               .thenReturn(CRS_CRSModelAtt);
         ModelAttrAssoc Contact_PhoneModelAtt = modelAttrAssocs.stream()
-                .filter(ma -> ma.getAttribute().getFragment().getName().equals("Contact")
-                        && ma.getAttribute().getName().equals("Phone"))
-                .findAny().get();
+                                                              .filter(ma -> ma.getAttribute()
+                                                                              .getFragment()
+                                                                              .getName()
+                                                                              .equals("Contact") && ma.getAttribute()
+                                                                                                      .getName()
+                                                                                                      .equals("Phone"))
+                                                              .findAny()
+                                                              .get();
         Contact_Phone = Contact_PhoneModelAtt.getAttribute();
         Contact_Phone.setId(5L);
         Mockito.when(pAttributeModelService.findByNameAndFragmentName(Contact_Phone.getName(),
                                                                       Contact_Phone.getFragment().getName()))
-                .thenReturn(Contact_Phone);
+               .thenReturn(Contact_Phone);
         Mockito.when(pModelAttributeService.getModelAttrAssoc(modelOfObjects.getId(), Contact_Phone))
-                .thenReturn(Contact_PhoneModelAtt);
+               .thenReturn(Contact_PhoneModelAtt);
     }
 
     /**
@@ -224,14 +253,19 @@ public class DatasetServiceTest {
      */
     private ICriterion getValidClause() {
         // textAtt contains "testContains"
-        ICriterion containsCrit = ICriterion.contains("attributes." + attString.getName(), "testContains", StringMatchType.KEYWORD);
+        ICriterion containsCrit = ICriterion.contains("attributes." + attString.getName(),
+                                                      "testContains",
+                                                      StringMatchType.KEYWORD);
         // textAtt ends with "testEndsWith"
-        ICriterion endsWithCrit = ICriterion
-                .endsWith("attributes." + GEO_CRS.getFragment().getName() + "." + GEO_CRS.getName(), "testEndsWith", StringMatchType.KEYWORD);
+        ICriterion endsWithCrit = ICriterion.endsWith(
+            "attributes." + GEO_CRS.getFragment().getName() + "." + GEO_CRS.getName(),
+            "testEndsWith",
+            StringMatchType.KEYWORD);
         // textAtt strictly equals "testEquals"
-        ICriterion equalsCrit = ICriterion
-                .eq("attributes." + Contact_Phone.getFragment().getName() + "." + Contact_Phone.getName(),
-                    "testEquals", StringMatchType.KEYWORD);
+        ICriterion equalsCrit = ICriterion.eq(
+            "attributes." + Contact_Phone.getFragment().getName() + "." + Contact_Phone.getName(),
+            "testEquals",
+            StringMatchType.KEYWORD);
 
         ICriterion booleanCrit = new BooleanMatchCriterion("attributes." + attBoolean.getName(), true);
 

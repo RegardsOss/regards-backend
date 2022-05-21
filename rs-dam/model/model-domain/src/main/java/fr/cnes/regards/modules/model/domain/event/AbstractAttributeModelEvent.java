@@ -18,11 +18,6 @@
  */
 package fr.cnes.regards.modules.model.domain.event;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeProperty;
@@ -31,11 +26,15 @@ import fr.cnes.regards.modules.model.domain.attributes.restriction.AbstractRestr
 import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionType;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 /**
  * {@link AttributeModel} event common information
  *
  * @author Marc Sordi
- *
  */
 public abstract class AbstractAttributeModelEvent implements ISubscribable {
 
@@ -84,11 +83,14 @@ public abstract class AbstractAttributeModelEvent implements ISubscribable {
         this.propertyType = pAttributeModel.getType();
         this.fullJsonPath = pAttributeModel.getFullJsonPath();
         this.esMappping = pAttributeModel.getEsMapping();
-        this.restrictionType = Optional.ofNullable(pAttributeModel.getRestriction()).map(AbstractRestriction::getType)
-                .orElse(RestrictionType.NO_RESTRICTION);
-        this.attributeProperties = pAttributeModel.getProperties() == null ? new HashMap<>()
-                : pAttributeModel.getProperties().stream()
-                        .collect(Collectors.toMap(AttributeProperty::getKey, AttributeProperty::getValue));
+        this.restrictionType = Optional.ofNullable(pAttributeModel.getRestriction())
+                                       .map(AbstractRestriction::getType)
+                                       .orElse(RestrictionType.NO_RESTRICTION);
+        this.attributeProperties = pAttributeModel.getProperties() == null ?
+            new HashMap<>() :
+            pAttributeModel.getProperties()
+                           .stream()
+                           .collect(Collectors.toMap(AttributeProperty::getKey, AttributeProperty::getValue));
     }
 
     public PropertyType getPropertyType() {

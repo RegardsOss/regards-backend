@@ -18,16 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -41,10 +31,19 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.acquisition.service.job.StopChainThread;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 /**
- *
  * Handle job event, mostly for job failure
+ *
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet
  */
@@ -92,7 +91,9 @@ public class AcquisitionChainJobEventHandler implements ApplicationListener<Appl
             runtimeTenantResolver.forceTenant(tenant);
             JobEvent jobEvent = wrapper.getContent();
             LOGGER.debug("Job event received with state \"{}\", tenant \"{}\" and job info id \"{}\"",
-                         jobEvent.getJobEventType(), tenant, jobEvent.getJobId());
+                         jobEvent.getJobEventType(),
+                         tenant,
+                         jobEvent.getJobId());
             try {
                 switch (jobEvent.getJobEventType()) {
                     case FAILED:
@@ -110,8 +111,10 @@ public class AcquisitionChainJobEventHandler implements ApplicationListener<Appl
                 LOGGER.error("Error occurs during job event handling", e);
                 StringWriter sw = new StringWriter();
                 e.printStackTrace(new PrintWriter(sw));
-                notificationClient.notify(sw.toString(), "Error occurs during job event handling",
-                                          NotificationLevel.ERROR, DefaultRole.ADMIN);
+                notificationClient.notify(sw.toString(),
+                                          "Error occurs during job event handling",
+                                          NotificationLevel.ERROR,
+                                          DefaultRole.ADMIN);
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

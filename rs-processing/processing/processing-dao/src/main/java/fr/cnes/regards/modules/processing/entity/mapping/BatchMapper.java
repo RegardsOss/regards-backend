@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.entity.mapping;
 
 import fr.cnes.regards.modules.processing.domain.PBatch;
@@ -35,30 +35,28 @@ public class BatchMapper implements DomainEntityMapper.Batch {
 
     @Override
     public BatchEntity toEntity(PBatch batch) {
-        return new BatchEntity(
-                batch.getId(),
-                batch.getProcessBusinessId(),
-                batch.getCorrelationId(),
-                batch.getTenant(),
-                batch.getUser(),
-                batch.getUserRole(),
-                new ParamValues(batch.getUserSuppliedParameters().toJavaList()),
-                new FileStatsByDataset(batch.getFilesetsByDataset().toJavaMap()), batch.isPersisted());
+        return new BatchEntity(batch.getId(),
+                               batch.getProcessBusinessId(),
+                               batch.getCorrelationId(),
+                               batch.getTenant(),
+                               batch.getUser(),
+                               batch.getUserRole(),
+                               new ParamValues(batch.getUserSuppliedParameters().toJavaList()),
+                               new FileStatsByDataset(batch.getFilesetsByDataset().toJavaMap()),
+                               batch.isPersisted());
     }
 
     @Override
     public PBatch toDomain(BatchEntity entity) {
-        return new PBatch(
-                entity.getCorrelationId(),
-                entity.getId(),
-                entity.getProcessBusinessId(),
-                entity.getTenant(),
-                entity.getUserEmail(),
-                entity.getUserRole(),
-                List.ofAll(entity.getParameters().getValues()),
-                HashMap.ofAll(entity.getFilesets().getMap()),
-                entity.isPersisted()
-        );
+        return new PBatch(entity.getCorrelationId(),
+                          entity.getId(),
+                          entity.getProcessBusinessId(),
+                          entity.getTenant(),
+                          entity.getUserEmail(),
+                          entity.getUserRole(),
+                          List.ofAll(entity.getParameters().getValues()),
+                          HashMap.ofAll(entity.getFilesets().getMap()),
+                          entity.isPersisted());
     }
 
 }

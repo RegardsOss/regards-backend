@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.dam.domain.dataaccess.accessright;
  * Quality Level of an AIP, it is determined by a human
  *
  * @author Sylvain Vissiere-Guerinet
- *
  */
 public enum QualityLevel {
 

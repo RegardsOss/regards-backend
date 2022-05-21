@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.framework.security.endpoint;
 
+import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,14 +29,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.security.domain.ResourceMapping;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-
 /**
  * Class DefaultPluginManagementIT
- *
+ * <p>
  * Test class for default IPLuginResourceManagement implemenation
+ *
  * @author sbinda
  */
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -54,9 +54,9 @@ public class DefaultPluginManagementIT {
     @Test
     public void defaultPluginResourceManagerTest() {
 
-        Assert.assertTrue(
-                manager.manageMethodResource(new ResourceMapping("resource/path", "Controller", RequestMethod.GET))
-                        .isEmpty());
+        Assert.assertTrue(manager.manageMethodResource(new ResourceMapping("resource/path",
+                                                                           "Controller",
+                                                                           RequestMethod.GET)).isEmpty());
     }
 
 }

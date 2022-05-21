@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.utils.metamodel.MetaAttribute;
 
 /**
  * Cette classe permet de gerer les attributs de type CLOB, et LONG_STRING
- * 
+ *
  * @author Christophe Mertz
  */
 

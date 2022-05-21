@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.order.service.job.parameters;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 
-
 /**
  * This class is a Job Parameter used by {@link fr.cnes.regards.modules.order.service.job.ProcessExecutionJob}.
  *

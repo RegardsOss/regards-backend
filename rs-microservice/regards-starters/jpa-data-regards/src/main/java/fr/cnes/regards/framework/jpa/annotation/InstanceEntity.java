@@ -18,17 +18,14 @@
  */
 package fr.cnes.regards.framework.jpa.annotation;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Class InstanceEntity
- *
+ * <p>
  * Annotation to indicates that the entity is associated to the instance database. Used to separate multitenancy
  * projects databases and instance database.
+ *
  * @author CS
  */
 @Target(ElementType.TYPE)

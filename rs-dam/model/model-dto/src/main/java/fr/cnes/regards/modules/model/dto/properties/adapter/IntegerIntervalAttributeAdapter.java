@@ -18,23 +18,23 @@
  */
 package fr.cnes.regards.modules.model.dto.properties.adapter;
 
-import java.io.IOException;
-
 import com.google.common.collect.Range;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-
 import fr.cnes.regards.modules.model.dto.properties.AbstractProperty;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.IntegerIntervalProperty;
 
+import java.io.IOException;
+
 /**
  * AbstractIntervalAttributeTypeAdapter specialization to manage IntegerIntervalAttribute.<br/>
  * This adapter is taken into account by GSon if adapted class contains annotation @JsonAdapter.
+ *
  * @author oroussel
  */
 public class IntegerIntervalAttributeAdapter
-        extends AbstractIntervalAttributeTypeAdapter<Integer, IntegerIntervalProperty> {
+    extends AbstractIntervalAttributeTypeAdapter<Integer, IntegerIntervalProperty> {
 
     @Override
     protected void writeValueLowerBound(JsonWriter pOut, AbstractProperty<Range<Integer>> pValue) throws IOException {

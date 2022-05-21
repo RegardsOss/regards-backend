@@ -39,16 +39,16 @@ import java.time.OffsetDateTime;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 
-
 /**
  * Test for {@link FeatureSaveMetadataScheduler}
+ *
  * @author Iliana Ghazali
  */
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_savemetadata_job_it",
-        "regards.amqp.enabled=true" })
+    "regards.amqp.enabled=true" })
 @ActiveProfiles(value = { "testAmqp", "noFemHandler", "noscheduler" })
-public class FeatureDumpSchedulerIT extends AbstractFeatureMultitenantServiceIT  {
+public class FeatureDumpSchedulerIT extends AbstractFeatureMultitenantServiceIT {
 
     private String tenant;
 
@@ -70,10 +70,9 @@ public class FeatureDumpSchedulerIT extends AbstractFeatureMultitenantServiceIT 
     @Purpose("Test update of a scheduler")
     public void testUpdateDumpAndScheduler() throws ExecutionException, InterruptedException, ModuleException {
 
-        DumpParameters dumpParameters = new DumpParameters()
-                .setActiveModule(true)
-                .setDumpLocation("target/dump")
-                .setCronTrigger("0 * * * * *");
+        DumpParameters dumpParameters = new DumpParameters().setActiveModule(true)
+                                                            .setDumpLocation("target/dump")
+                                                            .setCronTrigger("0 * * * * *");
 
         dumpSettingsService.setDumpParameters(dumpParameters);
 
@@ -86,17 +85,15 @@ public class FeatureDumpSchedulerIT extends AbstractFeatureMultitenantServiceIT 
         scheduler.get();
         OffsetDateTime executionDuration = OffsetDateTime.now();
         Assert.assertTrue("The scheduler was not updated because it was not executed with new cron trigger",
-                          Duration.between(start, executionDuration).compareTo(Duration.ofSeconds(15)) < 0
-        );
+                          Duration.between(start, executionDuration).compareTo(Duration.ofSeconds(15)) < 0);
     }
 
     @Test
     @Purpose("Test update of a scheduler with an incorrect dump configuration")
     public void testUpdateDumpAndSchedulerError() {
-        DumpParameters dumpParameters = new DumpParameters()
-                .setActiveModule(true)
-                .setDumpLocation("target/dump")
-                .setCronTrigger("* * *");
+        DumpParameters dumpParameters = new DumpParameters().setActiveModule(true)
+                                                            .setDumpLocation("target/dump")
+                                                            .setCronTrigger("* * *");
         try {
             dumpSettingsService.setDumpParameters(dumpParameters);
             Assert.fail(String.format("%s was expected", EntityInvalidException.class.getName()));

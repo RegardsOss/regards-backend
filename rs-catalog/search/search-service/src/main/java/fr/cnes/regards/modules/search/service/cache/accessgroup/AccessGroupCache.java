@@ -47,6 +47,7 @@ public class AccessGroupCache implements IAccessGroupCache {
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessGroupCache.class);
 
     private final IProjectUsersClient projectUsersClient;
+
     private final IAccessGroupClient accessGroupClient;
 
     public AccessGroupCache(IProjectUsersClient projectUsersClient, IAccessGroupClient accessGroupClient) {
@@ -59,12 +60,18 @@ public class AccessGroupCache implements IAccessGroupCache {
         List<AccessGroup> accessGroups = new ArrayList<>();
         try {
             FeignSecurityManager.asSystem();
-            ProjectUser projectUser = HateoasUtils.unwrap(projectUsersClient.retrieveProjectUserByEmail(email).getBody());
+            ProjectUser projectUser = HateoasUtils.unwrap(projectUsersClient.retrieveProjectUserByEmail(email)
+                                                                            .getBody());
             if (projectUser != null) {
-                projectUser.getAccessGroups().forEach(accessGroup -> accessGroups.add(HateoasUtils.unwrap(accessGroupClient.retrieveAccessGroup(accessGroup).getBody())));
+                projectUser.getAccessGroups()
+                           .forEach(accessGroup -> accessGroups.add(HateoasUtils.unwrap(accessGroupClient.retrieveAccessGroup(
+                               accessGroup).getBody())));
             } else {
-                accessGroups.addAll(
-                        HateoasUtils.retrieveAllPages(100, pageable -> accessGroupClient.retrieveAccessGroupsList(true, pageable.getPageNumber(), pageable.getPageSize())));
+                accessGroups.addAll(HateoasUtils.retrieveAllPages(100,
+                                                                  pageable -> accessGroupClient.retrieveAccessGroupsList(
+                                                                      true,
+                                                                      pageable.getPageNumber(),
+                                                                      pageable.getPageSize())));
             }
         } finally {
             FeignSecurityManager.reset();

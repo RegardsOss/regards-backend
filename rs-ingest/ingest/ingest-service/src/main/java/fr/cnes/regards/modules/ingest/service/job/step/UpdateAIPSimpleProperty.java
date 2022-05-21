@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.job.step;
 
-import java.util.List;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
@@ -30,6 +28,8 @@ import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTaskType;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 
+import java.util.List;
+
 /**
  * Update step to add/remove a Descriptive property from {@link InformationPackageMap} of an {@link AIP}
  *
@@ -39,7 +39,7 @@ public class UpdateAIPSimpleProperty implements IUpdateStep {
 
     @Override
     public AIPEntityUpdateWrapper run(AIPEntityUpdateWrapper aipWrapper, AbstractAIPUpdateTask updateTask)
-            throws ModuleException {
+        throws ModuleException {
         AIPUpdateTaskType taskType = updateTask.getType();
         switch (taskType) {
             case ADD_CATEGORY:

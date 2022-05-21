@@ -26,14 +26,15 @@ import java.util.List;
 public class OrderSettingsService extends AbstractSettingService implements IOrderSettingsService {
 
     private final ITenantResolver tenantsResolver;
+
     private final IRuntimeTenantResolver runtimeTenantResolver;
+
     private OrderSettingsService self;
 
     public OrderSettingsService(IDynamicTenantSettingService dynamicTenantSettingService,
                                 ITenantResolver tenantsResolver,
                                 IRuntimeTenantResolver runtimeTenantResolver,
-                                OrderSettingsService orderSettingsService
-    ) {
+                                OrderSettingsService orderSettingsService) {
         super(dynamicTenantSettingService);
         this.tenantsResolver = tenantsResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;

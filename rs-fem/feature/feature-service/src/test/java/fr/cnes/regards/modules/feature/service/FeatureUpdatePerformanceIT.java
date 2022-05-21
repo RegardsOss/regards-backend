@@ -1,21 +1,5 @@
 package fr.cnes.regards.modules.feature.service;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import org.assertj.core.util.Lists;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
@@ -26,14 +10,26 @@ import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import org.assertj.core.util.Lists;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
+import java.util.*;
+
 import static org.junit.Assert.assertEquals;
 
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=feature_uperf", "regards.amqp.enabled=true",
-                "regards.feature.metrics.enabled=true"
-//                        , "spring.jpa.show-sql=true"
-        }, locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
-        "classpath:metrics.properties" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=feature_uperf", "regards.amqp.enabled=true",
+        "regards.feature.metrics.enabled=true"
+        //                        , "spring.jpa.show-sql=true"
+    },
+    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 public class FeatureUpdatePerformanceIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -61,8 +57,10 @@ public class FeatureUpdatePerformanceIT extends AbstractFeatureMultitenantServic
     public void createFeatures() throws InterruptedException {
 
         // Register creation requests
-        FeatureSessionMetadata metadata = FeatureSessionMetadata
-                .build("sessionOwner", "session", PriorityLevel.NORMAL, Lists.emptyList());
+        FeatureSessionMetadata metadata = FeatureSessionMetadata.build("sessionOwner",
+                                                                       "session",
+                                                                       PriorityLevel.NORMAL,
+                                                                       Lists.emptyList());
         String modelName = mockModelClient(GeodeProperties.getGeodeModel());
 
         Thread.sleep(5_000);
@@ -78,8 +76,12 @@ public class FeatureUpdatePerformanceIT extends AbstractFeatureMultitenantServic
         for (int i = 1; i <= NB_FEATURES; i++) {
             bulk++;
             String id = String.format(PROVIDER_ID_FORMAT, i);
-            Feature feature = Feature
-                    .build(id, "owner", refs.get(id), IGeometry.unlocated(), EntityType.DATA, modelName);
+            Feature feature = Feature.build(id,
+                                            "owner",
+                                            refs.get(id),
+                                            IGeometry.unlocated(),
+                                            EntityType.DATA,
+                                            modelName);
             GeodeProperties.addGeodeUpdateProperties(feature);
             events.add(FeatureUpdateRequestEvent.build("test", metadata, feature, requestDate));
 

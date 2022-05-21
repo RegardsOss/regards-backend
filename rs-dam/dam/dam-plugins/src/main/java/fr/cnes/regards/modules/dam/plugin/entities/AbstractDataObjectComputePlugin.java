@@ -18,16 +18,8 @@
  */
 package fr.cnes.regards.modules.dam.plugin.entities;
 
-import java.util.Optional;
-import java.util.function.Consumer;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -42,9 +34,16 @@ import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.Fragment;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * Implementation of {@link IComputedAttribute} plugin interface.
+ *
  * @param <R> type of the result attribute value
  * @author Sylvain Vissiere-Guerinet
  */
@@ -79,12 +78,12 @@ public abstract class AbstractDataObjectComputePlugin<R> implements IComputedAtt
     private AttributeModel attributeToCompute;
 
     @PluginParameter(name = RESULT_ATTRIBUTE_NAME, label = "Result attribute name",
-            description = "Name of attribute to compute (ie result attribute).", unconfigurable = true)
+        description = "Name of attribute to compute (ie result attribute).", unconfigurable = true)
     protected String attributeToComputeName;
 
     @PluginParameter(name = RESULT_FRAGMENT_NAME, label = "Result fragment name",
-            description = "Name of attribute to compute fragment. If computed attribute belongs to default fragment, this value can be set to null.",
-            optional = true, unconfigurable = true)
+        description = "Name of attribute to compute fragment. If computed attribute belongs to default fragment, this value can be set to null.",
+        optional = true, unconfigurable = true)
     protected String attributeToComputeFragmentName;
 
     protected R result;
@@ -94,36 +93,38 @@ public abstract class AbstractDataObjectComputePlugin<R> implements IComputedAtt
         return result;
     }
 
-    protected void init(String attributeToComputeName, String attributeToComputeFragmentName,
-            String parameterAttributeName, String parameterAttributeFragmentName) {
-        attributeToCompute = attModelRepos
-                .findByNameAndFragmentName(attributeToComputeName,
-                                           Strings.isNullOrEmpty(attributeToComputeFragmentName)
-                                                   ? Fragment.getDefaultName()
-                                                   : attributeToComputeFragmentName);
+    protected void init(String attributeToComputeName,
+                        String attributeToComputeFragmentName,
+                        String parameterAttributeName,
+                        String parameterAttributeFragmentName) {
+        attributeToCompute = attModelRepos.findByNameAndFragmentName(attributeToComputeName,
+                                                                     Strings.isNullOrEmpty(
+                                                                         attributeToComputeFragmentName) ?
+                                                                         Fragment.getDefaultName() :
+                                                                         attributeToComputeFragmentName);
         if (attributeToCompute == null) {
             if (!Strings.isNullOrEmpty(attributeToComputeFragmentName)) {
-                throw new IllegalArgumentException(
-                        String.format("Cannot find computed attribute '%s'.'%s'", attributeToComputeFragmentName,
-                                      attributeToComputeName));
+                throw new IllegalArgumentException(String.format("Cannot find computed attribute '%s'.'%s'",
+                                                                 attributeToComputeFragmentName,
+                                                                 attributeToComputeName));
             } else {
-                throw new IllegalArgumentException(
-                        String.format("Cannot find computed attribute '%s'", attributeToComputeName));
+                throw new IllegalArgumentException(String.format("Cannot find computed attribute '%s'",
+                                                                 attributeToComputeName));
             }
         }
-        parameterAttribute = attModelRepos
-                .findByNameAndFragmentName(parameterAttributeName,
-                                           Strings.isNullOrEmpty(parameterAttributeFragmentName)
-                                                   ? Fragment.getDefaultName()
-                                                   : parameterAttributeFragmentName);
+        parameterAttribute = attModelRepos.findByNameAndFragmentName(parameterAttributeName,
+                                                                     Strings.isNullOrEmpty(
+                                                                         parameterAttributeFragmentName) ?
+                                                                         Fragment.getDefaultName() :
+                                                                         parameterAttributeFragmentName);
         if (parameterAttribute == null) {
             if (!Strings.isNullOrEmpty(parameterAttributeFragmentName)) {
-                throw new IllegalArgumentException(
-                        String.format("Cannot find parameter attribute '%s'.'%s'", parameterAttributeFragmentName,
-                                      parameterAttributeName));
+                throw new IllegalArgumentException(String.format("Cannot find parameter attribute '%s'.'%s'",
+                                                                 parameterAttributeFragmentName,
+                                                                 parameterAttributeName));
             } else {
-                throw new IllegalArgumentException(
-                        String.format("Cannot find parameter attribute '%s'", parameterAttributeName));
+                throw new IllegalArgumentException(String.format("Cannot find parameter attribute '%s'",
+                                                                 parameterAttributeName));
             }
         }
 
@@ -131,7 +132,7 @@ public abstract class AbstractDataObjectComputePlugin<R> implements IComputedAtt
 
     /**
      * @param dataset dataset on which the attribute, once computed, will be added. This allows us to know which
-     * DataObject should be used.
+     *                DataObject should be used.
      */
     @Override
     public void compute(Dataset dataset) {
@@ -141,8 +142,10 @@ public abstract class AbstractDataObjectComputePlugin<R> implements IComputedAtt
         searchKey.setSearchIndex(tenantResolver.getTenant());
         searchKey.setCrs(projectGeoSettings.getCrs());
         esRepo.searchAll(searchKey, this.doCompute(), dataset.getSubsettingClause());
-        log.debug("Attribute {} computed for Dataset {}. Result: {}", parameterAttribute.getFullJsonPath(),
-                  dataset.getIpId().toString(), result);
+        log.debug("Attribute {} computed for Dataset {}. Result: {}",
+                  parameterAttribute.getFullJsonPath(),
+                  dataset.getIpId().toString(),
+                  result);
     }
 
     @Override
@@ -162,12 +165,12 @@ public abstract class AbstractDataObjectComputePlugin<R> implements IComputedAtt
         }
         // the attribute is in a fragment so :
         // filter the fragment property then filter the right property on fragment properties
-        com.google.common.base.Optional<ObjectProperty> fragmentOpt = com.google.common.base.Optional
-                .fromNullable((ObjectProperty) object.getProperty(parameterAttribute.getFragment().getName()));
-        return fragmentOpt.isPresent()
-                ? Iterables.tryFind(fragmentOpt.get().getValue(), p -> p.getName().equals(parameterAttribute.getName()))
-                        .toJavaUtil()
-                : Optional.empty();
+        com.google.common.base.Optional<ObjectProperty> fragmentOpt = com.google.common.base.Optional.fromNullable((ObjectProperty) object.getProperty(
+            parameterAttribute.getFragment().getName()));
+        return fragmentOpt.isPresent() ?
+            Iterables.tryFind(fragmentOpt.get().getValue(), p -> p.getName().equals(parameterAttribute.getName()))
+                     .toJavaUtil() :
+            Optional.empty();
 
     }
 

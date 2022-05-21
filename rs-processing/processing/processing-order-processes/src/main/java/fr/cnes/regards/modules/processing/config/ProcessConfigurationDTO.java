@@ -24,7 +24,6 @@ import fr.cnes.regards.modules.processing.dto.ProcessPluginConfigurationRightsDT
  * POJO used to import/export process configurations
  *
  * @author Sébastien Binda
- *
  */
 public class ProcessConfigurationDTO {
 

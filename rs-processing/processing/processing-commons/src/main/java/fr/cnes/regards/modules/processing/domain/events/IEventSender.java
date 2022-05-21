@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.events;
 
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
@@ -24,7 +24,6 @@ import reactor.core.publisher.Mono;
  * Interface defining the signature to send an event in te context of a tenant, giving back a Mono of the event.
  *
  * @param <M> the message type
- *
  * @author gandrieu
  */
 public interface IEventSender<M extends ISubscribable> {

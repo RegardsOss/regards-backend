@@ -1,7 +1,5 @@
 package fr.cnes.regards.modules.opensearch.service.converter;
 
-import java.io.IOException;
-
 import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -13,8 +11,11 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
 
+import java.io.IOException;
+
 /**
  * Type adapter reading an OpenSearch query string and converting it to an {@link ICriterion}
+ *
  * @author Xavier-Alexandre Brochard
  */
 @GsonTypeAdapterBean(adapted = ICriterion.class)
@@ -32,8 +33,8 @@ public class ICriterionTypeAdapter extends TypeAdapter<ICriterion> {
 
     /**
      * @param openSearchService The OpenSearch service building {@link ICriterion} from a request string. Autowired by
-     *            Spring. Must not be null.
-     * @param gson Gson. Autowired by Spring. Must not be null.
+     *                          Spring. Must not be null.
+     * @param gson              Gson. Autowired by Spring. Must not be null.
      */
     public ICriterionTypeAdapter(IOpenSearchService openSearchService, Gson gson) {
         super();

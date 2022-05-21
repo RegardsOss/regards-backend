@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain;
 
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
@@ -28,10 +28,9 @@ import java.time.OffsetDateTime;
 import static fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus.*;
 import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
 
-
 /**
  * This class defines an abstract step. Subclasses are {@link PStepFinal} and {@link PStepIntermediary}.
- *
+ * <p>
  * A step is immutable.
  *
  * @author gandrieu
@@ -40,15 +39,17 @@ import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
 public abstract class PStep {
 
     protected final ExecutionStatus status;
+
     protected final OffsetDateTime time;
+
     protected final String message;
 
     public abstract PStep withTime(OffsetDateTime time);
 
     public static PStep from(ExecutionStatus status, OffsetDateTime time, String message) {
-        return status.isFinalStep()
-                ? new PStepFinal(status, time, message)
-                : new PStepIntermediary(status, time, message);
+        return status.isFinalStep() ?
+            new PStepFinal(status, time, message) :
+            new PStepIntermediary(status, time, message);
     }
 
     public static PStepIntermediary registered(String message) {
@@ -91,5 +92,7 @@ public abstract class PStep {
         return new PStepSequence(List.of(steps));
     }
 
-    public PStep clean() { return from(status, time, message); }
+    public PStep clean() {
+        return from(status, time, message);
+    }
 }

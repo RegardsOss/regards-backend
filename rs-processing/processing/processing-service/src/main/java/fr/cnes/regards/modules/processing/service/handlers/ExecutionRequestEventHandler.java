@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.service.handlers;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -37,7 +37,7 @@ import reactor.core.publisher.Mono;
  */
 @Component
 public class ExecutionRequestEventHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IHandler<PExecutionRequestEvent> {
+    implements ApplicationListener<ApplicationReadyEvent>, IHandler<PExecutionRequestEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExecutionRequestEventHandler.class);
 
@@ -48,8 +48,9 @@ public class ExecutionRequestEventHandler
     private final IExecutionService execService;
 
     @Autowired
-    public ExecutionRequestEventHandler(IRuntimeTenantResolver runtimeTenantResolver, ISubscriber subscriber,
-            IExecutionService execService) {
+    public ExecutionRequestEventHandler(IRuntimeTenantResolver runtimeTenantResolver,
+                                        ISubscriber subscriber,
+                                        IExecutionService execService) {
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.subscriber = subscriber;
         this.execService = execService;
@@ -68,9 +69,9 @@ public class ExecutionRequestEventHandler
         LOGGER.info("exec={} - Execution request received", execCid);
 
         execService.launchExecution(message)
-                .switchIfEmpty(Mono.defer(() -> Mono
-                        .error(new RuntimeException("PExecutionRequestEvent yielded an empty result: " + message))))
-                .subscribe(exec -> LOGGER.info("exec={} - Execution request registered correctly", execCid),
-                           err -> LOGGER.error("exec={} - Execution request error: {}", execCid, err.getMessage()));
+                   .switchIfEmpty(Mono.defer(() -> Mono.error(new RuntimeException(
+                       "PExecutionRequestEvent yielded an empty result: " + message))))
+                   .subscribe(exec -> LOGGER.info("exec={} - Execution request registered correctly", execCid),
+                              err -> LOGGER.error("exec={} - Execution request error: {}", execCid, err.getMessage()));
     }
 }

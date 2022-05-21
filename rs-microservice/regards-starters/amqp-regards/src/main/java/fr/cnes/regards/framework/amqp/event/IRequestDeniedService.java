@@ -20,11 +20,9 @@ package fr.cnes.regards.framework.amqp.event;
 
 import org.springframework.amqp.core.Message;
 
-import fr.cnes.regards.framework.amqp.event.IRequestType;
-
 /**
- *
  * Denied request that cannot be converted
+ *
  * @author Marc SORDI
  */
 public interface IRequestDeniedService {

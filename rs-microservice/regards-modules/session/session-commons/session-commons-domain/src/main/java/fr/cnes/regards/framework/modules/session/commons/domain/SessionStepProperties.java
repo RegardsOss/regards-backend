@@ -26,4 +26,5 @@ import java.util.HashMap;
  * @author Iliana Ghazali
  **/
 public class SessionStepProperties extends HashMap<String, String> {
+
 }

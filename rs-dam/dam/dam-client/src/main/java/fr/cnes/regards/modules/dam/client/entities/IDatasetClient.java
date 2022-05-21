@@ -53,14 +53,14 @@ public interface IDatasetClient {
 
     String ENTITY_ASSOCS_MAPPING = "{datasetUrn}/assocs";
 
-
     /**
      * Retrieve a page of datasets
+     *
      * @return a page of datasets
      */
     @GetMapping(path = ROOT_DATASET_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<Dataset>>> retrieveDatasets(@RequestParam("page") int page,
-            @RequestParam("size") int size);
+                                                                      @RequestParam("size") int size);
 
     /**
      * Retrieve a dataset using its id
@@ -85,29 +85,31 @@ public interface IDatasetClient {
      */
     @PutMapping(path = ROOT_DATASET_PATH + DATASET_ID_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<Dataset>> updateDataset(@PathVariable("dataset_id") Long datasetId,
-            @RequestBody Dataset dataset);
+                                                       @RequestBody Dataset dataset);
 
     /**
      * Entry point to handle dissociation of {@link Dataset} specified by its id to other entities
-     * @param datasetId {@link Dataset} id
+     *
+     * @param datasetId       {@link Dataset} id
      * @param toBeDissociated entity to dissociate
      * @return {@link Dataset} as a {@link EntityModel}
      */
     @PutMapping(path = ROOT_DATASET_PATH + DATASET_ID_DISSOCIATE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<Dataset>> dissociateDataset(@PathVariable("dataset_id") Long datasetId,
-            @RequestBody Set<OaisUniformResourceName> toBeDissociated);
+                                                           @RequestBody Set<OaisUniformResourceName> toBeDissociated);
 
     /**
      * Entry point to handle association of {@link Dataset} specified by its id to other entities
-     * @param datasetId {@link Dataset} id
+     *
+     * @param datasetId          {@link Dataset} id
      * @param toBeAssociatedWith entities to be associated
      * @return {@link Dataset} as a {@link EntityModel}
      */
     @PutMapping(path = ROOT_DATASET_PATH + DATASET_ID_ASSOCIATE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<Dataset>> associateDataset(@PathVariable("dataset_id") Long datasetId,
-            @RequestBody Set<OaisUniformResourceName> toBeAssociatedWith);
+                                                          @RequestBody Set<OaisUniformResourceName> toBeAssociatedWith);
 
     @GetMapping(path = ROOT_DATASET_PATH + ENTITY_ASSOCS_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Collection<ModelAttrAssoc>> getModelAttrAssocsForDataInDataset(
-            @RequestParam(name = "datasetUrn") UniformResourceName datasetUrn);
+        @RequestParam(name = "datasetUrn") UniformResourceName datasetUrn);
 }

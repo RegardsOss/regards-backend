@@ -36,7 +36,6 @@ import java.util.List;
  * User resource management API client
  *
  * @author Marc Sordi
- *
  */
 @RestClient(name = "rs-admin", contextId = "rs-admin.user-resource-client")
 public interface IUserResourceClient {
@@ -49,40 +48,38 @@ public interface IUserResourceClient {
     /**
      * Retrieve the {@link List} of {@link ResourcesAccess} for the account of passed <code>email</code>.
      *
-     * @param pUserLogin
-     *            The account <code>email</code>
-     * @param pBorrowedRoleName
-     *            The borrowed {@link Role} <code>name</code> if the user is connected with a borrowed role. Optional.
+     * @param pUserLogin        The account <code>email</code>
+     * @param pBorrowedRoleName The borrowed {@link Role} <code>name</code> if the user is connected with a borrowed role. Optional.
      * @return the {@link List} list of resources access
-     *
      */
-    @GetMapping(path = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<EntityModel<ResourcesAccess>>> retrieveProjectUserResources(
-            @PathVariable("user_email") final String pUserLogin,
-            @RequestParam(value = "borrowedRoleName", required = false) final String pBorrowedRoleName);
+        @PathVariable("user_email") final String pUserLogin,
+        @RequestParam(value = "borrowedRoleName", required = false) final String pBorrowedRoleName);
 
     /**
      * Update the the {@link List} of <code>permissions</code>.
      *
-     * @param pLogin
-     *            The {@link ProjectUser}'s <code>login</code>
-     * @param pUpdatedUserAccessRights
-     *            The {@link List} of {@link ResourcesAccess} to set
+     * @param pLogin                   The {@link ProjectUser}'s <code>login</code>
+     * @param pUpdatedUserAccessRights The {@link List} of {@link ResourcesAccess} to set
      * @return void
      */
-    @PutMapping(path = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Update the list of specific user accesses", role = DefaultRole.PROJECT_ADMIN)
     ResponseEntity<Void> updateProjectUserResources(@PathVariable("user_email") final String pLogin,
-            @Valid @RequestBody final List<ResourcesAccess> pUpdatedUserAccessRights);
+                                                    @Valid @RequestBody
+                                                    final List<ResourcesAccess> pUpdatedUserAccessRights);
 
     /**
      * Remove all specific user accesses
      *
-     * @param pUserLogin
-     *            user email
+     * @param pUserLogin user email
      * @return {@link Void}
      */
-    @DeleteMapping(path = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(path = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Remove all specific user accesses", role = DefaultRole.PROJECT_ADMIN)
     ResponseEntity<Void> removeProjectUserResources(@PathVariable("user_email") final String pUserLogin);
 }

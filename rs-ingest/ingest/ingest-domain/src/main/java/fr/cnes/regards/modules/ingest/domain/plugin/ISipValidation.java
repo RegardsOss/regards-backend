@@ -18,16 +18,14 @@
  */
 package fr.cnes.regards.modules.ingest.domain.plugin;
 
-import org.springframework.validation.Errors;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import org.springframework.validation.Errors;
 
 /**
  * Second <b>required</b> step of the SIP processing chain
  *
  * @author Marc Sordi
- *
  */
 @FunctionalInterface
 @PluginInterface(description = "SIP validation plugin contract")
@@ -35,7 +33,8 @@ public interface ISipValidation {
 
     /**
      * Allows to validate SIP
-     * @param sip {@link SIP} to be validated
+     *
+     * @param sip    {@link SIP} to be validated
      * @param errors list of validation errors
      */
     void validate(final SIP sip, Errors errors);

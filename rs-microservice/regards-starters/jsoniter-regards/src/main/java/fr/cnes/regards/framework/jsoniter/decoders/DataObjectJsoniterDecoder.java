@@ -26,15 +26,14 @@ public class DataObjectJsoniterDecoder implements AbstractEntityDecoder<DataObje
     public Object decode(JsonIterator iter) throws IOException {
         Any dataObj = iter.readAny();
         DataObjectFeature feature = dataObj.as(DataObjectFeature.class, "feature");
-        DataObject result = new DataObject(
-            asOrNull(dataObj.get("model"), Model.class),
-            feature
-        );
+        DataObject result = new DataObject(asOrNull(dataObj.get("model"), Model.class), feature);
 
         readCommonFields(dataObj, feature, result);
 
         whenPresent(dataObj.get("dataSourceId"), Long.class, result::setDataSourceId);
-        whenPresent(dataObj.get("datasetModelNames"), new TypeLiteral<Set<String>>(){}, result::setDatasetModelNames);
+        whenPresent(dataObj.get("datasetModelNames"), new TypeLiteral<Set<String>>() {
+
+        }, result::setDatasetModelNames);
         result.setInternal(dataObj.toBoolean("internal"));
         whenPresent(dataObj.get("metadata"), DataObjectMetadata.class, result::setMetadata);
 

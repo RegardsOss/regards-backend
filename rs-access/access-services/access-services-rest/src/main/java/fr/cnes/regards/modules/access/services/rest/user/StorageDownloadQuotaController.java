@@ -56,7 +56,6 @@ public class StorageDownloadQuotaController {
     @Autowired
     private IStorageRestClient storageClient;
 
-
     @Autowired
     private IAuthenticationResolver authenticationResolver;
 
@@ -66,64 +65,53 @@ public class StorageDownloadQuotaController {
     @GetMapping(path = PATH_USER_QUOTA)
     @ResponseBody
     @ResourceAccess(description = "Get user download quota limits.", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits(
-        @PathVariable(USER_EMAIL_PARAM) String userEmail
-    ) throws ModuleException {
-        return wrapStorageErrorForFrontend(
-            () -> {FeignSecurityManager
-                    .asUser(authenticationResolver.getUser(), RoleAuthority
-                            .getSysRole(appName));return storageClient.getQuotaLimits(userEmail);},
-            () -> new DownloadQuotaLimitsDto(authResolver.getUser(), null, null)
-        );
+    public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits(@PathVariable(USER_EMAIL_PARAM) String userEmail)
+        throws ModuleException {
+        return wrapStorageErrorForFrontend(() -> {
+            FeignSecurityManager.asUser(authenticationResolver.getUser(), RoleAuthority.getSysRole(appName));
+            return storageClient.getQuotaLimits(userEmail);
+        }, () -> new DownloadQuotaLimitsDto(authResolver.getUser(), null, null));
     }
 
     @PutMapping(path = PATH_USER_QUOTA)
     @ResponseBody
     @ResourceAccess(description = "Update user download quota limits.", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(
-        @PathVariable(USER_EMAIL_PARAM) String userEmail,
-        @Valid @RequestBody DownloadQuotaLimitsDto quotaLimits
-    ) throws ModuleException {
-        return wrapStorageErrorForFrontend(
-            () -> {FeignSecurityManager
-                    .asUser(authenticationResolver.getUser(), RoleAuthority.getSysRole(appName));return storageClient.upsertQuotaLimits(userEmail, quotaLimits);},
-            () -> new DownloadQuotaLimitsDto(authResolver.getUser(), null, null)
-        );
+    public ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(@PathVariable(USER_EMAIL_PARAM) String userEmail,
+                                                                    @Valid @RequestBody
+                                                                    DownloadQuotaLimitsDto quotaLimits)
+        throws ModuleException {
+        return wrapStorageErrorForFrontend(() -> {
+            FeignSecurityManager.asUser(authenticationResolver.getUser(), RoleAuthority.getSysRole(appName));
+            return storageClient.upsertQuotaLimits(userEmail, quotaLimits);
+        }, () -> new DownloadQuotaLimitsDto(authResolver.getUser(), null, null));
     }
 
     @GetMapping(path = PATH_QUOTA)
     @ResponseBody
     @ResourceAccess(description = "Get current user download quota limits.", role = DefaultRole.PUBLIC)
     public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits() throws ModuleException {
-        return wrapStorageErrorForFrontend(
-            () -> storageClient.getQuotaLimits(),
-            () -> new DownloadQuotaLimitsDto(authResolver.getUser(), null, null)
-        );
+        return wrapStorageErrorForFrontend(() -> storageClient.getQuotaLimits(),
+                                           () -> new DownloadQuotaLimitsDto(authResolver.getUser(), null, null));
     }
 
     @GetMapping(path = PATH_CURRENT_QUOTA)
     @ResponseBody
     @ResourceAccess(description = "Get current download quota values for current user.", role = DefaultRole.PUBLIC)
     public ResponseEntity<UserCurrentQuotas> getCurrentQuotas() throws ModuleException {
-        return wrapStorageErrorForFrontend(
-            () -> storageClient.getCurrentQuotas(),
-            () -> new UserCurrentQuotas(authResolver.getUser())
-        );
+        return wrapStorageErrorForFrontend(() -> storageClient.getCurrentQuotas(),
+                                           () -> new UserCurrentQuotas(authResolver.getUser()));
     }
 
-    private <V> ResponseEntity<V> wrapStorageErrorForFrontend(
-        Supplier<ResponseEntity<V>> action,
-        Supplier<V> orElse
-    ) throws ModuleException {
+    private <V> ResponseEntity<V> wrapStorageErrorForFrontend(Supplier<ResponseEntity<V>> action, Supplier<V> orElse)
+        throws ModuleException {
         return Try.ofSupplier(action)
-            // response should be remapped because of a "bug" somewhere in spring that does not treat headers as case-insentive while feign does
-            .map(response->new ResponseEntity<>(response.getBody(), response.getStatusCode()))
-            // add FeignSecurityManager.reset call so that security is properly handled in case quotaSupplier usurp identity. Otherwise, reset just set back the value per default
-            .andFinally(FeignSecurityManager::reset)
-            // special value for frontend if any error on storage or storage not deploy
-            .onFailure(e -> LOGGER.debug("Failed to query rs-storage for quotas.", e))
-            .orElse(() -> Try.success(orElse.get())
-                .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK)))
-            .getOrElseThrow((Function<Throwable, ModuleException>) ModuleException::new);
+                  // response should be remapped because of a "bug" somewhere in spring that does not treat headers as case-insentive while feign does
+                  .map(response -> new ResponseEntity<>(response.getBody(), response.getStatusCode()))
+                  // add FeignSecurityManager.reset call so that security is properly handled in case quotaSupplier usurp identity. Otherwise, reset just set back the value per default
+                  .andFinally(FeignSecurityManager::reset)
+                  // special value for frontend if any error on storage or storage not deploy
+                  .onFailure(e -> LOGGER.debug("Failed to query rs-storage for quotas.", e))
+                  .orElse(() -> Try.success(orElse.get()).map(dto -> new ResponseEntity<>(dto, HttpStatus.OK)))
+                  .getOrElseThrow((Function<Throwable, ModuleException>) ModuleException::new);
     }
 }

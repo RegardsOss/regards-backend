@@ -18,21 +18,18 @@
  */
 package fr.cnes.regards.framework.gson.adapters.actuator;
 
-import java.lang.reflect.Type;
-
-import org.springframework.boot.actuate.web.mappings.MappingsEndpoint.ApplicationMappings;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import org.springframework.boot.actuate.web.mappings.MappingsEndpoint.ApplicationMappings;
+
+import java.lang.reflect.Type;
 
 /**
- *
  * Spring Boot actuator deserializer for beans endpoint
  *
  * @author Marc SORDI
- *
  */
 public class ApplicationMappingsAdapter implements JsonSerializer<ApplicationMappings> {
 

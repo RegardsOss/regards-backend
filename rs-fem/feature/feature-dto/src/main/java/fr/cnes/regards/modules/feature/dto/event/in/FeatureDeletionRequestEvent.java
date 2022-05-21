@@ -18,26 +18,21 @@
  */
 package fr.cnes.regards.modules.feature.dto.event.in;
 
-import java.time.OffsetDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.validation.constraints.NotNull;
-
-import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
-import fr.cnes.regards.framework.amqp.event.Event;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
-import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.amqp.event.*;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
 
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
+
 /**
  * Request to Delete a {@link Feature}
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class FeatureDeletionRequestEvent extends AbstractRequestEvent implements ISubscribable {
@@ -66,8 +61,9 @@ public class FeatureDeletionRequestEvent extends AbstractRequestEvent implements
         this.urn = urn;
     }
 
-    public static FeatureDeletionRequestEvent build(String requestOwner, FeatureUniformResourceName urn,
-            PriorityLevel level) {
+    public static FeatureDeletionRequestEvent build(String requestOwner,
+                                                    FeatureUniformResourceName urn,
+                                                    PriorityLevel level) {
         FeatureDeletionRequestEvent event = new FeatureDeletionRequestEvent();
         event.setUrn(urn);
         event.setRequestDate(OffsetDateTime.now().minusSeconds(1));

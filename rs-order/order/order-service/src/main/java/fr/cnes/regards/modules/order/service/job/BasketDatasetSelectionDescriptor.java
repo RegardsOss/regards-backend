@@ -30,10 +30,14 @@ import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
 public class BasketDatasetSelectionDescriptor {
 
     private final Long dsSelId;
+
     private final String datasetIpId;
+
     private final ProcessDatasetDescription processDatasetDescription;
 
-    public BasketDatasetSelectionDescriptor(Long dsSelId, String datasetIpId, ProcessDatasetDescription processDatasetDescription) {
+    public BasketDatasetSelectionDescriptor(Long dsSelId,
+                                            String datasetIpId,
+                                            ProcessDatasetDescription processDatasetDescription) {
         this.dsSelId = dsSelId;
         this.datasetIpId = datasetIpId;
         this.processDatasetDescription = processDatasetDescription;

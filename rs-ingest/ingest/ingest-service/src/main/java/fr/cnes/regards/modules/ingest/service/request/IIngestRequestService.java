@@ -18,11 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
@@ -33,19 +28,24 @@ import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Ingest request service
  *
  * @author Marc SORDI
- *
  */
 public interface IIngestRequestService {
 
     /**
      * Schedule a job with following passed requests.
      * <b>Ingest requests must be linked to the chain. No additional control is done!</b>
+     *
      * @param chainName related processing chain
-     * @param requests requests to handle
+     * @param requests  requests to handle
      */
     void scheduleIngestProcessingJobByChain(String chainName, Collection<IngestRequest> requests);
 

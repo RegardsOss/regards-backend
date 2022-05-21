@@ -18,18 +18,18 @@
  */
 package fr.cnes.regards.framework.security.endpoint.voter;
 
-import java.util.Collection;
-import java.util.List;
-
-import org.springframework.security.access.ConfigAttribute;
-import org.springframework.security.core.Authentication;
-
 import fr.cnes.regards.framework.security.utils.endpoint.IProjectAdminAccessVoter;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import org.springframework.security.access.ConfigAttribute;
+import org.springframework.security.core.Authentication;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * MethodAuthorization voter to accept access to all endpoints for project administrator.
+ *
  * @author Sylvain Vissiere-Guerinet
  */
 public class ProjectAdminAccessVoter implements IProjectAdminAccessVoter {
@@ -50,8 +50,8 @@ public class ProjectAdminAccessVoter implements IProjectAdminAccessVoter {
         final JWTAuthentication authentication = (JWTAuthentication) pAuthentication;
 
         // If authenticated user is one of the project admins allow all.
-        @SuppressWarnings("unchecked") final List<RoleAuthority> roles = (List<RoleAuthority>) authentication
-                .getAuthorities();
+        @SuppressWarnings("unchecked")
+        final List<RoleAuthority> roles = (List<RoleAuthority>) authentication.getAuthorities();
         if (RoleAuthority.isProjectAdminRole(roles.get(0).getAuthority())) {
             return ACCESS_GRANTED;
         }

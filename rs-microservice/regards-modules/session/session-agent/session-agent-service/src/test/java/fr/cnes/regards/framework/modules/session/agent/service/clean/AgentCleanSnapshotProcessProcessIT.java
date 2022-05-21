@@ -27,10 +27,6 @@ import fr.cnes.regards.framework.modules.session.agent.service.clean.snapshotpro
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,13 +34,18 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Test for {@link AgentCleanSnapshotProcessService}
  *
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_clean_process_it",
-        "regards.session.agent.clean.snapshot.process.limit.store=30" })
+    "regards.session.agent.clean.snapshot.process.limit.store=30" })
 @ActiveProfiles({ "noscheduler" })
 public class AgentCleanSnapshotProcessProcessIT extends AbstractAgentServiceUtilsIT {
 
@@ -81,16 +82,16 @@ public class AgentCleanSnapshotProcessProcessIT extends AbstractAgentServiceUtil
                           snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(1)));
         Assert.assertTrue("Snapshot process should have been present. It is linked to a step request. ",
                           snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(2)));
-        Assert.assertTrue("Snapshot process should not be present. It is not yet expired (cf. "
-                                + "limitStoreSnapshotProcess).",
-                           snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(3)));
+        Assert.assertTrue(
+            "Snapshot process should not be present. It is not yet expired (cf. " + "limitStoreSnapshotProcess).",
+            snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(3)));
 
         // SNAPSHOT linked to SOURCE_5, SOURCE_6 should be removed
         Assert.assertFalse("Snapshot process should not be present. It is not linked to any step requests and it is "
-                                   + "older than the maximum snapshot process storage date.",
-                          snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(4)));
+                               + "older than the maximum snapshot process storage date.",
+                           snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(4)));
         Assert.assertFalse("Snapshot process should not be present. It is not linked to any step requests.",
-                          snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(5)));
+                           snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(5)));
 
     }
 
@@ -109,27 +110,45 @@ public class AgentCleanSnapshotProcessProcessIT extends AbstractAgentServiceUtil
         List<StepPropertyUpdateRequest> stepRequests = new ArrayList<>();
 
         // ACQUISITION
-        stepRequests.add(new StepPropertyUpdateRequest("scan", SOURCE_1, "OWNER_1", OffsetDateTime.now(),
+        stepRequests.add(new StepPropertyUpdateRequest("scan",
+                                                       SOURCE_1,
+                                                       "OWNER_1",
+                                                       OffsetDateTime.now(),
                                                        StepPropertyEventTypeEnum.INC,
 
                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
                                                                                          StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "1", true, false)));
+                                                                                         "gen.products",
+                                                                                         "1",
+                                                                                         true,
+                                                                                         false)));
 
         // REFERENCING
-        stepRequests.add(new StepPropertyUpdateRequest("oais", SOURCE_2, "OWNER_2", OffsetDateTime.now(),
+        stepRequests.add(new StepPropertyUpdateRequest("oais",
+                                                       SOURCE_2,
+                                                       "OWNER_2",
+                                                       OffsetDateTime.now(),
                                                        StepPropertyEventTypeEnum.INC,
 
                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.REFERENCING,
                                                                                          StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "1", true, false)));
+                                                                                         "gen.products",
+                                                                                         "1",
+                                                                                         true,
+                                                                                         false)));
 
         // STORAGE
-        stepRequests.add(new StepPropertyUpdateRequest("storage", SOURCE_3, "OWNER_3", OffsetDateTime.now(),
+        stepRequests.add(new StepPropertyUpdateRequest("storage",
+                                                       SOURCE_3,
+                                                       "OWNER_3",
+                                                       OffsetDateTime.now(),
                                                        StepPropertyEventTypeEnum.INC,
                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
                                                                                          StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "1", true, false)));
+                                                                                         "gen.products",
+                                                                                         "1",
+                                                                                         true,
+                                                                                         false)));
         // SAVE
         this.stepPropertyRepo.saveAll(stepRequests);
     }

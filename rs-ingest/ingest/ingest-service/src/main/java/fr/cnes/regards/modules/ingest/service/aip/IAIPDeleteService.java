@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 
 /**
  * AIP Service interface. Service to handle business around {@link AIPEntity}s
+ *
  * @author Sébastien Binda
  */
 public interface IAIPDeleteService {
@@ -35,7 +36,6 @@ public interface IAIPDeleteService {
      */
     void scheduleLinkedFilesDeletion(OAISDeletionRequest request);
 
-
     /**
      * Remove all {@link AIPEntity} linked to an {@link SIPEntity#getSipId()}
      */
@@ -43,6 +43,7 @@ public interface IAIPDeleteService {
 
     /**
      * Check if a deletion request is running or pending  for the given aip
+     *
      * @param aip
      * @return [TRUE|FALSE]
      */

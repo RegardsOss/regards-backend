@@ -18,16 +18,14 @@
  */
 package fr.cnes.regards.modules.model.rest;
 
+import fr.cnes.regards.modules.model.gson.IAttributeHelper;
+import fr.cnes.regards.modules.model.service.xml.IComputationPluginService;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.modules.model.gson.IAttributeHelper;
-import fr.cnes.regards.modules.model.service.xml.IComputationPluginService;
-
 /**
  * @author Marc SORDI
- *
  */
 @Configuration
 public class TestConfiguration {

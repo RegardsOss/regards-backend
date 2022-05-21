@@ -18,26 +18,22 @@
  */
 package fr.cnes.regards.modules.model.dao;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Iterables;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModelBuilder;
 import fr.cnes.regards.modules.model.domain.attributes.Fragment;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.AbstractRestriction;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- *
  * Some cleaning tests
  *
  * @author Marc Sordi
- *
  */
 @MultitenantTransactional
 public class CleanDatabaseIT extends AbstractModelIT {
@@ -50,9 +46,9 @@ public class CleanDatabaseIT extends AbstractModelIT {
 
     @Test
     public void deleteAttributeWithRestriction() {
-        final AttributeModel attModel = AttributeModelBuilder
-                .build("withRestrictionAttribute", PropertyType.STRING, "ForTests")
-                .withPatternRestriction("MOCKPATTERN");
+        final AttributeModel attModel = AttributeModelBuilder.build("withRestrictionAttribute",
+                                                                    PropertyType.STRING,
+                                                                    "ForTests").withPatternRestriction("MOCKPATTERN");
         final AttributeModel saved = saveAttribute(attModel);
         attModelRepository.delete(saved);
 
@@ -67,11 +63,11 @@ public class CleanDatabaseIT extends AbstractModelIT {
     public void deleteAttributeWithNoRestriction() {
 
         final AttributeModel attModel = AttributeModelBuilder.build("TO_DELETE", PropertyType.STRING, "ForTests")
-                .withoutRestriction();
+                                                             .withoutRestriction();
         final AttributeModel saved = saveAttribute(attModel);
 
         final AttributeModel attModel2 = AttributeModelBuilder.build("TO_DELETE_TWO", PropertyType.STRING, "ForTests")
-                .withoutRestriction();
+                                                              .withoutRestriction();
         saveAttribute(attModel2);
 
         attModelRepository.delete(saved);

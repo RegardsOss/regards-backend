@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.framework.amqp.configuration;
 
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.transaction.RabbitTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.util.Assert;
 
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-
 /**
  * Override {@link RabbitTransactionManager} to manage virtual host in transaction
+ *
  * @author Marc Sordi
  */
 @SuppressWarnings("serial")
@@ -44,8 +44,10 @@ public class MultitenantRabbitTransactionManager extends RabbitTransactionManage
      */
     private final transient IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
-    public MultitenantRabbitTransactionManager(VirtualHostMode mode, ConnectionFactory connectionFactory,
-            IRuntimeTenantResolver pRuntimeTenantResolver, IRabbitVirtualHostAdmin rabbitVirtualHostAdmin) {
+    public MultitenantRabbitTransactionManager(VirtualHostMode mode,
+                                               ConnectionFactory connectionFactory,
+                                               IRuntimeTenantResolver pRuntimeTenantResolver,
+                                               IRabbitVirtualHostAdmin rabbitVirtualHostAdmin) {
         super(connectionFactory);
         this.mode = mode;
         this.runtimeTenantResolver = pRuntimeTenantResolver;
@@ -68,7 +70,7 @@ public class MultitenantRabbitTransactionManager extends RabbitTransactionManage
     }
 
     /**
-     * Temproary fix waiting for spring amq fix issue : 
+     * Temproary fix waiting for spring amq fix issue :
      * https://github.com/spring-projects/spring-amqp/issues/883
      */
     @Override

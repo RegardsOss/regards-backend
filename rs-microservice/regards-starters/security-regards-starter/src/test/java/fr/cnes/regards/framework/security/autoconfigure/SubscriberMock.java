@@ -26,8 +26,9 @@ import java.util.Optional;
 
 /**
  * Class SubscriberMock
- *
+ * <p>
  * Test class to mock AMQP Subscriber
+ *
  * @author Sébastien Binda
  */
 public class SubscriberMock implements ISubscriber {
@@ -38,8 +39,10 @@ public class SubscriberMock implements ISubscriber {
     }
 
     @Override
-    public <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, String queueName,
-            String exchangeName) {
+    public <E extends ISubscribable> void subscribeTo(Class<E> eventType,
+                                                      IHandler<E> receiver,
+                                                      String queueName,
+                                                      String exchangeName) {
     }
 
     @Override
@@ -48,13 +51,17 @@ public class SubscriberMock implements ISubscriber {
     }
 
     @Override
-    public <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, String queueName,
-            String exchangeName, boolean purgeQueue) {
+    public <E extends ISubscribable> void subscribeTo(Class<E> eventType,
+                                                      IHandler<E> receiver,
+                                                      String queueName,
+                                                      String exchangeName,
+                                                      boolean purgeQueue) {
     }
 
     @Override
-    public <E extends ISubscribable> void purgeQueue(Class<E> eventType, Class<? extends IHandler<E>> handlerType,
-            Optional<String> queueName) {
+    public <E extends ISubscribable> void purgeQueue(Class<E> eventType,
+                                                     Class<? extends IHandler<E>> handlerType,
+                                                     Optional<String> queueName) {
         // Nothing to do
     }
 

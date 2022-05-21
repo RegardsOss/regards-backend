@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorIT;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * Generate DDL with HBM2DDL
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
 // Use following line to launch FLYWAY on public schema (comment it to use HBM2DDL)
 //@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=public",

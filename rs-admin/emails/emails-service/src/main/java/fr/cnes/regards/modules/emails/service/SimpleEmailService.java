@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.emails.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.modules.emails.dao.IEmailRepository;
+import fr.cnes.regards.modules.emails.domain.Email;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,17 +29,15 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.modules.emails.dao.IEmailRepository;
-import fr.cnes.regards.modules.emails.domain.Email;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- *
  * Class SimpleEmailService
- *
+ * <p>
  * Simple mail service doesn't persist mail entities in database. To persist entities use EmailService.
  *
  * @author Sébastien Binda
-
  */
 @Profile("!nomail")
 @Service
@@ -62,8 +59,7 @@ public class SimpleEmailService extends AbstractEmailService {
     /**
      * Creates an {@link EmailService} wired to the given {@link IEmailRepository}.
      *
-     * @param pMailSender
-     *            Autowired by Spring. Must not be {@literal null}.
+     * @param pMailSender Autowired by Spring. Must not be {@literal null}.
      */
     public SimpleEmailService(final JavaMailSender pMailSender) {
         super();

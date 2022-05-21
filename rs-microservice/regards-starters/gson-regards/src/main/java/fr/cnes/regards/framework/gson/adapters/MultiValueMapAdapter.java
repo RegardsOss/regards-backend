@@ -18,6 +18,12 @@
  */
 package fr.cnes.regards.framework.gson.adapters;
 
+import com.google.common.reflect.TypeParameter;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.*;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
@@ -25,28 +31,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-
-import com.google.common.reflect.TypeParameter;
-import com.google.common.reflect.TypeToken;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
-
 /**
  * {@link MultiValueMap} Gson adapter
+ *
  * @author Sébastien Binda
  */
 public class MultiValueMapAdapter
-        implements JsonDeserializer<MultiValueMap<Object, Object>>, JsonSerializer<MultiValueMap<Object, Object>> {
+    implements JsonDeserializer<MultiValueMap<Object, Object>>, JsonSerializer<MultiValueMap<Object, Object>> {
 
     @Override
     public MultiValueMap<Object, Object> deserialize(JsonElement json, Type type, JsonDeserializationContext context)
-            throws JsonParseException {
+        throws JsonParseException {
         final MultiValueMap<Object, Object> result = new LinkedMultiValueMap<>();
         final Map<Object, List<Object>> map = context.deserialize(json, multimapTypeToMapType(type));
         result.putAll(map);

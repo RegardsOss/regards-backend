@@ -23,32 +23,31 @@ import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @PluginInterface(
-        description = "Plugin interface which are responsible for storing entities (Collection, Dataset, Document)")
+    description = "Plugin interface which are responsible for storing entities (Collection, Dataset, Document)")
 public interface IStorageService {
 
     /**
      * method to call whenever an {@link AbstractEntity} has changed or is created and modifications has to be
      * communicated to the storage unit
      *
-     * @param <T>
-     *            one of {@link AbstractEntity} sub class
-     * @param toPersist
-     *            {@link AbstractEntity} to be persisted
+     * @param <T>       one of {@link AbstractEntity} sub class
+     * @param toPersist {@link AbstractEntity} to be persisted
      * @return persisted {@link AbstractEntity}
      */
     <T extends AbstractEntity<?>> T store(T toPersist);
 
     /**
      * Delete the aip associated to the given entity
+     *
      * @param toDelete
      */
     void delete(AbstractEntity<?> toDelete);
 
     /**
      * Update the aip associated to the given entity
+     *
      * @param toUpdate
      * @param oldEntity old version of the entity to update
      * @return updated aip

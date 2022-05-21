@@ -28,5 +28,5 @@ import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTas
 public interface IUpdateStep {
 
     AIPEntityUpdateWrapper run(AIPEntityUpdateWrapper aipWrapper, AbstractAIPUpdateTask updateTask)
-            throws ModuleException;
+        throws ModuleException;
 }

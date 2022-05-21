@@ -73,8 +73,12 @@ public class UIPluginConfigurationServiceTest {
         cacheableRolesClient = Mockito.mock(CacheableRolesClient.class);
         authResolver = Mockito.mock(IAuthenticationResolver.class);
 
-        pluginConfigurationService = new UIPluginConfigurationService(pluginRepository, linkedUiPluginRespository,
-                repository, publisher, cacheableRolesClient, authResolver);
+        pluginConfigurationService = new UIPluginConfigurationService(pluginRepository,
+                                                                      linkedUiPluginRespository,
+                                                                      repository,
+                                                                      publisher,
+                                                                      cacheableRolesClient,
+                                                                      authResolver);
     }
 
     /**
@@ -87,6 +91,7 @@ public class UIPluginConfigurationServiceTest {
     /**
      * Test method for
      * {@link fr.cnes.regards.modules.access.services.service.ui.UIPluginConfigurationService#deletePluginconfiguration(fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration)}.
+     *
      * @throws EntityException
      */
     @Test
@@ -97,12 +102,13 @@ public class UIPluginConfigurationServiceTest {
         pluginConfiguration1.setId(8484L);
         Dataset dataset = new Dataset(new Model(), "tenant", "providerId", "label");
         LinkUIPluginsDatasets link = new LinkUIPluginsDatasets(dataset.getIpId().toString(),
-                Lists.newArrayList(pluginConfiguration0, pluginConfiguration1));
+                                                               Lists.newArrayList(pluginConfiguration0,
+                                                                                  pluginConfiguration1));
 
         // Mock
         Mockito.when(repository.existsById(Mockito.anyLong())).thenReturn(true);
         Mockito.when(linkedUiPluginRespository.findAllByServicesContaining(pluginConfiguration0))
-                .thenReturn(Stream.of(link));
+               .thenReturn(Stream.of(link));
 
         // Perform test
         pluginConfigurationService.deletePluginconfiguration(pluginConfiguration0);
@@ -116,6 +122,7 @@ public class UIPluginConfigurationServiceTest {
     /**
      * Test method for
      * {@link fr.cnes.regards.modules.access.services.service.ui.UIPluginConfigurationService#deletePluginconfiguration(fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration)}.
+     *
      * @throws EntityException
      */
     @Test
@@ -124,12 +131,12 @@ public class UIPluginConfigurationServiceTest {
         pluginConfiguration0.setId(4334L);
         Dataset dataset = new Dataset(new Model(), "tenant", "providerId", "label");
         LinkUIPluginsDatasets link = new LinkUIPluginsDatasets(dataset.getIpId().toString(),
-                Lists.newArrayList(pluginConfiguration0));
+                                                               Lists.newArrayList(pluginConfiguration0));
 
         // Mock
         Mockito.when(repository.existsById(Mockito.anyLong())).thenReturn(true);
         Mockito.when(linkedUiPluginRespository.findAllByServicesContaining(pluginConfiguration0))
-                .thenReturn(Stream.of(link));
+               .thenReturn(Stream.of(link));
 
         // Perform test
         pluginConfigurationService.deletePluginconfiguration(pluginConfiguration0);

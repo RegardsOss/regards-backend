@@ -1,14 +1,14 @@
 package fr.cnes.regards.modules.crawler.service.consumer;
 
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import fr.cnes.regards.modules.dam.domain.entities.metadata.DatasetMetadata.DataObjectGroup;
+
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
-
-import fr.cnes.regards.modules.dam.domain.entities.DataObject;
-import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.dam.domain.entities.metadata.DatasetMetadata.DataObjectGroup;
 
 /**
  * Data object accumulator and multi thread Elasticsearch bulk saver
@@ -23,8 +23,12 @@ public class DataObjectUpdater extends AbstractDataObjectBulkSaver implements Co
 
     private final String datasetModelName;
 
-    public DataObjectUpdater(Dataset dataset, OffsetDateTime updateDate, HashSet<DataObject> toSaveObjects,
-            SaveDataObjectsCallable saveDataObjectsCallable, ExecutorService executor, Integer maxBulkSize) {
+    public DataObjectUpdater(Dataset dataset,
+                             OffsetDateTime updateDate,
+                             HashSet<DataObject> toSaveObjects,
+                             SaveDataObjectsCallable saveDataObjectsCallable,
+                             ExecutorService executor,
+                             Integer maxBulkSize) {
         super(saveDataObjectsCallable, executor, toSaveObjects, dataset.getId(), maxBulkSize);
         this.datasetIpId = dataset.getIpId().toString();
         this.groupsMap = dataset.getMetadata().getDataObjectsGroupsMap();

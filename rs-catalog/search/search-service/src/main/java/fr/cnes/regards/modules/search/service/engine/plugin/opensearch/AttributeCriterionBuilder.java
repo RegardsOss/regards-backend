@@ -33,6 +33,7 @@ import java.util.List;
 
 /**
  * {@link ICriterion} builder for catalog searches.
+ *
  * @author Sébastien Binda
  */
 public class AttributeCriterionBuilder {
@@ -44,14 +45,15 @@ public class AttributeCriterionBuilder {
 
     /**
      * Build a {@link ICriterion} for catalog search from
+     *
      * @param attributeModel {@link AttributeModel}
-     * @param operator {@link ParameterOperator} to apply for the current attribute search
-     * @param values {@link String}s search values.
+     * @param operator       {@link ParameterOperator} to apply for the current attribute search
+     * @param values         {@link String}s search values.
      * @return {@link ICriterion}
      * @throws UnsupportedCriterionOperator
      */
     public static ICriterion build(AttributeModel attributeModel, ParameterOperator operator, List<String> values)
-            throws UnsupportedCriterionOperator {
+        throws UnsupportedCriterionOperator {
         ICriterion criterion = null;
         for (String value : values) {
             ICriterion valueCriterion = null;
@@ -96,21 +98,23 @@ public class AttributeCriterionBuilder {
 
     /**
      * Build an Boolean {@link ICriterion} for catalog searches from a given search parameter and value.
+     *
      * @param attribute {@link AttributeModel} to search for
-     * @param value String representation of boolean parameter value
-     * @param operator {@link ParameterOperator} for search
+     * @param value     String representation of boolean parameter value
+     * @param operator  {@link ParameterOperator} for search
      * @return {@link ICriterion}
      * @throws UnsupportedCriterionOperator
      */
     private static ICriterion buildBooleanCrit(AttributeModel attribute, String value, ParameterOperator operator)
-            throws UnsupportedCriterionOperator {
+        throws UnsupportedCriterionOperator {
         switch (operator) {
             case GE:
             case GT:
             case LE:
             case LT:
-                throw new UnsupportedCriterionOperator(
-                        String.format(INVALID_OPERATOR_S_FOR_STRING_PARAMETER_S, operator.toString(), attribute));
+                throw new UnsupportedCriterionOperator(String.format(INVALID_OPERATOR_S_FOR_STRING_PARAMETER_S,
+                                                                     operator.toString(),
+                                                                     attribute));
             case EQ:
             default:
                 return IFeatureCriterion.eq(attribute, Boolean.valueOf(value));
@@ -119,9 +123,10 @@ public class AttributeCriterionBuilder {
 
     /**
      * Build an Date {@link ICriterion} for catalog searches from a given search parameter and value.
+     *
      * @param attribute {@link AttributeModel} to search for
-     * @param value String representation of date parameter value
-     * @param operator {@link ParameterOperator} for search
+     * @param value     String representation of date parameter value
+     * @param operator  {@link ParameterOperator} for search
      * @return {@link ICriterion}
      * @throws OpenSearchUnknownParameter
      */
@@ -143,9 +148,10 @@ public class AttributeCriterionBuilder {
 
     /**
      * Build an Integer {@link ICriterion} for catalog searches from a given search parameter and value.
+     *
      * @param attribute {@link AttributeModel} to search for
-     * @param value String representation of integer parameter value
-     * @param operator {@link ParameterOperator} for search
+     * @param value     String representation of integer parameter value
+     * @param operator  {@link ParameterOperator} for search
      * @return {@link ICriterion}
      * @throws OpenSearchUnknownParameter
      */
@@ -178,9 +184,10 @@ public class AttributeCriterionBuilder {
 
     /**
      * Build an Double {@link ICriterion} for catalog searches from a given search parameter and value.
+     *
      * @param attribute {@link AttributeModel} to search for
-     * @param value String representation of double parameter value
-     * @param operator {@link ParameterOperator} for search
+     * @param value     String representation of double parameter value
+     * @param operator  {@link ParameterOperator} for search
      * @return {@link ICriterion}
      */
     private static ICriterion buildDoubleCrit(AttributeModel attribute, String value, ParameterOperator operator) {
@@ -202,9 +209,10 @@ public class AttributeCriterionBuilder {
 
     /**
      * Build an Long {@link ICriterion} for catalog searches from a given search parameter and value.
+     *
      * @param attribute {@link AttributeModel} to search for
-     * @param value String representation of long parameter value
-     * @param operator {@link ParameterOperator} for search
+     * @param value     String representation of long parameter value
+     * @param operator  {@link ParameterOperator} for search
      * @return {@link ICriterion}
      */
     private static ICriterion buildLongCrit(AttributeModel attribute, String value, ParameterOperator operator) {
@@ -236,21 +244,23 @@ public class AttributeCriterionBuilder {
 
     /**
      * Build an String {@link ICriterion} for catalog searches from a given search parameter and value.
+     *
      * @param attribute {@link AttributeModel} to search for
-     * @param value String representation of parameter value
-     * @param operator {@link ParameterOperator} for search
+     * @param value     String representation of parameter value
+     * @param operator  {@link ParameterOperator} for search
      * @return {@link ICriterion}
      * @throws UnsupportedCriterionOperator
      */
     private static ICriterion buildStringCrit(AttributeModel attribute, String value, ParameterOperator operator)
-            throws UnsupportedCriterionOperator {
+        throws UnsupportedCriterionOperator {
         switch (operator) {
             case GE:
             case GT:
             case LE:
             case LT:
-                throw new UnsupportedCriterionOperator(
-                        String.format(INVALID_OPERATOR_S_FOR_STRING_PARAMETER_S, operator.toString(), attribute));
+                throw new UnsupportedCriterionOperator(String.format(INVALID_OPERATOR_S_FOR_STRING_PARAMETER_S,
+                                                                     operator.toString(),
+                                                                     attribute));
             case EQ:
             default:
                 return IFeatureCriterion.eq(attribute, value, StringMatchType.KEYWORD);
@@ -259,21 +269,23 @@ public class AttributeCriterionBuilder {
 
     /**
      * Build a String {@link ICriterion} for catalog searches from a given search parameter and value.
+     *
      * @param attribute {@link AttributeModel} to search for
-     * @param value String representation of parameter value
-     * @param operator {@link ParameterOperator} for search
+     * @param value     String representation of parameter value
+     * @param operator  {@link ParameterOperator} for search
      * @return {@link ICriterion}
      * @throws UnsupportedCriterionOperator
      */
     private static ICriterion buildStringArrayCrit(AttributeModel attribute, String value, ParameterOperator operator)
-            throws UnsupportedCriterionOperator {
+        throws UnsupportedCriterionOperator {
         switch (operator) {
             case GE:
             case GT:
             case LE:
             case LT:
-                throw new UnsupportedCriterionOperator(
-                        String.format(INVALID_OPERATOR_S_FOR_STRING_PARAMETER_S, operator.toString(), attribute));
+                throw new UnsupportedCriterionOperator(String.format(INVALID_OPERATOR_S_FOR_STRING_PARAMETER_S,
+                                                                     operator.toString(),
+                                                                     attribute));
             case EQ:
             default:
                 return IFeatureCriterion.contains(attribute, value, StringMatchType.KEYWORD);
@@ -282,6 +294,7 @@ public class AttributeCriterionBuilder {
 
     /**
      * Build a {@link ICriterion} to search for the lists of geometry given in WKT format.
+     *
      * @param wkts geometry to search for
      * @return {@link ICriterion}
      */
@@ -295,6 +308,7 @@ public class AttributeCriterionBuilder {
 
     /**
      * Build a {@link ICriterion} to search for the lists of geometry bbox given.
+     *
      * @param bboxs {@link String}s
      * @return {@link ICriterion}
      * @throws InvalidGeometryException
@@ -310,22 +324,22 @@ public class AttributeCriterionBuilder {
     /**
      * Build a {@link ICriterion} to search for the lists of geometry circle given. A circle is a longitude, latitude
      * and radius.
+     *
      * @param longitude {@link String}
-     * @param latitude {@link String}
-     * @param radius {@link String}
+     * @param latitude  {@link String}
+     * @param radius    {@link String}
      * @return {@link ICriterion}
      * @throws InvalidGeometryException
      */
     public static ICriterion buildGeometryCircle(List<String> longitude, List<String> latitude, List<String> radius)
-            throws InvalidGeometryException {
+        throws InvalidGeometryException {
         List<ICriterion> criterion = new ArrayList<>();
         if ((longitude.size() == latitude.size()) && (latitude.size() == radius.size())) {
             for (int i = 0; i < longitude.size(); i++) {
                 criterion.add(GeometryCriterionBuilder.build(longitude.get(i), latitude.get(i), radius.get(i)));
             }
         } else {
-            throw new InvalidGeometryException(
-                    "Missing one of latitude, longitude or radius to create circle geometry");
+            throw new InvalidGeometryException("Missing one of latitude, longitude or radius to create circle geometry");
         }
         return criterion.isEmpty() ? ICriterion.all() : ICriterion.and(criterion);
     }

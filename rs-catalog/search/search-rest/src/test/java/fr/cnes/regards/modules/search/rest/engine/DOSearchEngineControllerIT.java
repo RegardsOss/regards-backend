@@ -49,7 +49,8 @@ import static org.mockito.ArgumentMatchers.any;
  *
  * @author Marc Sordi
  */
-@TestPropertySource(locations = {"classpath:test.properties"}, properties = {"regards.tenant=dosearch", "spring.jpa.properties.hibernate.default_schema=dosearch"})
+@TestPropertySource(locations = { "classpath:test.properties" },
+    properties = { "regards.tenant=dosearch", "spring.jpa.properties.hibernate.default_schema=dosearch" })
 @MultitenantTransactional
 public class DOSearchEngineControllerIT extends AbstractEngineIT {
 
@@ -60,7 +61,8 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
 
     private static final String ACCESS_GROUP = "GRANTED";
 
-    private static final String PATH = SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING;
+    private static final String PATH =
+        SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING;
 
     @Autowired
     protected IAccessGroupClient accessGroupClient;
@@ -71,8 +73,10 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
         ProjectUser projectUser = new ProjectUser().setAccessGroups(Collections.singleton(ACCESS_GROUP));
         AccessGroup accessGroup = new AccessGroup(ACCESS_GROUP);
         Mockito.when(projectUserClientMock.isAdmin(Mockito.anyString())).thenReturn(ResponseEntity.ok(Boolean.FALSE));
-        Mockito.when(projectUserClientMock.retrieveProjectUserByEmail(any())).thenReturn(ResponseEntity.ok(EntityModel.of(projectUser)));
-        Mockito.when(accessGroupClient.retrieveAccessGroup(ACCESS_GROUP)).thenReturn(ResponseEntity.ok(EntityModel.of(accessGroup)));
+        Mockito.when(projectUserClientMock.retrieveProjectUserByEmail(any()))
+               .thenReturn(ResponseEntity.ok(EntityModel.of(projectUser)));
+        Mockito.when(accessGroupClient.retrieveAccessGroup(ACCESS_GROUP))
+               .thenReturn(ResponseEntity.ok(EntityModel.of(accessGroup)));
     }
 
     @Override
@@ -135,7 +139,7 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
     @Test
     public void searchFullTextDataobjects2() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expectValue("$.content.length()",2);
+        customizer.expectValue("$.content.length()", 2);
         // Add full text search
         String value = MERCURY + " OR " + PLANET + ":" + JUPITER;
         customizer.addParameter("q", value);

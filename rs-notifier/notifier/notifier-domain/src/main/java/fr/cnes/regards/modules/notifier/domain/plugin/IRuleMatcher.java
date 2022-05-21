@@ -24,8 +24,8 @@ import org.dom4j.rule.Rule;
 
 /**
  * Describe action to applied to a {@link Rule}
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
 @FunctionalInterface
 @PluginInterface(description = "Element rule matcher")
@@ -33,8 +33,9 @@ public interface IRuleMatcher {
 
     /**
      * Verify if a {@link JsonObject} corresponding to an event payload match with a rule
+     *
      * @param metadata {@link JsonObject} to verify if it matches
-     * @param payload {@link JsonObject} to verify if it matches
+     * @param payload  {@link JsonObject} to verify if it matches
      * @return true if match, false otherwise
      */
     boolean match(JsonObject metadata, JsonObject payload);

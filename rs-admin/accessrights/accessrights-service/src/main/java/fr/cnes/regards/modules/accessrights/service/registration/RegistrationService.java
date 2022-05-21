@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * {@link IRegistrationService} implementation.
+ *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  */
@@ -44,13 +45,17 @@ public class RegistrationService implements IRegistrationService {
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationService.class);
 
     private final IProjectUserService projectUserService;
+
     private final IEmailVerificationTokenService tokenService;
+
     private final WaitForQualificationListener listener;
+
     private final AccountUtilsService accountUtilsService;
 
-    public RegistrationService(IProjectUserService projectUserService, IEmailVerificationTokenService tokenService, WaitForQualificationListener listener,
-            AccountUtilsService accountUtilsService
-    ) {
+    public RegistrationService(IProjectUserService projectUserService,
+                               IEmailVerificationTokenService tokenService,
+                               WaitForQualificationListener listener,
+                               AccountUtilsService accountUtilsService) {
         this.projectUserService = projectUserService;
         this.tokenService = tokenService;
         this.listener = listener;
@@ -58,7 +63,8 @@ public class RegistrationService implements IRegistrationService {
     }
 
     @Override
-    public ProjectUser requestAccess(AccessRequestDto accessRequestDto, boolean isExternalAccess) throws EntityException {
+    public ProjectUser requestAccess(AccessRequestDto accessRequestDto, boolean isExternalAccess)
+        throws EntityException {
 
         String email = accessRequestDto.getEmail();
         ProjectUser projectUser = projectUserService.create(accessRequestDto, isExternalAccess, null, null);
@@ -69,7 +75,9 @@ public class RegistrationService implements IRegistrationService {
             tokenService.create(projectUser, accessRequestDto.getOriginUrl(), accessRequestDto.getRequestLink());
             // Sending proper event if account is active
             if (AccountStatus.ACTIVE.equals(account.getStatus())) {
-                LOG.info("Account is already active for new user {}. Sending AccountAcceptedEvent to handle ProjectUser status.", email);
+                LOG.info(
+                    "Account is already active for new user {}. Sending AccountAcceptedEvent to handle ProjectUser status.",
+                    email);
                 listener.onAccountActivation(email);
             }
         }

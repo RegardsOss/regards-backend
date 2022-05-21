@@ -23,6 +23,7 @@ import org.springframework.amqp.rabbit.connection.SimpleRoutingConnectionFactory
 
 /**
  * Extends {@link SimpleRoutingConnectionFactory} to expose {@link ConnectionFactory} management
+ *
  * @author Marc Sordi
  */
 public class MultitenantSimpleRoutingConnectionFactory extends SimpleRoutingConnectionFactory {

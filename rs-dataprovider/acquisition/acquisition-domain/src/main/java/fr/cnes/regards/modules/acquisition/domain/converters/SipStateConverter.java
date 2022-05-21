@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.converters;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
-
 import fr.cnes.regards.modules.acquisition.domain.SipStateManager;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
+
+import javax.persistence.AttributeConverter;
+import javax.persistence.Converter;
 
 /**
  * Converter for extended SIP state
  *
  * @author Marc Sordi
- *
  */
 @Converter(autoApply = true)
 public class SipStateConverter implements AttributeConverter<ISipState, String> {

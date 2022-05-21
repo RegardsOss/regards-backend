@@ -24,6 +24,7 @@ import java.util.Collection;
  * String[] specialized AbstractMatchCriterion ie a criterion to test if an attribute belongs to an array of
  * values.<br/>
  * <b>NB : This class is only used if none of provided string from given ones contains a blank character</b>
+ *
  * @author oroussel
  */
 public class StringMatchAnyCriterion extends AbstractMatchCriterion<String[]> {

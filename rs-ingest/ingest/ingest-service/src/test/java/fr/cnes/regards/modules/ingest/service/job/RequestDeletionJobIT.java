@@ -18,31 +18,12 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
-import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IAIPUpdatesCreatorRepository;
-import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IIngestRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.IOAISDeletionCreatorRepository;
-import fr.cnes.regards.modules.ingest.dao.IOAISDeletionRequestRepository;
-import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
+import fr.cnes.regards.modules.ingest.dao.*;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
@@ -67,15 +48,25 @@ import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * @author Léo Mieulet
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_deletion_job",
-        "regards.amqp.enabled=true", "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false",
-        "spring.jpa.show-sql=false",
+@TestPropertySource(
+    properties = { "spring.jpa.properties.hibernate.default_schema=request_deletion_job", "regards.amqp.enabled=true",
+        "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false", "spring.jpa.show-sql=false",
         "regards.ingest.aip.delete.bulk.delay=100" }, locations = { "classpath:application-test.properties" })
-@ActiveProfiles(value = { "testAmqp" , "noscheduler"})
+@ActiveProfiles(value = { "testAmqp", "noscheduler" })
 public class RequestDeletionJobIT extends IngestMultitenantServiceIT {
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
@@ -125,8 +116,8 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceIT {
         SIPEntity sip4 = new SIPEntity();
 
         sip4.setSip(SIP.build(EntityType.DATA, "SIP_001").withDescriptiveInformation("version", "2"));
-        sip4.setSipId(OaisUniformResourceName
-                .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
+        sip4.setSipId(OaisUniformResourceName.fromString(
+            "URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip4.setProviderId("SIP_003");
         sip4.setCreationDate(OffsetDateTime.now().minusHours(6));
         sip4.setLastUpdate(OffsetDateTime.now().minusHours(6));
@@ -141,7 +132,9 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceIT {
 
         AIP aip = AIP.build(sip4.getSip(),
                             OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
-                            Optional.empty(), "SIP_001", sip4.getVersion());
+                            Optional.empty(),
+                            "SIP_001",
+                            sip4.getVersion());
         aip.setIpType(EntityType.DATA);
         AIPEntity aipEntity = AIPEntity.build(sip4, AIPState.GENERATED, aip);
 
@@ -149,38 +142,50 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceIT {
 
         AIP aip2 = AIP.build(sip4.getSip(),
                              OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, "tenant", 1),
-                             Optional.empty(), "SIP_002", sip4.getVersion());
+                             Optional.empty(),
+                             "SIP_002",
+                             sip4.getVersion());
         aip2.setVersion(sip4.getVersion());
         AIPEntity aipEntity2 = AIPEntity.build(sip4, AIPState.GENERATED, aip2);
 
         aipEntity2 = aipRepository.save(aipEntity2);
 
-        mtd = IngestMetadataDto.build(SESSION_OWNER_0, SESSION_0, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                      Sets.newHashSet(CATEGORIES_0), StorageMetadata.build(STORAGE_0));
+        mtd = IngestMetadataDto.build(SESSION_OWNER_0,
+                                      SESSION_0,
+                                      IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                      Sets.newHashSet(CATEGORIES_0),
+                                      StorageMetadata.build(STORAGE_0));
 
         aips = aipRepository.findAll();
 
         // Create an event of each type and ensure they are not consummed by jobs / queue / whatever
-        AIPUpdatesCreatorRequest updateCreatorRequest = AIPUpdatesCreatorRequest.build(AIPUpdateParametersDto
-                .build(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0)));
+        AIPUpdatesCreatorRequest updateCreatorRequest = AIPUpdatesCreatorRequest.build(AIPUpdateParametersDto.build(
+            SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0)));
         updateCreatorRequest.setState(InternalRequestState.ERROR);
         aipUpdatesCreatorRepository.save(updateCreatorRequest);
 
-        List<AIPUpdateRequest> updateRequest = AIPUpdateRequest.build(aips.get(0), AIPUpdateParametersDto
-                .build(SearchAIPsParameters.build().withSession(SESSION_0)).withAddTags(Lists.newArrayList("SOME TAG")),
+        List<AIPUpdateRequest> updateRequest = AIPUpdateRequest.build(aips.get(0),
+                                                                      AIPUpdateParametersDto.build(SearchAIPsParameters.build()
+                                                                                                                       .withSession(
+                                                                                                                           SESSION_0))
+                                                                                            .withAddTags(Lists.newArrayList(
+                                                                                                "SOME TAG")),
                                                                       true);
         updateRequest.get(0).setState(InternalRequestState.ERROR);
         aipUpdateRequestRepository.saveAll(updateRequest);
 
-        ingestRequestRepository
-                .save(IngestRequest.build(null, mapper.dtoToMetadata(mtd), InternalRequestState.ERROR,
-                                          IngestRequestStep.REMOTE_STORAGE_ERROR, aips.get(0).getSip().getSip()));
+        ingestRequestRepository.save(IngestRequest.build(null,
+                                                         mapper.dtoToMetadata(mtd),
+                                                         InternalRequestState.ERROR,
+                                                         IngestRequestStep.REMOTE_STORAGE_ERROR,
+                                                         aips.get(0).getSip().getSip()));
         OAISDeletionCreatorRequest deletionRequest = new OAISDeletionCreatorRequest();
         deletionRequest.setCreationDate(OffsetDateTime.now());
         deletionRequest.setState(InternalRequestState.ERROR);
         oaisDeletionCreatorRepository.save(deletionRequest);
 
-        OAISDeletionRequest oaisDeletionRequest = OAISDeletionRequest.build(aips.get(0), SessionDeletionMode.BY_STATE,
+        OAISDeletionRequest oaisDeletionRequest = OAISDeletionRequest.build(aips.get(0),
+                                                                            SessionDeletionMode.BY_STATE,
                                                                             true);
         oaisDeletionRequest.setState(InternalRequestState.ERROR);
         oaisDeletionRequestRepository.save(oaisDeletionRequest);
@@ -189,8 +194,9 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceIT {
 
     /**
      * Helper method to wait for DB ingestion
+     *
      * @param expectedTasks expected count of task in db
-     * @param timeout in ms
+     * @param timeout       in ms
      * @throws InterruptedException
      */
     public void waitForRequestReach(long expectedTasks, long timeout) {
@@ -221,11 +227,12 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceIT {
         initData();
         Assert.assertEquals("Something went wrong while creating requests", 5, abstractRequestRepository.count());
         requestService.scheduleRequestDeletionJob(SearchRequestsParameters.build()
-                .withRequestType(RequestTypeEnum.AIP_UPDATES_CREATOR));
+                                                                          .withRequestType(RequestTypeEnum.AIP_UPDATES_CREATOR));
         waitForRequestReach(5, 20_000);
 
-        requestService.scheduleRequestDeletionJob(SearchRequestsParameters.build().withSession(SESSION_0)
-                .withSessionOwner(SESSION_OWNER_0));
+        requestService.scheduleRequestDeletionJob(SearchRequestsParameters.build()
+                                                                          .withSession(SESSION_0)
+                                                                          .withSessionOwner(SESSION_OWNER_0));
         waitForRequestReach(1, 10_000);
 
         requestService.scheduleRequestDeletionJob(SearchRequestsParameters.build());

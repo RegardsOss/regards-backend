@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
@@ -40,7 +39,6 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
-import org.elasticsearch.action.search.SearchTask;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -49,8 +47,6 @@ import org.junit.runners.MethodSorters;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -69,9 +65,9 @@ import static org.junit.Assert.*;
  * @author Sébastien Binda
  */
 @TestPropertySource(
-        properties = {"spring.jpa.properties.hibernate.default_schema=feature_deletion", "regards.amqp.enabled=true",
-        "regards.feature.max.bulk.size=10"},
-        locations = {"classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties",})
+    properties = { "spring.jpa.properties.hibernate.default_schema=feature_deletion", "regards.amqp.enabled=true",
+        "regards.feature.max.bulk.size=10" },
+    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties", })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
@@ -102,7 +98,8 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         Mockito.doNothing().when(publisher).publish(Mockito.any(NotificationRequestEvent.class));
         long featureNumberInDatabase;
         int cpt = 0;
-        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, false,
+        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner,
+                                                                           false,
                                                                            properties.getMaxBulkSize(),
                                                                            this.isToNotify);
 
@@ -136,6 +133,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
      * we will test that the {@link FeatureDeletionRequest} have their step to
      * REMOTE_STORAGE_DELETEION_REQUESTED and all FeatureEntity are still in database
      * because they have files
+     *
      * @throws InterruptedException
      */
     @Test
@@ -147,13 +145,17 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         // mock the publish method to not broke other tests in notifier manager
         Mockito.doNothing().when(publisher).publish(Mockito.any(NotificationRequestEvent.class));
 
-        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, true,
+        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner,
+                                                                           true,
                                                                            nbFeature,
                                                                            this.isToNotify);
         this.featureDeletionService.registerRequests(events);
         this.featureDeletionService.scheduleRequests();
 
-        waitForStep(featureDeletionRequestRepo, FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED, nbFeature, 10_000);
+        waitForStep(featureDeletionRequestRepo,
+                    FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED,
+                    nbFeature,
+                    10_000);
 
         assertEquals(properties.getMaxBulkSize().intValue(), this.featureRepo.count());
         // the publisher has been called because of storage successes (feature creation with files)
@@ -173,8 +175,10 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         int nbFeaturesBatch1 = properties.getMaxBulkSize();
         int nbFeaturesBatch2 = properties.getMaxBulkSize() / 2;
         int nbFeatures = nbFeaturesBatch1 + nbFeaturesBatch2;
-        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, true,
-                                                                           nbFeatures, this.isToNotify);
+        List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner,
+                                                                           true,
+                                                                           nbFeatures,
+                                                                           this.isToNotify);
         this.featureDeletionService.registerRequests(events);
 
         this.featureDeletionService.scheduleRequests();
@@ -200,8 +204,9 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         List<FeatureDeletionRequestEvent> events = prepareDeletionTestData(deletionOwner, true, nbValid, false);
         this.featureDeletionService.registerRequests(events);
 
-        RequestsPage<FeatureRequestDTO> results = this.featureRequestService
-                .findAll(FeatureRequestTypeEnum.DELETION, FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 100));
+        RequestsPage<FeatureRequestDTO> results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
+                                                                                     FeatureRequestsSelectionDTO.build(),
+                                                                                     PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
@@ -214,16 +219,20 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                     FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED)
-                                                             .withStart(OffsetDateTime.now().plusSeconds(5)),
+                                                     FeatureRequestsSelectionDTO.build()
+                                                                                .withState(RequestState.GRANTED)
+                                                                                .withStart(OffsetDateTime.now()
+                                                                                                         .plusSeconds(5)),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.DELETION,
-                                                     FeatureRequestsSelectionDTO.build().withStart(start)
-                                                             .withEnd(OffsetDateTime.now().plusSeconds(5)),
+                                                     FeatureRequestsSelectionDTO.build()
+                                                                                .withStart(start)
+                                                                                .withEnd(OffsetDateTime.now()
+                                                                                                       .plusSeconds(5)),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
@@ -254,35 +263,38 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         this.featureDeletionService.registerRequests(events);
 
         // Simulate all requests to scheduled
-        this.featureDeletionService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, nbValid*2))
-                .forEach(r -> {
-                    r.setStep(FeatureRequestStep.LOCAL_SCHEDULED);
-                    this.featureDeletionRequestRepo.save(r);
-                });
+        this.featureDeletionService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, nbValid * 2))
+                                   .forEach(r -> {
+                                       r.setStep(FeatureRequestStep.LOCAL_SCHEDULED);
+                                       this.featureDeletionRequestRepo.save(r);
+                                   });
 
         // Try delete all requests.
-        RequestHandledResponse response = this.featureDeletionService
-                .deleteRequests(FeatureRequestsSelectionDTO.build());
+        RequestHandledResponse response = this.featureDeletionService.deleteRequests(FeatureRequestsSelectionDTO.build());
         LOGGER.info(response.getMessage());
-        Assert.assertEquals("There should be 0 requests deleted as all request are processing", 0,
+        Assert.assertEquals("There should be 0 requests deleted as all request are processing",
+                            0,
                             response.getTotalHandled());
-        Assert.assertEquals("There should be 0 requests to delete as all request are processing", 0,
+        Assert.assertEquals("There should be 0 requests to delete as all request are processing",
+                            0,
                             response.getTotalRequested());
 
-        response = this.featureDeletionService
-                .deleteRequests(FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED));
+        response = this.featureDeletionService.deleteRequests(FeatureRequestsSelectionDTO.build()
+                                                                                         .withState(RequestState.GRANTED));
         LOGGER.info(response.getMessage());
-        Assert.assertEquals("There should be 0 requests deleted as selection set on GRANTED Requests", 0,
+        Assert.assertEquals("There should be 0 requests deleted as selection set on GRANTED Requests",
+                            0,
                             response.getTotalHandled());
-        Assert.assertEquals("There should be 0 requests to delete as selection set on GRANTED Requests", 0,
+        Assert.assertEquals("There should be 0 requests to delete as selection set on GRANTED Requests",
+                            0,
                             response.getTotalRequested());
 
         // Simulate all requests to scheduled
-        this.featureDeletionService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, nbValid*2))
-                .forEach(r -> {
-                    r.setStep(FeatureRequestStep.REMOTE_STORAGE_ERROR);
-                    this.featureDeletionRequestRepo.save(r);
-                });
+        this.featureDeletionService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, nbValid * 2))
+                                   .forEach(r -> {
+                                       r.setStep(FeatureRequestStep.REMOTE_STORAGE_ERROR);
+                                       this.featureDeletionRequestRepo.save(r);
+                                   });
 
         response = this.featureDeletionService.deleteRequests(FeatureRequestsSelectionDTO.build());
         LOGGER.info(response.getMessage());
@@ -301,21 +313,22 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         this.featureDeletionService.registerRequests(events);
 
         // Try delete all requests.
-        RequestHandledResponse response = this.featureDeletionService
-                .retryRequests(FeatureRequestsSelectionDTO.build().withState(RequestState.ERROR));
+        RequestHandledResponse response = this.featureDeletionService.retryRequests(FeatureRequestsSelectionDTO.build()
+                                                                                                               .withState(
+                                                                                                                   RequestState.ERROR));
         LOGGER.info(response.getMessage());
-        Assert.assertEquals("There should be 0 requests retryed as request are not in ERROR state", 0,
+        Assert.assertEquals("There should be 0 requests retryed as request are not in ERROR state",
+                            0,
                             response.getTotalHandled());
-        Assert.assertEquals("There should be 0 requests to retry as request are not in ERROR state", 0,
+        Assert.assertEquals("There should be 0 requests to retry as request are not in ERROR state",
+                            0,
                             response.getTotalRequested());
 
-        response = this.featureDeletionService
-                .retryRequests(FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED));
+        response = this.featureDeletionService.retryRequests(FeatureRequestsSelectionDTO.build()
+                                                                                        .withState(RequestState.GRANTED));
         LOGGER.info(response.getMessage());
-        Assert.assertEquals("invalid number of GRANTED Requests", nbValid,
-                            response.getTotalHandled());
-        Assert.assertEquals("invalid number GRANTED Requests", nbValid,
-                            response.getTotalRequested());
+        Assert.assertEquals("invalid number of GRANTED Requests", nbValid, response.getTotalHandled());
+        Assert.assertEquals("invalid number GRANTED Requests", nbValid, response.getTotalRequested());
 
     }
 
@@ -450,17 +463,26 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
     @Test
     public void testDeletionWithCreationPendingWithURN() {
 
-        List<FeatureCreationRequestEvent> featureCreationRequestEvents = initFeatureCreationRequestEvent(1, false, false);
-        FeatureUniformResourceName urn = FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA, "tenant", UUID.randomUUID(), 1);
+        List<FeatureCreationRequestEvent> featureCreationRequestEvents = initFeatureCreationRequestEvent(1,
+                                                                                                         false,
+                                                                                                         false);
+        FeatureUniformResourceName urn = FeatureUniformResourceName.build(FeatureIdentifier.FEATURE,
+                                                                          EntityType.DATA,
+                                                                          "tenant",
+                                                                          UUID.randomUUID(),
+                                                                          1);
         featureCreationRequestEvents.get(0).getFeature().setUrn(urn);
         featureCreationService.registerRequests(featureCreationRequestEvents);
 
-        FeatureDeletionRequestEvent featureDeletionRequestEvent = FeatureDeletionRequestEvent.build(owner, urn, PriorityLevel.NORMAL);
+        FeatureDeletionRequestEvent featureDeletionRequestEvent = FeatureDeletionRequestEvent.build(owner,
+                                                                                                    urn,
+                                                                                                    PriorityLevel.NORMAL);
 
         featureDeletionService.registerRequests(Collections.singletonList(featureDeletionRequestEvent));
         featureDeletionService.scheduleRequests();
 
-        Set<FeatureDeletionRequest> notScheduled = featureDeletionRequestRepo.findByStepIn(Collections.singletonList(FeatureRequestStep.LOCAL_DELAYED), OffsetDateTime.now());
+        Set<FeatureDeletionRequest> notScheduled = featureDeletionRequestRepo.findByStepIn(Collections.singletonList(
+            FeatureRequestStep.LOCAL_DELAYED), OffsetDateTime.now());
         assertEquals(1, notScheduled.size());
     }
 
@@ -471,12 +493,15 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
 
         FeatureUniformResourceName urn = featureCreationRequestRepo.findAll().get(0).getUrn();
 
-        FeatureDeletionRequestEvent featureDeletionRequestEvent = FeatureDeletionRequestEvent.build(owner, urn, PriorityLevel.NORMAL);
+        FeatureDeletionRequestEvent featureDeletionRequestEvent = FeatureDeletionRequestEvent.build(owner,
+                                                                                                    urn,
+                                                                                                    PriorityLevel.NORMAL);
 
         featureDeletionService.registerRequests(Collections.singletonList(featureDeletionRequestEvent));
         featureDeletionService.scheduleRequests();
 
-        Set<FeatureDeletionRequest> notScheduled = featureDeletionRequestRepo.findByStepIn(Collections.singletonList(FeatureRequestStep.LOCAL_DELAYED), OffsetDateTime.now());
+        Set<FeatureDeletionRequest> notScheduled = featureDeletionRequestRepo.findByStepIn(Collections.singletonList(
+            FeatureRequestStep.LOCAL_DELAYED), OffsetDateTime.now());
         assertEquals(1, notScheduled.size());
     }
 

@@ -67,30 +67,25 @@ public interface IAccountService {
     /**
      * Retrieve the {@link Account} of passed <code>id</code>.
      *
-     * @param pAccountId
-     *            The {@link Account}'s <code>id</code>
-     * @throws EntityNotFoundException
-     *             Thrown if no {@link Account} with passed <code>id</code> could be found
+     * @param pAccountId The {@link Account}'s <code>id</code>
      * @return The account
+     * @throws EntityNotFoundException Thrown if no {@link Account} with passed <code>id</code> could be found
      */
     Account retrieveAccount(Long pAccountId) throws EntityNotFoundException;
 
     /**
      * Retrieve the {@link Account} of passed <code>email</code>
      *
-     * @param pEmail
-     *            The {@link Account}'s <code>email</code>
+     * @param pEmail The {@link Account}'s <code>email</code>
      * @return the account
-     * @throws EntityNotFoundException
-     *             Thrown if no {@link Account} with passed <code>email</code> could be found
+     * @throws EntityNotFoundException Thrown if no {@link Account} with passed <code>email</code> could be found
      */
     Account retrieveAccountByEmail(String pEmail) throws EntityNotFoundException;
 
     /**
      * Return <code>true</code> if an {@link Account} of passed <code>id</code> exists.
      *
-     * @param pId
-     *            The {@link Account}'s <code>id</code>
+     * @param pId The {@link Account}'s <code>id</code>
      * @return <code>true</code> if exists, else <code>false</code>
      */
     boolean existAccount(Long pId);
@@ -98,8 +93,7 @@ public interface IAccountService {
     /**
      * Return <code>true</code> if an {@link Account} of passed <code>email</code> exists.
      *
-     * @param pEmail
-     *            The {@link Account}'s <code>email</code>
+     * @param pEmail The {@link Account}'s <code>email</code>
      * @return <code>true</code> if exists, else <code>false</code>
      */
     boolean existAccount(String pEmail);
@@ -107,17 +101,14 @@ public interface IAccountService {
     /**
      * Update an {@link Account} with passed values. Passwords and emails are not updated by this method.
      *
-     * @param pAccountId
-     *            The <code>id</code> of the {@link Account} to update
-     * @param pUpdatedAccount
-     *            The new values to set
+     * @param pAccountId      The <code>id</code> of the {@link Account} to update
+     * @param pUpdatedAccount The new values to set
      * @return the {@link Account} created
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityInconsistentIdentifierException} Thrown when <code>pAccountId</code> is different from
-     *             the id of <code>pUpdatedAccount</code><br>
-     *             {@link EntityNotFoundException} Thrown when no {@link Account} could be found with id
-     *             <code>pAccountId</code><br>
+     * @throws EntityException <br>
+     *                         {@link EntityInconsistentIdentifierException} Thrown when <code>pAccountId</code> is different from
+     *                         the id of <code>pUpdatedAccount</code><br>
+     *                         {@link EntityNotFoundException} Thrown when no {@link Account} could be found with id
+     *                         <code>pAccountId</code><br>
      */
     Account updateAccount(Long pAccountId, Account pUpdatedAccount) throws EntityException;
 
@@ -125,25 +116,21 @@ public interface IAccountService {
      * Return <code>true</code> if the passed <code>pPassword</code> is equal to the one set on the {@link Account} of
      * passed <code>email</code>
      *
-     * @param email
-     *            The {@link Account}'s <code>email</code>
-     * @param password
-     *            The password to check
+     * @param email                The {@link Account}'s <code>email</code>
+     * @param password             The password to check
      * @param checkAccountValidity if true, this method check also the account validity
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link Account} could be found with id <code>pAccountId</code>
      * @return <code>true</code> if the password is valid, else <code>false</code>
+     * @throws EntityNotFoundException Thrown when no {@link Account} could be found with id <code>pAccountId</code>
      */
     boolean validatePassword(String email, String password, boolean checkAccountValidity)
-            throws EntityNotFoundException;
+        throws EntityNotFoundException;
 
     /**
      * Validate the password according to the regex provided by file. Mainly used by create and update methods so an
      * invalid password wouldn't be used
      *
      * @param pNewAccount the account which we are checking the password from
-     * @throws EntityInvalidException
-     *             thrown if the provided password does not respect the configured regex
+     * @throws EntityInvalidException thrown if the provided password does not respect the configured regex
      */
     void checkPassword(Account pNewAccount) throws EntityInvalidException;
 
@@ -165,7 +152,8 @@ public interface IAccountService {
 
     /**
      * Change password
-     * @param pId account id
+     *
+     * @param pId              account id
      * @param pEncryptPassword encrypted password
      * @throws EntityNotFoundException if no account of passed id could be found
      */

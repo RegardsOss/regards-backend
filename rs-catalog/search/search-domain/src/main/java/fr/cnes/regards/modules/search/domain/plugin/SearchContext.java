@@ -18,24 +18,21 @@
  */
 package fr.cnes.regards.modules.search.domain.plugin;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.urn.UniformResourceName;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Search context for search engine.<br/>
@@ -46,7 +43,6 @@ import fr.cnes.regards.framework.urn.UniformResourceName;
  * {@link #withDataTypes(List)}.
  *
  * @author Marc Sordi
- *
  */
 public class SearchContext {
 
@@ -224,8 +220,11 @@ public class SearchContext {
     /**
      * Search context builder
      */
-    public static SearchContext build(SearchType searchType, String engineType, HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, Pageable pageable) {
+    public static SearchContext build(SearchType searchType,
+                                      String engineType,
+                                      HttpHeaders headers,
+                                      MultiValueMap<String, String> queryParams,
+                                      Pageable pageable) {
         SearchContext context = new SearchContext();
         context.setSearchType(searchType);
         context.setEngineType(engineType);

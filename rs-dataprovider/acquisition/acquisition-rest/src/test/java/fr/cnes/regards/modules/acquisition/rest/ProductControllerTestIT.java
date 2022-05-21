@@ -18,24 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.rest;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.restdocs.payload.FieldDescriptor;
-import org.springframework.restdocs.payload.PayloadDocumentation;
-import org.springframework.restdocs.request.ParameterDescriptor;
-import org.springframework.restdocs.request.RequestDocumentation;
-import org.springframework.restdocs.snippet.Attributes;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
@@ -50,9 +33,25 @@ import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.restdocs.payload.PayloadDocumentation;
+import org.springframework.restdocs.request.ParameterDescriptor;
+import org.springframework.restdocs.request.RequestDocumentation;
+import org.springframework.restdocs.snippet.Attributes;
+import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
 
 /**
  * Test for ProductController
+ *
  * @author Sébastien Binda
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acquisition_it" })
@@ -113,12 +112,12 @@ public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
         performDefaultGet(ProductController.TYPE_PATH, requestBuilderCustomizer, "Should retrieve products");
         documentRequestParameters(requestBuilderCustomizer);
 
-        requestBuilderCustomizer.document(PayloadDocumentation.relaxedResponseFields(Attributes.attributes(Attributes
-                                                                                                                   .key(RequestBuilderCustomizer.PARAM_TITLE)
-                                                                                                                   .value("Product")),
-                                                                                     documentProduct()));
+        requestBuilderCustomizer.document(PayloadDocumentation.relaxedResponseFields(Attributes.attributes(Attributes.key(
+            RequestBuilderCustomizer.PARAM_TITLE).value("Product")), documentProduct()));
 
-        requestBuilderCustomizer.addParameter("sipState", ProductSIPState.NOT_SCHEDULED.getName(), ProductSIPState.SUBMITTED.getName());
+        requestBuilderCustomizer.addParameter("sipState",
+                                              ProductSIPState.NOT_SCHEDULED.getName(),
+                                              ProductSIPState.SUBMITTED.getName());
         performDefaultGet(ProductController.TYPE_PATH, requestBuilderCustomizer, "Should retrieve products");
     }
 
@@ -129,51 +128,69 @@ public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
             joiner.add(state.name());
         }
         ParameterDescriptor paramState = RequestDocumentation.parameterWithName(ProductController.REQUEST_PARAM_STATE)
-                .optional().attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                .description("Product state filter")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                    .value("Optional. Multiple values allowed. Allowed values : " + joiner.toString()));
+                                                             .optional()
+                                                             .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                   .value(JSON_STRING_TYPE))
+                                                             .description("Product state filter")
+                                                             .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                   .value(
+                                                                                       "Optional. Multiple values allowed. Allowed values : "
+                                                                                           + joiner.toString()));
 
         joiner = new StringJoiner(", ");
         for (ProductSIPState state : ProductSIPState.values()) {
             joiner.add(state.name());
         }
-        ParameterDescriptor paramSipState = RequestDocumentation
-                .parameterWithName(ProductController.REQUEST_PARAM_SIP_STATE).optional()
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                .description("Product SIP state filter")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                    .value("Optional. Multiple values allowed. Allowed values : " + joiner.toString()));
+        ParameterDescriptor paramSipState = RequestDocumentation.parameterWithName(ProductController.REQUEST_PARAM_SIP_STATE)
+                                                                .optional()
+                                                                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                      .value(JSON_STRING_TYPE))
+                                                                .description("Product SIP state filter")
+                                                                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                      .value(
+                                                                                          "Optional. Multiple values allowed. Allowed values : "
+                                                                                              + joiner.toString()));
 
-        ParameterDescriptor paramProductId = RequestDocumentation
-                .parameterWithName(ProductController.REQUEST_PARAM_PRODUCT_NAME).optional()
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                .description("Product name filter")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"));
+        ParameterDescriptor paramProductId = RequestDocumentation.parameterWithName(ProductController.REQUEST_PARAM_PRODUCT_NAME)
+                                                                 .optional()
+                                                                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                       .value(JSON_STRING_TYPE))
+                                                                 .description("Product name filter")
+                                                                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                       .value("Optional"));
 
-        ParameterDescriptor paramChainId = RequestDocumentation
-                .parameterWithName(ProductController.REQUEST_PARAM_CHAIN_ID).optional()
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_NUMBER_TYPE))
-                .description("Acquisition chain identifier filter")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"));
+        ParameterDescriptor paramChainId = RequestDocumentation.parameterWithName(ProductController.REQUEST_PARAM_CHAIN_ID)
+                                                               .optional()
+                                                               .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                     .value(JSON_NUMBER_TYPE))
+                                                               .description("Acquisition chain identifier filter")
+                                                               .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                     .value("Optional"));
 
         ParameterDescriptor paramFrom = RequestDocumentation.parameterWithName(ProductController.REQUEST_PARAM_FROM)
-                .optional().attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                .description("ISO Date time filter")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                    .value("Optional. Required format : yyyy-MM-dd'T'HH:mm:ss.SSSZ"));
+                                                            .optional()
+                                                            .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                  .value(JSON_STRING_TYPE))
+                                                            .description("ISO Date time filter")
+                                                            .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                  .value(
+                                                                                      "Optional. Required format : yyyy-MM-dd'T'HH:mm:ss.SSSZ"));
 
-        ParameterDescriptor paramSession = RequestDocumentation
-                .parameterWithName(ProductController.REQUEST_PARAM_SESSION).optional()
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                .description("Session name filter")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"));
+        ParameterDescriptor paramSession = RequestDocumentation.parameterWithName(ProductController.REQUEST_PARAM_SESSION)
+                                                               .optional()
+                                                               .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                     .value(JSON_STRING_TYPE))
+                                                               .description("Session name filter")
+                                                               .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                     .value("Optional"));
 
-        ParameterDescriptor noSession = RequestDocumentation
-                .parameterWithName(ProductController.REQUEST_PARAM_NO_SESSION).optional()
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_BOOLEAN_TYPE))
-                .description("No session filter")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"));
+        ParameterDescriptor noSession = RequestDocumentation.parameterWithName(ProductController.REQUEST_PARAM_NO_SESSION)
+                                                            .optional()
+                                                            .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                  .value(JSON_BOOLEAN_TYPE))
+                                                            .description("No session filter")
+                                                            .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                  .value("Optional"));
 
         // Add request parameters documentation
         requestBuilderCustomizer.document(RequestDocumentation.requestParameters(paramState,
@@ -196,8 +213,10 @@ public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
         for (ProductState mode : ProductState.values()) {
             joiner.add(mode.name());
         }
-        fields.add(constrainedFields
-                           .withPath(prefix + "state", "state", "State", "Allowed values : " + joiner.toString()));
+        fields.add(constrainedFields.withPath(prefix + "state",
+                                              "state",
+                                              "State",
+                                              "Allowed values : " + joiner.toString()));
 
         joiner = new StringJoiner(", ");
         for (ProductSIPState mode : ProductSIPState.values()) {
@@ -208,18 +227,22 @@ public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
                                               " SIP State",
                                               "Allowed values : " + joiner.toString()));
 
-        fields.add(constrainedFields
-                           .withPath(prefix + "error", "error", "Error details when product state is in error state")
-                           .optional().type(JSON_STRING_TYPE));
+        fields.add(constrainedFields.withPath(prefix + "error",
+                                              "error",
+                                              "Error details when product state is in error state")
+                                    .optional()
+                                    .type(JSON_STRING_TYPE));
 
         fields.add(constrainedFields.withPath(prefix + "lastUpdate", "lastUpdate", "ISO 8601 last product update"));
         fields.add(constrainedFields.withPath(prefix + "productName", "productName", "Product name"));
-        fields.add(constrainedFields.withPath(prefix + "session", "session", "Session name").optional()
-                           .type(JSON_STRING_TYPE));
-//        fields.add(constrainedFields.withPath(prefix + "fileList[]", "fileList", "Acquired product files"));
+        fields.add(constrainedFields.withPath(prefix + "session", "session", "Session name")
+                                    .optional()
+                                    .type(JSON_STRING_TYPE));
+        //        fields.add(constrainedFields.withPath(prefix + "fileList[]", "fileList", "Acquired product files"));
 
-        fields.add(constrainedFields.withPath(prefix + "sip", "sip", "Generated SIP").optional()
-                           .type(JSON_OBJECT_TYPE));
+        fields.add(constrainedFields.withPath(prefix + "sip", "sip", "Generated SIP")
+                                    .optional()
+                                    .type(JSON_OBJECT_TYPE));
         fields.add(constrainedFields.withPath(prefix + "ipId", "ipId", "SIP IP ID").optional().type(JSON_STRING_TYPE));
 
         return fields;

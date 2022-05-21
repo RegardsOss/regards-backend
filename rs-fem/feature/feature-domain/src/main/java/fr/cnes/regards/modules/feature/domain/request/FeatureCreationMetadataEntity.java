@@ -18,31 +18,32 @@
  */
 package fr.cnes.regards.modules.feature.domain.request;
 
-import java.util.List;
-
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.modules.feature.dto.StorageMetadata;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.modules.feature.dto.StorageMetadata;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import java.util.List;
 
 /**
  * @author Kevin Marchois
- *
  */
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @Embeddable
 public class FeatureCreationMetadataEntity extends FeatureMetadataEntity {
 
-    /** If we override duplicated feature or create a new version */
+    /**
+     * If we override duplicated feature or create a new version
+     */
     @Column(name = "override_previous_version", nullable = true)
     private boolean override;
 
-    public static FeatureCreationMetadataEntity build(String sessionOwner, String session,
-            List<StorageMetadata> storages, boolean override) {
+    public static FeatureCreationMetadataEntity build(String sessionOwner,
+                                                      String session,
+                                                      List<StorageMetadata> storages,
+                                                      boolean override) {
         FeatureCreationMetadataEntity f = new FeatureCreationMetadataEntity();
         f.setSessionOwner(sessionOwner);
         f.setSession(session);

@@ -18,8 +18,22 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
-import javax.validation.Valid;
-
+import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
+import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
+import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
+import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
+import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
+import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,22 +52,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.common.collect.Lists;
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
-import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
-import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
-import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
-import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
-import fr.cnes.regards.modules.ingest.service.request.IRequestService;
+import javax.validation.Valid;
 
 /**
  * This controller manages Requests.
@@ -105,7 +104,8 @@ public class RequestController implements IResourceController<RequestDto> {
 
     /**
      * Retrieve a page of ingest requests according to the given filters
-     * @param filters request filters
+     *
+     * @param filters   request filters
      * @param pageable
      * @param assembler
      * @return page of aip metadata respecting the constraints
@@ -114,9 +114,9 @@ public class RequestController implements IResourceController<RequestDto> {
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Return a page of Requests", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<RequestDto>>> searchRequest(
-            @RequestBody SearchRequestsParameters filters,
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<RequestDto> assembler) throws ModuleException {
+        @RequestBody SearchRequestsParameters filters,
+        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        PagedResourcesAssembler<RequestDto> assembler) throws ModuleException {
         Page<RequestDto> requests = requestService.findRequestDtos(filters, pageable);
         return new ResponseEntity<>(toPagedResources(requests, assembler), HttpStatus.OK);
     }
@@ -130,11 +130,11 @@ public class RequestController implements IResourceController<RequestDto> {
 
     @RequestMapping(value = VERSIONING_CHOICE_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "choose versioning mode for requests matching provided filters",
-            role = DefaultRole.EXPLOIT)
+        role = DefaultRole.EXPLOIT)
     public ResponseEntity<Object> chooseVersioning(@Valid @RequestBody ChooseVersioningRequestParameters filters) {
         if (filters.getNewVersioningMode() == VersioningMode.MANUAL) {
             return ResponseEntity.unprocessableEntity()
-                    .body("You cannot choose " + VersioningMode.MANUAL + " versioning mode!");
+                                 .body("You cannot choose " + VersioningMode.MANUAL + " versioning mode!");
         }
         LOGGER.debug("Received request to retry requests");
         ingestRequestService.scheduleRequestWithVersioningMode(filters);
@@ -161,7 +161,7 @@ public class RequestController implements IResourceController<RequestDto> {
         EntityModel<RequestDto> resource = resourceService.toResource(element);
 
         if ((InternalRequestState.ERROR == element.getState()) || (element.getState()
-                == InternalRequestState.ABORTED)) {
+            == InternalRequestState.ABORTED)) {
             resourceService.addLink(resource,
                                     this.getClass(),
                                     "retryRequests",
@@ -169,7 +169,7 @@ public class RequestController implements IResourceController<RequestDto> {
                                     MethodParamFactory.build(SearchRequestsParameters.class));
         }
         if (!Lists.newArrayList(InternalRequestState.RUNNING, InternalRequestState.CREATED)
-                .contains(element.getState())) {
+                  .contains(element.getState())) {
             resourceService.addLink(resource,
                                     this.getClass(),
                                     "delete",

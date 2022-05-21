@@ -22,7 +22,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
  * @author sbinda
- *
  */
 @SuppressWarnings("serial")
 public class NearlineFileNotAvailableException extends ModuleException {

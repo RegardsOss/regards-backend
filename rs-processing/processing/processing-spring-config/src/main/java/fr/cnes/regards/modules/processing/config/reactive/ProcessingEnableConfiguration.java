@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.config.reactive;
 
 import fr.cnes.regards.framework.feign.autoconfigure.FeignWebMvcConfiguration;
@@ -28,20 +28,18 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+
 /**
  * This class is the "@EnableXXX" config for reactive application.
+ *
  * @author gandrieu
  */
 @Configuration
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
 
-@EnableAutoConfiguration(exclude = {
-        R2dbcMigrateAutoConfiguration.class,
-        WebMvcAutoConfiguration.class,
-        FeignWebMvcConfiguration.class,
-        WebSecurityAutoConfiguration.class,
-        MethodSecurityAutoConfiguration.class
-})
+@EnableAutoConfiguration(
+    exclude = { R2dbcMigrateAutoConfiguration.class, WebMvcAutoConfiguration.class, FeignWebMvcConfiguration.class,
+        WebSecurityAutoConfiguration.class, MethodSecurityAutoConfiguration.class })
 @EnableWebFluxSecurity
 @EnableJpaRepositories
 @EnableFeignClients

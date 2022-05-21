@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.access.services.rest.assembler;
 
-import org.springframework.hateoas.EntityModel;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.SimpleResourceAssemblerSupport;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.stereotype.Component;
 
 /**
  * Custom {@link SimpleResourceAssemblerSupport} for {@link PluginServiceDto}s.

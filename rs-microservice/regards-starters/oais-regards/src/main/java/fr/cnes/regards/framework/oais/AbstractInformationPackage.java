@@ -18,25 +18,23 @@
  */
 package fr.cnes.regards.framework.oais;
 
+import fr.cnes.regards.framework.geojson.AbstractFeature;
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
+import org.springframework.util.MimeType;
+
+import javax.validation.constraints.NotNull;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
-
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
-import org.springframework.util.MimeType;
-
-import fr.cnes.regards.framework.geojson.AbstractFeature;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.urn.EntityType;
-
 /**
  * OAIS Information package base structure
- *
+ * <p>
  * An {@link InformationPackageProperties} contains :
  * <ul>
  * <li>An array of {@link ContentInformation} to describe related physical files</li>
@@ -129,6 +127,7 @@ import fr.cnes.regards.framework.urn.EntityType;
  * <br/>
  * To define descriptive information, just call delegated method {@link #withDescriptiveInformation(String, Object)}.
  * <br/>
+ *
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet
  */
@@ -155,6 +154,7 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
 
     /**
      * Abstraction on where the last event is and how to get it
+     *
      * @return last event occurred to this aip
      */
     public Event getLastEvent() {
@@ -167,8 +167,10 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
     }
 
     public Event getSubmissionEvent() {
-        return getHistory().stream().filter(e -> EventType.SUBMISSION.name().equals(e.getType())).findFirst()
-                .orElse(null);
+        return getHistory().stream()
+                           .filter(e -> EventType.SUBMISSION.name().equals(e.getType()))
+                           .findFirst()
+                           .orElse(null);
     }
 
     /**
@@ -207,8 +209,7 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
         if (getClass() != obj.getClass()) {
             return false;
         }
-        @SuppressWarnings("rawtypes")
-        AbstractInformationPackage other = (AbstractInformationPackage) obj;
+        @SuppressWarnings("rawtypes") AbstractInformationPackage other = (AbstractInformationPackage) obj;
         return ipType == other.ipType;
     }
 
@@ -216,6 +217,7 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
 
     /**
      * Set required feature id and entity type
+     *
      * @param id feature id
      */
     public <T extends AbstractInformationPackage<ID>> T withIdAndType(ID id, EntityType type) {
@@ -226,8 +228,9 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
 
     /**
      * Set optional feature bounding box an CRS
+     *
      * @param bbox bounding box
-     * @param crs coordinate reference system (default WGS 84)
+     * @param crs  coordinate reference system (default WGS 84)
      */
 
     public <T extends AbstractInformationPackage<ID>> T withBbox(Double[] bbox, String crs) {
@@ -263,7 +266,8 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
 
     /**
      * Add <b>optional</b> descriptive information to the current information package. (repeatable)
-     * @param key information key
+     *
+     * @param key   information key
      * @param value information value
      */
     public <T extends AbstractInformationPackage<ID>> T withDescriptiveInformation(String key, Object value) {
@@ -273,7 +277,8 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
 
     /**
      * Add <b>optional</b> descriptive information to the current information package. (repeatable)
-     * @param key information key
+     *
+     * @param key   information key
      * @param value information value
      */
     public <T extends AbstractInformationPackage<ID>> T withNullableDescriptiveInformation(String key, Object value) {
@@ -283,6 +288,7 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
 
     /**
      * Add tags into context information (repeatable)
+     *
      * @param tags list of tags
      */
     public <T extends AbstractInformationPackage<ID>> T withContextTags(String... tags) {
@@ -292,7 +298,8 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
 
     /**
      * Add link into context information (repeatable)
-     * @param key link key
+     *
+     * @param key   link key
      * @param value link value
      */
     public <T extends AbstractInformationPackage<ID>> T withContextInformation(String key, Object value) {
@@ -368,7 +375,8 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
      * Add a provenance information event to the information package thanks to the given parameters (repeatable)
      */
     public <T extends AbstractInformationPackage<ID>> T withProvenanceInformationEvent(@Nullable String type,
-            String comment, OffsetDateTime date) {
+                                                                                       String comment,
+                                                                                       OffsetDateTime date) {
         properties.withProvenanceInformationEvent(type, comment, date);
         return (T) this;
     }
@@ -377,7 +385,7 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
      * Add a provenance information event to the information package thanks to the given parameters (repeatable)
      */
     public <T extends AbstractInformationPackage<ID>> T withProvenanceInformationEvent(String comment,
-            OffsetDateTime date) {
+                                                                                       OffsetDateTime date) {
         properties.withProvenanceInformationEvent(comment, date);
         return (T) this;
     }
@@ -401,8 +409,10 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
     /**
      * Set the access right informtaion to the information package thanks to the given parameters
      */
-    public <T extends AbstractInformationPackage<ID>> T withAccessRightInformation(String licence, String dataRights,
-            @Nullable OffsetDateTime publicReleaseDate) {
+    public <T extends AbstractInformationPackage<ID>> T withAccessRightInformation(String licence,
+                                                                                   String dataRights,
+                                                                                   @Nullable
+                                                                                   OffsetDateTime publicReleaseDate) {
         properties.withAccessRightInformation(licence, dataRights, publicReleaseDate);
         return (T) this;
     }
@@ -419,44 +429,57 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
      * Set <b>required</b> data object properties for a data object reference<br/>
      * Use this method to reference an external data object that will not be managed by archival storage (i.e. physical
      * file will not be stored by the system)<br/>
+     *
      * @param dataType {@link DataType}
      * @param filename filename
-     * @param url external url
-     * @param storage storage identifier not managed by storage service (to just reference the file and a<T extends AbstractInformationPackage<ID>> T manipulating it).
-     * An arbitrary character string may be appropriate!
+     * @param url      external url
+     * @param storage  storage identifier not managed by storage service (to just reference the file and a<T extends AbstractInformationPackage<ID>> T manipulating it).
+     *                 An arbitrary character string may be appropriate!
      */
-    public <T extends AbstractInformationPackage<ID>> T withDataObjectReference(DataType dataType, String filename,
-            String url, String storage) {
+    public <T extends AbstractInformationPackage<ID>> T withDataObjectReference(DataType dataType,
+                                                                                String filename,
+                                                                                String url,
+                                                                                String storage) {
         properties.withDataObjectReference(dataType, filename, url, storage);
         return (T) this;
     }
 
     /**
      * Set <b>required</b> data object properties<br/>
-     * @param dataType {@link DataType}
-     * @param filename filename
+     *
+     * @param dataType  {@link DataType}
+     * @param filename  filename
      * @param algorithm checksum algorithm
-     * @param checksum the checksum
-     * @param fileSize <b>optional</b> file size
+     * @param checksum  the checksum
+     * @param fileSize  <b>optional</b> file size
      * @param locations references to the physical file. Use {@link OAISDataObjectLocation} build methods to create location!
      */
-    public <T extends AbstractInformationPackage<ID>> T withDataObject(DataType dataType, String filename,
-            String algorithm, String checksum, Long fileSize, OAISDataObjectLocation... locations) {
+    public <T extends AbstractInformationPackage<ID>> T withDataObject(DataType dataType,
+                                                                       String filename,
+                                                                       String algorithm,
+                                                                       String checksum,
+                                                                       Long fileSize,
+                                                                       OAISDataObjectLocation... locations) {
         properties.withDataObject(dataType, filename, algorithm, checksum, fileSize, locations);
         return (T) this;
     }
 
     /**
      * Set <b>required</b> data object properties
-     * @param dataType {@link DataType}
-     * @param filePath reference to the physical file
-     * @param filename filename
+     *
+     * @param dataType  {@link DataType}
+     * @param filePath  reference to the physical file
+     * @param filename  filename
      * @param algorithm checksum algorithm
-     * @param checksum the checksum
-     * @param fileSize file size
+     * @param checksum  the checksum
+     * @param fileSize  file size
      */
-    public <T extends AbstractInformationPackage<ID>> T withDataObject(DataType dataType, Path filePath,
-            String filename, String algorithm, String checksum, Long fileSize) {
+    public <T extends AbstractInformationPackage<ID>> T withDataObject(DataType dataType,
+                                                                       Path filePath,
+                                                                       String filename,
+                                                                       String algorithm,
+                                                                       String checksum,
+                                                                       Long fileSize) {
         properties.withDataObject(dataType, filePath, filename, algorithm, checksum, fileSize);
         return (T) this;
     }
@@ -464,13 +487,16 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
     /**
      * Alias for {@link ContentInformation#withDataObject(DataType, Path, String, String, String, Long)} (no
      * file size)
-     * @param dataType {@link DataType}
-     * @param filePath reference to the physical file
+     *
+     * @param dataType  {@link DataType}
+     * @param filePath  reference to the physical file
      * @param algorithm checksum algorithm
-     * @param checksum the checksum
+     * @param checksum  the checksum
      */
-    public <T extends AbstractInformationPackage<ID>> T withDataObject(DataType dataType, Path filePath,
-            String algorithm, String checksum) {
+    public <T extends AbstractInformationPackage<ID>> T withDataObject(DataType dataType,
+                                                                       Path filePath,
+                                                                       String algorithm,
+                                                                       String checksum) {
         properties.withDataObject(dataType, filePath, algorithm, checksum);
         return (T) this;
     }
@@ -478,12 +504,14 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
     /**
      * Alias for {@link ContentInformation#withDataObject(DataType, Path, String, String, String, Long)} (no file
      * size and MD5 default checksum algorithm)
+     *
      * @param dataType {@link DataType}
      * @param filePath reference to the physical file
      * @param checksum the checksum
      */
-    public <T extends AbstractInformationPackage<ID>> T withDataObject(DataType dataType, Path filePath,
-            String checksum) {
+    public <T extends AbstractInformationPackage<ID>> T withDataObject(DataType dataType,
+                                                                       Path filePath,
+                                                                       String checksum) {
         properties.withDataObject(dataType, filePath, checksum);
         return (T) this;
     }
@@ -492,13 +520,15 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
      * Set the syntax to the information package thanks to the given parameters
      */
     public <T extends AbstractInformationPackage<ID>> T withSyntax(@Nullable String mimeName,
-            @Nullable String mimeDescription, MimeType mimeType) {
+                                                                   @Nullable String mimeDescription,
+                                                                   MimeType mimeType) {
         properties.withSyntax(mimeName, mimeDescription, mimeType);
         return (T) this;
     }
 
     /**
      * Set syntax representation
+     *
      * @param mimeType MIME type
      */
     public <T extends AbstractInformationPackage<ID>> T withSyntax(MimeType mimeType) {
@@ -508,10 +538,12 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
 
     /**
      * Set syntax representation
+     *
      * @param mimeType MIME type
      */
-    public <T extends AbstractInformationPackage<ID>> T withSyntaxAndDimension(MimeType mimeType, Double width,
-            Double Height) {
+    public <T extends AbstractInformationPackage<ID>> T withSyntaxAndDimension(MimeType mimeType,
+                                                                               Double width,
+                                                                               Double Height) {
         properties.withSyntaxAndDimension(mimeType, width, Height);
         return (T) this;
     }
@@ -519,8 +551,10 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
     /**
      * Set syntax and semantic to the information package thanks to the given parameters
      */
-    public <T extends AbstractInformationPackage<ID>> T withSyntaxAndSemantic(String mimeName, String mimeDescription,
-            MimeType mimeType, String semanticDescription) {
+    public <T extends AbstractInformationPackage<ID>> T withSyntaxAndSemantic(String mimeName,
+                                                                              String mimeDescription,
+                                                                              MimeType mimeType,
+                                                                              String semanticDescription) {
         properties.withSyntaxAndSemantic(mimeName, mimeDescription, mimeType, semanticDescription);
         return (T) this;
     }
@@ -543,6 +577,7 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
 
     /**
      * Add IP events
+     *
      * @param events events to add
      */
     public <T extends AbstractInformationPackage<ID>> T withEvents(Event... events) {
@@ -553,6 +588,7 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
 
     /**
      * Add IP events
+     *
      * @param events events to add
      */
     public <T extends AbstractInformationPackage<ID>> T withEvents(Collection<Event> events) {
@@ -562,12 +598,14 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
 
     /**
      * Add an IP event
-     * @param type optional event type key (may be null)
+     *
+     * @param type    optional event type key (may be null)
      * @param comment event comment
-     * @param date event date
+     * @param date    event date
      */
-    public <T extends AbstractInformationPackage<ID>> T withEvent(@Nullable String type, String comment,
-            OffsetDateTime date) {
+    public <T extends AbstractInformationPackage<ID>> T withEvent(@Nullable String type,
+                                                                  String comment,
+                                                                  OffsetDateTime date) {
         Event event = new Event();
         event.setType(type);
         event.setComment(comment);
@@ -577,8 +615,9 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
 
     /**
      * Add IP event
+     *
      * @param comment event comment
-     * @param date event date
+     * @param date    event date
      */
     public <T extends AbstractInformationPackage<ID>> T withEvent(String comment, OffsetDateTime date) {
         return withEvent(null, comment, date);
@@ -586,6 +625,7 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
 
     /**
      * Add IP event
+     *
      * @param comment event comment
      */
     public <T extends AbstractInformationPackage<ID>> T withEvent(String comment) {
@@ -594,6 +634,7 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
 
     /**
      * Add IP event
+     *
      * @param comment event comment
      */
     public <T extends AbstractInformationPackage<ID>> T withEvent(String type, String comment) {

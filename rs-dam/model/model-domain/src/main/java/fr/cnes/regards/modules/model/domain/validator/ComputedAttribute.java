@@ -18,20 +18,15 @@
  */
 package fr.cnes.regards.modules.model.domain.validator;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import javax.validation.Constraint;
-import javax.validation.Payload;
-
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.model.domain.IComputedAttribute;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+
+import javax.validation.Constraint;
+import javax.validation.Payload;
+import java.lang.annotation.*;
 
 /**
  * Validate whether a {@link ModelAttrAssoc} define a link to a computed {@link AttributeModel} or not. If it does,
@@ -53,7 +48,7 @@ public @interface ComputedAttribute {
     String CLASS_NAME = "fr.cnes.regards.modules.dam.domain.models.validation.ComputedAttribute";
 
     String TEMPLATE_START = "Validation annotation @" + CLASS_NAME
-            + " validating ModelAttrAssoc (attribute %s): mode is COMPUTED but associated PluginConfiguration %s ";
+        + " validating ModelAttrAssoc (attribute %s): mode is COMPUTED but associated PluginConfiguration %s ";
 
     String DEFAULT_TEMPLATE = TEMPLATE_START + "is null or not implementing IComputedAttribute";
 

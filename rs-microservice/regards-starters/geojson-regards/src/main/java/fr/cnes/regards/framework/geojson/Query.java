@@ -18,12 +18,13 @@
  */
 package fr.cnes.regards.framework.geojson;
 
-import java.util.Map;
-
 import com.google.common.collect.Maps;
+
+import java.util.Map;
 
 /**
  * Query for geo+json opensearch meta response.
+ *
  * @author Sébastien Binda
  */
 public class Query {

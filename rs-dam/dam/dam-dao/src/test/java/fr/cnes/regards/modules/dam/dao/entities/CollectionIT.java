@@ -18,27 +18,24 @@
  */
 package fr.cnes.regards.modules.dam.dao.entities;
 
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalIT;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.dam.domain.entities.Collection;
+import fr.cnes.regards.modules.model.dao.IModelRepository;
+import fr.cnes.regards.modules.model.domain.Model;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
+
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalIT;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.dam.domain.entities.Collection;
-import fr.cnes.regards.modules.model.dao.IModelRepository;
-import fr.cnes.regards.modules.model.domain.Model;
-
 /**
- *
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=projectdb" })
 public class CollectionIT extends AbstractDaoTransactionalIT {

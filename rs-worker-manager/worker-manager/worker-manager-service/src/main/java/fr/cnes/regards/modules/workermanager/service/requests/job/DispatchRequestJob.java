@@ -60,7 +60,7 @@ public class DispatchRequestJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         // lets instantiate the plugin to use
         Type type = new TypeToken<Set<Long>>() {
 
@@ -74,12 +74,14 @@ public class DispatchRequestJob extends AbstractJob<Void> {
         long start = System.currentTimeMillis();
         logger.debug("[DISPATCH REQUEST JOB] Handling {} requests", nbRequestToHandle);
         List<Request> requests = requestService.searchRequests(ids);
-        SessionsRequestsInfo requestsInfo = new SessionsRequestsInfo(
-                requests.stream().map(Request::toDTO).collect(Collectors.toList()));
+        SessionsRequestsInfo requestsInfo = new SessionsRequestsInfo(requests.stream()
+                                                                             .map(Request::toDTO)
+                                                                             .collect(Collectors.toList()));
         SessionsRequestsInfo newRequestsInfo = requestService.handleRequests(requests, requestsInfo, true);
 
         logger.info("{} re-dispatched request(s), {} re-delayed request(s) handled in {} ms",
-                    newRequestsInfo.getRequests(RequestStatus.DISPATCHED).size(), newRequestsInfo.getRequests(RequestStatus.NO_WORKER_AVAILABLE).size(),
+                    newRequestsInfo.getRequests(RequestStatus.DISPATCHED).size(),
+                    newRequestsInfo.getRequests(RequestStatus.NO_WORKER_AVAILABLE).size(),
                     System.currentTimeMillis() - start);
     }
 

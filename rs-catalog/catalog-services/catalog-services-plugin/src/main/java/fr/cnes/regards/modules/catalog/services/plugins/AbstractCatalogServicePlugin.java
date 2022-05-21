@@ -29,7 +29,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
  * </ul>
  *
  * @author Sébastien Binda
- *
  */
 public class AbstractCatalogServicePlugin {
 
@@ -43,9 +42,9 @@ public class AbstractCatalogServicePlugin {
      * NOTE : This parameter is private because it is never used in plugins implementation it is only used by the serviceManager
      */
     @PluginParameter(name = AbstractCatalogServicePlugin.APPLY_TO_ALL_DATASETS_PARAM,
-            label = "Activate this service for datas of every datasets",
-            description = "If this parameter is not true, then you have to configure each dataset to allow access to this service.",
-            defaultValue = "false", optional = false)
+        label = "Activate this service for datas of every datasets",
+        description = "If this parameter is not true, then you have to configure each dataset to allow access to this service.",
+        defaultValue = "false", optional = false)
     private Boolean applyToAllDatasets;
 
 }

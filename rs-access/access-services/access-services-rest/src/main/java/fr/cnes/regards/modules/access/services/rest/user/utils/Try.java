@@ -9,23 +9,19 @@ import java.util.function.Function;
 
 public class Try {
 
-    private Try() {}
+    private Try() {
+    }
 
-    public static  <T> Function<io.vavr.control.Try<ResponseEntity<T>>, Validation<ComposableClientException, T>> handleClientFailure(String clientName) {
-        return (t) -> t
-            .toEither()
-            .mapLeft(ComposableClientException::make)
-            .flatMap(response -> {
-                if (!response.getStatusCode().is2xxSuccessful()) {
-                    return Either.left(
-                        ComposableClientException.make(
-                            new RestClientException(String.format("Request to %s failed with status %s.", clientName, response.getStatusCodeValue()))
-                        )
-                    );
-                }
-                return Either.right(response);
-            })
-            .map(ResponseEntity::getBody)
-            .toValidation();
+    public static <T> Function<io.vavr.control.Try<ResponseEntity<T>>, Validation<ComposableClientException, T>> handleClientFailure(
+        String clientName) {
+        return (t) -> t.toEither().mapLeft(ComposableClientException::make).flatMap(response -> {
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                return Either.left(ComposableClientException.make(new RestClientException(String.format(
+                    "Request to %s failed with status %s.",
+                    clientName,
+                    response.getStatusCodeValue()))));
+            }
+            return Either.right(response);
+        }).map(ResponseEntity::getBody).toValidation();
     }
 }

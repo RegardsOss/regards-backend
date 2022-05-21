@@ -18,21 +18,21 @@
  */
 package fr.cnes.regards.framework.security.annotation;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.springframework.core.annotation.AnnotationUtils;
-
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import org.springframework.core.annotation.AnnotationUtils;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class ResourceAccessAdapter
- *
+ * <p>
  * GSON adapter for annotation {@link ResourceAccess}
+ *
  * @author Sébastien Binda
  */
 public class ResourceAccessAdapter extends TypeAdapter<ResourceAccess> {
@@ -80,6 +80,7 @@ public class ResourceAccessAdapter extends TypeAdapter<ResourceAccess> {
 
     /**
      * Instanciate a new ResourceAccess annotation
+     *
      * @param pDescription description
      * @param pDefaultRole default role
      * @return {@link ResourceAccess}

@@ -20,14 +20,15 @@ package fr.cnes.regards.framework.modules.session.agent.dao;
 
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
-import java.time.OffsetDateTime;
-import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * JPA Repository for {@link StepPropertyUpdateRequest}
@@ -37,13 +38,18 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface IStepPropertyUpdateRequestRepository extends JpaRepository<StepPropertyUpdateRequest, Long> {
 
+    Page<StepPropertyUpdateRequest> findBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(String source,
+                                                                                                          OffsetDateTime lastUpdate,
+                                                                                                          OffsetDateTime freezeDate,
+                                                                                                          Pageable page);
 
-    Page<StepPropertyUpdateRequest> findBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(String source, OffsetDateTime lastUpdate,
-            OffsetDateTime freezeDate, Pageable page);
+    long countBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(String source,
+                                                                                OffsetDateTime lastUpdate,
+                                                                                OffsetDateTime freezeDate);
 
-    long countBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(String source, OffsetDateTime lastUpdate, OffsetDateTime freezeDate);
-
-    Page<StepPropertyUpdateRequest> findBySourceAndRegistrationDateBefore(String source, OffsetDateTime freezeDate, Pageable page);
+    Page<StepPropertyUpdateRequest> findBySourceAndRegistrationDateBefore(String source,
+                                                                          OffsetDateTime freezeDate,
+                                                                          Pageable page);
 
     long countBySourceAndRegistrationDateBefore(String source, OffsetDateTime lastUpdate);
 
@@ -53,7 +59,7 @@ public interface IStepPropertyUpdateRequestRepository extends JpaRepository<Step
 
     @Modifying
     @Query("DELETE FROM SnapshotProcess p where p.source NOT IN (SELECT s.source FROM StepPropertyUpdateRequest s) "
-            + "AND (p.lastUpdateDate IS NULL OR p.lastUpdateDate <= ?1)")
+        + "AND (p.lastUpdateDate IS NULL OR p.lastUpdateDate <= ?1)")
     int deleteUnusedProcess(OffsetDateTime limitDate);
 
 }

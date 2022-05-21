@@ -27,21 +27,17 @@ public class DomainEntityMapperImpl implements DomainEntityMapper {
 
     @Override
     public ServiceProviderEntity toEntity(ServiceProvider serviceProvider) {
-        return new ServiceProviderEntity(
-            serviceProvider.getName(),
-            serviceProvider.getAuthUrl(),
-            serviceProvider.getLogoutUrl(),
-            serviceProvider.getConfiguration()
-        );
+        return new ServiceProviderEntity(serviceProvider.getName(),
+                                         serviceProvider.getAuthUrl(),
+                                         serviceProvider.getLogoutUrl(),
+                                         serviceProvider.getConfiguration());
     }
 
     @Override
     public ServiceProvider toDomain(ServiceProviderEntity serviceProvider) {
-        return new ServiceProvider(
-            serviceProvider.getName(),
-            serviceProvider.getAuthUrl(),
-            serviceProvider.getLogoutUrl(),
-            serviceProvider.getConfiguration()
-        );
+        return new ServiceProvider(serviceProvider.getName(),
+                                   serviceProvider.getAuthUrl(),
+                                   serviceProvider.getLogoutUrl(),
+                                   serviceProvider.getConfiguration());
     }
 }

@@ -18,27 +18,23 @@
  */
 package fr.cnes.regards.modules.model.service.validation.validator.restriction;
 
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.validation.Errors;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaException;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
-
 import fr.cnes.regards.modules.model.domain.attributes.restriction.JsonSchemaRestriction;
 import fr.cnes.regards.modules.model.dto.properties.JsonProperty;
 import fr.cnes.regards.modules.model.service.validation.validator.AbstractPropertyValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.validation.Errors;
+
+import java.io.IOException;
 
 /**
- *
  * @author Sébastien Binda
- *
  */
 public class JsonSchemaValidator extends AbstractPropertyValidator {
 
@@ -78,8 +74,10 @@ public class JsonSchemaValidator extends AbstractPropertyValidator {
         try {
             getJsonSchema().validate(getJsonNode(ppt.getValue().toString())).forEach(e -> {
                 errors.reject(ERROR_VALUE_NOT_CONFORM_TO_JSON_SCHEMA,
-                              String.format("Attribute %s.%s not valid with jsonSchema. Cause : %s", ppt.getName(),
-                                            e.getPath(), e.getMessage()));
+                              String.format("Attribute %s.%s not valid with jsonSchema. Cause : %s",
+                                            ppt.getName(),
+                                            e.getPath(),
+                                            e.getMessage()));
             });
         } catch (JsonSchemaException e) {
             LOGGER.error(e.getMessage(), e);

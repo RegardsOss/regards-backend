@@ -18,6 +18,14 @@
  */
 package fr.cnes.regards.modules.model.gson;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.domain.attributes.restriction.JsonSchemaRestriction;
+import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import org.apache.commons.compress.utils.Lists;
+import org.apache.commons.io.IOUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -27,20 +35,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.compress.utils.Lists;
-import org.apache.commons.io.IOUtils;
-
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.JsonSchemaRestriction;
-import fr.cnes.regards.modules.model.dto.properties.PropertyType;
-
 /**
- *
  * @author Sébastien Binda
- *
  */
 public class TestAttributeHelper extends AbstractAttributeHelper {
 

@@ -26,7 +26,6 @@ import fr.cnes.regards.modules.model.dto.properties.PropertyType;
  * Restriction interface
  *
  * @author msordi
- *
  */
 public interface IRestriction extends IXmlisable<Restriction> {
 

@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.jpa.multitenant.event;
 
 /**
  * Common tenant event structure
+ *
  * @author Marc Sordi
  */
 public abstract class AbstractTenantEvent {

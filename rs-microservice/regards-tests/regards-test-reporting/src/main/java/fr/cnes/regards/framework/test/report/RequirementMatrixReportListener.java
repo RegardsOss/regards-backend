@@ -18,14 +18,6 @@
  */
 package fr.cnes.regards.framework.test.report;
 
-import java.nio.file.Paths;
-
-import org.junit.runner.Description;
-import org.junit.runner.Result;
-import org.junit.runner.notification.RunListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
@@ -33,9 +25,17 @@ import fr.cnes.regards.framework.test.report.xml.XmlHelper;
 import fr.cnes.regards.framework.test.report.xml.XmlRequirement;
 import fr.cnes.regards.framework.test.report.xml.XmlRequirements;
 import fr.cnes.regards.framework.test.report.xml.XmlTest;
+import org.junit.runner.Description;
+import org.junit.runner.Result;
+import org.junit.runner.notification.RunListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.nio.file.Paths;
 
 /**
  * JUnit listener to help writing requirement matrix report
+ *
  * @author msordi
  */
 public class RequirementMatrixReportListener extends RunListener {
@@ -102,9 +102,10 @@ public class RequirementMatrixReportListener extends RunListener {
 
     /**
      * Init a new report element if requirement exists
+     *
      * @param pDescription Test description
      * @param pRequirement Requirement
-     * @param pPurpose Test purpose
+     * @param pPurpose     Test purpose
      */
     private void handleRequirementTest(Description pDescription, Requirement pRequirement, Purpose pPurpose) {
         if (pRequirement == null) {
@@ -130,7 +131,9 @@ public class RequirementMatrixReportListener extends RunListener {
     public void testRunFinished(Result pResult) throws Exception {
         if (xmlRequirements.getRequirements() != null) {
             LOG.debug(Integer.toString(xmlRequirements.getRequirements().size()));
-            XmlHelper.write(Paths.get(MVN_OUTPUT_DIRECTORY, REPORT_DIR), filename, XmlRequirements.class,
+            XmlHelper.write(Paths.get(MVN_OUTPUT_DIRECTORY, REPORT_DIR),
+                            filename,
+                            XmlRequirements.class,
                             xmlRequirements);
         }
     }

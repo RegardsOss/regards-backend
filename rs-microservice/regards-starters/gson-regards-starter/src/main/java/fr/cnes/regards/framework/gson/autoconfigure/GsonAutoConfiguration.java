@@ -18,6 +18,11 @@
  */
 package fr.cnes.regards.framework.gson.autoconfigure;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapterFactory;
+import fr.cnes.regards.framework.gson.GsonBuilderFactory;
+import fr.cnes.regards.framework.gson.GsonProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,15 +40,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.converter.json.GsonHttpMessageConverter;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.TypeAdapterFactory;
-
-import fr.cnes.regards.framework.gson.GsonBuilderFactory;
-import fr.cnes.regards.framework.gson.GsonProperties;
-
 /**
  * GSON support auto configuration
+ *
  * @author Marc Sordi
  */
 @Configuration
@@ -68,6 +67,7 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
 
     /**
      * Configure a builder with GSON adapter for Sprinfox swagger Json object
+     *
      * @return {@link GsonBuilder}
      */
     @Bean
@@ -77,7 +77,7 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
         GsonBuilder builder = gsonBuilderFactory.newBuilder();
         try {
             builder.registerTypeAdapterFactory((TypeAdapterFactory) Class.forName(SPRINGFOX_GSON_FACTORY)
-                    .newInstance());
+                                                                         .newInstance());
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             final String errorMessage = "Cannot init SpringFox GSON factory";
             LOGGER.error(errorMessage, e);
@@ -114,7 +114,7 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
     @Bean
     @ConditionalOnMissingBean
     public GsonHttpMessageConverter gsonConverter(@Qualifier("gson") Gson gson,
-            @Qualifier("prettyGson") Gson prettyGson) {
+                                                  @Qualifier("prettyGson") Gson prettyGson) {
         final GsonHttpMessageConverterCustom gsonHttpMessageConverter = new GsonHttpMessageConverterCustom();
         gsonHttpMessageConverter.setGson(gson);
         gsonHttpMessageConverter.setPrettyGson(prettyGson);

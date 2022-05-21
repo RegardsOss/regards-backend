@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.modules.project.rest;
 
+import fr.cnes.regards.modules.accessrights.client.ILicenseClient;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.modules.accessrights.client.ILicenseClient;
-
 /**
  * Common license configuration
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
 @Configuration
 public class LicenseConfiguration {

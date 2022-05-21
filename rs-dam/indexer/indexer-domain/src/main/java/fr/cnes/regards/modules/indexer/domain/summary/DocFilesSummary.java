@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.indexer.domain.summary;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -27,6 +26,7 @@ import java.util.concurrent.ConcurrentMap;
  * Represents a summary of docs count, files count and files size sum computed from an opensearch on documents of type
  * DocFiles (ie with "files" property). These properties are computed for each discriminant property (ie "tags" for
  * example) and for total
+ *
  * @author oroussel
  */
 public class DocFilesSummary extends AbstractDocSummary {
@@ -56,6 +56,6 @@ public class DocFilesSummary extends AbstractDocSummary {
     @Override
     public String toString() {
         return "DocFilesSummary{" + "subSummariesMap=" + subSummariesMap + ", documentsCount=" + documentsCount
-                + ", filesCount=" + filesCount + ", filesSize=" + filesSize + '}';
+            + ", filesCount=" + filesCount + ", filesSize=" + filesSize + '}';
     }
 }

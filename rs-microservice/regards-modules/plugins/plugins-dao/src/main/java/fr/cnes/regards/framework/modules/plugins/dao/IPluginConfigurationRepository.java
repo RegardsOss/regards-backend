@@ -18,17 +18,17 @@
  */
 package fr.cnes.regards.framework.modules.plugins.dao;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import java.util.List;
 
 /**
  * {@link PluginConfiguration} repository
+ *
  * @author Christophe Mertz
  */
 @Repository
@@ -36,6 +36,7 @@ public interface IPluginConfigurationRepository extends JpaRepository<PluginConf
 
     /**
      * Find a {@link List} of {@link PluginConfiguration} for a plugin
+     *
      * @param pluginId the plugin identifier
      * @return a {@link List} of {@link PluginConfiguration}
      */
@@ -43,6 +44,7 @@ public interface IPluginConfigurationRepository extends JpaRepository<PluginConf
 
     /**
      * Find a {@link List} of active {@link PluginConfiguration} for a plugin
+     *
      * @param pluginId the plugin identifier
      * @return a {@link List} of active {@link PluginConfiguration}
      */
@@ -55,6 +57,7 @@ public interface IPluginConfigurationRepository extends JpaRepository<PluginConf
 
     /**
      * Find a plugin configuration loading its parameters and dynamic values
+     *
      * @param businessId pluginConfiguration business id
      * @return a PluginConfiguration
      */
@@ -62,6 +65,7 @@ public interface IPluginConfigurationRepository extends JpaRepository<PluginConf
 
     /**
      * Check if plugin configuration exists for this business id
+     *
      * @param businessId pluginConfiguration business id
      */
     boolean existsByBusinessId(String businessId);

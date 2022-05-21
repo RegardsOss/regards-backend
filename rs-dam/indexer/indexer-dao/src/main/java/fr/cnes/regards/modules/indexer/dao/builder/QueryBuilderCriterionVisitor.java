@@ -34,7 +34,6 @@ import java.time.OffsetDateTime;
 import java.util.Set;
 
 /**
- *
  * Criterion visitor implementation to generate Elasticsearch QueryBuilder from
  * a search criterion
  *
@@ -99,8 +98,8 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
             case FULL_TEXT_SEARCH:
                 return visitStringMatchCriterion(criterion, "");
             default:
-                throw new IllegalArgumentException(
-                        String.format("Unsupported string match type %s", criterion.getMatchType()));
+                throw new IllegalArgumentException(String.format("Unsupported string match type %s",
+                                                                 criterion.getMatchType()));
         }
     }
 
@@ -137,22 +136,22 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
     public QueryBuilder visitStringMultiMatchCriterion(StringMultiMatchCriterion criterion) {
         String searchValue = criterion.getValue();
         Set<String> attNames = criterion.getNames();
-        MultiMatchQueryBuilder builder = QueryBuilders
-                .multiMatchQuery(searchValue, attNames.toArray(new String[attNames.size()]));
+        MultiMatchQueryBuilder builder = QueryBuilders.multiMatchQuery(searchValue,
+                                                                       attNames.toArray(new String[attNames.size()]));
         builder.type(criterion.getType());
         return builder;
     }
 
     @Override
-    public QueryBuilder visitStringMatchAnyCriterion(StringMatchAnyCriterion criterion){
+    public QueryBuilder visitStringMatchAnyCriterion(StringMatchAnyCriterion criterion) {
         switch (criterion.getMatchType()) {
             case KEYWORD:
                 return QueryBuilders.termsQuery(criterion.getName() + ".keyword", criterion.getValue());
             case FULL_TEXT_SEARCH:
                 return QueryBuilders.matchQuery(criterion.getName(), criterion.getValue());
             default:
-                throw new IllegalArgumentException(
-                        String.format("Unsupported string match type %s", criterion.getMatchType()));
+                throw new IllegalArgumentException(String.format("Unsupported string match type %s",
+                                                                 criterion.getMatchType()));
         }
     }
 
@@ -247,8 +246,8 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
     @Override
     public QueryBuilder visitPolygonCriterion(PolygonCriterion criterion) {
         try {
-            return QueryBuilders
-                    .geoIntersectionQuery(IMapping.GEO_SHAPE_ATTRIBUTE, buildGeometryFromCoordinates(criterion.getCoordinates()));
+            return QueryBuilders.geoIntersectionQuery(IMapping.GEO_SHAPE_ATTRIBUTE,
+                                                      buildGeometryFromCoordinates(criterion.getCoordinates()));
         } catch (IOException ioe) { // Never occurs
             throw new RsRuntimeException(ioe);
         }
@@ -256,6 +255,7 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
 
     /**
      * Build Geometry using the coordinates with a PolygonBuilder
+     *
      * @param coordinates the coordinates of the Geometry
      * @return the Geometry
      */
@@ -274,14 +274,16 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
         // API manages longitude from -360 to 360
         // Check X constraints
         if (criterion.getMinX() >= criterion.getMaxX()) {
-            String message = String
-                    .format("MinX must be less than MaxX : %s < %s", criterion.getMinX(), criterion.getMaxX());
+            String message = String.format("MinX must be less than MaxX : %s < %s",
+                                           criterion.getMinX(),
+                                           criterion.getMaxX());
             throw new RsRuntimeException(message);
         }
         // Check Y constraints
         if (criterion.getMinY() >= criterion.getMaxY()) {
-            String message = String
-                    .format("MinY must be less than MaxY : %s < %s", criterion.getMinY(), criterion.getMaxY());
+            String message = String.format("MinY must be less than MaxY : %s < %s",
+                                           criterion.getMinY(),
+                                           criterion.getMaxY());
             throw new RsRuntimeException(message);
         }
         checkYLimits(criterion.getMinY());
@@ -318,18 +320,25 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
         } else if (criterion.getMinX() >= WEST_DATELINE && criterion.getMaxX() > EAST_DATELINE) {
             // East crossing bbox
             // bbox is between -180 and +360 : cut it into 2 bbox with relocation
-            return ICriterion.or(ICriterion.intersectsBbox(criterion.getMinX(), criterion.getMinY(), EAST_DATELINE,
-                                                           criterion.getMaxY()), ICriterion
-                                         .intersectsBbox(WEST_DATELINE, criterion.getMinY(),
-                                                         criterion.getMaxX() - RELOCATE_DATELINE, criterion.getMaxY()))
-                    .accept(this);
+            return ICriterion.or(ICriterion.intersectsBbox(criterion.getMinX(),
+                                                           criterion.getMinY(),
+                                                           EAST_DATELINE,
+                                                           criterion.getMaxY()),
+                                 ICriterion.intersectsBbox(WEST_DATELINE,
+                                                           criterion.getMinY(),
+                                                           criterion.getMaxX() - RELOCATE_DATELINE,
+                                                           criterion.getMaxY())).accept(this);
         } else if (criterion.getMinX() < WEST_DATELINE && criterion.getMaxX() <= EAST_DATELINE) {
             // West crossing bbox
             // bbox is between -360 and +180 : cut it into 2 bbox with relocation
-            return ICriterion.or(ICriterion.intersectsBbox(WEST_DATELINE, criterion.getMinY(), criterion.getMaxX(),
-                                                           criterion.getMaxY()), ICriterion
-                                         .intersectsBbox(criterion.getMinX() + RELOCATE_DATELINE, criterion.getMinY(),
-                                                         EAST_DATELINE, criterion.getMaxY())).accept(this);
+            return ICriterion.or(ICriterion.intersectsBbox(WEST_DATELINE,
+                                                           criterion.getMinY(),
+                                                           criterion.getMaxX(),
+                                                           criterion.getMaxY()),
+                                 ICriterion.intersectsBbox(criterion.getMinX() + RELOCATE_DATELINE,
+                                                           criterion.getMinY(),
+                                                           EAST_DATELINE,
+                                                           criterion.getMaxY())).accept(this);
 
         } else {
             // bbox is between -180 and +180 : no crossed dateline / basic case
@@ -348,9 +357,10 @@ public class QueryBuilderCriterionVisitor implements ICriterionVisitor<QueryBuil
         try {
             // upper left, lower right
             // (minX, maxY), (maxX, minY)
-            EnvelopeBuilder envelopeBuilder = new EnvelopeBuilder(
-                    new Coordinate(boundaryBoxCriterion.getMinX(), boundaryBoxCriterion.getMaxY()),
-                    new Coordinate(boundaryBoxCriterion.getMaxX(), boundaryBoxCriterion.getMinY()));
+            EnvelopeBuilder envelopeBuilder = new EnvelopeBuilder(new Coordinate(boundaryBoxCriterion.getMinX(),
+                                                                                 boundaryBoxCriterion.getMaxY()),
+                                                                  new Coordinate(boundaryBoxCriterion.getMaxX(),
+                                                                                 boundaryBoxCriterion.getMinY()));
             return QueryBuilders.geoIntersectionQuery(IMapping.GEO_SHAPE_ATTRIBUTE, envelopeBuilder.buildGeometry());
         } catch (IOException ioe) {
             throw new RsRuntimeException(ioe);

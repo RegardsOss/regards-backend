@@ -1,11 +1,10 @@
 package fr.cnes.regards.framework.utils.parser.rule;
 
-import java.util.regex.Pattern;
-
+import fr.cnes.regards.framework.utils.parser.IRuleVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.utils.parser.IRuleVisitor;
+import java.util.regex.Pattern;
 
 public class RegexpPropertyRule implements IRule {
 

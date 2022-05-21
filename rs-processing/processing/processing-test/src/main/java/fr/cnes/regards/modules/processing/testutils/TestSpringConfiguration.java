@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.testutils;
 
 import com.google.gson.Gson;
@@ -99,26 +99,15 @@ import static io.r2dbc.spi.ConnectionFactoryOptions.*;
  * @author gandrieu
  */
 @Configuration
-@EnableAutoConfiguration(exclude = {
-        R2dbcMigrateAutoConfiguration.class,
-        WebSecurityAutoConfiguration.class,
-        WebMvcAutoConfiguration.class,
-        FeignWebMvcConfiguration.class,
-        MethodSecurityAutoConfiguration.class,
-        Oauth2AutoConfiguration.class,
-})
+@EnableAutoConfiguration(
+    exclude = { R2dbcMigrateAutoConfiguration.class, WebSecurityAutoConfiguration.class, WebMvcAutoConfiguration.class,
+        FeignWebMvcConfiguration.class, MethodSecurityAutoConfiguration.class, Oauth2AutoConfiguration.class, })
 @EnableWebFlux
 @EnableWebFluxSecurity
 @EnableJpaRepositories
 @EnableFeignClients
-@Import({
-        MultitenantAutoConfiguration.class,
-        MicroserviceAutoConfiguration.class,
-        AmqpAutoConfiguration.class,
-        DataSourcesAutoConfiguration.class,
-        MultitenantJpaAutoConfiguration.class,
-        JacksonAutoConfiguration.class
-})
+@Import({ MultitenantAutoConfiguration.class, MicroserviceAutoConfiguration.class, AmqpAutoConfiguration.class,
+    DataSourcesAutoConfiguration.class, MultitenantJpaAutoConfiguration.class, JacksonAutoConfiguration.class })
 public class TestSpringConfiguration implements WebFluxConfigurer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestSpringConfiguration.class);
@@ -150,17 +139,16 @@ public class TestSpringConfiguration implements WebFluxConfigurer {
     @Bean
     @ConditionalOnMissingBean
     public ConnectionFactory connectionFactory() {
-        ConnectionFactoryOptions.Builder builder = builder()
-                .option(DRIVER, "pool")
-                .option(ACQUIRE_RETRY, 5)
-                .option(MAX_ACQUIRE_TIME, Duration.ofSeconds(5))
-                .option(PROTOCOL, "postgresql")
-                .option(HOST, r2dbcHost)
-                .option(PORT, r2dbcPort)
-                .option(DATABASE, r2dbcDbname)
-                .option(SCHEMA, r2dbcSchema)
-                .option(USER, r2dbcUsername)
-                .option(PASSWORD, r2dbcPassword);
+        ConnectionFactoryOptions.Builder builder = builder().option(DRIVER, "pool")
+                                                            .option(ACQUIRE_RETRY, 5)
+                                                            .option(MAX_ACQUIRE_TIME, Duration.ofSeconds(5))
+                                                            .option(PROTOCOL, "postgresql")
+                                                            .option(HOST, r2dbcHost)
+                                                            .option(PORT, r2dbcPort)
+                                                            .option(DATABASE, r2dbcDbname)
+                                                            .option(SCHEMA, r2dbcSchema)
+                                                            .option(USER, r2dbcUsername)
+                                                            .option(PASSWORD, r2dbcPassword);
         return ConnectionFactories.get(builder.build());
     }
 
@@ -178,12 +166,12 @@ public class TestSpringConfiguration implements WebFluxConfigurer {
     @Bean
     @ConditionalOnMissingBean
     public GsonBuilderFactory gsonBuilderFactory() {
-        return new GsonBuilderFactory(properties, applicationContext){
-            @Override public GsonBuilder newBuilder() {
-                GsonBuilder builder = GsonCustomizer.gsonBuilder(
-                        Optional.ofNullable(properties),
-                        Optional.ofNullable(applicationContext)
-                );
+        return new GsonBuilderFactory(properties, applicationContext) {
+
+            @Override
+            public GsonBuilder newBuilder() {
+                GsonBuilder builder = GsonCustomizer.gsonBuilder(Optional.ofNullable(properties),
+                                                                 Optional.ofNullable(applicationContext));
                 ServiceLoader<TypedGsonTypeAdapter> loader = ServiceLoader.load(TypedGsonTypeAdapter.class);
                 loader.iterator().forEachRemaining(tr -> {
                     builder.registerTypeAdapter(tr.type(), tr.serializer());
@@ -200,9 +188,8 @@ public class TestSpringConfiguration implements WebFluxConfigurer {
     public ReactiveAuthenticationManager authenticationManager(JWTService jwtService) {
         return auth -> {
             if (auth instanceof JWTAuthentication) {
-                return Mono.fromCallable(() -> jwtService.parseToken((JWTAuthentication)auth));
-            }
-            else {
+                return Mono.fromCallable(() -> jwtService.parseToken((JWTAuthentication) auth));
+            } else {
                 return Mono.empty();
             }
         };
@@ -222,8 +209,10 @@ public class TestSpringConfiguration implements WebFluxConfigurer {
         return new AffirmativeBased(decisionVoters);
     }
 
-    @Bean @ConditionalOnMissingBean
-    public ServerSecurityContextRepository securityContextRepository(ReactiveAuthenticationManager authenticationManager, JWTService jwtService) {
+    @Bean
+    @ConditionalOnMissingBean
+    public ServerSecurityContextRepository securityContextRepository(ReactiveAuthenticationManager authenticationManager,
+                                                                     JWTService jwtService) {
         return new ServerSecurityContextRepository() {
 
             @Override
@@ -244,8 +233,7 @@ public class TestSpringConfiguration implements WebFluxConfigurer {
                         } catch (JwtException e) {
                             LOGGER.error("Failed to parse JWT token", e);
                         }
-                        return authenticationManager.authenticate(auth)
-                                .map(SecurityContextImpl::new);
+                        return authenticationManager.authenticate(auth).map(SecurityContextImpl::new);
                     } else {
                         return Mono.empty();
                     }
@@ -254,35 +242,41 @@ public class TestSpringConfiguration implements WebFluxConfigurer {
         };
     }
 
-    @Bean @ConditionalOnMissingBean
-    public SecurityWebFilterChain securityWebFilterChain(
-            ServerHttpSecurity http,
-            ReactiveAuthenticationManager authenticationManager,
-            ServerSecurityContextRepository securityContextRepository
-    ) {
-        return http
-                .exceptionHandling()
-                .authenticationEntryPoint((swe, e) -> {
-                    return Mono.fromRunnable(() -> {
-                        swe.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-                    });
-                }).accessDeniedHandler((swe, e) -> {
-                    return Mono.fromRunnable(() -> {
-                        swe.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
-                    });
-                }).and()
-                .csrf().disable()
-                .formLogin().disable()
-                .httpBasic().disable()
-                .authenticationManager(authenticationManager)
-                .securityContextRepository(securityContextRepository)
-                .authorizeExchange()
-                .pathMatchers(HttpMethod.OPTIONS).permitAll()
-                .pathMatchers("/**").permitAll() // TODO restrict this?
-                .anyExchange().authenticated()
-                .and().build();
+    @Bean
+    @ConditionalOnMissingBean
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,
+                                                         ReactiveAuthenticationManager authenticationManager,
+                                                         ServerSecurityContextRepository securityContextRepository) {
+        return http.exceptionHandling()
+                   .authenticationEntryPoint((swe, e) -> {
+                       return Mono.fromRunnable(() -> {
+                           swe.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                       });
+                   })
+                   .accessDeniedHandler((swe, e) -> {
+                       return Mono.fromRunnable(() -> {
+                           swe.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+                       });
+                   })
+                   .and()
+                   .csrf()
+                   .disable()
+                   .formLogin()
+                   .disable()
+                   .httpBasic()
+                   .disable()
+                   .authenticationManager(authenticationManager)
+                   .securityContextRepository(securityContextRepository)
+                   .authorizeExchange()
+                   .pathMatchers(HttpMethod.OPTIONS)
+                   .permitAll()
+                   .pathMatchers("/**")
+                   .permitAll() // TODO restrict this?
+                   .anyExchange()
+                   .authenticated()
+                   .and()
+                   .build();
     }
-
 
     @Value("${regards.test.role:USER_ROLE}")
     public String role;

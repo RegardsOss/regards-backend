@@ -25,7 +25,6 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.session.manager.service.clean.session.ManagerCleanJob;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import java.time.Instant;
 import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
@@ -35,6 +34,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+
+import java.time.Instant;
 
 /**
  * Scheduler to launch {@link ManagerSnapshotJob}
@@ -86,9 +87,9 @@ public class ManagerSnapshotScheduler extends AbstractTaskScheduler {
      * Schedule {@link ManagerSnapshotJob} every 30s to generate sessions and sources from session steps
      */
     @Scheduled(initialDelayString = "${regards.session.management.snapshot.process.scheduler.bulk.initial.delay:"
-            + DEFAULT_INITIAL_DELAY + "}",
-            fixedDelayString = "${regards.session.management.snapshot.process.scheduler.bulk.delay:"
-                    + DEFAULT_SCHEDULING_DELAY + "}")
+        + DEFAULT_INITIAL_DELAY + "}",
+        fixedDelayString = "${regards.session.management.snapshot.process.scheduler.bulk.delay:"
+            + DEFAULT_SCHEDULING_DELAY + "}")
     public void scheduleManagerSnapshot() {
         scheduleJob();
     }
@@ -102,12 +103,14 @@ public class ManagerSnapshotScheduler extends AbstractTaskScheduler {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, MANAGER_SNAPSHOT_PROCESS);
                 // check if a clean process is currently running, if not launch ManagerSnapshotTask
-                if (this.jobInfoService
-                        .retrieveJobsCount(ManagerCleanJob.class.getName(), JobStatus.QUEUED, JobStatus.PENDING,
-                                           JobStatus.RUNNING) == 0) {
-                    lockingTaskExecutors.executeWithLock(snapshotProcessTask, new LockConfiguration(
-                            microserviceName + "_session-manager-snapshot",
-                            Instant.now().plusSeconds(MAX_TASK_DELAY)));
+                if (this.jobInfoService.retrieveJobsCount(ManagerCleanJob.class.getName(),
+                                                          JobStatus.QUEUED,
+                                                          JobStatus.PENDING,
+                                                          JobStatus.RUNNING) == 0) {
+                    lockingTaskExecutors.executeWithLock(snapshotProcessTask,
+                                                         new LockConfiguration(
+                                                             microserviceName + "_session-manager-snapshot",
+                                                             Instant.now().plusSeconds(MAX_TASK_DELAY)));
                 } else {
                     LOGGER.warn("{} could not be executed because a ManagerCleanJob is currently running",
                                 MANAGER_SNAPSHOT_PROCESS_TITLE);

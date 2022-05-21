@@ -23,15 +23,12 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Enumeration for compression modes
+ *
  * @author Sébastien Binda
  */
 public enum CompressionTypeEnum {
 
-    ZIP("zip"),
-    GZIP("gz"),
-    TAR("tar"),
-    UNKNOWN(""),
-    Z("z");
+    ZIP("zip"), GZIP("gz"), TAR("tar"), UNKNOWN(""), Z("z");
 
     /**
      * Attribut permettant la journalisation.

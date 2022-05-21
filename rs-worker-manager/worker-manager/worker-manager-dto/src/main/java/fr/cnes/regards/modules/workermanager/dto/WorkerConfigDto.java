@@ -17,6 +17,7 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 package fr.cnes.regards.modules.workermanager.dto;
+
 import org.springframework.util.Assert;
 
 import javax.validation.constraints.NotBlank;
@@ -26,6 +27,7 @@ import java.util.Set;
 /**
  * Worker config that maps a set of content types to a worker type
  * this DTO is used by import / export microservice config
+ *
  * @author Léo Mieulet
  */
 public class WorkerConfigDto {

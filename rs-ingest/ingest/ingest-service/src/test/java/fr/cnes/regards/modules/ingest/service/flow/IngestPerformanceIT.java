@@ -18,19 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.flow;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-
-import org.junit.Ignore;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
@@ -50,18 +38,26 @@ import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * Test SIP flow handling
  *
  * @author Marc SORDI
- *
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=sipflow", "regards.amqp.enabled=true",
-                "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100", "eureka.client.enabled=false",
-                "regards.ingest.aip.delete.bulk.delay=100" },
-        locations = { "classpath:application-test.properties" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=sipflow", "regards.amqp.enabled=true",
+        "regards.scheduler.pool.size=4", "regards.ingest.maxBulkSize=100", "eureka.client.enabled=false",
+        "regards.ingest.aip.delete.bulk.delay=100" }, locations = { "classpath:application-test.properties" })
 @ActiveProfiles({ "testAmqp", "StorageClientMock" })
 @Ignore("Performance test")
 public class IngestPerformanceIT extends IngestMultitenantServiceIT {
@@ -133,9 +129,9 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         // 2. Wait
         ingestServiceTest.waitForIngestion(maxloops * maxSessions, maxloops * maxSessions * 10000, SIPState.STORED);
 
-        LOGGER.info("END TEST : {} SIP(s) INGESTED in {} ms", (maxloops * maxSessions) + existingItems,
+        LOGGER.info("END TEST : {} SIP(s) INGESTED in {} ms",
+                    (maxloops * maxSessions) + existingItems,
                     System.currentTimeMillis() - start);
-
 
         //        // 3. Delete products
         //        OAISDeletionPayloadDto dto = OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE)
@@ -238,9 +234,10 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         LOGGER.info("END TEST : {} SIP(s) INGESTED in {} ms", nbStored, System.currentTimeMillis() - start);
 
         // 3. Ask for product updates
-        AIPUpdateParametersDto updateDto = AIPUpdateParametersDto
-                .build(SearchAIPsParameters.build().withCategories(CATEGORIES.get(0)))
-                .withAddCategories(Lists.newArrayList("new_cat"));
+        AIPUpdateParametersDto updateDto = AIPUpdateParametersDto.build(SearchAIPsParameters.build()
+                                                                                            .withCategories(CATEGORIES.get(
+                                                                                                0)))
+                                                                 .withAddCategories(Lists.newArrayList("new_cat"));
         aipService.registerUpdatesCreator(updateDto);
         // 4. Ask for same product updates
         aipService.registerUpdatesCreator(updateDto);
@@ -323,9 +320,10 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         LOGGER.info("===============> Ingestion sents !!");
 
         // 8. Ask for products update
-        AIPUpdateParametersDto updateDto = AIPUpdateParametersDto
-                .build(SearchAIPsParameters.build().withCategories(CATEGORIES.get(0)))
-                .withAddCategories(Lists.newArrayList("new_cat"));
+        AIPUpdateParametersDto updateDto = AIPUpdateParametersDto.build(SearchAIPsParameters.build()
+                                                                                            .withCategories(CATEGORIES.get(
+                                                                                                0)))
+                                                                 .withAddCategories(Lists.newArrayList("new_cat"));
         aipService.registerUpdatesCreator(updateDto);
         LOGGER.info("===============> Update sents !!");
 
@@ -349,7 +347,6 @@ public class IngestPerformanceIT extends IngestMultitenantServiceIT {
         // Wait
         ingestServiceTest.waitForAIP(1, 30_000, AIPState.GENERATED);
         ingestServiceTest.waitForIngestRequest(1, 30_000, InternalRequestState.ERROR);
-
 
         // Remove request
         SearchRequestsParameters filters = SearchRequestsParameters.build().withProviderIds(providerId);

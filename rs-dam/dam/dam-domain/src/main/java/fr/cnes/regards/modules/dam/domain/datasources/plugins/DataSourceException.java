@@ -3,6 +3,7 @@ package fr.cnes.regards.modules.dam.domain.datasources.plugins;
 /**
  * Generic datasource exception used to rethrow an internal datasource ingestion exception.
  * This exception will be catched by crawler service to be logged onto database.
+ *
  * @author oroussel
  */
 @SuppressWarnings("serial")

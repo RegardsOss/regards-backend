@@ -19,13 +19,11 @@
 package fr.cnes.regards.modules.accessrights.instance.domain.accountunlock;
 
 /**
- *
  * Class PerformUnlockAccountDto
- *
+ * <p>
  * POJO for REST interface to unlock an account by using a given token
  *
  * @author Sébastien Binda
-
  */
 public class PerformUnlockAccountDto {
 

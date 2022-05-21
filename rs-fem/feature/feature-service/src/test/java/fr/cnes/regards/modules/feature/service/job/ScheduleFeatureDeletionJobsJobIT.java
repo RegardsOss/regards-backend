@@ -35,16 +35,14 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.util.concurrent.ExecutionException;
 
-import static fr.cnes.regards.framework.amqp.event.Target.ONE_PER_MICROSERVICE_TYPE;
-
 /**
  * Test class to check {@link PublishFeatureDeletionEventsJob}s and  {@link ScheduleFeatureDeletionJobsJob}s
  *
  * @author Sébastien Binda
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=deletion_job_test", "regards.amqp.enabled=true",
-                "regards.feature.deletion.notification.job.size=30" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=deletion_job_test", "regards.amqp.enabled=true",
+        "regards.feature.deletion.notification.job.size=30" })
 @ActiveProfiles(value = { "testAmqp", "noFemHandler", "noscheduler" })
 public class ScheduleFeatureDeletionJobsJobIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -76,8 +74,9 @@ public class ScheduleFeatureDeletionJobsJobIT extends AbstractFeatureMultitenant
         }
         // No job should be scheduled
         Assert.assertEquals(
-                "No PublishFeatureDeletionEventsJob should be scheduled as the feature selection should be empty",
-                new Long(0L), jobInfoService.retrieveJobsCount(PublishFeatureDeletionEventsJob.class.getName()));
+            "No PublishFeatureDeletionEventsJob should be scheduled as the feature selection should be empty",
+            new Long(0L),
+            jobInfoService.retrieveJobsCount(PublishFeatureDeletionEventsJob.class.getName()));
         Thread.sleep(1_000);
         Assert.assertEquals("No deletion request event should be sent", 0, listener.getNumberOfRequests());
 
@@ -89,10 +88,12 @@ public class ScheduleFeatureDeletionJobsJobIT extends AbstractFeatureMultitenant
         }
         // As the number of features to handle is 100 and each job should handle 30 features, there should be 4 jobs scheduled
         Assert.assertEquals("There should be 100/regards.feature.deletion.notification.job.size jobs scheduled ",
-                            new Long(4L), jobInfoService
-                                    .retrieveJobsCount(PublishFeatureDeletionEventsJob.class.getName(),
-                                                       JobStatus.TO_BE_RUN, JobStatus.QUEUED, JobStatus.RUNNING,
-                                                       JobStatus.SUCCEEDED));
+                            new Long(4L),
+                            jobInfoService.retrieveJobsCount(PublishFeatureDeletionEventsJob.class.getName(),
+                                                             JobStatus.TO_BE_RUN,
+                                                             JobStatus.QUEUED,
+                                                             JobStatus.RUNNING,
+                                                             JobStatus.SUCCEEDED));
         int loop = 0;
         while ((listener.getNumberOfRequests() < 100) && (loop < 100)) {
             Thread.sleep(100);

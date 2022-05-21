@@ -18,10 +18,12 @@
  */
 package fr.cnes.regards.modules.configuration.service;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
-
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.configuration.dao.IThemeRepository;
+import fr.cnes.regards.modules.configuration.domain.Theme;
+import fr.cnes.regards.modules.configuration.service.exception.InitUIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,12 +33,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.configuration.dao.IThemeRepository;
-import fr.cnes.regards.modules.configuration.domain.Theme;
-import fr.cnes.regards.modules.configuration.service.exception.InitUIException;
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Service managing themes
@@ -138,7 +137,6 @@ public class ThemeService extends AbstractUiConfigurationService implements IThe
     }
 
     /**
-     *
      * Set to false the defaultDynamicModule attribute of all modules for the given application id
      *
      * @since 1.0-SNAPSHOT

@@ -26,7 +26,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.Valid;
 
@@ -34,6 +37,7 @@ import javax.validation.Valid;
  * Feign client to call SearchController methods but with JsonObject as result types.
  * This client is mostly called by rs-access AccessSearchController (to avoid calling directly SearchController from
  * the front)
+ *
  * @author oroussel
  * @author Sébastien Binda
  */
@@ -45,21 +49,26 @@ public interface ILegacySearchEngineJsonClient {
     @GetMapping(path = ROOT_PATH + SearchEngineMappings.SEARCH_ALL_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<JsonObject> searchAll(@RequestParam(required = false) MultiValueMap<String, String> allParams);
 
-    @GetMapping(path = ROOT_PATH + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<JsonObject> searchDataObjects(
-            @RequestParam(required = false) MultiValueMap<String, String> allParams);
+        @RequestParam(required = false) MultiValueMap<String, String> allParams);
 
-    @GetMapping(path = ROOT_PATH + SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH + SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<JsonObject> searchCollections(@RequestParam MultiValueMap<String, String> allParams);
 
-    @GetMapping(path = ROOT_PATH + SearchEngineMappings.SEARCH_DATAOBJECTS_DATASETS_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH + SearchEngineMappings.SEARCH_DATAOBJECTS_DATASETS_MAPPING,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<JsonObject> searchDataobjectsReturnDatasets(@RequestParam MultiValueMap<String, String> allParams);
 
-    @GetMapping(path = ROOT_PATH + SearchEngineMappings.SEARCH_DATASETS_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH + SearchEngineMappings.SEARCH_DATASETS_MAPPING,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<JsonObject> searchDatasets(@RequestParam MultiValueMap<String, String> allParams);
 
-    @GetMapping(path = ROOT_PATH + SearchEngineMappings.GET_DATAOBJECT_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH + SearchEngineMappings.GET_DATAOBJECT_MAPPING,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<JsonObject> getDataobject(@Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn,
-            @RequestHeader HttpHeaders headers);
+                                             @RequestHeader HttpHeaders headers);
 
 }

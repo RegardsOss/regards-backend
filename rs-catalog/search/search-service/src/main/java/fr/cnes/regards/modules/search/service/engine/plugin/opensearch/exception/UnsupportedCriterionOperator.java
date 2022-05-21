@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
  * UnsupportedMediaTypesException
+ *
  * @author Sébastien Binda
  */
 @SuppressWarnings("serial")
@@ -31,8 +32,10 @@ public class UnsupportedCriterionOperator extends ModuleException {
         super();
     }
 
-    public UnsupportedCriterionOperator(String message, Throwable cause, boolean enableSuppression,
-            boolean writableStackTrace) {
+    public UnsupportedCriterionOperator(String message,
+                                        Throwable cause,
+                                        boolean enableSuppression,
+                                        boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 

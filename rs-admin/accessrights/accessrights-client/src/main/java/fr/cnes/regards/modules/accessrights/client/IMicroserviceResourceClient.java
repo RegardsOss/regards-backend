@@ -31,10 +31,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 /**
- *
- *
  * @author Marc Sordi
- *
  */
 @RestClient(name = "rs-admin", contextId = "rs-admin.ms-resources-client")
 public interface IMicroserviceResourceClient {
@@ -57,54 +54,51 @@ public interface IMicroserviceResourceClient {
     /**
      * Retrieve the resource accesses available to the user of the given microservice
      *
-     * @param pMicroserviceName
-     *            microservice
-     * @param pPageable
-     *            pagination information
-     * @param pPagedResourcesAssembler
-     *            page assembler
+     * @param pMicroserviceName        microservice
+     * @param pPageable                pagination information
+     * @param pPagedResourcesAssembler page assembler
      * @return list of user resource accesses for given microservice
      */
-    @GetMapping(value = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<ResourcesAccess>>> getAllResourceAccessesByMicroservice(
-            @PathVariable("microservicename") final String pMicroserviceName, @RequestParam("page") int pPage,
-            @RequestParam("size") int pSize);
+        @PathVariable("microservicename") final String pMicroserviceName,
+        @RequestParam("page") int pPage,
+        @RequestParam("size") int pSize);
 
     /**
-     *
-     * @param pMicroserviceName
-     *            microservice name
-     * @param pResourcesToRegister
-     *            resource to register for the specified microservice
+     * @param pMicroserviceName    microservice name
+     * @param pResourcesToRegister resource to register for the specified microservice
      * @return {@link Void}
      */
-    @PostMapping(value = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> registerMicroserviceEndpoints(@PathVariable("microservicename") final String pMicroserviceName,
-            @RequestBody @Valid final List<ResourceMapping> pResourcesToRegister);
+                                                       @RequestBody @Valid
+                                                       final List<ResourceMapping> pResourcesToRegister);
 
     /**
      * Retrieve all resource controller names for the given microservice.
      *
-     * @param pMicroserviceName
-     *            microservice
+     * @param pMicroserviceName microservice
      * @return list of all controllers associated to the specified microservice
      */
-    @GetMapping(value = ROOT_TYPE_MAPPING + CONTROLLERS_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = ROOT_TYPE_MAPPING + CONTROLLERS_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<String>> retrieveMicroserviceControllers(
-            @PathVariable("microservicename") final String pMicroserviceName);
+        @PathVariable("microservicename") final String pMicroserviceName);
 
     /**
      * Retrieve all resources for the given microservice and the given controller name
      *
-     * @param pMicroserviceName
-     *            microservice
-     * @param pControllerName
-     *            controller
+     * @param pMicroserviceName microservice
+     * @param pControllerName   controller
      * @return List of accessible resources for the specified microservice and controller
      */
-    @RequestMapping(value = ROOT_TYPE_MAPPING + CONTROLLER_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = ROOT_TYPE_MAPPING + CONTROLLER_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<EntityModel<ResourcesAccess>>> retrieveMicroserviceControllerEndpoints(
-            @PathVariable("microservicename") final String pMicroserviceName,
-            @PathVariable("controllername") final String pControllerName);
+        @PathVariable("microservicename") final String pMicroserviceName,
+        @PathVariable("controllername") final String pControllerName);
 
 }

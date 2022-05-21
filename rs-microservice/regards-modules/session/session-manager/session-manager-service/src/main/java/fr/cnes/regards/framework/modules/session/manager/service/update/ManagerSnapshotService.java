@@ -26,20 +26,7 @@ import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.framework.modules.session.manager.dao.ISessionManagerRepository;
 import fr.cnes.regards.framework.modules.session.manager.dao.ISourceManagerRepository;
-import fr.cnes.regards.framework.modules.session.manager.domain.AggregationState;
-import fr.cnes.regards.framework.modules.session.manager.domain.DeltaSessionStep;
-import fr.cnes.regards.framework.modules.session.manager.domain.ManagerState;
-import fr.cnes.regards.framework.modules.session.manager.domain.Session;
-import fr.cnes.regards.framework.modules.session.manager.domain.Source;
-import fr.cnes.regards.framework.modules.session.manager.domain.SourceStepAggregation;
-import java.time.OffsetDateTime;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
+import fr.cnes.regards.framework.modules.session.manager.domain.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +35,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Service to generate {@link Session}s associated to a single {@link Source} from {@link SessionStep}s
@@ -91,7 +82,10 @@ public class ManagerSnapshotService {
         Source source = this.sourceRepo.findByName(sourceName).orElse(new Source(sourceName));
 
         // Calculate sessions and sources aggregations
-        boolean interrupted = calculateSnapshots(sessionSet, source, sourceName, snapshotProcess.getLastUpdateDate(),
+        boolean interrupted = calculateSnapshots(sessionSet,
+                                                 source,
+                                                 sourceName,
+                                                 snapshotProcess.getLastUpdateDate(),
                                                  freezeDate);
 
         if (!interrupted && !sessionSet.isEmpty()) {
@@ -116,14 +110,19 @@ public class ManagerSnapshotService {
      * @param freezeDate     upper limit to process sessionSteps
      * @return if thread was interrupted
      */
-    private boolean calculateSnapshots(Set<Session> sessionSet, Source source, String sourceName,
-            OffsetDateTime lastUpdateDate, OffsetDateTime freezeDate) {
+    private boolean calculateSnapshots(Set<Session> sessionSet,
+                                       Source source,
+                                       String sourceName,
+                                       OffsetDateTime lastUpdateDate,
+                                       OffsetDateTime freezeDate) {
         // Map sessionName - session to calculate sessions snapshots
         Map<String, Session> sessionMap = new HashMap<>();
 
         // Map stepType - agg to calculate source snapshot
-        Map<StepTypeEnum, SourceStepAggregation> aggByStep = source.getSteps().stream()
-                .collect(Collectors.toMap(SourceStepAggregation::getType, s -> s));
+        Map<StepTypeEnum, SourceStepAggregation> aggByStep = source.getSteps()
+                                                                   .stream()
+                                                                   .collect(Collectors.toMap(SourceStepAggregation::getType,
+                                                                                             s -> s));
 
         // CREATE SESSIONS
         boolean interrupted;
@@ -131,8 +130,13 @@ public class ManagerSnapshotService {
         // iterate on all pages of sessionSteps to create Sessions
         do {
             interrupted = Thread.currentThread().isInterrupted();
-            pageToRequest = updateOnePageSessionSteps(sessionMap, aggByStep, source, sourceName, lastUpdateDate,
-                                                      freezeDate, pageToRequest);
+            pageToRequest = updateOnePageSessionSteps(sessionMap,
+                                                      aggByStep,
+                                                      source,
+                                                      sourceName,
+                                                      lastUpdateDate,
+                                                      freezeDate,
+                                                      pageToRequest);
         } while (pageToRequest != null && !interrupted);
 
         // UPDATE SOURCE SNAPSHOT
@@ -160,19 +164,26 @@ public class ManagerSnapshotService {
      * @return next page or null if there are no more pages
      */
     private Pageable updateOnePageSessionSteps(Map<String, Session> sessionMap,
-            Map<StepTypeEnum, SourceStepAggregation> aggByStep, Source source, String sourceName,
-            OffsetDateTime lastUpdateDate, OffsetDateTime freezeDate, Pageable pageToRequest) {
+                                               Map<StepTypeEnum, SourceStepAggregation> aggByStep,
+                                               Source source,
+                                               String sourceName,
+                                               OffsetDateTime lastUpdateDate,
+                                               OffsetDateTime freezeDate,
+                                               Pageable pageToRequest) {
 
         // Get page of sessionSteps to handle between lastUpdateDate and freezeDate or under freezeDate if
         // lastUpdateDate is null
         Page<SessionStep> sessionStepPage;
         if (lastUpdateDate != null) {
-            sessionStepPage = this.sessionStepRepo
-                    .findBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(sourceName, lastUpdateDate,
-                                                                                           freezeDate, pageToRequest);
+            sessionStepPage = this.sessionStepRepo.findBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(
+                sourceName,
+                lastUpdateDate,
+                freezeDate,
+                pageToRequest);
         } else {
-            sessionStepPage = this.sessionStepRepo
-                    .findBySourceAndRegistrationDateBefore(sourceName, freezeDate, pageToRequest);
+            sessionStepPage = this.sessionStepRepo.findBySourceAndRegistrationDateBefore(sourceName,
+                                                                                         freezeDate,
+                                                                                         pageToRequest);
         }
 
         // Iterate on each session step
@@ -206,8 +217,10 @@ public class ManagerSnapshotService {
      * @param deltaStep   difference between previous {@link SessionStep} (if there is one) and the {@link SessionStep}
      *                    updated
      */
-    private void updateSession(Map<String, Session> sessionMap, String sourceName, SessionStep sessionStep,
-            DeltaSessionStep deltaStep) {
+    private void updateSession(Map<String, Session> sessionMap,
+                               String sourceName,
+                               SessionStep sessionStep,
+                               DeltaSessionStep deltaStep) {
         String sessionName = sessionStep.getSession();
         // add session if not already in the map
         Session session = sessionMap.get(sessionName);
@@ -312,8 +325,9 @@ public class ManagerSnapshotService {
      * @param deltaStep difference between previous {@link SessionStep} (if there is one) and the {@link SessionStep}
      *                  updated
      */
-    private void updateSourceAgg(Map<StepTypeEnum, SourceStepAggregation> aggByStep, Source source,
-            DeltaSessionStep deltaStep) {
+    private void updateSourceAgg(Map<StepTypeEnum, SourceStepAggregation> aggByStep,
+                                 Source source,
+                                 DeltaSessionStep deltaStep) {
         // CREATE AGGREGATION BY TYPE IF NOT EXISTING
         StepTypeEnum stepType = deltaStep.getType();
         SourceStepAggregation agg = aggByStep.get(stepType);
@@ -337,7 +351,7 @@ public class ManagerSnapshotService {
         // update lastUpdateDate only if deltaLastUpdate is after
         OffsetDateTime deltaStepLastUpdate = deltaStep.getLastUpdateDate();
         if (deltaStepLastUpdate != null && (source.getLastUpdateDate() == null || source.getLastUpdateDate()
-                .isBefore(deltaStepLastUpdate))) {
+                                                                                        .isBefore(deltaStepLastUpdate))) {
             source.setLastUpdateDate(deltaStepLastUpdate);
         }
 

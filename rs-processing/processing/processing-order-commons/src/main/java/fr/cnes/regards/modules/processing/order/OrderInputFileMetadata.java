@@ -29,17 +29,24 @@ import lombok.With;
  *
  * @author gandrieu
  */
-@lombok.Data @With
+@lombok.Data
+@With
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderInputFileMetadata {
 
-    /** Whether the input file is internal (URL pointing to storage) or external (free URL) */
+    /**
+     * Whether the input file is internal (URL pointing to storage) or external (free URL)
+     */
     Boolean internal;
 
-    /** The ID for feature the data file came from. */
+    /**
+     * The ID for feature the data file came from.
+     */
     UniformResourceName featureId;
 
-    /** If a location is provided (in case the input is not a file) */
+    /**
+     * If a location is provided (in case the input is not a file)
+     */
     String storedPath;
 }

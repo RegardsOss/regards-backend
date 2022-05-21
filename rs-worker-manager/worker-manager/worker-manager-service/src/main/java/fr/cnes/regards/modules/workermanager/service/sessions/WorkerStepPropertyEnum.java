@@ -26,17 +26,49 @@ import java.util.Optional;
 
 public enum WorkerStepPropertyEnum {
 
-    TOTAL_REQUESTS("workers.requests", null, StepPropertyStateEnum.INFO, false, true, false),
-    NO_WORKER_AVAILABLE("workers.no_worker_available", RequestStatus.NO_WORKER_AVAILABLE, StepPropertyStateEnum.WAITING,
-                        false, false, false),
-    RUNNING("workers.%s.running", RequestStatus.RUNNING, StepPropertyStateEnum.RUNNING, true, false, false),
-    DISPATCHED("workers.%s.dispatched", RequestStatus.DISPATCHED, StepPropertyStateEnum.RUNNING, true, false, false),
-    ERROR("workers.%s.error", RequestStatus.ERROR, StepPropertyStateEnum.ERROR, true, false, false),
-    INVALID_CONTENT("workers.%s.invalid", RequestStatus.INVALID_CONTENT, StepPropertyStateEnum.ERROR, true, false,
-                    false),
-    DONE("workers.%s.done", RequestStatus.SUCCESS, StepPropertyStateEnum.SUCCESS, true, false, true),
-    RETRY_PENDING("workers.%s.retry", RequestStatus.TO_DISPATCH, StepPropertyStateEnum.INFO, true, false, false),
-    DELETION_PENDING("workers.%s.deletion", RequestStatus.TO_DELETE, StepPropertyStateEnum.INFO, true, false, false);
+    TOTAL_REQUESTS("workers.requests", null, StepPropertyStateEnum.INFO, false, true, false), NO_WORKER_AVAILABLE(
+        "workers.no_worker_available",
+        RequestStatus.NO_WORKER_AVAILABLE,
+        StepPropertyStateEnum.WAITING,
+        false,
+        false,
+        false), RUNNING("workers.%s.running",
+                        RequestStatus.RUNNING,
+                        StepPropertyStateEnum.RUNNING,
+                        true,
+                        false,
+                        false), DISPATCHED("workers.%s.dispatched",
+                                           RequestStatus.DISPATCHED,
+                                           StepPropertyStateEnum.RUNNING,
+                                           true,
+                                           false,
+                                           false), ERROR("workers.%s.error",
+                                                         RequestStatus.ERROR,
+                                                         StepPropertyStateEnum.ERROR,
+                                                         true,
+                                                         false,
+                                                         false), INVALID_CONTENT("workers.%s.invalid",
+                                                                                 RequestStatus.INVALID_CONTENT,
+                                                                                 StepPropertyStateEnum.ERROR,
+                                                                                 true,
+                                                                                 false,
+                                                                                 false), DONE("workers.%s.done",
+                                                                                              RequestStatus.SUCCESS,
+                                                                                              StepPropertyStateEnum.SUCCESS,
+                                                                                              true,
+                                                                                              false,
+                                                                                              true), RETRY_PENDING(
+        "workers.%s.retry",
+        RequestStatus.TO_DISPATCH,
+        StepPropertyStateEnum.INFO,
+        true,
+        false,
+        false), DELETION_PENDING("workers.%s.deletion",
+                                 RequestStatus.TO_DELETE,
+                                 StepPropertyStateEnum.INFO,
+                                 true,
+                                 false,
+                                 false);
 
     private final String propertyPath;
 
@@ -50,8 +82,12 @@ public enum WorkerStepPropertyEnum {
 
     private final boolean outputRelated;
 
-    WorkerStepPropertyEnum(String propertyPath, RequestStatus requestStatus, StepPropertyStateEnum propertyState,
-            boolean workerTypeRequired, boolean inputRelated, boolean outputRelated) {
+    WorkerStepPropertyEnum(String propertyPath,
+                           RequestStatus requestStatus,
+                           StepPropertyStateEnum propertyState,
+                           boolean workerTypeRequired,
+                           boolean inputRelated,
+                           boolean outputRelated) {
         this.propertyPath = propertyPath;
         this.requestStatus = requestStatus;
         this.propertyState = propertyState;
@@ -62,7 +98,9 @@ public enum WorkerStepPropertyEnum {
 
     public static Optional<WorkerStepPropertyEnum> parse(RequestStatus status) {
         Optional<WorkerStepPropertyEnum> oStep = Arrays.stream(WorkerStepPropertyEnum.values())
-                .filter(step -> step.getRequestStatus() != null && status == step.getRequestStatus()).findFirst();
+                                                       .filter(step -> step.getRequestStatus() != null
+                                                           && status == step.getRequestStatus())
+                                                       .findFirst();
         return oStep;
     }
 

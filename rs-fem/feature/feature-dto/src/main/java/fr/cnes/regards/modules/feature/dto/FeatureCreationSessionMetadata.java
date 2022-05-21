@@ -18,21 +18,24 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
+import org.springframework.util.Assert;
+
 import java.util.Arrays;
 import java.util.List;
 
-import org.springframework.util.Assert;
-
 /**
  * @author kevin
- *
  */
 public class FeatureCreationSessionMetadata extends FeatureSessionMetadata {
 
-    /** If we override previous version or not*/
+    /**
+     * If we override previous version or not
+     */
     private boolean override = false;
 
-    /** If urn is provided and associated feature already exists update the existing feature with parameters of given one */
+    /**
+     * If urn is provided and associated feature already exists update the existing feature with parameters of given one
+     */
     private boolean updateIfExists = false;
 
     public boolean isOverride() {
@@ -53,25 +56,40 @@ public class FeatureCreationSessionMetadata extends FeatureSessionMetadata {
 
     /**
      * Build feature metadata
+     *
      * @param sessionOwner Owner of the session
-     * @param session session
-     * @param override if we override previous version
-     * @param storages storage metadata
+     * @param session      session
+     * @param override     if we override previous version
+     * @param storages     storage metadata
      */
-    public static FeatureCreationSessionMetadata build(String sessionOwner, String session, PriorityLevel priority,
-            boolean override, boolean updateIfExists, StorageMetadata... storages) {
-        return FeatureCreationSessionMetadata.build(sessionOwner, session, priority, Arrays.asList(storages), override, updateIfExists);
+    public static FeatureCreationSessionMetadata build(String sessionOwner,
+                                                       String session,
+                                                       PriorityLevel priority,
+                                                       boolean override,
+                                                       boolean updateIfExists,
+                                                       StorageMetadata... storages) {
+        return FeatureCreationSessionMetadata.build(sessionOwner,
+                                                    session,
+                                                    priority,
+                                                    Arrays.asList(storages),
+                                                    override,
+                                                    updateIfExists);
     }
 
     /**
      * Build feature metadata
+     *
      * @param sessionOwner Owner of the session
-     * @param session session
-     * @param storages storage metadata
-     * @param override if we override previous version
+     * @param session      session
+     * @param storages     storage metadata
+     * @param override     if we override previous version
      */
-    public static FeatureCreationSessionMetadata build(String sessionOwner, String session, PriorityLevel priority,
-            List<StorageMetadata> storages, boolean override, boolean updateIfExists) {
+    public static FeatureCreationSessionMetadata build(String sessionOwner,
+                                                       String session,
+                                                       PriorityLevel priority,
+                                                       List<StorageMetadata> storages,
+                                                       boolean override,
+                                                       boolean updateIfExists) {
         Assert.hasLength(sessionOwner, MISSING_SESSION_OWNER);
         Assert.hasLength(session, MISSING_SESSION);
         Assert.notNull(storages, MISSING_STORAGE_METADATA);

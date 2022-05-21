@@ -18,9 +18,18 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
-import java.util.Set;
-import java.util.UUID;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
+import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
+import fr.cnes.regards.modules.storage.domain.database.FileLocation;
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
+import fr.cnes.regards.modules.storage.service.file.handler.FileReferenceEventHandler;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -35,30 +44,20 @@ import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
-import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
-import fr.cnes.regards.modules.storage.domain.database.FileLocation;
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
-import fr.cnes.regards.modules.storage.service.file.handler.FileReferenceEventHandler;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Performances tests for creating and store new file references.
+ *
  * @author Sébastien Binda
  */
 @ActiveProfiles(value = { "default", "test", "testAmqp", "storageTest" }, inheritProfiles = false)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_client_tests",
-        "regards.amqp.enabled=true", "regards.storage.schedule.delay:1000",
-        "regards.storage.location.schedule.delay:600000", "regards.storage.reference.items.bulk.size:10" },
-        locations = { "classpath:application-local.properties" })
+@TestPropertySource(
+    properties = { "spring.jpa.properties.hibernate.default_schema=storage_client_tests", "regards.amqp.enabled=true",
+        "regards.storage.schedule.delay:1000", "regards.storage.location.schedule.delay:600000",
+        "regards.storage.reference.items.bulk.size:10" }, locations = { "classpath:application-local.properties" })
 @Ignore("Performances tests")
 public class FlowPerformanceIT extends AbstractRegardsTransactionalIT {
 
@@ -102,8 +101,11 @@ public class FlowPerformanceIT extends AbstractRegardsTransactionalIT {
             Set<FileReference> toSave = Sets.newHashSet();
             for (Long i = 0L; i < 1_000_000; i++) {
                 int count = 1;
-                FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(), "UUID",
-                        "file_" + i + ".test", i, MediaType.APPLICATION_OCTET_STREAM);
+                FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(),
+                                                                           "UUID",
+                                                                           "file_" + i + ".test",
+                                                                           i,
+                                                                           MediaType.APPLICATION_OCTET_STREAM);
                 FileLocation location = new FileLocation("storage-" + count, "storage://plop/file");
                 FileReference fileRef = new FileReference(Lists.newArrayList("owner"), metaInfo, location);
                 toSave.add(fileRef);
@@ -133,7 +135,8 @@ public class FlowPerformanceIT extends AbstractRegardsTransactionalIT {
         }
         if (listener.getNbRequestEnds() < nbrequests) {
             String message = String.format("Number of requests requested for end not reached %d/%d",
-                                           listener.getNbRequestEnds(), nbrequests);
+                                           listener.getNbRequestEnds(),
+                                           nbrequests);
             Assert.fail(message);
         }
     }
@@ -150,22 +153,57 @@ public class FlowPerformanceIT extends AbstractRegardsTransactionalIT {
             String session = "session-" + i;
 
             Set<FileReferenceRequestDTO> requests = Sets.newHashSet();
-            requests.add(FileReferenceRequestDTO.build("quicklook.1-" + i, UUID.randomUUID().toString(), "MD5",
-                                                       "application/octet-stream", 10L, newOwner, refStorage,
-                                                       "file://storage/location/quicklook1", sessionOwner, session));
-            requests.add(FileReferenceRequestDTO.build("quicklook.2-" + i, UUID.randomUUID().toString(), "MD5",
-                                                       "application/octet-stream", 10L, newOwner, refStorage,
-                                                       "file://storage/location/quicklook1", sessionOwner, session));
-            requests.add(FileReferenceRequestDTO.build("quicklook.3-" + i, UUID.randomUUID().toString(), "MD5",
-                                                       "application/octet-stream", 10L, newOwner, refStorage,
-                                                       "file://storage/location/quicklook1", sessionOwner, session));
-            requests.add(FileReferenceRequestDTO.build("quicklook.4-" + i, UUID.randomUUID().toString(), "MD5",
-                                                       "application/octet-stream", 10L, newOwner, refStorage,
-                                                       "file://storage/location/quicklook1", sessionOwner, session));
+            requests.add(FileReferenceRequestDTO.build("quicklook.1-" + i,
+                                                       UUID.randomUUID().toString(),
+                                                       "MD5",
+                                                       "application/octet-stream",
+                                                       10L,
+                                                       newOwner,
+                                                       refStorage,
+                                                       "file://storage/location/quicklook1",
+                                                       sessionOwner,
+                                                       session));
+            requests.add(FileReferenceRequestDTO.build("quicklook.2-" + i,
+                                                       UUID.randomUUID().toString(),
+                                                       "MD5",
+                                                       "application/octet-stream",
+                                                       10L,
+                                                       newOwner,
+                                                       refStorage,
+                                                       "file://storage/location/quicklook1",
+                                                       sessionOwner,
+                                                       session));
+            requests.add(FileReferenceRequestDTO.build("quicklook.3-" + i,
+                                                       UUID.randomUUID().toString(),
+                                                       "MD5",
+                                                       "application/octet-stream",
+                                                       10L,
+                                                       newOwner,
+                                                       refStorage,
+                                                       "file://storage/location/quicklook1",
+                                                       sessionOwner,
+                                                       session));
+            requests.add(FileReferenceRequestDTO.build("quicklook.4-" + i,
+                                                       UUID.randomUUID().toString(),
+                                                       "MD5",
+                                                       "application/octet-stream",
+                                                       10L,
+                                                       newOwner,
+                                                       refStorage,
+                                                       "file://storage/location/quicklook1",
+                                                       sessionOwner,
+                                                       session));
             // Create a new bus message File reference request
-            requests.add(FileReferenceRequestDTO.build("file.name-" + i, UUID.randomUUID().toString(), "MD5",
-                                                       "application/octet-stream", 10L, newOwner, refStorage,
-                                                       "file://storage/location/file.name", sessionOwner, session));
+            requests.add(FileReferenceRequestDTO.build("file.name-" + i,
+                                                       UUID.randomUUID().toString(),
+                                                       "MD5",
+                                                       "application/octet-stream",
+                                                       10L,
+                                                       newOwner,
+                                                       refStorage,
+                                                       "file://storage/location/file.name",
+                                                       sessionOwner,
+                                                       session));
             nbRrequests++;
             client.reference(requests);
             LOGGER.info(" {} requests sent ....", nbRrequests);

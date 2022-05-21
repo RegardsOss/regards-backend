@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.modules.session.manager.domain;
 
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
+
 import java.time.OffsetDateTime;
 
 /**

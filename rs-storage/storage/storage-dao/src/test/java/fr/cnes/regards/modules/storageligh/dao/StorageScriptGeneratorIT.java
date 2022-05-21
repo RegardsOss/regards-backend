@@ -1,8 +1,7 @@
 package fr.cnes.regards.modules.storageligh.dao;
 
-import org.junit.Ignore;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorIT;
+import org.junit.Ignore;
 
 /**
  * Test for SQL database generation script

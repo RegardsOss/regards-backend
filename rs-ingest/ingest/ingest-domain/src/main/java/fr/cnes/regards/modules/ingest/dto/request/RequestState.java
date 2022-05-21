@@ -19,15 +19,16 @@
 package fr.cnes.regards.modules.ingest.dto.request;
 
 /**
- *         o
- *         |______DENIED
- *         |
- *      GRANTED
- *         |______ERROR
- *         |
- *       DONE
- *
+ * o
+ * |______DENIED
+ * |
+ * GRANTED
+ * |______ERROR
+ * |
+ * DONE
+ * <p>
  * Available request states
+ *
  * @author Marc SORDI
  */
 public enum RequestState {

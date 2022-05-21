@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
  * A range criterion defines a range of value comparisons for a named property.<br/>
  * For example : property "toto" between 0 and 1 (ie toto range = > 0 and < 1).<br/>
  * This class is also to be used for only one comparison.
+ *
  * @param <T> value type
  * @author oroussel
  */
@@ -52,8 +53,9 @@ public class RangeCriterion<T extends Comparable<? super T>> extends AbstractPro
     @Override
     public RangeCriterion<T> copy() {
         RangeCriterion<T> copy = new RangeCriterion<>(super.name);
-        copy.valueComparisons
-                .addAll(this.valueComparisons.stream().map(ValueComparison::copy).collect(Collectors.toSet()));
+        copy.valueComparisons.addAll(this.valueComparisons.stream()
+                                                          .map(ValueComparison::copy)
+                                                          .collect(Collectors.toSet()));
         return copy;
     }
 

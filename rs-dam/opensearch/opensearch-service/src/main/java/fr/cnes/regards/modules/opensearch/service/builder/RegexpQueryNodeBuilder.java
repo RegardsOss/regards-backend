@@ -67,9 +67,8 @@ public class RegexpQueryNodeBuilder implements ICriterionQueryBuilder {
                 Set<AttributeModel> atts = MultiSearchHelper.discoverFields(finder, value);
                 return IFeatureCriterion.multiMatchStartWith(atts, value);
             } catch (OpenSearchUnknownParameter e) {
-                throw new QueryNodeException(new MessageImpl(
-                        fr.cnes.regards.modules.opensearch.service.message.QueryParserMessages.FIELD_TYPE_UNDETERMINATED,
-                        e.getMessage()), e);
+                throw new QueryNodeException(new MessageImpl(fr.cnes.regards.modules.opensearch.service.message.QueryParserMessages.FIELD_TYPE_UNDETERMINATED,
+                                                             e.getMessage()), e);
             }
         }
 
@@ -80,9 +79,8 @@ public class RegexpQueryNodeBuilder implements ICriterionQueryBuilder {
         try {
             attributeModel = finder.findByName(fieldAndMatchType.getFirst());
         } catch (OpenSearchUnknownParameter e) {
-            throw new QueryNodeException(new MessageImpl(
-                    fr.cnes.regards.modules.opensearch.service.message.QueryParserMessages.FIELD_TYPE_UNDETERMINATED,
-                    e.getMessage()), e);
+            throw new QueryNodeException(new MessageImpl(fr.cnes.regards.modules.opensearch.service.message.QueryParserMessages.FIELD_TYPE_UNDETERMINATED,
+                                                         e.getMessage()), e);
         }
 
         return IFeatureCriterion.regexp(attributeModel, value, fieldAndMatchType.getSecond());

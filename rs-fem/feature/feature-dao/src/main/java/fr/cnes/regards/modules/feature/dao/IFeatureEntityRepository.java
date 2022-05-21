@@ -35,7 +35,8 @@ import java.util.Collection;
 import java.util.List;
 
 @Repository
-public interface IFeatureEntityRepository extends JpaRepository<FeatureEntity, Long>, JpaSpecificationExecutor<FeatureEntity> {
+public interface IFeatureEntityRepository
+    extends JpaRepository<FeatureEntity, Long>, JpaSpecificationExecutor<FeatureEntity> {
 
     FeatureEntity findTop1VersionByProviderIdOrderByVersionAsc(String providerId);
 
@@ -48,7 +49,8 @@ public interface IFeatureEntityRepository extends JpaRepository<FeatureEntity, L
     /**
      * List existing provider identifiers in specified list
      */
-    @Query("select f.urn as urn, f.providerId as providerId, f.version as version from FeatureEntity f where f.providerId in :providerIds order by f.version desc")
+    @Query(
+        "select f.urn as urn, f.providerId as providerId, f.version as version from FeatureEntity f where f.providerId in :providerIds order by f.version desc")
     List<IUrnVersionByProvider> findByProviderIdInOrderByVersionDesc(@Param("providerIds") List<String> providerIds);
 
     /**

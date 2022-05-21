@@ -33,8 +33,9 @@ public class DateRangeCriterion extends RangeCriterion<OffsetDateTime> implement
     @Override
     public DateRangeCriterion copy() {
         DateRangeCriterion copy = new DateRangeCriterion(super.name);
-        copy.valueComparisons
-                .addAll(super.valueComparisons.stream().map(ValueComparison::copy).collect(Collectors.toSet()));
+        copy.valueComparisons.addAll(super.valueComparisons.stream()
+                                                           .map(ValueComparison::copy)
+                                                           .collect(Collectors.toSet()));
         return copy;
 
     }

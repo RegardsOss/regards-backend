@@ -28,11 +28,15 @@ import fr.cnes.regards.modules.order.service.utils.OrderCounts;
  * dataset selections having processing.
  *
  * @author Guillaume Andrieu
- *
  */
 public interface IOrderProcessingService {
 
-    OrderCounts manageProcessedDatasetSelection(Order order, BasketDatasetSelection dsSel, String tenant, String user,
-            String userRole, OrderCounts counts, int subOrderDuration) throws ModuleException;
+    OrderCounts manageProcessedDatasetSelection(Order order,
+                                                BasketDatasetSelection dsSel,
+                                                String tenant,
+                                                String user,
+                                                String userRole,
+                                                OrderCounts counts,
+                                                int subOrderDuration) throws ModuleException;
 
 }

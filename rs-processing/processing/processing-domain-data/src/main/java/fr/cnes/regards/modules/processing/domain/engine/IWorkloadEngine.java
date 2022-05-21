@@ -14,17 +14,16 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.engine;
 
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import reactor.core.publisher.Mono;
 
-
 /**
  * This interface defines an engine: something that takes a context and returns a running execution.
- *
+ * <p>
  * The engine may perform the execution's executable asynchronously, saving some state about
  * the execution, etc., but ultimately it is responsible for launching the process's
  * executable for the given context.

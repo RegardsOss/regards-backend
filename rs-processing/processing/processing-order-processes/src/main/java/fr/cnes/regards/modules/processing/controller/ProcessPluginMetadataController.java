@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.controller;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -47,8 +47,11 @@ public class ProcessPluginMetadataController {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "List all detected process plugins", role = DefaultRole.ADMIN)
     public Collection<PluginMetaData> listAllDetectedPlugins() {
-        return Stream.ofAll(PluginUtils.getPlugins().values()).filter(md -> md.getInterfaceNames().stream()
-                .anyMatch(i -> i.endsWith(IProcessDefinition.class.getName()))).collect(Collectors.toList());
+        return Stream.ofAll(PluginUtils.getPlugins().values())
+                     .filter(md -> md.getInterfaceNames()
+                                     .stream()
+                                     .anyMatch(i -> i.endsWith(IProcessDefinition.class.getName())))
+                     .collect(Collectors.toList());
     }
 
 }

@@ -921,9 +921,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         try {
             // If new file to register date <= last scanning date, check if file is not already acquired.
             // truncate to microseconds because postgres timestamp has a resolution of 1 microsecond
-            lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(filePath).toInstant(), ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS);
+            lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(filePath).toInstant(), ZoneOffset.UTC)
+                                .truncatedTo(ChronoUnit.MICROS);
             if (scanningDate.isPresent() && (lmd.isBefore(scanningDate.get()) || lmd.isEqual(scanningDate.get()))
-                    && acqFileRepository.existsByFilePathInAndFileInfo(filePath, info)) {
+                && acqFileRepository.existsByFilePathInAndFileInfo(filePath, info)) {
                 return false;
             } else {
                 // Initialize new file

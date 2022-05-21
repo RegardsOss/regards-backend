@@ -25,7 +25,6 @@ import fr.cnes.regards.modules.ingest.dto.aip.AIP;
  * Result object to inform changes in an {@link AIPEntity}.
  *
  * @author Sébastien Binda
- *
  */
 public class AIPUpdateResult {
 

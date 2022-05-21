@@ -76,7 +76,8 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
     @Before
     public void init() {
         accountsClient = FeignClientBuilder.build(new TokenClientProvider<>(IAccountsClient.class,
-                "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
+                                                                            "http://" + serverAddress + ":" + getPort(),
+                                                                            feignSecurityManager));
         FeignSecurityManager.asSystem();
 
         final Optional<Account> account = accountRepo.findOneByEmail(MAIL_TEST);
@@ -84,16 +85,15 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
     }
 
     /**
-     *
      * Check that the accounts Feign Client can retrieve all accounts.
-     *
-    
      */
     @Ignore
     @Test
     public void retrieveAccountListFromFeignClient() {
         try {
-            final ResponseEntity<PagedModel<EntityModel<Account>>> accounts = accountsClient.retrieveAccountList(null, 0, 10);
+            final ResponseEntity<PagedModel<EntityModel<Account>>> accounts = accountsClient.retrieveAccountList(null,
+                                                                                                                 0,
+                                                                                                                 10);
             Assert.assertEquals(accounts.getStatusCode(), HttpStatus.OK);
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);
@@ -102,10 +102,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
     }
 
     /**
-     *
      * Check that the accounts Feign Client can create an account.
-     *
-    
      */
     @Ignore
     @Test
@@ -122,10 +119,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
     }
 
     /**
-     *
      * Check that the accounts Feign Client can update an account.
-     *
-    
      */
     @Test
     @Ignore
@@ -142,10 +136,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
     }
 
     /**
-     *
      * Check that the accounts Feign Client can update an account.
-     *
-    
      */
     @Test
     @Ignore
@@ -160,10 +151,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
     }
 
     /**
-     *
      * Check that the accounts Feign Client can retrieve an account.
-     *
-    
      */
     @Test
     @Ignore
@@ -178,17 +166,13 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
     }
 
     /**
-     *
      * Check that the accounts Feign Client can retrieve an account.
-     *
-    
      */
     @Test
     @Ignore
     public void retrieveAccountByEmailFromFeignClient() {
         try {
-            final ResponseEntity<EntityModel<Account>> response = accountsClient
-                    .retrieveAccounByEmail("email@unkown.fr");
+            final ResponseEntity<EntityModel<Account>> response = accountsClient.retrieveAccounByEmail("email@unkown.fr");
             Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);
@@ -197,10 +181,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
     }
 
     /**
-     *
      * Check that the accounts Feign Client can retrieve an account.
-     *
-    
      */
     @Test
     @Ignore
@@ -215,10 +196,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
     }
 
     /**
-     *
      * Check that the accounts Feign Client can retrieve an account.
-     *
-    
      */
     @Test
     @Ignore
@@ -234,10 +212,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
     }
 
     /**
-     *
      * Check that the accounts Feign Client can retrieve an account.
-     *
-    
      */
     @Test
     public void validatePasswordFromFeignClient() {

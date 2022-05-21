@@ -20,6 +20,7 @@ public class QuotaHelperService {
     private static final Logger LOG = LoggerFactory.getLogger(QuotaHelperService.class);
 
     private static final String MAX_QUOTA_SETTING = StorageSetting.MAX_QUOTA_NAME;
+
     private static final Long MAX_QUOTA_DEFAULT_VALUE = -1L;
 
     private final IStorageSettingClient storageSettingClient;
@@ -34,9 +35,11 @@ public class QuotaHelperService {
 
         try {
             FeignSecurityManager.asSystem();
-            ResponseEntity<List<EntityModel<DynamicTenantSettingDto>>> response = storageSettingClient.retrieveAll(Collections.singleton(MAX_QUOTA_SETTING));
+            ResponseEntity<List<EntityModel<DynamicTenantSettingDto>>> response = storageSettingClient.retrieveAll(
+                Collections.singleton(MAX_QUOTA_SETTING));
             if (response != null && response.getStatusCode().is2xxSuccessful()) {
-                defaultQuota = ((DynamicTenantSettingDto<Double>) HateoasUtils.unwrapCollection(response.getBody()).get(0)).getValue().longValue();
+                defaultQuota = ((DynamicTenantSettingDto<Double>) HateoasUtils.unwrapCollection(response.getBody())
+                                                                              .get(0)).getValue().longValue();
             }
         } catch (Exception e) {
             LOG.warn("Unable to retrieve default quota value from storage service - using default value", e);

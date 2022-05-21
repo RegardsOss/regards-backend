@@ -10,7 +10,6 @@ import java.io.IOException;
 
 public class DataObjectGroupJsoniterDecoder implements NullSafeDecoderBuilder {
 
-
     public static Decoder selfRegister() {
         Decoder decoder = new DataObjectGroupJsoniterDecoder().nullSafe();
         JsoniterSpi.registerTypeDecoder(DataObjectGroup.class, decoder);
@@ -20,12 +19,10 @@ public class DataObjectGroupJsoniterDecoder implements NullSafeDecoderBuilder {
     @Override
     public Object decode(JsonIterator iter) throws IOException {
         Any group = iter.readAny();
-        return new DataObjectGroup(
-            group.toString("groupName"),
-            group.toBoolean("datasetAccess"),
-            group.toBoolean("dataObjectAccess"),
-            group.toLong("metaDataObjectAccessFilterPluginId"),
-            group.toLong("dataObjectAccessFilterPluginId")
-        );
+        return new DataObjectGroup(group.toString("groupName"),
+                                   group.toBoolean("datasetAccess"),
+                                   group.toBoolean("dataObjectAccess"),
+                                   group.toLong("metaDataObjectAccessFilterPluginId"),
+                                   group.toLong("dataObjectAccessFilterPluginId"));
     }
 }

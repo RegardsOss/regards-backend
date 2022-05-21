@@ -18,9 +18,14 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
+import fr.cnes.regards.modules.feature.dto.PriorityLevel;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -31,26 +36,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
-import fr.cnes.regards.modules.feature.dto.PriorityLevel;
-import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test feature mutation based on null property values.
  *
  * @author Marc SORDI
- *
  */
 @Ignore
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=feature_geode_swarm",
-                "regards.amqp.enabled=true", "regards.tenant=project1" },
-        locations = { "classpath:regards_geode.properties", "classpath:batch.properties" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=feature_geode_swarm", "regards.amqp.enabled=true",
+        "regards.tenant=project1" }, locations = { "classpath:regards_geode.properties", "classpath:batch.properties" })
 @ActiveProfiles(value = { "testAmqp", "noFemHandler", "noscheduler" })
 public class FeatureGeodeSwarmIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -72,23 +69,34 @@ public class FeatureGeodeSwarmIT extends AbstractFeatureMultitenantServiceIT {
         super.before();
 
         // Manage model
-        modelName = mockModelClient(GeodeProperties.getGeodeModel(), this.getCps(), this.getFactory(),
-                                    this.getDefaultTenant(), this.getModelAttrAssocClientMock());
+        modelName = mockModelClient(GeodeProperties.getGeodeModel(),
+                                    this.getCps(),
+                                    this.getFactory(),
+                                    this.getDefaultTenant(),
+                                    this.getModelAttrAssocClientMock());
         Thread.sleep(5_000);
     }
 
     @Test
     public void requestCreation() {
-        FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata
-                .build("sessionOwner", "session", PriorityLevel.HIGH, Lists.emptyList(), true, false);
+        FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata.build("sessionOwner",
+                                                                                       "session",
+                                                                                       PriorityLevel.HIGH,
+                                                                                       Lists.emptyList(),
+                                                                                       true,
+                                                                                       false);
 
         long creationStart = System.currentTimeMillis();
         List<FeatureCreationRequestEvent> events = new ArrayList<>();
         int bulk = 0;
         for (int i = 1; i <= NB_FEATURES; i++) {
             bulk++;
-            Feature feature = Feature.build(String.format(PROVIDER_ID_FORMAT, i), "owner", null, IGeometry.unlocated(),
-                                            EntityType.DATA, modelName);
+            Feature feature = Feature.build(String.format(PROVIDER_ID_FORMAT, i),
+                                            "owner",
+                                            null,
+                                            IGeometry.unlocated(),
+                                            EntityType.DATA,
+                                            modelName);
             GeodeProperties.addGeodeProperties(feature);
             events.add(FeatureCreationRequestEvent.build("sessionOwner", metadata, feature));
 
@@ -103,14 +111,19 @@ public class FeatureGeodeSwarmIT extends AbstractFeatureMultitenantServiceIT {
             publish(events, "creation", NB_FEATURES, NB_FEATURES);
         }
 
-        LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests published in {} ms", NB_FEATURES,
+        LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests published in {} ms",
+                    NB_FEATURES,
                     System.currentTimeMillis() - creationStart);
     }
 
     private void publish(List<? extends ISubscribable> events, String type, int count, int total) {
         long creationStart = System.currentTimeMillis();
         publisher.publish(events);
-        LOGGER.info(">>>>>>>>>>>>>>>>> {} {} events published in {} ms ({}/{})", events.size(), type,
-                    System.currentTimeMillis() - creationStart, count, total);
+        LOGGER.info(">>>>>>>>>>>>>>>>> {} {} events published in {} ms ({}/{})",
+                    events.size(),
+                    type,
+                    System.currentTimeMillis() - creationStart,
+                    count,
+                    total);
     }
 }

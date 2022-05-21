@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.modules.model.service.validation;
 
-import java.util.List;
-
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
+
+import java.util.List;
 
 /**
  * Retrieve all attributes related to a model.

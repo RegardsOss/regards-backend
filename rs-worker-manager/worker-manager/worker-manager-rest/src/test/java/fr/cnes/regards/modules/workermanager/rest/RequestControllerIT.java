@@ -23,8 +23,8 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
-import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
+import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import org.assertj.core.util.Lists;
 import org.junit.After;
@@ -33,19 +33,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * {@link Request} REST API testing
  *
  * @author Théo Lasserre
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_controller_it" })
 public class RequestControllerIT extends AbstractRegardsIT {
@@ -62,7 +58,15 @@ public class RequestControllerIT extends AbstractRegardsIT {
     @Before
     public void init() {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        createRequests("requestId", OffsetDateTime.now(), "contentType", "source1", "session1", RequestStatus.DISPATCHED, "".getBytes(), "error", 1);
+        createRequests("requestId",
+                       OffsetDateTime.now(),
+                       "contentType",
+                       "source1",
+                       "session1",
+                       RequestStatus.DISPATCHED,
+                       "".getBytes(),
+                       "error",
+                       1);
     }
 
     @After
@@ -71,7 +75,15 @@ public class RequestControllerIT extends AbstractRegardsIT {
         requestRepository.deleteAll();
     }
 
-    private void createRequests(String requestId, OffsetDateTime creationDate, String contentType, String source, String session, RequestStatus status, byte[] content, String error, int nbRequests) {
+    private void createRequests(String requestId,
+                                OffsetDateTime creationDate,
+                                String contentType,
+                                String source,
+                                String session,
+                                RequestStatus status,
+                                byte[] content,
+                                String error,
+                                int nbRequests) {
         List<Request> requests = Lists.newArrayList();
         for (int i = 0; i < nbRequests; i++) {
             Request request = new Request();
@@ -105,22 +117,29 @@ public class RequestControllerIT extends AbstractRegardsIT {
     public void retrieveARequest() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer();
         requestBuilderCustomizer.expectStatusOk();
-        performDefaultGet(RequestController.TYPE_MAPPING + RequestController.REQUEST_ID_PATH, requestBuilderCustomizer, "Error retrieving a request", "requestId0");
+        performDefaultGet(RequestController.TYPE_MAPPING + RequestController.REQUEST_ID_PATH,
+                          requestBuilderCustomizer,
+                          "Error retrieving a request",
+                          "requestId0");
     }
 
     @Test
-    public  void retryRequests() {
+    public void retryRequests() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer();
         requestBuilderCustomizer.expectStatusOk();
         performDefaultPost(RequestController.TYPE_MAPPING + RequestController.REQUEST_RETRY_PATH,
-                SearchRequestParameters.build(), requestBuilderCustomizer, "Error retry requests");
+                           SearchRequestParameters.build(),
+                           requestBuilderCustomizer,
+                           "Error retry requests");
     }
 
     @Test
     public void deleteAllRequests() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         performDefaultDelete(RequestController.TYPE_MAPPING + RequestController.REQUEST_DELETE_PATH,
-                new SearchRequestParameters().withIdsExcluded(), requestBuilderCustomizer, "Error delete all requests");
+                             new SearchRequestParameters().withIdsExcluded(),
+                             requestBuilderCustomizer,
+                             "Error delete all requests");
     }
 
     @Test
@@ -128,7 +147,9 @@ public class RequestControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         Long id = requestRepository.findAll().stream().findAny().get().getId();
         performDefaultDelete(RequestController.TYPE_MAPPING + RequestController.REQUEST_DELETE_PATH,
-                new SearchRequestParameters().withIdsIncluded(id), requestBuilderCustomizer, "Error delete one request");
+                             new SearchRequestParameters().withIdsIncluded(id),
+                             requestBuilderCustomizer,
+                             "Error delete one request");
     }
 
 }

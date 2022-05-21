@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  * Occurs if an attribute is part of a fragment but shouldn't be
  *
  * @author Marc Sordi
- *
  */
 public class FragmentAttributeException extends ModuleException {
 

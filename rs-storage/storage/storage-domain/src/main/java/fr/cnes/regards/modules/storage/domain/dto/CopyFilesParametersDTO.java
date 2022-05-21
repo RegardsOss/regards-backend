@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.storage.domain.dto;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
+
 import java.util.Collection;
 import java.util.Set;
-
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 
 /**
  * POJO to handle copy files requests parameters.
@@ -49,14 +48,18 @@ public class CopyFilesParametersDTO {
 
     /**
      * Build a copy request parameters object.
-     * @param sourceStorage source storage location name
-     * @param sourcePath source path recursively copy
+     *
+     * @param sourceStorage      source storage location name
+     * @param sourcePath         source path recursively copy
      * @param destinationStorage destination storage location name
-     * @param destinationPath destination path to copy to
+     * @param destinationPath    destination path to copy to
      * @return {@link CopyFilesParametersDTO}
      */
-    public static CopyFilesParametersDTO build(String sourceStorage, String sourcePath, String destinationStorage,
-            String destinationPath, Collection<String> types) {
+    public static CopyFilesParametersDTO build(String sourceStorage,
+                                               String sourcePath,
+                                               String destinationStorage,
+                                               String destinationPath,
+                                               Collection<String> types) {
         CopyFilesParametersDTO dto = new CopyFilesParametersDTO();
         dto.from = FileLocationDTO.build(sourceStorage, sourcePath);
         dto.to = FileLocationDTO.build(destinationStorage, destinationPath);

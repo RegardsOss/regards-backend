@@ -18,22 +18,22 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins;
 
-import java.nio.file.Path;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+
+import java.nio.file.Path;
 
 /**
  * Second <b>optional</b> step of acquisition processing chain. This step is used to validate a file.
  *
  * @author Marc Sordi
- *
  */
 @PluginInterface(description = "File validation plugin contract")
 public interface IValidationPlugin {
 
     /**
      * Validate a file
+     *
      * @param filePath file to validate
      * @return true if file is valid
      * @throws ModuleException if error occurs!

@@ -18,23 +18,22 @@
  */
 package fr.cnes.regards.modules.dam.rest.datasources;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Map;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.dam.domain.datasources.Column;
 import fr.cnes.regards.modules.dam.domain.datasources.Table;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDBConnectionPlugin;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Map;
+
 /**
  * For testing purpose
  *
  * @author Marc Sordi
- *
  */
 @Plugin(id = "MockConnectionPlugin", author = "CSSI", contact = "CSSI", description = "MockConnectionPlugin",
-        version = "alpha", url = "none", owner = "CSSI", license = "GPLv3")
+    version = "alpha", url = "none", owner = "CSSI", license = "GPLv3")
 public class MockConnectionPlugin implements IDBConnectionPlugin {
 
     @Override

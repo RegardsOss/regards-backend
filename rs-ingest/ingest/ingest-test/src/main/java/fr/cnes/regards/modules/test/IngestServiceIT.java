@@ -53,7 +53,9 @@ import java.util.List;
 public class IngestServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestServiceIT.class);
+
     public static final String NEW_SIP_S_IN_DATABASE_TEMPLATE = "{} new SIP(s) {} in database";
+
     public static final String ALL_STATUS = "ALL_STATUS";
 
     @Autowired
@@ -148,8 +150,9 @@ public class IngestServiceIT {
 
     /**
      * Helper method to wait for SIP ingestion
+     *
      * @param expectedSips expected count of sips in database
-     * @param timeout in ms
+     * @param timeout      in ms
      */
     public void waitForIngestion(long expectedSips, long timeout, SIPState sipState) {
         long end = System.currentTimeMillis() + timeout;
@@ -164,14 +167,21 @@ public class IngestServiceIT {
                 newCount = totalCount;
             }
             if (newCount != sipCount) {
-                LOGGER.info(NEW_SIP_S_IN_DATABASE_TEMPLATE, newCount - sipCount,
+                LOGGER.info(NEW_SIP_S_IN_DATABASE_TEMPLATE,
+                            newCount - sipCount,
                             sipState != null ? sipState.toString() : ALL_STATUS);
             }
             sipCount = newCount;
-            if (timerStop(expectedSips, end, sipCount, String
-                    .format("Timeout after waiting %s ms for %s SIPs in %s. Actual=%s. Total count %s (no specific status)",
-                            timeout, expectedSips, sipState != null ? sipState.toString() : ALL_STATUS, sipCount,
-                            totalCount))) {
+            if (timerStop(expectedSips,
+                          end,
+                          sipCount,
+                          String.format(
+                              "Timeout after waiting %s ms for %s SIPs in %s. Actual=%s. Total count %s (no specific status)",
+                              timeout,
+                              expectedSips,
+                              sipState != null ? sipState.toString() : ALL_STATUS,
+                              sipCount,
+                              totalCount))) {
                 break;
             }
         } while (true);
@@ -193,14 +203,20 @@ public class IngestServiceIT {
                 newCount = totalCount;
             }
             if (newCount != aipCount) {
-                LOGGER.info(NEW_SIP_S_IN_DATABASE_TEMPLATE, newCount - aipCount,
+                LOGGER.info(NEW_SIP_S_IN_DATABASE_TEMPLATE,
+                            newCount - aipCount,
                             aipState != null ? aipState.toString() : ALL_STATUS);
             }
             aipCount = newCount;
-            if (timerStop(expectedSips, end, aipCount, String
-                    .format("Timeout after waiting for %s SIPs in %s. Acutal=%s. Total count %s (no specific status)",
-                            expectedSips, aipState != null ? aipState.toString() : ALL_STATUS, aipCount,
-                            totalCount))) {
+            if (timerStop(expectedSips,
+                          end,
+                          aipCount,
+                          String.format(
+                              "Timeout after waiting for %s SIPs in %s. Acutal=%s. Total count %s (no specific status)",
+                              expectedSips,
+                              aipState != null ? aipState.toString() : ALL_STATUS,
+                              aipCount,
+                              totalCount))) {
                 break;
             }
         } while (true);
@@ -222,14 +238,20 @@ public class IngestServiceIT {
                 newCount = totalCount;
             }
             if (newCount != requestCount) {
-                LOGGER.info(NEW_SIP_S_IN_DATABASE_TEMPLATE, newCount - requestCount,
+                LOGGER.info(NEW_SIP_S_IN_DATABASE_TEMPLATE,
+                            newCount - requestCount,
                             requestState != null ? requestState.toString() : ALL_STATUS);
             }
             requestCount = newCount;
-            if (timerStop(expectedSips, end, requestCount, String
-                    .format("Timeout after waiting for %s SIPs in %s. Acutal=%s. Total count %s (no specific status)",
-                            expectedSips, requestState != null ? requestState.toString() : ALL_STATUS, requestCount,
-                            totalCount))) {
+            if (timerStop(expectedSips,
+                          end,
+                          requestCount,
+                          String.format(
+                              "Timeout after waiting for %s SIPs in %s. Acutal=%s. Total count %s (no specific status)",
+                              expectedSips,
+                              requestState != null ? requestState.toString() : ALL_STATUS,
+                              requestCount,
+                              totalCount))) {
                 break;
             }
         } while (true);
@@ -254,8 +276,9 @@ public class IngestServiceIT {
 
     /**
      * Helper method to wait for DB ingestion
+     *
      * @param expectedTasks expected count of task in db
-     * @param timeout in ms
+     * @param timeout       in ms
      */
     public void waitForRequestReach(long expectedTasks, long timeout) {
         long end = System.currentTimeMillis() + timeout;
@@ -264,8 +287,12 @@ public class IngestServiceIT {
         do {
             taskCount = abstractRequestRepository.count();
             LOGGER.debug("{} UpdateRequest(s) created in database", taskCount);
-            if (timerStop(expectedTasks, end, taskCount, String
-                    .format("Timeout after waiting for %s request tasks ends. Actual=%s", expectedTasks, taskCount))) {
+            if (timerStop(expectedTasks,
+                          end,
+                          taskCount,
+                          String.format("Timeout after waiting for %s request tasks ends. Actual=%s",
+                                        expectedTasks,
+                                        taskCount))) {
                 break;
             }
         } while (true);
@@ -273,15 +300,17 @@ public class IngestServiceIT {
 
     /**
      * Helper method that waits all requests have been processed
+     *
      * @param timeout
      */
     public void waitAllRequestsFinished(long timeout) {
         long end = System.currentTimeMillis() + timeout;
         // Wait
         do {
-            long count = abstractRequestRepository
-                    .countByStateIn(Sets.newHashSet(InternalRequestState.BLOCKED, InternalRequestState.CREATED,
-                                                    InternalRequestState.RUNNING, InternalRequestState.TO_SCHEDULE));
+            long count = abstractRequestRepository.countByStateIn(Sets.newHashSet(InternalRequestState.BLOCKED,
+                                                                                  InternalRequestState.CREATED,
+                                                                                  InternalRequestState.RUNNING,
+                                                                                  InternalRequestState.TO_SCHEDULE));
             LOGGER.info("{} Current request running", count);
             if (count == 0) {
                 break;
@@ -303,9 +332,10 @@ public class IngestServiceIT {
         try {
             Thread.sleep(1000);
             // Wait
-            long count = abstractRequestRepository
-                    .countByStateIn(Sets.newHashSet(InternalRequestState.BLOCKED, InternalRequestState.CREATED,
-                                                    InternalRequestState.RUNNING, InternalRequestState.TO_SCHEDULE));
+            long count = abstractRequestRepository.countByStateIn(Sets.newHashSet(InternalRequestState.BLOCKED,
+                                                                                  InternalRequestState.CREATED,
+                                                                                  InternalRequestState.RUNNING,
+                                                                                  InternalRequestState.TO_SCHEDULE));
             LOGGER.info("{} Current request running", count);
             return count == 0;
         } catch (InterruptedException e) {
@@ -323,6 +353,7 @@ public class IngestServiceIT {
 
     /**
      * Send the event to ingest a new SIP
+     *
      * @param sip
      * @param mtd
      */
@@ -347,10 +378,12 @@ public class IngestServiceIT {
             if (ji.getStatus().getStatus() == status) {
                 done = true;
             }
-        }while (!done && (System.currentTimeMillis() < (start + timeout)));
+        } while (!done && (System.currentTimeMillis() < (start + timeout)));
 
         if (!done) {
-            Assert.assertEquals("Job info is not in expected status", ji.getStatus().getStatus(), jobInfo.getStatus().getStatus());
+            Assert.assertEquals("Job info is not in expected status",
+                                ji.getStatus().getStatus(),
+                                jobInfo.getStatus().getStatus());
         }
     }
 

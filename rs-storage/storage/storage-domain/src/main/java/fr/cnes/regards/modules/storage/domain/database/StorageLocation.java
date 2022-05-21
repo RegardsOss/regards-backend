@@ -18,20 +18,10 @@
  */
 package fr.cnes.regards.modules.storage.domain.database;
 
-import java.time.OffsetDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+
+import javax.persistence.*;
+import java.time.OffsetDateTime;
 
 /**
  * Database definition of the table containing monitoring information about all storage location known.
@@ -40,7 +30,7 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
  */
 @Entity
 @Table(name = "t_storage_location", indexes = { @Index(name = "idx_storage_location", columnList = "name") },
-        uniqueConstraints = { @UniqueConstraint(name = "uk_t_storage_location_name", columnNames = { "name" }) })
+    uniqueConstraints = { @UniqueConstraint(name = "uk_t_storage_location_name", columnNames = { "name" }) })
 public class StorageLocation {
 
     /**

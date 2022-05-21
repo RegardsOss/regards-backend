@@ -40,7 +40,7 @@ import java.util.List;
  */
 @Component
 public class FileRequestsGroupEventHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FileRequestsGroupEvent> {
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FileRequestsGroupEvent> {
 
     @Autowired
     private ISubscriber subscriber;
@@ -82,11 +82,14 @@ public class FileRequestsGroupEventHandler
 
     private void handleDeletionGroupDone(FileRequestsGroupEvent event) {
         if (event.getState() == FlowItemStatus.ERROR) {
-            notificationClient
-                    .notify(String.format("Requests group %s is terminated with erros. %s success and %s errors.",
-                                          event.getGroupId(), event.getSuccess().size(), event.getErrors().size()),
-                            String.format("Storage - %s process", event.getType().toString()), NotificationLevel.ERROR,
-                            DefaultRole.PROJECT_ADMIN);
+            notificationClient.notify(String.format(
+                                          "Requests group %s is terminated with erros. %s success and %s errors.",
+                                          event.getGroupId(),
+                                          event.getSuccess().size(),
+                                          event.getErrors().size()),
+                                      String.format("Storage - %s process", event.getType().toString()),
+                                      NotificationLevel.ERROR,
+                                      DefaultRole.PROJECT_ADMIN);
         }
     }
 }

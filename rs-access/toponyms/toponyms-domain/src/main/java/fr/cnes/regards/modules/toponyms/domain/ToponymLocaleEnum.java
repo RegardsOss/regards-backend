@@ -19,9 +19,7 @@
 package fr.cnes.regards.modules.toponyms.domain;
 
 /**
- *
  * @author Sébastien Binda
- *
  */
 public enum ToponymLocaleEnum {
 

@@ -29,6 +29,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 /**
  * Asynchronous task configuration
+ *
  * @author Marc Sordi
  */
 @Configuration

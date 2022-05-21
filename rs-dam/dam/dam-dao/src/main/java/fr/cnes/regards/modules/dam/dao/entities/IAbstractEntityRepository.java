@@ -39,15 +39,17 @@ import java.util.Set;
 
 /**
  * Common requests on entities
+ *
+ * @param <T> {@link AbstractEntity}
  * @author Sylvain Vissiere-Guerinet
  * @author oroussel
- * @param <T> {@link AbstractEntity}
  */
 public interface IAbstractEntityRepository<T extends AbstractEntity<?>>
-        extends JpaRepository<T, Long>, JpaSpecificationExecutor<T> {
+    extends JpaRepository<T, Long>, JpaSpecificationExecutor<T> {
 
     /**
      * Find entity giving its id eagerly loading its common relations (ie relations defined into AbstractEntity
+     *
      * @param pId id of entity
      * @return entity
      */
@@ -57,6 +59,7 @@ public interface IAbstractEntityRepository<T extends AbstractEntity<?>>
 
     /**
      * Find all entities of which ipId belongs to given set (eagerly loading all relations)
+     *
      * @param pIpIds set of ipId
      * @return found entities
      */
@@ -65,6 +68,7 @@ public interface IAbstractEntityRepository<T extends AbstractEntity<?>>
 
     /**
      * Find entity of given ipId
+     *
      * @param pIpId ipId of which entity
      * @return found entity
      */
@@ -72,6 +76,7 @@ public interface IAbstractEntityRepository<T extends AbstractEntity<?>>
 
     /**
      * Find entity of given IpId eagerly loading all common relations
+     *
      * @param pIpId ipId of which entity
      * @return found entity
      */
@@ -80,6 +85,7 @@ public interface IAbstractEntityRepository<T extends AbstractEntity<?>>
 
     /**
      * Find all entities complient with the given modelName
+     *
      * @param pModelName name of the model we want to be complient with
      * @return entities complient with the given model
      */
@@ -88,6 +94,7 @@ public interface IAbstractEntityRepository<T extends AbstractEntity<?>>
 
     /**
      * Find all entities matching given modelIds
+     *
      * @param modelIds a list of model ids
      * @return entities complient with the given model
      */
@@ -96,6 +103,7 @@ public interface IAbstractEntityRepository<T extends AbstractEntity<?>>
 
     /**
      * Count nb entities matching given modelIds
+     *
      * @param modelIds a list of model ids
      * @return count of entities matching
      */
@@ -126,6 +134,7 @@ public interface IAbstractEntityRepository<T extends AbstractEntity<?>>
 
     /**
      * Check if at least one model is already linked to at least one entity
+     *
      * @param modelIds model list
      * @return true if no entity exists linked with at least one model
      */
@@ -135,6 +144,7 @@ public interface IAbstractEntityRepository<T extends AbstractEntity<?>>
 
     /**
      * Find all entities containing given tag
+     *
      * @param pTagToSearch tag to search entities for
      * @return entities which contain given tag
      */
@@ -142,10 +152,11 @@ public interface IAbstractEntityRepository<T extends AbstractEntity<?>>
 
     /**
      * Find the all the entity with this specified provider id
+     *
      * @param providerId a provider id
      * @return entities corresponding to the provider id
      */
     @Query(value = "select * from {h-schema}t_entity where feature @> jsonb_build_object('providerId', ?1)",
-            nativeQuery = true)
+        nativeQuery = true)
     Set<T> findAllByProviderId(String providerId);
 }

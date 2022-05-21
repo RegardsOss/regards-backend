@@ -14,23 +14,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.service;
 
-import java.time.Duration;
-import java.util.UUID;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-
-import fr.cnes.regards.modules.processing.domain.PBatch;
-import fr.cnes.regards.modules.processing.domain.PExecution;
-import fr.cnes.regards.modules.processing.domain.PInputFile;
-import fr.cnes.regards.modules.processing.domain.PProcess;
-import fr.cnes.regards.modules.processing.domain.PStep;
+import fr.cnes.regards.modules.processing.domain.*;
 import fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutionEventNotifier;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionRequestEvent;
@@ -42,7 +29,15 @@ import fr.cnes.regards.modules.processing.domain.repository.IPOutputFilesReposit
 import fr.cnes.regards.modules.processing.domain.repository.IPProcessRepository;
 import fr.cnes.regards.modules.processing.domain.service.IExecutionService;
 import io.vavr.collection.Seq;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+
+import java.time.Duration;
+import java.util.UUID;
 
 /**
  * This class is the implementation for the {@link IExecutionService} interface.
@@ -65,9 +60,11 @@ public class ExecutionServiceImpl implements IExecutionService {
     private final IExecutionResultEventSender execResultSender;
 
     @Autowired
-    public ExecutionServiceImpl(IPExecutionRepository execRepo, IPBatchRepository batchRepo,
-            IPProcessRepository processRepo, IPOutputFilesRepository outputFilesRepo,
-            IExecutionResultEventSender execResultSender) {
+    public ExecutionServiceImpl(IPExecutionRepository execRepo,
+                                IPBatchRepository batchRepo,
+                                IPProcessRepository processRepo,
+                                IPOutputFilesRepository outputFilesRepo,
+                                IExecutionResultEventSender execResultSender) {
         this.execRepo = execRepo;
         this.batchRepo = batchRepo;
         this.processRepo = processRepo;
@@ -78,8 +75,11 @@ public class ExecutionServiceImpl implements IExecutionService {
     @Override
     public Mono<ExecutionContext> createContext(UUID execId) {
         return execRepo.findById(execId)
-                .flatMap(exec -> batchRepo.findById(exec.getBatchId()).flatMap(batch -> processRepo.findByBatch(batch)
-                        .flatMap(process -> createContext(exec, batch, process))));
+                       .flatMap(exec -> batchRepo.findById(exec.getBatchId())
+                                                 .flatMap(batch -> processRepo.findByBatch(batch)
+                                                                              .flatMap(process -> createContext(exec,
+                                                                                                                batch,
+                                                                                                                process))));
     }
 
     @Override
@@ -87,7 +87,8 @@ public class ExecutionServiceImpl implements IExecutionService {
         return makeExec(request).flatMap(this::runEngine);
     }
 
-    @Scheduled(cron = "${regards.processing.executions.timedout.cleanup.cron:0 0 */6 * * *}" // every six hours by default
+    @Scheduled(cron = "${regards.processing.executions.timedout.cleanup.cron:0 0 */6 * * *}"
+        // every six hours by default
     )
     @Override
     public void scheduledTimeoutNotify() {
@@ -97,26 +98,40 @@ public class ExecutionServiceImpl implements IExecutionService {
     private void notifyTimeout(PExecution execution) {
         LOGGER.info("exec={} - Notifying timeout", execution.getId());
         notifierFor(execution).notifyEvent(ExecutionEvent.event(PStep.timeout("")))
-                .subscribe(exec -> LOGGER.info("exec={} - Timeout notified", exec.getId()),
-                           t -> LOGGER.error(t.getMessage(), t));
+                              .subscribe(exec -> LOGGER.info("exec={} - Timeout notified", exec.getId()),
+                                         t -> LOGGER.error(t.getMessage(), t));
     }
 
     private Mono<PExecution> runEngine(PExecution exec) {
-        return batchRepo.findById(exec.getBatchId()).flatMap(batch -> processRepo.findByBatch(batch)
-                .flatMap(process -> createContext(exec, batch, process).flatMap(ctx -> process.getEngine().run(ctx))));
+        return batchRepo.findById(exec.getBatchId())
+                        .flatMap(batch -> processRepo.findByBatch(batch)
+                                                     .flatMap(process -> createContext(exec,
+                                                                                       batch,
+                                                                                       process).flatMap(ctx -> process.getEngine()
+                                                                                                                      .run(
+                                                                                                                          ctx))));
     }
 
     private Mono<PExecution> makeExec(PExecutionRequestEvent request) {
         return batchRepo.findById(request.getBatchId())
-                .flatMap(batch -> estimateDuration(batch, request.getInputFiles())
-                        .map(duration -> makeExecFromBatchAndDurationAndRequest(request, batch, duration)))
-                .flatMap(execRepo::create);
+                        .flatMap(batch -> estimateDuration(batch,
+                                                           request.getInputFiles()).map(duration -> makeExecFromBatchAndDurationAndRequest(
+                            request,
+                            batch,
+                            duration)))
+                        .flatMap(execRepo::create);
     }
 
-    private PExecution makeExecFromBatchAndDurationAndRequest(PExecutionRequestEvent request, PBatch batch,
-            Duration duration) {
-        return PExecution.create(request.getExecutionCorrelationId(), batch.getId(), batch.getCorrelationId(), duration,
-                                 request.getInputFiles(), batch.getTenant(), batch.getUser(),
+    private PExecution makeExecFromBatchAndDurationAndRequest(PExecutionRequestEvent request,
+                                                              PBatch batch,
+                                                              Duration duration) {
+        return PExecution.create(request.getExecutionCorrelationId(),
+                                 batch.getId(),
+                                 batch.getCorrelationId(),
+                                 duration,
+                                 request.getInputFiles(),
+                                 batch.getTenant(),
+                                 batch.getUser(),
                                  batch.getProcessBusinessId());
     }
 

@@ -18,18 +18,6 @@
  */
 package fr.cnes.regards.modules.dam.service.entities;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -41,6 +29,13 @@ import fr.cnes.regards.modules.dam.domain.entities.Collection;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.model.domain.Model;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import java.io.IOException;
+import java.util.*;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -96,7 +91,7 @@ public class EntityServiceTest {
         List<AbstractEntity<?>> findByTagsValueCol2IpId = new ArrayList<>();
         findByTagsValueCol2IpId.add(collection4);
         Mockito.when(entitiesRepositoryMocked.findByTags(collection2.getIpId().toString()))
-                .thenReturn(findByTagsValueCol2IpId);
+               .thenReturn(findByTagsValueCol2IpId);
 
         // EntityManager emMocked = Mockito.mock(EntityManager.class);
 

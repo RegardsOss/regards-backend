@@ -18,20 +18,19 @@
  */
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 /**
  * @author Marc Sordi
- *
  */
 @Plugin(id = "DefaultFileValidation", version = "1.0.0-SNAPSHOT", description = "Default validation plugin",
-        author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
+    url = "https://github.com/RegardsOss")
 public class DefaultFileValidation implements IValidationPlugin {
 
     @Override

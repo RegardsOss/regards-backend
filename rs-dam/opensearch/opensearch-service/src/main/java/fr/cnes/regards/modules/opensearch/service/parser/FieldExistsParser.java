@@ -18,13 +18,13 @@
  */
 package fr.cnes.regards.modules.opensearch.service.parser;
 
-import org.springframework.util.MultiValueMap;
-
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import org.springframework.util.MultiValueMap;
 
 /**
  * This {@link IParser} implementation only handles the "exists" parameter (exists doesn't seem to exist in openSearch)
  * and returns an {@link ICriterion} testing that given field exists.
+ *
  * @author oroussel
  */
 public class FieldExistsParser implements IParser {
@@ -33,7 +33,8 @@ public class FieldExistsParser implements IParser {
 
     @Override
     public ICriterion parse(MultiValueMap<String, String> parameters) {
-        return parameters.containsKey(EXISTS_PARAM) ? ICriterion.attributeExists(parameters.getFirst(EXISTS_PARAM))
-                : null;
+        return parameters.containsKey(EXISTS_PARAM) ?
+            ICriterion.attributeExists(parameters.getFirst(EXISTS_PARAM)) :
+            null;
     }
 }

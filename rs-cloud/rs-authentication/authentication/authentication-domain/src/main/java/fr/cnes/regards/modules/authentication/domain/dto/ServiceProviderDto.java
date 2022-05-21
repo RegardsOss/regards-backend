@@ -73,9 +73,9 @@ public class ServiceProviderDto {
             return false;
         }
         ServiceProviderDto that = (ServiceProviderDto) o;
-        return Objects.equals(name, that.name)
-            && Objects.equals(authUrl, that.authUrl)
-            && Objects.equals(pluginConfiguration, that.pluginConfiguration);
+        return Objects.equals(name, that.name) && Objects.equals(authUrl, that.authUrl) && Objects.equals(
+            pluginConfiguration,
+            that.pluginConfiguration);
     }
 
     @Override
@@ -84,11 +84,6 @@ public class ServiceProviderDto {
     }
 
     public ServiceProvider toDomain() {
-        return new ServiceProvider(
-            name,
-            authUrl,
-            logoutUrl,
-            pluginConfiguration
-        );
+        return new ServiceProvider(name, authUrl, logoutUrl, pluginConfiguration);
     }
 }

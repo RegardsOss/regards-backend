@@ -18,25 +18,21 @@
  */
 package fr.cnes.regards.framework.oais;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
+
+import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import javax.validation.constraints.NotNull;
-
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
-
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
-
 /**
  * OAIS Preservation Description Information object<br/>
- *
+ * <p>
  * A {@link PreservationDescriptionInformation} contains exactly five information objects :
  * <ul>
  * <li>A context information object</li>
@@ -134,8 +130,8 @@ public class PreservationDescriptionInformation {
      * @return the tags
      */
     public Collection<String> getTags() {
-        @SuppressWarnings("unchecked")
-        Collection<String> tags = (Collection<String>) getContextInformation().get(CONTEXT_INFO_TAGS_KEY);
+        @SuppressWarnings("unchecked") Collection<String> tags = (Collection<String>) getContextInformation().get(
+            CONTEXT_INFO_TAGS_KEY);
         if (tags == null) {
             tags = Sets.newHashSet();
             getContextInformation().put(CONTEXT_INFO_TAGS_KEY, tags);
@@ -208,13 +204,14 @@ public class PreservationDescriptionInformation {
 
     /**
      * Add tags (repeatable)
+     *
      * @param tags tags to add
      */
     public PreservationDescriptionInformation withContextTags(String... tags) {
         Assert.notEmpty(tags, "Tag is required");
         @SuppressWarnings("unchecked")
-        Collection<String> existingTags = (Collection<String>) getContextInformation()
-                .get(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);
+        Collection<String> existingTags = (Collection<String>) getContextInformation().get(
+            PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);
         if (existingTags == null) {
             existingTags = Sets.newHashSet(tags);
             getContextInformation().put(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY, existingTags);
@@ -242,7 +239,8 @@ public class PreservationDescriptionInformation {
 
     /**
      * Add an <b>optional</b> context information (repeatable)
-     * @param key information key
+     *
+     * @param key   information key
      * @param value information
      */
     public PreservationDescriptionInformation withContextInformation(String key, Object value) {
@@ -255,7 +253,8 @@ public class PreservationDescriptionInformation {
 
     /**
      * Add optional reference information (repeatable)
-     * @param key information key
+     *
+     * @param key   information key
      * @param value information
      */
     public PreservationDescriptionInformation withReferenceInformation(String key, String value) {
@@ -267,7 +266,8 @@ public class PreservationDescriptionInformation {
 
     /**
      * add additional provenance information (repeatable)
-     * @param key name of the information
+     *
+     * @param key   name of the information
      * @param value value of the information
      */
     public PreservationDescriptionInformation withAdditionalProvenanceInformation(String key, Object value) {
@@ -319,6 +319,7 @@ public class PreservationDescriptionInformation {
 
     /**
      * Add information object events (repeatable)
+     *
      * @param events events to add
      */
     public PreservationDescriptionInformation withProvenanceInformationEvents(Event... events) {
@@ -333,12 +334,14 @@ public class PreservationDescriptionInformation {
 
     /**
      * Add an information object event
-     * @param type optional event type key (may be null)
+     *
+     * @param type    optional event type key (may be null)
      * @param comment event comment
-     * @param date event date
+     * @param date    event date
      */
-    public PreservationDescriptionInformation withProvenanceInformationEvent(@Nullable String type, String comment,
-            OffsetDateTime date) {
+    public PreservationDescriptionInformation withProvenanceInformationEvent(@Nullable String type,
+                                                                             String comment,
+                                                                             OffsetDateTime date) {
         Event event = new Event();
         event.setType(type);
         event.setComment(comment);
@@ -349,8 +352,9 @@ public class PreservationDescriptionInformation {
 
     /**
      * Add an information object event
+     *
      * @param comment event comment
-     * @param date event date
+     * @param date    event date
      */
     public PreservationDescriptionInformation withProvenanceInformationEvent(String comment, OffsetDateTime date) {
         withProvenanceInformationEvent(null, comment, date);
@@ -359,6 +363,7 @@ public class PreservationDescriptionInformation {
 
     /**
      * Add an information object event
+     *
      * @param comment event comment
      */
     public PreservationDescriptionInformation withProvenanceInformationEvent(String comment) {
@@ -368,7 +373,8 @@ public class PreservationDescriptionInformation {
 
     /**
      * Add an <b>optional</b> fixity information
-     * @param key information key
+     *
+     * @param key   information key
      * @param value information
      */
     public PreservationDescriptionInformation withFixityInformation(String key, Object value) {
@@ -380,12 +386,14 @@ public class PreservationDescriptionInformation {
 
     /**
      * Set <b>required</b> access right information
-     * @param licence optional licence
-     * @param dataRights secure key
+     *
+     * @param licence           optional licence
+     * @param dataRights        secure key
      * @param publicReleaseDate optional public release date (may be null)
      */
-    public PreservationDescriptionInformation withAccessRightInformation(String licence, String dataRights,
-            @Nullable OffsetDateTime publicReleaseDate) {
+    public PreservationDescriptionInformation withAccessRightInformation(String licence,
+                                                                         String dataRights,
+                                                                         @Nullable OffsetDateTime publicReleaseDate) {
         Assert.hasLength(dataRights, "Data rights is required");
         getAccessRightInformation().setDataRights(dataRights);
         getAccessRightInformation().setPublicReleaseDate(publicReleaseDate);
@@ -396,6 +404,7 @@ public class PreservationDescriptionInformation {
     /**
      * Alias for {@link PreservationDescriptionInformation#withAccessRightInformation(String, String, OffsetDateTime)} (no public release
      * date)
+     *
      * @param dataRights secure key
      */
     public PreservationDescriptionInformation withAccessRightInformation(String dataRights) {

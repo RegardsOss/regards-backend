@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
  * Interface to reset the catalog
+ *
  * @author Iliana Ghazali
  */
 
@@ -35,6 +36,7 @@ public interface ICatalogResetService {
 
     /**
      * Delete existing indexes, recreate entities and clear all datasource ingestions
+     *
      * @throws ModuleException
      */
     void resetCatalog() throws ModuleException;

@@ -38,19 +38,7 @@ import fr.cnes.regards.modules.order.service.IOrderJobService;
 import fr.cnes.regards.modules.order.service.job.BasketDatasetSelectionDescriptor;
 import fr.cnes.regards.modules.order.service.job.ProcessExecutionJob;
 import fr.cnes.regards.modules.order.service.job.StorageFilesJob;
-import fr.cnes.regards.modules.order.service.job.parameters.BasketDatasetSelectionJobParameter;
-import fr.cnes.regards.modules.order.service.job.parameters.FilesJobParameter;
-import fr.cnes.regards.modules.order.service.job.parameters.ProcessBatchCorrelationIdJobParameter;
-import fr.cnes.regards.modules.order.service.job.parameters.ProcessDTOJobParameter;
-import fr.cnes.regards.modules.order.service.job.parameters.ProcessInputsPerFeature;
-import fr.cnes.regards.modules.order.service.job.parameters.ProcessInputsPerFeatureJobParameter;
-import fr.cnes.regards.modules.order.service.job.parameters.ProcessJobInfoJobParameter;
-import fr.cnes.regards.modules.order.service.job.parameters.ProcessOutputFeatureDesc;
-import fr.cnes.regards.modules.order.service.job.parameters.ProcessOutputFilesJobParameter;
-import fr.cnes.regards.modules.order.service.job.parameters.SubOrderAvailabilityPeriodJobParameter;
-import fr.cnes.regards.modules.order.service.job.parameters.TenantJobParameter;
-import fr.cnes.regards.modules.order.service.job.parameters.UserJobParameter;
-import fr.cnes.regards.modules.order.service.job.parameters.UserRoleJobParameter;
+import fr.cnes.regards.modules.order.service.job.parameters.*;
 import fr.cnes.regards.modules.order.service.processing.correlation.BatchSuborderCorrelationIdentifier;
 import fr.cnes.regards.modules.order.service.processing.correlation.ProcessInputCorrelationIdentifier;
 import fr.cnes.regards.modules.order.service.utils.BasketSelectionPageSearch;
@@ -59,19 +47,10 @@ import fr.cnes.regards.modules.order.service.utils.SuborderSizeCounter;
 import fr.cnes.regards.modules.processing.client.IProcessingRestClient;
 import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
 import fr.cnes.regards.modules.processing.domain.forecast.IResultSizeForecast;
-import fr.cnes.regards.modules.processing.order.Cardinality;
-import fr.cnes.regards.modules.processing.order.OrderProcessInfo;
-import fr.cnes.regards.modules.processing.order.OrderProcessInfoMapper;
-import fr.cnes.regards.modules.processing.order.Scope;
-import fr.cnes.regards.modules.processing.order.SizeLimit;
+import fr.cnes.regards.modules.processing.order.*;
 import io.vavr.collection.HashSet;
 import io.vavr.collection.List;
 import io.vavr.control.Option;
-import java.util.Collections;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.commons.lang3.NotImplementedException;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
@@ -89,26 +68,38 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
+import java.util.Collections;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * Complement to OrderService when dealing with dataset selections having processing.
  *
  * @author Guillaume Andrieu
- *
  */
 @Service
 public class OrderProcessingService implements IOrderProcessingService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderProcessingService.class);
+
     private static final String OCTET_STREAM = "application/octet-stream";
 
     protected final OrderProcessInfoMapper processInfoMapper = new OrderProcessInfoMapper();
 
     protected final BasketSelectionPageSearch basketSelectionPageSearch;
+
     protected final IProcessingRestClient processingClient;
+
     protected final SuborderSizeCounter suborderSizeCounter;
+
     protected final IOrderDataFileService orderDataFileService;
+
     protected final IOrderDataFileRepository orderDataFileRepository;
+
     protected final IOrderJobService orderJobService;
+
     protected final IJobInfoService jobInfoService;
 
     // @formatter:off

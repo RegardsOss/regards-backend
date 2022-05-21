@@ -18,11 +18,12 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.rest;
 
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Map;
-
+import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.HikariPoolMXBean;
+import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.DataSourcesAutoConfiguration;
+import fr.cnes.regards.framework.module.rest.representation.GenericResponseBody;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,15 +36,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.zaxxer.hikari.HikariDataSource;
-import com.zaxxer.hikari.HikariPoolMXBean;
-import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.DataSourcesAutoConfiguration;
-import fr.cnes.regards.framework.module.rest.representation.GenericResponseBody;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Map;
 
 /**
  * Manage data source connection for Multitenant starter
+ *
  * @author Marc Sordi
  */
 @RestController
@@ -71,7 +71,7 @@ public class JpaMultitenantController {
 
         if (dataSource == null) {
             return ResponseEntity.badRequest()
-                    .body(new GenericResponseBody("No datasource found for specified tenant"));
+                                 .body(new GenericResponseBody("No datasource found for specified tenant"));
         }
 
         try (Connection connection = dataSource.getConnection()) {
@@ -90,13 +90,13 @@ public class JpaMultitenantController {
 
         if (dataSource == null) {
             return ResponseEntity.badRequest()
-                    .body(new GenericResponseBody("No datasource found for specified tenant"));
+                                 .body(new GenericResponseBody("No datasource found for specified tenant"));
         }
 
         // Add datasource status if available
         if (dataSource instanceof HikariDataSource) {
             @SuppressWarnings("resource") // Data source is not close here!
-                    HikariDataSource hds = (HikariDataSource) dataSource;
+            HikariDataSource hds = (HikariDataSource) dataSource;
             HikariPoolMXBean bean = hds.getHikariPoolMXBean();
             GenericResponseBody body = new GenericResponseBody();
             body.getProperties().put("Max connections", hds.getMaximumPoolSize());

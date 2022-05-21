@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.utils.random;
 
 import org.jeasy.random.EasyRandom;
@@ -27,7 +27,6 @@ import org.jeasy.random.api.Randomizer;
  * order to prevent circular dependencies in maven modules.
  *
  * @param <T> the generic type
- *
  * @author gandrieu
  */
 public interface TypedRandomizer<T> {

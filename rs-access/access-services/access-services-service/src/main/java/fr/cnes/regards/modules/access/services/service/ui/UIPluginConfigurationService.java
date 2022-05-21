@@ -53,8 +53,9 @@ import java.util.stream.Stream;
 
 /**
  * Class PluginConfigurationService
- *
+ * <p>
  * Business service to manage {@link UIPluginConfiguration} entities.
+ *
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
@@ -72,8 +73,10 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
      * Builds a pedicate telling if the passed {@link UIPluginConfiguration} is applicable on passed {@link ServiceScope}.
      * Returns <code>true</code> if passed <code>pApplicationMode</code> is <code>null</code>.
      */
-    private static final Function<List<ServiceScope>, Predicate<UIPluginConfiguration>> IS_APPLICABLE_ON = pApplicationModes -> pConfiguration -> (pApplicationModes == null)
-            || pConfiguration.getPluginDefinition().getApplicationModes().containsAll(pApplicationModes);
+    private static final Function<List<ServiceScope>, Predicate<UIPluginConfiguration>> IS_APPLICABLE_ON = pApplicationModes -> pConfiguration ->
+        (pApplicationModes == null) || pConfiguration.getPluginDefinition()
+                                                     .getApplicationModes()
+                                                     .containsAll(pApplicationModes);
 
     private final IUIPluginDefinitionRepository pluginRepository;
 
@@ -100,8 +103,11 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
      * @param pPublisher
      */
     public UIPluginConfigurationService(IUIPluginDefinitionRepository pluginRepository,
-            ILinkUIPluginsDatasetsRepository linkedUiPluginRespository, IUIPluginConfigurationRepository repository,
-            IPublisher publisher, CacheableRolesClient rolesClient, IAuthenticationResolver authResolver) {
+                                        ILinkUIPluginsDatasetsRepository linkedUiPluginRespository,
+                                        IUIPluginConfigurationRepository repository,
+                                        IPublisher publisher,
+                                        CacheableRolesClient rolesClient,
+                                        IAuthenticationResolver authResolver) {
         super();
         this.pluginRepository = pluginRepository;
         this.linkedUiPluginRespository = linkedUiPluginRespository;
@@ -113,13 +119,16 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
 
     @Override
     public Page<UIPluginConfiguration> retrievePluginConfigurations(final UIPluginTypesEnum pPluginType,
-            final Boolean pIsActive, final Boolean pIsLinkedToAllEntities, final Pageable pPageable) {
+                                                                    final Boolean pIsActive,
+                                                                    final Boolean pIsLinkedToAllEntities,
+                                                                    final Pageable pPageable) {
         if ((pPluginType == null) && (pIsActive == null) && (pIsLinkedToAllEntities == null)) {
             return repository.findAll(pPageable);
         } else {
             if (pPluginType != null) {
                 if ((pIsActive != null) && (pIsLinkedToAllEntities != null)) {
-                    return repository.findByPluginDefinitionTypeAndActiveAndLinkedToAllEntities(pPluginType, pIsActive,
+                    return repository.findByPluginDefinitionTypeAndActiveAndLinkedToAllEntities(pPluginType,
+                                                                                                pIsActive,
                                                                                                 pIsLinkedToAllEntities,
                                                                                                 pPageable);
                 } else if (pIsActive != null) {
@@ -139,8 +148,9 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
 
     @Override
     public Page<UIPluginConfiguration> retrievePluginConfigurations(final UIPluginDefinition pPluginDefinition,
-            final Boolean pIsActive, final Boolean pIsLinkedToAllEntities, final Pageable pPageable)
-            throws EntityException {
+                                                                    final Boolean pIsActive,
+                                                                    final Boolean pIsLinkedToAllEntities,
+                                                                    final Pageable pPageable) throws EntityException {
         if ((pPluginDefinition == null) || (pPluginDefinition.getId() == null)) {
             throw new EntityInvalidException("Plugin Identifier cannot be null");
         }
@@ -154,7 +164,7 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
 
     @Override
     public UIPluginConfiguration retrievePluginconfiguration(final Long pPluginConfigurationId)
-            throws EntityInvalidException {
+        throws EntityInvalidException {
         if (pPluginConfigurationId == null) {
             throw new EntityInvalidException("Plugin Identifier cannot be null");
         }
@@ -164,7 +174,7 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
 
     @Override
     public UIPluginConfiguration updatePluginconfiguration(final UIPluginConfiguration pPluginConfiguration)
-            throws EntityException {
+        throws EntityException {
         if ((pPluginConfiguration == null) || (pPluginConfiguration.getId() == null)) {
             throw new EntityInvalidException("PluginConfiguration Identifier cannot be null");
         }
@@ -188,7 +198,7 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
 
     @Override
     public UIPluginConfiguration createPluginconfiguration(final UIPluginConfiguration pPluginConfiguration)
-            throws EntityException {
+        throws EntityException {
         if ((pPluginConfiguration == null) || (pPluginConfiguration.getId() != null)) {
             throw new EntityInvalidException("PluginConfiguration is invalid");
         }
@@ -217,8 +227,8 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
         }
 
         // Remove the config from the links
-        try (Stream<LinkUIPluginsDatasets> links = linkedUiPluginRespository
-                .findAllByServicesContaining(pPluginConfiguration)) {
+        try (Stream<LinkUIPluginsDatasets> links = linkedUiPluginRespository.findAllByServicesContaining(
+            pPluginConfiguration)) {
             links.peek(link -> link.getServices().remove(pPluginConfiguration)).forEach(link -> {
                 if (link.getServices().isEmpty()) {
                     linkedUiPluginRespository.delete(link);
@@ -235,13 +245,13 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
 
     @Override
     public List<UIPluginConfiguration> retrieveActivePluginServices(final String pDatasetId,
-            List<ServiceScope> pApplicationModes) {
+                                                                    List<ServiceScope> pApplicationModes) {
         return retrieveActivePluginServices(Lists.newArrayList(pDatasetId), pApplicationModes);
     }
 
     @Override
     public List<UIPluginConfiguration> retrieveActivePluginServices(List<String> pDatasetIds,
-            List<ServiceScope> pApplicationModes) {
+                                                                    List<ServiceScope> pApplicationModes) {
         final Set<UIPluginConfiguration> activePluginsConfigurations = Sets.newHashSet();
         if ((pDatasetIds != null) && !pDatasetIds.isEmpty()) {
             final List<LinkUIPluginsDatasets> links = linkedUiPluginRespository.findByDatasetIdIn(pDatasetIds);
@@ -249,8 +259,10 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
         }
 
         // Retrieve plugins linked to all dataset
-        final List<UIPluginConfiguration> linkedToAllDataset = repository
-                .findByActiveAndLinkedToAllEntitiesAndPluginDefinitionType(true, true, UIPluginTypesEnum.SERVICE);
+        final List<UIPluginConfiguration> linkedToAllDataset = repository.findByActiveAndLinkedToAllEntitiesAndPluginDefinitionType(
+            true,
+            true,
+            UIPluginTypesEnum.SERVICE);
         if (linkedToAllDataset != null) {
             linkedToAllDataset.forEach(pluginConf -> {
                 if (!activePluginsConfigurations.contains(pluginConf)) {
@@ -260,28 +272,33 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
         }
         try (Stream<UIPluginConfiguration> stream = activePluginsConfigurations.stream()) {
             return stream.filter(IS_APPLICABLE_ON.apply(pApplicationModes))
-                    // Apply UIPlugin authorization
-                    .filter(uiPluginConfiguration -> {
-                        boolean usableByCurrentUser = false;
-                        String roleName = uiPluginConfiguration.getPluginDefinition().getRoleName();
-                        String userRoleName = authResolver.getRole();
-                        if ((roleName == null) || userRoleName.equals(roleName)) {
-                            usableByCurrentUser = true;
-                        } else {
-                            try {
-                                usableByCurrentUser = rolesClient.shouldAccessToResourceRequiring(roleName).getBody();
-                            } catch (EntityNotFoundException e) {
-                                LOGGER.error("Failed to retrieve role authorisation. UIPluginDefinition role {} and UIPluginConf id {}",
-                                             roleName, uiPluginConfiguration.getId(), e);
-                            }
-                        }
-                        return usableByCurrentUser;
-                    }).collect(Collectors.toList());
+                         // Apply UIPlugin authorization
+                         .filter(uiPluginConfiguration -> {
+                             boolean usableByCurrentUser = false;
+                             String roleName = uiPluginConfiguration.getPluginDefinition().getRoleName();
+                             String userRoleName = authResolver.getRole();
+                             if ((roleName == null) || userRoleName.equals(roleName)) {
+                                 usableByCurrentUser = true;
+                             } else {
+                                 try {
+                                     usableByCurrentUser = rolesClient.shouldAccessToResourceRequiring(roleName)
+                                                                      .getBody();
+                                 } catch (EntityNotFoundException e) {
+                                     LOGGER.error(
+                                         "Failed to retrieve role authorisation. UIPluginDefinition role {} and UIPluginConf id {}",
+                                         roleName,
+                                         uiPluginConfiguration.getId(),
+                                         e);
+                                 }
+                             }
+                             return usableByCurrentUser;
+                         }).collect(Collectors.toList());
         }
     }
 
     /**
      * Retrieve unqi services from given {@link LinkUIPluginsDatasets}s
+     *
      * @param links
      * @return {@link UIPluginConfiguration}s
      */

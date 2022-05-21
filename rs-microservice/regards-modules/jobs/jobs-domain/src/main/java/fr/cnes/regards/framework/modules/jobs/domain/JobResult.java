@@ -18,17 +18,17 @@
  */
 package fr.cnes.regards.framework.modules.jobs.domain;
 
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+import org.hibernate.annotations.Type;
+
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.hibernate.annotations.Type;
-
-import fr.cnes.regards.framework.utils.RsRuntimeException;
-
 /**
  * Job result
+ *
  * @author Léo Mieulet
  * @author oroussel
  */
@@ -57,8 +57,9 @@ public class JobResult {
 
     /**
      * Constructor with the attributes
+     *
      * @param mimeType the uri's MimeType
-     * @param uri the uri's URI
+     * @param uri      the uri's URI
      */
     public JobResult(String mimeType, URI uri) {
         super();

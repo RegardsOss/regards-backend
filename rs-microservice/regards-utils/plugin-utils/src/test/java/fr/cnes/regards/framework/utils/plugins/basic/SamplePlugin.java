@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.framework.utils.plugins.basic;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * SamplePlugin
@@ -31,8 +30,8 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
  * @author Christophe Mertz
  */
 @Plugin(description = "Sample plugin test", markdown = "suffix.md", userMarkdown = "suffixUser.md",
-        id = "aSamplePlugin", version = "0.0.1", author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3",
-        owner = "CSSI", url = "https://github.com/RegardsOss")
+    id = "aSamplePlugin", version = "0.0.1", author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3",
+    owner = "CSSI", url = "https://github.com/RegardsOss")
 public class SamplePlugin implements ISamplePlugin {
 
     public static final String FIELD_NAME_SUFFIX = "suffix";
@@ -52,7 +51,7 @@ public class SamplePlugin implements ISamplePlugin {
      * A {@link String} parameter
      */
     @PluginParameter(description = "short description, see markdown for detailed description", markdown = "suffix.md",
-            label = "Suffix")
+        label = "Suffix")
     private String suffix;
 
     /**
@@ -91,8 +90,9 @@ public class SamplePlugin implements ISamplePlugin {
      */
     @PluginInit
     private void aInit() {
-        LOGGER.info("Init method call : " + this.getClass().getName() + "suffixe:" + suffix + "|active:" + isActive
-                            + "|coeff:" + coef);
+        LOGGER.info(
+            "Init method call : " + this.getClass().getName() + "suffixe:" + suffix + "|active:" + isActive + "|coeff:"
+                + coef);
     }
 
 }

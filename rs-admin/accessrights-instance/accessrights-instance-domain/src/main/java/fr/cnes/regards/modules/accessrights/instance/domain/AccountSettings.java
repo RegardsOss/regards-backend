@@ -14,19 +14,15 @@ public final class AccountSettings {
 
     public static final ValidationMode DEFAULT_VALIDATION_MODE = ValidationMode.AUTO_ACCEPT;
 
-    public static final DynamicTenantSetting VALIDATION_SETTING = new DynamicTenantSetting(
-            VALIDATION,
-            "Accept Mode",
-            DEFAULT_VALIDATION_MODE.getName()
-    );
-    public static final List<DynamicTenantSetting> SETTING_LIST = Collections.singletonList(
-            VALIDATION_SETTING
-    );
+    public static final DynamicTenantSetting VALIDATION_SETTING = new DynamicTenantSetting(VALIDATION,
+                                                                                           "Accept Mode",
+                                                                                           DEFAULT_VALIDATION_MODE.getName());
+
+    public static final List<DynamicTenantSetting> SETTING_LIST = Collections.singletonList(VALIDATION_SETTING);
 
     public enum ValidationMode {
 
-        MANUAL("manual"),
-        AUTO_ACCEPT("auto-accept");
+        MANUAL("manual"), AUTO_ACCEPT("auto-accept");
 
         private final String name;
 

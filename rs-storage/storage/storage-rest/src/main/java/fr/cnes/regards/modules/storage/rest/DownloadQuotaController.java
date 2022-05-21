@@ -22,7 +22,6 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.storage.service.file.download.IQuotaService;
@@ -71,27 +70,24 @@ public class DownloadQuotaController {
     @GetMapping(path = PATH_USER_QUOTA)
     @ResponseBody
     @ResourceAccess(description = "Get user download quota limits.", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits(
-        @PathVariable(USER_EMAIL_PARAM) String userEmail
-    ) {
+    public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits(@PathVariable(USER_EMAIL_PARAM) String userEmail) {
         return quotaService.getDownloadQuotaLimits(userEmail)
-            .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
-            .get();
+                           .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
+                           .get();
     }
 
     @PutMapping(path = PATH_USER_QUOTA)
     @ResponseBody
     @ResourceAccess(description = "Update user download quota limits.", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(
-        @PathVariable(USER_EMAIL_PARAM) String userEmail,
-        @Valid @RequestBody DownloadQuotaLimitsDto quotaLimits
-    ) {
+    public ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(@PathVariable(USER_EMAIL_PARAM) String userEmail,
+                                                                    @Valid @RequestBody
+                                                                    DownloadQuotaLimitsDto quotaLimits) {
         if (!Objects.equals(userEmail, quotaLimits.getEmail())) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         return quotaService.upsertDownloadQuotaLimits(quotaLimits)
-            .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
-            .get();
+                           .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
+                           .get();
     }
 
     @GetMapping(path = PATH_QUOTA)
@@ -99,47 +95,39 @@ public class DownloadQuotaController {
     @ResourceAccess(description = "Get current user download quota limits.", role = DefaultRole.PUBLIC)
     public ResponseEntity<DownloadQuotaLimitsDto> getQuotaLimits() {
         return quotaService.getDownloadQuotaLimits(authResolver.getUser())
-            .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
-            .get();
+                           .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
+                           .get();
     }
 
     @GetMapping(path = PATH_QUOTA_LIST)
     @ResponseBody
     @ResourceAccess(description = "Get download quota limits for the specified users.", role = DefaultRole.PUBLIC)
-    public ResponseEntity<List<DownloadQuotaLimitsDto>> getQuotaLimits(@RequestParam(value = USER_EMAIL_PARAM) String[] userEmails) {
+    public ResponseEntity<List<DownloadQuotaLimitsDto>> getQuotaLimits(
+        @RequestParam(value = USER_EMAIL_PARAM) String[] userEmails) {
         return quotaService.getDownloadQuotaLimits(userEmails)
-            .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
-            .get();
+                           .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
+                           .get();
     }
 
     @GetMapping(path = PATH_CURRENT_QUOTA)
     @ResponseBody
     @ResourceAccess(description = "Get current download quota values for current user.", role = DefaultRole.PUBLIC)
     public ResponseEntity<UserCurrentQuotas> getCurrentQuotas() {
-        return new ResponseEntity<>(
-            quotaService.getCurrentQuotas(authResolver.getUser()),
-            HttpStatus.OK
-        );
+        return new ResponseEntity<>(quotaService.getCurrentQuotas(authResolver.getUser()), HttpStatus.OK);
     }
 
     @GetMapping(path = PATH_USER_CURRENT_QUOTA)
     @ResponseBody
     @ResourceAccess(description = "Get user download quota limits.", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas(
-        @PathVariable(USER_EMAIL_PARAM) String userEmail
-    ) {
-        return new ResponseEntity<>(
-            quotaService.getCurrentQuotas(userEmail),
-            HttpStatus.OK
-        );
+    public ResponseEntity<UserCurrentQuotas> getCurrentQuotas(@PathVariable(USER_EMAIL_PARAM) String userEmail) {
+        return new ResponseEntity<>(quotaService.getCurrentQuotas(userEmail), HttpStatus.OK);
     }
 
     @PostMapping(path = PATH_CURRENT_QUOTA_LIST)
     @ResponseBody
-    @ResourceAccess(description = "Get current download quota values for the specified users.", role = DefaultRole.ADMIN)
+    @ResourceAccess(description = "Get current download quota values for the specified users.",
+        role = DefaultRole.ADMIN)
     public ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(@Valid @RequestBody String[] userEmails) {
-        return quotaService.getCurrentQuotas(userEmails)
-            .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
-            .get();
+        return quotaService.getCurrentQuotas(userEmails).map(dto -> new ResponseEntity<>(dto, HttpStatus.OK)).get();
     }
 }

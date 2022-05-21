@@ -18,23 +18,12 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.update;
 
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.persistence.DiscriminatorColumn;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
-
-import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 
 /**
  * @author Léo Mieulet
@@ -85,23 +74,28 @@ public abstract class AbstractAIPUpdateTask {
     public static List<AbstractAIPUpdateTask> build(AIPUpdateParametersDto updateTaskDto) {
         List<AbstractAIPUpdateTask> result = new ArrayList<>();
         if (!updateTaskDto.getAddCategories().isEmpty()) {
-            result.add(AIPUpdateCategoryTask.build(AIPUpdateTaskType.ADD_CATEGORY, AIPUpdateState.READY,
+            result.add(AIPUpdateCategoryTask.build(AIPUpdateTaskType.ADD_CATEGORY,
+                                                   AIPUpdateState.READY,
                                                    updateTaskDto.getAddCategories()));
         }
         if (!updateTaskDto.getRemoveCategories().isEmpty()) {
-            result.add(AIPUpdateCategoryTask.build(AIPUpdateTaskType.REMOVE_CATEGORY, AIPUpdateState.READY,
+            result.add(AIPUpdateCategoryTask.build(AIPUpdateTaskType.REMOVE_CATEGORY,
+                                                   AIPUpdateState.READY,
                                                    updateTaskDto.getRemoveCategories()));
         }
         if (!updateTaskDto.getAddTags().isEmpty()) {
-            result.add(AIPUpdateTagTask.build(AIPUpdateTaskType.ADD_TAG, AIPUpdateState.READY,
+            result.add(AIPUpdateTagTask.build(AIPUpdateTaskType.ADD_TAG,
+                                              AIPUpdateState.READY,
                                               updateTaskDto.getAddTags()));
         }
         if (!updateTaskDto.getRemoveTags().isEmpty()) {
-            result.add(AIPUpdateTagTask.build(AIPUpdateTaskType.REMOVE_TAG, AIPUpdateState.READY,
+            result.add(AIPUpdateTagTask.build(AIPUpdateTaskType.REMOVE_TAG,
+                                              AIPUpdateState.READY,
                                               updateTaskDto.getRemoveTags()));
         }
         if (!updateTaskDto.getRemoveStorages().isEmpty()) {
-            result.add(AIPRemoveStorageTask.build(AIPUpdateTaskType.REMOVE_STORAGE, AIPUpdateState.READY,
+            result.add(AIPRemoveStorageTask.build(AIPUpdateTaskType.REMOVE_STORAGE,
+                                                  AIPUpdateState.READY,
                                                   updateTaskDto.getRemoveStorages()));
         }
         return result;

@@ -157,7 +157,10 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to retrieve all user on a project.")
     public void getAllUsers() {
-        performDefaultPost(ProjectUsersController.TYPE_MAPPING + ProjectUsersController.SEARCH_USERS, new ProjectUserSearchParameters(), customizer().expectStatusOk(), ERROR_MESSAGE);
+        performDefaultPost(ProjectUsersController.TYPE_MAPPING + ProjectUsersController.SEARCH_USERS,
+                           new ProjectUserSearchParameters(),
+                           customizer().expectStatusOk(),
+                           ERROR_MESSAGE);
     }
 
     @Test
@@ -368,8 +371,8 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         // When
         String path = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.EXPORT;
         RequestBuilderCustomizer customizer = customizer().expectStatusOk()
-            .addHeader(HttpConstants.CONTENT_TYPE, "application/json")
-            .addHeader(HttpConstants.ACCEPT, "text/csv");
+                                                          .addHeader(HttpConstants.CONTENT_TYPE, "application/json")
+                                                          .addHeader(HttpConstants.ACCEPT, "text/csv");
         ResultActions results = performDefaultGet(path, customizer, "error");
         String content = results.andReturn().getResponse().getContentAsString();
 

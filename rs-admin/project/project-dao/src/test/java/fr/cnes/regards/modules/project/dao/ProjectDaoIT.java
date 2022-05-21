@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.modules.project.dao;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.project.domain.Project;
+import fr.cnes.regards.modules.project.domain.ProjectConnection;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,20 +34,16 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.project.domain.ProjectConnection;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- *
  * Class ProjectDaoTest
- *
+ * <p>
  * Test class for DAO of project module
  *
  * @author CS
  * @author Xavier-Alexandre Brochard
-
  */
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -126,35 +123,39 @@ public class ProjectDaoIT {
         projectConnectionRepository.deleteAll();
         projectRepository.deleteAll();
 
-        Project project1=new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, COMMON_PROJECT_NAME_1);
+        Project project1 = new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, COMMON_PROJECT_NAME_1);
         project1.setLabel("project1");
-        Project project2=new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, COMMON_PROJECT_NAME_2);
+        Project project2 = new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, COMMON_PROJECT_NAME_2);
         project2.setLabel("project2");
         // Create a new projects
-        project = projectRepository
-                .save(project1);
-        projectRepository
-                .save(project2);
+        project = projectRepository.save(project1);
+        projectRepository.save(project2);
 
         // Check results
         final Iterable<Project> projects = projectRepository.findAll();
         final List<Project> results = new ArrayList<>();
         projects.forEach(results::add);
-        Assert.assertEquals(String.format("There must be 2 projects in database not %d", results.size()), 2,
+        Assert.assertEquals(String.format("There must be 2 projects in database not %d", results.size()),
+                            2,
                             results.size());
 
         // Create new projects connections
-        projectConnectionRepository.save(new ProjectConnection(project, MICROSERVICE_1, COMMON_PROJECT_USER_NAME,
-                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, COMMON_PROJECT_URL));
-        projectConnectionRepository.save(new ProjectConnection(project, MICROSERVICE_2, COMMON_PROJECT_USER_NAME,
-                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, COMMON_PROJECT_URL));
+        projectConnectionRepository.save(new ProjectConnection(project,
+                                                               MICROSERVICE_1,
+                                                               COMMON_PROJECT_USER_NAME,
+                                                               COMMON_PROJECT_USER_PWD,
+                                                               COMMON_PROJECT_DRIVER,
+                                                               COMMON_PROJECT_URL));
+        projectConnectionRepository.save(new ProjectConnection(project,
+                                                               MICROSERVICE_2,
+                                                               COMMON_PROJECT_USER_NAME,
+                                                               COMMON_PROJECT_USER_PWD,
+                                                               COMMON_PROJECT_DRIVER,
+                                                               COMMON_PROJECT_URL));
     }
 
     /**
-     *
      * Test to create and retrieve projects connections in instance database
-     *
-
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Test to create and retrieve projects connections in instance database.")
@@ -165,20 +166,20 @@ public class ProjectDaoIT {
         final Iterable<ProjectConnection> connections = projectConnectionRepository.findAll();
         final List<ProjectConnection> cresults = new ArrayList<>();
         connections.forEach(cresults::add);
-        Assert.assertEquals(String.format("There must be 2 project connection in database not %d", cresults.size()), 2,
+        Assert.assertEquals(String.format("There must be 2 project connection in database not %d", cresults.size()),
+                            2,
                             cresults.size());
-        final ProjectConnection conn = projectConnectionRepository
-                .findOneByProjectNameAndMicroservice(project.getName(), MICROSERVICE_1);
+        final ProjectConnection conn = projectConnectionRepository.findOneByProjectNameAndMicroservice(project.getName(),
+                                                                                                       MICROSERVICE_1);
         final String errorMessage = "Error retreiving project connection for project name %s and microservice %s";
         Assert.assertNotNull(String.format(errorMessage, project.getName(), MICROSERVICE_1), conn);
         Assert.assertEquals("Error retreiving project connection for project name %s and microservice %s.",
-                            conn.getMicroservice(), MICROSERVICE_1);
+                            conn.getMicroservice(),
+                            MICROSERVICE_1);
     }
 
     /**
      * Test to retrieve projects connections of given project's name in instance database.
-     *
-
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose(" Test to retrieve projects connections of given project's name in instance database.")

@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.order.dao;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 
 /**
  * Specific OrderDataFile repository methods
+ *
  * @author oroussel
  */
 @Repository
@@ -58,8 +59,9 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
 
     List<OrderDataFile> findAllByOrderId(Long orderId);
 
-    Optional<OrderDataFile> findFirstByChecksumAndIpIdAndOrderId(String checksum, UniformResourceName aipId,
-            Long orderId);
+    Optional<OrderDataFile> findFirstByChecksumAndIpIdAndOrderId(String checksum,
+                                                                 UniformResourceName aipId,
+                                                                 Long orderId);
 
     /**
      * Return a list of { Order, sum of file size (Long) } for not finished orders whom expiration date is after the one
@@ -72,6 +74,7 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
     /**
      * Return a list of { Order, sum of file size (Long) } for notfinished orders whom expiration date is after the one
      * provided and whom files state is one of provided ones
+     *
      * @param states must not be null nor empty !!!!
      */
     @Query(name = "selectSumSizesByOrderIdAndStates") // Query is defined on OrderDataFile class
@@ -79,60 +82,63 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
     List<Object[]> selectSumSizesByOrderIdAndStates(OffsetDateTime limitDate, Collection<String> states);
 
     default List<Object[]> selectSumSizesByOrderIdAndStates(OffsetDateTime limitDate, FileState... states) {
-        return selectSumSizesByOrderIdAndStates(limitDate, Arrays.asList(states).stream().map(FileState::toString)
-                .collect(Collectors.toList()));
+        return selectSumSizesByOrderIdAndStates(limitDate,
+                                                Arrays.asList(states)
+                                                      .stream()
+                                                      .map(FileState::toString)
+                                                      .collect(Collectors.toList()));
     }
 
     /**
      * Return a list of { Order, file count (Long) } for not finished orders whom expiration date is after the one
      * provided and whom files state is one of provided ones
+     *
      * @param states must not be null nor empty !!!!
      */
     @Query(name = "selectCountFilesByOrderIdAndStates") // Query is defined on OrderDataFile class
-    @Converts({ @Convert(converter = OffsetDateTimeAttributeConverter.class),
-            @Convert(converter = FileStateConverter.class), @Convert(converter = FileStateCollectionConverter.class) })
+    @Converts(
+        { @Convert(converter = OffsetDateTimeAttributeConverter.class), @Convert(converter = FileStateConverter.class),
+            @Convert(converter = FileStateCollectionConverter.class) })
     List<Object[]> selectCountFilesByOrderIdAndStates(OffsetDateTime limitDate, Collection<String> states);
 
     default List<Object[]> selectCountFilesByOrderIdAndStates(OffsetDateTime limitDate, FileState... states) {
-        return selectCountFilesByOrderIdAndStates(limitDate, Arrays.asList(states).stream().map(FileState::toString)
-                .collect(Collectors.toList()));
+        return selectCountFilesByOrderIdAndStates(limitDate,
+                                                  Arrays.asList(states)
+                                                        .stream()
+                                                        .map(FileState::toString)
+                                                        .collect(Collectors.toList()));
     }
 
     /**
      * Return a list of { Order, file count (Long) } for all orders and whom expiration date is after the one provided
      * and whom files state is one of provided ones
+     *
      * @param states must not be null nor empty !!!!
      */
     @Query(name = "selectCountFilesByOrderIdAndStates4AllOrders") // Query is defined on OrderDataFile class
-    @Converts({ @Convert(converter = OffsetDateTimeAttributeConverter.class),
-            @Convert(converter = FileStateConverter.class), @Convert(converter = FileStateCollectionConverter.class) })
+    @Converts(
+        { @Convert(converter = OffsetDateTimeAttributeConverter.class), @Convert(converter = FileStateConverter.class),
+            @Convert(converter = FileStateCollectionConverter.class) })
     List<Object[]> selectCountFilesByOrderIdAndStates4AllOrders(OffsetDateTime limitDate, Collection<String> states);
 
     default List<Object[]> selectCountFilesByOrderIdAndStates4AllOrders(OffsetDateTime limitDate, FileState... states) {
-        return selectCountFilesByOrderIdAndStates4AllOrders(limitDate, Arrays.asList(states).stream()
-                .map(FileState::toString).collect(Collectors.toList()));
+        return selectCountFilesByOrderIdAndStates4AllOrders(limitDate,
+                                                            Arrays.asList(states)
+                                                                  .stream()
+                                                                  .map(FileState::toString)
+                                                                  .collect(Collectors.toList()));
     }
 
     @Modifying
     void deleteByOrderId(Long orderId);
 
-    @Query(value = "SELECT df.* " +
-            "FROM {h-schema}t_data_file df " +
-            "JOIN {h-schema}t_task t ON t.id = df.files_task_id " +
-            "JOIN {h-schema}t_dataset_task dt ON dt.id = t.parent_id " +
-            "WHERE dt.id = ?1 " +
-            "AND df.data_objects_ip_id IN " +
-            "(" +
-            "    SELECT df.data_objects_ip_id " +
-            "    FROM {h-schema}t_data_file df " +
-            "    JOIN {h-schema}t_task t ON t.id = df.files_task_id " +
-            "    JOIN {h-schema}t_dataset_task dt ON dt.id = t.parent_id " +
-            "    WHERE dt.id = ?1 " +
-            "    AND df.state IN ?2 " +
-            "    LIMIT ?3 " +
-            ") " +
-            "ORDER BY df.id",
-            nativeQuery = true)
+    @Query(value = "SELECT df.* " + "FROM {h-schema}t_data_file df "
+        + "JOIN {h-schema}t_task t ON t.id = df.files_task_id "
+        + "JOIN {h-schema}t_dataset_task dt ON dt.id = t.parent_id " + "WHERE dt.id = ?1 "
+        + "AND df.data_objects_ip_id IN " + "(" + "    SELECT df.data_objects_ip_id "
+        + "    FROM {h-schema}t_data_file df " + "    JOIN {h-schema}t_task t ON t.id = df.files_task_id "
+        + "    JOIN {h-schema}t_dataset_task dt ON dt.id = t.parent_id " + "    WHERE dt.id = ?1 "
+        + "    AND df.state IN ?2 " + "    LIMIT ?3 " + ") " + "ORDER BY df.id", nativeQuery = true)
     List<OrderDataFile> selectByDatasetTaskAndStateAndLimit(long datasetTaskId, List<String> states, int limit);
 
 }

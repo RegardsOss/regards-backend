@@ -36,9 +36,9 @@ import java.util.List;
  * @author Léo Mieulet
  */
 @Plugin(author = "REGARDS Team", description = "Recipient sender", id = RecipientSender.PLUGIN_ID, version = "1.0.0",
-        contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
+    contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
 public class RecipientSender implements fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier,
-        IHandler<RecipientSender.NotificationEvent> {
+    IHandler<RecipientSender.NotificationEvent> {
 
     public static final String PLUGIN_ID = "RecipientSender";
 

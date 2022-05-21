@@ -22,7 +22,6 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * @author Marc SORDI
- *
  */
 @Configuration
 public class NotificationTestConfiguration {

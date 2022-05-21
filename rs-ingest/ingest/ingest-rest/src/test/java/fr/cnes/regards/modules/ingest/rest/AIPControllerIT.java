@@ -75,14 +75,13 @@ import java.util.Set;
 import java.util.StringJoiner;
 
 /**
-* {@link AIPEntity} REST API testing
-*
-* @author Léo Mieulet
-*
-*/
+ * {@link AIPEntity} REST API testing
+ *
+ * @author Léo Mieulet
+ */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=aip_controller_it", "regards.amqp.enabled=true",
-                "regards.aips.save-metadata.bulk.delay=100", "regards.ingest.aip.delete.bulk.delay=100" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=aip_controller_it", "regards.amqp.enabled=true",
+        "regards.aips.save-metadata.bulk.delay=100", "regards.ingest.aip.delete.bulk.delay=100" })
 @ContextConfiguration(classes = { AIPControllerIT.Config.class })
 @ActiveProfiles(value = { "default", "test", "testAmqp", "StorageClientMock" }, inheritProfiles = false)
 public class AIPControllerIT extends AbstractRegardsTransactionalIT {
@@ -129,11 +128,15 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class), null, null));
     }
 
-    public void createAIP(String providerId, Set<String> categories, String sessionOwner, String session,
-            String storage) {
+    public void createAIP(String providerId,
+                          Set<String> categories,
+                          String sessionOwner,
+                          String session,
+                          String storage) {
         SIP sip = SIP.build(EntityType.DATA, providerId);
         sip.withDataObject(DataType.RAWDATA,
-                           Paths.get("src", "main", "test", "resources", "data", "cdpp_collection.json"), "MD5",
+                           Paths.get("src", "main", "test", "resources", "data", "cdpp_collection.json"),
+                           "MD5",
                            "azertyuiopqsdfmlmld");
         sip.withSyntax(MediaType.APPLICATION_JSON);
         sip.registerContentInformation();
@@ -142,8 +145,10 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         sip.withEvent(String.format("SIP %s generated", providerId));
 
         // Create event
-        IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner, session,
-                                                        IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, categories,
+        IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner,
+                                                        session,
+                                                        IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                                        categories,
                                                         StorageMetadata.build(storage));
 
         ingestServiceTest.sendIngestRequestEvent(sip, mtd);
@@ -151,7 +156,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_110"), @Requirement("REGARDS_DSL_STO_AIP_115"),
-            @Requirement("REGARDS_DSL_STO_AIP_120"), @Requirement("REGARDS_DSL_STO_AIP_560") })
+        @Requirement("REGARDS_DSL_STO_AIP_120"), @Requirement("REGARDS_DSL_STO_AIP_560") })
     @Purpose("Check that ingested AIPs are retrievable")
     public void searchAIPs() {
 
@@ -171,32 +176,42 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         // Add response body documentation
         requestBuilderCustomizer.documentResponseBody(documentResultingAIPEntity());
 
-        performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH, body, requestBuilderCustomizer,
+        performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH,
+                           body,
+                           requestBuilderCustomizer,
                            "Should retrieve AIPEntities");
 
         // Try a research with pagination and sort options
-        performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + "?page=0&size=20&sort=version,ASC", body,
-                           requestBuilderCustomizer, "Should retrieve AIPEntities");
+        performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + "?page=0&size=20&sort=version,ASC",
+                           body,
+                           requestBuilderCustomizer,
+                           "Should retrieve AIPEntities");
     }
 
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_150"), @Requirement("REGARDS_DSL_STO_AIP_160"),
-            @Requirement("REGARDS_DSL_STO_AIP_050") })
+        @Requirement("REGARDS_DSL_STO_AIP_050") })
     @Purpose("Retrieve AIPs thanks a providerId")
     public void testRetrieveAIPVersionHistory() {
         // Create AIP
-        createAIP("testRetrieveAIPVersionHistory", Sets.newHashSet("CAT 1", "CAT 2"), "ESA",
-                  OffsetDateTime.now().toString(), "NAS #1");
-        createAIP("testRetrieveAIPVersionHistory", Sets.newHashSet("CAT 3", "CAT 4"), "ESA",
-                  OffsetDateTime.now().toString(), "NAS #1");
+        createAIP("testRetrieveAIPVersionHistory",
+                  Sets.newHashSet("CAT 1", "CAT 2"),
+                  "ESA",
+                  OffsetDateTime.now().toString(),
+                  "NAS #1");
+        createAIP("testRetrieveAIPVersionHistory",
+                  Sets.newHashSet("CAT 3", "CAT 4"),
+                  "ESA",
+                  OffsetDateTime.now().toString(),
+                  "NAS #1");
 
         // Wait for ingestion finished
         ingestServiceTest.waitForIngestion(2, 10000, SIPState.STORED);
         ingestServiceTest.waitAllRequestsFinished(10000);
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         requestBuilderCustomizer.expectToHaveSize("$.content", 2);
-        requestBuilderCustomizer
-                .expectIsNotEmpty("$.content[0].content.aip.properties.pdi.provenanceInformation.history");
+        requestBuilderCustomizer.expectIsNotEmpty(
+            "$.content[0].content.aip.properties.pdi.provenanceInformation.history");
 
         SearchAIPsParameters body = SearchAIPsParameters.build().withProviderIds("testRetrieveAIPVersionHistory");
 
@@ -205,7 +220,9 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         // Add response body documentation
         requestBuilderCustomizer.documentResponseBody(documentResultingAIPEntity());
 
-        performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH, body, requestBuilderCustomizer,
+        performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH,
+                           body,
+                           requestBuilderCustomizer,
                            "Should retrieve AIPEntities");
     }
 
@@ -230,11 +247,14 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         fields.add(new ConstrainedFields(List.class).withPath("[]", "List of tags").type(JSON_ARRAY_TYPE));
         requestBuilderCustomizer.documentResponseBody(fields);
 
-        SearchFacetsAIPsParameters body = SearchFacetsAIPsParameters.build().withSessionOwner(sessionOwner)
-                .withSession(session);
+        SearchFacetsAIPsParameters body = SearchFacetsAIPsParameters.build()
+                                                                    .withSessionOwner(sessionOwner)
+                                                                    .withSession(session);
 
-        performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.TAG_SEARCH_PATH, body,
-                           requestBuilderCustomizer, "Should retrieve AIP tags");
+        performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.TAG_SEARCH_PATH,
+                           body,
+                           requestBuilderCustomizer,
+                           "Should retrieve AIP tags");
     }
 
     @Test
@@ -258,11 +278,14 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         fields.add(new ConstrainedFields(List.class).withPath("[]", "List of categories").type(JSON_ARRAY_TYPE));
         requestBuilderCustomizer.documentResponseBody(fields);
 
-        SearchFacetsAIPsParameters body = SearchFacetsAIPsParameters.build().withSessionOwner(sessionOwner)
-                .withSession(session);
+        SearchFacetsAIPsParameters body = SearchFacetsAIPsParameters.build()
+                                                                    .withSessionOwner(sessionOwner)
+                                                                    .withSession(session);
 
-        performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.CATEGORIES_SEARCH_PATH, body,
-                           requestBuilderCustomizer, "Should retrieve AIP categories");
+        performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.CATEGORIES_SEARCH_PATH,
+                           body,
+                           requestBuilderCustomizer,
+                           "Should retrieve AIP categories");
     }
 
     @Test
@@ -284,14 +307,17 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         // Add response documentation
         List<FieldDescriptor> fields = new ArrayList<>();
         fields.add(new ConstrainedFields(List.class).withPath("[]", "List of storages location (plugin business id)")
-                .type(JSON_ARRAY_TYPE));
+                                                    .type(JSON_ARRAY_TYPE));
         requestBuilderCustomizer.documentResponseBody(fields);
 
-        SearchFacetsAIPsParameters body = SearchFacetsAIPsParameters.build().withSessionOwner(sessionOwner)
-                .withSession(session);
+        SearchFacetsAIPsParameters body = SearchFacetsAIPsParameters.build()
+                                                                    .withSessionOwner(sessionOwner)
+                                                                    .withSession(session);
 
-        performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.STORAGE_SEARCH_PATH, body,
-                           requestBuilderCustomizer, "Should retrieve AIP storages");
+        performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.STORAGE_SEARCH_PATH,
+                           body,
+                           requestBuilderCustomizer,
+                           "Should retrieve AIP storages");
     }
 
     @Test
@@ -309,12 +335,19 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         // Add request parameters documentation
         requestBuilderCustomizer.documentRequestBody(documentUpdateAIPRequestParameters());
 
-        AIPUpdateParametersDto body = AIPUpdateParametersDto
-                .build(SearchAIPsParameters.build().withSessionOwner(sessionOwner).withSession(session), null, null,
-                       null, Lists.newArrayList("CAT 1"), null);
+        AIPUpdateParametersDto body = AIPUpdateParametersDto.build(SearchAIPsParameters.build()
+                                                                                       .withSessionOwner(sessionOwner)
+                                                                                       .withSession(session),
+                                                                   null,
+                                                                   null,
+                                                                   null,
+                                                                   Lists.newArrayList("CAT 1"),
+                                                                   null);
 
-        performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.AIP_UPDATE_PATH, body,
-                           requestBuilderCustomizer, "Should schedule AIP update");
+        performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.AIP_UPDATE_PATH,
+                           body,
+                           requestBuilderCustomizer,
+                           "Should schedule AIP update");
     }
 
     @Test
@@ -333,10 +366,14 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.documentRequestBody(documentDeleteAIPRequestParameters());
 
         OAISDeletionPayloadDto body = OAISDeletionPayloadDto.build(SessionDeletionMode.IRREVOCABLY)
-                .withSessionOwner(sessionOwner).withSession(session).withCategory("CAT 1");
+                                                            .withSessionOwner(sessionOwner)
+                                                            .withSession(session)
+                                                            .withCategory("CAT 1");
 
-        performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.OAIS_DELETE_PATH, body,
-                           requestBuilderCustomizer, "Should schedule AIP deletion");
+        performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH + AIPController.OAIS_DELETE_PATH,
+                           body,
+                           requestBuilderCustomizer,
+                           "Should schedule AIP deletion");
     }
 
     private List<FieldDescriptor> documentDeleteAIPRequestParameters() {
@@ -347,10 +384,13 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         for (SessionDeletionMode mode : SessionDeletionMode.values()) {
             joiner.add(mode.name());
         }
-        params.add(constrainedFields.withPath("deletionMode", "deletionMode", "Type of deletion").type(JSON_STRING_TYPE)
-                .optional().attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                        .value("Optional. Allowed values : " + joiner.toString())));
+        params.add(constrainedFields.withPath("deletionMode", "deletionMode", "Type of deletion")
+                                    .type(JSON_STRING_TYPE)
+                                    .optional()
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(JSON_STRING_TYPE))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value("Optional. Allowed values : " + joiner.toString())));
 
         params.addAll(getSearchBodyDescriptors(""));
         return params;
@@ -361,37 +401,55 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         ConstrainedFields constrainedFields = new ConstrainedFields(AIPUpdateParametersDto.class);
 
         String addTags = "addTags";
-        params.add(constrainedFields.withPath(addTags, addTags, "A list of tags every entity will have").optional()
-                .type(List.class.getSimpleName())
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName()))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional.")));
+        params.add(constrainedFields.withPath(addTags, addTags, "A list of tags every entity will have")
+                                    .optional()
+                                    .type(List.class.getSimpleName())
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(List.class.getSimpleName()))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value("Optional.")));
 
         String removeTags = "removeTags";
         params.add(constrainedFields.withPath(removeTags, removeTags, "A list of tags every entity won't have anymore")
-                .optional().type(List.class.getSimpleName())
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName()))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional.")));
+                                    .optional()
+                                    .type(List.class.getSimpleName())
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(List.class.getSimpleName()))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value("Optional.")));
 
         String addCategories = "addCategories";
-        params.add(constrainedFields
-                .withPath(addCategories, addCategories, "A list of categories every entity will have").optional()
-                .type(List.class.getSimpleName())
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName()))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional.")));
+        params.add(constrainedFields.withPath(addCategories,
+                                              addCategories,
+                                              "A list of categories every entity will have")
+                                    .optional()
+                                    .type(List.class.getSimpleName())
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(List.class.getSimpleName()))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value("Optional.")));
 
         String removeCategories = "removeCategories";
-        params.add(constrainedFields
-                .withPath(removeCategories, removeCategories, "A list of categories every entity won't have anymore")
-                .optional().type(List.class.getSimpleName())
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName()))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional.")));
+        params.add(constrainedFields.withPath(removeCategories,
+                                              removeCategories,
+                                              "A list of categories every entity won't have anymore")
+                                    .optional()
+                                    .type(List.class.getSimpleName())
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(List.class.getSimpleName()))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value("Optional.")));
 
         String removeStorages = "removeStorages";
-        params.add(constrainedFields
-                .withPath(removeStorages, removeStorages, "A list of storages every entity won't use anymore")
-                .optional().type(List.class.getSimpleName())
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName()))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional.")));
+        params.add(constrainedFields.withPath(removeStorages,
+                                              removeStorages,
+                                              "A list of storages every entity won't use anymore")
+                                    .optional()
+                                    .type(List.class.getSimpleName())
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(List.class.getSimpleName()))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value("Optional.")));
 
         params.addAll(getSearchBodyDescriptors("criteria."));
         return params;
@@ -411,101 +469,137 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         }
         ConstrainedFields constrainedFields = new ConstrainedFields(SearchAIPsParameters.class);
 
-        params.add(constrainedFields
-                .withPath(rootPath + AIPController.REQUEST_PARAM_STATE, AIPController.REQUEST_PARAM_STATE,
-                          "AIP Entity state filter")
-                .type(JSON_STRING_TYPE).optional()
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                        .value("Optional. Multiple values allowed. Allowed values : " + aipJoiner.toString())));
+        params.add(constrainedFields.withPath(rootPath + AIPController.REQUEST_PARAM_STATE,
+                                              AIPController.REQUEST_PARAM_STATE,
+                                              "AIP Entity state filter")
+                                    .type(JSON_STRING_TYPE)
+                                    .optional()
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(JSON_STRING_TYPE))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value("Optional. Multiple values allowed. Allowed values : "
+                                                                     + aipJoiner.toString())));
 
-        params.add(constrainedFields
-                .withPath(rootPath + AIPController.REQUEST_PARAM_FROM, AIPController.REQUEST_PARAM_FROM,
-                          "ISO Date time filtering on last update")
-                .optional().type(JSON_STRING_TYPE)
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
-                        .value(OffsetDateTime.class.getSimpleName()))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                        .value("Optional. Required format : yyyy-MM-dd'T'HH:mm:ss.SSSZ")));
+        params.add(constrainedFields.withPath(rootPath + AIPController.REQUEST_PARAM_FROM,
+                                              AIPController.REQUEST_PARAM_FROM,
+                                              "ISO Date time filtering on last update")
+                                    .optional()
+                                    .type(JSON_STRING_TYPE)
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(OffsetDateTime.class.getSimpleName()))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value(
+                                                              "Optional. Required format : yyyy-MM-dd'T'HH:mm:ss.SSSZ")));
 
-        params.add(constrainedFields
-                .withPath(rootPath + AIPController.REQUEST_PARAM_TO, AIPController.REQUEST_PARAM_TO,
-                          "ISO Date time filtering on last update")
-                .optional().type(JSON_STRING_TYPE)
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
-                        .value(OffsetDateTime.class.getSimpleName()))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                        .value("Optional. Required format : yyyy-MM-dd'T'HH:mm:ss.SSSZ")));
+        params.add(constrainedFields.withPath(rootPath + AIPController.REQUEST_PARAM_TO,
+                                              AIPController.REQUEST_PARAM_TO,
+                                              "ISO Date time filtering on last update")
+                                    .optional()
+                                    .type(JSON_STRING_TYPE)
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(OffsetDateTime.class.getSimpleName()))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value(
+                                                              "Optional. Required format : yyyy-MM-dd'T'HH:mm:ss.SSSZ")));
 
-        params.add(constrainedFields
-                .withPath(rootPath + AIPController.REQUEST_PARAM_TAGS, AIPController.REQUEST_PARAM_TAGS,
-                          "A list of tags every entity must have")
-                .optional().type(List.class.getSimpleName())
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName()))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional.")));
+        params.add(constrainedFields.withPath(rootPath + AIPController.REQUEST_PARAM_TAGS,
+                                              AIPController.REQUEST_PARAM_TAGS,
+                                              "A list of tags every entity must have")
+                                    .optional()
+                                    .type(List.class.getSimpleName())
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(List.class.getSimpleName()))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value("Optional.")));
 
-        params.add(constrainedFields
-                .withPath(rootPath + AIPController.REQUEST_PARAM_PROVIDER_ID, AIPController.REQUEST_PARAM_PROVIDER_ID,
-                          "A list of provider ids filter")
-                .optional().type(JSON_STRING_TYPE)
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                        .value("Optional. If you add the % character, we will use the like operator to match provider id")));
+        params.add(constrainedFields.withPath(rootPath + AIPController.REQUEST_PARAM_PROVIDER_ID,
+                                              AIPController.REQUEST_PARAM_PROVIDER_ID,
+                                              "A list of provider ids filter")
+                                    .optional()
+                                    .type(JSON_STRING_TYPE)
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(JSON_STRING_TYPE))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value(
+                                                              "Optional. If you add the % character, we will use the like operator to match provider id")));
 
-        params.add(constrainedFields
-                .withPath(rootPath + AIPController.REQUEST_PARAM_PROVIDER_ID, AIPController.REQUEST_PARAM_PROVIDER_ID,
-                          "A list of provider ids filter")
-                .optional().type(JSON_STRING_TYPE)
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                        .value("Optional. If you add the % character, we will use the like operator to match provider id")));
+        params.add(constrainedFields.withPath(rootPath + AIPController.REQUEST_PARAM_PROVIDER_ID,
+                                              AIPController.REQUEST_PARAM_PROVIDER_ID,
+                                              "A list of provider ids filter")
+                                    .optional()
+                                    .type(JSON_STRING_TYPE)
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(JSON_STRING_TYPE))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value(
+                                                              "Optional. If you add the % character, we will use the like operator to match provider id")));
 
-        params.add(constrainedFields
-                .withPath(rootPath + AIPController.REQUEST_PARAM_SESSION_OWNER,
-                          AIPController.REQUEST_PARAM_SESSION_OWNER, "Session owner filter")
-                .optional().type(JSON_STRING_TYPE)
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional.")));
+        params.add(constrainedFields.withPath(rootPath + AIPController.REQUEST_PARAM_SESSION_OWNER,
+                                              AIPController.REQUEST_PARAM_SESSION_OWNER,
+                                              "Session owner filter")
+                                    .optional()
+                                    .type(JSON_STRING_TYPE)
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(JSON_STRING_TYPE))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value("Optional.")));
 
-        params.add(constrainedFields
-                .withPath(rootPath + AIPController.REQUEST_PARAM_SESSION, AIPController.REQUEST_PARAM_SESSION,
-                          "Session filter")
-                .optional().type(JSON_STRING_TYPE)
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional.")));
+        params.add(constrainedFields.withPath(rootPath + AIPController.REQUEST_PARAM_SESSION,
+                                              AIPController.REQUEST_PARAM_SESSION,
+                                              "Session filter")
+                                    .optional()
+                                    .type(JSON_STRING_TYPE)
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(JSON_STRING_TYPE))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value("Optional.")));
 
-        params.add(constrainedFields
-                .withPath(rootPath + AIPController.REQUEST_PARAM_CATEGORIES, AIPController.REQUEST_PARAM_CATEGORIES,
-                          "A list of categories every entity must have")
-                .optional().type(List.class.getSimpleName())
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName()))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional.")));
+        params.add(constrainedFields.withPath(rootPath + AIPController.REQUEST_PARAM_CATEGORIES,
+                                              AIPController.REQUEST_PARAM_CATEGORIES,
+                                              "A list of categories every entity must have")
+                                    .optional()
+                                    .type(List.class.getSimpleName())
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(List.class.getSimpleName()))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value("Optional.")));
 
-        params.add(constrainedFields
-                .withPath(rootPath + AIPController.REQUEST_PARAM_STORAGES, AIPController.REQUEST_PARAM_STORAGES,
-                          "A list of storage names the entity must have, at least one")
-                .optional().type(List.class.getSimpleName())
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName()))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional.")));
+        params.add(constrainedFields.withPath(rootPath + AIPController.REQUEST_PARAM_STORAGES,
+                                              AIPController.REQUEST_PARAM_STORAGES,
+                                              "A list of storage names the entity must have, at least one")
+                                    .optional()
+                                    .type(List.class.getSimpleName())
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(List.class.getSimpleName()))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value("Optional.")));
 
-        params.add(constrainedFields
-                .withPath(rootPath + AIPController.REQUEST_PARAM_AIP_IDS, AIPController.REQUEST_PARAM_AIP_IDS,
-                          "A list of aip ids")
-                .optional().type(List.class.getSimpleName())
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName()))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional.")));
+        params.add(constrainedFields.withPath(rootPath + AIPController.REQUEST_PARAM_AIP_IDS,
+                                              AIPController.REQUEST_PARAM_AIP_IDS,
+                                              "A list of aip ids")
+                                    .optional()
+                                    .type(List.class.getSimpleName())
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(List.class.getSimpleName()))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value("Optional.")));
 
-        params.add(constrainedFields.withPath(rootPath + "last", "last", "is it the last version?").optional()
-                .type(JSON_BOOLEAN_TYPE)
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional.")));
+        params.add(constrainedFields.withPath(rootPath + "last", "last", "is it the last version?")
+                                    .optional()
+                                    .type(JSON_BOOLEAN_TYPE)
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value("Optional.")));
 
-        params.add(constrainedFields
-                .withPath(rootPath + AIPController.REQUEST_PARAM_STATE, AIPController.REQUEST_PARAM_STATE,
-                          "This attribute describe what the aipIds list mean.")
-                .type(JSON_STRING_TYPE).optional()
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                        .value("Optional. Allowed values : " + selectionModeJoiner.toString())));
+        params.add(constrainedFields.withPath(rootPath + AIPController.REQUEST_PARAM_STATE,
+                                              AIPController.REQUEST_PARAM_STATE,
+                                              "This attribute describe what the aipIds list mean.")
+                                    .type(JSON_STRING_TYPE)
+                                    .optional()
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(JSON_STRING_TYPE))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value("Optional. Allowed values : "
+                                                                     + selectionModeJoiner.toString())));
 
         return params;
     }
@@ -521,12 +615,13 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         for (AIPState state : AIPState.values()) {
             joiner.add(state.name());
         }
-        fields.add(constrainedFields
-                .withPath(prefix + "state", "state", "State", "Allowed values : " + joiner.toString())
-                .type(JSON_STRING_TYPE));
+        fields.add(constrainedFields.withPath(prefix + "state",
+                                              "state",
+                                              "State",
+                                              "Allowed values : " + joiner.toString()).type(JSON_STRING_TYPE));
 
         fields.add(constrainedFields.withPath(prefix + "providerId", "providerId", "Provider id")
-                .type(JSON_STRING_TYPE));
+                                    .type(JSON_STRING_TYPE));
 
         fields.add(constrainedFields.withPath(prefix + "aipId", "aipId", "AIP id"));
 
@@ -539,15 +634,15 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         fields.add(constrainedFields.withPath(prefix + "aip", "aip", "Generated AIP").type(JSON_OBJECT_TYPE));
 
         fields.add(constrainedFields.withPath(prefix + "sessionOwner", "sessionOwner", "Session owner")
-                .type(JSON_STRING_TYPE));
+                                    .type(JSON_STRING_TYPE));
 
         fields.add(constrainedFields.withPath(prefix + "session", "session", "Session").type(JSON_STRING_TYPE));
 
         fields.add(constrainedFields.withPath(prefix + "storages", "storages", "List of storage")
-                .type(JSON_ARRAY_TYPE));
+                                    .type(JSON_ARRAY_TYPE));
 
         fields.add(constrainedFields.withPath(prefix + "categories", "categories", "List of categories")
-                .type(JSON_ARRAY_TYPE));
+                                    .type(JSON_ARRAY_TYPE));
 
         return fields;
     }

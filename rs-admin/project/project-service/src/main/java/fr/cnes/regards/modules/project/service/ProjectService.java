@@ -18,11 +18,17 @@
  */
 package fr.cnes.regards.modules.project.service;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import fr.cnes.regards.framework.amqp.IInstancePublisher;
+import fr.cnes.regards.framework.amqp.event.tenant.TenantCreatedEvent;
+import fr.cnes.regards.framework.amqp.event.tenant.TenantDeletedEvent;
+import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.project.dao.IProjectRepository;
+import fr.cnes.regards.modules.project.domain.Project;
+import fr.cnes.regards.modules.project.domain.ProjectUpdateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,27 +38,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.amqp.IInstancePublisher;
-import fr.cnes.regards.framework.amqp.event.tenant.TenantCreatedEvent;
-import fr.cnes.regards.framework.amqp.event.tenant.TenantDeletedEvent;
-import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.project.dao.IProjectRepository;
-import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.project.domain.ProjectUpdateEvent;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- *
  * Service class to manage REGARDS projects.
  *
  * @author Sylvain Vissiere-Guerinet
  * @author Christophe Mertz
  * @author Sébastien Binda
- *
  */
 @Service
 @InstanceTransactional
@@ -86,9 +82,10 @@ public class ProjectService implements IProjectService {
     private final String defaultTenantHost;
 
     public ProjectService(IProjectConnectionService projectConnectionService,
-            final IProjectRepository projectRepository,
-            IInstancePublisher instancePublisher, @Value("${regards.default.tenants}") String defaultTenants,
-            @Value("${regards.config.first.project.public.access}") String defaultTenantHost) {
+                          final IProjectRepository projectRepository,
+                          IInstancePublisher instancePublisher,
+                          @Value("${regards.default.tenants}") String defaultTenants,
+                          @Value("${regards.config.first.project.public.access}") String defaultTenantHost) {
         this.projectRepository = projectRepository;
         this.projectConnectionService = projectConnectionService;
         this.instancePublisher = instancePublisher;

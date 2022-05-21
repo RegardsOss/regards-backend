@@ -72,9 +72,9 @@ import static io.vavr.collection.List.ofAll;
  * @author gandrieu
  */
 @Plugin(id = SimpleShellProcessPlugin.SIMPLE_SHELL_PROCESS_PLUGIN, version = "1.0.0-SNAPSHOT",
-        description = "Launch a shell script", author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3",
-        owner = "CSSI", url = "https://github.com/RegardsOss", markdown = "SimpleShellProcessPlugin.md",
-        userMarkdown =  "SimpleShellProcessPluginUser.md")
+    description = "Launch a shell script", author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3",
+    owner = "CSSI", url = "https://github.com/RegardsOss", markdown = "SimpleShellProcessPlugin.md",
+    userMarkdown = "SimpleShellProcessPluginUser.md")
 public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAwareProcessPlugin {
 
     public static final String SIMPLE_SHELL_PROCESS_PLUGIN = "SimpleShellProcessPlugin";
@@ -84,53 +84,51 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
     protected static final Logger LOGGER = LoggerFactory.getLogger(SimpleShellProcessPlugin.class);
 
     @PluginParameter(name = "shellScript", label = "Shell script name or absolute path",
-            description = "The script must be executable and reachable by rs-processing.")
+        description = "The script must be executable and reachable by rs-processing.")
     protected String shellScriptName;
 
     @PluginParameter(name = "envVariables", label = "Environment variables to give to the shell script",
-            description = "List of environment variables needed by the shell script."
-                    + " Format as KEY=VALUE separated by '&', for instance:" + " KEY1=value1&KEY2=value2 ",
-            optional = true)
+        description = "List of environment variables needed by the shell script."
+            + " Format as KEY=VALUE separated by '&', for instance:" + " KEY1=value1&KEY2=value2 ", optional = true)
     protected String envVariables;
 
     @PluginParameter(name = "requiredDataTypes", label = "Comma-separated list of required DataTypes",
-            description = "This parameter allows to change the feature files sent as input for executions. "
-                    + "By default, only RAWDATA are sent, but changing this parameter to 'RAWDATA,THUMBNAIL,AIP' "
-                    + "for instance would provide RAWDATA, THUMBNAIL and AIP files.", optional = true,
-            defaultValue = "RAWDATA")
+        description = "This parameter allows to change the feature files sent as input for executions. "
+            + "By default, only RAWDATA are sent, but changing this parameter to 'RAWDATA,THUMBNAIL,AIP' "
+            + "for instance would provide RAWDATA, THUMBNAIL and AIP files.", optional = true, defaultValue = "RAWDATA")
     protected String requiredDataTypes = "RAWDATA";
 
     @PluginParameter(name = "scope", label = "Scope",
-            description = "This parameter defines how many executions are launched per suborder."
-                    + " The possible values are: SUBORDER, FEATURE."
-                    + " If the value is SUBORDER, there is only one execution per suborder,"
-                    + " allowing to group several features in the same execution, and the corresponding script must"
-                    + " be able to deal with several features."
-                    + " If the value is FEATURE, there is one execution per feature in the suborder,"
-                    + " allowing to isolate each feature in its own execution context and the corresponding script"
-                    + " deals with only one feature.", optional = true, defaultValue = "SUBORDER")
+        description = "This parameter defines how many executions are launched per suborder."
+            + " The possible values are: SUBORDER, FEATURE."
+            + " If the value is SUBORDER, there is only one execution per suborder,"
+            + " allowing to group several features in the same execution, and the corresponding script must"
+            + " be able to deal with several features."
+            + " If the value is FEATURE, there is one execution per feature in the suborder,"
+            + " allowing to isolate each feature in its own execution context and the corresponding script"
+            + " deals with only one feature.", optional = true, defaultValue = "SUBORDER")
     protected String scope = Scope.SUBORDER.toString();
 
     @PluginParameter(name = "cardinality", label = "Cardinality of output files",
-            description = "This parameter defines how many output files are created by the script."
-                    + " The possible values are: ONE_PER_EXECUTION, ONE_PER_FEATURE, ONE_PER_INPUT_FILE."
-                    + " If the value is ONE_PER_EXECUTION, the corresponding script must"
-                    + " produce only one output file. " + " If the value is ONE_PER_FEATURE, the corresponding script"
-                    + " must produce one output file for each feature present in the input. "
-                    + " If the value is ONE_PER_INPUT_FILE, the corresponding script"
-                    + " must produce one output file for each file present in the input. ", optional = true,
-            defaultValue = "ONE_PER_FEATURE")
+        description = "This parameter defines how many output files are created by the script."
+            + " The possible values are: ONE_PER_EXECUTION, ONE_PER_FEATURE, ONE_PER_INPUT_FILE."
+            + " If the value is ONE_PER_EXECUTION, the corresponding script must" + " produce only one output file. "
+            + " If the value is ONE_PER_FEATURE, the corresponding script"
+            + " must produce one output file for each feature present in the input. "
+            + " If the value is ONE_PER_INPUT_FILE, the corresponding script"
+            + " must produce one output file for each file present in the input. ", optional = true,
+        defaultValue = "ONE_PER_FEATURE")
     protected String cardinality = Cardinality.ONE_PER_FEATURE.toString();
 
     @PluginParameter(name = "maxFilesInInput", label = "Maximum number of features in input for one execution",
-            description = "This parameter allows to limit the number of features given as input."
-                    + " Must be positive or null. Set to 0 for no limit.", optional = true, defaultValue = "0")
+        description = "This parameter allows to limit the number of features given as input."
+            + " Must be positive or null. Set to 0 for no limit.", optional = true, defaultValue = "0")
     protected long maxFeaturesInInput = 0;
 
     @PluginParameter(name = "forbidSplitInSubOrders", label = "Forbid an order to be split into multiple orders.",
-            description = "Keep the consistency of an processing by forbidding the split of the order into multiple "
-                    + "suborders. The ordered products will be processed in the same batch.", optional = true,
-            defaultValue = "false")
+        description = "Keep the consistency of an processing by forbidding the split of the order into multiple "
+            + "suborders. The ordered products will be processed in the same batch.", optional = true,
+        defaultValue = "false")
     protected boolean forbidSplitInSuborders = false;
 
     @Override
@@ -149,10 +147,12 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
 
     @Override
     public OrderProcessInfo processInfo() {
-        return new OrderProcessInfo(Scope.valueOf(scope), Cardinality.valueOf(cardinality),
+        return new OrderProcessInfo(Scope.valueOf(scope),
+                                    Cardinality.valueOf(cardinality),
                                     getRequiredDataTypes().toList(),
                                     new SizeLimit(SizeLimit.Type.FEATURES, maxFeaturesInInput),
-                                    this.sizeForecast().get(), this.forbidSplitInSuborders);
+                                    this.sizeForecast().get(),
+                                    this.forbidSplitInSuborders);
     }
 
     public void setShellScriptName(String shellScriptName) {
@@ -206,28 +206,34 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
     @Override
     public IExecutable executable() {
         return sendEvent(prepareEvent()).andThen("prepare workdir", prepareWorkdir())
-                .andThen("send running", sendEvent(runningEvent()))
-                .andThen("simple shell", new SimpleShellProcessExecutable()).andThen("store output", storeOutputFiles())
-                .andThen("send result", sendResultBasedOnOutputFileCount()).andThen("clean workdir", cleanWorkdir())
-                .onErrorThen(sendFailureEventThenClean());
+                                        .andThen("send running", sendEvent(runningEvent()))
+                                        .andThen("simple shell", new SimpleShellProcessExecutable())
+                                        .andThen("store output", storeOutputFiles())
+                                        .andThen("send result", sendResultBasedOnOutputFileCount())
+                                        .andThen("clean workdir", cleanWorkdir())
+                                        .onErrorThen(sendFailureEventThenClean());
     }
 
     private IExecutable sendResultBasedOnOutputFileCount() {
-        return ctx -> ctx.getParam(CumulativeOutputFiles.class).map(CumulativeOutputFiles::getOutFiles)
-                .flatMap(outFiles -> {
-                    int size = outFiles.size();
-                    int correctSize = correctSize(ctx);
-                    if (size == correctSize) {
-                        return ctx.sendEvent(event(success(""), outFiles));
-                    } else {
-                        String message = String.format("Wrong number of output files: expected %d, got %d", correctSize,
-                                                       size);
-                        return ctx.sendEvent(event(failure(message), outFiles));
-                    }
-                }).onErrorResume(t -> {
-                    LOGGER.error(t.getMessage(), t);
-                    return ctx.sendEvent(event(failure(t.getMessage())));
-                }).switchIfEmpty(Mono.defer(() -> ctx.sendEvent(event(failure("No output files found")))));
+        return ctx -> ctx.getParam(CumulativeOutputFiles.class)
+                         .map(CumulativeOutputFiles::getOutFiles)
+                         .flatMap(outFiles -> {
+                             int size = outFiles.size();
+                             int correctSize = correctSize(ctx);
+                             if (size == correctSize) {
+                                 return ctx.sendEvent(event(success(""), outFiles));
+                             } else {
+                                 String message = String.format("Wrong number of output files: expected %d, got %d",
+                                                                correctSize,
+                                                                size);
+                                 return ctx.sendEvent(event(failure(message), outFiles));
+                             }
+                         })
+                         .onErrorResume(t -> {
+                             LOGGER.error(t.getMessage(), t);
+                             return ctx.sendEvent(event(failure(t.getMessage())));
+                         })
+                         .switchIfEmpty(Mono.defer(() -> ctx.sendEvent(event(failure("No output files found")))));
     }
 
     private int correctSize(ExecutionContext ctx) {
@@ -249,8 +255,9 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
     }
 
     protected Seq<DataType> getRequiredDataTypes() {
-        return io.vavr.collection.List.of(requiredDataTypes.split(",")).map(String::trim)
-                .flatMap(str -> Try.of(() -> DataType.valueOf(str)));
+        return io.vavr.collection.List.of(requiredDataTypes.split(","))
+                                      .map(String::trim)
+                                      .flatMap(str -> Try.of(() -> DataType.valueOf(str)));
     }
 
     protected Function1<Throwable, IExecutable> sendFailureEvent() {
@@ -266,8 +273,9 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
     }
 
     protected Function<ExecutionContext, ExecutionEvent> runningEvent() {
-        return ctx -> event(
-                running(String.format("Launch script %s | execId=%s", shellScriptName, ctx.getExec().getId())));
+        return ctx -> event(running(String.format("Launch script %s | execId=%s",
+                                                  shellScriptName,
+                                                  ctx.getExec().getId())));
     }
 
     protected Function<ExecutionContext, ExecutionEvent> prepareEvent() {
@@ -300,15 +308,19 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
 
         protected void onFailure(int i) {
             String message = String.format("correlationId=%s exec=%s process=%s : Exited with status code %d",
-                                           ctx.getBatch().getCorrelationId(), ctx.getExec().getId(), shellScriptName,
+                                           ctx.getBatch().getCorrelationId(),
+                                           ctx.getExec().getId(),
+                                           shellScriptName,
                                            i);
             LOGGER.error(message);
             sink.error(new SimpleShellProcessExecutionException(message));
         }
 
         protected void onSuccess() {
-            LOGGER.info("batch={} exec={} process={} : Exited with status code 0", ctx.getBatch().getId(),
-                        ctx.getExec().getId(), shellScriptName);
+            LOGGER.info("batch={} exec={} process={} : Exited with status code 0",
+                        ctx.getBatch().getId(),
+                        ctx.getExec().getId(),
+                        shellScriptName);
             sink.success(ctx);
         }
 
@@ -316,8 +328,11 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
         public void onStdout(ByteBuffer byteBuffer, boolean b) {
             String msg = readBytesToString(byteBuffer);
             if (!StringUtils.isBlank(msg)) {
-                LOGGER.debug("batch={} exec={} process={} :\nstdout: {}", ctx.getBatch().getId(), ctx.getExec().getId(),
-                             shellScriptName, msg);
+                LOGGER.debug("batch={} exec={} process={} :\nstdout: {}",
+                             ctx.getBatch().getId(),
+                             ctx.getExec().getId(),
+                             shellScriptName,
+                             msg);
             }
         }
 
@@ -325,8 +340,11 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
         public void onStderr(ByteBuffer byteBuffer, boolean b) {
             String msg = readBytesToString(byteBuffer);
             if (!StringUtils.isBlank(msg)) {
-                LOGGER.error("batch={} exec={} process={} :\nstderr: {}", ctx.getBatch().getId(), ctx.getExec().getId(),
-                             shellScriptName, msg);
+                LOGGER.error("batch={} exec={} process={} :\nstderr: {}",
+                             ctx.getBatch().getId(),
+                             ctx.getExec().getId(),
+                             shellScriptName,
+                             msg);
             }
         }
 
@@ -382,10 +400,13 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
 
     private Map<String, String> parseEnvVars() {
         return Option.of(envVariables)
-                .map(s -> io.vavr.collection.List.of(s.split("\\&")).map(KEYVALUE_PATTERN::matcher)
-                        .filter(Matcher::matches)
-                        .toMap(matcher -> Tuple.of(matcher.group("name"), matcher.group("value"))))
-                .getOrElse(HashMap.empty()).toJavaMap();
+                     .map(s -> io.vavr.collection.List.of(s.split("\\&"))
+                                                      .map(KEYVALUE_PATTERN::matcher)
+                                                      .filter(Matcher::matches)
+                                                      .toMap(matcher -> Tuple.of(matcher.group("name"),
+                                                                                 matcher.group("value"))))
+                     .getOrElse(HashMap.empty())
+                     .toJavaMap();
     }
 
     public static class SimpleShellProcessExecutionException extends Exception {

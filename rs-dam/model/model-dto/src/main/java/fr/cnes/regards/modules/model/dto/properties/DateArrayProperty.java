@@ -24,7 +24,6 @@ import java.time.OffsetDateTime;
  * Represent a {@link PropertyType#DATE_ARRAY} model attribute
  *
  * @author Marc Sordi
- *
  */
 public class DateArrayProperty extends AbstractProperty<OffsetDateTime[]> {
 

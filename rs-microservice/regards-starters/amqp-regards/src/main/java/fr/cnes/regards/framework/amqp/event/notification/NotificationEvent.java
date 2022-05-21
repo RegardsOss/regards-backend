@@ -18,22 +18,20 @@
  */
 package fr.cnes.regards.framework.amqp.event.notification;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import org.springframework.util.Assert;
-
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.notification.NotificationDTO;
+import org.springframework.util.Assert;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 /**
  * A notification wrapper
  *
  * @author Marc SORDI
- *
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class NotificationEvent implements ISubscribable {

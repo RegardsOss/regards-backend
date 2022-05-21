@@ -58,7 +58,6 @@ public class DownloadTokenService {
     @Value("${spring.application.name}")
     private String applicationName;
 
-
     /**
      * Remove all expired download tokens
      */
@@ -68,6 +67,7 @@ public class DownloadTokenService {
 
     /**
      * Generate a download token for the file associated to the given checksum
+     *
      * @param checksum
      * @return download token
      */
@@ -79,11 +79,13 @@ public class DownloadTokenService {
 
     /**
      * Check if given token is valid to download the file associated to the given checksum.
+     *
      * @param checksum
      * @param token
      */
     public boolean checkToken(String checksum, String token) {
-        boolean accessGranted = downTokenRepo.existsByChecksumAndTokenAndExpirationDateAfter(checksum, token,
+        boolean accessGranted = downTokenRepo.existsByChecksumAndTokenAndExpirationDateAfter(checksum,
+                                                                                             token,
                                                                                              OffsetDateTime.now());
         if (!accessGranted) {
             LOGGER.error("Access denied to file {}. Token {} is no longer valid", checksum, token);
@@ -93,6 +95,7 @@ public class DownloadTokenService {
 
     /**
      * Generate a public download URL for the file associated to the given Checksum
+     *
      * @param checksum
      * @return download url
      * @throws ModuleException if the Eureka server is not reachable
@@ -104,7 +107,11 @@ public class DownloadTokenService {
             String path = Paths.get(FileDownloadService.FILES_PATH, FileDownloadService.DOWNLOAD_TOKEN_PATH).toString();
             String p = path.replace("{checksum}", checksum);
             p = p.charAt(0) == '/' ? p.replaceFirst("/", "") : p;
-            return String.format("%s/%s?scope=%s&%s=%s", host, p, tenantResolver.getTenant(), FileDownloadService.TOKEN_PARAM,
+            return String.format("%s/%s?scope=%s&%s=%s",
+                                 host,
+                                 p,
+                                 tenantResolver.getTenant(),
+                                 FileDownloadService.TOKEN_PARAM,
                                  createDownloadToken(checksum));
         } else {
             throw new ModuleException("Error getting storage microservice address from eureka client");

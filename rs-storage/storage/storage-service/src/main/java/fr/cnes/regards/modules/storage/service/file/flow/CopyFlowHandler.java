@@ -64,7 +64,8 @@ public class CopyFlowHandler implements ApplicationListener<ApplicationReadyEven
         LOGGER.debug("[COPY FLOW HANDLER] Bulk saving {} CopyFlowItem...", messages.size());
         long start = System.currentTimeMillis();
         fileCopyReqService.copy(messages);
-        LOGGER.debug("[COPY FLOW HANDLER] {} CopyFlowItem handled in {} ms", messages.size(),
+        LOGGER.debug("[COPY FLOW HANDLER] {} CopyFlowItem handled in {} ms",
+                     messages.size(),
                      System.currentTimeMillis() - start);
     }
 

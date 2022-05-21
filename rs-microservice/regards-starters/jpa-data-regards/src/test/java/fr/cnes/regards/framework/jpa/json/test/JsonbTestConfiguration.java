@@ -18,15 +18,14 @@
  */
 package fr.cnes.regards.framework.jpa.json.test;
 
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-
-import com.google.gson.Gson;
-import fr.cnes.regards.framework.jpa.json.GsonUtil;
 
 /**
  * @author Sylvain Vissiere-Guerinet

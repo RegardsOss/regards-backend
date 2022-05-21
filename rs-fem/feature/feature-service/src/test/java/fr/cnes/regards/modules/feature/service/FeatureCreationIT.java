@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.feature.service;
 
 import com.google.common.collect.Lists;
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.urn.DataType;
@@ -50,7 +49,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -69,9 +67,8 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=feature_version", "regards.amqp.enabled=true" },
-        locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
-                "classpath:metrics.properties" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=feature_version", "regards.amqp.enabled=true" },
+    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -143,39 +140,46 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
                 return featureRepo.findByProviderIdInOrderByVersionDesc(Lists.newArrayList("id0")).size() == 2;
             });
         } catch (ConditionTimeoutException e) {
-            Assert.assertEquals("Invalid number of version of same feature", 2,
+            Assert.assertEquals("Invalid number of version of same feature",
+                                2,
                                 featureRepo.findByProviderIdInOrderByVersionDesc(Lists.newArrayList("id0")).size());
         }
-        List<IUrnVersionByProvider> urnsForId1 = featureRepo.findByProviderIdInOrderByVersionDesc(
-                Lists.newArrayList("id0"));
+        List<IUrnVersionByProvider> urnsForId1 = featureRepo.findByProviderIdInOrderByVersionDesc(Lists.newArrayList(
+            "id0"));
         Assert.assertTrue(featureRepo.findByUrn(urnsForId1.get(0).getUrn()).getFeature().isLast());
         Assert.assertFalse(featureRepo.findByUrn(urnsForId1.get(1).getUrn()).getFeature().isLast());
 
         List<FeatureCreationRequest> requests = featureCreationRequestRepo.findAll();
         Assert.assertFalse(requests.isEmpty());
         Assert.assertTrue(
-                "All feature creation request should have urn and feature entity set to ensure proper notification processing",
-                requests.stream().allMatch(fcr -> (fcr.getUrn() != null) && (fcr.getFeatureEntity() != null)));
+            "All feature creation request should have urn and feature entity set to ensure proper notification processing",
+            requests.stream().allMatch(fcr -> (fcr.getUrn() != null) && (fcr.getFeatureEntity() != null)));
     }
 
     @Test
     @Purpose(
-            "Check that if files to store in a given feature are not all of the same store mode (reference or storage),"
-                    + "the request is denied")
+        "Check that if files to store in a given feature are not all of the same store mode (reference or storage),"
+            + "the request is denied")
     public void testFeatureCreationStorageModeFails() {
         // Init creation request
         List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true, false);
         // Add one file with a referenced file (both storage and url are provided in location)
         FeatureFileAttributes attributes = FeatureFileAttributes.build(DataType.RAWDATA,
-                                                                       MediaType.APPLICATION_OCTET_STREAM, "fileName",
-                                                                       10L, "MD5", "checksum");
+                                                                       MediaType.APPLICATION_OCTET_STREAM,
+                                                                       "fileName",
+                                                                       10L,
+                                                                       "MD5",
+                                                                       "checksum");
         FeatureFileLocation location = FeatureFileLocation.build("file:///test/file.txt", "somewhere");
         events.get(0).getFeature().getFiles().add(FeatureFile.build(attributes, location));
 
         // Add one file with a store file (only url is provided in location)
         FeatureFileAttributes attributes2 = FeatureFileAttributes.build(DataType.RAWDATA,
-                                                                        MediaType.APPLICATION_OCTET_STREAM, "fileName2",
-                                                                        10L, "MD5", "checksum2");
+                                                                        MediaType.APPLICATION_OCTET_STREAM,
+                                                                        "fileName2",
+                                                                        10L,
+                                                                        "MD5",
+                                                                        "checksum2");
         FeatureFileLocation location2 = FeatureFileLocation.build("file:///dir/file.txt");
         events.get(0).getFeature().getFiles().add(FeatureFile.build(attributes2, location2));
         events.get(0).getMetadata().setStorages(Lists.newArrayList(StorageMetadata.build("elsewhere")));
@@ -196,8 +200,11 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         events.get(0).getMetadata().setStorages(Lists.newArrayList(StorageMetadata.build("somewhere")));
         // Add one file with a store file (only url is provided in location)
         FeatureFileAttributes attributes = FeatureFileAttributes.build(DataType.RAWDATA,
-                                                                        MediaType.APPLICATION_OCTET_STREAM, "fileName2",
-                                                                        10L, "MD5", "checksum2");
+                                                                       MediaType.APPLICATION_OCTET_STREAM,
+                                                                       "fileName2",
+                                                                       10L,
+                                                                       "MD5",
+                                                                       "checksum2");
         FeatureFileLocation location = FeatureFileLocation.build("file://dir/file.txt");
         events.get(0).getFeature().getFiles().add(FeatureFile.build(attributes, location));
 
@@ -207,8 +214,8 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         Assert.assertEquals(0L, info.getDenied().size());
 
         // schedule request
-        Assert.assertEquals(1 ,this.featureCreationService.scheduleRequests());
-        waitFeature(1L,null,10_000);
+        Assert.assertEquals(1, this.featureCreationService.scheduleRequests());
+        waitFeature(1L, null, 10_000);
 
         // Feature should be created and request set in remote storage requested step.
         Assert.assertEquals(1L, featureRepo.count());
@@ -217,19 +224,26 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         // Check feature in db is valid and contains not stored information about file location
         Assert.assertEquals(1L, feature.getFeature().getFiles().size());
         Assert.assertEquals(1L, feature.getFeature().getFiles().get(0).getLocations().stream().count());
-        Assert.assertNull(feature.getFeature().getFiles().get(0).getLocations().stream().findFirst().get().getStorage());
-        Assert.assertEquals(location.getUrl(), feature.getFeature().getFiles().get(0).getLocations().stream().findFirst().get().getUrl());
+        Assert.assertNull(feature.getFeature()
+                                 .getFiles()
+                                 .get(0)
+                                 .getLocations()
+                                 .stream()
+                                 .findFirst()
+                                 .get()
+                                 .getStorage());
+        Assert.assertEquals(location.getUrl(),
+                            feature.getFeature().getFiles().get(0).getLocations().stream().findFirst().get().getUrl());
 
         // Simulate an update request on the newly created (but not terminated) feature
-        List<FeatureUpdateRequestEvent> updates = prepareUpdateRequests(
-                Lists.newArrayList(feature.getUrn()));
+        List<FeatureUpdateRequestEvent> updates = prepareUpdateRequests(Lists.newArrayList(feature.getUrn()));
         RequestInfo<FeatureUniformResourceName> updateInfo = this.featureUpdateService.registerRequests(updates);
         Assert.assertEquals(1L, updateInfo.getGranted().size());
         Assert.assertEquals(0L, updateInfo.getDenied().size());
 
         // Update request cannot be scheduled as a creation request is still pending
         // Wait for delay before requests can be scheduled.
-        Thread.sleep((properties.getDelayBeforeProcessing()+1)*1000);
+        Thread.sleep((properties.getDelayBeforeProcessing() + 1) * 1000);
         Assert.assertEquals(0L, this.featureUpdateService.scheduleRequests());
 
         // Simulate result from storage
@@ -238,8 +252,23 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         // Check feature file location has been updated to add the storage location and to change url
         Assert.assertEquals(1L, feature.getFeature().getFiles().size());
         Assert.assertEquals(1L, feature.getFeature().getFiles().get(0).getLocations().stream().count());
-        Assert.assertNotNull(feature.getFeature().getFiles().get(0).getLocations().stream().findFirst().get().getStorage());
-        Assert.assertNotEquals(location.getUrl(), feature.getFeature().getFiles().get(0).getLocations().stream().findFirst().get().getUrl());
+        Assert.assertNotNull(feature.getFeature()
+                                    .getFiles()
+                                    .get(0)
+                                    .getLocations()
+                                    .stream()
+                                    .findFirst()
+                                    .get()
+                                    .getStorage());
+        Assert.assertNotEquals(location.getUrl(),
+                               feature.getFeature()
+                                      .getFiles()
+                                      .get(0)
+                                      .getLocations()
+                                      .stream()
+                                      .findFirst()
+                                      .get()
+                                      .getUrl());
 
         FeatureCreationRequest request = featureCreationRequestRepo.findAll().get(0);
         Assert.assertNotNull(request);
@@ -266,8 +295,8 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
 
         RequestsPage<FeatureRequestDTO> results = this.featureRequestService.findAll(FeatureRequestTypeEnum.CREATION,
                                                                                      FeatureRequestsSelectionDTO.build()
-                                                                                             .withState(
-                                                                                                     RequestState.GRANTED),
+                                                                                                                .withState(
+                                                                                                                    RequestState.GRANTED),
                                                                                      PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
@@ -281,27 +310,38 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.CREATION,
-                                                     FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED)
-                                                             .withProviderId(events.get(0).getFeature().getId()),
+                                                     FeatureRequestsSelectionDTO.build()
+                                                                                .withState(RequestState.GRANTED)
+                                                                                .withProviderId(events.get(0)
+                                                                                                      .getFeature()
+                                                                                                      .getId()),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(1, results.getContent().size());
         Assert.assertEquals(1, results.getTotalElements());
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.CREATION,
-                                                     FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED)
-                                                             .withProviderId(events.get(0).getFeature().getId())
-                                                             .withStart(OffsetDateTime.now().plusSeconds(5)),
+                                                     FeatureRequestsSelectionDTO.build()
+                                                                                .withState(RequestState.GRANTED)
+                                                                                .withProviderId(events.get(0)
+                                                                                                      .getFeature()
+                                                                                                      .getId())
+                                                                                .withStart(OffsetDateTime.now()
+                                                                                                         .plusSeconds(5)),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.CREATION,
-                                                     FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED)
-                                                             .withProviderId(events.get(0).getFeature().getId())
-                                                             .withStart(start)
-                                                             .withEnd(OffsetDateTime.now().plusSeconds(5)),
+                                                     FeatureRequestsSelectionDTO.build()
+                                                                                .withState(RequestState.GRANTED)
+                                                                                .withProviderId(events.get(0)
+                                                                                                      .getFeature()
+                                                                                                      .getId())
+                                                                                .withStart(start)
+                                                                                .withEnd(OffsetDateTime.now()
+                                                                                                       .plusSeconds(5)),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(1, results.getContent().size());
         Assert.assertEquals(1, results.getTotalElements());
@@ -318,34 +358,37 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
 
         // Simulate all requests to scheduled
         this.featureCreationService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 1000))
-                .forEach(r -> {
-                    r.setStep(FeatureRequestStep.LOCAL_SCHEDULED);
-                    this.featureCreationRequestRepo.save(r);
-                });
+                                   .forEach(r -> {
+                                       r.setStep(FeatureRequestStep.LOCAL_SCHEDULED);
+                                       this.featureCreationRequestRepo.save(r);
+                                   });
 
         // Try delete all requests.
-        RequestHandledResponse response = this.featureCreationService.deleteRequests(
-                FeatureRequestsSelectionDTO.build());
+        RequestHandledResponse response = this.featureCreationService.deleteRequests(FeatureRequestsSelectionDTO.build());
         LOGGER.info(response.getMessage());
-        Assert.assertEquals("There should be 0 requests deleted as request are not in ERROR state", 0,
+        Assert.assertEquals("There should be 0 requests deleted as request are not in ERROR state",
+                            0,
                             response.getTotalHandled());
-        Assert.assertEquals("There should be 0 requests to delete as request are not in ERROR state", 0,
+        Assert.assertEquals("There should be 0 requests to delete as request are not in ERROR state",
+                            0,
                             response.getTotalRequested());
 
-        response = this.featureCreationService.deleteRequests(
-                FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED));
+        response = this.featureCreationService.deleteRequests(FeatureRequestsSelectionDTO.build()
+                                                                                         .withState(RequestState.GRANTED));
         LOGGER.info(response.getMessage());
-        Assert.assertEquals("There should be 0 requests deleted as selection set on GRANTED Requests", 0,
+        Assert.assertEquals("There should be 0 requests deleted as selection set on GRANTED Requests",
+                            0,
                             response.getTotalHandled());
-        Assert.assertEquals("There should be 0 requests to delete as selection set on GRANTED Requests", 0,
+        Assert.assertEquals("There should be 0 requests to delete as selection set on GRANTED Requests",
+                            0,
                             response.getTotalRequested());
 
         // Simulate all requests to error
         this.featureCreationService.findRequests(FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 1000))
-                .forEach(r -> {
-                    r.setStep(FeatureRequestStep.REMOTE_STORAGE_ERROR);
-                    this.featureCreationRequestRepo.save(r);
-                });
+                                   .forEach(r -> {
+                                       r.setStep(FeatureRequestStep.REMOTE_STORAGE_ERROR);
+                                       this.featureCreationRequestRepo.save(r);
+                                   });
 
         response = this.featureCreationService.deleteRequests(FeatureRequestsSelectionDTO.build());
         LOGGER.info(response.getMessage());
@@ -363,20 +406,25 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         this.featureCreationService.registerRequests(events);
 
         // Try delete all requests.
-        RequestHandledResponse response = this.featureCreationService.retryRequests(
-                FeatureRequestsSelectionDTO.build().withState(RequestState.ERROR));
+        RequestHandledResponse response = this.featureCreationService.retryRequests(FeatureRequestsSelectionDTO.build()
+                                                                                                               .withState(
+                                                                                                                   RequestState.ERROR));
         LOGGER.info(response.getMessage());
-        Assert.assertEquals("There should be 0 requests retryed as request are not in ERROR state", 0,
+        Assert.assertEquals("There should be 0 requests retryed as request are not in ERROR state",
+                            0,
                             response.getTotalHandled());
-        Assert.assertEquals("There should be 0 requests to retry as request are not in ERROR state", 0,
+        Assert.assertEquals("There should be 0 requests to retry as request are not in ERROR state",
+                            0,
                             response.getTotalRequested());
 
-        response = this.featureCreationService.retryRequests(
-                FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED));
+        response = this.featureCreationService.retryRequests(FeatureRequestsSelectionDTO.build()
+                                                                                        .withState(RequestState.GRANTED));
         LOGGER.info(response.getMessage());
-        Assert.assertEquals("There should be 20 requests retryed as selection set on GRANTED Requests", nbValid,
+        Assert.assertEquals("There should be 20 requests retryed as selection set on GRANTED Requests",
+                            nbValid,
                             response.getTotalHandled());
-        Assert.assertEquals("There should be 20 requests to retry as selection set on GRANTED Requests", nbValid,
+        Assert.assertEquals("There should be 20 requests to retry as selection set on GRANTED Requests",
+                            nbValid,
                             response.getTotalRequested());
 
     }
@@ -385,12 +433,16 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         // now that feature are created, lets do logic to get to notification of the creation
         // lets check that for feature created, there is a request in step LOCAL_TO_BE_NOTIFIED
         Page<AbstractFeatureRequest> requestsToSend = abstractFeatureRequestRepo.findByStepAndRequestDateLessThanEqual(
-                FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, OffsetDateTime.now(),
-                PageRequest.of(0, properties.getMaxBulkSize(),
-                               Sort.by(Sort.Order.asc("priority"), Sort.Order.asc("requestDate"))));
+            FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
+            OffsetDateTime.now(),
+            PageRequest.of(0,
+                           properties.getMaxBulkSize(),
+                           Sort.by(Sort.Order.asc("priority"), Sort.Order.asc("requestDate"))));
         Assert.assertEquals("There should be at least max bulk size request in step LOCAL_TO_BE_NOTIFIED",
-                            properties.getMaxBulkSize().intValue(), requestsToSend.getSize());
-        Assert.assertEquals("There should be only one page of request in step LOCAL_TO_BE_NOTIFIED", 1,
+                            properties.getMaxBulkSize().intValue(),
+                            requestsToSend.getSize());
+        Assert.assertEquals("There should be only one page of request in step LOCAL_TO_BE_NOTIFIED",
+                            1,
                             requestsToSend.getTotalPages());
         // now that we are sure only right requests are in step LOCAL_TO_BE_NOTIFIED, lets ask them to be sent (method called by task scheduler)
         featureNotificationService.sendToNotifier();
@@ -398,8 +450,10 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         // lets capture events sent and check that there is properties.getMaxBulkSize NotificationActionEvent
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(recordsCaptor.capture());
         // That captor also records SessionStepEvent published, for some reason, hence the need to filter
-        List<List<NotificationRequestEvent>> value = recordsCaptor.getAllValues().stream()
-                .filter(list -> list.get(0) instanceof NotificationRequestEvent).collect(Collectors.toList());
+        List<List<NotificationRequestEvent>> value = recordsCaptor.getAllValues()
+                                                                  .stream()
+                                                                  .filter(list -> list.get(0) instanceof NotificationRequestEvent)
+                                                                  .collect(Collectors.toList());
         assertEquals(1, value.size());
         assertEquals(properties.getMaxBulkSize().intValue(), value.get(0).size());
 
@@ -414,7 +468,8 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         Mockito.doNothing().when(publisher).publish(Mockito.any(NotificationRequestEvent.class));
 
         List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(properties.getMaxBulkSize(),
-                                                                                         true, false);
+                                                                                         true,
+                                                                                         false);
 
         // clear file to test notifications without files and put the same request id
         events.forEach(request -> {
@@ -438,7 +493,8 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
     public void testFeatureCreationWithInvalidFeature() {
 
         List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(properties.getMaxBulkSize(),
-                                                                                         true, false);
+                                                                                         true,
+                                                                                         false);
 
         Feature f = events.get(0).getFeature();
         f.setEntityType(null);
@@ -455,24 +511,33 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
     @Test
     public void testRegisterScheduleProcess() {
         List<Feature> features = new ArrayList<>();
-        String model = mockModelClient("feature_model_01.xml", cps, factory, this.getDefaultTenant(),
+        String model = mockModelClient("feature_model_01.xml",
+                                       cps,
+                                       factory,
+                                       this.getDefaultTenant(),
                                        modelAttrAssocClientMock);
         for (int i = 0; i < properties.getMaxBulkSize(); i++) {
-            Feature toAdd = Feature.build("id" + i, "owner", null, IGeometry.point(IGeometry.position(10.0, 20.0)),
-                                          EntityType.DATA, model);
+            Feature toAdd = Feature.build("id" + i,
+                                          "owner",
+                                          null,
+                                          IGeometry.point(IGeometry.position(10.0, 20.0)),
+                                          EntityType.DATA,
+                                          model);
             features.add(toAdd);
             toAdd.addProperty(IProperty.buildString("data_type", "TYPE01"));
-            toAdd.addProperty(
-                    IProperty.buildObject("file_characterization", IProperty.buildBoolean("valid", Boolean.TRUE)));
+            toAdd.addProperty(IProperty.buildObject("file_characterization",
+                                                    IProperty.buildBoolean("valid", Boolean.TRUE)));
         }
 
         StorageMetadata.build("id ");
         FeatureCreationCollection collection = FeatureCreationCollection.build("owner",
                                                                                FeatureCreationSessionMetadata.build(
-                                                                                       "owner", "session",
-                                                                                       PriorityLevel.NORMAL, false,
-                                                                                       false,
-                                                                                       StorageMetadata.build("id ")),
+                                                                                   "owner",
+                                                                                   "session",
+                                                                                   PriorityLevel.NORMAL,
+                                                                                   false,
+                                                                                   false,
+                                                                                   StorageMetadata.build("id ")),
                                                                                features);
         RequestInfo<String> infos = this.featureCreationService.registerRequests(collection);
 
@@ -485,17 +550,23 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
     public void testRegisterScheduleProcessWithErrors() {
         List<Feature> features = new ArrayList<>();
         for (int i = 0; i < properties.getMaxBulkSize(); i++) {
-            features.add(Feature.build("id" + i, "owner", null, IGeometry.point(IGeometry.position(10.0, 20.0)), null,
+            features.add(Feature.build("id" + i,
+                                       "owner",
+                                       null,
+                                       IGeometry.point(IGeometry.position(10.0, 20.0)),
+                                       null,
                                        "model"));
         }
 
         StorageMetadata.build("id ");
         FeatureCreationCollection collection = FeatureCreationCollection.build("owner",
                                                                                FeatureCreationSessionMetadata.build(
-                                                                                       "owner", "session",
-                                                                                       PriorityLevel.NORMAL, false,
-                                                                                       false,
-                                                                                       StorageMetadata.build("id ")),
+                                                                                   "owner",
+                                                                                   "session",
+                                                                                   PriorityLevel.NORMAL,
+                                                                                   false,
+                                                                                   false,
+                                                                                   StorageMetadata.build("id ")),
                                                                                features);
         RequestInfo<String> infos = this.featureCreationService.registerRequests(collection);
 
@@ -512,7 +583,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
     public void testFeaturePriority() {
 
         List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(
-                properties.getMaxBulkSize() + (properties.getMaxBulkSize() / 2), true, false);
+            properties.getMaxBulkSize() + (properties.getMaxBulkSize() / 2), true, false);
 
         // we will set all priority to normal except for the (properties.getMaxBulkSize() / 2) last events
         for (int i = properties.getMaxBulkSize();
@@ -527,8 +598,11 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
 
         this.featureCreationService.scheduleRequests();
         // Retrieved scheduled requests and verify that the 500 High priority have been scheduled first.
-        List<FeatureCreationRequest> scheduled = featureCreationRequestRepo.findAll().stream()
-                .filter(r -> r.getStep() != FeatureRequestStep.LOCAL_DELAYED).collect(Collectors.toList());
+        List<FeatureCreationRequest> scheduled = featureCreationRequestRepo.findAll()
+                                                                           .stream()
+                                                                           .filter(r -> r.getStep()
+                                                                               != FeatureRequestStep.LOCAL_DELAYED)
+                                                                           .collect(Collectors.toList());
         Assert.assertEquals(properties.getMaxBulkSize().intValue(), scheduled.size());
 
         int highPriorityNumber = 0;
@@ -551,11 +625,12 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
     @Test
     public void testCreationWithURN() {
         // Given
-        FeatureCreationRequestEvent featureCreationRequestEvent = createFeatureCreationRequestEvent("ùlajzlke", 1,
+        FeatureCreationRequestEvent featureCreationRequestEvent = createFeatureCreationRequestEvent("ùlajzlke",
+                                                                                                    1,
                                                                                                     false);
         // When
-        RequestInfo<String> requestInfo = featureCreationService.registerRequests(
-                Collections.singletonList(featureCreationRequestEvent));
+        RequestInfo<String> requestInfo = featureCreationService.registerRequests(Collections.singletonList(
+            featureCreationRequestEvent));
         featureCreationService.scheduleRequests();
         // Then
         assertEquals(1, requestInfo.getGranted().size());
@@ -632,15 +707,18 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         waitForFeatures(1);
     }
 
-    private FeatureCreationRequestEvent createFeatureCreationRequestEvent(String tenant, int version,
-            boolean updateIfExists) {
-        FeatureCreationRequestEvent featureCreationRequestEvent = initFeatureCreationRequestEvent(1, false,
-                                                                                                  updateIfExists).get(
-                0);
+    private FeatureCreationRequestEvent createFeatureCreationRequestEvent(String tenant,
+                                                                          int version,
+                                                                          boolean updateIfExists) {
+        FeatureCreationRequestEvent featureCreationRequestEvent = initFeatureCreationRequestEvent(1,
+                                                                                                  false,
+                                                                                                  updateIfExists).get(0);
         Feature feature = featureCreationRequestEvent.getFeature();
         UUID uuid = UUID.nameUUIDFromBytes(feature.getId().getBytes());
         FeatureUniformResourceName urn = FeatureUniformResourceName.build(FeatureIdentifier.FEATURE,
-                                                                          feature.getEntityType(), tenant, uuid,
+                                                                          feature.getEntityType(),
+                                                                          tenant,
+                                                                          uuid,
                                                                           version);
         feature.setUrn(urn);
         return featureCreationRequestEvent;

@@ -52,9 +52,17 @@ public class AccessRequestDto {
     public AccessRequestDto() {
     }
 
-    public AccessRequestDto(String email, String firstName, String lastName, String roleName, List<MetaData> metadata, String password, String originUrl, String requestLink,
-            String origin, Set<String> accessGroups, Long maxQuota
-    ) {
+    public AccessRequestDto(String email,
+                            String firstName,
+                            String lastName,
+                            String roleName,
+                            List<MetaData> metadata,
+                            String password,
+                            String originUrl,
+                            String requestLink,
+                            String origin,
+                            Set<String> accessGroups,
+                            Long maxQuota) {
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;

@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.client;
 
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
@@ -75,14 +75,14 @@ public class ProcessingRestClientIT extends AbstractProcessingIT {
     @Before
     public void init() throws IOException, ModuleException {
         runtimeTenantResolver.forceTenant(TENANT_PROJECTA);
-        client = FeignClientBuilder.build(
-                new TokenClientProvider<>(IProcessingRestClient.class,
-                                          "http://" + serverAddress + ":" + port, feignSecurityManager),
-                gson);
+        client = FeignClientBuilder.build(new TokenClientProvider<>(IProcessingRestClient.class,
+                                                                    "http://" + serverAddress + ":" + port,
+                                                                    feignSecurityManager), gson);
         FeignSecurityManager.asSystem();
     }
 
     interface Values {
+
         List<PProcessDTO> processes = randomList(PProcessDTO.class, 20);
         PBatch batch = randomInstance(PBatch.class);
     }
@@ -91,21 +91,30 @@ public class ProcessingRestClientIT extends AbstractProcessingIT {
     @EnableFeignClients(basePackageClasses = { IRolesClient.class, IStorageRestClient.class })
     static class Config {
 
-        @Bean public IProcessService processService() {
+        @Bean
+        public IProcessService processService() {
             return new IProcessService() {
-                @Override public Flux<PProcessDTO> findByTenant(String tenant) {
+
+                @Override
+                public Flux<PProcessDTO> findByTenant(String tenant) {
                     return Flux.fromIterable(Values.processes);
                 }
             };
         }
-        @Bean public IBatchService batchService() {
+
+        @Bean
+        public IBatchService batchService() {
             return new IBatchService() {
-                @Override public Mono<PBatch> checkAndCreateBatch(PUserAuth auth, PBatchRequest data) {
+
+                @Override
+                public Mono<PBatch> checkAndCreateBatch(PUserAuth auth, PBatchRequest data) {
                     return Mono.just(Values.batch);
                 }
             };
         }
-        @Bean public IWorkloadEngineRepository engineRepo() {
+
+        @Bean
+        public IWorkloadEngineRepository engineRepo() {
             return Mockito.mock(IWorkloadEngineRepository.class);
         }
     }

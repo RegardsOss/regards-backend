@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.oais.builder;
 
 /**
  * OAIS Builder contract
+ *
  * @author Marc Sordi
  */
 @FunctionalInterface

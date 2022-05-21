@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.plugins.impl;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -31,18 +31,11 @@ import io.vavr.control.Try;
  */
 public abstract class AbstractBaseForecastedProcessPlugin implements IProcessDefinition {
 
-    @PluginParameter(
-            name = "sizeForecast",
-            label = "Size forecast",
-            description = ForecastParser.SIZE_DESCRIPTION
-    )
+    @PluginParameter(name = "sizeForecast", label = "Size forecast", description = ForecastParser.SIZE_DESCRIPTION)
     protected String sizeForecast;
 
-    @PluginParameter(
-            name = "durationForecast",
-            label = "Duration forecast",
-            description = ForecastParser.DURATION_DESCRIPTION
-    )
+    @PluginParameter(name = "durationForecast", label = "Duration forecast",
+        description = ForecastParser.DURATION_DESCRIPTION)
     protected String durationForecast;
 
     @Override

@@ -21,9 +21,9 @@ package fr.cnes.regards.modules.search.domain;
 
 /**
  * POJO to handle boundaries of an attribute.
- * @author Sébastien Binda
  *
  * @param <T>
+ * @author Sébastien Binda
  */
 public class PropertyBound<T> {
 
@@ -43,10 +43,9 @@ public class PropertyBound<T> {
     private T upperBound;
 
     /**
-     *
      * @param propertyName Jsonpath of the attribute
-     * @param lowerBound Lower bound value
-     * @param upperBound Upper bound value
+     * @param lowerBound   Lower bound value
+     * @param upperBound   Upper bound value
      */
     public PropertyBound(String propertyName, T lowerBound, T upperBound) {
         super();

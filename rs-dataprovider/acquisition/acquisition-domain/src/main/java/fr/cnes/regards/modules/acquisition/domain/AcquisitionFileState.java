@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.acquisition.domain;
 
 /**
- *
  * {@link AcquisitionFile} lifecycle
  *
  * <pre>
@@ -38,7 +37,6 @@ package fr.cnes.regards.modules.acquisition.domain;
  *
  * @author Christophe Mertz
  * @author Marc Sordi
- *
  */
 public enum AcquisitionFileState {
     /**

@@ -18,15 +18,13 @@
  */
 package fr.cnes.regards.modules.search.service;
 
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import org.springframework.data.domain.Pageable;
 
-import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
-
 /**
- *
  * Convert sorted parameters to queryable ones
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
 public interface IPageableConverter {
 

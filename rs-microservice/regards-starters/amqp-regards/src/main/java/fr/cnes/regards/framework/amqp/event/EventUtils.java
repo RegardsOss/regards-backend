@@ -23,6 +23,7 @@ import org.springframework.util.Assert;
 
 /**
  * Utility class to extract annotation information from events.
+ *
  * @author Marc Sordi
  */
 public final class EventUtils {
@@ -32,6 +33,7 @@ public final class EventUtils {
 
     /**
      * Retrieve annotation {@link Event} from class. This annotation must exist!
+     *
      * @param eventType {@link Event} annotated class
      * @return {@link Event}
      */
@@ -88,7 +90,7 @@ public final class EventUtils {
     }
 
     public static boolean isAutoDeleteQueue(Class<?> eventType) {
-       return EventUtils.getEventProperties(eventType).autoDelete();
+        return EventUtils.getEventProperties(eventType).autoDelete();
     }
 
 }

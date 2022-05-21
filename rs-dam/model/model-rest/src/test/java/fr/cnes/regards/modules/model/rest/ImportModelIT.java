@@ -18,18 +18,6 @@
  */
 package fr.cnes.regards.modules.model.rest;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -43,8 +31,18 @@ import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.Fragment;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.EnumerationRestriction;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
-import fr.cnes.regards.modules.model.rest.ModelController;
 import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
 /**
  * @author Marc Sordi
@@ -85,7 +83,9 @@ public class ImportModelIT extends AbstractRegardsTransactionalIT {
 
     private void importModel(String filename, ResultMatcher matcher) {
         Path filePath = Paths.get("src", "test", "resources", filename);
-        performDefaultFileUpload(ModelController.TYPE_MAPPING + "/import", filePath, customizer().expect(matcher),
+        performDefaultFileUpload(ModelController.TYPE_MAPPING + "/import",
+                                 filePath,
+                                 customizer().expect(matcher),
                                  "Should be able to import a model");
     }
 

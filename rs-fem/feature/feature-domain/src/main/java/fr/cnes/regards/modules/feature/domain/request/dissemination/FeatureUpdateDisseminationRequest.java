@@ -39,7 +39,7 @@ public class FeatureUpdateDisseminationRequest {
 
     @Id
     @SequenceGenerator(name = "featureUpdateDisseminationSequence", initialValue = 1,
-            sequenceName = "seq_feature_update_dissemination")
+        sequenceName = "seq_feature_update_dissemination")
     @GeneratedValue(generator = "featureUpdateDisseminationSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
@@ -71,8 +71,10 @@ public class FeatureUpdateDisseminationRequest {
     public FeatureUpdateDisseminationRequest() {
     }
 
-    public FeatureUpdateDisseminationRequest(FeatureUniformResourceName urn, String recipientLabel,
-            FeatureUpdateDisseminationInfoType updateType, Optional<Boolean> ackRequiredOpt) {
+    public FeatureUpdateDisseminationRequest(FeatureUniformResourceName urn,
+                                             String recipientLabel,
+                                             FeatureUpdateDisseminationInfoType updateType,
+                                             Optional<Boolean> ackRequiredOpt) {
         this.urn = urn;
         this.recipientLabel = recipientLabel;
         this.updateType = updateType;

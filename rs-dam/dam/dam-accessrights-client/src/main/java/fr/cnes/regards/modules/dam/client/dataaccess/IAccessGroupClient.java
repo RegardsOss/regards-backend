@@ -40,30 +40,37 @@ public interface IAccessGroupClient {
 
     /**
      * Retrieve access group
+     *
      * @param isPublic whether we are also looking for public groups
-     * @param page which page
-     * @param size which page size
+     * @param page     which page
+     * @param size     which page size
      * @return a page of access group
      */
-    @GetMapping(path = ROOT_PATH_ACCESS_GROUPS, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH_ACCESS_GROUPS, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<AccessGroup>>> retrieveAccessGroupsList(
-            @RequestParam(name = "public", required = false) Boolean isPublic, @RequestParam("page") int page,
-            @RequestParam("size") int size);
+        @RequestParam(name = "public", required = false) Boolean isPublic,
+        @RequestParam("page") int page,
+        @RequestParam("size") int size);
 
-    @PostMapping(path = ROOT_PATH_ACCESS_GROUPS, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = ROOT_PATH_ACCESS_GROUPS, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<AccessGroup>> createAccessGroup(@Valid @RequestBody AccessGroup toBeCreated);
 
     /**
      * Retrieve an access group by its name
+     *
      * @return the retrieved access group
      */
-    @GetMapping(path = ROOT_PATH_ACCESS_GROUPS + PATH_ACCESS_GROUPS_NAME, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH_ACCESS_GROUPS + PATH_ACCESS_GROUPS_NAME, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<AccessGroup>> retrieveAccessGroup(@Valid @PathVariable("name") String groupName);
 
     /**
      * Delete an access group by its name
      */
-    @DeleteMapping(path = ROOT_PATH_ACCESS_GROUPS + PATH_ACCESS_GROUPS_NAME, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(path = ROOT_PATH_ACCESS_GROUPS + PATH_ACCESS_GROUPS_NAME,
+        consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Void> deleteAccessGroup(@Valid @PathVariable("name") String groupName);
 
 }

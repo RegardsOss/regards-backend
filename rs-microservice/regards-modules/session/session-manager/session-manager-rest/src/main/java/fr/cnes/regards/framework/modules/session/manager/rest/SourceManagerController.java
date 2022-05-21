@@ -27,7 +27,6 @@ import fr.cnes.regards.framework.modules.session.manager.domain.Source;
 import fr.cnes.regards.framework.modules.session.manager.service.controllers.SourceManagerService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,13 +37,9 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 /**
  * Controller for {@link Source}
@@ -86,10 +81,10 @@ public class SourceManagerController implements IResourceController<Source> {
     @ResponseBody
     @ResourceAccess(description = "Endpoint to get sources", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<Source>>> getSources(
-            @RequestParam(value = "sourceName", required = false) String sourceName,
-            @RequestParam(value = "sourceState", required = false) String sourceState,
-            @PageableDefault(sort = "lastUpdateDate", direction = Sort.Direction.DESC, size = 20) Pageable pageable,
-            final PagedResourcesAssembler<Source> assembler) {
+        @RequestParam(value = "sourceName", required = false) String sourceName,
+        @RequestParam(value = "sourceState", required = false) String sourceState,
+        @PageableDefault(sort = "lastUpdateDate", direction = Sort.Direction.DESC, size = 20) Pageable pageable,
+        final PagedResourcesAssembler<Source> assembler) {
         Page<Source> sources = this.sourceManagerService.loadSources(sourceName, sourceState, pageable);
         return ResponseEntity.ok(toPagedResources(sources, assembler));
     }
@@ -99,7 +94,6 @@ public class SourceManagerController implements IResourceController<Source> {
     public ResponseEntity<Set<String>> getSourcesNames(@RequestParam(value = "name", required = false) String name) {
         return ResponseEntity.ok(this.sourceManagerService.retrieveSourcesNames(name));
     }
-
 
     @DeleteMapping(value = DELETE_SOURCE_MAPPING)
     @ResponseBody
@@ -112,12 +106,18 @@ public class SourceManagerController implements IResourceController<Source> {
     @Override
     public EntityModel<Source> toResource(Source source, Object... extras) {
         EntityModel<Source> resource = resourceService.toResource(source);
-        resourceService.addLink(resource, this.getClass(), "getSources", LinkRels.LIST,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "getSources",
+                                LinkRels.LIST,
                                 MethodParamFactory.build(String.class, source.getName()),
                                 MethodParamFactory.build(String.class),
                                 MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
-        resourceService.addLink(resource, this.getClass(), "deleteSource", LinkRels.DELETE,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "deleteSource",
+                                LinkRels.DELETE,
                                 MethodParamFactory.build(String.class, source.getName()));
         return resource;
     }

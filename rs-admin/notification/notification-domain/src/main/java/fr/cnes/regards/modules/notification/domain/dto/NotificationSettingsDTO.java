@@ -52,8 +52,7 @@ public class NotificationSettingsDTO {
     }
 
     /**
-     * @param pDays
-     *            the days to set
+     * @param pDays the days to set
      */
     public void setDays(final Integer pDays) {
         days = pDays;
@@ -67,8 +66,7 @@ public class NotificationSettingsDTO {
     }
 
     /**
-     * @param pFrequency
-     *            the frequency to set
+     * @param pFrequency the frequency to set
      */
     public void setFrequency(final NotificationFrequency pFrequency) {
         frequency = pFrequency;
@@ -82,8 +80,7 @@ public class NotificationSettingsDTO {
     }
 
     /**
-     * @param pHours
-     *            the hours to set
+     * @param pHours the hours to set
      */
     public void setHours(final Integer pHours) {
         hours = pHours;

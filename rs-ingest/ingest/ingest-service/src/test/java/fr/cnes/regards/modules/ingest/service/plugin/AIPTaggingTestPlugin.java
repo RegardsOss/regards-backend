@@ -18,22 +18,22 @@
  */
 package fr.cnes.regards.modules.ingest.service.plugin;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.ingest.domain.exception.TagAIPException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipTagging;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.service.chain.ProcessingChainTestErrorSimulator;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 /**
  * Test plugin for the processing chains.
+ *
  * @author Sébastien Binda
  */
 @Plugin(author = "REGARDS Team", description = "Test plugin for AIP tagging", id = "TestAIPTagging", version = "1.0.0",
-        contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
+    contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
 public class AIPTaggingTestPlugin implements IAipTagging {
 
     @Autowired

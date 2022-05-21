@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects.validation;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 
 /**
  * Implement the logic to validate the constraint specified by {@link HasValidParent} annotation.
@@ -44,8 +44,8 @@ public class HasValidParentValidator implements ConstraintValidator<HasValidPare
         }
         String roleName = pRole.getName();
         boolean shouldHaveParentRole = !(roleName.equals(DefaultRole.PUBLIC.toString())
-                || roleName.equals(DefaultRole.INSTANCE_ADMIN.toString())
-                || roleName.equals(DefaultRole.PROJECT_ADMIN.toString()));
+            || roleName.equals(DefaultRole.INSTANCE_ADMIN.toString())
+            || roleName.equals(DefaultRole.PROJECT_ADMIN.toString()));
         if (shouldHaveParentRole) {
             Role parentRole = pRole.getParentRole();
             if ((parentRole == null) || !parentRole.isNative()) {
@@ -53,8 +53,8 @@ public class HasValidParentValidator implements ConstraintValidator<HasValidPare
             }
             // INSTANCE_ADMIN and PROJECT_ADMIN cannot have any children
             String parentRoleName = parentRole.getName();
-            return !((parentRoleName.equals(DefaultRole.INSTANCE_ADMIN.toString())))
-                    || (parentRoleName.equals(DefaultRole.PROJECT_ADMIN.toString()));
+            return !((parentRoleName.equals(DefaultRole.INSTANCE_ADMIN.toString()))) || (parentRoleName.equals(
+                DefaultRole.PROJECT_ADMIN.toString()));
         } else {
             return pRole.getParentRole() == null;
         }

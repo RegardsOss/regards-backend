@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.framework.module.manager;
 
-import java.util.Set;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+
+import java.util.Set;
 
 /**
  * Bean contract for module management
+ *
  * @param <S> module specifications for {@link ModuleReadinessReport}
  * @author Marc Sordi
  */
@@ -72,6 +72,7 @@ public interface IModuleManager<S> {
      * Module specification may be given to fulfill missing configuration.<br/>
      * For instance, most of the time, minimal configuration will require at least one plugin configuration.<br/>
      * To implement this method, override it and {@link #isReadyImplemented()}
+     *
      * @return whether or not the module is considered ready
      */
     default ModuleReadinessReport<S> isReady() {

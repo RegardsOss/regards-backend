@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 /**
  * Job initializer.
  * This component is used to launch job service as a daemon.
+ *
  * @author oroussel
  */
 @Profile("!nojobs")

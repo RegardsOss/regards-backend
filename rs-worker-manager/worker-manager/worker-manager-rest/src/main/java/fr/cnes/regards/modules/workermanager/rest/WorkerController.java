@@ -41,7 +41,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 
  * @author Théo Lasserre
  */
 @Tag(name = "Worker manager")
@@ -59,11 +58,13 @@ public class WorkerController implements IResourceController<WorkerTypeAlive> {
     private WorkerCacheService workerCacheService;
 
     @RequestMapping(path = TYPE_MAPPING, method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve worker types with its number of alive instances", role = DefaultRole.EXPLOIT)
-    @Operation(summary = "Retrieve worker types", description = "Retrieve worker types with its number of alive instances.")
+    @ResourceAccess(description = "Retrieve worker types with its number of alive instances",
+        role = DefaultRole.EXPLOIT)
+    @Operation(summary = "Retrieve worker types",
+        description = "Retrieve worker types with its number of alive instances.")
     public ResponseEntity<List<WorkerTypeAlive>> retrieveWorkerList(
         @Parameter(description = "Filter Workers on Request Content Types they handle")
-        @RequestParam (value = "contentTypes", required = false) List<String> contentTypes) {
+        @RequestParam(value = "contentTypes", required = false) List<String> contentTypes) {
         List<WorkerTypeAlive> workers = workerCacheService.getWorkersInstance(contentTypes);
         return new ResponseEntity<>(workers, HttpStatus.OK);
     }

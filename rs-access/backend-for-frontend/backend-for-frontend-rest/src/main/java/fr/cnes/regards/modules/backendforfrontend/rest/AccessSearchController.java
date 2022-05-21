@@ -49,6 +49,7 @@ import java.util.stream.StreamSupport;
 
 /**
  * Controller proxying rs-catalog's CatalogController in order to inject services.
+ *
  * @author Xavier-Alexandre Brochard
  */
 @RestController
@@ -58,8 +59,9 @@ public class AccessSearchController {
     /**
      * Function converting a {@link JsonArray} into a {@link Stream}
      */
-    private static final Function<JsonArray, Stream<JsonElement>> JSON_ARRAY_TO_STREAM = pJsonArray -> StreamSupport
-            .stream(pJsonArray.spliterator(), false);
+    private static final Function<JsonArray, Stream<JsonElement>> JSON_ARRAY_TO_STREAM = pJsonArray -> StreamSupport.stream(
+        pJsonArray.spliterator(),
+        false);
 
     private CacheableServiceAggregatorClient serviceAggregatorClient;
 
@@ -95,18 +97,18 @@ public class AccessSearchController {
      * collection, dataset, dataobject and document.
      * <p>
      * Also injects the applicable Ui Services and Catalog Services.
+     *
      * @param allParams all query parameters
      * @return the search result with services injected
      */
     @RequestMapping(path = SEARCH, method = RequestMethod.GET)
     @ResourceAccess(
-            description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return "
-                    + "objects can be any mix of collection, dataset, dataobject and document. Injects applicable "
-                    + "UI Services and Catalog Services.",
-            role = DefaultRole.PUBLIC)
+        description = "Perform an OpenSearch request on all indexed data, regardless of the type. The return "
+            + "objects can be any mix of collection, dataset, dataobject and document. Injects applicable "
+            + "UI Services and Catalog Services.", role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchAll(
-            @RequestParam(required = false) final MultiValueMap<String, String> allParams)
-            throws HttpClientErrorException, HttpServerErrorException {
+        @RequestParam(required = false) final MultiValueMap<String, String> allParams)
+        throws HttpClientErrorException, HttpServerErrorException {
         // before everything, we need to encode '+' and only '+' which is interpreted as ' ' by jetty
         // and which is not encoded by feign which is respecting RFC1738 on URI
         encodePlus(allParams);
@@ -120,16 +122,16 @@ public class AccessSearchController {
      * Perform an OpenSearch request on collections.
      * <p>
      * Also injects the applicable Ui Services and Catalog Services.
+     *
      * @param allParams all query parameters
      * @return the search result with services injected
      */
     @RequestMapping(path = COLLECTIONS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(
-            description = "Perform an OpenSearch request on collections. Injects applicable UI Services and Catalog "
-                    + "Services.",
-            role = DefaultRole.PUBLIC)
+        description = "Perform an OpenSearch request on collections. Injects applicable UI Services and Catalog "
+            + "Services.", role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchCollections(@RequestParam final MultiValueMap<String, String> allParams)
-            throws HttpClientErrorException, HttpServerErrorException {
+        throws HttpClientErrorException, HttpServerErrorException {
         // before everything, we need to encode '+' and only '+' which is interpreted as ' ' by jetty
         // and which is not encoded by feign which is respecting RFC1738 on URI
         encodePlus(allParams);
@@ -142,16 +144,16 @@ public class AccessSearchController {
      * Perform an OpenSearch request on datasets.
      * <p>
      * Also injects the applicable Ui Services and Catalog Services.
+     *
      * @param allParams all query parameters
      * @return the search result with services injected
      */
     @RequestMapping(path = DATASETS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(
-            description = "Perform an OpenSearch request on datasets. Injects applicable UI Services and Catalog "
-                    + "Services.",
-            role = DefaultRole.PUBLIC)
+        description = "Perform an OpenSearch request on datasets. Injects applicable UI Services and Catalog "
+            + "Services.", role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDatasets(@RequestParam final MultiValueMap<String, String> allParams)
-            throws HttpClientErrorException, HttpServerErrorException {
+        throws HttpClientErrorException, HttpServerErrorException {
         // before everything, we need to encode '+' and only '+' which is interpreted as ' ' by jetty
         // and which is not encoded by feign which is respecting RFC1738 on URI
         encodePlus(allParams);
@@ -164,14 +166,15 @@ public class AccessSearchController {
      * Perform an OpenSearch request on dataobjects. Only return required facets.
      * <p>
      * Also injects the applicable Ui Services and Catalog Services.
+     *
      * @param allParams a MultiValueMap containing all request params (multi-valued because of multi "sort" params)
      * @return the search result with services injected
      */
     @RequestMapping(path = DATAOBJECTS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(description = "Perform an OpenSearch request on dataobjects. Only return required facets. Injects "
-            + "applicable UI Services and Catalog Services.", role = DefaultRole.PUBLIC)
+        + "applicable UI Services and Catalog Services.", role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDataobjects(@RequestParam MultiValueMap<String, String> allParams)
-            throws HttpClientErrorException, HttpServerErrorException {
+        throws HttpClientErrorException, HttpServerErrorException {
         // before everything, we need to encode '+' and only '+' which is interpreted as ' ' by jetty
         // and which is not encoded by feign which is respecting RFC1738 on URI
         encodePlus(allParams);
@@ -189,17 +192,18 @@ public class AccessSearchController {
      * associated datasets.
      * <p>
      * Also injects the applicable Ui Services and Catalog Services.
+     *
      * @param allParams all query parameters
      * @return the search result with services injected
      */
     @RequestMapping(path = DATAOBJECTS_DATASETS_SEARCH, method = RequestMethod.GET)
     @ResourceAccess(
-            description = "Perform an joined OpenSearch request. The search will be performed on dataobjects attributes,"
-                    + " but will return the associated datasets. Injects applicable UI Services and Catalog Services.",
-            role = DefaultRole.PUBLIC)
+        description = "Perform an joined OpenSearch request. The search will be performed on dataobjects attributes,"
+            + " but will return the associated datasets. Injects applicable UI Services and Catalog Services.",
+        role = DefaultRole.PUBLIC)
     public ResponseEntity<JsonObject> searchDataobjectsReturnDatasets(
-            @RequestParam final MultiValueMap<String, String> allParams)
-            throws HttpClientErrorException, HttpServerErrorException {
+        @RequestParam final MultiValueMap<String, String> allParams)
+        throws HttpClientErrorException, HttpServerErrorException {
         // before everything, we need to encode '+' and only '+' which is interpreted as ' ' by jetty
         // and which is not encoded by feign which is respecting RFC1738 on URI
         encodePlus(allParams);
@@ -210,6 +214,7 @@ public class AccessSearchController {
 
     /**
      * Inject applicable Ui Services and Catalog Services into given entities
+     *
      * @param pEntities The list of entities, represented as a {@link JsonObject} wrapped in a {@link ResponseEntity}
      */
     private void injectApplicableServices(JsonObject pEntities) {
@@ -226,6 +231,7 @@ public class AccessSearchController {
 
     /**
      * Returns the applicable services of the given entity
+     *
      * @param pEntity The entity, represented as a {@link JsonObject}
      * @return The list of applicable services, represented as a {@link JsonObject}
      */

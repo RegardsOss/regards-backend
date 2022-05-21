@@ -56,23 +56,23 @@ public class ExternalTokenVerificationFilter implements GlobalFilter {
 
     private final ExternalAuthenticationVerifier externalAuthenticationVerifier;
 
-    public ExternalTokenVerificationFilter(JWTService jwtService, ExternalAuthenticationVerifier externalAuthenticationVerifier) {
+    public ExternalTokenVerificationFilter(JWTService jwtService,
+                                           ExternalAuthenticationVerifier externalAuthenticationVerifier) {
         this.jwtService = jwtService;
         this.externalAuthenticationVerifier = externalAuthenticationVerifier;
     }
 
     private final Cache<String, String> invalid = Caffeine.newBuilder()
-        .expireAfterAccess(30, TimeUnit.MINUTES)
-        .expireAfterWrite(30, TimeUnit.MINUTES)
-        .maximumSize(10000)
-        .build();
+                                                          .expireAfterAccess(30, TimeUnit.MINUTES)
+                                                          .expireAfterWrite(30, TimeUnit.MINUTES)
+                                                          .maximumSize(10000)
+                                                          .build();
 
     private final Cache<String, String> valid = Caffeine.newBuilder()
-        .expireAfterAccess(30, TimeUnit.MINUTES)
-        .expireAfterWrite(30, TimeUnit.MINUTES)
-        .maximumSize(10000)
-        .build();
-
+                                                        .expireAfterAccess(30, TimeUnit.MINUTES)
+                                                        .expireAfterWrite(30, TimeUnit.MINUTES)
+                                                        .maximumSize(10000)
+                                                        .build();
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -85,7 +85,9 @@ public class ExternalTokenVerificationFilter implements GlobalFilter {
             // if token invalid, no need to check,
             if (!invalid.asMap().containsKey(jwtKey)) {
                 return tryAuthentication(request, jwtKey).flatMap(jwtVal -> {
-                    ServerHttpRequest modifiedRequest = request.mutate().header(AUTHORIZATION, BEARER + " " + jwtVal).build();
+                    ServerHttpRequest modifiedRequest = request.mutate()
+                                                               .header(AUTHORIZATION, BEARER + " " + jwtVal)
+                                                               .build();
                     // Even if it's an expired Regards token, pass it along, it will be invalidated by the JWTAuthenticationProvider down stream
                     return chain.filter(exchange.mutate().request(modifiedRequest).build());
                 });
@@ -110,25 +112,28 @@ public class ExternalTokenVerificationFilter implements GlobalFilter {
             }
 
             return Mono.fromCallable(() -> jwtService.parseToken(authentication))
-                    .map(JWTAuthentication::getJwt)
-                    .onErrorResume(JwtException.class, e ->
-                                           externalAuthenticationVerifier.verifyAndAuthenticate(authentication.getTenant(), authentication.getJwt())
-                                           .map(Authentication::getAccessToken)
-                                           .onErrorResume(t -> {
-                                                LOGGER.info("Token verification failed (token={}).", jwtKey, t);
-                                                // If not resolved, mark token as invalid.
-                                                invalid.put(jwtKey, jwtKey);
-                                                return Mono.empty();
-                                           })
-                                   )
-                    // If resolved, it's supposed to be a valid REGARDS token in any case:
-                    // 1) either because it was already a valid Regards token
-                    // 2) or because it was a valid external token which was traded against a valid Regards token by the external "resolver".
-                    // So we can cache it and pass along.
-                    .map(regardsToken -> {
-                        valid.put(jwtKey, regardsToken);
-                        return regardsToken;
-                    });
+                       .map(JWTAuthentication::getJwt)
+                       .onErrorResume(JwtException.class,
+                                      e -> externalAuthenticationVerifier.verifyAndAuthenticate(authentication.getTenant(),
+                                                                                                authentication.getJwt())
+                                                                         .map(Authentication::getAccessToken)
+                                                                         .onErrorResume(t -> {
+                                                                             LOGGER.info(
+                                                                                 "Token verification failed (token={}).",
+                                                                                 jwtKey,
+                                                                                 t);
+                                                                             // If not resolved, mark token as invalid.
+                                                                             invalid.put(jwtKey, jwtKey);
+                                                                             return Mono.empty();
+                                                                         }))
+                       // If resolved, it's supposed to be a valid REGARDS token in any case:
+                       // 1) either because it was already a valid Regards token
+                       // 2) or because it was a valid external token which was traded against a valid Regards token by the external "resolver".
+                       // So we can cache it and pass along.
+                       .map(regardsToken -> {
+                           valid.put(jwtKey, regardsToken);
+                           return regardsToken;
+                       });
         }
     }
 

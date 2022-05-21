@@ -33,6 +33,7 @@ import java.util.function.UnaryOperator;
 
 /**
  * FacetType visitor implementation to generate AggregationBuilder from a search criterion with facets
+ *
  * @author oroussel
  */
 @Component
@@ -55,8 +56,8 @@ public class AggregationBuilderFacetTypeVisitor implements IFacetTypeVisitor<Agg
     private final int stringFacetMinDocCount;
 
     public AggregationBuilderFacetTypeVisitor(
-            @Value("${regards.elasticsearch.string.facet.size:10}") int stringFacetSize,
-            @Value("${regards.elasticsearch.string.facet.min.doc.count:1}") int stringFacetMinDocCount) {
+        @Value("${regards.elasticsearch.string.facet.size:10}") int stringFacetSize,
+        @Value("${regards.elasticsearch.string.facet.min.doc.count:1}") int stringFacetMinDocCount) {
         this.stringFacetSize = stringFacetSize;
         this.stringFacetMinDocCount = stringFacetMinDocCount;
     }
@@ -84,8 +85,8 @@ public class AggregationBuilderFacetTypeVisitor implements IFacetTypeVisitor<Agg
     @Override
     public AggregationBuilder visitDateFacet(Object... args) {
         String attributeName = (String) args[0]; // Development error if ClassCast or null array
-        PercentilesAggregationBuilder percentsAggsBuilder = AggregationBuilders
-                .percentiles(attributeName + DATE_FACET_SUFFIX);
+        PercentilesAggregationBuilder percentsAggsBuilder = AggregationBuilders.percentiles(
+            attributeName + DATE_FACET_SUFFIX);
         percentsAggsBuilder.field(attributeName);
         percentsAggsBuilder.percentiles(10., 20., 30., 40., 50., 60., 70., 80., 90.);
         return percentsAggsBuilder;
@@ -94,8 +95,8 @@ public class AggregationBuilderFacetTypeVisitor implements IFacetTypeVisitor<Agg
     @Override
     public AggregationBuilder visitNumericFacet(Object... args) {
         String attributeName = (String) args[0]; // Development error if ClassCast or null array
-        PercentilesAggregationBuilder percentsAggsBuilder = AggregationBuilders
-                .percentiles(attributeName + NUMERIC_FACET_SUFFIX);
+        PercentilesAggregationBuilder percentsAggsBuilder = AggregationBuilders.percentiles(
+            attributeName + NUMERIC_FACET_SUFFIX);
         percentsAggsBuilder.field(attributeName);
         percentsAggsBuilder.percentiles(0.0, 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.0);
         return percentsAggsBuilder;
@@ -132,7 +133,7 @@ public class AggregationBuilderFacetTypeVisitor implements IFacetTypeVisitor<Agg
         rangeAggBuilder.field(attributeName);
         Double previousValue = null;
         // INFO : ES API range creation use closedOpened ranges ([a , b[)
-        for (Iterator<Percentile> i = percentiles.iterator(); i.hasNext();) {
+        for (Iterator<Percentile> i = percentiles.iterator(); i.hasNext(); ) {
             if (previousValue == null) { // first value
                 previousValue = scalingFct.apply(i.next().getValue());
                 // Armor Elasticsearch bullshits

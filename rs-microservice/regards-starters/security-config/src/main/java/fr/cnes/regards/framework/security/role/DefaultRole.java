@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.security.role;
 
 /**
  * Lists the default roles available.
+ *
  * @author Xavier-Alexandre Brochard
  */
 public enum DefaultRole {

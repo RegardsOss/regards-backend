@@ -18,30 +18,24 @@
  */
 package fr.cnes.regards.modules.model.dao;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModelBuilder;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.AbstractRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.DoubleRangeRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.EnumerationRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.IntegerRangeRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.PatternRestriction;
+import fr.cnes.regards.modules.model.domain.attributes.restriction.*;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Restriction test
  *
  * @author Marc Sordi
- *
  */
 public class RestrictionIT extends AbstractModelIT {
 
     @Test
     public void enumRestriction() {
         final AttributeModel attModel = AttributeModelBuilder.build("ENUM", PropertyType.STRING, "ForTests")
-                .withEnumerationRestriction("FIRST", "SECOND");
+                                                             .withEnumerationRestriction("FIRST", "SECOND");
         saveAttribute(attModel);
 
         final AttributeModel att = findSingle();
@@ -56,7 +50,10 @@ public class RestrictionIT extends AbstractModelIT {
     @Test
     public void floatRestriction() {
         final AttributeModel attModel = AttributeModelBuilder.build("VFLOAT", PropertyType.DOUBLE_INTERVAL, "ForTests")
-                .withFloatRangeRestriction(Double.MIN_VALUE, Double.MAX_VALUE, false, false);
+                                                             .withFloatRangeRestriction(Double.MIN_VALUE,
+                                                                                        Double.MAX_VALUE,
+                                                                                        false,
+                                                                                        false);
         saveAttribute(attModel);
 
         final AttributeModel att = findSingle();
@@ -74,7 +71,10 @@ public class RestrictionIT extends AbstractModelIT {
     @Test
     public void integerRestriction() {
         final AttributeModel attModel = AttributeModelBuilder.build("VINTEGER", PropertyType.INTEGER_ARRAY, "ForTests")
-                .withIntegerRangeRestriction(Integer.MIN_VALUE, Integer.MAX_VALUE, false, true);
+                                                             .withIntegerRangeRestriction(Integer.MIN_VALUE,
+                                                                                          Integer.MAX_VALUE,
+                                                                                          false,
+                                                                                          true);
         saveAttribute(attModel);
 
         final AttributeModel att = findSingle();
@@ -90,7 +90,7 @@ public class RestrictionIT extends AbstractModelIT {
     public void patternRestriction() {
         final String pattern = "pattern";
         final AttributeModel attModel = AttributeModelBuilder.build("STRING", PropertyType.STRING_ARRAY, "ForTests")
-                .withPatternRestriction(pattern);
+                                                             .withPatternRestriction(pattern);
         saveAttribute(attModel);
 
         final AttributeModel att = findSingle();

@@ -29,6 +29,7 @@ public interface EntityFeatureDecoder extends SmartDecoder {
     Logger LOGGER = LoggerFactory.getLogger(EntityFeatureDecoder.class);
 
     AttributeModelPropertyTypeFinder getPropTypeFinder();
+
     Gson getGson();
 
     default void readTagsFilesProperties(Any feature, EntityFeature result) {
@@ -40,11 +41,10 @@ public interface EntityFeatureDecoder extends SmartDecoder {
         });
 
         feature.get("properties")
-                .asMap()
-                .forEach((name, value) -> getPropTypeFinder().getPropertyTypeForAttributeWithName(name)
-                        .flatMap(type -> readProperty(name, value, type))
-                        .peek(result::addProperty)
-                );
+               .asMap()
+               .forEach((name, value) -> getPropTypeFinder().getPropertyTypeForAttributeWithName(name)
+                                                            .flatMap(type -> readProperty(name, value, type))
+                                                            .peek(result::addProperty));
 
     }
 
@@ -79,49 +79,58 @@ public interface EntityFeatureDecoder extends SmartDecoder {
                 case INTEGER_ARRAY:
                     return Option.of(IProperty.buildIntegerArray(name, value.as(Integer[].class)));
                 case INTEGER_INTERVAL:
-                    return Option.of(IProperty.buildIntegerInterval(name, value.toInt(RANGE_LOWER_BOUND), value.toInt(RANGE_UPPER_BOUND)));
+                    return Option.of(IProperty.buildIntegerInterval(name,
+                                                                    value.toInt(RANGE_LOWER_BOUND),
+                                                                    value.toInt(RANGE_UPPER_BOUND)));
 
                 case LONG:
                     return Option.of(IProperty.buildLong(name, value.toLong()));
                 case LONG_ARRAY:
                     return Option.of(IProperty.buildLongArray(name, value.as(Long[].class)));
                 case LONG_INTERVAL:
-                    return Option.of(IProperty.buildLongInterval(name, value.toLong(RANGE_LOWER_BOUND), value.toLong(RANGE_UPPER_BOUND)));
+                    return Option.of(IProperty.buildLongInterval(name,
+                                                                 value.toLong(RANGE_LOWER_BOUND),
+                                                                 value.toLong(RANGE_UPPER_BOUND)));
 
                 case DOUBLE:
                     return Option.of(IProperty.buildDouble(name, value.toDouble()));
                 case DOUBLE_ARRAY:
                     return Option.of(IProperty.buildDoubleArray(name, value.as(Double[].class)));
                 case DOUBLE_INTERVAL:
-                    return Option.of(IProperty.buildDoubleInterval(name, value.toDouble(RANGE_LOWER_BOUND), value.toDouble(RANGE_UPPER_BOUND)));
+                    return Option.of(IProperty.buildDoubleInterval(name,
+                                                                   value.toDouble(RANGE_LOWER_BOUND),
+                                                                   value.toDouble(RANGE_UPPER_BOUND)));
 
                 case DATE_ISO8601:
                     return Option.of(IProperty.buildDate(name, parseDate(value.toString())));
                 case DATE_ARRAY:
                     return Option.of(IProperty.buildDateArray(name, toDateTimes(value.as(String[].class))));
                 case DATE_INTERVAL:
-                    return Option.of(IProperty.buildDateInterval(name, toDateRange(value.toString(RANGE_LOWER_BOUND), value.toString(RANGE_UPPER_BOUND))));
+                    return Option.of(IProperty.buildDateInterval(name,
+                                                                 toDateRange(value.toString(RANGE_LOWER_BOUND),
+                                                                             value.toString(RANGE_UPPER_BOUND))));
 
                 case OBJECT:
                     return Option.of(IProperty.buildObject(name, toSubProperties(value)));
                 case JSON:
-                    return Option.of(IProperty.buildJson(name, getGson().fromJson(value.toString(), JsonElement.class)));
+                    return Option.of(IProperty.buildJson(name,
+                                                         getGson().fromJson(value.toString(), JsonElement.class)));
 
                 default:
                     return Option.none();
             }
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             return Option.none();
         }
     }
 
     default IProperty<?>[] toSubProperties(Any value) {
-        return HashMap.ofAll(value.asMap()).toStream()
-                .flatMap(t -> getPropTypeFinder().getPropertyTypeForAttributeWithName(t._1())
-                        .flatMap(type -> readProperty(t._1(), t._2(), type)))
-                .toJavaArray(IProperty[]::new);
+        return HashMap.ofAll(value.asMap())
+                      .toStream()
+                      .flatMap(t -> getPropTypeFinder().getPropertyTypeForAttributeWithName(t._1())
+                                                       .flatMap(type -> readProperty(t._1(), t._2(), type)))
+                      .toJavaArray(IProperty[]::new);
     }
 
     default Range<OffsetDateTime> toDateRange(String from, String to) {
@@ -133,9 +142,7 @@ public interface EntityFeatureDecoder extends SmartDecoder {
     }
 
     default OffsetDateTime[] toDateTimes(String[] as) {
-        return Stream.of(as)
-                .map(this::parseDate)
-                .toArray(OffsetDateTime[]::new);
+        return Stream.of(as).map(this::parseDate).toArray(OffsetDateTime[]::new);
     }
 
 }

@@ -27,19 +27,20 @@ public class FluxByteBufferHarmonizer {
     public static Function<Flux<ByteBuffer>, Flux<ByteBuffer>> harmonize(int fixedSize) {
         return bbs -> {
             AtomicReference<ByteBuffer> fixedSizeBufferRef = new AtomicReference<>(ByteBuffer.allocate(fixedSize));
-            return bbs.materialize().filter(s -> List.of(ON_NEXT, ON_COMPLETE, ON_ERROR).contains(s.getType()))
-                    .concatMap(s -> {
-                        switch (s.getType()) {
-                            case ON_NEXT:
-                                return processNextByteBuffer(fixedSize, fixedSizeBufferRef, s);
-                            case ON_COMPLETE:
-                                return processComplete(fixedSizeBufferRef.get());
-                            case ON_ERROR:
-                                return Mono.error(s.getThrowable());
-                            default:
-                                return Mono.empty();
-                        }
-                    });
+            return bbs.materialize()
+                      .filter(s -> List.of(ON_NEXT, ON_COMPLETE, ON_ERROR).contains(s.getType()))
+                      .concatMap(s -> {
+                          switch (s.getType()) {
+                              case ON_NEXT:
+                                  return processNextByteBuffer(fixedSize, fixedSizeBufferRef, s);
+                              case ON_COMPLETE:
+                                  return processComplete(fixedSizeBufferRef.get());
+                              case ON_ERROR:
+                                  return Mono.error(s.getThrowable());
+                              default:
+                                  return Mono.empty();
+                          }
+                      });
         };
     }
 
@@ -53,7 +54,8 @@ public class FluxByteBufferHarmonizer {
     }
 
     public static Publisher<ByteBuffer> processNextByteBuffer(int fixedSize,
-            AtomicReference<ByteBuffer> fixedSizeBufferRef, Signal<ByteBuffer> s) {
+                                                              AtomicReference<ByteBuffer> fixedSizeBufferRef,
+                                                              Signal<ByteBuffer> s) {
         final ByteBuffer nextBuffer = s.get();
         List<ByteBuffer> toFluxOut = List.empty();
         if (nextBuffer != null) {

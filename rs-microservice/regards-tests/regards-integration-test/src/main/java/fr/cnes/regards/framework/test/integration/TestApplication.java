@@ -23,6 +23,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * Mock to test API endpoints at module level
+ *
  * @author msordi
  */
 // CHECKSTYLE:OFF

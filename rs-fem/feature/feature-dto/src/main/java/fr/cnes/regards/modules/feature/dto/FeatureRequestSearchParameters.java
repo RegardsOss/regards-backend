@@ -18,18 +18,16 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+
 import java.time.OffsetDateTime;
 import java.util.Collection;
-
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 
 /**
  * Search parameters to retrieve {@link FeatureRequestDTO}s
  *
  * @author Sébastien Binda
- *
  */
 public class FeatureRequestSearchParameters {
 

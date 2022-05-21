@@ -18,13 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.dto.aip;
 
-import java.time.OffsetDateTime;
 import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.OffsetDateTime;
 
 /**
  * @author Léo Mieulet
  */
 public class OAISDateRange {
+
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private OffsetDateTime from;
 

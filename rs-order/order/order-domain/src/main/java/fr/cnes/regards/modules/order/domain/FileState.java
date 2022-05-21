@@ -30,13 +30,9 @@ package fr.cnes.regards.modules.order.domain;
  * - ONLINE files are not stored into rs-storage BUT are managed by rs-storage. Hence, it is mandatory to
  * ask storage for their availability and storage respond they are immediately available.
  * So, from order point of view, an online data file is the same as a NEARLINE data file.
+ *
  * @author oroussel
  */
 public enum FileState {
-    AVAILABLE,
-    DOWNLOADED,
-    DOWNLOAD_ERROR,
-    PROCESSING_ERROR,
-    ERROR,
-    PENDING,
+    AVAILABLE, DOWNLOADED, DOWNLOAD_ERROR, PROCESSING_ERROR, ERROR, PENDING,
 }

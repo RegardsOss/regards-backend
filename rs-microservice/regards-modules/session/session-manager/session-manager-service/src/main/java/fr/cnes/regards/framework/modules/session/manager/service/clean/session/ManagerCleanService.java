@@ -67,8 +67,8 @@ public class ManagerCleanService {
     @Value("${regards.session.manager.clean.session.page:100}")
     private int pageSize;
 
-    public ManagerCleanService(ISessionStepRepository sessionStepRepo, 
-                               ISessionManagerRepository sessionRepo, 
+    public ManagerCleanService(ISessionStepRepository sessionStepRepo,
+                               ISessionManagerRepository sessionRepo,
                                ISourceManagerRepository sourceRepo,
                                ManagerCleanService managerCleanService) {
         this.sessionStepRepo = sessionStepRepo;
@@ -82,6 +82,7 @@ public class ManagerCleanService {
      * - delete old session steps and sessions (all items with lastUpdateDates before a configured date)
      * - update source aggregation information due to the session removals.
      * - delete sources which are not linked to any sessions
+     *
      * @return number of sessions deleted
      */
     public int clean() {
@@ -128,19 +129,21 @@ public class ManagerCleanService {
 
     /**
      * Update source information due to the session removals
+     *
      * @param sessionList list of sessions related to a source
      */
     private Map<String, Source> updateSources(List<Session> sessionList) {
         Map<String, Source> updatedSourcesMap = new HashMap<>();
         Map<String, List<Session>> sessionsRetrievedBySource = sessionList.stream()
-                .collect(Collectors.groupingBy(Session::getSource));
+                                                                          .collect(Collectors.groupingBy(Session::getSource));
 
         // iterate on all sessions of the source
         for (Map.Entry<String, List<Session>> entry : sessionsRetrievedBySource.entrySet()) {
             String sourceName = entry.getKey();
             // retrieve the source from the database
-            Source source = updatedSourcesMap
-                    .computeIfAbsent(sourceName, value -> this.sourceRepo.findByName(sourceName).orElse(null));
+            Source source = updatedSourcesMap.computeIfAbsent(sourceName,
+                                                              value -> this.sourceRepo.findByName(sourceName)
+                                                                                      .orElse(null));
             // if a source was found, update its related information
             if (source != null) {
                 List<Session> sessionListBySource = entry.getValue();
@@ -161,7 +164,8 @@ public class ManagerCleanService {
 
     /**
      * Store the sum of sessionSteps parameters which will impact the source aggregation
-     * @param steps sessionSteps of a session
+     *
+     * @param steps       sessionSteps of a session
      * @param deltaByType sum of sessionSteps parameters sorted by type of sessionStep
      */
     private void updateDelta(Set<SessionStep> steps, Map<StepTypeEnum, DeltaSessionStep> deltaByType) {
@@ -190,7 +194,8 @@ public class ManagerCleanService {
 
     /**
      * Update the source aggregation with the calculated delta
-     * @param source the source to update
+     *
+     * @param source      the source to update
      * @param deltaByType the source step aggregation calculate
      */
     private void updateSourceAgg(Source source, Map<StepTypeEnum, DeltaSessionStep> deltaByType) {

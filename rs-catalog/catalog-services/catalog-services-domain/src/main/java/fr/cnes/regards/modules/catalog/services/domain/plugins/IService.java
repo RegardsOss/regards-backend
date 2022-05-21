@@ -18,13 +18,12 @@
  */
 package fr.cnes.regards.modules.catalog.services.domain.plugins;
 
-import javax.servlet.http.HttpServletResponse;
-
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Plugin applying processus according to its parameters.
@@ -36,10 +35,11 @@ public interface IService {
 
     /**
      * Default method to apply a catalog service plugin. Check the type of plugin service and call the asscoiated method if any
+     *
      * @param pParameters plugin parameters {@link ServicePluginParameters}
      * @return @{link ResponseEntity}
      */
     public ResponseEntity<StreamingResponseBody> apply(ServicePluginParameters pParameters,
-            HttpServletResponse response);
+                                                       HttpServletResponse response);
 
 }

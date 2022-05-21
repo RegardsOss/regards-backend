@@ -86,6 +86,7 @@ import java.util.stream.Collectors;
 
 /**
  * Engine common methods
+ *
  * @author Marc Sordi
  */
 @DirtiesContext
@@ -287,8 +288,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         // COLLECTION : Star
         Model starModel = modelService.importModel(this.getClass().getResourceAsStream("collection_star.xml"));
         // DATASET : Star system
-        Model starSystemModel = modelService
-                .importModel(this.getClass().getResourceAsStream("dataset_star_system.xml"));
+        Model starSystemModel = modelService.importModel(this.getClass()
+                                                             .getResourceAsStream("dataset_star_system.xml"));
         // DATA : Planet
         Model planetModel = modelService.importModel(this.getClass().getResourceAsStream("data_planet.xml"));
 
@@ -305,8 +306,10 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         });
         Mockito.when(modelAttrAssocClientMock.getModelAttrAssocs(Mockito.any())).thenAnswer(invocation -> {
             String modelName = invocation.getArgument(0);
-            return ResponseEntity.ok(modelService.getModelAttrAssocs(modelName).stream()
-                    .map(EntityModel::of).collect(Collectors.toList()));
+            return ResponseEntity.ok(modelService.getModelAttrAssocs(modelName)
+                                                 .stream()
+                                                 .map(EntityModel::of)
+                                                 .collect(Collectors.toList()));
         });
 
         // - Refresh attribute factory
@@ -343,8 +346,10 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         // SOLAR SYSTEM
         solarSystem = createStelarSystem(starSystemModel, SOLAR_SYSTEM);
         List<DataObject> solarPlanets = createSolarSystemPlanets(planetModel, solarSystem.getIpId());
-        solarSystem.addProperty(IProperty.buildDate(STUDY_DATE, OffsetDateTime
-                .of(LocalDate.of(2020, 1, 1), LocalTime.of(0, 0, 0, 0), ZoneOffset.UTC)));
+        solarSystem.addProperty(IProperty.buildDate(STUDY_DATE,
+                                                    OffsetDateTime.of(LocalDate.of(2020, 1, 1),
+                                                                      LocalTime.of(0, 0, 0, 0),
+                                                                      ZoneOffset.UTC)));
         solarSystem.addProperty(IProperty.buildInteger(NUMBER_OF_PLANETS, solarPlanets.size()));
         solarSystem.addProperty(IProperty.buildUrl(RESEARCH_LAB, "https://esa.int"));
         solarSystem.addProperty(IProperty.buildDouble(DISTANCE_TO_SOLAR_SYSTEM, 0.0));
@@ -354,8 +359,10 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         // KEPLER 90 SYSTEM
         Dataset kepler90System = createStelarSystem(starSystemModel, KEPLER_90);
         List<DataObject> kepler90Planets = createKepler90SystemPlanets(planetModel, kepler90System.getIpId());
-        kepler90System.addProperty(IProperty.buildDate(STUDY_DATE, OffsetDateTime
-                .of(LocalDate.of(2019, 1, 1), LocalTime.of(0, 0, 0, 0), ZoneOffset.UTC)));
+        kepler90System.addProperty(IProperty.buildDate(STUDY_DATE,
+                                                       OffsetDateTime.of(LocalDate.of(2019, 1, 1),
+                                                                         LocalTime.of(0, 0, 0, 0),
+                                                                         ZoneOffset.UTC)));
         kepler90System.addProperty(IProperty.buildInteger(NUMBER_OF_PLANETS, kepler90Planets.size()));
         kepler90System.addProperty(IProperty.buildUrl(RESEARCH_LAB, "https://roscosmos.ru"));
         kepler90System.addProperty(IProperty.buildDouble(DISTANCE_TO_SOLAR_SYSTEM, 2.544));
@@ -420,19 +427,20 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         engineConfiguration.setContact("regards@c-s.fr");
         engineConfiguration.setImage("http://plop/image.png");
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(OpenSearchEngine.TIME_EXTENSION_PARAMETER,
-                                        PluginParameterTransformer.toJson(geoTime)),
-                     IPluginParam.build(OpenSearchEngine.REGARDS_EXTENSION_PARAMETER,
-                                        PluginParameterTransformer.toJson(regardsExt)),
-                     IPluginParam.build(OpenSearchEngine.MEDIA_EXTENSION_PARAMETER,
-                                        PluginParameterTransformer.toJson(mediaExt)),
-                     IPluginParam.build(OpenSearchEngine.EARTH_OBSERVATION_EXTENSION_PARAMETER,
-                                        PluginParameterTransformer.toJson(eoExt)),
-                     IPluginParam.build(OpenSearchEngine.PARAMETERS_CONFIGURATION,
-                                        PluginParameterTransformer.toJson(paramConfigurations)),
-                     IPluginParam.build(OpenSearchEngine.ENGINE_PARAMETERS,
-                                        PluginParameterTransformer.toJson(engineConfiguration)));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(OpenSearchEngine.TIME_EXTENSION_PARAMETER,
+                                                                           PluginParameterTransformer.toJson(geoTime)),
+                                                        IPluginParam.build(OpenSearchEngine.REGARDS_EXTENSION_PARAMETER,
+                                                                           PluginParameterTransformer.toJson(regardsExt)),
+                                                        IPluginParam.build(OpenSearchEngine.MEDIA_EXTENSION_PARAMETER,
+                                                                           PluginParameterTransformer.toJson(mediaExt)),
+                                                        IPluginParam.build(OpenSearchEngine.EARTH_OBSERVATION_EXTENSION_PARAMETER,
+                                                                           PluginParameterTransformer.toJson(eoExt)),
+                                                        IPluginParam.build(OpenSearchEngine.PARAMETERS_CONFIGURATION,
+                                                                           PluginParameterTransformer.toJson(
+                                                                               paramConfigurations)),
+                                                        IPluginParam.build(OpenSearchEngine.ENGINE_PARAMETERS,
+                                                                           PluginParameterTransformer.toJson(
+                                                                               engineConfiguration)));
 
         PluginConfiguration opensearchConf = PluginConfiguration.build(OpenSearchEngine.class, null, parameters);
         openSearchPluginConf = pluginService.savePluginConfiguration(opensearchConf);
@@ -444,8 +452,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         SearchEngineConfiguration seConfOSdataset = new SearchEngineConfiguration();
         seConfOSdataset.setConfiguration(openSearchPluginConf);
         seConfOSdataset.setLabel("Opensearch conf for one dataset");
-        seConfOSdataset
-                .setDatasetUrn("URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:" + UUID.randomUUID() + ":V1");
+        seConfOSdataset.setDatasetUrn(
+            "URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:" + UUID.randomUUID() + ":V1");
         searchEngineService.createConf(seConfOSdataset);
     }
 
@@ -486,11 +494,19 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         // Create planets
         List<DataObject> planets = new ArrayList<>();
         planets.add(createMercury(planetModel));
-        planets.add(createPlanet(planetModel, "Venus", PLANET_TYPE_TELLURIC, 12104, 108_000_000L,
+        planets.add(createPlanet(planetModel,
+                                 "Venus",
+                                 PLANET_TYPE_TELLURIC,
+                                 12104,
+                                 108_000_000L,
                                  createParams("near", "sun")));
         planets.add(createPlanet(planetModel, "Earth", PLANET_TYPE_TELLURIC, 12756, 150_000_000L));
         planets.add(createPlanet(planetModel, "Mars", PLANET_TYPE_TELLURIC, 6800, 228_000_000L));
-        planets.add(createPlanet(planetModel, JUPITER, PLANET_TYPE_GAS_GIANT, 143_000, 778_000_000L,
+        planets.add(createPlanet(planetModel,
+                                 JUPITER,
+                                 PLANET_TYPE_GAS_GIANT,
+                                 143_000,
+                                 778_000_000L,
                                  createParams(ALPHA_PARAM, "beta", "gamma")));
         planets.add(createPlanet(planetModel, "Saturn", PLANET_TYPE_GAS_GIANT, 120_536, 1_427_000_000L));
         planets.add(createPlanet(planetModel, "Uranus", PLANET_TYPE_ICE_GIANT, 51_800, 2_800_000_000L));
@@ -552,49 +568,65 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         planet.setDatasetModelNames(Sets.newHashSet(planetModel.getName()));
 
         planet.getFiles()
-            .put(DataType.QUICKLOOK_SD,
-                 buildDataFile(DataType.QUICKLOOK_SD,
-                               "le_quicklook_sd.jpg",
-                               "http://regards/le_quicklook_sd.jpg",
-                               "application/jpg",
-                               100d));
+              .put(DataType.QUICKLOOK_SD,
+                   buildDataFile(DataType.QUICKLOOK_SD,
+                                 "le_quicklook_sd.jpg",
+                                 "http://regards/le_quicklook_sd.jpg",
+                                 "application/jpg",
+                                 100d));
 
         planet.getFiles()
-            .put(DataType.QUICKLOOK_MD,
-                 buildDataFile(DataType.QUICKLOOK_MD,
-                               "le_quicklook_md.jpg",
-                               "http://regards/le_quicklook_md.jpg",
-                               "application/jpg",
-                               100d));
+              .put(DataType.QUICKLOOK_MD,
+                   buildDataFile(DataType.QUICKLOOK_MD,
+                                 "le_quicklook_md.jpg",
+                                 "http://regards/le_quicklook_md.jpg",
+                                 "application/jpg",
+                                 100d));
 
         planet.getFiles()
-            .put(DataType.QUICKLOOK_HD,
-                 buildDataFile(DataType.QUICKLOOK_HD,
-                               "le_quicklook_hd.jpg",
-                               "http://regards/le_quicklook_hd.jpg",
-                               "application/jpg",
-                               100d));
+              .put(DataType.QUICKLOOK_HD,
+                   buildDataFile(DataType.QUICKLOOK_HD,
+                                 "le_quicklook_hd.jpg",
+                                 "http://regards/le_quicklook_hd.jpg",
+                                 "application/jpg",
+                                 100d));
 
         planet.getFiles()
-            .put(DataType.THUMBNAIL,
-                 buildDataFile(DataType.THUMBNAIL,
-                               "thumbnail.png",
-                               "http://regards/thumbnail.png",
-                               "application/png",
-                               250d));
+              .put(DataType.THUMBNAIL,
+                   buildDataFile(DataType.THUMBNAIL,
+                                 "thumbnail.png",
+                                 "http://regards/thumbnail.png",
+                                 "application/png",
+                                 250d));
 
-        DataFile rawdata = DataFile.build(DataType.RAWDATA, "test.nc", "http://regards/test.nc",
-                                          MediaType.APPLICATION_OCTET_STREAM, Boolean.TRUE, Boolean.FALSE);
+        DataFile rawdata = DataFile.build(DataType.RAWDATA,
+                                          "test.nc",
+                                          "http://regards/test.nc",
+                                          MediaType.APPLICATION_OCTET_STREAM,
+                                          Boolean.TRUE,
+                                          Boolean.FALSE);
         rawdata.setFilesize(10L);
         planet.getFiles().put(rawdata.getDataType(), rawdata);
 
-        Polygon geo = IGeometry.polygon(IGeometry.toPolygonCoordinates(IGeometry
-                .toLinearRingCoordinates(IGeometry.position(10.0, 10.0), IGeometry.position(10.0, 30.0),
-                                         IGeometry.position(30.0, 30.0), IGeometry.position(30.0, 10.0),
-                                         IGeometry.position(10.0, 10.0))));
+        Polygon geo = IGeometry.polygon(IGeometry.toPolygonCoordinates(IGeometry.toLinearRingCoordinates(IGeometry.position(
+                                                                                                             10.0,
+                                                                                                             10.0),
+                                                                                                         IGeometry.position(
+                                                                                                             10.0,
+                                                                                                             30.0),
+                                                                                                         IGeometry.position(
+                                                                                                             30.0,
+                                                                                                             30.0),
+                                                                                                         IGeometry.position(
+                                                                                                             30.0,
+                                                                                                             10.0),
+                                                                                                         IGeometry.position(
+                                                                                                             10.0,
+                                                                                                             10.0))));
         planet.setGeometry(geo);
         planet.setWgs84(geo);
-        planet.addProperty(IProperty.buildObject("TimePeriod", IProperty.buildDate(START_DATE, startDateValue),
+        planet.addProperty(IProperty.buildObject("TimePeriod",
+                                                 IProperty.buildDate(START_DATE, startDateValue),
                                                  IProperty.buildDate(STOP_DATE, stopDateValue)));
 
         return planet;
@@ -619,8 +651,12 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         return null;
     }
 
-    protected DataObject createPlanet(Model planetModel, String name, String type, Integer diameter, Long sunDistance,
-            Set<String> params) {
+    protected DataObject createPlanet(Model planetModel,
+                                      String name,
+                                      String type,
+                                      Integer diameter,
+                                      Long sunDistance,
+                                      Set<String> params) {
         DataObject planet = createEntity(planetModel, name);
         planet.setGroups(getAccessGroups());
         planet.addProperty(IProperty.buildString(PLANET, name));
@@ -631,7 +667,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         if ((params != null) && !params.isEmpty()) {
             planet.addProperty(IProperty.buildStringArray(PLANET_PARAMS, params.toArray(new String[params.size()])));
         }
-        planet.addProperty(IProperty.buildObject("TimePeriod", IProperty.buildDate(START_DATE, startDateValue),
+        planet.addProperty(IProperty.buildObject("TimePeriod",
+                                                 IProperty.buildDate(START_DATE, startDateValue),
                                                  IProperty.buildDate(STOP_DATE, stopDateValue)));
         DataFile file = DataFile.build(DataType.RAWDATA, name+".txt","http://toto/toto.txt", MediaType.APPLICATION_OCTET_STREAM, true, false);
         planet.getFeature().getFiles().put(DataType.RAWDATA, file);
@@ -640,7 +677,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
     protected JsonObject buildPlanetOrigine() {
         return builder.create()
-                .fromJson("{\"name\":\"CNES\",\"link\":\"http://cnes.fr\",\"contacts\":[{\"name\":\"JeanPaul\",\"locations\":[{\"institut\":\"CNES-001\",\"code\":1}]},{\"name\":\"Bernadette\",\"locations\":[{\"institut\":\"CNES-156\",\"code\":156}]}]}",
+                      .fromJson(
+                          "{\"name\":\"CNES\",\"link\":\"http://cnes.fr\",\"contacts\":[{\"name\":\"JeanPaul\",\"locations\":[{\"institut\":\"CNES-001\",\"code\":1}]},{\"name\":\"Bernadette\",\"locations\":[{\"institut\":\"CNES-156\",\"code\":156}]}]}",
                           JsonObject.class);
     }
 
@@ -648,7 +686,11 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         return new HashSet<>(Arrays.asList(params));
     }
 
-    protected DataObject createPlanet(Model planetModel, String name, String type, Integer diameter, Long localSunDistance) {
+    protected DataObject createPlanet(Model planetModel,
+                                      String name,
+                                      String type,
+                                      Integer diameter,
+                                      Long localSunDistance) {
         return createPlanet(planetModel, name, type, diameter, localSunDistance, null);
     }
 
@@ -674,8 +716,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         entity.setCreationDate(OffsetDateTime.now());
         entity.setLastUpdate(OffsetDateTime.now());
         if (astroObjects.containsKey(label)) {
-            throw new UnsupportedOperationException("Label \"" + label
-                    + "\" for astronomical object already exists! Please change it and relaunch test!");
+            throw new UnsupportedOperationException(
+                "Label \"" + label + "\" for astronomical object already exists! Please change it and relaunch test!");
         }
         astroObjects.put(label, entity);
         return (T) entity;

@@ -18,19 +18,17 @@
  */
 package fr.cnes.regards.framework.utils.metamodel;
 
-import java.util.List;
-
-import fr.cnes.regards.framework.utils.exceptions.AttributeFactoryException;
 import fr.cnes.regards.framework.utils.model.Attribute;
 import fr.cnes.regards.framework.utils.model.AttributeTypeEnum;
+
+import java.util.List;
 
 /**
  * Cette classe modelise la notion de MetaAttribut. Un MetaAttribut correspond a une definition de type d'attribut.
  * Cette classe est utile par exemple pour mettre en oeuvre les fonctions permettant de recuperer la liste des attributs
  * definis pour une entite.
- * 
- * @author Christophe Mertz
  *
+ * @author Christophe Mertz
  */
 public class MetaAttribute {
 
@@ -68,9 +66,8 @@ public class MetaAttribute {
 
     /**
      * Constructor
-     * 
-     * @param type
-     *            le type du meta attribut
+     *
+     * @param type le type du meta attribut
      */
     public MetaAttribute(AttributeTypeEnum type) {
         valueType = type;
@@ -78,11 +75,9 @@ public class MetaAttribute {
 
     /**
      * Constructor
-     * 
-     * @param name
-     *            Nom ou identifiant du meta-attribut.
-     * @param type
-     *            Classe de la valeur du meta-attribut.
+     *
+     * @param name Nom ou identifiant du meta-attribut.
+     * @param type Classe de la valeur du meta-attribut.
      */
     public MetaAttribute(String name, AttributeTypeEnum type) {
         this.name = name;

@@ -18,16 +18,14 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoIT;
 import org.junit.Test;
 import org.springframework.test.context.TestPropertySource;
-
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoIT;
 
 /**
  * Initialize database with Flyway scripts on public schema.
  *
  * @author Marc Sordi
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=public" })
 public class InitSQLDependenciesIT extends AbstractDaoIT {

@@ -27,10 +27,6 @@ import fr.cnes.regards.framework.modules.session.agent.service.AbstractAgentServ
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -38,6 +34,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Performance test for {@link AgentSnapshotJobService}
@@ -82,17 +83,18 @@ public class AgentSnapshotPerformanceJobServiceIT extends AbstractAgentServiceUt
         long start = System.currentTimeMillis();
         long timeout = 20000L;
         LOGGER.info(
-                "Launching performance test to create SessionSteps from {} step requests from {} different " + "source",
-                nbStepRequests, nbSources);
+            "Launching performance test to create SessionSteps from {} step requests from {} different " + "source",
+            nbStepRequests,
+            nbSources);
         agentJobSnapshotService.scheduleJob();
 
         // wait for job to be in success state
         boolean isJobSuccess = waitForJobSuccesses(AgentSnapshotJob.class.getName(), nbSources, timeout);
         LOGGER.info("Performance test handled in {}ms to create SessionSteps from {} step requests from {} different "
-                            + "source", System.currentTimeMillis() - start, nbStepRequests, nbSources);
+                        + "source", System.currentTimeMillis() - start, nbStepRequests, nbSources);
         if (!isJobSuccess) {
             Assert.fail(String.format("The number of jobs in success state is not expected. Check if all jobs were "
-                                              + "created in the required amount of time (max. %d ms)", timeout));
+                                          + "created in the required amount of time (max. %d ms)", timeout));
         }
 
         checkResult(nbSources);
@@ -117,12 +119,15 @@ public class AgentSnapshotPerformanceJobServiceIT extends AbstractAgentServiceUt
             String source = sources.get(i % nbSources);
 
             // ACQUISITION - scan event SOURCE 0-nbSources / OWNER 1
-            stepRequests.add(new StepPropertyUpdateRequestEvent(new StepProperty("scan", source, OWNER_1,
-                                                                                 new StepPropertyInfo(
-                                                                                         StepTypeEnum.ACQUISITION,
-                                                                                         StepPropertyStateEnum.SUCCESS,
-                                                                                         "gen.products", "1", true,
-                                                                                         false)),
+            stepRequests.add(new StepPropertyUpdateRequestEvent(new StepProperty("scan",
+                                                                                 source,
+                                                                                 OWNER_1,
+                                                                                 new StepPropertyInfo(StepTypeEnum.ACQUISITION,
+                                                                                                      StepPropertyStateEnum.SUCCESS,
+                                                                                                      "gen.products",
+                                                                                                      "1",
+                                                                                                      true,
+                                                                                                      false)),
                                                                 StepPropertyEventTypeEnum.INC));
         }
         // Publish events

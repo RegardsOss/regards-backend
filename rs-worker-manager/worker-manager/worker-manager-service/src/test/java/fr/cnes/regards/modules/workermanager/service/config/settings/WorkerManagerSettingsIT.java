@@ -34,9 +34,8 @@ import org.springframework.test.context.TestPropertySource;
 import java.util.Arrays;
 import java.util.List;
 
-@TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=worker_manager_settings" },
-        locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=worker_manager_settings" },
+    locations = { "classpath:application-test.properties" })
 public class WorkerManagerSettingsIT extends AbstractMultitenantServiceIT {
 
     @Autowired
@@ -59,10 +58,12 @@ public class WorkerManagerSettingsIT extends AbstractMultitenantServiceIT {
     }
 
     @Test
-    public void testSetting() throws EntityOperationForbiddenException, EntityInvalidException, EntityNotFoundException {
+    public void testSetting()
+        throws EntityOperationForbiddenException, EntityInvalidException, EntityNotFoundException {
         List<String> contentTypesToSkip = settingService.getValue(WorkerManagerSettings.SKIP_CONTENT_TYPES.getName());
         Assert.assertTrue(contentTypesToSkip.isEmpty());
-        tenantSettingService.update(WorkerManagerSettings.SKIP_CONTENT_TYPES.getName(), Arrays.asList("content1", "content2"));
+        tenantSettingService.update(WorkerManagerSettings.SKIP_CONTENT_TYPES.getName(),
+                                    Arrays.asList("content1", "content2"));
         contentTypesToSkip = settingService.getValue(WorkerManagerSettings.SKIP_CONTENT_TYPES.getName());
         Assert.assertTrue(contentTypesToSkip.contains("content1"));
         Assert.assertTrue(contentTypesToSkip.contains("content2"));

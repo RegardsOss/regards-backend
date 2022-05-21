@@ -1,7 +1,6 @@
 package fr.cnes.regards.modules.acquisition.service.session;
 
 import com.google.common.base.Strings;
-
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
@@ -56,8 +55,8 @@ public class SessionChangingStateProbe {
 
     public boolean shouldUpdateState() {
         return ((getInitialProductState() != getProductState()) && !(
-        // Ignore FINISHED -> COMPLETED state change
-        (getProductState() == ProductState.FINISHED) && (getInitialProductState() == ProductState.COMPLETED)));
+            // Ignore FINISHED -> COMPLETED state change
+            (getProductState() == ProductState.FINISHED) && (getInitialProductState() == ProductState.COMPLETED)));
     }
 
     public String getInitialSession() {

@@ -25,7 +25,6 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 
 /**
  * @author sbinda
- *
  */
 @Event(target = Target.ALL)
 public class UIPluginDefinitionEvent implements ISubscribable {

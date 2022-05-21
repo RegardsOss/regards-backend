@@ -18,19 +18,17 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.update;
 
-import java.util.List;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import java.util.List;
 
 /**
  * @author Léo Mieulet
@@ -44,7 +42,7 @@ public class AIPUpdateFileLocationTask extends AbstractAIPUpdateTask {
      */
     @Column(columnDefinition = "jsonb", name = "payload")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
-            value = "fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO") })
+        value = "fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO") })
     private List<RequestResultInfoDTO> fileLocationUpdates;
 
     public List<RequestResultInfoDTO> getFileLocationUpdates() {

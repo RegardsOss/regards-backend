@@ -17,12 +17,11 @@
  */
 package fr.cnes.regards.modules.feature.dto.hateoas;
 
-import java.util.List;
-
+import fr.cnes.regards.modules.feature.dto.RequestInfo;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
-import fr.cnes.regards.modules.feature.dto.RequestInfo;
+import java.util.List;
 
 /**
  * Page implementation with {@link RequestInfo} values

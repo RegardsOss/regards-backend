@@ -18,21 +18,18 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
-import java.util.Set;
-
-import javax.persistence.criteria.Predicate;
-
+import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
-import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
+import javax.persistence.criteria.Predicate;
+import java.util.Set;
 
 /**
  * JPA Specification to search for {@link FeatureUpdateRequest} from {@link IFeatureUpdateRequestRepository}
  *
  * @author Sébastien Binda
- *
  */
 public class FeatureUpdateRequestSpecification {
 
@@ -42,15 +39,15 @@ public class FeatureUpdateRequestSpecification {
 
     /**
      * Creates search {@link Specification} for {@link FeatureUpdateRequest}s
+     *
      * @param selection {@link FeatureRequestsSelectionDTO}
-     * @param page {@link Pageable}
+     * @param page      {@link Pageable}
      * @return {@link Specification}
      */
     public static Specification<FeatureUpdateRequest> searchAllByFilters(FeatureRequestsSelectionDTO selection,
-            Pageable page) {
+                                                                         Pageable page) {
         return (root, query, cb) -> {
-            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(selection, true, root, query, cb,
-                                                                                page);
+            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(selection, true, root, query, cb, page);
             if (selection.getFilters() != null) {
                 if (selection.getFilters().getProviderId() != null) {
                     predicates.add(cb.like(cb.lower(root.get("providerId")),

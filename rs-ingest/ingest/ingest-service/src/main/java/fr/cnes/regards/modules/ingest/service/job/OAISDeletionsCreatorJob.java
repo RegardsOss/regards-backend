@@ -18,20 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import fr.cnes.regards.modules.ingest.service.aip.IAIPDeleteService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.util.CollectionUtils;
-
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -45,10 +31,22 @@ import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreato
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPDeleteService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.util.CollectionUtils;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * This job creates {@link AbstractAIPUpdateTask} task to update. It scans AIP and create for each modification a task
@@ -88,7 +86,7 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         // Retrieve deletion request
         Long databaseId = getValue(parameters, REQUEST_ID);
         Optional<OAISDeletionCreatorRequest> oDeletionRequest = oaisDeletionRequestService.searchCreator(databaseId);
@@ -119,16 +117,19 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
             do {
 
                 aipsPage = aipService.findByFilters(oaisDeletionCreatorPayload, pageRequest);
-                logger.debug("[OAIS DELETION CREATOR JOB] Scheduling deletion of {} aips", aipsPage.getNumberOfElements());
+                logger.debug("[OAIS DELETION CREATOR JOB] Scheduling deletion of {} aips",
+                             aipsPage.getNumberOfElements());
                 // Save number of pages to publish job advancement
                 if (totalPages < aipsPage.getTotalPages()) {
                     totalPages = aipsPage.getTotalPages();
                 }
                 // If deletion request is already registered for the given aip do not create a new one.
                 List<AbstractRequest> requests = aipsPage.stream()
-                        .filter(aip -> !aipDeleteService.deletionAlreadyPending(aip))
-                        .map(aip -> OAISDeletionRequest.build(aip, oaisDeletionCreatorPayload.getDeletionMode(), oaisDeletionCreatorPayload.getDeletePhysicalFiles()))
-                        .collect(Collectors.toList());
+                                                         .filter(aip -> !aipDeleteService.deletionAlreadyPending(aip))
+                                                         .map(aip -> OAISDeletionRequest.build(aip,
+                                                                                               oaisDeletionCreatorPayload.getDeletionMode(),
+                                                                                               oaisDeletionCreatorPayload.getDeletePhysicalFiles()))
+                                                         .collect(Collectors.toList());
                 nbRequestScheduled += requestService.scheduleRequests(requests);
                 if (totalPages > 0) {
                     advanceCompletion();
@@ -141,7 +142,9 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
 
         requestService.deleteRequest(oaisDeletionCreatorRequest);
 
-        logger.info("[OAIS DELETION CREATOR JOB] {} OAISDeletionRequest(s) scheduled in {}ms", nbRequestScheduled, System.currentTimeMillis() - start);
+        logger.info("[OAIS DELETION CREATOR JOB] {} OAISDeletionRequest(s) scheduled in {}ms",
+                    nbRequestScheduled,
+                    System.currentTimeMillis() - start);
     }
 
     @Override
@@ -168,18 +171,18 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
                 isValid = true;
                 break;
             case INCLUDE:
-                isValid = oaisDeletionCreatorPayload.getState() != null
-                        || oaisDeletionCreatorPayload.getIpType() != null
+                isValid =
+                    oaisDeletionCreatorPayload.getState() != null || oaisDeletionCreatorPayload.getIpType() != null
                         || oaisDeletionCreatorPayload.getLastUpdate().getFrom() != null
-                        || oaisDeletionCreatorPayload.getLastUpdate().getTo() != null
-                        || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getProviderIds())
+                        || oaisDeletionCreatorPayload.getLastUpdate().getTo() != null || !CollectionUtils.isEmpty(
+                        oaisDeletionCreatorPayload.getProviderIds())
                         || oaisDeletionCreatorPayload.getSessionOwner() != null
-                        || oaisDeletionCreatorPayload.getSession() != null
-                        || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getStorages())
+                        || oaisDeletionCreatorPayload.getSession() != null || !CollectionUtils.isEmpty(
+                        oaisDeletionCreatorPayload.getStorages())
                         || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getCategories())
                         || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getTags())
-                        || oaisDeletionCreatorPayload.getLast() != null
-                        || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getAipIds());
+                        || oaisDeletionCreatorPayload.getLast() != null || !CollectionUtils.isEmpty(
+                        oaisDeletionCreatorPayload.getAipIds());
                 break;
             default:
                 break;

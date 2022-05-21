@@ -34,28 +34,18 @@ import java.util.TreeSet;
  * @author oroussel
  */
 @Entity
-@Table(name = "t_order", uniqueConstraints = {
-    @UniqueConstraint(name = "uk_t_order_label_owner", columnNames = {"label", "owner"})
-})
-@NamedEntityGraphs({
-    @NamedEntityGraph(
-        name = "graph.order.complete",
-        attributeNodes = @NamedAttributeNode(
-            value = "datasetTasks",
-            subgraph = "graph.order.complete.datasetTasks"
-        ),
-        subgraphs = @NamedSubgraph(
-            name = "graph.order.complete.datasetTasks",
-            attributeNodes = @NamedAttributeNode(value = "reliantTasks")
-        )
-    ),
-    @NamedEntityGraph(
-        name = "graph.order.simple",
-        attributeNodes = @NamedAttributeNode(value = "datasetTasks")
-    )
-})
+@Table(name = "t_order",
+    uniqueConstraints = { @UniqueConstraint(name = "uk_t_order_label_owner", columnNames = { "label", "owner" }) })
+@NamedEntityGraphs({ @NamedEntityGraph(name = "graph.order.complete",
+    attributeNodes = @NamedAttributeNode(value = "datasetTasks", subgraph = "graph.order.complete.datasetTasks"),
+    subgraphs = @NamedSubgraph(name = "graph.order.complete.datasetTasks",
+        attributeNodes = @NamedAttributeNode(value = "reliantTasks"))),
+    @NamedEntityGraph(name = "graph.order.simple", attributeNodes = @NamedAttributeNode(value = "datasetTasks")) })
 public class Order implements IIdentifiable<Long>, Comparable<Order> {
-    /** Label field length (shared with service) */
+
+    /**
+     * Label field length (shared with service)
+     */
     public static final int LABEL_FIELD_LENGTH = 50;
 
     @OneToMany(cascade = CascadeType.ALL)
@@ -104,9 +94,11 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
      */
     @Column(name = "available_count", nullable = false)
     private int availableFilesCount = 0;
+
     @Column(name = "avail_count_update_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime availableUpdateDate;
+
     @Column(name = "waiting_for_user", nullable = false)
     private boolean waitingForUser = false;
 

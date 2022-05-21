@@ -30,6 +30,7 @@ import java.util.TreeSet;
 
 /**
  * A grouped items by dataset selection from a basket
+ *
  * @author oroussel
  * @author Sébastien Binda
  */
@@ -67,7 +68,7 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
 
     @ElementCollection
     @CollectionTable(name = "t_basket_ds_item", joinColumns = @JoinColumn(name = "basket_dataset_id"),
-            foreignKey = @ForeignKey(name = "fk_items_selection"))
+        foreignKey = @ForeignKey(name = "fk_items_selection"))
     @SortNatural
     private final SortedSet<BasketDatedItemsSelection> itemsSelections = new TreeSet<>();
 
@@ -117,26 +118,22 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
     }
 
     public Long getFileTypeSize(String fileType) {
-        return Optional.ofNullable(fileTypesSizes)
-            .map(m -> m.getOrDefault(fileType, 0L))
-            .orElse(0L);
+        return Optional.ofNullable(fileTypesSizes).map(m -> m.getOrDefault(fileType, 0L)).orElse(0L);
     }
 
     public void setFileTypeSize(String fileType, Long filesSize) {
-        if (fileTypesSizes==null) {
+        if (fileTypesSizes == null) {
             fileTypesSizes = new StringToLongMap();
         }
         this.fileTypesSizes.put(fileType, filesSize);
     }
 
     public Long getFileTypeCount(String fileType) {
-        return Optional.ofNullable(fileTypesCount)
-            .map(m -> m.getOrDefault(fileType, 0L))
-            .orElse(0L);
+        return Optional.ofNullable(fileTypesCount).map(m -> m.getOrDefault(fileType, 0L)).orElse(0L);
     }
 
     public void setFileTypeCount(String fileType, Long filesCount) {
-        if (fileTypesCount==null) {
+        if (fileTypesCount == null) {
             fileTypesCount = new StringToLongMap();
         }
         this.fileTypesCount.put(fileType, filesCount);

@@ -28,6 +28,7 @@ import java.io.IOException;
 
 /**
  * {@link Link} adapter
+ *
  * @author Marc Sordi
  */
 @GsonTypeAdapter(adapted = Link.class)

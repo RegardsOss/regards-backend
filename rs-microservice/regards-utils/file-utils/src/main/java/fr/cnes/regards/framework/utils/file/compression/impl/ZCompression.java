@@ -18,6 +18,11 @@
  */
 package fr.cnes.regards.framework.utils.file.compression.impl;
 
+import fr.cnes.regards.framework.utils.file.compression.*;
+import org.apache.commons.compress.compressors.z.ZCompressorInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -27,21 +32,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import org.apache.commons.compress.compressors.z.ZCompressorInputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import fr.cnes.regards.framework.utils.file.compression.AbstractRunnableCompression;
-import fr.cnes.regards.framework.utils.file.compression.CompressManager;
-import fr.cnes.regards.framework.utils.file.compression.CompressionException;
-import fr.cnes.regards.framework.utils.file.compression.CompressionTypeEnum;
-import fr.cnes.regards.framework.utils.file.compression.FileAlreadyExistException;
-
 /**
  * Manage Z (de)compression
  *
  * @author Marc SORDI
- *
  */
 public class ZCompression extends AbstractRunnableCompression {
 
@@ -74,7 +68,7 @@ public class ZCompression extends AbstractRunnableCompression {
 
         // Init result file
         String resultFilename = compressedFile.getName()
-                .substring(0, compressedFile.getName().length() - Z_EXTENSION.length());
+                                              .substring(0, compressedFile.getName().length() - Z_EXTENSION.length());
         Path resultPath = outputDir.toPath().resolve(resultFilename);
 
         if (Files.exists(resultPath)) {
@@ -84,25 +78,29 @@ public class ZCompression extends AbstractRunnableCompression {
         }
 
         // Uncompress
-        try (ZCompressorInputStream zIn = new ZCompressorInputStream(
-                new BufferedInputStream(Files.newInputStream(compressedFile.toPath())));
-                OutputStream out = Files.newOutputStream(resultPath)) {
+        try (ZCompressorInputStream zIn = new ZCompressorInputStream(new BufferedInputStream(Files.newInputStream(
+            compressedFile.toPath()))); OutputStream out = Files.newOutputStream(resultPath)) {
             final byte[] buffer = new byte[BUFFER_SIZE];
             int n = 0;
             while (-1 != (n = zIn.read(buffer))) {
                 out.write(buffer, 0, n);
             }
         } catch (IOException e) {
-            String msg = String
-                    .format(String.format("IO error during %s uncompression of %s", CompressionTypeEnum.Z, resultPath));
+            String msg = String.format(String.format("IO error during %s uncompression of %s",
+                                                     CompressionTypeEnum.Z,
+                                                     resultPath));
             LOGGER.error(msg, e);
             throw new CompressionException(msg);
         }
     }
 
     @Override
-    protected CompressManager runCompress(List<File> fileList, File compressedFile, File rootDirectory,
-            boolean flatArchive, Charset charset, CompressManager compressManager) throws CompressionException {
+    protected CompressManager runCompress(List<File> fileList,
+                                          File compressedFile,
+                                          File rootDirectory,
+                                          boolean flatArchive,
+                                          Charset charset,
+                                          CompressManager compressManager) throws CompressionException {
         throw new CompressionException("Unsupported operation");
     }
 

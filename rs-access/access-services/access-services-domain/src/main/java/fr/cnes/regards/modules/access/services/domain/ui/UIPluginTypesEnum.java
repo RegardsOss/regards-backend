@@ -19,9 +19,8 @@
 package fr.cnes.regards.modules.access.services.domain.ui;
 
 /**
- *
  * Class PluginTypesEnum
- *
+ * <p>
  * Enum for all plugin types.
  *
  * @author Sébastien Binda

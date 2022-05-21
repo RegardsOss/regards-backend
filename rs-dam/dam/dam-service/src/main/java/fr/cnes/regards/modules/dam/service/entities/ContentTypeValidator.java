@@ -18,22 +18,20 @@
  */
 package fr.cnes.regards.modules.dam.service.entities;
 
-import java.util.Arrays;
-import java.util.Collection;
-
-import org.springframework.http.MediaType;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.dam.service.entities.exception.InvalidCharsetException;
 import fr.cnes.regards.modules.dam.service.entities.exception.InvalidContentTypeException;
 import fr.cnes.regards.modules.dam.service.entities.exception.InvalidFilenameException;
+import org.springframework.http.MediaType;
+
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * Utility class to validate supported content type for a file data type.
  *
  * @author Marc Sordi
- *
  */
 public final class ContentTypeValidator {
 
@@ -56,8 +54,10 @@ public final class ContentTypeValidator {
         switch (dataType) {
             case DESCRIPTION:
                 checkFileSupported(contentType,
-                                   Arrays.asList(MediaType.APPLICATION_PDF_VALUE, MediaType.TEXT_MARKDOWN_VALUE,
-                                                 TEXT_MARKDOWN_ALTERNATIVE_MEDIATYPE, MediaType.TEXT_HTML_VALUE));
+                                   Arrays.asList(MediaType.APPLICATION_PDF_VALUE,
+                                                 MediaType.TEXT_MARKDOWN_VALUE,
+                                                 TEXT_MARKDOWN_ALTERNATIVE_MEDIATYPE,
+                                                 MediaType.TEXT_HTML_VALUE));
                 break;
             default:
                 // No restriction
@@ -66,7 +66,7 @@ public final class ContentTypeValidator {
     }
 
     public static void supportsForReference(DataType dataType, String filename, String contentType)
-            throws ModuleException {
+        throws ModuleException {
 
         // Original file must be given
         if ((filename == null) || filename.isEmpty()) {
@@ -76,8 +76,10 @@ public final class ContentTypeValidator {
         switch (dataType) {
             case DESCRIPTION:
                 checkFileSupported(contentType,
-                                   Arrays.asList(MediaType.APPLICATION_PDF_VALUE, MediaType.TEXT_MARKDOWN_VALUE,
-                                                 MediaType.TEXT_HTML_VALUE, TEXT_MARKDOWN_ALTERNATIVE_MEDIATYPE));
+                                   Arrays.asList(MediaType.APPLICATION_PDF_VALUE,
+                                                 MediaType.TEXT_MARKDOWN_VALUE,
+                                                 MediaType.TEXT_HTML_VALUE,
+                                                 TEXT_MARKDOWN_ALTERNATIVE_MEDIATYPE));
                 break;
             default:
                 // No restriction
@@ -87,7 +89,7 @@ public final class ContentTypeValidator {
     }
 
     private static void checkFileSupported(String contentType, Collection<String> expectedContentTypes)
-            throws InvalidCharsetException, InvalidContentTypeException {
+        throws InvalidCharsetException, InvalidContentTypeException {
 
         // Check content types
         if (expectedContentTypes != null) {

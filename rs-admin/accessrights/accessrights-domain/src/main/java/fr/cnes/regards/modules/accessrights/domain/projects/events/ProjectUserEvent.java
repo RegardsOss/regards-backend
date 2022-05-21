@@ -23,10 +23,12 @@ public class ProjectUserEvent implements ISubscribable {
     /**
      * Default constructor
      */
-    public ProjectUserEvent() {}
+    public ProjectUserEvent() {
+    }
 
     /**
      * Constructor setting the parameters as attributes
+     *
      * @param email
      * @param action
      */
@@ -44,6 +46,7 @@ public class ProjectUserEvent implements ISubscribable {
 
     /**
      * Set the email
+     *
      * @param email
      */
     public void setEmail(String email) {
@@ -59,6 +62,7 @@ public class ProjectUserEvent implements ISubscribable {
 
     /**
      * Set the action
+     *
      * @param action
      */
     public void setAction(ProjectUserAction action) {

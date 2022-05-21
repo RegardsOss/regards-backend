@@ -18,16 +18,13 @@
  */
 package fr.cnes.regards.framework.security.endpoint;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.security.domain.ResourceMappingException;
+import fr.cnes.regards.framework.security.domain.SecurityException;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,17 +41,14 @@ import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.domain.ResourceMapping;
-import fr.cnes.regards.framework.security.domain.ResourceMappingException;
-import fr.cnes.regards.framework.security.domain.SecurityException;
-import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This service allows to set/get the REST resource method access authorizations.<br/>
  * An authorization is defined by a endpoint, a HTTP Verb and a list of authorized user ROLES
+ *
  * @author Sébastien Binda
  */
 public class MethodAuthorizationService implements ApplicationContextAware, ApplicationListener<ApplicationReadyEvent> {
@@ -118,6 +112,7 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
 
     /**
      * Manage tenant initialization
+     *
      * @param tenant tenant to initialize
      * @throws SecurityException if error occurs!
      */
@@ -130,13 +125,14 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
 
     /**
      * Retrieve the resources of the current microservice
+     *
      * @return List<ResourceMapping>
      */
     public List<ResourceMapping> getResources() {
 
         final List<ResourceMapping> resources = new ArrayList<>();
         final ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
-                false);
+            false);
 
         // Check for all RestController classes
         scanner.addIncludeFilter(new AnnotationTypeFilter(RestController.class));
@@ -159,6 +155,7 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
 
     /**
      * Create the resources associated to a Rest controller endpoint
+     *
      * @param pMethod method of the endpoint
      * @return List<ResourceMapping>
      */
@@ -178,13 +175,14 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
                 }
             } else {
                 LOGGER.debug(
-                        "Skipping resource management for  method {} as there is no @ResourceAccess annotation on it",
-                        pMethod.getName());
+                    "Skipping resource management for  method {} as there is no @ResourceAccess annotation on it",
+                    pMethod.getName());
             }
         } catch (final ResourceMappingException e) {
             // Skip inconsistent resource management
             LOGGER.warn(e.getMessage(), e);
-            LOGGER.warn("Skipping resource management for method \"{}\" on class \"{}\".", pMethod.getName(),
+            LOGGER.warn("Skipping resource management for method \"{}\" on class \"{}\".",
+                        pMethod.getName(),
                         pMethod.getDeclaringClass().getCanonicalName());
         }
         return mappings;
@@ -192,6 +190,7 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
 
     /**
      * Retrieve all Role authorities of the given tenant from the administration service
+     *
      * @param tenant tenant
      * @throws SecurityException if error occurs
      */
@@ -207,8 +206,9 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
 
     /**
      * Build authorities cache for current tenant based on available roles
+     *
      * @param tenant the tenant
-     * @param roles related roles
+     * @param roles  related roles
      */
     private void buildAuthorities(String tenant, List<RoleAuthority> roles) {
         // Remove authorities cache for current tenant
@@ -218,15 +218,17 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
         }
 
         for (RoleAuthority authority : roles) {
-            Set<ResourceMapping> configuredResources = getAuthoritiesProvider()
-                    .getResourceMappings(microserviceName, tenant, authority.getRoleName());
+            Set<ResourceMapping> configuredResources = getAuthoritiesProvider().getResourceMappings(microserviceName,
+                                                                                                    tenant,
+                                                                                                    authority.getRoleName());
             configuredResources.forEach(resource -> setAuthorities(tenant, resource));
         }
     }
 
     /**
      * Add resources authorization
-     * @param tenant tenant name
+     *
+     * @param tenant          tenant name
      * @param resourceMapping resource to add
      */
     private void setAuthorities(String tenant, ResourceMapping resourceMapping) {
@@ -243,8 +245,8 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
             ArrayList<GrantedAuthority> newAuthorities;
             if (grantedAuthoritiesByResource.containsKey(resourceId)) {
                 // we already have some authorities(roles) in the system, so lets get them and add the new ones
-                final Set<GrantedAuthority> grantedAuthorities = new LinkedHashSet<>(
-                        grantedAuthoritiesByResource.get(resourceId));
+                final Set<GrantedAuthority> grantedAuthorities = new LinkedHashSet<>(grantedAuthoritiesByResource.get(
+                    resourceId));
                 grantedAuthorities.addAll(resourceMapping.getAutorizedRoles());
                 newAuthorities = new ArrayList<>(grantedAuthorities);
             } else {
@@ -257,14 +259,18 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
 
     /**
      * Add resources authorization
-     * @param pTenant tenant name
-     * @param pUrlPath resource path
+     *
+     * @param pTenant               tenant name
+     * @param pUrlPath              resource path
      * @param pControllerSimpleName controller simple name
-     * @param pMethod resource Method
-     * @param pRoleNames resource role names
+     * @param pMethod               resource Method
+     * @param pRoleNames            resource role names
      */
-    public void setAuthorities(final String pTenant, final String pUrlPath, final String pControllerSimpleName,
-            final RequestMethod pMethod, final String... pRoleNames) {
+    public void setAuthorities(final String pTenant,
+                               final String pUrlPath,
+                               final String pControllerSimpleName,
+                               final RequestMethod pMethod,
+                               final String... pRoleNames) {
         // Validate
         Assert.notNull(pUrlPath, "Path to resource cannot be null.");
         Assert.notNull(pMethod, "HTTP method cannot be null.");
@@ -296,22 +302,24 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
 
     public void updateAuthoritiesFor(String tenant, String roleName) {
         unsetAuthorities(tenant, roleName);
-        Set<ResourceMapping> newMappings = getAuthoritiesProvider()
-                .getResourceMappings(microserviceName, tenant, roleName);
+        Set<ResourceMapping> newMappings = getAuthoritiesProvider().getResourceMappings(microserviceName,
+                                                                                        tenant,
+                                                                                        roleName);
         newMappings.forEach(mapping -> setAuthorities(tenant, mapping));
     }
 
     /**
      * Get authorities for the given resource and the current tenant.
-     * @param pTenant tenant name
+     *
+     * @param pTenant          tenant name
      * @param pResourceMapping resource to retrieve
      * @return List<GrantedAuthority>>
      */
     public Optional<List<GrantedAuthority>> getAuthorities(final String pTenant,
-            final ResourceMapping pResourceMapping) {
+                                                           final ResourceMapping pResourceMapping) {
         List<GrantedAuthority> result = null;
-        final Map<String, ArrayList<GrantedAuthority>> grantedAuthoritiesByResource = grantedAuthoritiesByTenant
-                .get(pTenant);
+        final Map<String, ArrayList<GrantedAuthority>> grantedAuthoritiesByResource = grantedAuthoritiesByTenant.get(
+            pTenant);
         if (grantedAuthoritiesByResource != null) {
             result = grantedAuthoritiesByResource.get(pResourceMapping.getResourceMappingId());
         }
@@ -320,8 +328,9 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
 
     /**
      * Check if a user can access an annotated method
+     *
      * @param pJWTAuthentication the user authentication object
-     * @param pMethod the method to access
+     * @param pMethod            the method to access
      * @return {@link Boolean#TRUE} if user can access the method
      */
     public Boolean hasAccess(final JWTAuthentication pJWTAuthentication, final Method pMethod) {
@@ -343,9 +352,10 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
                 // CHECKSTYLE:OFF
                 final String decision = access ? "granted" : "denied";
                 // CHECKSTYLE:ON
-                final String logMessage = String
-                        .format("Access %s to resource %s for user %s.", decision, mapping.getResourceMappingId(),
-                                pJWTAuthentication.getName());
+                final String logMessage = String.format("Access %s to resource %s for user %s.",
+                                                        decision,
+                                                        mapping.getResourceMappingId(),
+                                                        pJWTAuthentication.getName());
                 LOGGER.debug(logMessage);
 
             } catch (final ResourceMappingException e) {
@@ -358,8 +368,9 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
 
     /**
      * Retrieve all authority resources for the given tenant
+     *
      * @param pTenant tenant name
-     * @return Map<String   ,       ArrayList   <   GrantedAuthority>>
+     * @return Map<String, ArrayList < GrantedAuthority>>
      */
     public Map<String, ArrayList<GrantedAuthority>> getTenantAuthorities(final String pTenant) {
         return grantedAuthoritiesByTenant.get(pTenant);
@@ -367,8 +378,9 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
 
     /**
      * Return the role authority configuration for the given tenant
+     *
      * @param pRoleAuthorityName Role name
-     * @param pTenant tenant
+     * @param pTenant            tenant
      * @return authorized addresses
      */
     public Optional<RoleAuthority> getRoleAuthority(final String pRoleAuthorityName, final String pTenant) {

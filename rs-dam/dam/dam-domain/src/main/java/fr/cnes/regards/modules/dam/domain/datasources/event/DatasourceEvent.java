@@ -26,7 +26,6 @@ import fr.cnes.regards.framework.amqp.event.Target;
  * Event to inform consumers that a datasource has been modified.
  *
  * @author Sébastien Binda
- *
  */
 @Event(target = Target.MICROSERVICE)
 public class DatasourceEvent implements ISubscribable {

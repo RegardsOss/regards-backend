@@ -18,21 +18,6 @@
  */
 package fr.cnes.regards.modules.dam.rest.datasources;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -50,9 +35,24 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.DBConnectionPluginConstants;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IConnectionPlugin;
 import fr.cnes.regards.modules.dam.service.datasources.IDBConnectionService;
+import org.hamcrest.Matchers;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Test DBConnnection controller
+ *
  * @author Christophe Mertz
  */
 @Ignore
@@ -106,7 +106,9 @@ public class DBConnectionControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer customizer = customizer();
         customizer.expect(MockMvcResultMatchers.status().is2xxSuccessful());
 
-        performDefaultPost(DBConnectionController.TYPE_MAPPING, readJsonContract("newConnection.json"), customizer,
+        performDefaultPost(DBConnectionController.TYPE_MAPPING,
+                           readJsonContract("newConnection.json"),
+                           customizer,
                            "Configuration should be saved!");
 
         resolver.forceTenant(getDefaultTenant());
@@ -116,15 +118,19 @@ public class DBConnectionControllerIT extends AbstractRegardsTransactionalIT {
 
         PluginConfiguration dbConf = pluginService.loadPluginConfiguration(dbConfs.get(0).getBusinessId());
 
-        performDefaultPut(DBConnectionController.TYPE_MAPPING + "/{connectionId}", dbConf, customizer,
-                          "Configuration should be saved!", dbConf.getId());
+        performDefaultPut(DBConnectionController.TYPE_MAPPING + "/{connectionId}",
+                          dbConf,
+                          customizer,
+                          "Configuration should be saved!",
+                          dbConf.getId());
     }
 
     @Test
     public void createEmptyDBConnection() {
         PluginConfiguration dbConn = new PluginConfiguration();
 
-        performDefaultPost(DBConnectionController.TYPE_MAPPING, dbConn,
+        performDefaultPost(DBConnectionController.TYPE_MAPPING,
+                           dbConn,
                            customizer().expect(MockMvcResultMatchers.status().isUnprocessableEntity()),
                            "Empty DBConnection shouldn't be created.");
     }
@@ -137,7 +143,8 @@ public class DBConnectionControllerIT extends AbstractRegardsTransactionalIT {
         meta.setPluginClassName("fr.cnes.regards.modules.dam.domain.datasources.plugins.DefaultPostgrConnectionPlugin");
         dbConn.setMetaDataAndPluginId(meta);
 
-        performDefaultPost(DBConnectionController.TYPE_MAPPING, dbConn,
+        performDefaultPost(DBConnectionController.TYPE_MAPPING,
+                           dbConn,
                            customizer().expect(MockMvcResultMatchers.status().isUnprocessableEntity()),
                            "Empty DBConnection shouldn't be created.");
     }
@@ -152,7 +159,8 @@ public class DBConnectionControllerIT extends AbstractRegardsTransactionalIT {
         meta.setPluginClassName(POSTGRESQL_PLUGIN_CONNECTION);
         dbConn.setMetaDataAndPluginId(meta);
 
-        performDefaultPost(DBConnectionController.TYPE_MAPPING, dbConn,
+        performDefaultPost(DBConnectionController.TYPE_MAPPING,
+                           dbConn,
                            customizer().expect(MockMvcResultMatchers.status().isUnprocessableEntity()),
                            "Empty DBConnection shouldn't be created.");
         MaintenanceManager.unSetMaintenance(getDefaultTenant());
@@ -178,7 +186,9 @@ public class DBConnectionControllerIT extends AbstractRegardsTransactionalIT {
         expectations.expect(MockMvcResultMatchers.jsonPath("$.content.label",
                                                            Matchers.hasToString(dbConnection.getLabel())));
 
-        performDefaultPost(DBConnectionController.TYPE_MAPPING, dbConnection, expectations,
+        performDefaultPost(DBConnectionController.TYPE_MAPPING,
+                           dbConnection,
+                           expectations,
                            "DBConnection creation request error");
     }
 
@@ -193,7 +203,9 @@ public class DBConnectionControllerIT extends AbstractRegardsTransactionalIT {
         expectations.expect(MockMvcResultMatchers.status().isOk());
         expectations.expect(MockMvcResultMatchers.jsonPath(JSON_ID, Matchers.notNullValue()));
 
-        performDefaultPost(DBConnectionController.TYPE_MAPPING, dbConnectionRequest, expectations,
+        performDefaultPost(DBConnectionController.TYPE_MAPPING,
+                           dbConnectionRequest,
+                           expectations,
                            "DBConnection creation request error");
     }
 
@@ -224,8 +236,10 @@ public class DBConnectionControllerIT extends AbstractRegardsTransactionalIT {
         expectations.expect(MockMvcResultMatchers.jsonPath("$.content.id",
                                                            Matchers.hasToString(plgConf.getId().toString())));
 
-        performDefaultGet(DBConnectionController.TYPE_MAPPING + "/{connectionId}", expectations,
-                          "Could not get a DBConnection.", plgConf.getId());
+        performDefaultGet(DBConnectionController.TYPE_MAPPING + "/{connectionId}",
+                          expectations,
+                          "Could not get a DBConnection.",
+                          plgConf.getId());
     }
 
     @Test
@@ -236,8 +250,10 @@ public class DBConnectionControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer expectations = customizer();
         expectations.expect(MockMvcResultMatchers.status().isNotFound());
 
-        performDefaultGet(DBConnectionController.TYPE_MAPPING + "/{connectionId}", expectations,
-                          "Could not get an unknown DBConnection.", plgConf.getId() + 1000);
+        performDefaultGet(DBConnectionController.TYPE_MAPPING + "/{connectionId}",
+                          expectations,
+                          "Could not get an unknown DBConnection.",
+                          plgConf.getId() + 1000);
     }
 
     @Test
@@ -250,8 +266,10 @@ public class DBConnectionControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer expectations = customizer();
         expectations.expect(MockMvcResultMatchers.status().isNoContent());
 
-        performDefaultDelete(DBConnectionController.TYPE_MAPPING + "/{connectionId}", expectations,
-                             "Could not delete a DBConnection.", plgConf.getId());
+        performDefaultDelete(DBConnectionController.TYPE_MAPPING + "/{connectionId}",
+                             expectations,
+                             "Could not delete a DBConnection.",
+                             plgConf.getId());
 
         PluginConfiguration plgCondDelete = null;
         try {
@@ -269,8 +287,10 @@ public class DBConnectionControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer expectations = customizer();
         expectations.expect(MockMvcResultMatchers.status().isNotFound());
 
-        performDefaultDelete(DBConnectionController.TYPE_MAPPING + "/{connectionId}", expectations,
-                             "Could not delete a DBConnection.", 123L);
+        performDefaultDelete(DBConnectionController.TYPE_MAPPING + "/{connectionId}",
+                             expectations,
+                             "Could not delete a DBConnection.",
+                             123L);
     }
 
     @Test
@@ -285,8 +305,11 @@ public class DBConnectionControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer expectations = customizer();
         expectations.expect(MockMvcResultMatchers.status().isOk());
 
-        performDefaultPost(DBConnectionController.TYPE_MAPPING + "/{connectionId}", dbConnection, expectations,
-                           "The DBConnection is not valid.", dbConnection.getId());
+        performDefaultPost(DBConnectionController.TYPE_MAPPING + "/{connectionId}",
+                           dbConnection,
+                           expectations,
+                           "The DBConnection is not valid.",
+                           dbConnection.getId());
     }
 
     @Test
@@ -301,8 +324,11 @@ public class DBConnectionControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer expectations = customizer();
         expectations.expect(MockMvcResultMatchers.status().isBadRequest());
 
-        performDefaultPost(DBConnectionController.TYPE_MAPPING + "/{connectionId}", dbConnection, expectations,
-                           "The DBConnection is not valid.", dbConnection.getId());
+        performDefaultPost(DBConnectionController.TYPE_MAPPING + "/{connectionId}",
+                           dbConnection,
+                           expectations,
+                           "The DBConnection is not valid.",
+                           dbConnection.getId());
     }
 
     @Test
@@ -314,8 +340,10 @@ public class DBConnectionControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer expectations = customizer();
         expectations.expect(MockMvcResultMatchers.status().isOk());
 
-        performDefaultGet(DBConnectionController.TYPE_MAPPING + "/{connectionId}/tables", expectations,
-                          "Could not get the tables.", plgConf.getId());
+        performDefaultGet(DBConnectionController.TYPE_MAPPING + "/{connectionId}/tables",
+                          expectations,
+                          "Could not get the tables.",
+                          plgConf.getId());
     }
 
     @Test
@@ -328,17 +356,24 @@ public class DBConnectionControllerIT extends AbstractRegardsTransactionalIT {
         expectations.expect(MockMvcResultMatchers.status().isOk());
 
         performDefaultGet(DBConnectionController.TYPE_MAPPING + "/{connectionId}/tables/{tableName}/columns",
-                          expectations, "Could not get the columns.", plgConf.getId(), TABLE_NAME_TEST);
+                          expectations,
+                          "Could not get the columns.",
+                          plgConf.getId(),
+                          TABLE_NAME_TEST);
     }
 
     private PluginConfiguration createADbConnection(String label, String pluginClassName) {
         PluginConfiguration dbConnection = new PluginConfiguration();
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(DBConnectionPluginConstants.USER_PARAM, dbUser),
-                     IPluginParam.build(DBConnectionPluginConstants.PASSWORD_PARAM, dbPassword),
-                     IPluginParam.build(DBConnectionPluginConstants.DB_HOST_PARAM, dbHost),
-                     IPluginParam.build(DBConnectionPluginConstants.DB_PORT_PARAM, dbPort),
-                     IPluginParam.build(DBConnectionPluginConstants.DB_NAME_PARAM, dbName));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(DBConnectionPluginConstants.USER_PARAM,
+                                                                           dbUser),
+                                                        IPluginParam.build(DBConnectionPluginConstants.PASSWORD_PARAM,
+                                                                           dbPassword),
+                                                        IPluginParam.build(DBConnectionPluginConstants.DB_HOST_PARAM,
+                                                                           dbHost),
+                                                        IPluginParam.build(DBConnectionPluginConstants.DB_PORT_PARAM,
+                                                                           dbPort),
+                                                        IPluginParam.build(DBConnectionPluginConstants.DB_NAME_PARAM,
+                                                                           dbName));
         dbConnection.setParameters(parameters);
         dbConnection.setLabel(label);
         PluginMetaData meta = new PluginMetaData();

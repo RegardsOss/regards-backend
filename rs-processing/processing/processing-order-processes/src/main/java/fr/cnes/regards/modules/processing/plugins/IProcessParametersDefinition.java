@@ -14,12 +14,13 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.plugins;
 
 import fr.cnes.regards.modules.processing.domain.engine.IOutputToInputMapper;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterDescriptor;
 import io.vavr.collection.Seq;
+
 /**
  * This interface defines parameters and in/out mapping for {@link IProcessDefinition}.
  *
@@ -29,6 +30,8 @@ public interface IProcessParametersDefinition {
 
     Seq<ExecutionParameterDescriptor> parameters();
 
-    default IOutputToInputMapper inputOutputMapper() { return IOutputToInputMapper.noMapping(); }
+    default IOutputToInputMapper inputOutputMapper() {
+        return IOutputToInputMapper.noMapping();
+    }
 
 }

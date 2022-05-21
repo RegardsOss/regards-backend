@@ -1,21 +1,21 @@
 package fr.cnes.regards.framework.encryption.utils;
 
+import fr.cnes.regards.framework.encryption.AESEncryptionService;
+import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
+import fr.cnes.regards.framework.encryption.exception.EncryptionException;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.util.Random;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import fr.cnes.regards.framework.encryption.AESEncryptionService;
-import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
-import fr.cnes.regards.framework.encryption.exception.EncryptionException;
-
 /**
  * Some basic tests
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class AESEncryptionTests {
@@ -25,8 +25,8 @@ public class AESEncryptionTests {
     @Before
     public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
         aesEncryptionService = new AESEncryptionService();
-        aesEncryptionService
-                .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "1234567812345678"));
+        aesEncryptionService.init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"),
+                                                       "1234567812345678"));
     }
 
     @Test

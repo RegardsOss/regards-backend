@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.entity.mapping;
 
 import fr.cnes.regards.modules.processing.domain.PExecution;
@@ -49,43 +49,39 @@ public class ExecutionMapper implements DomainEntityMapper.Execution {
 
     @Override
     public ExecutionEntity toEntity(PExecution exec) {
-        return new ExecutionEntity(
-                exec.getId(),
-                exec.getBatchId(),
-                new FileParameters(exec.getInputFiles().toJavaList()),
-                exec.getExpectedDuration().toMillis(),
-                toEntity(exec.getSteps()),
-                exec.getSteps().lastOption().map(PStep::getStatus).getOrElse(REGISTERED),
-                exec.getTenant(),
-                exec.getUserName(),
-                exec.getProcessBusinessId(),
-                exec.getExecutionCorrelationId(),
-                exec.getBatchCorrelationId(),
-                exec.getCreated(),
-                exec.getLastUpdated(),
-                exec.getVersion(),
-                exec.isPersisted()
-        );
+        return new ExecutionEntity(exec.getId(),
+                                   exec.getBatchId(),
+                                   new FileParameters(exec.getInputFiles().toJavaList()),
+                                   exec.getExpectedDuration().toMillis(),
+                                   toEntity(exec.getSteps()),
+                                   exec.getSteps().lastOption().map(PStep::getStatus).getOrElse(REGISTERED),
+                                   exec.getTenant(),
+                                   exec.getUserName(),
+                                   exec.getProcessBusinessId(),
+                                   exec.getExecutionCorrelationId(),
+                                   exec.getBatchCorrelationId(),
+                                   exec.getCreated(),
+                                   exec.getLastUpdated(),
+                                   exec.getVersion(),
+                                   exec.isPersisted());
     }
 
     @Override
     public PExecution toDomain(ExecutionEntity entity) {
-        return new PExecution(
-                entity.getId(),
-                entity.getCorrelationId(),
-                entity.getBatchId(),
-                entity.getBatchCorrelationId(),
-                Duration.ofMillis(entity.getTimeoutAfterMillis()),
-                List.ofAll(entity.getFileParameters().getValues()),
-                toDomain(entity.getSteps()),
-                entity.getTenant(),
-                entity.getUserEmail(),
-                entity.getProcessBusinessId(),
-                entity.getCreated(),
-                entity.getLastUpdated(),
-                entity.getVersion(),
-                entity.isPersisted()
-        );
+        return new PExecution(entity.getId(),
+                              entity.getCorrelationId(),
+                              entity.getBatchId(),
+                              entity.getBatchCorrelationId(),
+                              Duration.ofMillis(entity.getTimeoutAfterMillis()),
+                              List.ofAll(entity.getFileParameters().getValues()),
+                              toDomain(entity.getSteps()),
+                              entity.getTenant(),
+                              entity.getUserEmail(),
+                              entity.getProcessBusinessId(),
+                              entity.getCreated(),
+                              entity.getLastUpdated(),
+                              entity.getVersion(),
+                              entity.isPersisted());
     }
 
     private Steps toEntity(Seq<PStep> domain) {

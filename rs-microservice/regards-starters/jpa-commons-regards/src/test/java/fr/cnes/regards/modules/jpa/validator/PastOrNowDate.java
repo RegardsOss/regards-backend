@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.modules.jpa.validator;
 
-import java.time.OffsetDateTime;
-
 import fr.cnes.regards.framework.jpa.validator.PastOrNow;
+
+import java.time.OffsetDateTime;
 
 /**
  * @author svissier

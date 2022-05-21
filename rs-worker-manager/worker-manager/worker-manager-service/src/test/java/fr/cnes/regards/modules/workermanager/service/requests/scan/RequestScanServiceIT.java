@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.workermanager.service.requests.scan;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
+import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.service.WorkerManagerJobsPriority;
 import fr.cnes.regards.modules.workermanager.service.requests.job.DispatchRequestJob;
@@ -44,7 +44,6 @@ public class RequestScanServiceIT extends AbstractRequestJobIT {
 
     @Autowired
     private RequestScanService requestScanService;
-
 
     @Test
     public void testScanThenDispatch() throws Throwable {
@@ -72,8 +71,8 @@ public class RequestScanServiceIT extends AbstractRequestJobIT {
 
         // Check
         Assert.assertEquals("still the expected number of requests", nbRequests, requestRepository.findAll().size());
-        Page<Request> runningRequests = requestService.searchRequests(
-                new SearchRequestParameters().withStatusesIncluded(RequestStatus.DISPATCHED), PageRequest.of(100, 5));
+        Page<Request> runningRequests = requestService.searchRequests(new SearchRequestParameters().withStatusesIncluded(
+            RequestStatus.DISPATCHED), PageRequest.of(100, 5));
         Assert.assertEquals("expect all requests running", nbRequests, runningRequests.getTotalElements());
     }
 

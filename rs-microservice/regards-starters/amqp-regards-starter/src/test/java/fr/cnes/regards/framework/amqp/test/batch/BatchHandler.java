@@ -18,21 +18,19 @@
  */
 package fr.cnes.regards.framework.amqp.test.batch;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 
-import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Marc SORDI
- *
  */
 public class BatchHandler implements IBatchHandler<BatchedMessage> {
 
@@ -92,9 +90,9 @@ public class BatchHandler implements IBatchHandler<BatchedMessage> {
                 incrementCount(tenantResolver.getTenant());
             } else {
                 incrementFails(tenantResolver.getTenant());
-                throw new IllegalArgumentException(
-                        String.format("One message processing throws exception and breaks the batch processing : %s",
-                                      message.getMessage()));
+                throw new IllegalArgumentException(String.format(
+                    "One message processing throws exception and breaks the batch processing : %s",
+                    message.getMessage()));
             }
         }
     }

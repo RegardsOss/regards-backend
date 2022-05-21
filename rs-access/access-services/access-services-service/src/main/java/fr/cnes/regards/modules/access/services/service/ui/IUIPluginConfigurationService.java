@@ -18,103 +18,87 @@
  */
 package fr.cnes.regards.modules.access.services.service.ui;
 
-import java.util.List;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 public interface IUIPluginConfigurationService {
 
     /**
-     *
      * Retrieve all plugin configurations
-     * @param pluginType
      *
-     * @param isActive
-     *            Return only the active plugins ?. Pass null value to not filter.
-     * @param isLinkedToAllEntities
-     *            Return only the plugins linked to all entities?. Pass null value to not filter.
+     * @param pluginType
+     * @param isActive              Return only the active plugins ?. Pass null value to not filter.
+     * @param isLinkedToAllEntities Return only the plugins linked to all entities?. Pass null value to not filter.
      * @param pageable
      * @return Page of {@link UIPluginConfiguration}
      * @since 1.0-SNAPSHOT
      */
-    Page<UIPluginConfiguration> retrievePluginConfigurations(final UIPluginTypesEnum pluginType, Boolean isActive,
-            Boolean isLinkedToAllEntities, Pageable pageable);
+    Page<UIPluginConfiguration> retrievePluginConfigurations(final UIPluginTypesEnum pluginType,
+                                                             Boolean isActive,
+                                                             Boolean isLinkedToAllEntities,
+                                                             Pageable pageable);
 
     /**
-     *
      * Retrieve all plugin configurations for the given plugin
      *
-     * @param plugin {@link UIPluginDefinition}'s to search configurations.
-     * @param isActive
-     *            Return only the active plugins ?. Pass null value to not filter.
-     * @param isLinkedToAllEntities
-     *            Return only the plugins linked to all entities?. Pass null value to not filter.
+     * @param plugin                {@link UIPluginDefinition}'s to search configurations.
+     * @param isActive              Return only the active plugins ?. Pass null value to not filter.
+     * @param isLinkedToAllEntities Return only the plugins linked to all entities?. Pass null value to not filter.
      * @param pageable
      * @return Page of {@link UIPluginConfiguration}
-     * @throws EntityException
-     *             throw exception if pPlugin is not defined or not exists.
+     * @throws EntityException throw exception if pPlugin is not defined or not exists.
      * @since 1.0-SNAPSHOT
      */
-    Page<UIPluginConfiguration> retrievePluginConfigurations(UIPluginDefinition plugin, Boolean isActive,
-            Boolean isLinkedToAllEntities, Pageable pageable) throws EntityException;
+    Page<UIPluginConfiguration> retrievePluginConfigurations(UIPluginDefinition plugin,
+                                                             Boolean isActive,
+                                                             Boolean isLinkedToAllEntities,
+                                                             Pageable pageable) throws EntityException;
 
     /**
-     *
      * Retrieve one plugin configuration.
      *
-     * @param pluginConfigurationId
-     *            PluginConfiguration id to retreive
+     * @param pluginConfigurationId PluginConfiguration id to retreive
      * @return {@link UIPluginConfiguration}
-     * @throws EntityInvalidException
-     *             if pPluginConfigurationId is null
+     * @throws EntityInvalidException if pPluginConfigurationId is null
      * @since 1.0-SNAPSHOT
      */
     UIPluginConfiguration retrievePluginconfiguration(Long pluginConfigurationId) throws EntityInvalidException;
 
     /**
-     *
      * Update a plugin configuration.
      *
-     * @param pluginConfiguration
-     *            {@link UIPluginConfiguration} to update
+     * @param pluginConfiguration {@link UIPluginConfiguration} to update
      * @return {@link UIPluginConfiguration}
-     * @throws EntityException
-     *             if given configuration is null or does not exists
+     * @throws EntityException if given configuration is null or does not exists
      * @since 1.0-SNAPSHOT
      */
     UIPluginConfiguration updatePluginconfiguration(UIPluginConfiguration pluginConfiguration) throws EntityException;
 
     /**
-     *
      * Create a plugin configuration.
      *
-     * @param pluginConfiguration
-     *            {@link UIPluginConfiguration} to update
+     * @param pluginConfiguration {@link UIPluginConfiguration} to update
      * @return {@link UIPluginConfiguration}
      * @throws EntityException
-     * @throws throws
-     *             EntityException if pPluginConfiguration already exists
+     * @throws throws          EntityException if pPluginConfiguration already exists
      * @since 1.0-SNAPSHOT
      */
     UIPluginConfiguration createPluginconfiguration(UIPluginConfiguration pluginConfiguration) throws EntityException;
 
     /**
-     *
      * Delete a plugin configuration.
      *
-     * @param pluginConfiguration
-     *            {@link UIPluginConfiguration} to update
-     * @throws EntityException
-     *             if pPluginConfiguration is invalid or does not exists
+     * @param pluginConfiguration {@link UIPluginConfiguration} to update
+     * @throws EntityException if pPluginConfiguration is invalid or does not exists
      * @since 1.0-SNAPSHOT
      */
     void deletePluginconfiguration(UIPluginConfiguration pluginConfiguration) throws EntityException;
@@ -122,7 +106,7 @@ public interface IUIPluginConfigurationService {
     /**
      * Return all {@link UIPluginConfiguration} for plugins type service and associated to the given dataset id if any given.
      *
-     * @param datasetId Can be <code>null</code>.
+     * @param datasetId        Can be <code>null</code>.
      * @param applicationModes Can be <code>null</code>.
      * @return list of {@link UIPluginConfiguration}
      * @since 1.0-SNAPSHOT
@@ -132,13 +116,13 @@ public interface IUIPluginConfigurationService {
     /**
      * Return all {@link UIPluginConfiguration} for plugins type service and associated to the given dataset id if any given.
      *
-     * @param pDatasetIds Can be <code>null</code>.
+     * @param pDatasetIds      Can be <code>null</code>.
      * @param applicationModes Can be <code>null</code>.
      * @return list of {@link UIPluginConfiguration}
      * @since 1.0-SNAPSHOT
      */
     List<UIPluginConfiguration> retrieveActivePluginServices(List<String> pDatasetIds,
-            List<ServiceScope> applicationModes);
+                                                             List<ServiceScope> applicationModes);
 
     Page<UIPluginConfiguration> retrievePluginConfigurations(PageRequest pageable);
 

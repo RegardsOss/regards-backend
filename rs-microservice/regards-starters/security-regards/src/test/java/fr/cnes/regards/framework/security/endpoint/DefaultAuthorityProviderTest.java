@@ -18,18 +18,18 @@
  */
 package fr.cnes.regards.framework.security.endpoint;
 
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-
 /**
  * Class DefaultAuthorityProviderTest
- *
+ * <p>
  * Test class for IAuthoritiesProvider default implementation
+ *
  * @author sbinda
  * @since 1.0-SNAPSHT
  */

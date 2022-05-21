@@ -18,18 +18,17 @@
  */
 package fr.cnes.regards.modules.emails.rest;
 
-import javax.mail.internet.MimeMessage;
-
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
 
+import javax.mail.internet.MimeMessage;
+
 /**
  * Mock {@link JavaMailSender}
  *
  * @author Marc Sordi
- *
  */
 @Configuration
 public class EmailConfiguration {

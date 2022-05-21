@@ -19,15 +19,16 @@
 package fr.cnes.regards.modules.feature.dto.event.out;
 
 /**
- *         o
- *         |______DENIED
- *         |
- *      GRANTED
- *         |______ERROR
- *         |
- *       DONE
- *
+ * o
+ * |______DENIED
+ * |
+ * GRANTED
+ * |______ERROR
+ * |
+ * DONE
+ * <p>
  * Available request states
+ *
  * @author Marc SORDI
  */
 public enum RequestState {

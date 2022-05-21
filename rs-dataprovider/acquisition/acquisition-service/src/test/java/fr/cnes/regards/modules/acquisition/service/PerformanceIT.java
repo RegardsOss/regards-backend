@@ -18,28 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -53,21 +32,30 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
-import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
+import fr.cnes.regards.modules.acquisition.domain.chain.*;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 /**
- *
  * @author Sébastien Binda
- *
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=dataprovider_perf_tests" })
@@ -191,21 +179,24 @@ public class PerformanceIT extends AbstractMultitenantServiceIT {
         processingChain.addFileInfo(fileInfo);
 
         // Validation
-        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class, null,
+        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class,
+                                                                         null,
                                                                          new HashSet<IPluginParam>());
         validationPlugin.setIsActive(true);
         validationPlugin.setLabel("Validation plugin");
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
-        PluginConfiguration productPlugin = PluginConfiguration.build(DefaultProductPlugin.class, null,
+        PluginConfiguration productPlugin = PluginConfiguration.build(DefaultProductPlugin.class,
+                                                                      null,
                                                                       new HashSet<IPluginParam>());
         productPlugin.setIsActive(true);
         productPlugin.setLabel("Product plugin");
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginConfiguration.build(DefaultSIPGeneration.class, null,
+        PluginConfiguration sipGenPlugin = PluginConfiguration.build(DefaultSIPGeneration.class,
+                                                                     null,
                                                                      new HashSet<IPluginParam>());
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin");
@@ -229,9 +220,10 @@ public class PerformanceIT extends AbstractMultitenantServiceIT {
         long duration = System.currentTimeMillis() - startTime;
         LOGGER.info("File(s) deleted by chain in {} milliseconds", duration);
         if (duration > expectedDuration) {
-            Assert.fail(String
-                    .format("Performance not reached for products deletion by chain .Deletion took %s ms when %s ms expected",
-                            duration, expectedDuration));
+            Assert.fail(String.format(
+                "Performance not reached for products deletion by chain .Deletion took %s ms when %s ms expected",
+                duration,
+                expectedDuration));
         }
     }
 
@@ -243,9 +235,10 @@ public class PerformanceIT extends AbstractMultitenantServiceIT {
         long duration = System.currentTimeMillis() - startTime;
         LOGGER.info("File(s) deleted by session in {} milliseconds", duration);
         if (duration > expectedDuration) {
-            Assert.fail(String
-                    .format("Performance not reached for products deletion by session. Deletion took %s ms when %s ms expected",
-                            duration, expectedDuration));
+            Assert.fail(String.format(
+                "Performance not reached for products deletion by session. Deletion took %s ms when %s ms expected",
+                duration,
+                expectedDuration));
         }
     }
 

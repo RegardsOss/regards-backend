@@ -307,7 +307,7 @@ public interface IGeometry {
         Preconditions.checkArgument(lonLats.length > 2);
         Preconditions.checkArgument(lonLats.length % 2 == 0);
         Preconditions.checkArgument(
-                (lonLats[0] != lonLats[lonLats.length - 2]) || (lonLats[1] != lonLats[lonLats.length - 1]));
+            (lonLats[0] != lonLats[lonLats.length - 2]) || (lonLats[1] != lonLats[lonLats.length - 1]));
 
         Position[] positions = new Position[lonLats.length / 2 + 1];
         for (int i = 0; i < lonLats.length; i += 2) {
@@ -330,7 +330,7 @@ public interface IGeometry {
         Preconditions.checkArgument(lonLats.length > 2);
         Preconditions.checkArgument(lonLats.length % 2 == 0);
         Preconditions.checkArgument(
-                (lonLats[0] != lonLats[lonLats.length - 2]) || (lonLats[1] != lonLats[lonLats.length - 1]));
+            (lonLats[0] != lonLats[lonLats.length - 2]) || (lonLats[1] != lonLats[lonLats.length - 1]));
 
         Position[] positions = new Position[lonLats.length / 2 + 1];
         for (int i = 0; i < lonLats.length; i += 2) {

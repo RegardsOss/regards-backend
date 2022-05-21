@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.ingest.domain.sip;
 
 /**
  * SIP project to only retrieve specific existing SIP information
- * @author Marc SORDI
  *
+ * @author Marc SORDI
  */
 public interface ISipIdAndVersion {
 

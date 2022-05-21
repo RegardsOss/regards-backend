@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
-import java.time.Duration;
-import java.time.OffsetDateTime;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
-
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.notification.domain.Notification;
+import fr.cnes.regards.modules.notification.domain.NotificationFrequency;
+import fr.cnes.regards.modules.notification.domain.NotificationToSendEvent;
+import fr.cnes.regards.modules.notification.service.utils.NotificationUserSetting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.data.domain.PageRequest;
@@ -30,11 +30,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.notification.domain.Notification;
-import fr.cnes.regards.modules.notification.domain.NotificationFrequency;
-import fr.cnes.regards.modules.notification.domain.NotificationToSendEvent;
-import fr.cnes.regards.modules.notification.service.utils.NotificationUserSetting;
+import java.time.Duration;
+import java.time.OffsetDateTime;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  * Service responsible for scheduling the sending of notifications to their recipients.<br>
@@ -72,12 +71,13 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
     /**
      * Create a new scheduler with passed services and repositories
      *
-     * @param strategy The notification sending strategy
-     * @param notificationService The notification service
+     * @param strategy                    The notification sending strategy
+     * @param notificationService         The notification service
      * @param notificationSettingsService The notification settings repository
      */
-    public SendingScheduler(final ISendingStrategy strategy, final INotificationService notificationService,
-            final INotificationSettingsService notificationSettingsService) {
+    public SendingScheduler(final ISendingStrategy strategy,
+                            final INotificationService notificationService,
+                            final INotificationSettingsService notificationSettingsService) {
         super();
         this.strategy = strategy;
         this.notificationService = notificationService;
@@ -124,7 +124,7 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
         final Predicate<NotificationUserSetting> filterOnPeriodExceeded = n -> {
             final Duration effectiveGap = Duration.between(n.getNotification().getDate(), OffsetDateTime.now());
             final Duration settingGap = Duration.ofDays(n.getSettings().getDays())
-                    .plus(Duration.ofHours(n.getSettings().getHours()));
+                                                .plus(Duration.ofHours(n.getSettings().getHours()));
             return effectiveGap.compareTo(settingGap) >= 0;
         };
 
@@ -145,12 +145,16 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
         notificationService.retrieveNotificationsToSend(PageRequest.of(0, 10)).getContent().forEach(notification -> {
             runtimeTenantResolver.forceTenant(tenant);
             // Build the list of recipients
-            String[] recipients = notificationService.findRecipients(notification).stream()
-                    .map(projectUser -> new NotificationUserSetting(notification,
-                                                                    projectUser,
-                                                                    notificationSettingsService
-                                                                            .retrieveNotificationSettings(projectUser)))
-                    .filter(pFilter).map(NotificationUserSetting::getProjectUser).distinct().toArray(String[]::new);
+            String[] recipients = notificationService.findRecipients(notification)
+                                                     .stream()
+                                                     .map(projectUser -> new NotificationUserSetting(notification,
+                                                                                                     projectUser,
+                                                                                                     notificationSettingsService.retrieveNotificationSettings(
+                                                                                                         projectUser)))
+                                                     .filter(pFilter)
+                                                     .map(NotificationUserSetting::getProjectUser)
+                                                     .distinct()
+                                                     .toArray(String[]::new);
 
             // Send the notification to recipients
             sendNotification(notification, recipients);
@@ -175,8 +179,8 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
      * @return The filter as a {@link Predicate}. Use in a {@link Stream#map} for example.
      */
     private Predicate<NotificationUserSetting> createFrequencyFilter(final NotificationFrequency pFrequency) {
-        return n -> pFrequency
-                .equals(notificationSettingsService.retrieveNotificationSettings(n.getProjectUser()).getFrequency());
+        return n -> pFrequency.equals(notificationSettingsService.retrieveNotificationSettings(n.getProjectUser())
+                                                                 .getFrequency());
     }
 
     /**

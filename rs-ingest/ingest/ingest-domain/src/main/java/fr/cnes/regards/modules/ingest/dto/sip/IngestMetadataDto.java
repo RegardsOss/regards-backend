@@ -18,20 +18,18 @@
  */
 package fr.cnes.regards.modules.ingest.dto.sip;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
+import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import org.springframework.util.Assert;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-
-import org.springframework.util.Assert;
-
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
-import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Extra information useful for SIP submission.<br/>
@@ -40,7 +38,6 @@ import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
  *
  * @author Marc Sordi
  * @author Léo Mieulet
- *
  */
 public class IngestMetadataDto {
 
@@ -72,26 +69,35 @@ public class IngestMetadataDto {
 
     /**
      * Build ingest metadata
+     *
      * @param sessionOwner Owner of the session
-     * @param session session
-     * @param ingestChain ingest processing chain name
-     * @param storages storage metadata
+     * @param session      session
+     * @param ingestChain  ingest processing chain name
+     * @param storages     storage metadata
      */
-    public static IngestMetadataDto build(String sessionOwner, String session, String ingestChain,
-            Set<String> categories, StorageMetadata... storages) {
+    public static IngestMetadataDto build(String sessionOwner,
+                                          String session,
+                                          String ingestChain,
+                                          Set<String> categories,
+                                          StorageMetadata... storages) {
         return IngestMetadataDto.build(sessionOwner, session, ingestChain, categories, null, Arrays.asList(storages));
     }
 
     /**
      * Build ingest metadata
-     * @param sessionOwner Owner of the session
-     * @param session session
-     * @param ingestChain ingest processing chain name
+     *
+     * @param sessionOwner   Owner of the session
+     * @param session        session
+     * @param ingestChain    ingest processing chain name
      * @param versioningMode
-     * @param storages storage metadata
+     * @param storages       storage metadata
      */
-    public static IngestMetadataDto build(String sessionOwner, String session, String ingestChain,
-            Set<String> categories, VersioningMode versioningMode, List<StorageMetadata> storages) {
+    public static IngestMetadataDto build(String sessionOwner,
+                                          String session,
+                                          String ingestChain,
+                                          Set<String> categories,
+                                          VersioningMode versioningMode,
+                                          List<StorageMetadata> storages) {
         Assert.hasLength(ingestChain, IngestValidationMessages.MISSING_INGEST_CHAIN);
         Assert.hasLength(sessionOwner, IngestValidationMessages.MISSING_SESSION_OWNER);
         Assert.hasLength(session, IngestValidationMessages.MISSING_SESSION);

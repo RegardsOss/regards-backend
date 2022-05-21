@@ -38,13 +38,11 @@ public class ServiceProviderEntity {
     private String logoutUrl;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(
-        name = "plugin_conf_id",
-        foreignKey = @ForeignKey(name = "fk_service_provider_plugin_conf")
-    )
+    @JoinColumn(name = "plugin_conf_id", foreignKey = @ForeignKey(name = "fk_service_provider_plugin_conf"))
     private PluginConfiguration configuration;
 
-    public ServiceProviderEntity() {}
+    public ServiceProviderEntity() {
+    }
 
     public ServiceProviderEntity(String name, String authUrl, String logoutUrl, PluginConfiguration configuration) {
         this.name = name;
@@ -94,9 +92,8 @@ public class ServiceProviderEntity {
             return false;
         }
         ServiceProviderEntity that = (ServiceProviderEntity) o;
-        return Objects.equals(name, that.name)
-            && Objects.equals(authUrl, that.authUrl)
-            && Objects.equals(configuration, that.configuration);
+        return Objects.equals(name, that.name) && Objects.equals(authUrl, that.authUrl) && Objects.equals(configuration,
+                                                                                                          that.configuration);
     }
 
     @Override

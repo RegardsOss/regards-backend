@@ -1,32 +1,15 @@
 package fr.cnes.regards.modules.storage.domain.database;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import org.springframework.util.MimeType;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Set;
-
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
-
-import org.springframework.util.MimeType;
-
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
-import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 
 /**
  * Database definition of the table containing the files currently in cache.
@@ -35,7 +18,7 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
  */
 @Entity
 @Table(name = "t_cache_file", indexes = { @Index(name = "idx_cache_file_checksum", columnList = "checksum") },
-        uniqueConstraints = { @UniqueConstraint(name = "uk_cache_file_checksum", columnNames = "checksum") })
+    uniqueConstraints = { @UniqueConstraint(name = "uk_cache_file_checksum", columnNames = "checksum") })
 public class CacheFile {
 
     /**
@@ -95,7 +78,7 @@ public class CacheFile {
     @Column(name = "group_id", nullable = false, length = 128)
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "ta_cache_file_group_ids", joinColumns = @JoinColumn(name = "cache_file_id",
-            foreignKey = @ForeignKey(name = "fk_ta_cache_file_request_ids_t_file_cache")))
+        foreignKey = @ForeignKey(name = "fk_ta_cache_file_request_ids_t_file_cache")))
     private final Set<String> groupIds = Sets.newHashSet();
 
     /**
@@ -107,12 +90,19 @@ public class CacheFile {
 
     /**
      * Constructor initializing the cache file from the parameters
+     *
      * @param df
      * @param expirationDate
      * @param type
      */
-    public CacheFile(String checksum, Long fileSize, String fileName, MimeType mimeType, URL location,
-                     OffsetDateTime expirationDate, String groupId, String type) {
+    public CacheFile(String checksum,
+                     Long fileSize,
+                     String fileName,
+                     MimeType mimeType,
+                     URL location,
+                     OffsetDateTime expirationDate,
+                     String groupId,
+                     String type) {
         this.checksum = checksum;
         this.fileSize = fileSize;
         this.location = location;

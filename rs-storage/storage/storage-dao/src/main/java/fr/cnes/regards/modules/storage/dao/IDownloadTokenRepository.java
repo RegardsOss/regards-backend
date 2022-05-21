@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import java.time.OffsetDateTime;
-
+import fr.cnes.regards.modules.storage.domain.database.DownloadToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import fr.cnes.regards.modules.storage.domain.database.DownloadToken;
+import java.time.OffsetDateTime;
 
 /**
  * Repository to access {@link DownloadToken} entities.

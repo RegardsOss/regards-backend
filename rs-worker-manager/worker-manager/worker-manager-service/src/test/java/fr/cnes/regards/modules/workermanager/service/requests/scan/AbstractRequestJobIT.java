@@ -44,7 +44,7 @@ import java.util.List;
  * @author Léo Mieulet
  */
 @TestPropertySource(properties = { "regards.amqp.enabled=false" },
-        locations = { "classpath:application-test.properties" })
+    locations = { "classpath:application-test.properties" })
 @ActiveProfiles({ "noscheduler" })
 @ContextConfiguration(classes = { RequestHandlerConfiguration.class })
 public abstract class AbstractRequestJobIT extends AbstractMultitenantServiceWithJobIT {
@@ -74,9 +74,9 @@ public abstract class AbstractRequestJobIT extends AbstractMultitenantServiceWit
         cleanRepository();
         configManager.resetConfiguration();
 
-        workerConfigService.importConfiguration(Sets.newHashSet(
-                new WorkerConfigDto(RequestHandlerConfiguration.AVAILABLE_WORKER_TYPE,
-                                    Sets.newHashSet(RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE))));
+        workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(RequestHandlerConfiguration.AVAILABLE_WORKER_TYPE,
+                                                                                    Sets.newHashSet(
+                                                                                        RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE))));
     }
 
     @After
@@ -89,7 +89,6 @@ public abstract class AbstractRequestJobIT extends AbstractMultitenantServiceWit
         requestRepository.deleteAll();
         jobInfoRepository.deleteAll();
     }
-
 
     public void createRequests(int nbRequests) {
         List<Request> requests = Lists.newArrayList();

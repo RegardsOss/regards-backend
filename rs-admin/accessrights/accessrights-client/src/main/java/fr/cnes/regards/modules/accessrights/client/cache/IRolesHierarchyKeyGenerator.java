@@ -22,7 +22,6 @@ import org.springframework.cache.interceptor.KeyGenerator;
 
 /**
  * @author sbinda
- *
  */
 public interface IRolesHierarchyKeyGenerator extends KeyGenerator {
 

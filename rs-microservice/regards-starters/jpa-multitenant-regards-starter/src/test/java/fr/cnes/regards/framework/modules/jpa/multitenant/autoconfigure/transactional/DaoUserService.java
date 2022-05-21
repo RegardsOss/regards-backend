@@ -18,21 +18,21 @@
  */
 package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.pojo.User;
+import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.repository.IUserRepository;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.pojo.User;
-import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.repository.IUserRepository;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test service for transactionnal DAO actions
+ *
  * @author CS
  */
 @Service
@@ -67,6 +67,7 @@ public class DaoUserService {
 
     /**
      * Test adding a user with error. Rollback must be done.
+     *
      * @param pTenant Tenant or project to use
      * @throws DaoTestException Simulated error always thrown to activate JPA rollback
      */
@@ -86,6 +87,7 @@ public class DaoUserService {
 
     /**
      * Test adding a user without error
+     *
      * @param pTenant Tenant or project to use
      */
     public void addWithoutError(final String pTenant) {
@@ -96,6 +98,7 @@ public class DaoUserService {
 
     /**
      * Test getting all users from a given tenant
+     *
      * @param pTenant Tenant or project to use
      * @return Result list of users
      */
@@ -109,6 +112,7 @@ public class DaoUserService {
 
     /**
      * Test method to delete all users from a given tenant
+     *
      * @param pTenant Tenant or project to use
      */
     public void deleteAll(final String pTenant) {

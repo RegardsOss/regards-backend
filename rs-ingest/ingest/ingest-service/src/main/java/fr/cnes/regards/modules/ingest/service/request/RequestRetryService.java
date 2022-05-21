@@ -52,14 +52,14 @@ public class RequestRetryService implements IRequestRetryService {
         for (AbstractRequest request : requests) {
             // Requests must be in ERROR state
             if (request.getState() == InternalRequestState.ERROR
-                    || request.getState() == InternalRequestState.ABORTED) {
+                || request.getState() == InternalRequestState.ABORTED) {
                 // Rollback the state to TO_SCHEDULE
                 requestService.switchRequestState(request);
             } else {
                 LOGGER.error(
-                        "Cannot relaunch the request {} because this request is neither in ERROR or ABORTED state. It was in {} state",
-                        request.getId(),
-                        request.getState());
+                    "Cannot relaunch the request {} because this request is neither in ERROR or ABORTED state. It was in {} state",
+                    request.getId(),
+                    request.getState());
             }
         }
         requestService.scheduleRequests(requests);
@@ -76,8 +76,10 @@ public class RequestRetryService implements IRequestRetryService {
                 }
             }
         }
-        ingestRequestToSchedulePerChain.keySet().forEach(chain -> ingestRequestService
-                .scheduleIngestProcessingJobByChain(chain, ingestRequestToSchedulePerChain.get(chain)));
+        ingestRequestToSchedulePerChain.keySet()
+                                       .forEach(chain -> ingestRequestService.scheduleIngestProcessingJobByChain(chain,
+                                                                                                                 ingestRequestToSchedulePerChain.get(
+                                                                                                                     chain)));
     }
 
 }

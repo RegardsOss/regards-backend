@@ -22,7 +22,6 @@ import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfigurat
 
 /**
  * @author sbinda
- *
  */
 public class StorageLocationDTO {
 
@@ -46,9 +45,16 @@ public class StorageLocationDTO {
 
     private StorageLocationConfiguration configuration;
 
-    public StorageLocationDTO(String name, Long nbFilesStored, Long totalStoredFilesSizeKo, Long nbStorageError,
-            Long nbDeletionError, boolean storageRunning, boolean deletionRunning, boolean copyRunning,
-            StorageLocationConfiguration configuration, boolean allowPhysicalDeletion) {
+    public StorageLocationDTO(String name,
+                              Long nbFilesStored,
+                              Long totalStoredFilesSizeKo,
+                              Long nbStorageError,
+                              Long nbDeletionError,
+                              boolean storageRunning,
+                              boolean deletionRunning,
+                              boolean copyRunning,
+                              StorageLocationConfiguration configuration,
+                              boolean allowPhysicalDeletion) {
         this.name = name;
         this.nbFilesStored = nbFilesStored;
         this.totalStoredFilesSizeKo = totalStoredFilesSizeKo;

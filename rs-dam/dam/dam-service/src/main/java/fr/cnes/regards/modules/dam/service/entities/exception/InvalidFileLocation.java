@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  * Data file invalid location exception
  *
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("serial")
 public class InvalidFileLocation extends ModuleException {

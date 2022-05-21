@@ -68,10 +68,9 @@ public class OpenIdTokenResponse {
             return false;
         }
         OpenIdTokenResponse that = (OpenIdTokenResponse) o;
-        return Objects.equals(tokenType, that.tokenType)
-            && Objects.equals(expiresIn, that.expiresIn)
-            && Objects.equals(refreshToken, that.refreshToken)
-            && Objects.equals(accessToken, that.accessToken);
+        return Objects.equals(tokenType, that.tokenType) && Objects.equals(expiresIn, that.expiresIn) && Objects.equals(
+            refreshToken,
+            that.refreshToken) && Objects.equals(accessToken, that.accessToken);
     }
 
     @Override

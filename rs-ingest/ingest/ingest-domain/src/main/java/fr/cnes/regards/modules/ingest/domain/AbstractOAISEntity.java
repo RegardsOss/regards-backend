@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.domain;
 
-import java.time.OffsetDateTime;
-import java.util.Set;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.framework.urn.EntityType;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.Column;
 import javax.persistence.EnumType;
@@ -29,15 +31,12 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Type;
-
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.framework.urn.EntityType;
+import java.time.OffsetDateTime;
+import java.util.Set;
 
 /**
  * Define common attributes between SIPEntity and AIPEntity
+ *
  * @author Léo Mieulet
  */
 @MappedSuperclass

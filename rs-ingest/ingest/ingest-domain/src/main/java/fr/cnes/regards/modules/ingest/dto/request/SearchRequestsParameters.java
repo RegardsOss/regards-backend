@@ -18,19 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.dto.request;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.dto.aip.OAISDateRange;
+
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.dto.aip.OAISDateRange;
-
 /**
  * Store AbstractQuery criteria filters to do some research against AbstractQuery repo
+ *
  * @author Léo Mieulet
  */
 public class SearchRequestsParameters {

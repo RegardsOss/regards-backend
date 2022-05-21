@@ -22,6 +22,7 @@ import com.google.gson.annotations.JsonAdapter;
 
 /**
  * Test on animal objects
+ *
  * @author Marc Sordi
  */
 @JsonAdapter(AnimalAdapterFactory1.class)

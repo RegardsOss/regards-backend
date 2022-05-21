@@ -19,27 +19,22 @@
 
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
-import java.time.OffsetDateTime;
-import java.util.Random;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.UUID;
-
-import fr.cnes.regards.framework.utils.metamodel.MetaAttribute;
-import fr.cnes.regards.framework.utils.model.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.Point;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.utils.metamodel.MetaAttribute;
+import fr.cnes.regards.framework.utils.model.*;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.time.OffsetDateTime;
+import java.util.*;
 
 /**
  * A simple {@link Plugin} of type {@link ISipGenerationPlugin}.
@@ -47,8 +42,8 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
  * @author Christophe Mertz
  */
 @Plugin(id = "TestGenerateSipPlugin", version = "1.0.0-SNAPSHOT", description = "TestGenerateSipPlugin",
-        author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
+    url = "https://github.com/RegardsOss")
 public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements ISipGenerationPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestGenerateSipPlugin.class);
@@ -66,9 +61,11 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
     @Override
     protected void addDataObjectsToSip(SIPBuilder sipBuilder, Set<AcquisitionFile> acqFiles) throws ModuleException {
         for (AcquisitionFile af : acqFiles) {
-            sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, af.getFilePath().toAbsolutePath(),
-                                                                    AcquisitionProcessingChain.CHECKSUM_ALGORITHM,
-                                                                    UUID.randomUUID().toString());
+            sipBuilder.getContentInformationBuilder()
+                      .setDataObject(DataType.RAWDATA,
+                                     af.getFilePath().toAbsolutePath(),
+                                     AcquisitionProcessingChain.CHECKSUM_ALGORITHM,
+                                     UUID.randomUUID().toString());
             sipBuilder.getContentInformationBuilder().setSyntax(af.getFileInfo().getMimeType());
             sipBuilder.addContentInformation();
         }
@@ -76,19 +73,21 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
 
     @Override
     public void addAttributesTopSip(SIPBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs)
-            throws ModuleException {
+        throws ModuleException {
         mapAttrs.forEach((k, v) -> {
             switch (v.getAttributeKey()) {
                 case MISSION_ATTRIBUE:
-                    sipBuilder.getPDIBuilder().addAdditionalProvenanceInformation(v.getAttributeKey(),
-                                                                                  v.getValueList().get(0));
+                    sipBuilder.getPDIBuilder()
+                              .addAdditionalProvenanceInformation(v.getAttributeKey(), v.getValueList().get(0));
                     break;
                 case INSTRUMENT_ATTRIBUE:
                     sipBuilder.getPDIBuilder().setInstrument((String) v.getValueList().get(0));
                     break;
                 case CREATION_DATE_ATTRIBUE:
-                    sipBuilder.getPDIBuilder().addProvenanceInformationEvent(CREATION_DATE_ATTRIBUE, "creation",
-                                                                             (OffsetDateTime) v.getValueList().get(0));
+                    sipBuilder.getPDIBuilder()
+                              .addProvenanceInformationEvent(CREATION_DATE_ATTRIBUE,
+                                                             "creation",
+                                                             (OffsetDateTime) v.getValueList().get(0));
                     break;
                 case GEO_POINT_ATTRIBUTE:
                     sipBuilder.setGeometry((Point) v.getValueList().get(0));
@@ -116,9 +115,10 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
         attributeMap.put(n++, createDateAttribute(CREATION_DATE_ATTRIBUE, OffsetDateTime.now()));
         attributeMap.put(n++, createDateAttribute("start date", OffsetDateTime.now().minusMinutes(45)));
         attributeMap.put(n++, createDateAttribute("stop  date", OffsetDateTime.now().minusMinutes(15)));
-        attributeMap
-                .put(n++,
-                     createPointAttribute(GEO_POINT_ATTRIBUTE, -90 * random.nextDouble(), 90 * random.nextDouble()));
+        attributeMap.put(n++,
+                         createPointAttribute(GEO_POINT_ATTRIBUTE,
+                                              -90 * random.nextDouble(),
+                                              90 * random.nextDouble()));
 
         LOGGER.info("End  create MetaData for the product <{}> ", productName);
 

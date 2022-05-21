@@ -51,7 +51,6 @@ import java.util.*;
  * And the {@link fr.cnes.regards.modules.ingest.service.job.OAISDeletionJob} algoritm
  *
  * @author Sébastien Binda
- *
  */
 @Service
 @MultitenantTransactional
@@ -158,7 +157,7 @@ public class OAISDeletionService implements IOAISDeletionService {
                         sipService.processDeletion(sipToDelete.getSipId(),
                                                    request.getDeletionMode() == SessionDeletionMode.IRREVOCABLY);
                         // if notifications are required
-                        if(isToNotify) {
+                        if (isToNotify) {
                             // break the link between request and aip (the aip does not exist anymore)
                             request.setAip(null);
                             // add aip content to the payload (the aip does not exist anymore but its content is still
@@ -171,16 +170,18 @@ public class OAISDeletionService implements IOAISDeletionService {
                     }
                 } catch (Exception e) {
                     String errorMsg = String.format("Deletion request %s of AIP %s could not be executed",
-                                                    request.getId(), request.getAip().getAipId());
+                                                    request.getId(),
+                                                    request.getAip().getAipId());
                     LOGGER.error(errorMsg, e);
                     request.setState(InternalRequestState.ERROR);
                     request.addError(errorMsg);
                     errors.add(request);
                 }
             } else {
-                String errorMsg = String
-                        .format("Deletion request %s of AIP %s could not be executed cause other requests reference same AIPs. Request is blocked.",
-                                request.getId(), request.getAip().getAipId());
+                String errorMsg = String.format(
+                    "Deletion request %s of AIP %s could not be executed cause other requests reference same AIPs. Request is blocked.",
+                    request.getId(),
+                    request.getAip().getAipId());
                 LOGGER.warn(errorMsg);
                 request.setState(InternalRequestState.BLOCKED);
                 request.addError(errorMsg);
@@ -202,7 +203,7 @@ public class OAISDeletionService implements IOAISDeletionService {
         deletionRequestRepository.saveAll(aborted);
 
         // If notifications are active, send them to notifier
-        if(isToNotify && !success.isEmpty()) {
+        if (isToNotify && !success.isEmpty()) {
             aipNotificationService.sendRequestsToNotifier(Sets.newHashSet(success));
         }
         if (interrupted) {

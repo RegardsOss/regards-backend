@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.feature.dto;
  * Feature history
  *
  * @author Sébastien Binda
- *
  */
 public class FeatureHistory {
 

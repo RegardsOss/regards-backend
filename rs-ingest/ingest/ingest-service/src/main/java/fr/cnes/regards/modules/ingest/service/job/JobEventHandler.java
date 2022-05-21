@@ -18,13 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -34,9 +27,16 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
 
 /**
  * Listen for Jobs events
+ *
  * @author Marc SORDI
  */
 @Component
@@ -83,11 +83,14 @@ public class JobEventHandler implements ApplicationListener<ApplicationReadyEven
                         break;
                 }
             } catch (Exception e) {
-                String message = String
-                        .format("Ingest job with id \"%s\" and status \"%s\" causes exception during its processing",
-                                wrapper.getContent().getJobId(), wrapper.getContent().getJobEventType());
+                String message = String.format(
+                    "Ingest job with id \"%s\" and status \"%s\" causes exception during its processing",
+                    wrapper.getContent().getJobId(),
+                    wrapper.getContent().getJobEventType());
                 LOGGER.error(message, e);
-                notificationClient.notify(message, "Ingest job event failure", NotificationLevel.ERROR,
+                notificationClient.notify(message,
+                                          "Ingest job event failure",
+                                          NotificationLevel.ERROR,
                                           DefaultRole.ADMIN);
             } finally {
                 runtimeTenantResolver.clearTenant();

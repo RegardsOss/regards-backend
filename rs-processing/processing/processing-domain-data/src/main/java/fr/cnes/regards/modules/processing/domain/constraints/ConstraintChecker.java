@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.constraints;
 
 import io.vavr.CheckedFunction1;
@@ -37,11 +37,10 @@ public interface ConstraintChecker<T> {
         return t -> validate(t).flatMap(vs -> other.validate(t).map(vs::appendAll));
     }
 
-
     static <T> ConstraintChecker<T> and(CheckedFunction1<T, Value<Violation>> fn) {
         return t -> Try.of(() -> fromValue(fn.apply(t)))
-            .recover(e -> Mono.error(() -> new ExceptionViolation(e)))
-            .get();
+                       .recover(e -> Mono.error(() -> new ExceptionViolation(e)))
+                       .get();
     }
 
     static <T> Mono<Seq<T>> fromValue(Value<T> v) {
@@ -49,11 +48,11 @@ public interface ConstraintChecker<T> {
     }
 
     static <T> ConstraintChecker<T> noViolation() {
-        return t ->  Mono.empty();
+        return t -> Mono.empty();
     }
 
     static <T> ConstraintChecker<T> violation(Violation v) {
-        return t ->  Mono.just(List.of(v));
+        return t -> Mono.just(List.of(v));
     }
 
 }

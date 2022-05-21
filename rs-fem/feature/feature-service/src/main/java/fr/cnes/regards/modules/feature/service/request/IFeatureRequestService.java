@@ -18,22 +18,19 @@
  */
 package fr.cnes.regards.modules.feature.service.request;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
-import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestDTO;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
+import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import org.springframework.data.domain.Pageable;
+
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * @author kevin
@@ -43,13 +40,15 @@ public interface IFeatureRequestService {
 
     /**
      * Retrieve {@link FeatureRequestDTO}s for given {@link FeatureRequestTypeEnum}
-     * @param type {@link FeatureRequestTypeEnum}
+     *
+     * @param type      {@link FeatureRequestTypeEnum}
      * @param selection {@link FeatureRequestsSelectionDTO}
      * @param page
      * @return {@link FeatureRequestDTO}s
      */
-    public RequestsPage<FeatureRequestDTO> findAll(FeatureRequestTypeEnum type, FeatureRequestsSelectionDTO selection,
-            Pageable page);
+    public RequestsPage<FeatureRequestDTO> findAll(FeatureRequestTypeEnum type,
+                                                   FeatureRequestsSelectionDTO selection,
+                                                   Pageable page);
 
     /**
      * Set the status STORAGE_OK to all {@link FeatureEntity} references by
@@ -85,6 +84,7 @@ public interface IFeatureRequestService {
 
     /**
      * Delete requests with given selection
+     *
      * @param selection {@link FeatureRequestsSelectionDTO}
      * @return {@link RequestHandledResponse}
      * @throws EntityOperationForbiddenException
@@ -93,6 +93,7 @@ public interface IFeatureRequestService {
 
     /**
      * Retry requests with given selection
+     *
      * @param selection {@link FeatureRequestsSelectionDTO}
      * @return {@link RequestHandledResponse}
      * @throws EntityOperationForbiddenException
@@ -101,8 +102,9 @@ public interface IFeatureRequestService {
 
     /**
      * Update status of given requests
+     *
      * @param requestIds
      * @param status
      */
-    public void  updateRequestsStatus(Set<Long> requestIds, RequestState status);
+    public void updateRequestsStatus(Set<Long> requestIds, RequestState status);
 }

@@ -41,8 +41,8 @@ public class IResultSizeForecastRandomizer implements TypedRandomizer<IResultSiz
 
     @Override
     public Randomizer<IResultSizeForecast> randomizer(EasyRandom generator) {
-        return () -> generator.nextBoolean()
-                ? new AbsoluteResultSizeForecast(Math.abs(generator.nextInt()))
-                : new MultiplierResultSizeForecast(Math.abs((float)generator.nextInt(10000)));
+        return () -> generator.nextBoolean() ?
+            new AbsoluteResultSizeForecast(Math.abs(generator.nextInt())) :
+            new MultiplierResultSizeForecast(Math.abs((float) generator.nextInt(10000)));
     }
 }

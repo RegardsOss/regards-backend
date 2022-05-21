@@ -140,7 +140,7 @@ public class MultitenantJobIT {
                     break;
                 default:
                     throw new IllegalArgumentException(type + " is not an handled type of JobEvent for this test: "
-                            + JobServiceIT.class.getSimpleName());
+                                                           + JobServiceIT.class.getSimpleName());
             }
         }
     }

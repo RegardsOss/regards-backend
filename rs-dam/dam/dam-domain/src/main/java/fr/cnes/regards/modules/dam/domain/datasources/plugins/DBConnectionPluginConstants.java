@@ -21,7 +21,8 @@ package fr.cnes.regards.modules.dam.domain.datasources.plugins;
 
 public final class DBConnectionPluginConstants {
 
-    private DBConnectionPluginConstants() {}
+    private DBConnectionPluginConstants() {
+    }
 
     /**
      * User name

@@ -18,16 +18,9 @@
  */
 package fr.cnes.regards.modules.dam.gson.entities;
 
-import java.util.Iterator;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
 import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -35,12 +28,16 @@ import fr.cnes.regards.modules.dam.domain.entities.feature.CollectionFeature;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DatasetFeature;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Iterator;
+import java.util.Map;
 
 /**
- *
  * Merge array of properties
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
 @GsonTypeAdapterFactory
 public class EntityFeatureAdapterFactory extends PolymorphicTypeAdapterFactory<EntityFeature> {
@@ -104,6 +101,7 @@ public class EntityFeatureAdapterFactory extends PolymorphicTypeAdapterFactory<E
 
     /**
      * Merge {@link JsonArray} flattening elements in a single {@link JsonObject}
+     *
      * @param jsonArray {@link JsonArray} to flatten
      * @return {@link JsonObject}
      */
@@ -126,6 +124,7 @@ public class EntityFeatureAdapterFactory extends PolymorphicTypeAdapterFactory<E
 
     /**
      * Restore {@link JsonArray} from flattened {@link JsonObject} elements (reverse merge)
+     *
      * @param jsonObject {@link JsonObject} to transform
      * @return {@link JsonArray}
      */

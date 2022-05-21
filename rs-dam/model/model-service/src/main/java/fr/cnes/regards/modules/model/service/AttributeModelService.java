@@ -51,6 +51,7 @@ import java.util.stream.Collectors;
 
 /**
  * Manage global attribute life cycle
+ *
  * @author msordi
  */
 @Service
@@ -97,10 +98,13 @@ public class AttributeModelService implements IAttributeModelService {
     private final List<IModelLinkService> linkServices;
 
     public AttributeModelService(@Autowired(required = false) List<IModelLinkService> linkServices,
-            IAttributeModelRepository pAttModelRepository, IRestrictionRepository pRestrictionRepository,
-            IFragmentRepository pFragmentRepository, IAttributePropertyRepository pAttPropertyRepository,
-            IModelAttrAssocRepository modelAttrAssocRepository, IPublisher pPublisher,
-            ApplicationEventPublisher eventPublisher) {
+                                 IAttributeModelRepository pAttModelRepository,
+                                 IRestrictionRepository pRestrictionRepository,
+                                 IFragmentRepository pFragmentRepository,
+                                 IAttributePropertyRepository pAttPropertyRepository,
+                                 IModelAttrAssocRepository modelAttrAssocRepository,
+                                 IPublisher pPublisher,
+                                 ApplicationEventPublisher eventPublisher) {
         this.linkServices = linkServices;
         attModelRepository = pAttModelRepository;
         restrictionRepository = pRestrictionRepository;
@@ -156,8 +160,8 @@ public class AttributeModelService implements IAttributeModelService {
     @Override
     public AttributeModel updateAttribute(Long id, AttributeModel attributeModel) throws ModuleException {
         if (!attributeModel.isIdentifiable()) {
-            throw new EntityNotFoundException(
-                    String.format("Unknown identifier for attribute model \"%s\"", attributeModel.getName()));
+            throw new EntityNotFoundException(String.format("Unknown identifier for attribute model \"%s\"",
+                                                            attributeModel.getName()));
         }
         if (!id.equals(attributeModel.getId())) {
             throw new EntityInconsistentIdentifierException(id, attributeModel.getId(), attributeModel.getClass());
@@ -170,7 +174,7 @@ public class AttributeModelService implements IAttributeModelService {
         publisher.publish(new AttributeModelUpdated(result));
         // Check if model is associated to this updated attribute. If so send an model changed event
         modelAttrAssocRepository.findAllByAttributeId(result.getId())
-                .forEach(a -> publisher.publish(ModelChangeEvent.build(a.getModel().getName())));
+                                .forEach(a -> publisher.publish(ModelChangeEvent.build(a.getModel().getName())));
         return result;
     }
 
@@ -181,8 +185,9 @@ public class AttributeModelService implements IAttributeModelService {
             if (!isDeletable(attributeId)) {
                 String errorMessage = "Attribute cannot be deleted because already linked to at least one entity or datasource";
                 LOGGER.error(errorMessage);
-                throw new EntityOperationForbiddenException(String.valueOf(attributeId), AttributeModel.class,
-                        errorMessage);
+                throw new EntityOperationForbiddenException(String.valueOf(attributeId),
+                                                            AttributeModel.class,
+                                                            errorMessage);
             }
 
             attModelRepository.deleteById(attributeId);
@@ -215,6 +220,7 @@ public class AttributeModelService implements IAttributeModelService {
 
     /**
      * Manage attribute model restriction
+     *
      * @param attributeModel attribute model
      * @throws UnsupportedRestrictionException if restriction not supported
      */
@@ -228,6 +234,7 @@ public class AttributeModelService implements IAttributeModelService {
 
     /**
      * Manage attribute model fragment (fallback to default fragment)
+     *
      * @param attributeModel attribute model
      * @return fragment
      */
@@ -254,9 +261,9 @@ public class AttributeModelService implements IAttributeModelService {
         if (fragment == null) {
             inFragment.setId(null);
             if (!isFragmentCreatable(inFragment.getName())) {
-                throw new EntityAlreadyExistsException(String
-                        .format("Fragment with name \"%s\" cannot be created because an attribute with the same name already exists!",
-                                inFragment.getName()));
+                throw new EntityAlreadyExistsException(String.format(
+                    "Fragment with name \"%s\" cannot be created because an attribute with the same name already exists!",
+                    inFragment.getName()));
             }
             fragment = fragmentRepository.save(inFragment);
         }
@@ -265,6 +272,7 @@ public class AttributeModelService implements IAttributeModelService {
 
     /**
      * Manage a single attribute model
+     *
      * @param inAttributeModel the attribute model
      * @return the persisted attribute model
      * @throws ModuleException if conflict detected
@@ -275,25 +283,27 @@ public class AttributeModelService implements IAttributeModelService {
         }
         if (!inAttributeModel.isIdentifiable()) {
             // Check potential conflict
-            AttributeModel attributeModel = attModelRepository
-                    .findByNameAndFragmentName(inAttributeModel.getName(), inAttributeModel.getFragment().getName());
+            AttributeModel attributeModel = attModelRepository.findByNameAndFragmentName(inAttributeModel.getName(),
+                                                                                         inAttributeModel.getFragment()
+                                                                                                         .getName());
             if (attributeModel != null) {
                 String message;
                 if (inAttributeModel.getFragment().isDefaultFragment()) {
                     message = MessageFormat.format("Attribute model with name \"{0}\" already exists.",
                                                    inAttributeModel.getName());
                 } else {
-                    message = MessageFormat
-                            .format("Attribute model with name \"{0}\" in fragment \"{1}\" already exists.",
-                                    inAttributeModel.getName(), inAttributeModel.getFragment().getName());
+                    message = MessageFormat.format(
+                        "Attribute model with name \"{0}\" in fragment \"{1}\" already exists.",
+                        inAttributeModel.getName(),
+                        inAttributeModel.getFragment().getName());
                 }
                 LOGGER.error(message);
                 throw new EntityAlreadyExistsException(message);
             }
             if (fragmentRepository.findByName(inAttributeModel.getName()) != null) {
-                throw new EntityAlreadyExistsException(MessageFormat
-                        .format("Attribute with name \"{0}\" cannot be created because a fragment with the same name already exists",
-                                inAttributeModel.getName()));
+                throw new EntityAlreadyExistsException(MessageFormat.format(
+                    "Attribute with name \"{0}\" cannot be created because a fragment with the same name already exists",
+                    inAttributeModel.getName()));
             }
         }
         return attModelRepository.save(inAttributeModel);
@@ -323,7 +333,8 @@ public class AttributeModelService implements IAttributeModelService {
         IRestriction restriction = pAttributeModel.getRestriction();
         if ((restriction != null) && !restriction.supports(pAttributeModel.getType())) {
             String message = String.format("Attribute of type %s does not support %s restriction",
-                                           pAttributeModel.getType(), restriction.getType());
+                                           pAttributeModel.getType(),
+                                           restriction.getType());
             LOGGER.error(message);
             throw new UnsupportedRestrictionException(message);
         }

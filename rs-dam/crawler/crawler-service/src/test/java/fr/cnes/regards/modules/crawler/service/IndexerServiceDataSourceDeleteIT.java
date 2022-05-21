@@ -36,8 +36,9 @@ import java.util.concurrent.ExecutionException;
 public class IndexerServiceDataSourceDeleteIT extends AbstractIndexerServiceDataSourceIT {
 
     @Test
-    public void testDeleteByDatasource() throws InactiveDatasourceException, ModuleException, InterruptedException,
-            ExecutionException, DataSourceException, NotFinishedException {
+    public void testDeleteByDatasource()
+        throws InactiveDatasourceException, ModuleException, InterruptedException, ExecutionException,
+        DataSourceException, NotFinishedException {
         String tenant = runtimeTenantResolver.getTenant();
 
         // Creation

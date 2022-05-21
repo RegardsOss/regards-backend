@@ -36,7 +36,9 @@ public class ManagerCleanJob extends AbstractJob<Void> {
         logger.debug("[{}] ManagerCleanJob starts ...", jobInfoId);
         long start = System.currentTimeMillis();
         int nbSession = managerCleanService.clean();
-        logger.debug("[{}] AgentCleanJob ends in {} ms. {} sessions deleted", jobInfoId,
-                     System.currentTimeMillis() - start, nbSession);
+        logger.debug("[{}] AgentCleanJob ends in {} ms. {} sessions deleted",
+                     jobInfoId,
+                     System.currentTimeMillis() - start,
+                     nbSession);
     }
 }

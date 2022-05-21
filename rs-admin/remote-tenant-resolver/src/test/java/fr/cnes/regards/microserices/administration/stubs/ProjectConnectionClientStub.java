@@ -18,22 +18,22 @@
  */
 package fr.cnes.regards.microserices.administration.stubs;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
+import fr.cnes.regards.modules.project.domain.ProjectConnection;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.PagedModel.PageMetadata;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
-import fr.cnes.regards.modules.project.domain.ProjectConnection;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class ProjectClientStub
- *
+ * <p>
  * Stub class for administration service client.
+ *
  * @author Sébastien Binda
  */
 public class ProjectConnectionClientStub implements IProjectConnectionClient {
@@ -42,30 +42,37 @@ public class ProjectConnectionClientStub implements IProjectConnectionClient {
     public ResponseEntity<PagedModel<EntityModel<ProjectConnection>>> getAllProjectConnections(String pProjectName) {
 
         List<EntityModel<ProjectConnection>> resources = new ArrayList<>();
-        ProjectConnection connection = new ProjectConnection(0L, ProjectClientStub.PROJECT, "MICROSERVICE", "", "", "",
-                "");
+        ProjectConnection connection = new ProjectConnection(0L,
+                                                             ProjectClientStub.PROJECT,
+                                                             "MICROSERVICE",
+                                                             "",
+                                                             "",
+                                                             "",
+                                                             "");
         resources.add(EntityModel.of(connection));
 
-        PagedModel<EntityModel<ProjectConnection>> page = PagedModel.of(resources, new PageMetadata(1, 1, 1),
-                new ArrayList<>());
+        PagedModel<EntityModel<ProjectConnection>> page = PagedModel.of(resources,
+                                                                        new PageMetadata(1, 1, 1),
+                                                                        new ArrayList<>());
         return new ResponseEntity<>(page, HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<EntityModel<ProjectConnection>> getProjectConnection(String pProjectName,
-            Long pConnectionId) {
+                                                                               Long pConnectionId) {
         return null;
     }
 
     @Override
     public ResponseEntity<EntityModel<ProjectConnection>> createProjectConnection(String pProjectName,
-            ProjectConnection pProjectConnection) {
+                                                                                  ProjectConnection pProjectConnection) {
         return null;
     }
 
     @Override
     public ResponseEntity<EntityModel<ProjectConnection>> updateProjectConnection(String pProjectName,
-            Long pConnectionId, ProjectConnection pProjectConnection) {
+                                                                                  Long pConnectionId,
+                                                                                  ProjectConnection pProjectConnection) {
         return null;
     }
 

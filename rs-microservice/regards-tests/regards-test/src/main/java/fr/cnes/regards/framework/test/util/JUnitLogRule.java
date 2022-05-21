@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * JUnit rule to log start and end of each tests.
+ *
  * @author Sébastien Binda
  */
 public class JUnitLogRule implements TestRule {

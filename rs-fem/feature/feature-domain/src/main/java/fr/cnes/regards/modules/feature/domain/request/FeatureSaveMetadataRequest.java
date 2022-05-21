@@ -19,21 +19,21 @@
 
 package fr.cnes.regards.modules.feature.domain.request;
 
-import java.time.OffsetDateTime;
-import java.util.Set;
-
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import java.time.OffsetDateTime;
+import java.util.Set;
+
 /**
  * Request to save feature metadata
+ *
  * @author Iliana Ghazali
  */
 
@@ -48,9 +48,15 @@ public class FeatureSaveMetadataRequest extends AbstractFeatureRequest {
     @Column(name = "dump_location")
     private String dumpLocation;
 
-    public static FeatureSaveMetadataRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
-            RequestState state, Set<String> errors, FeatureRequestStep step, PriorityLevel priority,
-            OffsetDateTime previousDumpDate, String dumpLocation) {
+    public static FeatureSaveMetadataRequest build(String requestId,
+                                                   String requestOwner,
+                                                   OffsetDateTime requestDate,
+                                                   RequestState state,
+                                                   Set<String> errors,
+                                                   FeatureRequestStep step,
+                                                   PriorityLevel priority,
+                                                   OffsetDateTime previousDumpDate,
+                                                   String dumpLocation) {
         FeatureSaveMetadataRequest request = new FeatureSaveMetadataRequest();
         request.with(requestId, requestOwner, requestDate, state, step, priority, errors);
         request.setPreviousDumpDate(previousDumpDate);

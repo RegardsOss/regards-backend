@@ -18,6 +18,5 @@
  */
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 package fr.cnes.regards.modules.dam.domain.dataaccess.accessright;

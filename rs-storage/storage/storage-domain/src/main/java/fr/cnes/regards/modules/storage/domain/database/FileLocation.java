@@ -88,8 +88,9 @@ public class FileLocation {
      */
     @Override
     public String toString() {
-        return "FileLocation [" + (storage != null ? "storage=" + storage + ", " : "")
-                + (url != null ? "url=" + url : "") + "]";
+        return "FileLocation [" + (storage != null ? "storage=" + storage + ", " : "") + (url != null ?
+            "url=" + url :
+            "") + "]";
     }
 
     @Override

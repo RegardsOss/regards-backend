@@ -22,7 +22,10 @@ import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.validation.Valid;
 import java.util.Collection;
@@ -32,7 +35,6 @@ import java.util.Set;
  * API to request data access rights
  *
  * @author Marc Sordi
- *
  */
 @RestClient(name = "rs-catalog", contextId = "rs-catalog.access-rights.client")
 public interface IAccessRights {
@@ -53,9 +55,11 @@ public interface IAccessRights {
 
     String ENTITY_HAS_ACCESS_MAPPING = URN_MAPPING + ACCESS_RIGHTS_MAPPING;
 
-    @GetMapping(path = ROOT_TYPE_MAPPING + ENTITY_HAS_ACCESS_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_TYPE_MAPPING + ENTITY_HAS_ACCESS_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE,
+        consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Boolean> hasAccess(@Valid @PathVariable("urn") UniformResourceName urn);
 
-    @PostMapping(path = ROOT_TYPE_MAPPING + HAS_ACCESS_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = ROOT_TYPE_MAPPING + HAS_ACCESS_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE,
+        consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Set<UniformResourceName>> hasAccess(@RequestBody Collection<UniformResourceName> inUrns);
 }

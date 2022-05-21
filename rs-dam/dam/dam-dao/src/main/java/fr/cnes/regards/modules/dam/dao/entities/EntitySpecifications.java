@@ -18,20 +18,18 @@
  */
 package fr.cnes.regards.modules.dam.dao.entities;
 
-import java.util.Set;
-
-import javax.persistence.criteria.Predicate;
-
+import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import org.springframework.data.jpa.domain.Specification;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
+import javax.persistence.criteria.Predicate;
+import java.util.Set;
 
 /**
  * JPA {@link Specification} to define {@link Predicate}s for criteria search from repository.
- * @author Sébastien Binda
+ *
  * @param <E> Entity type to search for
+ * @author Sébastien Binda
  */
 public class EntitySpecifications<E> {
 
@@ -40,6 +38,7 @@ public class EntitySpecifications<E> {
     /**
      * Filter on the given attributes (sessionId, owner, ingestDate and state) and return result ordered by descending
      * ingestDate
+     *
      * @param label Search label
      * @return {@link Specification}
      */
@@ -47,14 +46,16 @@ public class EntitySpecifications<E> {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if (label != null) {
-                predicates.add(cb
-                        .like(cb.function("jsonb_extract_path_text", String.class, root.get(StaticProperties.FEATURE),
-                                          cb.literal(StaticProperties.FEATURE_LABEL)),
-                              LIKE_CHAR + label + LIKE_CHAR));
+                predicates.add(cb.like(cb.function("jsonb_extract_path_text",
+                                                   String.class,
+                                                   root.get(StaticProperties.FEATURE),
+                                                   cb.literal(StaticProperties.FEATURE_LABEL)),
+                                       LIKE_CHAR + label + LIKE_CHAR));
             }
-            query.orderBy(cb
-                    .asc(cb.function("jsonb_extract_path_text", String.class, root.get(StaticProperties.FEATURE),
-                                     cb.literal(StaticProperties.FEATURE_LABEL))));
+            query.orderBy(cb.asc(cb.function("jsonb_extract_path_text",
+                                             String.class,
+                                             root.get(StaticProperties.FEATURE),
+                                             cb.literal(StaticProperties.FEATURE_LABEL))));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }

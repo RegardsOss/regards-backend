@@ -19,18 +19,18 @@
 
 package fr.cnes.regards.modules.dam.domain.datasources.plugins;
 
-import java.time.OffsetDateTime;
-
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
+import java.time.OffsetDateTime;
 
 /**
  * Class IDataSourcePlugin
- *
+ * <p>
  * Allows to search in a data source,
+ *
  * @author Christophe Mertz
  * @author oroussel
  */
@@ -39,21 +39,24 @@ public interface IDataSourcePlugin {
 
     /**
      * The model name
+     *
      * @return model name
      */
     String getModelName();
 
     /**
      * The refresh rate of the data source
+     *
      * @return the refresh rate value (in seconds)
      */
     int getRefreshRate();
 
     /**
      * Returns a {@link Page} of new entities meeting the paging restriction provided in the {@code Pageable} object.
-     * @param tenant tenant to build URN
+     *
+     * @param tenant   tenant to build URN
      * @param pageable the pagination information
-     * @param date Allows to filter the new entities created after this date parameter (can be null)
+     * @param date     Allows to filter the new entities created after this date parameter (can be null)
      * @return a page of entities
      * @throws DataSourceException
      */
@@ -61,7 +64,8 @@ public interface IDataSourcePlugin {
 
     /**
      * Returns a {@link Page} of entities meeting the paging restriction provided in the {@code Pageable} object.
-     * @param tenant tenant to build URN
+     *
+     * @param tenant   tenant to build URN
      * @param pageable the pagination information
      * @return a page of entities
      * @throws DataSourceException

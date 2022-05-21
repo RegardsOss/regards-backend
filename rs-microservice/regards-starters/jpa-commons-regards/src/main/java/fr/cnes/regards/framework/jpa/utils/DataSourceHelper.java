@@ -18,25 +18,24 @@
  */
 package fr.cnes.regards.framework.jpa.utils;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import javax.sql.DataSource;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-
 /**
  * Class DataSourceHelper
- *
+ * <p>
  * Helper to manipulate JPA Regards Datasources
+ *
  * @author CS
  */
 public final class DataSourceHelper {
@@ -83,7 +82,8 @@ public final class DataSourceHelper {
     /**
      * Create an embedded data source. This method should not be used in production in favor of
      * {@link DataSourceHelper#createHikariDataSource(String, String, String, String, String, Integer, Integer, String, String)}
-     * @param pTenant Project name
+     *
+     * @param pTenant       Project name
      * @param pEmbeddedPath path for database files.
      * @return an HSQLDB embedded data source
      */
@@ -92,16 +92,26 @@ public final class DataSourceHelper {
         final DriverManagerDataSource dmDataSource = new DriverManagerDataSource();
         dmDataSource.setDriverClassName(EMBEDDED_HSQL_DRIVER_CLASS);
         dmDataSource.setUrl(EMBEDDED_HSQL_URL + pEmbeddedPath + DataSourceHelper.EMBEDDED_URL_SEPARATOR + pTenant
-                + DataSourceHelper.EMBEDDED_URL_SEPARATOR + DataSourceHelper.EMBEDDED_URL_BASE_NAME);
+                                + DataSourceHelper.EMBEDDED_URL_SEPARATOR + DataSourceHelper.EMBEDDED_URL_BASE_NAME);
 
-        LOGGER.info("\n{}\nCreating an EMBEDDED datasource for tenant {} with path {}\n{}", HR, pTenant, pEmbeddedPath,
+        LOGGER.info("\n{}\nCreating an EMBEDDED datasource for tenant {} with path {}\n{}",
+                    HR,
+                    pTenant,
+                    pEmbeddedPath,
                     HR);
 
         return dmDataSource;
     }
 
-    public static DataSource createHikariDataSource(String tenant, String url, String driverClassName, String userName,
-            String password, Integer minPoolSize, Integer maxPoolSize, String preferredTestQuery, String schemaIdentifier) throws IOException {
+    public static DataSource createHikariDataSource(String tenant,
+                                                    String url,
+                                                    String driverClassName,
+                                                    String userName,
+                                                    String password,
+                                                    Integer minPoolSize,
+                                                    Integer maxPoolSize,
+                                                    String preferredTestQuery,
+                                                    String schemaIdentifier) throws IOException {
 
         LOGGER.info("\n{}\nCreating a HIKARI CP datasource for tenant {} with url {}\n{}", HR, tenant, url, HR);
 
@@ -131,7 +141,8 @@ public final class DataSourceHelper {
 
     /**
      * Test connection
-     * @param dataSource data source to test
+     *
+     * @param dataSource    data source to test
      * @param destroyOnFail if true, destroy datasource if connection test fails.
      * @throws SQLException if connection fails
      */

@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -28,6 +26,7 @@ import fr.cnes.regards.modules.notification.dao.INotificationSettingsRepository;
 import fr.cnes.regards.modules.notification.domain.NotificationFrequency;
 import fr.cnes.regards.modules.notification.domain.NotificationSettings;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationSettingsDTO;
+import org.springframework.stereotype.Service;
 
 /**
  * {@link INotificationSettingsService} implementation.
@@ -35,7 +34,6 @@ import fr.cnes.regards.modules.notification.domain.dto.NotificationSettingsDTO;
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  * @author Christophe Mertz
- *
  */
 @Service
 @RegardsTransactional
@@ -54,13 +52,11 @@ public class NotificationSettingsService implements INotificationSettingsService
     /**
      * Creates a {@link NotificationSettingsService} wired to the given {@link INotificationRepository}.
      *
-     * @param authenticationResolver
-     *            Autowired by Spring. Must not be {@literal null}.
-     * @param pNotificationSettingsRepository
-     *            Autowired by Spring. Must not be {@literal null}.
+     * @param authenticationResolver          Autowired by Spring. Must not be {@literal null}.
+     * @param pNotificationSettingsRepository Autowired by Spring. Must not be {@literal null}.
      */
     public NotificationSettingsService(final IAuthenticationResolver authenticationResolver,
-            final INotificationSettingsRepository pNotificationSettingsRepository) {
+                                       final INotificationSettingsRepository pNotificationSettingsRepository) {
         super();
         this.authenticationResolver = authenticationResolver;
         notificationSettingsRepository = pNotificationSettingsRepository;
@@ -94,7 +90,7 @@ public class NotificationSettingsService implements INotificationSettingsService
      */
     @Override
     public NotificationSettings updateNotificationSettings(final NotificationSettingsDTO pDto)
-            throws EntityNotFoundException {
+        throws EntityNotFoundException {
         final NotificationSettings notificationSettings = retrieveNotificationSettings();
 
         if (pDto.getDays() != null) {
@@ -113,8 +109,7 @@ public class NotificationSettingsService implements INotificationSettingsService
     /**
      * Create notification settings for project user
      *
-     * @param pProjectUser
-     *            The target project user
+     * @param pProjectUser The target project user
      * @return The created notification settings
      */
     private NotificationSettings createNotificationSettings(final String pProjectUser) {

@@ -23,7 +23,8 @@ public class AccountSettingsService extends AbstractSettingService {
     }
 
     @EventListener
-    public void onApplicationStartedEvent(ApplicationStartedEvent event) throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
+    public void onApplicationStartedEvent(ApplicationStartedEvent event)
+        throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
         init();
     }
 
@@ -33,7 +34,8 @@ public class AccountSettingsService extends AbstractSettingService {
     }
 
     public boolean isAutoAccept() {
-        return AccountSettings.ValidationMode.AUTO_ACCEPT.equals(AccountSettings.ValidationMode.fromName(getValue(AccountSettings.VALIDATION)));
+        return AccountSettings.ValidationMode.AUTO_ACCEPT.equals(AccountSettings.ValidationMode.fromName(getValue(
+            AccountSettings.VALIDATION)));
     }
 
 }

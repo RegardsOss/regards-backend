@@ -1,8 +1,8 @@
 package fr.cnes.regards.modules.feature.client;
 
-import java.util.List;
-
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
+
+import java.util.List;
 
 /**
  * @author Sylvain VISSIERE-GUERINET

@@ -24,32 +24,26 @@
 // CHECKSTYLE:ON
 package fr.cnes.regards.framework.gson.adapters;
 
+import com.google.gson.*;
+import com.google.gson.internal.Streams;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+import fr.cnes.regards.framework.gson.utils.GSONUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.TypeAdapter;
-import com.google.gson.TypeAdapterFactory;
-import com.google.gson.internal.Streams;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import fr.cnes.regards.framework.gson.utils.GSONUtils;
-
 /**
  * Generic polymorphic adapter factory. This adapter is based on a discriminator field to explicitly map an entity to
  * its implementation.<br/>
  * A hierarchy of class has to embed a discriminator attribute to be able to use this adapter.
+ *
  * @param <E> entity base type
  * @author Marc Sordi
  */
@@ -101,9 +95,9 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
     protected final ConcurrentMap<Class<?>, Boolean> subtypeSerializeNulls = new ConcurrentHashMap<>();
 
     /**
-     * @param baseType base hierarchy type
+     * @param baseType               base hierarchy type
      * @param discriminatorFieldName discriminator field name
-     * @param injectField do not inject field if already exists else yes.
+     * @param injectField            do not inject field if already exists else yes.
      */
     protected PolymorphicTypeAdapterFactory(Class<E> baseType, String discriminatorFieldName, boolean injectField) {
         GSONUtils.assertNotNull(baseType, "Base hierarchy type is required.");
@@ -115,7 +109,8 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
         this.injectField = injectField;
 
         LOGGER.debug("Managing polymorphic adapter for class \"{}\" and discriminator field \"{}\".",
-                     this.baseType.getName(), this.discriminatorFieldName);
+                     this.baseType.getName(),
+                     this.discriminatorFieldName);
         if (this.injectField) {
             LOGGER.debug("Discriminator field will be injected dynamically.");
         }
@@ -123,7 +118,8 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
 
     /**
      * Init a {@link TypeAdapterFactory} with an existing discriminator field (so field is not injected)
-     * @param baseType base hierarchy type
+     *
+     * @param baseType               base hierarchy type
      * @param discriminatorFieldName discriminator field name
      */
     protected PolymorphicTypeAdapterFactory(Class<E> baseType, String discriminatorFieldName) {
@@ -132,6 +128,7 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
 
     /**
      * Inject default discriminator field name in the serialized object.
+     *
      * @param baseType base hierarchy type
      */
     protected PolymorphicTypeAdapterFactory(Class<E> baseType) {
@@ -141,20 +138,23 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
     /**
      * Creates a new runtime type adapter using for {@code baseType} using {@code
      * typeFieldName} as the type field name. Type field names are case sensitive.
-     * @param <T> base polymorphic type
-     * @param baseType Base polymorphic class
+     *
+     * @param <T>                    base polymorphic type
+     * @param baseType               Base polymorphic class
      * @param discriminatorFieldName discriminator field name
-     * @param injectField do not inject field if already exists else yes.
+     * @param injectField            do not inject field if already exists else yes.
      * @return {@link PolymorphicTypeAdapterFactory}
      */
-    public static <T> PolymorphicTypeAdapterFactory<T> of(Class<T> baseType, String discriminatorFieldName,
-            boolean injectField) {
+    public static <T> PolymorphicTypeAdapterFactory<T> of(Class<T> baseType,
+                                                          String discriminatorFieldName,
+                                                          boolean injectField) {
         return new PolymorphicTypeAdapterFactory<>(baseType, discriminatorFieldName, injectField);
     }
 
     /**
      * Create a {@link TypeAdapterFactory} injecting a default discriminator field in the {@link JsonObject}
-     * @param <T> base polymorphic type
+     *
+     * @param <T>      base polymorphic type
      * @param baseType base hierarchy type
      * @return {@link PolymorphicTypeAdapterFactory}
      */
@@ -164,12 +164,13 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
 
     /**
      * Register a mapping between a field value and an explicit type
-     * @param type type
+     *
+     * @param type                    type
      * @param discriminatorFieldValue field value
-     * @param serializeNulls Enable null serialization for current type.<br/>
-     * Warning: this action disables a global null serialization configuration! Do not call this method if
-     * such
-     * configuration is set globally.
+     * @param serializeNulls          Enable null serialization for current type.<br/>
+     *                                Warning: this action disables a global null serialization configuration! Do not call this method if
+     *                                such
+     *                                configuration is set globally.
      */
     public final void registerSubtype(Class<?> type, String discriminatorFieldValue, boolean serializeNulls) {
         refreshMapping = true;
@@ -186,11 +187,11 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
         LOGGER.debug("Subtype \"{}\" mapped to \"{}\" value", type, discriminatorFieldValue);
 
         // Check if map not already contains value with a different mapping
-        if (discriminatorToSubtype.containsKey(discriminatorFieldValue) && (type != discriminatorToSubtype
-                .get(discriminatorFieldValue))) {
+        if (discriminatorToSubtype.containsKey(discriminatorFieldValue) && (type != discriminatorToSubtype.get(
+            discriminatorFieldValue))) {
 
-            final String errorMessage = String
-                    .format("Discrimator field value %s must be unique", discriminatorFieldValue);
+            final String errorMessage = String.format("Discrimator field value %s must be unique",
+                                                      discriminatorFieldValue);
             LOGGER.error(errorMessage);
             throw new IllegalArgumentException(errorMessage);
         }
@@ -230,7 +231,8 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
 
     /**
      * Unregister mapping between a field value and an explicit type
-     * @param type type
+     *
+     * @param type                    type
      * @param discriminatorFieldValue field value
      */
     public void unregisterSubtype(Class<?> type, String discriminatorFieldValue) {
@@ -248,12 +250,14 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
 
     /**
      * Store mappings
-     * @param gson GSON
+     *
+     * @param gson                    GSON
      * @param discriminatorAdapterMap mapping between discriminator value and adapter
-     * @param subTypeAdapterMap mapping between sub type and adapter
+     * @param subTypeAdapterMap       mapping between sub type and adapter
      */
-    protected void doMapping(Gson gson, Map<String, TypeAdapter<?>> discriminatorAdapterMap,
-            Map<Class<?>, TypeAdapter<?>> subTypeAdapterMap) {
+    protected void doMapping(Gson gson,
+                             Map<String, TypeAdapter<?>> discriminatorAdapterMap,
+                             Map<Class<?>, TypeAdapter<?>> subTypeAdapterMap) {
 
         // Clear maps before computing delegation
         discriminatorAdapterMap.clear();
@@ -271,6 +275,7 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
     /**
      * Default behavior to retrieve discriminator on read.<br/>
      * Override this method to customize discriminator retrieval.
+     *
      * @param jsonElement parsed JSON
      * @return {@link JsonElement} containing a {@link String} representing the discriminator field value.
      */
@@ -289,9 +294,10 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
     /**
      * Default behavior before parsing {@link JsonElement} to sub type.<br/>
      * Override this method to manipulate {@link JsonElement} before parsing it into target type.
-     * @param jsonElement {@link JsonElement}
+     *
+     * @param jsonElement   {@link JsonElement}
      * @param discriminator related discriminator value
-     * @param subType target type
+     * @param subType       target type
      * @return {@link JsonElement} that will be parsed.
      */
     protected JsonElement beforeRead(JsonElement jsonElement, String discriminator, Class<?> subType) {
@@ -301,8 +307,9 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
     /**
      * Default behavior before writing {@link JsonElement} to output stream.<br/>
      * Override this method to manipulate {@link JsonElement} before writing it to JSON.
+     *
      * @param jsonElement {@link JsonElement}
-     * @param subType target type
+     * @param subType     target type
      * @return {@link JsonElement} that will be write on output stream.
      */
     protected JsonElement beforeWrite(JsonElement jsonElement, Class<?> subType) {
@@ -378,8 +385,8 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
                 TypeAdapter<T> delegate = (TypeAdapter<T>) subtypeToDelegate.get(srcType);
 
                 if (delegate == null) {
-                    String errorMessage = String
-                            .format("Cannot serialize %s. Did you forget to register a subtype?", srcType.getName());
+                    String errorMessage = String.format("Cannot serialize %s. Did you forget to register a subtype?",
+                                                        srcType.getName());
                     LOGGER.error(errorMessage);
                     throw new JsonParseException(errorMessage);
                 }
@@ -416,9 +423,10 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
 
                 // Check value found
                 if (discriminatorEl == null) {
-                    String errorMessage = String
-                            .format("Cannot deserialize %s because it does not define a field named %s.", baseType,
-                                    discriminatorFieldName);
+                    String errorMessage = String.format(
+                        "Cannot deserialize %s because it does not define a field named %s.",
+                        baseType,
+                        discriminatorFieldName);
                     LOGGER.error(errorMessage);
                     throw new JsonParseException(errorMessage);
                 }
@@ -428,15 +436,17 @@ public class PolymorphicTypeAdapterFactory<E> implements TypeAdapterFactory {
                 TypeAdapter<T> delegate = (TypeAdapter<T>) discriminatorToDelegate.get(discriminator);
 
                 if (delegate == null) {
-                    String errorMessage = String
-                            .format("Cannot deserialize %s subtype named %s. Did you forget to register a subtype?",
-                                    baseType, discriminator);
+                    String errorMessage = String.format(
+                        "Cannot deserialize %s subtype named %s. Did you forget to register a subtype?",
+                        baseType,
+                        discriminator);
                     LOGGER.error(errorMessage);
                     throw new JsonParseException(errorMessage);
                 }
 
-                return delegate.fromJsonTree(
-                        beforeRead(jsonElement, discriminator, discriminatorToSubtype.get(discriminator)));
+                return delegate.fromJsonTree(beforeRead(jsonElement,
+                                                        discriminator,
+                                                        discriminatorToSubtype.get(discriminator)));
             }
         }.nullSafe();
     }

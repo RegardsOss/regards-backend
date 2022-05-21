@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.engine;
 
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
@@ -47,7 +47,7 @@ public class LaunchExecutionJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         execId = getValue(parameters, EXEC_ID_PARAM);
     }
 
@@ -55,7 +55,9 @@ public class LaunchExecutionJob extends AbstractJob<Void> {
     public void run() {
         STATIC_LOGGER.info("exec={} - LaunchExecutionJob start", execId);
         execService.runExecutable(execId)
-                .subscribe(exec -> STATIC_LOGGER.info("exec={} - LaunchExecutionJob success", execId),
-                           err -> STATIC_LOGGER.error("exec={} - LaunchExecutionJob failure: {}", execId, err.getMessage()));
+                   .subscribe(exec -> STATIC_LOGGER.info("exec={} - LaunchExecutionJob success", execId),
+                              err -> STATIC_LOGGER.error("exec={} - LaunchExecutionJob failure: {}",
+                                                         execId,
+                                                         err.getMessage()));
     }
 }

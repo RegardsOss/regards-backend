@@ -18,22 +18,14 @@
  */
 package fr.cnes.regards.modules.configuration.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
-
 import org.hibernate.annotations.Type;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+
 /**
- *
  * Class Module
- *
+ * <p>
  * Entity to describe an IHM module configuration.
  *
  * @author Sébastien Binda
@@ -193,7 +185,7 @@ public class Module {
     @Override
     public String toString() {
         return "Module [id=" + id + ", type=" + type + ", description=" + description + ", applicationId="
-                + applicationId + ", container=" + container + ", conf=" + conf + ", active=" + active + "]";
+            + applicationId + ", container=" + container + ", conf=" + conf + ", active=" + active + "]";
     }
 
 }

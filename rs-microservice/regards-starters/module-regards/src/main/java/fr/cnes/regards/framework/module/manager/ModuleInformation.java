@@ -24,6 +24,7 @@ import javax.validation.constraints.NotBlank;
  * Module information are loaded from <b>module.properties</b> that must exist in same package as
  * {@link IModuleManager}
  * bean implementation.
+ *
  * @author Marc Sordi
  */
 public class ModuleInformation {

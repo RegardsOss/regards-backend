@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.modules.project.service;
 
-import java.util.Set;
-
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
+
+import java.util.Set;
 
 /**
  * This interface is used to retrieve all tenants from {@link IProjectRepository}.<br/>
@@ -30,18 +30,15 @@ import fr.cnes.regards.modules.project.dao.IProjectRepository;
  * initialize itself.
  *
  * @author Marc Sordi
- *
  */
 public interface ITenantService {
 
     /**
-     *
      * @return all tenant managed by the current instance. Tenants are equivalents to projects.
      */
     Set<String> getAllTenants();
 
     /**
-     *
      * @return all tenant managed by the current instance and fully configured. Tenants are equivalents to projects.
      */
     Set<String> getAllActiveTenants(String pMicroserviceName);

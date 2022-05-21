@@ -18,14 +18,12 @@
  */
 package fr.cnes.regards.modules.catalog.services.dao;
 
+import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
-
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 public interface ILinkPluginsDatasetsRepository extends JpaRepository<LinkPluginsDatasets, Long> {
 

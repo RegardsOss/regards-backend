@@ -6,26 +6,12 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
-import fr.cnes.regards.framework.modules.jobs.domain.FailedAfter1sJob;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.domain.SpringJob;
-import fr.cnes.regards.framework.modules.jobs.domain.WaiterJob;
+import fr.cnes.regards.framework.modules.jobs.domain.*;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.task.JobInfoTaskScheduler;
 import fr.cnes.regards.framework.modules.jobs.test.JobTestConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,8 +27,12 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.time.OffsetDateTime;
+import java.util.*;
+
 /**
  * Test of Jobs executions (status, pool, spring autowiring, ...)
+ *
  * @author oroussel
  */
 @RunWith(SpringRunner.class)
@@ -163,7 +153,8 @@ public class JobServiceIT {
     public void testPendingTrigger() {
         OffsetDateTime triggerDate = OffsetDateTime.now();
         JobInfo jobToBeTriggered = jobInfoService.createPendingTriggerJob(createWaitJob(1L, 1, 10), triggerDate);
-        JobInfo jobNotToBeTriggered = jobInfoService.createPendingTriggerJob(createWaitJob(1L, 1, 10), triggerDate.plusDays(1));
+        JobInfo jobNotToBeTriggered = jobInfoService.createPendingTriggerJob(createWaitJob(1L, 1, 10),
+                                                                             triggerDate.plusDays(1));
         jobInfoTaskScheduler.triggerPendingJobs();
         // check the status of jobToBeTriggered has changed to QUEUED or TO_BE_RUN (triggerPendingJobs changes the
         // status to QUEUED and JobService#manage changes it to TO_BE_RUN)
@@ -173,11 +164,11 @@ public class JobServiceIT {
         Assert.assertTrue("jobToBeTriggered should be present", jobToBeTriggeredUpdated.isPresent());
         Assert.assertTrue("jobNotToBeTriggered should be present", jobNotToBeTriggeredNotUpdated.isPresent());
         Assert.assertTrue("Unexpected jobToBeTriggered status",
-                jobToBeTriggeredUpdated.get().getStatus().getStatus().equals(JobStatus.QUEUED) ||
-                        jobToBeTriggeredUpdated.get().getStatus().getStatus().equals(JobStatus.TO_BE_RUN)
-        );
-        Assert.assertEquals("Unexpected jobNotToBeTriggered status", JobStatus.PENDING,
-                jobNotToBeTriggeredNotUpdated.get().getStatus().getStatus());
+                          jobToBeTriggeredUpdated.get().getStatus().getStatus().equals(JobStatus.QUEUED)
+                              || jobToBeTriggeredUpdated.get().getStatus().getStatus().equals(JobStatus.TO_BE_RUN));
+        Assert.assertEquals("Unexpected jobNotToBeTriggered status",
+                            JobStatus.PENDING,
+                            jobNotToBeTriggeredNotUpdated.get().getStatus().getStatus());
     }
 
     @Test
@@ -185,7 +176,7 @@ public class JobServiceIT {
         // Create 6 waitJob
         JobInfo[] jobInfos = new JobInfo[6];
         for (int i = 0; i < jobInfos.length; i++) {
-            jobInfos[i] = createWaitJob(1000L, 2, 20-i); // makes it easier to know which ones are launched first
+            jobInfos[i] = createWaitJob(1000L, 2, 20 - i); // makes it easier to know which ones are launched first
         }
         for (int i = 0; i < jobInfos.length; i++) {
             jobInfos[i] = jobInfoService.createAsQueued(jobInfos[i]);
@@ -255,7 +246,7 @@ public class JobServiceIT {
                     break;
                 default:
                     throw new IllegalArgumentException(type + " is not an handled type of JobEvent for this test: "
-                            + JobServiceIT.class.getSimpleName());
+                                                           + JobServiceIT.class.getSimpleName());
             }
         }
     }
@@ -265,7 +256,7 @@ public class JobServiceIT {
         waitJobInfo.setPriority(jobPriority);
         waitJobInfo.setClassName(WaiterJob.class.getName());
         waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, waitPeriod),
-                new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, waitPeriodCount));
+                                  new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, waitPeriodCount));
         return waitJobInfo;
     }
 }

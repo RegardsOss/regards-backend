@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.utils.cycle.generics;
 
 /**
  * This class contains a {@link CyclicInfo}
+ *
  * @author Marc Sordi
  */
 public class CyclicMessage {

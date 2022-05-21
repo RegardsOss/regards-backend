@@ -1,20 +1,11 @@
 package fr.cnes.regards.modules.dam.domain.entities;
 
-import java.time.OffsetDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.urn.converters.UrnConverter;
+
+import javax.persistence.*;
+import java.time.OffsetDateTime;
 
 /**
  * Deleted entity (collection, dataset, ...).
@@ -22,7 +13,7 @@ import fr.cnes.regards.framework.urn.converters.UrnConverter;
  */
 @Entity
 @Table(name = "t_deleted_entity",
-        uniqueConstraints = @UniqueConstraint(name = "uk_deleted_entity_ipId", columnNames = { "ipId" }))
+    uniqueConstraints = @UniqueConstraint(name = "uk_deleted_entity_ipId", columnNames = { "ipId" }))
 public class DeletedEntity {
 
     /**

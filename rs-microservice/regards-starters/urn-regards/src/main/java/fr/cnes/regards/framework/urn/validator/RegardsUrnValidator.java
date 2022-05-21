@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.framework.urn.validator;
 
+import fr.cnes.regards.framework.urn.UniformResourceName;
+
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-
-import fr.cnes.regards.framework.urn.UniformResourceName;
 
 /**
  * @author Kevin Marchois

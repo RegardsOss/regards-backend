@@ -29,14 +29,16 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.service.IDatasourceIngesterService;
 import fr.cnes.regards.modules.crawler.service.IEntityIndexerService;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * Reset the catalog from the crawler service
+ *
  * @author Iliana Ghazali
  */
 
@@ -44,12 +46,11 @@ import org.springframework.stereotype.Service;
 @MultitenantTransactional
 public class CatalogResetService implements ICatalogResetService {
 
-
     private static final Logger LOGGER = LoggerFactory.getLogger(CatalogResetService.class);
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
-    
+
     @Autowired
     private IJobInfoService jobInfoService;
 

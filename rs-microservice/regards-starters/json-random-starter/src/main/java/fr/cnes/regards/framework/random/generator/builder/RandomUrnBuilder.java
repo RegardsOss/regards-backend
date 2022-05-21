@@ -99,9 +99,10 @@ public class RandomUrnBuilder implements RandomGeneratorBuilder<RandomUrnBuilder
             } else if (String.class.isAssignableFrom(idProObject.getClass())) {
                 uuid = UUID.nameUUIDFromBytes(((String) idProObject).getBytes()).toString();
             } else {
-                throw new UnsupportedOperationException(
-                        String.format("%s does not support %s for dependent property value", fd.getFunctionName(),
-                                      idProObject.getClass()));
+                throw new UnsupportedOperationException(String.format(
+                    "%s does not support %s for dependent property value",
+                    fd.getFunctionName(),
+                    idProObject.getClass()));
             }
 
             if (projetProperty != null) {

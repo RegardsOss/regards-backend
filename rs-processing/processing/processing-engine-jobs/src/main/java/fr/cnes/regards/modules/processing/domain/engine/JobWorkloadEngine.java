@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.engine;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -37,7 +37,7 @@ import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
 
 /**
  * This class defines a worload engine based on REGARDS Jobs mechanism.
- *
+ * <p>
  * In order to launch an execution, the engine creation a {@link JobInfo} referencing
  * a {@link LaunchExecutionJob}. The actual execution (calling the process' executable on the
  * execution parameters) will be done by this job.
@@ -56,11 +56,9 @@ public class JobWorkloadEngine implements IWorkloadEngine, InitializingBean {
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    public JobWorkloadEngine(
-            IJobInfoService jobInfoService,
-            IWorkloadEngineRepository engineRepo,
-            IRuntimeTenantResolver runtimeTenantResolver
-    ) {
+    public JobWorkloadEngine(IJobInfoService jobInfoService,
+                             IWorkloadEngineRepository engineRepo,
+                             IRuntimeTenantResolver runtimeTenantResolver) {
         this.jobInfoService = jobInfoService;
         this.engineRepo = engineRepo;
         this.runtimeTenantResolver = runtimeTenantResolver;
@@ -81,21 +79,25 @@ public class JobWorkloadEngine implements IWorkloadEngine, InitializingBean {
     public Mono<PExecution> run(ExecutionContext context) {
         return Mono.fromCallable(() -> {
             try {
-                JobInfo jobInfo = new JobInfo(false, 0,
-                        List.of(new JobParameter(LaunchExecutionJob.EXEC_ID_PARAM, context.getExec().getId())).toJavaSet(),
-                        context.getBatch().getUser(), LaunchExecutionJob.class.getName());
+                JobInfo jobInfo = new JobInfo(false,
+                                              0,
+                                              List.of(new JobParameter(LaunchExecutionJob.EXEC_ID_PARAM,
+                                                                       context.getExec().getId())).toJavaSet(),
+                                              context.getBatch().getUser(),
+                                              LaunchExecutionJob.class.getName());
 
                 jobInfo.setExpirationDate(nowUtc().plus(context.getExec().getExpectedDuration()));
                 String tenant = context.getExec().getTenant();
                 runtimeTenantResolver.forceTenant(tenant);
                 JobInfo pendingJob = jobInfoService.createAsQueued(jobInfo);
 
-                LOGGER.info("batch={} exec={} - Job created with ID {}", context.getBatch().getId(),
-                        context.getExec().getId(), pendingJob.getId());
+                LOGGER.info("batch={} exec={} - Job created with ID {}",
+                            context.getBatch().getId(),
+                            context.getExec().getId(),
+                            pendingJob.getId());
 
                 return context.getExec();
-            }
-            finally {
+            } finally {
                 runtimeTenantResolver.clearTenant();
             }
         });

@@ -66,19 +66,27 @@ public class UserResourceControllerIT extends AbstractRegardsTransactionalIT {
 
         // Create user
         Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.toString()).get();
-        ProjectUser user = projectUserRepository
-                .save(new ProjectUser(getDefaultUserEmail(), adminRole, new ArrayList<>(), new HashSet<>()));
+        ProjectUser user = projectUserRepository.save(new ProjectUser(getDefaultUserEmail(),
+                                                                      adminRole,
+                                                                      new ArrayList<>(),
+                                                                      new HashSet<>()));
 
         // Create a new resource
-        ResourcesAccess resource = new ResourcesAccess(null, "microservice", "/to/user", "controller",
-                RequestMethod.GET, DefaultRole.ADMIN);
+        ResourcesAccess resource = new ResourcesAccess(null,
+                                                       "microservice",
+                                                       "/to/user",
+                                                       "controller",
+                                                       RequestMethod.GET,
+                                                       DefaultRole.ADMIN);
         resourcesAccessRepository.save(resource);
 
         // Add access to user
         user.setPermissions(Lists.newArrayList(resource));
 
-        performDefaultGet(UserResourceController.TYPE_MAPPING, customizer().expectStatusOk(),
-                          "Error retrieving resourcesAccess for user.", user.getEmail());
+        performDefaultGet(UserResourceController.TYPE_MAPPING,
+                          customizer().expectStatusOk(),
+                          "Error retrieving resourcesAccess for user.",
+                          user.getEmail());
     }
 
     @Test
@@ -86,18 +94,26 @@ public class UserResourceControllerIT extends AbstractRegardsTransactionalIT {
 
         // Create another user
         Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.toString()).get();
-        ProjectUser user = projectUserRepository
-                .save(new ProjectUser(getDefaultUserEmail(), adminRole, new ArrayList<>(), new HashSet<>()));
+        ProjectUser user = projectUserRepository.save(new ProjectUser(getDefaultUserEmail(),
+                                                                      adminRole,
+                                                                      new ArrayList<>(),
+                                                                      new HashSet<>()));
 
         // Create a new resource
-        ResourcesAccess resource = new ResourcesAccess(null, "microservice", "/to/user", "controller",
-                                                       RequestMethod.GET, DefaultRole.ADMIN);
+        ResourcesAccess resource = new ResourcesAccess(null,
+                                                       "microservice",
+                                                       "/to/user",
+                                                       "controller",
+                                                       RequestMethod.GET,
+                                                       DefaultRole.ADMIN);
         resourcesAccessRepository.save(resource);
         // Add access to the other user
         user.setPermissions(Lists.newArrayList(resource));
 
-        performDefaultGet(UserResourceController.TYPE_MAPPING, customizer().expectStatusNotFound(),
-                          "The user does not exists. There should be an error 404", "wrongEmail");
+        performDefaultGet(UserResourceController.TYPE_MAPPING,
+                          customizer().expectStatusNotFound(),
+                          "The user does not exists. There should be an error 404",
+                          "wrongEmail");
     }
 
 }

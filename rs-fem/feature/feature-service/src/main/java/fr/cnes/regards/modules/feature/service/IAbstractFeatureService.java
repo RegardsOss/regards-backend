@@ -16,16 +16,19 @@ import java.util.Map;
  * @author Sylvain VISSIERE-GUERINET
  * @author Sébastien Binda
  */
-public interface IAbstractFeatureService<R extends AbstractFeatureRequest> extends IRequestDeniedService, IRequestValidation {
+public interface IAbstractFeatureService<R extends AbstractFeatureRequest>
+    extends IRequestDeniedService, IRequestValidation {
 
     /**
      * Schedule a job to process a batch of requests<br/>
+     *
      * @return number of scheduled requests (0 if no request was scheduled)
      */
     int scheduleRequests();
 
     /**
      * Find requests information with search parameters context
+     *
      * @param selection {@link FeatureRequestsSelectionDTO}
      * @return {@link RequestsInfo}
      */

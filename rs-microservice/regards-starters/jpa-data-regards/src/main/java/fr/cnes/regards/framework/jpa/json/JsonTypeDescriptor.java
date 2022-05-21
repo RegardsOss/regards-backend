@@ -56,6 +56,7 @@ public class JsonTypeDescriptor extends AbstractTypeDescriptor<Object> implement
      * Must be set when declaring a jsonb field : <br/>
      * Its value corresponds to the target name class that will be retrieved using {@link Class#forName(String)}<br/>
      * <code>
+     *
      * @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "{classname}") })
      * </code>
      * @author Marc Sordi
@@ -68,6 +69,7 @@ public class JsonTypeDescriptor extends AbstractTypeDescriptor<Object> implement
      * Must be set when declaring a jsonb field, which is a map : <br/>
      * Its value corresponds to the target name class of the key that will be retrieved using {@link Class#forName(String)}<br/>
      * <code>
+     *
      * @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.KEY_ARG_TYPE, value = "{classname}") })
      * </code>
      * @author Sylvain Vissiere-Guerinet
@@ -87,7 +89,8 @@ public class JsonTypeDescriptor extends AbstractTypeDescriptor<Object> implement
     public void setParameterValues(Properties parameters) {
         // Manage parameterized type
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Managing json type for entity {} and property {}", parameters.get(ENTITY),
+            LOGGER.debug("Managing json type for entity {} and property {}",
+                         parameters.get(ENTITY),
                          parameters.get(PROPERTY));
         }
 
@@ -104,9 +107,9 @@ public class JsonTypeDescriptor extends AbstractTypeDescriptor<Object> implement
             try {
                 argType = Class.forName((String) argTypeName);
             } catch (ClassNotFoundException e) {
-                String message = String
-                        .format("Argument type name %s does not correspond to a valid class on the classpath",
-                                argTypeName);
+                String message = String.format(
+                    "Argument type name %s does not correspond to a valid class on the classpath",
+                    argTypeName);
                 LOGGER.error(message, e);
                 throw new IllegalArgumentException(e);
             }
@@ -119,9 +122,9 @@ public class JsonTypeDescriptor extends AbstractTypeDescriptor<Object> implement
                 try {
                     keyArgType = Class.forName((String) keyArgTypeName);
                 } catch (ClassNotFoundException e) {
-                    String message = String
-                            .format("Key argument type name %s does not correspond to a valid class on the classpath",
-                                    keyArgTypeName);
+                    String message = String.format(
+                        "Key argument type name %s does not correspond to a valid class on the classpath",
+                        keyArgTypeName);
                     LOGGER.error(message, e);
                     throw new IllegalArgumentException(e);
                 }

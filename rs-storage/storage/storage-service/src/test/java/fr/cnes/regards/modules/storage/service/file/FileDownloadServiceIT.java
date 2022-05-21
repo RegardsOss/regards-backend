@@ -59,7 +59,8 @@ import static org.junit.Assert.assertTrue;
  * @author Sébastien Binda
  */
 @ActiveProfiles({ "noscheduler" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_download_tests" }, locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_download_tests" },
+    locations = { "classpath:application-test.properties" })
 public class FileDownloadServiceIT extends AbstractStorageIT {
 
     private static final String SESSION_OWNER = "SOURCE 1";
@@ -83,8 +84,11 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
         fileRef = this.generateStoredFileReference(fileRef.getMetaInfo().getChecksum(),
                                                    fileRef.getLazzyOwners().stream().findFirst().get(),
                                                    fileRef.getMetaInfo().getFileName(),
-                                                   ONLINE_CONF_LABEL_WITHOUT_DELETE, Optional.empty(), Optional.empty(),
-                                                   SESSION_OWNER, SESSION);
+                                                   ONLINE_CONF_LABEL_WITHOUT_DELETE,
+                                                   Optional.empty(),
+                                                   Optional.empty(),
+                                                   SESSION_OWNER,
+                                                   SESSION);
         downloadService.downloadFile(fileRef.getMetaInfo().getChecksum());
         // there should not be any exception as the file is at the same time online and nearline
     }
@@ -96,11 +100,15 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
 
     @Test
     public void downloadFileReferenceOffLine() {
-        FileReference fileRef = this.referenceFile(UUID.randomUUID().toString(), "owner", null, "file.test",
-                                                   "somewhere", "source1", "session1")
-                .get();
-        Try<Callable<DownloadableFile>> result = Try
-                .of(() -> downloadService.downloadFile(fileRef.getMetaInfo().getChecksum()));
+        FileReference fileRef = this.referenceFile(UUID.randomUUID().toString(),
+                                                   "owner",
+                                                   null,
+                                                   "file.test",
+                                                   "somewhere",
+                                                   "source1",
+                                                   "session1").get();
+        Try<Callable<DownloadableFile>> result = Try.of(() -> downloadService.downloadFile(fileRef.getMetaInfo()
+                                                                                                  .getChecksum()));
         assertTrue("File should not be available for download as it is not handled by a known storage location plugin",
                    result.isFailure());
         assertTrue(result.getCause() instanceof ModuleException);
@@ -111,23 +119,26 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
         FileReference fileRef = this.generateRandomStoredNearlineFileReference();
 
         Try<DownloadableFile> result = Try.of(() -> downloadService.downloadFile(fileRef.getMetaInfo().getChecksum()))
-                .mapTry(Callable::call);
+                                          .mapTry(Callable::call);
         assertTrue("File should not be available for download as it is not online", result.isFailure());
         assertTrue(result.getCause() instanceof NearlineFileNotAvailableException);
 
         // A cache request should be created
         Optional<FileCacheRequest> oReq = fileCacheRequestService.search(fileRef.getMetaInfo().getChecksum());
         Assert.assertTrue("FileCacheRequest should be created", oReq.isPresent());
-        assertEquals("FileCacheRequest should be created to retrieve file from nearline storage", NEARLINE_CONF_LABEL,
+        assertEquals("FileCacheRequest should be created to retrieve file from nearline storage",
+                     NEARLINE_CONF_LABEL,
                      oReq.get().getStorage());
         assertEquals("FileCacheRequest should be created to retrieve file from nearline storage",
-                     FileRequestStatus.TO_DO, oReq.get().getStatus());
+                     FileRequestStatus.TO_DO,
+                     oReq.get().getStatus());
         Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
         runAndWaitJob(jobs);
 
         Optional<CacheFile> oCf = cacheService.search(fileRef.getMetaInfo().getChecksum());
         Assert.assertTrue("File should be present in cache", oCf.isPresent());
-        assertEquals("File should be present in cache", cacheService.getFilePath(fileRef.getMetaInfo().getChecksum()),
+        assertEquals("File should be present in cache",
+                     cacheService.getFilePath(fileRef.getMetaInfo().getChecksum()),
                      oCf.get().getLocation().getPath());
 
         // Now the file is available in cache try to download it again.
@@ -136,16 +147,18 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
         DownloadableFile file = result.get();
         Assert.assertNotNull("File should be downloadable", file);
         Assert.assertNotNull("File should be downloadable", file.getFileInputStream());
-        assertEquals("File should be downloadable with a valid name", fileRef.getMetaInfo().getFileName(),
+        assertEquals("File should be downloadable with a valid name",
+                     fileRef.getMetaInfo().getFileName(),
                      file.getFileName());
-        assertEquals("File should be downloadable with a valid mime type", fileRef.getMetaInfo().getMimeType(),
+        assertEquals("File should be downloadable with a valid mime type",
+                     fileRef.getMetaInfo().getMimeType(),
                      file.getMimeType());
         file.getFileInputStream().close();
     }
 
     @Test(expected = NearlineFileNotAvailableException.class)
-    public void download_without_cache() throws InterruptedException, ExecutionException, EntityNotFoundException,
-            NearlineFileNotAvailableException {
+    public void download_without_cache()
+        throws InterruptedException, ExecutionException, EntityNotFoundException, NearlineFileNotAvailableException {
         FileReference fileRef = this.generateRandomStoredNearlineFileReference();
         try {
             downloadService.download(fileRef);
@@ -156,8 +169,9 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
     }
 
     @Test
-    public void download_with_cache() throws InterruptedException, ExecutionException, EntityNotFoundException,
-            IOException, NearlineFileNotAvailableException {
+    public void download_with_cache()
+        throws InterruptedException, ExecutionException, EntityNotFoundException, IOException,
+        NearlineFileNotAvailableException {
         FileReference fileRef = this.generateRandomStoredNearlineFileReference();
         this.simulateFileInCache(fileRef.getMetaInfo().getChecksum());
         InputStream stream = downloadService.download(fileRef);
@@ -183,30 +197,24 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
         Random r = new Random();
         DataType[] typesCache = DataType.values();
 
-        IntStream.range(0, 100)
-            .forEach(i -> Try.run(() -> {
-                DataType type = typesCache[r.nextInt(typesCache.length)];
-                FileReference fileRef = generateStoredFileReference(
-                    UUID.randomUUID().toString(),
-                    "someone",
-                    "file.test",
-                    ONLINE_CONF_LABEL,
-                    Optional.empty(),
-                    Optional.of(type.name()),
-                    SESSION_OWNER,
-                    SESSION
-                );
+        IntStream.range(0, 100).forEach(i -> Try.run(() -> {
+            DataType type = typesCache[r.nextInt(typesCache.length)];
+            FileReference fileRef = generateStoredFileReference(UUID.randomUUID().toString(),
+                                                                "someone",
+                                                                "file.test",
+                                                                ONLINE_CONF_LABEL,
+                                                                Optional.empty(),
+                                                                Optional.of(type.name()),
+                                                                SESSION_OWNER,
+                                                                SESSION);
 
-                DownloadableFile dlFile =
-                    Try.of(() -> downloadService.downloadFile(fileRef.getMetaInfo().getChecksum()))
-                        .mapTry(Callable::call)
-                        .get();
+            DownloadableFile dlFile = Try.of(() -> downloadService.downloadFile(fileRef.getMetaInfo().getChecksum()))
+                                         .mapTry(Callable::call)
+                                         .get();
 
-                assertTrue(
-                    type.equals(DataType.RAWDATA)
-                        ? dlFile instanceof FileDownloadService.QuotaLimitedDownloadableFile
-                        : dlFile instanceof FileDownloadService.StandardDownloadableFile
-                );
-            }));
+            assertTrue(type.equals(DataType.RAWDATA) ?
+                           dlFile instanceof FileDownloadService.QuotaLimitedDownloadableFile :
+                           dlFile instanceof FileDownloadService.StandardDownloadableFile);
+        }));
     }
 }

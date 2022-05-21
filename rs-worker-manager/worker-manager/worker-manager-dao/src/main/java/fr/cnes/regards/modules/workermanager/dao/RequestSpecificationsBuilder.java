@@ -19,8 +19,8 @@
 package fr.cnes.regards.modules.workermanager.dao;
 
 import fr.cnes.regards.framework.jpa.utils.AbstractSpecificationsBuilder;
-import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
+import fr.cnes.regards.modules.workermanager.domain.request.SearchRequestParameters;
 
 /**
  * @author Théo Lasserre

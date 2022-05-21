@@ -18,6 +18,12 @@
  */
 package fr.cnes.regards.framework.amqp.test;
 
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.test.event.Info;
+import fr.cnes.regards.framework.amqp.test.handler.AbstractInfoReceiver;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,23 +32,17 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.amqp.test.event.Info;
-import fr.cnes.regards.framework.amqp.test.handler.AbstractInfoReceiver;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-
 /**
  * Single virtual host tests
+ *
  * @author Marc Sordi
  */
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration
 @TestPropertySource(
-        properties = { "regards.amqp.management.mode=SINGLE", "regards.tenants=PROJECT, PROJECT1",
-                "regards.tenant=PROJECT", "regards.amqp.internal.transaction=true", "spring.jmx.enabled=false", "" },
-        locations = "classpath:amqp.properties")
+    properties = { "regards.amqp.management.mode=SINGLE", "regards.tenants=PROJECT, PROJECT1", "regards.tenant=PROJECT",
+        "regards.amqp.internal.transaction=true", "spring.jmx.enabled=false", "" },
+    locations = "classpath:amqp.properties")
 public class SingleVhostSubscriberIT extends AbstractSubscriberIT {
 
     @Autowired

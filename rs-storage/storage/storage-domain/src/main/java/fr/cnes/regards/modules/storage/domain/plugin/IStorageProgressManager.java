@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.modules.storage.domain.plugin;
 
-import java.net.URL;
-
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+
+import java.net.URL;
 
 /**
  * The ProgressManager is used by {@link IStorageLocation} plugins to notidy the upper service of storage action results :
@@ -28,20 +28,23 @@ import fr.cnes.regards.modules.storage.domain.database.request.FileStorageReques
  * <li>Storage succeed {@link #storageSucceed}</li>
  * <li>Storage failed {@link #storageFailed}</li>
  * </ul>
+ *
  * @author Sébastien Binda
  */
 public interface IStorageProgressManager {
 
     /**
      * Notify system that the given {@link FileStorageRequest} is stored.
+     *
      * @param fileReferenceRequest {@link FileStorageRequest} stored.
      */
     public void storageSucceed(FileStorageRequest fileReferenceRequest, URL storedUrl, Long fileSize);
 
     /**
      * Notify the system that the given {@link FileStorageRequest} couldn't be stored.
+     *
      * @param fileReferenceRequest {@link FileStorageRequest} not stored.
-     * @param cause {@link String} error message.
+     * @param cause                {@link String} error message.
      */
     public void storageFailed(FileStorageRequest fileReferenceRequest, String cause);
 

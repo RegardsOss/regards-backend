@@ -18,10 +18,6 @@
  */
 package fr.cnes.regards.modules.crawler.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -29,12 +25,14 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.dam.domain.datasources.event.DatasourceEvent;
 import fr.cnes.regards.modules.dam.domain.datasources.event.DatasourceEventType;
 import fr.cnes.regards.modules.model.gson.ModelJsonReadyEvent;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
 
 /**
  * Handler to handle {@link DatasourceEvent} events. Those events are sent when a datasource is deleted.
  *
  * @author Sébastien Binda
- *
  */
 @Component
 public class DatasourceEventHandler implements IHandler<DatasourceEvent> {

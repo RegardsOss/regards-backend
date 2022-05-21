@@ -19,12 +19,12 @@
 
 package fr.cnes.regards.modules.acquisition.dao;
 
-import org.junit.Ignore;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorIT;
+import org.junit.Ignore;
 
 /**
  * Generate data provider database
+ *
  * @author Christophe Mertz
  */
 // @TestPropertySource(properties = { "regards.jpa.multitenant.migrationTool=FLYWAYDB" })

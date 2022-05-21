@@ -18,14 +18,15 @@
  */
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.atom.modules.gml;
 
-import java.time.OffsetDateTime;
-
 import com.google.gson.Gson;
+
+import java.time.OffsetDateTime;
 
 /**
  * Provides access to GML Time&Geo information.
- * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
+ *
  * @author Sébastien Binda
+ * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  */
 public interface GmlTimeResponse {
 

@@ -18,19 +18,6 @@
  */
 package fr.cnes.regards.modules.feature.service.job;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.compress.utils.Lists;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -42,12 +29,21 @@ import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.IFeatureService;
+import org.apache.commons.compress.utils.Lists;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Job to publis {@link FeatureNotificationRequestEvent}s for each {@link FeatureEntityDto} matching  search parameters
  *
  * @author Sébastien Binda
- *
  */
 public class PublishFeatureNotificationJob extends AbstractJob<Void> {
 
@@ -70,7 +66,7 @@ public class PublishFeatureNotificationJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         selection = getValue(parameters, SELECTION_PARAMETER);
         owner = getValue(parameters, OWNER_PARAMETER);
     }
@@ -92,7 +88,8 @@ public class PublishFeatureNotificationJob extends AbstractJob<Void> {
             // Scheduling page deletion job
             publishNotificationEvents(results.map(f -> f.getFeature().getUrn()).toList());
             logger.info("Scheduling job for {} feature notification requests (remaining {}).",
-                        results.getNumberOfElements(), totalElementCheck - results.getNumberOfElements());
+                        results.getNumberOfElements(),
+                        totalElementCheck - results.getNumberOfElements());
             page = page.next();
         } while ((results != null) && results.hasNext());
     }
@@ -100,7 +97,8 @@ public class PublishFeatureNotificationJob extends AbstractJob<Void> {
     private void publishNotificationEvents(Collection<FeatureUniformResourceName> featureUrns) {
         List<FeatureNotificationRequestEvent> events = Lists.newArrayList();
         for (FeatureUniformResourceName urn : featureUrns) {
-            FeatureNotificationRequestEvent event = FeatureNotificationRequestEvent.build(owner, urn,
+            FeatureNotificationRequestEvent event = FeatureNotificationRequestEvent.build(owner,
+                                                                                          urn,
                                                                                           PriorityLevel.HIGH);
             events.add(event);
         }

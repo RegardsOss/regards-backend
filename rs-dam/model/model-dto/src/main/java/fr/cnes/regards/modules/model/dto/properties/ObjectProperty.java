@@ -34,6 +34,7 @@ public class ObjectProperty extends AbstractProperty<Set<IProperty<?>>> {
 
     /**
      * Appends attribute in this attribute set
+     *
      * @param attribute to append
      * @deprecated
      */
@@ -44,6 +45,7 @@ public class ObjectProperty extends AbstractProperty<Set<IProperty<?>>> {
 
     /**
      * Appends property in this property set
+     *
      * @param property to append
      */
     public void addProperty(IProperty<?> property) {

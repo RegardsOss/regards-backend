@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.indexer.domain.criterion;
 
 /**
  * ICriterion visitor
+ *
  * @param <T> return type of all methods
  * @author oroussel
  */

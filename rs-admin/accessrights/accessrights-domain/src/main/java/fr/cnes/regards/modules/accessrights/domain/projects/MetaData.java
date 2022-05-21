@@ -34,7 +34,8 @@ import java.util.Objects;
  */
 @Entity
 // user_id is the JoinColumn defined in ProjectUser
-@Table(name = "t_metadata", uniqueConstraints = @UniqueConstraint(name = "uk_metadata_key_user_id", columnNames = {"key", "user_id"}))
+@Table(name = "t_metadata",
+    uniqueConstraints = @UniqueConstraint(name = "uk_metadata_key_user_id", columnNames = { "key", "user_id" }))
 @SequenceGenerator(name = "metaDataSequence", initialValue = 1, sequenceName = "seq_metadata")
 public class MetaData implements IIdentifiable<Long> {
 
@@ -61,6 +62,7 @@ public class MetaData implements IIdentifiable<Long> {
 
     /**
      * Constructor setting the parameters as attributes
+     *
      * @param key
      * @param value
      * @param visibility
@@ -106,8 +108,10 @@ public class MetaData implements IIdentifiable<Long> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof MetaData)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof MetaData))
+            return false;
         MetaData metaData = (MetaData) o;
         return Objects.equals(key, metaData.key);
     }

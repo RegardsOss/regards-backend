@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.utils.plugins.exception;
 
 /**
  * @author sbinda
- *
  */
 @SuppressWarnings("serial")
 public class NotAvailablePluginConfigurationException extends Exception {

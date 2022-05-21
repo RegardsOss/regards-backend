@@ -18,30 +18,28 @@
  */
 package fr.cnes.regards.modules.storage.domain.dto.request;
 
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotBlank;
-
+import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.springframework.util.InvalidMimeTypeException;
 
-import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotBlank;
+import java.util.Optional;
 
 /**
  * Information about a file for a store request.<br/>
  * Mandatory information are : <ul>
- *  <li> Filename</li>
- *  <li> Checksum</li>
- *  <li> Checksum algorithm </li>
- *  <li> mimeType </li>
- *  <li> Storage location where to delete the file</li>
- *  <li> Owner of the file who ask for storage </li>
- *  <li> originUrl where to access file to store. Must be locally accessible (file protocol for example) </li>
+ * <li> Filename</li>
+ * <li> Checksum</li>
+ * <li> Checksum algorithm </li>
+ * <li> mimeType </li>
+ * <li> Storage location where to delete the file</li>
+ * <li> Owner of the file who ask for storage </li>
+ * <li> originUrl where to access file to store. Must be locally accessible (file protocol for example) </li>
  * </ul>
  * See {@link StorageFlowItem} for more information about storage request process.
  *
@@ -81,8 +79,16 @@ public class FileStorageRequestDTO {
 
     private String session;
 
-    public static FileStorageRequestDTO build(String fileName, String checksum, String algorithm, String mimeType,
-            String owner, String sessionOwner, String session, String originUrl, String storage, Optional<String> subDirectory) {
+    public static FileStorageRequestDTO build(String fileName,
+                                              String checksum,
+                                              String algorithm,
+                                              String mimeType,
+                                              String owner,
+                                              String sessionOwner,
+                                              String session,
+                                              String originUrl,
+                                              String storage,
+                                              Optional<String> subDirectory) {
 
         Assert.notNull(fileName, "File name is mandatory.");
         Assert.notNull(checksum, "Checksum is mandatory.");
@@ -111,6 +117,7 @@ public class FileStorageRequestDTO {
 
     /**
      * Build a {@link FileReferenceMetaInfo} with the current request information.
+     *
      * @return {@link FileReferenceMetaInfo}
      */
     public FileReferenceMetaInfo buildMetaInfo() {
@@ -118,8 +125,9 @@ public class FileStorageRequestDTO {
         try {
             mt = MediaType.valueOf(mimeType);
         } catch (InvalidMimeTypeException e) {
-            LOGGER.error("Invalid media type for new file reference : %s .Falling back to default media type application/octet-stream",
-                         e);
+            LOGGER.error(
+                "Invalid media type for new file reference : %s .Falling back to default media type application/octet-stream",
+                e);
         }
         return new FileReferenceMetaInfo(checksum, algorithm, fileName, null, mt).withType(type);
     }
@@ -174,6 +182,7 @@ public class FileStorageRequestDTO {
 
     /**
      * Add optional type to current {@link FileStorageRequestDTO}
+     *
      * @param type
      * @return current {@link FileStorageRequestDTO}
      */

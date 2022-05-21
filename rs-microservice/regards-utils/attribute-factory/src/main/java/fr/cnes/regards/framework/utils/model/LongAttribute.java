@@ -22,9 +22,8 @@ import fr.cnes.regards.framework.utils.metamodel.MetaAttribute;
 
 /**
  * Cette classe represente un attribut de type Entier.
- * 
- * @author Christophe Mertz
  *
+ * @author Christophe Mertz
  */
 public class LongAttribute extends Attribute {
 

@@ -33,6 +33,7 @@ import java.net.URI;
 
 /**
  * Mock default resource service to avoid bad servlet context issue *
+ *
  * @author msordi
  */
 public class MockDefaultResourceService extends DefaultResourceService {

@@ -19,11 +19,9 @@
 package fr.cnes.regards.modules.toponyms.domain;
 
 /**
- *
  * Centralized endpoint path for REST interface
  *
  * @author Sébastien Binda
- *
  */
 public class ToponymsRestConfiguration {
 

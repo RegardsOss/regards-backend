@@ -18,14 +18,12 @@
  */
 package fr.cnes.regards.modules.model.service.validation;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.HashMap;
-
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonReader;
+import fr.cnes.regards.modules.model.domain.attributes.restriction.JsonSchemaRestriction;
+import fr.cnes.regards.modules.model.dto.properties.IProperty;
+import fr.cnes.regards.modules.model.service.validation.validator.restriction.RestrictionValidatorFactory;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,18 +32,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.stream.JsonReader;
-
-import fr.cnes.regards.modules.model.domain.attributes.restriction.JsonSchemaRestriction;
-import fr.cnes.regards.modules.model.dto.properties.IProperty;
-import fr.cnes.regards.modules.model.service.validation.validator.restriction.RestrictionValidatorFactory;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
 
 /**
- *
  * @author Sébastien Binda
- *
  */
 public class RestrictionTest {
 
@@ -59,12 +55,12 @@ public class RestrictionTest {
         String schema = IOUtils.toString(in, StandardCharsets.UTF_8.name());
 
         InputStream inTest = Files.newInputStream(Paths.get("src", "test", "resources", "valid.json"));
-        JsonObject json = (new GsonBuilder()).create().fromJson(new JsonReader(new InputStreamReader(inTest)),
-                                                                JsonObject.class);
+        JsonObject json = (new GsonBuilder()).create()
+                                             .fromJson(new JsonReader(new InputStreamReader(inTest)), JsonObject.class);
         restriction.setJsonSchema(schema);
         Errors errors = new MapBindingResult(new HashMap<>(), "test");
-        RestrictionValidatorFactory.getValidator(restriction, "test").validate(IProperty.buildJson("test", json),
-                                                                               errors);
+        RestrictionValidatorFactory.getValidator(restriction, "test")
+                                   .validate(IProperty.buildJson("test", json), errors);
         errors.getAllErrors().forEach(e -> {
             LOGGER.error(e.getDefaultMessage());
         });
@@ -79,12 +75,12 @@ public class RestrictionTest {
         String schema = IOUtils.toString(in, StandardCharsets.UTF_8.name());
 
         InputStream inTest = Files.newInputStream(Paths.get("src", "test", "resources", "invalid.json"));
-        JsonObject json = (new GsonBuilder()).create().fromJson(new JsonReader(new InputStreamReader(inTest)),
-                                                                JsonObject.class);
+        JsonObject json = (new GsonBuilder()).create()
+                                             .fromJson(new JsonReader(new InputStreamReader(inTest)), JsonObject.class);
         restriction.setJsonSchema(schema);
         Errors errors = new MapBindingResult(new HashMap<>(), "test");
-        RestrictionValidatorFactory.getValidator(restriction, "test").validate(IProperty.buildJson("test", json),
-                                                                               errors);
+        RestrictionValidatorFactory.getValidator(restriction, "test")
+                                   .validate(IProperty.buildJson("test", json), errors);
         errors.getAllErrors().forEach(e -> {
             LOGGER.error(e.getDefaultMessage());
         });
@@ -99,12 +95,12 @@ public class RestrictionTest {
         String schema = IOUtils.toString(in, StandardCharsets.UTF_8.name());
 
         InputStream inTest = Files.newInputStream(Paths.get("src", "test", "resources", "valid.json"));
-        JsonObject json = (new GsonBuilder()).create().fromJson(new JsonReader(new InputStreamReader(inTest)),
-                                                                JsonObject.class);
+        JsonObject json = (new GsonBuilder()).create()
+                                             .fromJson(new JsonReader(new InputStreamReader(inTest)), JsonObject.class);
         restriction.setJsonSchema(schema);
         Errors errors = new MapBindingResult(new HashMap<>(), "test");
-        RestrictionValidatorFactory.getValidator(restriction, "test").validate(IProperty.buildJson("test", json),
-                                                                               errors);
+        RestrictionValidatorFactory.getValidator(restriction, "test")
+                                   .validate(IProperty.buildJson("test", json), errors);
         errors.getAllErrors().forEach(e -> {
             LOGGER.error(e.getDefaultMessage());
         });

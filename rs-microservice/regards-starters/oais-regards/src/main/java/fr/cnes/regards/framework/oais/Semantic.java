@@ -22,6 +22,7 @@ import javax.validation.constraints.NotNull;
 
 /**
  * OAIS semantic
+ *
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
  */

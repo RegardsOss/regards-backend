@@ -1,13 +1,12 @@
 package fr.cnes.regards.microservices.administration;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -24,8 +23,9 @@ public class LocalAuthoritiesProviderAutoConfiguration {
      */
     @Bean
     @Primary
-    public IAuthoritiesProvider localAuthoritiesProvider(IRoleService roleService, IResourcesService resourcesService,
-            IRuntimeTenantResolver runtimeTenantResolver) {
+    public IAuthoritiesProvider localAuthoritiesProvider(IRoleService roleService,
+                                                         IResourcesService resourcesService,
+                                                         IRuntimeTenantResolver runtimeTenantResolver) {
         return new LocalAuthoritiesProvider(roleService, resourcesService, runtimeTenantResolver);
     }
 

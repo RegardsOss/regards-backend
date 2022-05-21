@@ -18,18 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.flow;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -49,6 +37,12 @@ import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import fr.cnes.regards.modules.storage.client.IStorageRequestListener;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.*;
 
 /**
  * This class offers callbacks from storage events
@@ -98,7 +92,8 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
         });
         // Finally, creates the AIPUpdateLocationRequests
         int nbScheduled = aipUpdateRequestService.create(updateTasksByAIP);
-        LOGGER.debug("[COPY RESPONSE HANDLER] {} update requests scheduled in {}ms", nbScheduled,
+        LOGGER.debug("[COPY RESPONSE HANDLER] {} update requests scheduled in {}ms",
+                     nbScheduled,
                      System.currentTimeMillis() - start);
     }
 
@@ -155,7 +150,9 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
         List<AbstractRequest> requests = requestService.getRequests(requestInfos);
         for (RequestInfo ri : requestInfos) {
             LOGGER.trace(HANDLER_NAME + "handling success storage request {} with {} success / {} errors",
-                         ri.getGroupId(), ri.getSuccessRequests().size(), ri.getErrorRequests().size());
+                         ri.getGroupId(),
+                         ri.getSuccessRequests().size(),
+                         ri.getErrorRequests().size());
             boolean found = false;
             Set<IngestRequest> toHandleRemote = Sets.newHashSet();
 
@@ -164,10 +161,12 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
                     found = true;
                     if (request instanceof IngestRequest) {
                         LOGGER.trace(HANDLER_NAME + "Ingest request {} found associated to group request {}",
-                                     request.getId(), ri.getGroupId());
+                                     request.getId(),
+                                     ri.getGroupId());
                         toHandleRemote.add((IngestRequest) request);
                     } else {
-                        LOGGER.trace(HANDLER_NAME + "Request type undefined {} for group {}", request.getId(),
+                        LOGGER.trace(HANDLER_NAME + "Request type undefined {} for group {}",
+                                     request.getId(),
                                      ri.getGroupId());
                         requestService.handleRemoteStoreSuccess(request);
                     }
@@ -180,13 +179,15 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
             }
         }
 
-        LOGGER.debug(HANDLER_NAME + "Before handling success of {} request infos take {} ms", requestInfos.size(),
+        LOGGER.debug(HANDLER_NAME + "Before handling success of {} request infos take {} ms",
+                     requestInfos.size(),
                      System.currentTimeMillis() - globalstart);
 
         // Handle all detected INGEST requests
         ingestRequestService.handleRemoteStoreSuccess(toHandle);
 
-        LOGGER.info(HANDLER_NAME + "Handling of {} request infos take {} ms", requestInfos.size(),
+        LOGGER.info(HANDLER_NAME + "Handling of {} request infos take {} ms",
+                    requestInfos.size(),
                     System.currentTimeMillis() - globalstart);
     }
 
@@ -199,7 +200,7 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
                 if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {
                     if (request instanceof IngestRequest) {
                         ingestRequestService.handleRemoteStoreError((IngestRequest) request, ri);
-                    }  else {
+                    } else {
                         requestService.handleRemoteStoreError(request);
                     }
                 }
@@ -220,6 +221,7 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
     /**
      * Create a map associates AIP identifier to a list of update tasks associated to the requests info responses from storage
      * client.
+     *
      * @param requestsInfo {@link RequestInfo}s from storage client.
      * @return {@link Map} key: AIP identifier. Values: {@link AbstractAIPUpdateTask}s
      */
@@ -243,19 +245,24 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
                         LOGGER.debug("File {}(checksum={}, type={}) as been copied to {} and is associated to AIP {}",
                                      sr.getResultFile().getMetaInfo().getFileName(),
                                      sr.getResultFile().getMetaInfo().getChecksum(),
-                                     sr.getResultFile().getMetaInfo().getType(), sr.getRequestStorage(), fileOwner);
+                                     sr.getResultFile().getMetaInfo().getType(),
+                                     sr.getRequestStorage(),
+                                     fileOwner);
                     }
                 }
                 if (!found) {
                     LOGGER.warn("File {}(checksum={}, type={}) as been copied to {} but is not associated to any AIP",
                                 sr.getResultFile().getMetaInfo().getFileName(),
                                 sr.getResultFile().getMetaInfo().getChecksum(),
-                                sr.getResultFile().getMetaInfo().getType(), sr.getRequestStorage());
+                                sr.getResultFile().getMetaInfo().getType(),
+                                sr.getRequestStorage());
                 }
             }
         }
-        LOGGER.info("{} copied files event received from {} groups. {} associated to existing AIPs", total,
-                    requestsInfo.size(), count);
+        LOGGER.info("{} copied files event received from {} groups. {} associated to existing AIPs",
+                    total,
+                    requestsInfo.size(),
+                    count);
         return newFileLocations;
     }
 

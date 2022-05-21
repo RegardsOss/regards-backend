@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.modules.configuration.domain;
 
+import org.hibernate.annotations.Type;
+
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
-import org.hibernate.annotations.Type;
-
 /**
  * UI Page entity.
+ *
  * @author Sébastien Binda
  */
 @Embeddable

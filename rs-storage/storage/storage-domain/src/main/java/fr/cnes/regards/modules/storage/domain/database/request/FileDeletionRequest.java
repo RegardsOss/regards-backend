@@ -18,30 +18,13 @@
  */
 package fr.cnes.regards.modules.storage.domain.database.request;
 
-import java.time.OffsetDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.MapsId;
-import javax.persistence.OneToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
-import org.springframework.util.Assert;
-
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import org.springframework.util.Assert;
+
+import javax.persistence.*;
+import java.time.OffsetDateTime;
 
 /**
  * Database definition of the table containing the requests for files deletion.
@@ -49,12 +32,10 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
  * @author Sébastien Binda
  */
 @Entity
-@Table(name = "t_file_deletion_request",
-        indexes = { @Index(name = "idx_file_deletion_request", columnList = "storage"),
-                @Index(name = "idx_file_deletion_grp", columnList = "group_id"),
-                @Index(name = "idx_file_deletion_file_ref", columnList = "file_reference") },
-        uniqueConstraints = { @UniqueConstraint(name = "uk_t_file_deletion_request_file_reference",
-                columnNames = { "file_reference" }) })
+@Table(name = "t_file_deletion_request", indexes = { @Index(name = "idx_file_deletion_request", columnList = "storage"),
+    @Index(name = "idx_file_deletion_grp", columnList = "group_id"),
+    @Index(name = "idx_file_deletion_file_ref", columnList = "file_reference") }, uniqueConstraints = {
+    @UniqueConstraint(name = "uk_t_file_deletion_request_file_reference", columnNames = { "file_reference" }) })
 public class FileDeletionRequest {
 
     @Id
@@ -119,14 +100,21 @@ public class FileDeletionRequest {
         this.session = session;
     }
 
-    public FileDeletionRequest(FileReference fileReference, boolean forceDelete, String groupId, String sessionOwner,
-            String session) {
+    public FileDeletionRequest(FileReference fileReference,
+                               boolean forceDelete,
+                               String groupId,
+                               String sessionOwner,
+                               String session) {
         this(fileReference, groupId, sessionOwner, session);
         this.forceDelete = forceDelete;
     }
 
-    public FileDeletionRequest(FileReference fileReference, boolean forceDelete, String groupId,
-            FileRequestStatus status, String sessionOwner, String session) {
+    public FileDeletionRequest(FileReference fileReference,
+                               boolean forceDelete,
+                               String groupId,
+                               FileRequestStatus status,
+                               String sessionOwner,
+                               String session) {
         this(fileReference, forceDelete, groupId, sessionOwner, session);
         this.status = status;
     }

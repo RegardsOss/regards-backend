@@ -20,12 +20,10 @@ package fr.cnes.regards.framework.jpa.multitenant.properties;
 
 /**
  * {@link TenantConnection} state
+ *
  * @author Marc Sordi
  */
 public enum TenantConnectionState {
 
-    ENABLED,
-    DISABLED,
-    CONNECTING,
-    ERROR
+    ENABLED, DISABLED, CONNECTING, ERROR
 }

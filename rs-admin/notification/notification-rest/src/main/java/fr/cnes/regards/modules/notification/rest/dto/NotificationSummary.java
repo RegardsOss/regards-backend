@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.notification.rest.dto;
 
 /**
  * @author sbinda
- *
  */
 public class NotificationSummary {
 

@@ -51,6 +51,7 @@ import java.lang.annotation.RetentionPolicy;
  * <li>{@link WorkerMode#UNICAST} / {@link Target#ALL} : event can be polled ONCE by
  * the FIRST microservice instance WHATEVER the microservice type.</li>
  * </ul>
+ *
  * @author Marc Sordi
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -61,6 +62,7 @@ public @interface Event {
      * With {@link ISubscribable} events, all {@link Target} are usable.<br/>
      * With {@link IPollable} events, only {@link Target#ALL} or {@link Target#MICROSERVICE} are.<br/>
      * Look at {@link Event} javadoc for usage.
+     *
      * @return event {@link Target}
      */
     Target target();
@@ -68,30 +70,35 @@ public @interface Event {
     /**
      * This mode is only used for {@link ISubscribable} event.<br/>
      * Look at {@link Event} javadoc for usage.
+     *
      * @return event {@link WorkerMode}
      */
     WorkerMode mode() default WorkerMode.BROADCAST;
 
     /**
      * Routing key to use for broadcast. In unicast mode, the routingKey is the queue name.
+     *
      * @return event {@link String}
      */
     String routingKey() default "";
 
     /**
      * Allows to chose between JACKSON and GSON message converters.
+     *
      * @return event JSON converter
      */
     JsonMessageConverter converter() default JsonMessageConverter.JACKSON;
 
     /**
      * Allows to specify an autoDelete queue.
+     *
      * @return
      */
     boolean autoDelete() default false;
 
     /**
      * Use to disable dlq creation
+     *
      * @return
      */
     boolean declareDlq() default true;

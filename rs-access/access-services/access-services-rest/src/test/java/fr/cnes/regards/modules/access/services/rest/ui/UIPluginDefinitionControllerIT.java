@@ -18,15 +18,7 @@
  */
 package fr.cnes.regards.modules.access.services.rest.ui;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -35,11 +27,18 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIDefaultPluginEnum;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * Class InstanceLayoutControllerIT
- *
+ * <p>
  * IT Tests for REST Controller
+ *
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
@@ -83,19 +82,21 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
 
     /**
      * Test retrieve all plugis
+     *
      * @since 1.0-SNAPSHOT
      */
     @Test
     public void testGetAllPlugins() {
         // default plugins + 3 created during this test
         performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT,
-                          customizer().expectStatusOk().expectToHaveSize("$.content",
-                                                                         UIDefaultPluginEnum.values().length + 3),
+                          customizer().expectStatusOk()
+                                      .expectToHaveSize("$.content", UIDefaultPluginEnum.values().length + 3),
                           "Error getting all plugins");
     }
 
     /**
      * Test retrieve all plugins by type
+     *
      * @since 1.0-SNAPSHOT
      */
     @Test
@@ -103,70 +104,86 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
         // default plugins + 2 created during this test
         performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT,
                           customizer().expectStatusOk()
-                                  .expectToHaveSize("$.content", UIDefaultPluginEnum.values().length + 2)
-                                  .addParameter("type", UIPluginTypesEnum.CRITERIA.toString()),
+                                      .expectToHaveSize("$.content", UIDefaultPluginEnum.values().length + 2)
+                                      .addParameter("type", UIPluginTypesEnum.CRITERIA.toString()),
                           "Error getting all criteria plugins");
 
         performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT,
-                          customizer().expectStatusOk().expectToHaveSize("$.content", 1)
-                                  .addParameter("type", UIPluginTypesEnum.SERVICE.toString()),
+                          customizer().expectStatusOk()
+                                      .expectToHaveSize("$.content", 1)
+                                      .addParameter("type", UIPluginTypesEnum.SERVICE.toString()),
                           "Error getting all criteria plugins");
     }
 
     /**
      * Test to retrieve one plugin
+     *
      * @since 1.0-SNAPSHOT
      */
     @Test
     public void testGetOnePlugin() {
         performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT
-                + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION, customizer().expectStatusOk(),
-                          "Error getting one plugin", plugin.getId());
+                              + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION,
+                          customizer().expectStatusOk(),
+                          "Error getting one plugin",
+                          plugin.getId());
     }
 
     /**
      * Test to delete one plugin
+     *
      * @since 1.0-SNAPSHOT
      */
     @Test
     public void testDeleteOnePlugin() {
         performDefaultDelete(UIPluginDefinitionController.REQUEST_MAPPING_ROOT
-                + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION, customizer().expectStatusOk(),
-                             "Error deleting one theme", plugin.getId());
+                                 + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION,
+                             customizer().expectStatusOk(),
+                             "Error deleting one theme",
+                             plugin.getId());
 
         performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT
-                + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION, customizer().expectStatusNotFound(),
-                          "Error retrieving plugin", plugin.getId());
+                              + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION,
+                          customizer().expectStatusNotFound(),
+                          "Error retrieving plugin",
+                          plugin.getId());
     }
 
     /**
      * Test to save a new theme
+     *
      * @since 1.0-SNAPSHOT
      */
     @Test
     public void testSavePlugin() {
         final UIPluginDefinition plugin = createPlugin(UIPluginTypesEnum.SERVICE);
-        performDefaultPost(UIPluginDefinitionController.REQUEST_MAPPING_ROOT, plugin, customizer().expectStatusOk(),
+        performDefaultPost(UIPluginDefinitionController.REQUEST_MAPPING_ROOT,
+                           plugin,
+                           customizer().expectStatusOk(),
                            "Error saving new plugin");
 
         // 8 default plugins + 4 created during this test
         performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT,
                           customizer().expectStatusOk()
-                                  .expectToHaveSize("$.content", UIDefaultPluginEnum.values().length + 4)
-                                  .addParameter("size", "20"),
+                                      .expectToHaveSize("$.content", UIDefaultPluginEnum.values().length + 4)
+                                      .addParameter("size", "20"),
                           "Error getting all plugins");
     }
 
     /**
      * Test to update a plugin
+     *
      * @since 1.0-SNAPSHOT
      */
     @Test
     public void testUpdatePlugin() {
         plugin.setSourcePath("plugins/new/bundle.js");
         performDefaultPut(UIPluginDefinitionController.REQUEST_MAPPING_ROOT
-                + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION, plugin, customizer().expectStatusOk(),
-                          "Error saving new theme", plugin.getId());
+                              + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION,
+                          plugin,
+                          customizer().expectStatusOk(),
+                          "Error saving new theme",
+                          plugin.getId());
     }
 
 }

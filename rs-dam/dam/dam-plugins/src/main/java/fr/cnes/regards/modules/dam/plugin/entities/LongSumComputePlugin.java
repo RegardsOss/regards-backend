@@ -18,9 +18,6 @@
  */
 package fr.cnes.regards.modules.dam.plugin.entities;
 
-import java.util.Optional;
-import java.util.function.Consumer;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -34,6 +31,9 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.dto.properties.LongProperty;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 
+import java.util.Optional;
+import java.util.function.Consumer;
+
 /**
  * This Implementation of IComputedAttribute allows to compute the sum of {@link LongProperty} according to a
  * collection of {@link DataObject} using the same LongAttribute name
@@ -41,19 +41,19 @@ import fr.cnes.regards.modules.model.dto.properties.PropertyType;
  * @author Sylvain Vissiere-Guerinet
  */
 @Plugin(id = PluginComputationIdentifierEnum.LONG_SUM_COUNT_VALUE, version = "1.0.0",
-        description = "allows to compute the sum of LongAttribute according to a collection of data using the same LongAttribute name",
-        author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+    description = "allows to compute the sum of LongAttribute according to a collection of data using the same LongAttribute name",
+    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
+    url = "https://github.com/RegardsOss")
 @ComputationPlugin(supportedType = PropertyType.LONG)
 public class LongSumComputePlugin extends AbstractDataObjectComputePlugin<Long> {
 
     @PluginParameter(name = PARAMETER_ATTRIBUTE_NAME, label = "Parameter attribute name",
-            description = "Name of parameter attribute used to compute result attribute.")
+        description = "Name of parameter attribute used to compute result attribute.")
     private String parameterAttributeName;
 
     @PluginParameter(name = PARAMETER_FRAGMENT_NAME, label = "Parameter fragment name",
-            description = "Name of parameter attribute fragment. If parameter attribute belongs to default fragment, leave this field empty.",
-            optional = true)
+        description = "Name of parameter attribute fragment. If parameter attribute belongs to default fragment, leave this field empty.",
+        optional = true)
     private String parameterAttributeFragmentName;
 
     /**
@@ -61,7 +61,9 @@ public class LongSumComputePlugin extends AbstractDataObjectComputePlugin<Long> 
      */
     @PluginInit
     public void init() {
-        super.init(attributeToComputeName, attributeToComputeFragmentName, parameterAttributeName,
+        super.init(attributeToComputeName,
+                   attributeToComputeFragmentName,
+                   parameterAttributeName,
                    parameterAttributeFragmentName);
         super.result = 0L;
     }
@@ -77,7 +79,7 @@ public class LongSumComputePlugin extends AbstractDataObjectComputePlugin<Long> 
 
     /**
      * @param dataset dataset on which the attribute, once computed, will be added. This allows us to know which
-     * DataObject should be used.
+     *                DataObject should be used.
      */
     @Override
     public void compute(Dataset dataset) {
@@ -86,11 +88,14 @@ public class LongSumComputePlugin extends AbstractDataObjectComputePlugin<Long> 
         SimpleSearchKey<DataObject> searchKey = new SimpleSearchKey<>(EntityType.DATA.toString(), DataObject.class);
         searchKey.setSearchIndex(tenantResolver.getTenant());
         searchKey.setCrs(projectGeoSettings.getCrs());
-        Double doubleResult = esRepo.sum(searchKey, dataset.getSubsettingClause(),
+        Double doubleResult = esRepo.sum(searchKey,
+                                         dataset.getSubsettingClause(),
                                          parameterAttribute.getFullJsonPath());
         result = doubleResult.longValue();
-        log.debug("Attribute {} computed for Dataset {}. Result: {}", parameterAttribute.getFullJsonPath(),
-                  dataset.getIpId().toString(), result);
+        log.debug("Attribute {} computed for Dataset {}. Result: {}",
+                  parameterAttribute.getFullJsonPath(),
+                  dataset.getIpId().toString(),
+                  result);
     }
 
     @Override

@@ -18,13 +18,13 @@
  */
 package fr.cnes.regards.modules.model.domain.attributes.restriction;
 
+import fr.cnes.regards.modules.model.domain.schema.Restriction;
+import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.validation.constraints.NotNull;
-
-import fr.cnes.regards.modules.model.domain.schema.Restriction;
-import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 
 /**
  * Manage pattern restriction for attribute of type :
@@ -34,7 +34,6 @@ import fr.cnes.regards.modules.model.dto.properties.PropertyType;
  * </ul>
  *
  * @author msordi
- *
  */
 @Entity
 @DiscriminatorValue("PATTERN")
@@ -63,8 +62,7 @@ public class PatternRestriction extends AbstractRestriction {
     }
 
     /**
-     * @param pPattern
-     *            the pattern to set
+     * @param pPattern the pattern to set
      */
     public void setPattern(String pPattern) {
         pattern = pPattern;

@@ -45,7 +45,7 @@ import java.util.List;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_snapshot_service_it",
-        "regards.session.agent.step.requests.page.size=2" })
+    "regards.session.agent.step.requests.page.size=2" })
 @ActiveProfiles({ "noscheduler" })
 public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsIT {
 
@@ -57,8 +57,9 @@ public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsIT {
     @Purpose("Test if session steps are correctly generated from step property requests")
     public void generateSessionStepTest() {
         // launch the generation of sessionSteps from StepPropertyUpdateRequest
-        SnapshotProcess snapshotProcess = this.snapshotProcessRepo
-                .save(new SnapshotProcess(SOURCE_1, CREATION_DATE, null));
+        SnapshotProcess snapshotProcess = this.snapshotProcessRepo.save(new SnapshotProcess(SOURCE_1,
+                                                                                            CREATION_DATE,
+                                                                                            null));
 
         List<StepPropertyUpdateRequest> stepRequests = createRun1StepEvents();
         Assert.assertEquals("Wrong number of stepPropertyUpdateRequests created", 9, stepRequests.size());
@@ -69,7 +70,8 @@ public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsIT {
 
         // launch the second run with same source and session owner, fields should be updated
         snapshotProcess = this.snapshotProcessRepo.findBySource(SOURCE_1).orElse(null);
-        Assert.assertEquals("Snapshot lastUpdateDate should have been updated", CREATION_DATE.plusMinutes(20),
+        Assert.assertEquals("Snapshot lastUpdateDate should have been updated",
+                            CREATION_DATE.plusMinutes(20),
                             snapshotProcess.getLastUpdateDate());
         List<StepPropertyUpdateRequest> stepRequests2 = createRun2StepEvents();
         Assert.assertEquals("Wrong number of stepPropertyUpdateRequests created", 5, stepRequests2.size());
@@ -83,79 +85,112 @@ public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsIT {
         List<StepPropertyUpdateRequest> stepRequests = new ArrayList<>();
 
         // ACQUISITION - scan event
-        StepPropertyUpdateRequest step1 = new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_1,
+        StepPropertyUpdateRequest step1 = new StepPropertyUpdateRequest("scan",
+                                                                        SOURCE_1,
+                                                                        OWNER_1,
                                                                         CREATION_DATE.plusSeconds(1),
                                                                         StepPropertyEventTypeEnum.INC,
-                                                                        new StepPropertyUpdateRequestInfo(
-                                                                                StepTypeEnum.ACQUISITION,
-                                                                                StepPropertyStateEnum.SUCCESS,
-                                                                                "gen.products", "2", true, false));
+                                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
+                                                                                                          StepPropertyStateEnum.SUCCESS,
+                                                                                                          "gen.products",
+                                                                                                          "2",
+                                                                                                          true,
+                                                                                                          false));
 
-        StepPropertyUpdateRequest step2 = new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_1,
+        StepPropertyUpdateRequest step2 = new StepPropertyUpdateRequest("scan",
+                                                                        SOURCE_1,
+                                                                        OWNER_1,
                                                                         CREATION_DATE.plusMinutes(1),
                                                                         StepPropertyEventTypeEnum.INC,
-                                                                        new StepPropertyUpdateRequestInfo(
-                                                                                StepTypeEnum.ACQUISITION,
-                                                                                StepPropertyStateEnum.SUCCESS,
-                                                                                "gen.products", "4", true, false));
+                                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
+                                                                                                          StepPropertyStateEnum.SUCCESS,
+                                                                                                          "gen.products",
+                                                                                                          "4",
+                                                                                                          true,
+                                                                                                          false));
 
         // REFERENCING - oais event
-        StepPropertyUpdateRequest step3 = new StepPropertyUpdateRequest("oais", SOURCE_1, OWNER_1,
+        StepPropertyUpdateRequest step3 = new StepPropertyUpdateRequest("oais",
+                                                                        SOURCE_1,
+                                                                        OWNER_1,
                                                                         CREATION_DATE.plusMinutes(2),
                                                                         StepPropertyEventTypeEnum.INC,
-                                                                        new StepPropertyUpdateRequestInfo(
-                                                                                StepTypeEnum.REFERENCING,
-                                                                                StepPropertyStateEnum.SUCCESS,
-                                                                                "gen.products", "6", false, true));
+                                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.REFERENCING,
+                                                                                                          StepPropertyStateEnum.SUCCESS,
+                                                                                                          "gen.products",
+                                                                                                          "6",
+                                                                                                          false,
+                                                                                                          true));
 
         // STORAGE - storage event
-        StepPropertyUpdateRequest step4 = new StepPropertyUpdateRequest("storage", SOURCE_1, OWNER_1,
+        StepPropertyUpdateRequest step4 = new StepPropertyUpdateRequest("storage",
+                                                                        SOURCE_1,
+                                                                        OWNER_1,
                                                                         CREATION_DATE.plusMinutes(5),
                                                                         StepPropertyEventTypeEnum.INC,
-                                                                        new StepPropertyUpdateRequestInfo(
-                                                                                StepTypeEnum.STORAGE,
-                                                                                StepPropertyStateEnum.SUCCESS,
-                                                                                "store.products", "2", false, true));
-        StepPropertyUpdateRequest step5 = new StepPropertyUpdateRequest("storage", SOURCE_1, OWNER_1,
+                                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
+                                                                                                          StepPropertyStateEnum.SUCCESS,
+                                                                                                          "store.products",
+                                                                                                          "2",
+                                                                                                          false,
+                                                                                                          true));
+        StepPropertyUpdateRequest step5 = new StepPropertyUpdateRequest("storage",
+                                                                        SOURCE_1,
+                                                                        OWNER_1,
                                                                         CREATION_DATE.plusMinutes(3),
                                                                         StepPropertyEventTypeEnum.INC,
-                                                                        new StepPropertyUpdateRequestInfo(
-                                                                                StepTypeEnum.STORAGE,
-                                                                                StepPropertyStateEnum.ERROR,
-                                                                                "store.products.errors", "4", false,
-                                                                                false));
-        StepPropertyUpdateRequest step6 = new StepPropertyUpdateRequest("storage", SOURCE_1, OWNER_1,
+                                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
+                                                                                                          StepPropertyStateEnum.ERROR,
+                                                                                                          "store.products.errors",
+                                                                                                          "4",
+                                                                                                          false,
+                                                                                                          false));
+        StepPropertyUpdateRequest step6 = new StepPropertyUpdateRequest("storage",
+                                                                        SOURCE_1,
+                                                                        OWNER_1,
                                                                         CREATION_DATE.plusMinutes(4),
                                                                         StepPropertyEventTypeEnum.VALUE,
-                                                                        new StepPropertyUpdateRequestInfo(
-                                                                                StepTypeEnum.STORAGE,
-                                                                                StepPropertyStateEnum.ERROR,
-                                                                                "store.products.state", "ERROR", false,
-                                                                                false));
+                                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
+                                                                                                          StepPropertyStateEnum.ERROR,
+                                                                                                          "store.products.state",
+                                                                                                          "ERROR",
+                                                                                                          false,
+                                                                                                          false));
         // DISSEMINATION - metacatalog event
-        StepPropertyUpdateRequest step7 = new StepPropertyUpdateRequest("metacatalog", SOURCE_1, OWNER_1,
+        StepPropertyUpdateRequest step7 = new StepPropertyUpdateRequest("metacatalog",
+                                                                        SOURCE_1,
+                                                                        OWNER_1,
                                                                         CREATION_DATE.plusMinutes(7),
                                                                         StepPropertyEventTypeEnum.INC,
-                                                                        new StepPropertyUpdateRequestInfo(
-                                                                                StepTypeEnum.DISSEMINATION,
-                                                                                StepPropertyStateEnum.WAITING,
-                                                                                "dis.products.pending", "2", false,
-                                                                                false));
+                                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.DISSEMINATION,
+                                                                                                          StepPropertyStateEnum.WAITING,
+                                                                                                          "dis.products.pending",
+                                                                                                          "2",
+                                                                                                          false,
+                                                                                                          false));
         // OTHER EVENTS NOT RELATED TO SESSION 1
-        StepPropertyUpdateRequest step8 = new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_2,
+        StepPropertyUpdateRequest step8 = new StepPropertyUpdateRequest("scan",
+                                                                        SOURCE_1,
+                                                                        OWNER_2,
                                                                         CREATION_DATE.plusMinutes(20),
                                                                         StepPropertyEventTypeEnum.INC,
-                                                                        new StepPropertyUpdateRequestInfo(
-                                                                                StepTypeEnum.ACQUISITION,
-                                                                                StepPropertyStateEnum.SUCCESS,
-                                                                                "gen.products", "2", true, false));
-        StepPropertyUpdateRequest step9 = new StepPropertyUpdateRequest("storage", SOURCE_1, OWNER_3,
+                                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
+                                                                                                          StepPropertyStateEnum.SUCCESS,
+                                                                                                          "gen.products",
+                                                                                                          "2",
+                                                                                                          true,
+                                                                                                          false));
+        StepPropertyUpdateRequest step9 = new StepPropertyUpdateRequest("storage",
+                                                                        SOURCE_1,
+                                                                        OWNER_3,
                                                                         CREATION_DATE.plusMinutes(20),
                                                                         StepPropertyEventTypeEnum.INC,
-                                                                        new StepPropertyUpdateRequestInfo(
-                                                                                StepTypeEnum.STORAGE,
-                                                                                StepPropertyStateEnum.SUCCESS,
-                                                                                "store.products", "6", false, true));
+                                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
+                                                                                                          StepPropertyStateEnum.SUCCESS,
+                                                                                                          "store.products",
+                                                                                                          "6",
+                                                                                                          false,
+                                                                                                          true));
 
         // set registration dates to creation dates
         step1.setRegistrationDate(step1.getCreationDate());
@@ -185,46 +220,63 @@ public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsIT {
     private List<StepPropertyUpdateRequest> createRun2StepEvents() {
         List<StepPropertyUpdateRequest> stepRequests = new ArrayList<>();
         // STORAGE - storage event
-        StepPropertyUpdateRequest step1 = new StepPropertyUpdateRequest("storage", SOURCE_1, OWNER_1,
+        StepPropertyUpdateRequest step1 = new StepPropertyUpdateRequest("storage",
+                                                                        SOURCE_1,
+                                                                        OWNER_1,
                                                                         CREATION_DATE.plusMinutes(30),
                                                                         StepPropertyEventTypeEnum.DEC,
-                                                                        new StepPropertyUpdateRequestInfo(
-                                                                                StepTypeEnum.STORAGE,
-                                                                                StepPropertyStateEnum.ERROR,
-                                                                                "store.products.errors", "4", false,
-                                                                                false));
-        StepPropertyUpdateRequest step2 = new StepPropertyUpdateRequest("storage", SOURCE_1, OWNER_1,
+                                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
+                                                                                                          StepPropertyStateEnum.ERROR,
+                                                                                                          "store.products.errors",
+                                                                                                          "4",
+                                                                                                          false,
+                                                                                                          false));
+        StepPropertyUpdateRequest step2 = new StepPropertyUpdateRequest("storage",
+                                                                        SOURCE_1,
+                                                                        OWNER_1,
                                                                         CREATION_DATE.plusMinutes(35),
                                                                         StepPropertyEventTypeEnum.INC,
-                                                                        new StepPropertyUpdateRequestInfo(
-                                                                                StepTypeEnum.STORAGE,
-                                                                                StepPropertyStateEnum.RUNNING,
-                                                                                "store.products", "4", false, true));
-        StepPropertyUpdateRequest step3 = new StepPropertyUpdateRequest("storage", SOURCE_1, OWNER_1,
+                                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
+                                                                                                          StepPropertyStateEnum.RUNNING,
+                                                                                                          "store.products",
+                                                                                                          "4",
+                                                                                                          false,
+                                                                                                          true));
+        StepPropertyUpdateRequest step3 = new StepPropertyUpdateRequest("storage",
+                                                                        SOURCE_1,
+                                                                        OWNER_1,
                                                                         CREATION_DATE.plusMinutes(38),
                                                                         StepPropertyEventTypeEnum.VALUE,
-                                                                        new StepPropertyUpdateRequestInfo(
-                                                                                StepTypeEnum.STORAGE,
-                                                                                StepPropertyStateEnum.INFO,
-                                                                                "store.products.state", "RUNNING",
-                                                                                false, false));
+                                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.STORAGE,
+                                                                                                          StepPropertyStateEnum.INFO,
+                                                                                                          "store.products.state",
+                                                                                                          "RUNNING",
+                                                                                                          false,
+                                                                                                          false));
         // DISSEMINATION - metacatalog event
-        StepPropertyUpdateRequest step4 = new StepPropertyUpdateRequest("metacatalog", SOURCE_1, OWNER_1,
+        StepPropertyUpdateRequest step4 = new StepPropertyUpdateRequest("metacatalog",
+                                                                        SOURCE_1,
+                                                                        OWNER_1,
                                                                         CREATION_DATE.plusMinutes(40),
                                                                         StepPropertyEventTypeEnum.DEC,
-                                                                        new StepPropertyUpdateRequestInfo(
-                                                                                StepTypeEnum.DISSEMINATION,
-                                                                                StepPropertyStateEnum.WAITING,
-                                                                                "dis.products.pending", "2", false,
-                                                                                false));
+                                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.DISSEMINATION,
+                                                                                                          StepPropertyStateEnum.WAITING,
+                                                                                                          "dis.products.pending",
+                                                                                                          "2",
+                                                                                                          false,
+                                                                                                          false));
 
-        StepPropertyUpdateRequest step5 = new StepPropertyUpdateRequest("metacatalog", SOURCE_1, OWNER_1,
+        StepPropertyUpdateRequest step5 = new StepPropertyUpdateRequest("metacatalog",
+                                                                        SOURCE_1,
+                                                                        OWNER_1,
                                                                         CREATION_DATE.plusMinutes(40),
                                                                         StepPropertyEventTypeEnum.INC,
-                                                                        new StepPropertyUpdateRequestInfo(
-                                                                                StepTypeEnum.DISSEMINATION,
-                                                                                StepPropertyStateEnum.SUCCESS,
-                                                                                "dis.products", "2", false, true));
+                                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.DISSEMINATION,
+                                                                                                          StepPropertyStateEnum.SUCCESS,
+                                                                                                          "dis.products",
+                                                                                                          "2",
+                                                                                                          false,
+                                                                                                          true));
 
         // set registration dates to creation dates
         step1.setRegistrationDate(step1.getCreationDate());
@@ -263,7 +315,8 @@ public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsIT {
                         Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                         Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                         Assert.assertEquals("Wrong num of running", 0L, sessionStep.getState().getRunning());
-                        Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(1),
+                        Assert.assertEquals("Wrong last update date",
+                                            CREATION_DATE.plusMinutes(1),
                                             sessionStep.getLastUpdateDate());
                         Assert.assertTrue("Wrong properties", properties.containsKey("gen.products"));
                         Assert.assertEquals("Wrong properties", "6", properties.get("gen.products"));
@@ -275,7 +328,8 @@ public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsIT {
                         Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                         Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                         Assert.assertEquals("Wrong num of running", 0L, sessionStep.getState().getRunning());
-                        Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(2),
+                        Assert.assertEquals("Wrong last update date",
+                                            CREATION_DATE.plusMinutes(2),
                                             sessionStep.getLastUpdateDate());
                         Assert.assertTrue("Wrong properties", properties.containsKey("gen.products"));
                         Assert.assertEquals("Wrong properties", "6", properties.get("gen.products"));
@@ -287,7 +341,8 @@ public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsIT {
                         Assert.assertEquals("Wrong num of errors", 4L, sessionStep.getState().getErrors());
                         Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                         Assert.assertEquals("Wrong num of running", 0L, sessionStep.getState().getRunning());
-                        Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(5),
+                        Assert.assertEquals("Wrong last update date",
+                                            CREATION_DATE.plusMinutes(5),
                                             sessionStep.getLastUpdateDate());
                         Assert.assertTrue("Wrong properties", properties.containsKey("store.products"));
                         Assert.assertEquals("Wrong properties", "2", properties.get("store.products"));
@@ -303,7 +358,8 @@ public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsIT {
                         Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                         Assert.assertEquals("Wrong num of waiting", 2L, sessionStep.getState().getWaiting());
                         Assert.assertEquals("Wrong num of running", 0L, sessionStep.getState().getRunning());
-                        Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(7),
+                        Assert.assertEquals("Wrong last update date",
+                                            CREATION_DATE.plusMinutes(7),
                                             sessionStep.getLastUpdateDate());
                         Assert.assertTrue("Wrong properties", properties.containsKey("dis.products.pending"));
                         Assert.assertEquals("Wrong properties", "2", properties.get("dis.products.pending"));
@@ -320,7 +376,8 @@ public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsIT {
                 Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                 Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                 Assert.assertEquals("Wrong num of running", 0L, sessionStep.getState().getRunning());
-                Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(20),
+                Assert.assertEquals("Wrong last update date",
+                                    CREATION_DATE.plusMinutes(20),
                                     sessionStep.getLastUpdateDate());
                 Assert.assertTrue("Wrong properties", properties.containsKey("gen.products"));
                 Assert.assertEquals("Wrong properties", "2", properties.get("gen.products"));
@@ -332,7 +389,8 @@ public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsIT {
                 Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                 Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                 Assert.assertEquals("Wrong num of running", 0L, sessionStep.getState().getRunning());
-                Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(20),
+                Assert.assertEquals("Wrong last update date",
+                                    CREATION_DATE.plusMinutes(20),
                                     sessionStep.getLastUpdateDate());
                 Assert.assertTrue("Wrong properties", properties.containsKey("store.products"));
                 Assert.assertEquals("Wrong properties", "6", properties.get("store.products"));
@@ -362,7 +420,8 @@ public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsIT {
                         Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                         Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                         Assert.assertEquals("Wrong num of running", 0L, sessionStep.getState().getRunning());
-                        Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(1),
+                        Assert.assertEquals("Wrong last update date",
+                                            CREATION_DATE.plusMinutes(1),
                                             sessionStep.getLastUpdateDate());
                         Assert.assertTrue("Wrong properties", properties.containsKey("gen.products"));
                         Assert.assertEquals("Wrong properties", "6", properties.get("gen.products"));
@@ -374,7 +433,8 @@ public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsIT {
                         Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                         Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                         Assert.assertEquals("Wrong num of running", 0L, sessionStep.getState().getRunning());
-                        Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(2),
+                        Assert.assertEquals("Wrong last update date",
+                                            CREATION_DATE.plusMinutes(2),
                                             sessionStep.getLastUpdateDate());
                         Assert.assertTrue("Wrong properties", properties.containsKey("gen.products"));
                         Assert.assertEquals("Wrong properties", "6", properties.get("gen.products"));
@@ -386,7 +446,8 @@ public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsIT {
                         Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                         Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                         Assert.assertEquals("Wrong num of running", 4L, sessionStep.getState().getRunning());
-                        Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(38),
+                        Assert.assertEquals("Wrong last update date",
+                                            CREATION_DATE.plusMinutes(38),
                                             sessionStep.getLastUpdateDate());
                         Assert.assertTrue("Wrong properties", properties.containsKey("store.products"));
                         Assert.assertEquals("Wrong properties", "6", properties.get("store.products"));
@@ -402,7 +463,8 @@ public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsIT {
                         Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                         Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                         Assert.assertEquals("Wrong num of running", 0L, sessionStep.getState().getRunning());
-                        Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(40),
+                        Assert.assertEquals("Wrong last update date",
+                                            CREATION_DATE.plusMinutes(40),
                                             sessionStep.getLastUpdateDate());
                         Assert.assertTrue("Wrong properties", properties.containsKey("dis.products"));
                         Assert.assertEquals("Wrong properties", "2", properties.get("dis.products"));
@@ -421,7 +483,8 @@ public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsIT {
                 Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                 Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                 Assert.assertEquals("Wrong num of running", 0L, sessionStep.getState().getRunning());
-                Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(20),
+                Assert.assertEquals("Wrong last update date",
+                                    CREATION_DATE.plusMinutes(20),
                                     sessionStep.getLastUpdateDate());
                 Assert.assertTrue("Wrong properties", properties.containsKey("gen.products"));
                 Assert.assertEquals("Wrong properties", "2", properties.get("gen.products"));
@@ -433,7 +496,8 @@ public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsIT {
                 Assert.assertEquals("Wrong num of errors", 0L, sessionStep.getState().getErrors());
                 Assert.assertEquals("Wrong num of waiting", 0L, sessionStep.getState().getWaiting());
                 Assert.assertEquals("Wrong num of running", 0L, sessionStep.getState().getRunning());
-                Assert.assertEquals("Wrong last update date", CREATION_DATE.plusMinutes(20),
+                Assert.assertEquals("Wrong last update date",
+                                    CREATION_DATE.plusMinutes(20),
                                     sessionStep.getLastUpdateDate());
                 Assert.assertTrue("Wrong properties", properties.containsKey("store.products"));
                 Assert.assertEquals("Wrong properties", "6", properties.get("store.products"));

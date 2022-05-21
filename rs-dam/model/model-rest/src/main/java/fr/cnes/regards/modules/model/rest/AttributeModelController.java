@@ -18,24 +18,6 @@
  */
 package fr.cnes.regards.modules.model.rest;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.validation.Valid;
-
-import org.springframework.data.domain.PageRequest;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -51,9 +33,21 @@ import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.service.IAttributeModelService;
 import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
 import fr.cnes.regards.modules.model.service.RestrictionService;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * REST controller for managing {@link AttributeModel}
+ *
  * @author msordi
  */
 @RestController
@@ -104,14 +98,16 @@ public class AttributeModelController implements IResourceController<AttributeMo
 
     /**
      * Constructor
+     *
      * @param attributeModelService Attribute service {@link IAttributeModelService}
-     * @param pResourceService Resource service {@link IResourceService}
-     * @param modelAttrAssocService  {@link IModelAttrAssocService}
-     * @param restrictionService Restriction service {@link RestrictionService}
+     * @param pResourceService      Resource service {@link IResourceService}
+     * @param modelAttrAssocService {@link IModelAttrAssocService}
+     * @param restrictionService    Restriction service {@link RestrictionService}
      */
     public AttributeModelController(final IAttributeModelService attributeModelService,
-            final IResourceService pResourceService, IModelAttrAssocService modelAttrAssocService,
-            final RestrictionService restrictionService) {
+                                    final IResourceService pResourceService,
+                                    IModelAttrAssocService modelAttrAssocService,
+                                    final RestrictionService restrictionService) {
         this.attributeService = attributeModelService;
         this.resourceService = pResourceService;
         this.restrictionService = restrictionService;
@@ -120,7 +116,8 @@ public class AttributeModelController implements IResourceController<AttributeMo
 
     /**
      * Retrieve all attributes. The request can be filtered by {@link PropertyType}
-     * @param type filter by type
+     *
+     * @param type         filter by type
      * @param fragmentName filter by fragment
      * @param modelNames
      * @param noLink
@@ -129,10 +126,10 @@ public class AttributeModelController implements IResourceController<AttributeMo
     @ResourceAccess(description = "List all attributes", role = DefaultRole.PUBLIC)
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<EntityModel<AttributeModel>>> getAttributes(
-            @RequestParam(value = PARAM_TYPE, required = false) PropertyType type,
-            @RequestParam(value = PARAM_FRAGMENT_NAME, required = false) String fragmentName,
-            @RequestParam(name = "modelNames", required = false) Set<String> modelNames,
-            @RequestParam(name = "noLink", required = false) Boolean noLink) {
+        @RequestParam(value = PARAM_TYPE, required = false) PropertyType type,
+        @RequestParam(value = PARAM_FRAGMENT_NAME, required = false) String fragmentName,
+        @RequestParam(name = "modelNames", required = false) Set<String> modelNames,
+        @RequestParam(name = "noLink", required = false) Boolean noLink) {
         List<AttributeModel> attributes = null;
         if ((modelNames != null) && !modelNames.isEmpty()) {
             attributes = modelAttrAssocService.getAttributeModels(modelNames, PageRequest.of(0, 1000)).getContent();
@@ -147,22 +144,25 @@ public class AttributeModelController implements IResourceController<AttributeMo
 
     /**
      * Retrieve all {@link Model}. The request can be filtered by {@link EntityType}.
+     *
      * @param modelType filter
      * @return a list of {@link Model}
      */
     @ResourceAccess(description = "List all models", role = DefaultRole.PUBLIC)
     @RequestMapping(method = RequestMethod.GET, value = ENTITY_TYPE_MAPPING)
     public ResponseEntity<List<EntityModel<AttributeModel>>> getModelsAttributes(
-            @PathVariable(name = "modelType") EntityType modelType) {
+        @PathVariable(name = "modelType") EntityType modelType) {
         Collection<ModelAttrAssoc> assocs = modelAttrAssocService.getModelAttrAssocsFor(modelType);
-        List<AttributeModel> attributes = assocs.stream().map(attrAssoc -> attrAssoc.getAttribute())
-                .collect(Collectors.toList());
+        List<AttributeModel> attributes = assocs.stream()
+                                                .map(attrAssoc -> attrAssoc.getAttribute())
+                                                .collect(Collectors.toList());
         return ResponseEntity.ok(toResources(attributes));
 
     }
 
     /**
      * Add a new attribute.
+     *
      * @param attributeModel the attribute to create
      * @return the created {@link AttributeModel}
      * @throws ModuleException if error occurs!
@@ -170,12 +170,13 @@ public class AttributeModelController implements IResourceController<AttributeMo
     @ResourceAccess(description = "Add an attribute", role = DefaultRole.ADMIN)
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<EntityModel<AttributeModel>> addAttribute(
-            @Valid @RequestBody final AttributeModel attributeModel) throws ModuleException {
+        @Valid @RequestBody final AttributeModel attributeModel) throws ModuleException {
         return ResponseEntity.ok(toResource(attributeService.addAttribute(attributeModel, false)));
     }
 
     /**
      * Get an attribute
+     *
      * @param id attribute identifier
      * @return the retrieved {@link AttributeModel}
      * @throws ModuleException if error occurs!
@@ -183,14 +184,15 @@ public class AttributeModelController implements IResourceController<AttributeMo
     @ResourceAccess(description = "Get an attribute", role = DefaultRole.PUBLIC)
     @RequestMapping(method = RequestMethod.GET, value = ATTRIBUTE_MAPPING)
     public ResponseEntity<EntityModel<AttributeModel>> getAttribute(@PathVariable(name = "attributeId") final Long id)
-            throws ModuleException {
+        throws ModuleException {
         AttributeModel attribute = attributeService.getAttribute(id);
         return ResponseEntity.ok(toResource(attribute));
     }
 
     /**
      * Update an attribute
-     * @param id attribute identifier
+     *
+     * @param id             attribute identifier
      * @param attributeModel attribute
      * @return the updated {@link AttributeModel}
      * @throws ModuleException if error occurs!
@@ -198,13 +200,14 @@ public class AttributeModelController implements IResourceController<AttributeMo
     @ResourceAccess(description = "Update an attribute", role = DefaultRole.ADMIN)
     @RequestMapping(method = RequestMethod.PUT, value = ATTRIBUTE_MAPPING)
     public ResponseEntity<EntityModel<AttributeModel>> updateAttribute(
-            @PathVariable(name = "attributeId") final Long id, @Valid @RequestBody final AttributeModel attributeModel)
-            throws ModuleException {
+        @PathVariable(name = "attributeId") final Long id, @Valid @RequestBody final AttributeModel attributeModel)
+        throws ModuleException {
         return ResponseEntity.ok(toResource(attributeService.updateAttribute(id, attributeModel)));
     }
 
     /**
      * Delete an attribute
+     *
      * @param id attribute identifier
      * @return nothing
      * @throws ModuleException
@@ -212,13 +215,14 @@ public class AttributeModelController implements IResourceController<AttributeMo
     @ResourceAccess(description = "Delete an attribute", role = DefaultRole.ADMIN)
     @RequestMapping(method = RequestMethod.DELETE, value = ATTRIBUTE_MAPPING)
     public ResponseEntity<Void> deleteAttribute(@PathVariable(name = "attributeId") final Long id)
-            throws ModuleException {
+        throws ModuleException {
         attributeService.deleteAttribute(id);
         return ResponseEntity.noContent().build();
     }
 
     /**
      * Get all restriction by {@link PropertyType}
+     *
      * @param type filter on attribute type
      * @return list of restriction name
      */
@@ -230,6 +234,7 @@ public class AttributeModelController implements IResourceController<AttributeMo
 
     /**
      * Get all attribute types
+     *
      * @return list of type names
      */
     @ResourceAccess(description = "List all attribute model types", role = DefaultRole.ADMIN)
@@ -250,21 +255,34 @@ public class AttributeModelController implements IResourceController<AttributeMo
     @Override
     public EntityModel<AttributeModel> toResource(final AttributeModel attributeModel, final Object... extras) {
         EntityModel<AttributeModel> resource = resourceService.toResource(attributeModel);
-        boolean addLinks = (extras == null) || (extras.length == 0)
-                || ((extras[0] instanceof Boolean) && !(Boolean) extras[0]);
+        boolean addLinks =
+            (extras == null) || (extras.length == 0) || ((extras[0] instanceof Boolean) && !(Boolean) extras[0]);
         if (addLinks) {
-            resourceService.addLink(resource, this.getClass(), "getAttribute", LinkRels.SELF,
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "getAttribute",
+                                    LinkRels.SELF,
                                     MethodParamFactory.build(Long.class, attributeModel.getId()));
-            resourceService.addLink(resource, this.getClass(), "updateAttribute", LinkRels.UPDATE,
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "updateAttribute",
+                                    LinkRels.UPDATE,
                                     MethodParamFactory.build(Long.class, attributeModel.getId()),
                                     MethodParamFactory.build(AttributeModel.class));
             if (attributeService.isDeletable(attributeModel.getId())) {
-                resourceService.addLink(resource, this.getClass(), "deleteAttribute", LinkRels.DELETE,
+                resourceService.addLink(resource,
+                                        this.getClass(),
+                                        "deleteAttribute",
+                                        LinkRels.DELETE,
                                         MethodParamFactory.build(Long.class, attributeModel.getId()));
             }
-            resourceService.addLink(resource, this.getClass(), "getAttributes", LinkRels.LIST,
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "getAttributes",
+                                    LinkRels.LIST,
                                     MethodParamFactory.build(PropertyType.class),
-                                    MethodParamFactory.build(String.class), MethodParamFactory.build(Set.class),
+                                    MethodParamFactory.build(String.class),
+                                    MethodParamFactory.build(Set.class),
                                     MethodParamFactory.build(Boolean.class));
         }
         return resource;

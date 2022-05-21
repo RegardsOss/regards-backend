@@ -29,5 +29,6 @@ import org.springframework.context.ApplicationListener;
  * @author Guillaume Andrieu
  */
 public interface IProcessingExecutionResultEventHandler
-        extends ApplicationListener<ApplicationReadyEvent>, IHandler<PExecutionResultEvent> {
+    extends ApplicationListener<ApplicationReadyEvent>, IHandler<PExecutionResultEvent> {
+
 }

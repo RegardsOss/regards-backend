@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.engine;
 
 import fr.cnes.regards.modules.processing.domain.POutputFile;
@@ -41,10 +41,18 @@ public abstract class ExecutionEvent {
      */
     @Value
     public static class FinalEvent extends ExecutionEvent {
+
         PStepFinal step;
+
         Seq<POutputFile> outputFiles;
-        @Override public Option<PStep> step() { return of(step); }
-        @Override public Seq<POutputFile> outputFiles() {
+
+        @Override
+        public Option<PStep> step() {
+            return of(step);
+        }
+
+        @Override
+        public Seq<POutputFile> outputFiles() {
             return outputFiles;
         }
     }
@@ -54,9 +62,16 @@ public abstract class ExecutionEvent {
      */
     @Value
     public static class IntermediaryEvent extends ExecutionEvent {
+
         PStepIntermediary step;
-        @Override public Option<PStep> step() { return of(step); }
-        @Override public Seq<POutputFile> outputFiles() {
+
+        @Override
+        public Option<PStep> step() {
+            return of(step);
+        }
+
+        @Override
+        public Seq<POutputFile> outputFiles() {
             return List.empty();
         }
     }
@@ -67,23 +82,32 @@ public abstract class ExecutionEvent {
      */
     @Value
     public static class OutputFileEvent extends ExecutionEvent {
+
         Seq<POutputFile> outputFiles;
-        @Override public Option<PStep> step() { return none(); }
-        @Override public Seq<POutputFile> outputFiles() {
+
+        @Override
+        public Option<PStep> step() {
+            return none();
+        }
+
+        @Override
+        public Seq<POutputFile> outputFiles() {
             return outputFiles;
         }
     }
 
-
     public static FinalEvent event(PStepFinal step) {
         return new FinalEvent(step, List.empty());
     }
+
     public static FinalEvent event(PStepFinal step, Seq<POutputFile> files) {
         return new FinalEvent(step, files);
     }
+
     public static IntermediaryEvent event(PStepIntermediary step) {
         return new IntermediaryEvent(step);
     }
+
     public static OutputFileEvent event(Seq<POutputFile> files) {
         return new OutputFileEvent(files);
     }

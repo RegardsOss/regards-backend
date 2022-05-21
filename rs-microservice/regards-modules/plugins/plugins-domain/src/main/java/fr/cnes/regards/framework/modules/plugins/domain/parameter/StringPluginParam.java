@@ -18,15 +18,14 @@
  */
 package fr.cnes.regards.framework.modules.plugins.domain.parameter;
 
-import javax.persistence.Transient;
-
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
+
+import javax.persistence.Transient;
 
 /**
  * Supported plugin parameter
  *
  * @author Marc SORDI
- *
  */
 public class StringPluginParam extends AbstractPluginParam<String> {
 

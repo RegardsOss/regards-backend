@@ -36,14 +36,15 @@ import java.util.Map;
 
 /**
  * API REST allowing to manually handle maintenances
- *
+ * <p>
  * TODO: verification on pTenant(it's one of the project or instance)
+ *
  * @author Sylvain Vissiere-Guerinet
  * @since 1.0
  */
 @RestController
 @ConditionalOnProperty(prefix = "regards.microservices", name = "maintenance.enabled", havingValue = "true",
-        matchIfMissing = true)
+    matchIfMissing = true)
 @RequestMapping(MaintenanceController.MAINTENANCE_URL)
 public class MaintenanceController {
 
@@ -62,7 +63,7 @@ public class MaintenanceController {
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the map (tenant, maintenance) for this instance",
-            role = DefaultRole.PROJECT_ADMIN)
+        role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<EntityModel<Map<String, MaintenanceInfo>>> retrieveTenantsInMaintenance() {
         final Map<String, MaintenanceInfo> maintenaceMap = MaintenanceManager.getMaintenanceMap();
         return new ResponseEntity<>(EntityModel.of(maintenaceMap), HttpStatus.OK);

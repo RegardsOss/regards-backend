@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.urn;
 
 /**
  * List of available entity types
+ *
  * @author msordi
  */
 public enum EntityType {
@@ -27,7 +28,5 @@ public enum EntityType {
     /**
      * Possible model type
      */
-    COLLECTION,
-    DATA,
-    DATASET
+    COLLECTION, DATA, DATASET
 }

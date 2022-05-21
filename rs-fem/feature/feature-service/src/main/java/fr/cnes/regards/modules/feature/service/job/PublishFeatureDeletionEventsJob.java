@@ -18,14 +18,6 @@
  */
 package fr.cnes.regards.modules.feature.service.job;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.compress.utils.Lists;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -35,12 +27,18 @@ import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import org.apache.commons.compress.utils.Lists;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Job to publis {@link FeatureDeletionRequestEvent}s for each {@link FeatureEntityDto} urn
  *
  * @author Sébastien Binda
- *
  */
 public class PublishFeatureDeletionEventsJob extends AbstractJob<Void> {
 
@@ -57,7 +55,7 @@ public class PublishFeatureDeletionEventsJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         urns = getValue(parameters, URNS_PARAMETER);
         owner = getValue(parameters, OWNER_PARAMETER);
     }
@@ -70,8 +68,10 @@ public class PublishFeatureDeletionEventsJob extends AbstractJob<Void> {
             try {
                 features.add(FeatureUniformResourceName.fromString(urn));
             } catch (IllegalArgumentException e) {
-                logger.error("Error trying to delete feature {} from FEM microservice. Feature identifier is not a valid FeatureUniformResourceName. Cause: {}",
-                             urn, e.getMessage());
+                logger.error(
+                    "Error trying to delete feature {} from FEM microservice. Feature identifier is not a valid FeatureUniformResourceName. Cause: {}",
+                    urn,
+                    e.getMessage());
             }
         }
         List<FeatureDeletionRequestEvent> events = Lists.newArrayList();

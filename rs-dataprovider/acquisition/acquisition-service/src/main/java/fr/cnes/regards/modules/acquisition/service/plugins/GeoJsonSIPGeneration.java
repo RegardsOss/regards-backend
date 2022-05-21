@@ -18,30 +18,29 @@
  */
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.file.Path;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Path;
 
 /**
  * This plugin allows to generate SIP by reading it into the content of the file to acquire.
+ *
  * @author Sébastien Binda
  */
 @Plugin(id = "ReadSIPFromFile", version = "1.0.0-SNAPSHOT",
-        description = "Read the SIP to generate from the file content.", author = "REGARDS Team",
-        contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
+    description = "Read the SIP to generate from the file content.", author = "REGARDS Team",
+    contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class GeoJsonSIPGeneration implements ISipGenerationPlugin {
 
     @Autowired

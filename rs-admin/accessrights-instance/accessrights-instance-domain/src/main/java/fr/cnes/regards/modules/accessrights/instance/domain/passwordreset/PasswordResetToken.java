@@ -18,33 +18,22 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.domain.passwordreset;
 
-import java.time.LocalDateTime;
-
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+
+import javax.persistence.*;
+import java.time.LocalDateTime;
 
 /**
  * Data base persisted token for resetting password
  *
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
- *
  */
 @InstanceEntity
 @Entity
 @Table(name = "t_password_reset_token",
-        uniqueConstraints = @UniqueConstraint(name = "uk_password_reset_token_account_id",
-                columnNames = { "account_id" }))
+    uniqueConstraints = @UniqueConstraint(name = "uk_password_reset_token_account_id", columnNames = { "account_id" }))
 public class PasswordResetToken {
 
     /**
@@ -85,6 +74,7 @@ public class PasswordResetToken {
 
     /**
      * Constructor
+     *
      * @param pToken the token string
      */
     public PasswordResetToken(final String pToken) {
@@ -95,7 +85,8 @@ public class PasswordResetToken {
 
     /**
      * Constructor
-     * @param pToken the token string
+     *
+     * @param pToken   the token string
      * @param pAccount the linked account
      */
     public PasswordResetToken(final String pToken, final Account pAccount) {
@@ -109,8 +100,7 @@ public class PasswordResetToken {
     /**
      * Calculate expiration date
      *
-     * @param pExpiryTimeInMinutes
-     *            the expiration time in minutes
+     * @param pExpiryTimeInMinutes the expiration time in minutes
      * @return the expiration date
      */
     private LocalDateTime calculateExpiryDate(final long pExpiryTimeInMinutes) {
@@ -132,8 +122,7 @@ public class PasswordResetToken {
     }
 
     /**
-     * @param pAccount
-     *            the account to set
+     * @param pAccount the account to set
      */
     public void setAccount(final Account pAccount) {
         account = pAccount;
@@ -147,8 +136,7 @@ public class PasswordResetToken {
     }
 
     /**
-     * @param pExpiryDate
-     *            the expiryDate to set
+     * @param pExpiryDate the expiryDate to set
      */
     public void setExpiryDate(final LocalDateTime pExpiryDate) {
         this.expiryDate = pExpiryDate;
@@ -156,6 +144,7 @@ public class PasswordResetToken {
 
     /**
      * Refresh the expiry date
+     *
      * @param pToken
      */
     public void updateToken(final String pToken) {

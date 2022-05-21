@@ -25,6 +25,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 /**
  * Abstract class to provide a configurable {@link ISipGenerationPlugin} tool
  * to add storage information for files into SIPs.
+ *
  * @author Sébastien Binda
  */
 public abstract class AbstractStorageInformation {
@@ -45,6 +46,7 @@ public abstract class AbstractStorageInformation {
 
     /**
      * Add storage information read from the plugin parameter pluginIdStorageDirectoryMap
+     *
      * @param sipBuilder
      */
     protected void addStorageInfomation(SIPBuilder sipBuilder) {

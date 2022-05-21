@@ -28,6 +28,7 @@ import java.util.Collection;
 
 /**
  * Extend the {@link PagedModel} to add a "info" field.
+ *
  * @param <T> The type of the resources
  * @author Sébastien Binda
  */
@@ -49,8 +50,9 @@ public class RequestsPagedModel<T> extends PagedModel<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends EntityModel<S>, S> RequestsPagedModel<T> wrap(Iterable<S> content, PageMetadata metadata,
-            RequestsInfo info) {
+    public static <T extends EntityModel<S>, S> RequestsPagedModel<T> wrap(Iterable<S> content,
+                                                                           PageMetadata metadata,
+                                                                           RequestsInfo info) {
         ArrayList<T> resources = new ArrayList<T>();
 
         if (content != null) {
@@ -99,7 +101,10 @@ public class RequestsPagedModel<T> extends PagedModel<T> {
 
     @Override
     public String toString() {
-        return String.format("RequestsPagedResources { content: %s, metadata: %s, links: %s, info: %s }", getContent(),
-                             getMetadata(), getLinks(), getInfo());
+        return String.format("RequestsPagedResources { content: %s, metadata: %s, links: %s, info: %s }",
+                             getContent(),
+                             getMetadata(),
+                             getLinks(),
+                             getInfo());
     }
 }

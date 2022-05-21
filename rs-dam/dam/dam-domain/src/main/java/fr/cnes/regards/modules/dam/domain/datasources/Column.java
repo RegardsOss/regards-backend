@@ -19,15 +19,14 @@
 
 package fr.cnes.regards.modules.dam.domain.datasources;
 
-import java.sql.Types;
-
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
+
+import java.sql.Types;
 
 /**
  * This class describes a column of a SQL database.
  *
  * @author Christophe Mertz
- * 
  */
 public final class Column {
 

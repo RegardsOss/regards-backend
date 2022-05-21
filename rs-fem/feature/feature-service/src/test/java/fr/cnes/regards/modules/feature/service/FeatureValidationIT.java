@@ -18,17 +18,6 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import java.time.OffsetDateTime;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.validation.Errors;
-
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -38,12 +27,21 @@ import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.validation.Errors;
+
+import java.time.OffsetDateTime;
 
 /**
  * Test feature validation
  *
  * @author Marc SORDI
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_validation" })
 @ActiveProfiles({ "noscheduler", "noFemHandler" })
@@ -59,12 +57,19 @@ public class FeatureValidationIT extends AbstractFeatureMultitenantServiceIT {
     public void validationTest() throws ModuleException {
 
         // Set model client mock from model
-        String modelName = mockModelClient("feature_model_01.xml", this.getCps(), this.getFactory(),
-                                           this.getDefaultTenant(), this.getModelAttrAssocClientMock());
+        String modelName = mockModelClient("feature_model_01.xml",
+                                           this.getCps(),
+                                           this.getFactory(),
+                                           this.getDefaultTenant(),
+                                           this.getModelAttrAssocClientMock());
 
         // Init feature without files and properties
-        Feature feature = Feature.build("id01", "owner", null, IGeometry.point(IGeometry.position(10.0, 20.0)),
-                                        EntityType.DATA, modelName);
+        Feature feature = Feature.build("id01",
+                                        "owner",
+                                        null,
+                                        IGeometry.point(IGeometry.position(10.0, 20.0)),
+                                        EntityType.DATA,
+                                        modelName);
 
         // Validate feature
         Errors errors = validationService.validate(feature, ValidationMode.CREATION);
@@ -77,9 +82,9 @@ public class FeatureValidationIT extends AbstractFeatureMultitenantServiceIT {
         }
 
         // Add required properties and validate
-        feature.withProperties(IProperty
-                .set(IProperty.buildString("data_type", "TYPE01"),
-                     IProperty.buildObject("file_characterization", IProperty.buildBoolean("valid", Boolean.TRUE))));
+        feature.withProperties(IProperty.set(IProperty.buildString("data_type", "TYPE01"),
+                                             IProperty.buildObject("file_characterization",
+                                                                   IProperty.buildBoolean("valid", Boolean.TRUE))));
 
         errors = validationService.validate(feature, ValidationMode.CREATION);
 
@@ -88,8 +93,10 @@ public class FeatureValidationIT extends AbstractFeatureMultitenantServiceIT {
         }
 
         // Update feature with non alterable properties
-        feature.setUrn(FeatureUniformResourceName.pseudoRandomUrn(FeatureIdentifier.FEATURE, EntityType.DATA,
-                                                                  getDefaultTenant(), 1));
+        feature.setUrn(FeatureUniformResourceName.pseudoRandomUrn(FeatureIdentifier.FEATURE,
+                                                                  EntityType.DATA,
+                                                                  getDefaultTenant(),
+                                                                  1));
         featureRepo.save(FeatureEntity.build("sessionOwner", "session", feature, null, modelName));
 
         errors = validationService.validate(feature, ValidationMode.PATCH);
@@ -102,9 +109,10 @@ public class FeatureValidationIT extends AbstractFeatureMultitenantServiceIT {
         }
 
         // Update feature with authorized properties
-        feature.withProperties(IProperty
-                .set(IProperty.buildObject("file_characterization", IProperty.buildBoolean("valid", Boolean.TRUE),
-                                           IProperty.buildDate("invalidation_date", OffsetDateTime.now()))));
+        feature.withProperties(IProperty.set(IProperty.buildObject("file_characterization",
+                                                                   IProperty.buildBoolean("valid", Boolean.TRUE),
+                                                                   IProperty.buildDate("invalidation_date",
+                                                                                       OffsetDateTime.now()))));
 
         errors = validationService.validate(feature, ValidationMode.PATCH);
 

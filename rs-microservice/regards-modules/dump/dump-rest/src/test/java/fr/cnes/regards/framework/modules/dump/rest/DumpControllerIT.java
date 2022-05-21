@@ -40,6 +40,7 @@ import java.time.OffsetDateTime;
 
 /**
  * {@link DumpController} REST API test
+ *
  * @author Iliana Ghazali
  */
 
@@ -69,7 +70,9 @@ public class DumpControllerIT extends AbstractRegardsTransactionalIT {
 
         // Reset lastReqDumpDate
         RequestBuilderCustomizer putRequest = customizer().expectStatusOk();
-        performDefaultPatch(DumpController.TYPE_MAPPING + DumpController.RESET_LAST_DUMP_DATE, null, putRequest,
+        performDefaultPatch(DumpController.TYPE_MAPPING + DumpController.RESET_LAST_DUMP_DATE,
+                            null,
+                            putRequest,
                             "Reset lastReqDumpDate error");
 
         Assert.assertNull(dumpSettingsService.lastDumpReqDate());

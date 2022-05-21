@@ -27,7 +27,6 @@ import fr.cnes.regards.framework.amqp.event.Target;
  * {@link ISubscribable} information event with no {@link Target} restriction
  *
  * @author Marc Sordi
- *
  */
 @Event(target = Target.ALL, converter = JsonMessageConverter.GSON)
 public class GsonInfo extends AbstractEvent implements ISubscribable {

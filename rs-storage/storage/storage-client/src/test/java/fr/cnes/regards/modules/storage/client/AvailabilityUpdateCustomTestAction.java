@@ -18,16 +18,14 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.storage.domain.IUpdateFileReferenceOnAvailable;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import org.springframework.stereotype.Component;
 
 /**
  * @author sbinda
- *
  */
 @Component
 public class AvailabilityUpdateCustomTestAction implements IUpdateFileReferenceOnAvailable {
@@ -41,11 +39,11 @@ public class AvailabilityUpdateCustomTestAction implements IUpdateFileReferenceO
      */
     @Override
     public FileReference update(FileReference availableFileReference, FileLocation onlineFileLocation)
-            throws ModuleException {
+        throws ModuleException {
         // Update checksum of the restored file
         if (availableFileReference.getMetaInfo().getFileName().equals(FILE_TO_UPDATE_NAME)) {
             availableFileReference.getMetaInfo()
-                    .setChecksum(getUpdatedChecksum(availableFileReference.getMetaInfo().getChecksum()));
+                                  .setChecksum(getUpdatedChecksum(availableFileReference.getMetaInfo().getChecksum()));
             return availableFileReference;
         } else {
             return null;

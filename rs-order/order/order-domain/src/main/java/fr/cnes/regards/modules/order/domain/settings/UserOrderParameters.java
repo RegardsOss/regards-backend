@@ -4,10 +4,9 @@ import java.util.Objects;
 
 public class UserOrderParameters {
 
-
     private int subOrderDuration;
-    private int delayBeforeEmailNotification;
 
+    private int delayBeforeEmailNotification;
 
     public UserOrderParameters() {
     }
@@ -44,7 +43,8 @@ public class UserOrderParameters {
             return false;
         }
         UserOrderParameters that = (UserOrderParameters) o;
-        return subOrderDuration == that.subOrderDuration && delayBeforeEmailNotification == that.delayBeforeEmailNotification;
+        return subOrderDuration == that.subOrderDuration
+            && delayBeforeEmailNotification == that.delayBeforeEmailNotification;
     }
 
     @Override
@@ -54,7 +54,8 @@ public class UserOrderParameters {
 
     @Override
     public String toString() {
-        return "UserOrderParameters{" + "subOrderDuration=" + subOrderDuration + ", delayBeforeEmailNotification=" + delayBeforeEmailNotification + '}';
+        return "UserOrderParameters{" + "subOrderDuration=" + subOrderDuration + ", delayBeforeEmailNotification="
+            + delayBeforeEmailNotification + '}';
     }
 
 }

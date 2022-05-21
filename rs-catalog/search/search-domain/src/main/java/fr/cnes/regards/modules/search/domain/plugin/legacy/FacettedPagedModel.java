@@ -30,6 +30,7 @@ import java.util.Set;
 
 /**
  * Extend the {@link PagedModel} to add a "facets" field.
+ *
  * @param <T> The type of the resources
  * @author Xavier-Alexandre Brochard
  */
@@ -44,8 +45,10 @@ public class FacettedPagedModel<T> extends PagedModel<T> {
         this(facets, content, metadata, Arrays.asList(links));
     }
 
-    public FacettedPagedModel(Set<IFacet<?>> facets, Collection<T> content, PageMetadata metadata,
-            Iterable<Link> pLinks) {
+    public FacettedPagedModel(Set<IFacet<?>> facets,
+                              Collection<T> content,
+                              PageMetadata metadata,
+                              Iterable<Link> pLinks) {
         super(content, metadata, pLinks);
         this.facets = facets;
     }
@@ -55,8 +58,9 @@ public class FacettedPagedModel<T> extends PagedModel<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends EntityModel<S>, S> FacettedPagedModel<T> wrap(Iterable<S> content, PageMetadata metadata,
-            Set<IFacet<?>> facets) {
+    public static <T extends EntityModel<S>, S> FacettedPagedModel<T> wrap(Iterable<S> content,
+                                                                           PageMetadata metadata,
+                                                                           Set<IFacet<?>> facets) {
         ArrayList<T> resources = new ArrayList<T>();
 
         if (content != null) {
@@ -106,6 +110,9 @@ public class FacettedPagedModel<T> extends PagedModel<T> {
     @Override
     public String toString() {
         return String.format("FacettedPagedResources { content: %s, metadata: %s, links: %s, facets: %s }",
-                             getContent(), getMetadata(), getLinks(), getFacets());
+                             getContent(),
+                             getMetadata(),
+                             getLinks(),
+                             getFacets());
     }
 }

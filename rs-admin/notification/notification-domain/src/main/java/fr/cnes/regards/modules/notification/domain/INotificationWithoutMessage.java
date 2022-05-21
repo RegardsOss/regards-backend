@@ -1,11 +1,9 @@
 package fr.cnes.regards.modules.notification.domain;
 
-import java.time.OffsetDateTime;
-import java.util.Set;
-
+import fr.cnes.regards.framework.notification.NotificationLevel;
 import org.springframework.util.MimeType;
 
-import fr.cnes.regards.framework.notification.NotificationLevel;
+import java.time.OffsetDateTime;
 
 /**
  * Interface used to deserialize the notification object and get it without its message {@link NotificationAdapter}

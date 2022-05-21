@@ -18,17 +18,15 @@
  */
 package fr.cnes.regards.modules.configuration.dao;
 
+import fr.cnes.regards.modules.configuration.domain.Theme;
+import org.springframework.data.jpa.repository.JpaRepository;
+
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import fr.cnes.regards.modules.configuration.domain.Theme;
-
 /**
- *
  * Class IThemeRepository
- *
+ * <p>
  * JPA Repository for Theme entities
  *
  * @author Sébastien Binda

@@ -36,8 +36,10 @@ public class ManagerCleanSnapshotProcessJob extends AbstractJob<Void> {
         logger.debug("[{}] ManagerCleanSnapshotProcessJob starts", jobInfoId);
         long start = System.currentTimeMillis();
         int nbSnapshotProcessDeleted = managerCleanSnapshotProcessService.clean();
-        logger.debug("[{}] ManagerCleanSnapshotProcessJob ends in {} ms. {} snapshot process deleted", jobInfoId,
-                     System.currentTimeMillis() - start, nbSnapshotProcessDeleted);
+        logger.debug("[{}] ManagerCleanSnapshotProcessJob ends in {} ms. {} snapshot process deleted",
+                     jobInfoId,
+                     System.currentTimeMillis() - start,
+                     nbSnapshotProcessDeleted);
     }
 
 }

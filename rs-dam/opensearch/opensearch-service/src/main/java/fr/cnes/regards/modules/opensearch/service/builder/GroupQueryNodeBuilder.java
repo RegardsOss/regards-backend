@@ -18,20 +18,19 @@
  */
 package fr.cnes.regards.modules.opensearch.service.builder;
 
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.core.builders.QueryTreeBuilder;
 import org.apache.lucene.queryparser.flexible.core.nodes.GroupQueryNode;
 import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
 import org.apache.lucene.queryparser.flexible.standard.nodes.PointRangeQueryNode;
 
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion;
-
 /**
  * Builds a {@link RangeCriterion} from a {@link PointRangeQueryNode} object.
  *
- * @see org.apache.lucene.queryparser.flexible.standard.builders.PointRangeQueryNodeBuilder#build(QueryNode)
  * @author Xavier-Alexandre Brochard
+ * @see org.apache.lucene.queryparser.flexible.standard.builders.PointRangeQueryNodeBuilder#build(QueryNode)
  */
 public class GroupQueryNodeBuilder implements ICriterionQueryBuilder {
 

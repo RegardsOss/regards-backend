@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.modules.dam.domain.datasources;
 
-import java.io.IOException;
-import java.util.Map;
-
 import com.google.common.collect.Maps;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * Converter to create an AbstractAttributeMapping from a Gson object.
@@ -65,11 +64,14 @@ public class AbstractAttributeMappingConverter extends TypeAdapter<AbstractAttri
         } else {
             switch (type) {
                 case DYNAMIC:
-                    return new DynamicAttributeMapping(elements.get("name"), elements.get("namespace"),
-                            PropertyType.valueOf(elements.get("type")), elements.get("nameDS"));
+                    return new DynamicAttributeMapping(elements.get("name"),
+                                                       elements.get("namespace"),
+                                                       PropertyType.valueOf(elements.get("type")),
+                                                       elements.get("nameDS"));
                 case STATIC:
-                    return new StaticAttributeMapping(elements.get("name"), PropertyType.valueOf(elements.get("type")),
-                            elements.get("nameDS"));
+                    return new StaticAttributeMapping(elements.get("name"),
+                                                      PropertyType.valueOf(elements.get("type")),
+                                                      elements.get("nameDS"));
                 default:
                     throw new RuntimeException(String.format("Invalid attribute mapping type %s", type.toString()));
             }

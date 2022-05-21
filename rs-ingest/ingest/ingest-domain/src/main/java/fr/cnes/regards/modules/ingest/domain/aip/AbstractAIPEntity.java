@@ -18,32 +18,23 @@
  */
 package fr.cnes.regards.modules.ingest.domain.aip;
 
-import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.persistence.Column;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.SequenceGenerator;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
-
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.AbstractOAISEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * AIP can be retrieve with two ways.
@@ -51,11 +42,10 @@ import fr.cnes.regards.modules.ingest.dto.aip.AIP;
  * <li>Getting full AIPEntity with SIP thanks to {@link AIPEntity}</li>
  * <li>Getting light AIPEntity without SIP thanks to {@link AIPEntityLight}</li>
  * </ul>
- *
+ * <p>
  * This abstract class represents the common part between the two pojos.
  *
  * @author Sébastien Binda
- *
  */
 @MappedSuperclass
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })

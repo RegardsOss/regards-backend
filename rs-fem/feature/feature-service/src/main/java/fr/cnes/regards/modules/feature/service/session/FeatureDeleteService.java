@@ -1,13 +1,10 @@
 package fr.cnes.regards.modules.feature.service.session;
 
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
-import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureDeletionRequestEvent;
@@ -21,14 +18,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.orm.jpa.EntityManagerFactoryInfo;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import javax.persistence.EntityManager;
-import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -66,9 +59,9 @@ public class FeatureDeleteService {
         int requestCount = 0;
         String deletionOwner;
         if (session == null || session.length() == 0) {
-            deletionOwner="delete-job-"+source;
+            deletionOwner = "delete-job-" + source;
         } else {
-            deletionOwner="delete-job-"+source+"-"+session;
+            deletionOwner = "delete-job-" + source + "-" + session;
         }
         do {
             if (StringUtils.isEmpty(session)) {
@@ -76,10 +69,14 @@ public class FeatureDeleteService {
             } else {
                 entityPage = featureEntityRepository.findBySessionOwnerAndSession(source, session, pageable);
             }
-            List<FeatureUniformResourceName> featureUrns = entityPage.stream().map(ILightFeatureEntity::getUrn).collect(Collectors.toList());
+            List<FeatureUniformResourceName> featureUrns = entityPage.stream()
+                                                                     .map(ILightFeatureEntity::getUrn)
+                                                                     .collect(Collectors.toList());
             List<FeatureDeletionRequestEvent> events = Lists.newArrayList();
             for (FeatureUniformResourceName urn : featureUrns) {
-                FeatureDeletionRequestEvent event = FeatureDeletionRequestEvent.build(deletionOwner, urn, PriorityLevel.NORMAL);
+                FeatureDeletionRequestEvent event = FeatureDeletionRequestEvent.build(deletionOwner,
+                                                                                      urn,
+                                                                                      PriorityLevel.NORMAL);
                 events.add(event);
                 requestCount++;
             }
@@ -87,7 +84,10 @@ public class FeatureDeleteService {
             pageable = entityPage.nextPageable();
         } while (!Thread.currentThread().isInterrupted() && entityPage.hasNext());
 
-        LOGGER.info("[SESSION DELETE EVENT] {} delete request created for source {} and session {}",requestCount, source, session);
+        LOGGER.info("[SESSION DELETE EVENT] {} delete request created for source {} and session {}",
+                    requestCount,
+                    source,
+                    session);
 
         if (Thread.currentThread().isInterrupted()) {
             LOGGER.debug("{} thread has been interrupted", this.getClass().getName());

@@ -31,9 +31,6 @@ import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPPostProcessFailTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPPostProcessTestPlugin;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -43,13 +40,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
+
 /**
  * @author Sebastien Binda
  * @author Iliana Ghazali
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=post_process_job_it", "regards.amqp.enabled=true" },
-        locations = { "classpath:application-test.properties" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=post_process_job_it", "regards.amqp.enabled=true" },
+    locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class IngestPostProcessingJobIT extends IngestMultitenantServiceIT {
 
@@ -60,7 +61,6 @@ public class IngestPostProcessingJobIT extends IngestMultitenantServiceIT {
 
     @Autowired
     private StorageClientMock storageClient;
-
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY", "CATEGORY00", "CATEGORY01");
 
@@ -100,17 +100,47 @@ public class IngestPostProcessingJobIT extends IngestMultitenantServiceIT {
     public void initData(String chain) throws ModuleException {
         long nbSIP = 6;
         storageClient.setBehavior(true, true);
-        publishSIPEvent(create("1", TAG_0), Lists.newArrayList(STORAGE_1), SESSION_0, SESSION_OWNER_0, CATEGORIES_0, Optional.of(chain));
-        publishSIPEvent(create("2", TAG_0), Lists.newArrayList(STORAGE_1), SESSION_0, SESSION_OWNER_1, CATEGORIES_1, Optional.of(chain));
-        publishSIPEvent(create("3", TAG_1), Lists.newArrayList(STORAGE_1), SESSION_0, SESSION_OWNER_0, CATEGORIES_0, Optional.of(chain));
-        publishSIPEvent(create("4", TAG_1), Lists.newArrayList(STORAGE_1), SESSION_1, SESSION_OWNER_1, CATEGORIES_1, Optional.of(chain));
-        publishSIPEvent(create("5", TAG_1), Lists.newArrayList(STORAGE_2), SESSION_1, SESSION_OWNER_1, CATEGORIES_0, Optional.of(chain));
-        publishSIPEvent(create("6", TAG_0), Lists.newArrayList(STORAGE_2), SESSION_1, SESSION_OWNER_0, CATEGORIES_0, Optional.of(chain));
+        publishSIPEvent(create("1", TAG_0),
+                        Lists.newArrayList(STORAGE_1),
+                        SESSION_0,
+                        SESSION_OWNER_0,
+                        CATEGORIES_0,
+                        Optional.of(chain));
+        publishSIPEvent(create("2", TAG_0),
+                        Lists.newArrayList(STORAGE_1),
+                        SESSION_0,
+                        SESSION_OWNER_1,
+                        CATEGORIES_1,
+                        Optional.of(chain));
+        publishSIPEvent(create("3", TAG_1),
+                        Lists.newArrayList(STORAGE_1),
+                        SESSION_0,
+                        SESSION_OWNER_0,
+                        CATEGORIES_0,
+                        Optional.of(chain));
+        publishSIPEvent(create("4", TAG_1),
+                        Lists.newArrayList(STORAGE_1),
+                        SESSION_1,
+                        SESSION_OWNER_1,
+                        CATEGORIES_1,
+                        Optional.of(chain));
+        publishSIPEvent(create("5", TAG_1),
+                        Lists.newArrayList(STORAGE_2),
+                        SESSION_1,
+                        SESSION_OWNER_1,
+                        CATEGORIES_0,
+                        Optional.of(chain));
+        publishSIPEvent(create("6", TAG_0),
+                        Lists.newArrayList(STORAGE_2),
+                        SESSION_1,
+                        SESSION_OWNER_0,
+                        CATEGORIES_0,
+                        Optional.of(chain));
 
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, TEN_SECONDS * nbSIP, SIPState.STORED);
         ingestServiceTest.waitDuring(TWO_SECONDS * nbSIP);
-        if(!isToNotify) {
+        if (!isToNotify) {
             ingestServiceTest.waitAllRequestsFinished(TEN_SECONDS * nbSIP);
         } else {
             mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
@@ -134,7 +164,9 @@ public class IngestPostProcessingJobIT extends IngestMultitenantServiceIT {
         // Creates a test chain with default post processing plugin
         createChainWithPostProcess(CHAIN_PP_WITH_ERRORS_LABEL, AIPPostProcessFailTestPlugin.class);
         initData(CHAIN_PP_WITH_ERRORS_LABEL);
-        Assert.assertEquals(3, aipPostProcessRepo.findAllByState(InternalRequestState.ERROR, PageRequest.of(0,100)).getTotalElements());
+        Assert.assertEquals(3,
+                            aipPostProcessRepo.findAllByState(InternalRequestState.ERROR, PageRequest.of(0, 100))
+                                              .getTotalElements());
     }
 }
 

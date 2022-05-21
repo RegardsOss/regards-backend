@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.order.dao;
 
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
@@ -26,16 +26,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface IBasketDatasetSelectionRepository  extends JpaRepository<BasketDatasetSelection, Long> {
+public interface IBasketDatasetSelectionRepository extends JpaRepository<BasketDatasetSelection, Long> {
 
-    @Query(
-        value = "SELECT BDS.*" +
-                " FROM t_basket_dataset AS BDS" +
-                " WHERE process_dataset_desc->>'processBusinessId' = :processBusinessId",
-            nativeQuery = true
-    )
-    List<BasketDatasetSelection> findByProcessBusinessId(
-            @Param("processBusinessId") String processBusinessId
-    );
+    @Query(value = "SELECT BDS.*" + " FROM t_basket_dataset AS BDS"
+        + " WHERE process_dataset_desc->>'processBusinessId' = :processBusinessId", nativeQuery = true)
+    List<BasketDatasetSelection> findByProcessBusinessId(@Param("processBusinessId") String processBusinessId);
 
 }

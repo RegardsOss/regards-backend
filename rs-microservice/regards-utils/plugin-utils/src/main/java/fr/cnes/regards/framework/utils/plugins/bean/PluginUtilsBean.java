@@ -32,6 +32,7 @@ public class PluginUtilsBean {
     private PluginUtilsBean(AutowireCapableBeanFactory autowireCapableBeanFactory) {
         PluginUtilsBean.beanFactory = autowireCapableBeanFactory;
     }
+
     /**
      * Allows to autowire bean into a plugin instance
      */
@@ -39,7 +40,7 @@ public class PluginUtilsBean {
         beanFactory.autowireBean(plugin);
     }
 
-    public static boolean isBeanFactoryInitialized(){
+    public static boolean isBeanFactoryInitialized() {
         return beanFactory != null;
     }
 }

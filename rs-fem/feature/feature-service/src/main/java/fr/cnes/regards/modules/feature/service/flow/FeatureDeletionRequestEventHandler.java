@@ -44,7 +44,7 @@ import java.util.List;
 @Component
 @Profile("!noFemHandler")
 public class FeatureDeletionRequestEventHandler extends AbstractFeatureRequestEventHandler<FeatureDeletionRequestEvent>
-        implements IBatchHandler<FeatureDeletionRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
+    implements IBatchHandler<FeatureDeletionRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureDeletionRequestEventHandler.class);
 
@@ -75,7 +75,8 @@ public class FeatureDeletionRequestEventHandler extends AbstractFeatureRequestEv
         long start = System.currentTimeMillis();
         RequestInfo<FeatureUniformResourceName> requestInfo = featureService.registerRequests(messages);
         LOGGER.info("{} granted request(s) and {} denied request(s) registered in {} ms",
-                    requestInfo.getGranted().size(), requestInfo.getDenied().keySet().size(),
+                    requestInfo.getGranted().size(),
+                    requestInfo.getDenied().keySet().size(),
                     System.currentTimeMillis() - start);
     }
 

@@ -18,13 +18,13 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.ingest.domain.request.dump.AIPSaveMetadataRequest;
-
 /**
  * JPA to access {@link AIPSaveMetadataRequest} repository
+ *
  * @author Iliana Ghazali
  */
 @Repository

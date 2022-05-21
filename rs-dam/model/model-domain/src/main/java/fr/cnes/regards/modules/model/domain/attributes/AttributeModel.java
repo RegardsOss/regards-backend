@@ -18,49 +18,12 @@
  */
 package fr.cnes.regards.modules.model.domain.attributes;
 
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.PostLoad;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
-
 import fr.cnes.regards.framework.gson.utils.GSONConstants;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.modules.model.domain.IXmlisable;
 import fr.cnes.regards.modules.model.domain.Model;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.AbstractRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.DoubleRangeRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.EnumerationRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.IntegerRangeRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.JsonSchemaRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.LongRangeRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.PatternRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionType;
+import fr.cnes.regards.modules.model.domain.attributes.restriction.*;
 import fr.cnes.regards.modules.model.domain.schema.Attribute;
 import fr.cnes.regards.modules.model.domain.schema.Property;
 import fr.cnes.regards.modules.model.domain.schema.Restriction;
@@ -68,12 +31,24 @@ import fr.cnes.regards.modules.model.domain.schema.Type;
 import fr.cnes.regards.modules.model.domain.validator.JsonString;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 
+import javax.persistence.*;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
 /**
  * @author msordi
  */
 @Entity
 @Table(name = "t_attribute_model", uniqueConstraints = @UniqueConstraint(name = "uk_attribute_model_name_fragment_id",
-        columnNames = { "name", "fragment_id" }))
+    columnNames = { "name", "fragment_id" }))
 @SequenceGenerator(name = "attModelSequence", initialValue = 1, sequenceName = "seq_att_model")
 public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute> {
 
@@ -90,9 +65,9 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
      */
     @NotNull(message = "Name cannot be null")
     @Pattern(regexp = Model.NAME_REGEXP,
-            message = "Attribute name must conform to regular expression \"" + Model.NAME_REGEXP + "\".")
-    @Size(min = Model.NAME_MIN_SIZE, max = Model.NAME_MAX_SIZE, message = "Attribute name must be between "
-            + Model.NAME_MIN_SIZE + " and " + Model.NAME_MAX_SIZE + " length.")
+        message = "Attribute name must conform to regular expression \"" + Model.NAME_REGEXP + "\".")
+    @Size(min = Model.NAME_MIN_SIZE, max = Model.NAME_MAX_SIZE,
+        message = "Attribute name must be between " + Model.NAME_MIN_SIZE + " and " + Model.NAME_MAX_SIZE + " length.")
     @Column(nullable = false, updatable = false, length = Model.NAME_MAX_SIZE)
     private String name;
 
@@ -134,7 +109,7 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
      */
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "fragment_id", foreignKey = @ForeignKey(name = "fk_fragment_id"), nullable = false,
-            updatable = false)
+        updatable = false)
     private Fragment fragment;
 
     /**
@@ -177,9 +152,9 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
      * Optional group for displaying purpose
      */
     @Pattern(regexp = Model.NAME_REGEXP,
-            message = "Group name must conform to regular expression \"" + Model.NAME_REGEXP + "\".")
+        message = "Group name must conform to regular expression \"" + Model.NAME_REGEXP + "\".")
     @Size(min = Model.NAME_MIN_SIZE, max = Model.NAME_MAX_SIZE,
-            message = "Group name must be between " + Model.NAME_MIN_SIZE + " and " + Model.NAME_MAX_SIZE + " length.")
+        message = "Group name must be between " + Model.NAME_MIN_SIZE + " and " + Model.NAME_MAX_SIZE + " length.")
     @Column(name = "group_name", length = Model.NAME_MAX_SIZE)
     private String group;
 
@@ -212,6 +187,7 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
 
     /**
      * Indicates if this attribute is a real atribute from the model or if it is a generated one from a JsonObject attributes.
+     *
      * @see AbstractAttributeHelper class. Generates attributes from a JsonObject attribute type thanks to JsonSchema associated in restriction.
      */
     @Transient
@@ -293,6 +269,7 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
 
     /**
      * Set the label
+     *
      * @param label
      */
     public void setLabel(String label) {
@@ -504,6 +481,7 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
 
     /**
      * Retrieve full feature attribute json path
+     *
      * @return json path
      */
     public String getFullJsonPath() {
@@ -518,6 +496,7 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
 
     /**
      * Construct a json path for the current attribute depending on given prefix namespace
+     *
      * @param namespace
      * @return json path
      */
@@ -568,6 +547,7 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
 
     /**
      * Does the current attribute type is {@link PropertyType#STRING} or {@link PropertyType#STRING_ARRAY} ?
+     *
      * @return {@link Boolean}
      */
     public boolean isTextAttribute() {
@@ -601,15 +581,16 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
     @Override
     public String toString() {
         return "AttributeModel{" + "id=" + id + ", name='" + name + '\'' + ", type=" + type + ", fragment=" + fragment
-                + ", jsonPath='" + jsonPath + '\'' + '}';
+            + ", jsonPath='" + jsonPath + '\'' + '}';
     }
 
     /**
      * @return
      */
     public RestrictionType getRestrictionType() {
-        return Optional.ofNullable(restriction).map(AbstractRestriction::getType)
-                .orElse(RestrictionType.NO_RESTRICTION);
+        return Optional.ofNullable(restriction)
+                       .map(AbstractRestriction::getType)
+                       .orElse(RestrictionType.NO_RESTRICTION);
     }
 
 }

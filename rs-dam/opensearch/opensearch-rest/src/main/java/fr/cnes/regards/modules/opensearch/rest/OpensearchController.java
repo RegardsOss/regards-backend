@@ -18,9 +18,11 @@
  */
 package fr.cnes.regards.modules.opensearch.rest;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.opensearch.service.OpenSearchService;
+import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,15 +32,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.opensearch.service.OpenSearchService;
-import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * @author sbinda
- *
  */
 @RestController
 @RequestMapping(OpensearchController.TYPE_MAPPING)

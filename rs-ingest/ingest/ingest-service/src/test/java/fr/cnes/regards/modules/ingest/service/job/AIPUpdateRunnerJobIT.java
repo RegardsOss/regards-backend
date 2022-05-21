@@ -18,15 +18,30 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.service.IJobService;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.test.report.annotation.Requirements;
+import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
+import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
+import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
+import fr.cnes.regards.modules.ingest.service.aip.scheduler.AIPUpdateRequestScheduler;
+import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
+import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
+import fr.cnes.regards.modules.storage.domain.database.FileLocation;
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.Test;
@@ -39,39 +54,19 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.service.IJobService;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.test.report.annotation.Requirements;
-import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
-import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
-import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
-import fr.cnes.regards.modules.ingest.service.aip.scheduler.AIPUpdateRequestScheduler;
-import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
-import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
-import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
-import fr.cnes.regards.modules.storage.domain.database.FileLocation;
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Test {@link AIPUpdateRunnerJob}
+ *
  * @author Léo Mieulet
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=update_oais_job", "regards.amqp.enabled=true",
-                "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false" },
-        locations = { "classpath:application-test.properties" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=update_oais_job", "regards.amqp.enabled=true",
+        "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false" },
+    locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
 
@@ -134,19 +129,38 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
     public void initData() throws InterruptedException {
 
         long nbSIP = 6;
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_0,
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0),
+                        STORAGE_1,
+                        SESSION_0,
+                        SESSION_OWNER_0,
                         CATEGORIES_0);
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1), Lists.newArrayList(STORAGE_2, STORAGE_3),
-                        SESSION_0, SESSION_OWNER_0, Lists.newArrayList(CATEGORIES_0), Optional.empty());
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1),
+                        Lists.newArrayList(STORAGE_2, STORAGE_3),
+                        SESSION_0,
+                        SESSION_OWNER_0,
+                        Lists.newArrayList(CATEGORIES_0),
+                        Optional.empty());
 
         // useless entities for this test
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0,
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0),
+                        STORAGE_2,
+                        SESSION_1,
+                        SESSION_OWNER_0,
                         CATEGORIES_0);
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_1,
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0),
+                        STORAGE_1,
+                        SESSION_0,
+                        SESSION_OWNER_1,
                         CATEGORIES_1);
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1,
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1),
+                        STORAGE_1,
+                        SESSION_1,
+                        SESSION_OWNER_1,
                         CATEGORIES_1);
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1,
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1),
+                        STORAGE_2,
+                        SESSION_1,
+                        SESSION_OWNER_1,
                         CATEGORIES_0);
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
@@ -162,15 +176,20 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
         Page<AIPEntity> aips = aipService.findByFilters(SearchAIPsParameters.build(), PageRequest.of(0, 200));
         List<AIPEntity> aipsContent = aips.getContent();
         for (AIPEntity aip : aipsContent) {
-            LOGGER.info("Intial AIP {}/{} tags : {}, categories : {}, storages : {}", aip.getProviderId(),
-                        aip.getState(), aip.getTags(), aip.getCategories(), aip.getStorages());
+            LOGGER.info("Intial AIP {}/{} tags : {}, categories : {}, storages : {}",
+                        aip.getProviderId(),
+                        aip.getState(),
+                        aip.getTags(),
+                        aip.getCategories(),
+                        aip.getStorages());
         }
     }
 
     /**
      * Helper method to wait for DB ingestion
+     *
      * @param expectedTasks expected count of task in db
-     * @param timeout in ms
+     * @param timeout       in ms
      */
     public void waitForUpdateTaskCreated(long expectedTasks, long timeout) {
         Awaitility.await().atMost(timeout, TimeUnit.MILLISECONDS).until(() -> {
@@ -181,12 +200,13 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
 
     /**
      * Test to add/remove TAGS and categories to an existing list of AIPs.
+     *
      * @throws ModuleException
      * @throws InterruptedException
      */
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_420"), @Requirement("REGARDS_DSL_STO_AIP_430"),
-            @Requirement("REGARDS_DSL_STO_AIP_210") })
+        @Requirement("REGARDS_DSL_STO_AIP_210") })
     @Purpose("Check that specific informations can be updated in AIP properties")
     public void testUpdateJob() throws ModuleException, InterruptedException {
         storageClient.setBehavior(true, true);
@@ -195,9 +215,15 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
         LOGGER.info("TAGS ADD : {}, REMOVE {}", TAG_2, TAG_3);
         LOGGER.info("CATEGORIES ADD : {}, REMOVE {}", CATEGORIES_2, CATEGORIES_0);
         LOGGER.info("STORAGES REMOVE : {}", STORAGE_3);
-        aipService.registerUpdatesCreator(AIPUpdateParametersDto
-                .build(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0), TAG_2,
-                       TAG_3, CATEGORIES_2, CATEGORIES_0, Lists.newArrayList(STORAGE_3)));
+        aipService.registerUpdatesCreator(AIPUpdateParametersDto.build(SearchAIPsParameters.build()
+                                                                                           .withSession(SESSION_0)
+                                                                                           .withSessionOwner(
+                                                                                               SESSION_OWNER_0),
+                                                                       TAG_2,
+                                                                       TAG_3,
+                                                                       CATEGORIES_2,
+                                                                       CATEGORIES_0,
+                                                                       Lists.newArrayList(STORAGE_3)));
         long nbSipConcerned = 2;
         long nbTasksPerSip = 5;
         waitForUpdateTaskCreated(nbSipConcerned * nbTasksPerSip, 10_000);
@@ -206,9 +232,10 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
         // Wait job done
         waitJobDone(updateJob, JobStatus.SUCCEEDED, 5_000);
 
-        Page<AIPEntity> aips = aipService
-                .findByFilters(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0),
-                               PageRequest.of(0, 200));
+        Page<AIPEntity> aips = aipService.findByFilters(SearchAIPsParameters.build()
+                                                                            .withSession(SESSION_0)
+                                                                            .withSessionOwner(SESSION_OWNER_0),
+                                                        PageRequest.of(0, 200));
         Collection<AIPEntity> aipsContent = aips.getContent();
         for (AIPEntity aip : aipsContent) {
             Assert.assertEquals(3, aip.getTags().size());
@@ -228,15 +255,28 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
         storageClient.setBehavior(true, true);
         initData();
 
-        Page<AIPEntity> aips = aipService.findByFilters(SearchAIPsParameters.build().withSession(SESSION_0)
-                .withSessionOwner(SESSION_OWNER_0).withStorage(STORAGE_1), PageRequest.of(0, 200));
+        Page<AIPEntity> aips = aipService.findByFilters(SearchAIPsParameters.build()
+                                                                            .withSession(SESSION_0)
+                                                                            .withSessionOwner(SESSION_OWNER_0)
+                                                                            .withStorage(STORAGE_1),
+                                                        PageRequest.of(0, 200));
         AIPEntity toUpdate = aips.getContent().get(0);
         String providerId = toUpdate.getProviderId();
-        Assert.assertEquals("Before adding the new location the data object should contains only one location", 1,
-                            toUpdate.getAip().getProperties().getContentInformations().get(0).getDataObject()
-                                    .getLocations().size());
-        String toUpdateChecksum = toUpdate.getAip().getProperties().getContentInformations().get(0).getDataObject()
-                .getChecksum();
+        Assert.assertEquals("Before adding the new location the data object should contains only one location",
+                            1,
+                            toUpdate.getAip()
+                                    .getProperties()
+                                    .getContentInformations()
+                                    .get(0)
+                                    .getDataObject()
+                                    .getLocations()
+                                    .size());
+        String toUpdateChecksum = toUpdate.getAip()
+                                          .getProperties()
+                                          .getContentInformations()
+                                          .get(0)
+                                          .getDataObject()
+                                          .getChecksum();
 
         LOGGER.info("Updating AIP {} and file {}", toUpdate.getAipId(), toUpdateChecksum);
 
@@ -244,9 +284,13 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
         String newStorageLocation = "somewhere";
         Collection<RequestResultInfoDTO> successRequests = Sets.newHashSet();
         Collection<String> owners = Sets.newHashSet(toUpdate.getAipId());
-        successRequests
-                .add(RequestResultInfoDTO.build("groupId", toUpdateChecksum, newStorageLocation, null, owners,
-                                                simulatefileReference(toUpdateChecksum, toUpdate.getAipId()), null));
+        successRequests.add(RequestResultInfoDTO.build("groupId",
+                                                       toUpdateChecksum,
+                                                       newStorageLocation,
+                                                       null,
+                                                       owners,
+                                                       simulatefileReference(toUpdateChecksum, toUpdate.getAipId()),
+                                                       null));
         requests.add(RequestInfo.build("groupId", successRequests, Sets.newHashSet()));
 
         storageListener.onCopySuccess(requests);
@@ -258,12 +302,24 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
         // Check that the new location is added to the AIP in DB.
         aips = aipService.findByFilters(SearchAIPsParameters.build().withProviderId(providerId), PageRequest.of(0, 10));
         AIPEntity updateAIP = aips.getContent().get(0);
-        Assert.assertEquals("After adding the new location the data object should contains two locations", 2, updateAIP
-                .getAip().getProperties().getContentInformations().get(0).getDataObject().getLocations().size());
+        Assert.assertEquals("After adding the new location the data object should contains two locations",
+                            2,
+                            updateAIP.getAip()
+                                     .getProperties()
+                                     .getContentInformations()
+                                     .get(0)
+                                     .getDataObject()
+                                     .getLocations()
+                                     .size());
         Assert.assertTrue("New location is not added to the AIP dataobject",
-                          updateAIP.getAip().getProperties().getContentInformations().get(0).getDataObject()
-                                  .getLocations().stream()
-                                  .anyMatch(l -> l.getStorage().contentEquals(newStorageLocation)));
+                          updateAIP.getAip()
+                                   .getProperties()
+                                   .getContentInformations()
+                                   .get(0)
+                                   .getDataObject()
+                                   .getLocations()
+                                   .stream()
+                                   .anyMatch(l -> l.getStorage().contentEquals(newStorageLocation)));
 
     }
 

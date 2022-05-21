@@ -45,6 +45,7 @@ import java.util.Optional;
 
 /**
  * This class manages JPA event workflow.
+ *
  * @author Marc Sordi
  */
 public class MultitenantJpaEventHandler implements ApplicationListener<ApplicationReadyEvent> {
@@ -98,11 +99,16 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
      */
     private final JpaProperties jpaProperties;
 
-    public MultitenantJpaEventHandler(String microserviceName, Map<String, DataSource> dataSources,
-            LockingTaskExecutors lockingTaskExecutors, MultitenantDaoProperties daoProperties,
-            IDatasourceSchemaHelper datasourceSchemaHelper, IInstanceSubscriber instanceSubscriber,
-            ITenantConnectionResolver multitenantResolver, MultitenantJpaEventPublisher localPublisher,
-            IEncryptionService encryptionService, JpaProperties jpaProperties) {
+    public MultitenantJpaEventHandler(String microserviceName,
+                                      Map<String, DataSource> dataSources,
+                                      LockingTaskExecutors lockingTaskExecutors,
+                                      MultitenantDaoProperties daoProperties,
+                                      IDatasourceSchemaHelper datasourceSchemaHelper,
+                                      IInstanceSubscriber instanceSubscriber,
+                                      ITenantConnectionResolver multitenantResolver,
+                                      MultitenantJpaEventPublisher localPublisher,
+                                      IEncryptionService encryptionService,
+                                      JpaProperties jpaProperties) {
         this.microserviceName = microserviceName;
         this.dataSources = dataSources;
         this.lockingTaskExecutors = lockingTaskExecutors;
@@ -129,8 +135,9 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
 
     /**
      * Handle a new {@link TenantConnection} if the related microservice is exactly the same.
+     *
      * @param eventMicroserviceName related microservice
-     * @param tenantConnection {@link TenantConnection} for the microservice
+     * @param tenantConnection      {@link TenantConnection} for the microservice
      */
     private void handleTenantConnection(String eventMicroserviceName, TenantConnection tenantConnection) {
         if (microserviceName.equals(eventMicroserviceName)) {
@@ -145,7 +152,9 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                 // before initiating data source, lets decrypt password
                 tenantConnection.setPassword(encryptionService.decrypt(tenantConnection.getPassword()));
                 TenantDataSourceHelper.verifyBatchParameter(jpaProperties, tenantConnection);
-                DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection, schemaIdentifier);
+                DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties,
+                                                                              tenantConnection,
+                                                                              schemaIdentifier);
                 // Remove existing one
                 DataSource oldDataSource = dataSources.remove(tenant);
                 // Remove related lock executor
@@ -164,7 +173,9 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                 // Broadcast connection ready with a Spring event
                 localPublisher.publishConnectionReady(tenant);
             } catch (Exception ex) {
-                LOGGER.error(String.format("Cannot handle tenant connection for project %s and microservice %s", tenant, eventMicroserviceName), ex);
+                LOGGER.error(String.format("Cannot handle tenant connection for project %s and microservice %s",
+                                           tenant,
+                                           eventMicroserviceName), ex);
                 updateConnectionState(tenant, TenantConnectionState.ERROR, Optional.ofNullable(ex.getMessage()));
             }
         }
@@ -182,6 +193,7 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
 
     /**
      * Handle {@link TenantConnection} configuration creation
+     *
      * @author Sébastien Binda
      */
     private class ConfigurationCreatedHandler implements IHandler<TenantConnectionConfigurationCreated> {
@@ -196,6 +208,7 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
 
     /**
      * Handle {@link TenantConnection} configuration update
+     *
      * @author Marc Sordi
      */
     private class ConfigurationUpdatedHandler implements IHandler<TenantConnectionConfigurationUpdated> {
@@ -210,6 +223,7 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
 
     /**
      * Handle {@link TenantConnection} configuration deletion
+     *
      * @author Marc Sordi
      */
     private class ConfigurationDeletedHandler implements IHandler<TenantConnectionConfigurationDeleted> {
@@ -231,8 +245,8 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                     localPublisher.publishConnectionDiscarded(tenantConnection.getTenant());
                 } catch (SQLException e) {
                     LOGGER.error(
-                            "Cannot release datasource for tenant {}. Delete fails while closing existing connection.",
-                            tenantConnection.getTenant());
+                        "Cannot release datasource for tenant {}. Delete fails while closing existing connection.",
+                        tenantConnection.getTenant());
                     LOGGER.error(e.getMessage(), e);
                 }
             }
@@ -241,6 +255,7 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
 
     /**
      * Handle {@link TenantConnection} fail event
+     *
      * @author Marc Sordi
      */
     private class TenantConnectionFailedHandler implements IHandler<TenantConnectionFailed> {

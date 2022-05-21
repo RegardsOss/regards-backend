@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.converters;
 
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-
 import fr.cnes.regards.modules.acquisition.domain.SipStateManager;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 
 /**
  * Implement the type conversion logic for a String to a {@link ISipState}.<br>

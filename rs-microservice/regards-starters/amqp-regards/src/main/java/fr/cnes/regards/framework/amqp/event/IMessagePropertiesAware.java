@@ -30,6 +30,7 @@ public interface IMessagePropertiesAware {
 
     /**
      * Set the {@link MessageProperties} of the current message.
+     *
      * @param messageProperties message properties
      */
     void setMessageProperties(MessageProperties messageProperties);

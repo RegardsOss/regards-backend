@@ -18,28 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.awaitility.Awaitility;
-import org.awaitility.Durations;
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -62,14 +41,33 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.service.job.IngestPostProcessingJob;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPPostProcessTestPlugin;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
+import org.awaitility.Awaitility;
+import org.awaitility.Durations;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Marc Sordi
  * @author Sébastien Binda
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest",
-        "eureka.client.enabled=false", "regards.ingest.aip.delete.bulk.delay=100" },
-        locations = { "classpath:application-test.properties" })
+@TestPropertySource(
+    properties = { "spring.jpa.properties.hibernate.default_schema=ingest", "eureka.client.enabled=false",
+        "regards.ingest.aip.delete.bulk.delay=100" }, locations = { "classpath:application-test.properties" })
 public class IngestServiceIT extends IngestMultitenantServiceIT {
 
     @SuppressWarnings("unused")
@@ -99,13 +97,16 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
     }
 
     private void ingestSIP(String providerId, String checksum) throws EntityInvalidException {
-        SIPCollection sips = SIPCollection
-                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                               Sets.newHashSet("CAT"), StorageMetadata.build("disk")));
+        SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
+                                                                         SESSION,
+                                                                         IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                                                         Sets.newHashSet("CAT"),
+                                                                         StorageMetadata.build("disk")));
 
         sips.add(SIP.build(EntityType.DATA, providerId)
-                .withDataObject(DataType.RAWDATA, Paths.get("sip1.xml"), checksum).withSyntax(MediaType.APPLICATION_XML)
-                .registerContentInformation());
+                    .withDataObject(DataType.RAWDATA, Paths.get("sip1.xml"), checksum)
+                    .withSyntax(MediaType.APPLICATION_XML)
+                    .registerContentInformation());
 
         // First ingestion with synchronous service
         ingestService.handleSIPCollection(sips);
@@ -116,8 +117,11 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
     public void ingestWithPostProcess() throws EntityInvalidException, InterruptedException {
         // Ingest SIP with no dataObject
         String providerId = "SIP_001";
-        SIPCollection sips = SIPCollection.build(IngestMetadataDto
-                .build(SESSION_OWNER, SESSION, CHAIN_PP_LABEL, Sets.newHashSet("CAT"), StorageMetadata.build("disk")));
+        SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
+                                                                         SESSION,
+                                                                         CHAIN_PP_LABEL,
+                                                                         Sets.newHashSet("CAT"),
+                                                                         StorageMetadata.build("disk")));
         sips.add(SIP.build(EntityType.DATA, providerId));
         ingestService.handleSIPCollection(sips);
         ingestServiceTest.waitForIngestion(1, TEN_SECONDS);
@@ -132,10 +136,12 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
         // wait for postprocessing job scheduling
         Awaitility.await().atMost(Durations.TEN_SECONDS).until(() -> {
             runtimeTenantResolver.forceTenant(getDefaultTenant());
-            return jobInfoService.retrieveJobsCount(IngestPostProcessingJob.class.getName(), JobStatus.QUEUED,
-                                             JobStatus.TO_BE_RUN, JobStatus.PENDING, JobStatus.RUNNING,
-                                             JobStatus.SUCCEEDED)
-                    .longValue() == 1L;
+            return jobInfoService.retrieveJobsCount(IngestPostProcessingJob.class.getName(),
+                                                    JobStatus.QUEUED,
+                                                    JobStatus.TO_BE_RUN,
+                                                    JobStatus.PENDING,
+                                                    JobStatus.RUNNING,
+                                                    JobStatus.SUCCEEDED).longValue() == 1L;
         });
     }
 
@@ -144,9 +150,11 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
     public void ingestWithoutAnyDataFile() throws EntityInvalidException {
         // Ingest SIP with no dataObject
         String providerId = "SIP_001";
-        SIPCollection sips = SIPCollection
-                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                               Sets.newHashSet("CAT"), StorageMetadata.build("disk")));
+        SIPCollection sips = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
+                                                                         SESSION,
+                                                                         IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                                                         Sets.newHashSet("CAT"),
+                                                                         StorageMetadata.build("disk")));
         sips.add(SIP.build(EntityType.DATA, providerId));
         ingestService.handleSIPCollection(sips);
         ingestServiceTest.waitForIngestion(1, TEN_SECONDS);
@@ -161,6 +169,7 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
 
     /**
      * Check if service properly store SIP and prevent to store a SIP twice
+     *
      * @throws ModuleException if error occurs!
      */
     @Requirement("REGARDS_DSL_ING_PRO_240")
@@ -189,8 +198,9 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
         // Detect error
         ArgumentCaptor<IngestRequest> argumentCaptor = ArgumentCaptor.forClass(IngestRequest.class);
         Mockito.verify(ingestRequestService, Mockito.times(1))
-                .handleIngestJobFailed(argumentCaptor.capture(), ArgumentCaptor.forClass(SIPEntity.class).capture(),
-                                       ArgumentCaptor.forClass(String.class).capture());
+               .handleIngestJobFailed(argumentCaptor.capture(),
+                                      ArgumentCaptor.forClass(SIPEntity.class).capture(),
+                                      ArgumentCaptor.forClass(String.class).capture());
         IngestRequest request = argumentCaptor.getValue();
         Assert.assertNotNull(request);
         Assert.assertEquals(InternalRequestState.ERROR, request.getState());
@@ -201,8 +211,9 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
 
     /**
      * Check if service properly manage SIP versions
-     * @throws ModuleException if error occurs!
-     * @throws IOException if error occurs!
+     *
+     * @throws ModuleException          if error occurs!
+     * @throws IOException              if error occurs!
      * @throws NoSuchAlgorithmException if error occurs!
      */
     @Requirement("REGARDS_DSL_ING_PRO_200")

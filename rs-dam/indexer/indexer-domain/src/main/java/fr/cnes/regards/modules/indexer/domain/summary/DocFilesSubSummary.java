@@ -18,12 +18,12 @@
  */
 package fr.cnes.regards.modules.indexer.domain.summary;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * See {@link DocFilesSummary}
+ *
  * @author oroussel
  */
 public class DocFilesSubSummary extends AbstractDocSummary {
@@ -39,6 +39,7 @@ public class DocFilesSubSummary extends AbstractDocSummary {
 
     /**
      * Constructor
+     *
      * @param fileTypes to initialise map
      */
     public DocFilesSubSummary(String... fileTypes) {
@@ -54,6 +55,6 @@ public class DocFilesSubSummary extends AbstractDocSummary {
     @Override
     public String toString() {
         return "DocFilesSubSummary{" + "fileTypesSummaryMap=" + fileTypesSummaryMap + ", documentsCount="
-                + documentsCount + ", filesCount=" + filesCount + ", filesSize=" + filesSize + '}';
+            + documentsCount + ", filesCount=" + filesCount + ", filesSize=" + filesSize + '}';
     }
 }

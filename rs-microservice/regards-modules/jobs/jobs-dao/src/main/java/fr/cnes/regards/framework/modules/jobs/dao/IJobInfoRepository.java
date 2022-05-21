@@ -39,6 +39,7 @@ import java.util.UUID;
 
 /**
  * Interface for a JPA auto-generated CRUD repository managing Jobs.
+ *
  * @author Olivier Rousselot
  */
 public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
@@ -62,19 +63,22 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
 
     @Modifying
     @Query("update JobInfo j set j.lastHeartbeatDate = :heartbeatDate where j.id in :ids")
-    void updateHeartbeatDateForIdsIn(@Param("heartbeatDate") OffsetDateTime now, @Param("ids") Collection<UUID> collect);
+    void updateHeartbeatDateForIdsIn(@Param("heartbeatDate") OffsetDateTime now,
+                                     @Param("ids") Collection<UUID> collect);
 
     @Modifying
-    @Query("update JobInfo j set j.status.percentCompleted = :completion, j.status.estimatedCompletion = :estimationCompletionDate, "
+    @Query(
+        "update JobInfo j set j.status.percentCompleted = :completion, j.status.estimatedCompletion = :estimationCompletionDate, "
             + "j.lastCompletionUpdate = :updateCompletionDate where j.id = :id and j.status.status = 'RUNNING'")
     void updateCompletion(@Param("completion") int percentCompleted,
-                          @Param("estimationCompletionDate") OffsetDateTime estimatedCompletion, @Param("id") UUID id,
-                          @Param("updateCompletionDate") OffsetDateTime updateDate
-    );
+                          @Param("estimationCompletionDate") OffsetDateTime estimatedCompletion,
+                          @Param("id") UUID id,
+                          @Param("updateCompletionDate") OffsetDateTime updateDate);
 
     @Modifying
     @Query("update JobInfo jobInfo set jobInfo.expirationDate = :expirationDate where jobInfo.id in :jobInfoIds")
-    void updateExpirationDate(@Param("expirationDate") OffsetDateTime expirationDate, @Param("jobInfoIds") Set<UUID> jobInfoIds);
+    void updateExpirationDate(@Param("expirationDate") OffsetDateTime expirationDate,
+                              @Param("jobInfoIds") Set<UUID> jobInfoIds);
 
     /**
      * Count the number of jobs with provided statuses
@@ -86,8 +90,9 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
     /**
      * Search jobs expired at given date (only unlocked)
      */
-    List<JobInfo> findByExpirationDateLessThanAndLockedAndStatusStatusNotIn(OffsetDateTime expireDate, Boolean locked,
-            JobStatus... statuses);
+    List<JobInfo> findByExpirationDateLessThanAndLockedAndStatusStatusNotIn(OffsetDateTime expireDate,
+                                                                            Boolean locked,
+                                                                            JobStatus... statuses);
 
     /**
      * Search currently expired jobs
@@ -104,8 +109,9 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
      * Search jobs with given status at given date (only unlocked)
      */
     @EntityGraph(attributePaths = { "parameters" }, type = EntityGraph.EntityGraphType.LOAD)
-    List<JobInfo> findByStatusStopDateLessThanAndLockedAndStatusStatusIn(OffsetDateTime stopDate, Boolean locked,
-            JobStatus... statuses);
+    List<JobInfo> findByStatusStopDateLessThanAndLockedAndStatusStatusIn(OffsetDateTime stopDate,
+                                                                         Boolean locked,
+                                                                         JobStatus... statuses);
 
     /**
      * Search succeeded jobs since given number of days
@@ -157,22 +163,34 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
      * Find all jobInfo by owner with a specified status. Results are ordered by desc priority and limited thanks to
      * page
      */
-    List<JobInfo> findByOwnerAndStatusStatusAndClassNameOrderByPriorityDesc(String owner, JobStatus status, String className, Pageable page);
+    List<JobInfo> findByOwnerAndStatusStatusAndClassNameOrderByPriorityDesc(String owner,
+                                                                            JobStatus status,
+                                                                            String className,
+                                                                            Pageable page);
 
     /**
      * Find top priority user pending jobs
+     *
      * @param count number of results to retrieve
      */
     default List<JobInfo> findTopUserPendingJobs(String user, String className, int count) {
-        return findByOwnerAndStatusStatusAndClassNameOrderByPriorityDesc(user, JobStatus.PENDING, className, PageRequest.of(0, count));
+        return findByOwnerAndStatusStatusAndClassNameOrderByPriorityDesc(user,
+                                                                         JobStatus.PENDING,
+                                                                         className,
+                                                                         PageRequest.of(0, count));
     }
 
     /**
      * Find jobs with a trigger date expired
      */
-    List<JobInfo> findByStatusStatusAndTriggerAfterDateLessThan(JobStatus status, OffsetDateTime currentDateTime, Pageable page);
+    List<JobInfo> findByStatusStatusAndTriggerAfterDateLessThan(JobStatus status,
+                                                                OffsetDateTime currentDateTime,
+                                                                Pageable page);
 
-    Long countByClassNameAndParameters_NameAndParameters_ValueAndStatusStatusIn(String className, String parameterName, String parameterValue, JobStatus... jobStatuses);
+    Long countByClassNameAndParameters_NameAndParameters_ValueAndStatusStatusIn(String className,
+                                                                                String parameterName,
+                                                                                String parameterValue,
+                                                                                JobStatus... jobStatuses);
 
     Page<JobInfo> findByClassNameAndStatusStatusIn(String className, JobStatus[] statuses, Pageable page);
 

@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.dto;
 
 import fr.cnes.regards.modules.processing.domain.dto.PBatchRequest;
@@ -22,7 +22,8 @@ import fr.cnes.regards.modules.processing.testutils.AbstractMarshallingTest;
 
 public class PBatchRequestDTOTest extends AbstractMarshallingTest<PBatchRequest> {
 
-    @Override public Class<PBatchRequest> testedType() {
+    @Override
+    public Class<PBatchRequest> testedType() {
         return PBatchRequest.class;
     }
 }

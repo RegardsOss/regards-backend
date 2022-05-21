@@ -21,10 +21,9 @@ package fr.cnes.regards.framework.amqp.test.handler;
 import fr.cnes.regards.framework.amqp.test.event.GsonInfo;
 
 /**
- *
  * Event using GSON message converter
- * @author Marc SORDI
  *
+ * @author Marc SORDI
  */
 public class GsonInfoNoWrapperHandler extends AbstractNoWrapperReceiver<GsonInfo> {
 

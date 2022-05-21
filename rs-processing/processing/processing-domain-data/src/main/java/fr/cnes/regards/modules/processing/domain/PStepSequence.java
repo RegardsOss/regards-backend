@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain;
 
 import io.vavr.collection.List;
@@ -23,7 +23,7 @@ import lombok.Value;
 
 /**
  * This class represents a sequence of steps.
- *
+ * <p>
  * A step sequence is immutable.
  *
  * @author gandrieu

@@ -18,12 +18,12 @@
  */
 package fr.cnes.regards.modules.storage.domain.plugin;
 
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
+
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 
 /**
  * Plugin to handle ONLINE storage location. <br/>
@@ -36,6 +36,7 @@ public interface IOnlineStorageLocation extends IStorageLocation {
 
     /**
      * Do retrieve action for the given {@link StorageDataFile}
+     *
      * @param data StorageDataFile to retrieve
      * @throws ModuleException
      */

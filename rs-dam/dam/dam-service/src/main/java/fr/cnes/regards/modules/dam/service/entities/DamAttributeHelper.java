@@ -18,29 +18,26 @@
  */
 package fr.cnes.regards.modules.dam.service.entities;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.gson.AbstractAttributeHelper;
 import fr.cnes.regards.modules.model.service.IAttributeModelService;
 import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- *
  * Helper class to retrieve model attributes
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
 @Service
 public class DamAttributeHelper extends AbstractAttributeHelper {
@@ -60,7 +57,8 @@ public class DamAttributeHelper extends AbstractAttributeHelper {
     private final IModelAttrAssocService attributeModelAssocService;
 
     public DamAttributeHelper(IRuntimeTenantResolver runtimeTenantResolver,
-            IAttributeModelService attributeModelService, IModelAttrAssocService attributeModelAssocService) {
+                              IAttributeModelService attributeModelService,
+                              IModelAttrAssocService attributeModelAssocService) {
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.attributeModelService = attributeModelService;
         this.attributeModelAssocService = attributeModelAssocService;
@@ -73,7 +71,8 @@ public class DamAttributeHelper extends AbstractAttributeHelper {
         boolean forceIt = current == null;
         // Prevent inconsistent context
         if ((current != null) && !current.equals(pTenant)) {
-            String errorMessage = String.format("Inconsistent tenant context. Expected %s but already on %s", pTenant,
+            String errorMessage = String.format("Inconsistent tenant context. Expected %s but already on %s",
+                                                pTenant,
                                                 current);
             LOGGER.error(errorMessage);
             throw new IllegalArgumentException(errorMessage);
@@ -96,13 +95,16 @@ public class DamAttributeHelper extends AbstractAttributeHelper {
         Set<AttributeModel> commonAttributes = Sets.newHashSet();
         boolean first = true;
         for (String modelName : modelNames) {
-            Set<AttributeModel> modelAttributes = attributeModelAssocService.getModelAttrAssocs(modelName).stream()
-                    .map(f -> f.getAttribute()).collect(Collectors.toSet());
+            Set<AttributeModel> modelAttributes = attributeModelAssocService.getModelAttrAssocs(modelName)
+                                                                            .stream()
+                                                                            .map(f -> f.getAttribute())
+                                                                            .collect(Collectors.toSet());
             if (first) {
                 commonAttributes.addAll(modelAttributes);
             } else {
-                commonAttributes = commonAttributes.stream().filter(f -> modelAttributes.contains(f))
-                        .collect(Collectors.toSet());
+                commonAttributes = commonAttributes.stream()
+                                                   .filter(f -> modelAttributes.contains(f))
+                                                   .collect(Collectors.toSet());
             }
             first = false;
         }

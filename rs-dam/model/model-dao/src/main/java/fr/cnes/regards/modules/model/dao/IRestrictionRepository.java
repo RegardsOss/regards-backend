@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.modules.model.dao;
 
+import fr.cnes.regards.modules.model.domain.attributes.restriction.AbstractRestriction;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
-
-import fr.cnes.regards.modules.model.domain.attributes.restriction.AbstractRestriction;
 
 /**
  * {@link AbstractRestriction} repository
  *
  * @author Marc Sordi
- *
  */
 @Repository
 public interface IRestrictionRepository extends CrudRepository<AbstractRestriction, Long> {
+
 }

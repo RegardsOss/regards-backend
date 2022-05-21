@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.config;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -55,8 +55,14 @@ public class ProcessingPgSqlConfiguration {
 
     @Bean
     public PgSqlProperties r2dbcPgSqlConfig() {
-        return new PgSqlProperties(r2dbcHost, r2dbcPort, r2dbcDbname, r2dbcSchema, r2dbcUsername, r2dbcPassword,
-                poolMinSize, poolMaxSize);
+        return new PgSqlProperties(r2dbcHost,
+                                   r2dbcPort,
+                                   r2dbcDbname,
+                                   r2dbcSchema,
+                                   r2dbcUsername,
+                                   r2dbcPassword,
+                                   poolMinSize,
+                                   poolMaxSize);
     }
 
 }

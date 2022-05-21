@@ -18,16 +18,14 @@
  */
 package fr.cnes.regards.framework.amqp.event;
 
-import java.time.OffsetDateTime;
-import java.util.UUID;
-
-import javax.validation.constraints.NotNull;
-
-import org.springframework.amqp.core.MessageProperties;
-
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
+import org.springframework.amqp.core.MessageProperties;
+
+import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 
 /**
  * Message headers

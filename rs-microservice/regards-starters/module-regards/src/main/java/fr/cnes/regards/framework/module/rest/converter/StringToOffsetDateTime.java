@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.framework.module.rest.converter;
 
-import java.time.OffsetDateTime;
-
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import java.time.OffsetDateTime;
 
 /**
  * Converter String =====> {@link OffsetDateTime}
+ *
  * @author Kevin Marchois
  */
 @Component

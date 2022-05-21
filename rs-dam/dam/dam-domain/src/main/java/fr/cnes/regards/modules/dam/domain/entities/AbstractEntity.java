@@ -53,6 +53,7 @@ import java.util.Set;
 
 /**
  * Base entity feature decorator
+ *
  * @param <F> represents the decorated entity feature
  * @author Léo Mieulet
  * @author Sylvain Vissiere-Guerinet
@@ -61,9 +62,9 @@ import java.util.Set;
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @Entity
 @Table(name = "t_entity", indexes = { @Index(name = "idx_entity_ipId", columnList = "ipId") },
-        uniqueConstraints = @UniqueConstraint(name = "uk_entity_ipId", columnNames = { "ipId" }))
+    uniqueConstraints = @UniqueConstraint(name = "uk_entity_ipId", columnNames = { "ipId" }))
 @NamedEntityGraph(name = "graph.full.abstract.entity",
-        attributeNodes = { @NamedAttributeNode(value = "tags"), @NamedAttributeNode(value = "groups") })
+    attributeNodes = { @NamedAttributeNode(value = "tags"), @NamedAttributeNode(value = "groups") })
 @DiscriminatorColumn(name = "dtype", length = 10)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public abstract class AbstractEntity<F extends EntityFeature> implements IIndexable, IDocFiles, ILocalizable {
@@ -108,7 +109,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
     @NotNull(message = "The Model must not be null")
     @ManyToOne
     @JoinColumn(name = "model_id", foreignKey = @ForeignKey(name = "fk_entity_model_id"), nullable = false,
-            updatable = false)
+        updatable = false)
     protected Model model;
 
     /**
@@ -117,7 +118,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
      */
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "t_entity_tag", joinColumns = @JoinColumn(name = "entity_id"),
-            foreignKey = @ForeignKey(name = "fk_entity_tag_entity_id"))
+        foreignKey = @ForeignKey(name = "fk_entity_tag_entity_id"))
     @Column(name = "value", length = 200)
     protected Set<String> tags = new HashSet<>();
 
@@ -128,7 +129,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
      */
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "t_entity_group", joinColumns = @JoinColumn(name = "entity_id"),
-            foreignKey = @ForeignKey(name = "fk_entity_group_entity_id"))
+        foreignKey = @ForeignKey(name = "fk_entity_group_entity_id"))
     @Column(name = "name", length = 200)
     protected Set<String> groups = new HashSet<>();
 
@@ -210,6 +211,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
 
     /**
      * Set the feature id
+     *
      * @param ipId
      */
     public void setIpId(UniformResourceName ipId) {
@@ -221,6 +223,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
     /**
      * Get an immutable copy of tags. To modify tag, use {@link #setTags(Set)} or {@link #addTags(String...)} or
      * {@link #removeTags(Collection)}
+     *
      * @return tags
      */
     public ImmutableSet<String> getTags() {
@@ -262,6 +265,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
     /**
      * Get an immutable copy of feature properties.
      * If this set should be modified, please use addProperty or removeProperty
+     *
      * @return {@link AbstractProperty}s
      */
     public ImmutableSet<IProperty<?>> getProperties() {
@@ -270,6 +274,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
 
     /**
      * Get a mutable copy of property paths.
+     *
      * @return properties path
      */
     public Set<String> getMutableCopyOfPropertiesPaths() {
@@ -279,7 +284,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
             if (prop instanceof ObjectProperty) {
                 String fragmentName = prop.getName();
                 ((ObjectProperty) prop).getValue()
-                        .forEach(fProp -> propertiesPaths.add(fragmentName + "." + fProp.getName()));
+                                       .forEach(fProp -> propertiesPaths.add(fragmentName + "." + fProp.getName()));
             } else {
                 propertiesPaths.add(prop.getName());
 
@@ -290,6 +295,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
 
     /**
      * Add feature property
+     *
      * @param property {@link AbstractProperty}
      */
     public void addProperty(IProperty<?> property) {
@@ -306,6 +312,7 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
 
     /**
      * Set the properties
+     *
      * @param attributes
      */
     public void setProperties(Set<IProperty<?>> attributes) {
@@ -408,8 +415,8 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
     @Override
     public String toString() {
         return "AbstractEntity [lastUpdate=" + lastUpdate + ", creationDate=" + creationDate + ", id=" + id + ", ipId="
-                + getIpId() + ", providerId=" + getProviderId() + ", label=" + getLabel() + ", attributes="
-                + getProperties() + ", model=" + model + "]";
+            + getIpId() + ", providerId=" + getProviderId() + ", label=" + getLabel() + ", attributes="
+            + getProperties() + ", model=" + model + "]";
     }
 
     public F getFeature() {

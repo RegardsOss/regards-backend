@@ -18,10 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-
+import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,14 +27,14 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * JPA Repository to handle access to {@link FileDeletionRequest} entities.
  *
  * @author Sébatien Binda
- *
  */
 public interface IFileDeletetionRequestRepository extends JpaRepository<FileDeletionRequest, Long> {
 
@@ -56,12 +54,16 @@ public interface IFileDeletetionRequestRepository extends JpaRepository<FileDele
     Page<FileDeletionRequest> findByStatus(FileRequestStatus status, Pageable page);
 
     Page<FileDeletionRequest> findByStatusAndSessionOwnerAndSession(FileRequestStatus status,
-            String sessionOwner, String session, Pageable page);
+                                                                    String sessionOwner,
+                                                                    String session,
+                                                                    Pageable page);
 
     Page<FileDeletionRequest> findByStorageAndStatus(String storage, FileRequestStatus status, Pageable page);
 
-    Page<FileDeletionRequest> findByStorageAndStatusAndIdGreaterThan(String storage, FileRequestStatus status,
-            Long maxId, Pageable page);
+    Page<FileDeletionRequest> findByStorageAndStatusAndIdGreaterThan(String storage,
+                                                                     FileRequestStatus status,
+                                                                     Long maxId,
+                                                                     Pageable page);
 
     boolean existsByGroupId(String groupId);
 
@@ -79,18 +81,21 @@ public interface IFileDeletetionRequestRepository extends JpaRepository<FileDele
 
     @Modifying
     @Query("update FileDeletionRequest fcr set fcr.status = :status, fcr.errorCause = :errorCause where fcr.id = :id")
-    int updateError(@Param("status") FileRequestStatus status, @Param("errorCause") String errorCause,
-            @Param("id") Long id);
+    int updateError(@Param("status") FileRequestStatus status,
+                    @Param("errorCause") String errorCause,
+                    @Param("id") Long id);
 
     @Modifying
     @Query("update FileDeletionRequest fdr set fdr.status = :status, fdr.jobId = :jobId where fdr.id = :id")
-    int updateStatusAndJobId(@Param("status") FileRequestStatus pending, @Param("jobId") String jobId,
-            @Param("id") Long id);
+    int updateStatusAndJobId(@Param("status") FileRequestStatus pending,
+                             @Param("jobId") String jobId,
+                             @Param("id") Long id);
 
     boolean existsByStorageAndStatusIn(String storage, Collection<FileRequestStatus> status);
 
-    boolean existsByStorageAndFileReferenceMetaInfoChecksumAndStatusIn(String storage, String checksum,
-            Set<FileRequestStatus> ruuninstatus);
+    boolean existsByStorageAndFileReferenceMetaInfoChecksumAndStatusIn(String storage,
+                                                                       String checksum,
+                                                                       Set<FileRequestStatus> ruuninstatus);
 
     boolean existsByFileReferenceMetaInfoChecksumAndStatusIn(String checksum, Set<FileRequestStatus> ruuninstatus);
 

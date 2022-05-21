@@ -18,21 +18,18 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
-import java.util.Set;
-
-import javax.persistence.criteria.Predicate;
-
-import org.springframework.data.jpa.domain.Specification;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
+import org.springframework.data.jpa.domain.Specification;
+
+import javax.persistence.criteria.Predicate;
+import java.util.Set;
 
 /**
  * Specification class to filter DAO searches on {@link AcquisitionProcessingChain} entities.
- * @author Sébastien Binda
  *
+ * @author Sébastien Binda
  */
 public final class AcquisitionProcessingChainSpecifications {
 
@@ -44,12 +41,14 @@ public final class AcquisitionProcessingChainSpecifications {
     /**
      * Filter on the given attributes (sessionId, owner, ingestDate and state) and return result ordered by descending
      * ingestDate
-     * @param label {@link String}
+     *
+     * @param label  {@link String}
      * @param locked {@link Boolean}
-     * @param mode {@link AcquisitionProcessingChainMode}
+     * @param mode   {@link AcquisitionProcessingChainMode}
      */
-    public static Specification<AcquisitionProcessingChain> search(String label, Boolean locked,
-            AcquisitionProcessingChainMode mode) {
+    public static Specification<AcquisitionProcessingChain> search(String label,
+                                                                   Boolean locked,
+                                                                   AcquisitionProcessingChainMode mode) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if (label != null) {

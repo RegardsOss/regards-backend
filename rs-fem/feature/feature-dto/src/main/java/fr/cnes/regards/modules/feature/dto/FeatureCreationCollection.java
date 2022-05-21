@@ -18,18 +18,16 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
-import java.util.Collection;
+import fr.cnes.regards.framework.geojson.AbstractFeatureCollection;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
-
-import fr.cnes.regards.framework.geojson.AbstractFeatureCollection;
+import java.util.Collection;
 
 /**
  * Feature collection representation based on GeoJson standard structure.
  *
  * @author Kevin Marchois
- *
  */
 public class FeatureCreationCollection extends AbstractFeatureCollection<Feature> {
 
@@ -41,12 +39,14 @@ public class FeatureCreationCollection extends AbstractFeatureCollection<Feature
 
     /**
      * Create a new {@link FeatureCreationCollection} <br/>
+     *
      * @param metadata {@link FeatureCreationSessionMetadata}
      * @param features collection of {@link Feature}
      * @return a {@link FeatureCreationCollection}
      */
-    public static FeatureCreationCollection build(String requestOwner, FeatureCreationSessionMetadata metadata,
-            Collection<Feature> features) {
+    public static FeatureCreationCollection build(String requestOwner,
+                                                  FeatureCreationSessionMetadata metadata,
+                                                  Collection<Feature> features) {
         FeatureCreationCollection collection = new FeatureCreationCollection();
         collection.setMetadata(metadata);
         collection.addAll(features);

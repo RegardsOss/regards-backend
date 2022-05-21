@@ -73,6 +73,7 @@ import static org.mockito.ArgumentMatchers.any;
 
 /**
  * Test class for {@link EmailService}.
+ *
  * @author Xavier-Alexandre Brochard
  */
 @RunWith(SpringRunner.class)
@@ -88,7 +89,9 @@ public class EmailServiceIT {
     private IEmailRepository emailRepository;
 
     private static final LocalDateTime SEND_DATE = LocalDateTime.now().minusMinutes(5);
+
     private static final String TO = "xavier-alexandre.brochard@c-s.fr";
+
     private static final String SUBJECT = "subject";
 
     /**
@@ -138,6 +141,7 @@ public class EmailServiceIT {
 
     /**
      * Check that the system allows to send an email to a list of recipients.
+     *
      * @throws MessagingException Exception thrown by getters of {@link MimeMessage}
      */
     @Test
@@ -242,13 +246,14 @@ public class EmailServiceIT {
 
     /**
      * Check that the system allows to re-send an email.
+     *
      * @throws MessagingException Exception thrown by getters of {@link MimeMessage}
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_440")
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system allows to re-send an email and check that the system allows to retrieve the list "
-            + "of sent emails..")
+        + "of sent emails..")
     public void resendEmail() throws MessagingException, ModuleException {
         // Create dummy email with random subject and content and add a recipient
         final String[] recipients = new String[] { "recipient@test.com" };
@@ -285,8 +290,12 @@ public class EmailServiceIT {
 
         JavaMailSenderImpl mailSender = Mockito.mock(JavaMailSenderImpl.class);
         String rootCauseMessage = "User Unknown";
-        SMTPAddressFailedException smtpAddressFailedException = new SMTPAddressFailedException(new InternetAddress(), "cmd", 550, rootCauseMessage);
-        SendFailedException sendFailedException = new SendFailedException("Invalid Adresses", smtpAddressFailedException);
+        SMTPAddressFailedException smtpAddressFailedException = new SMTPAddressFailedException(new InternetAddress(),
+                                                                                               "cmd",
+                                                                                               550,
+                                                                                               rootCauseMessage);
+        SendFailedException sendFailedException = new SendFailedException("Invalid Adresses",
+                                                                          smtpAddressFailedException);
         MailSendException mailSendException = new MailSendException("Could not Send mail", sendFailedException);
         Mockito.doThrow(mailSendException).when(mailSender).send(any(MimeMessage.class));
         Mockito.when(mailSender.createMimeMessage()).thenCallRealMethod();
@@ -300,7 +309,8 @@ public class EmailServiceIT {
         Assertions.assertThat(logCaptor.getErrorLogs()).isEmpty();
         Assertions.assertThat(logCaptor.getWarnLogs()).hasSize(1);
         String warningMessage = logCaptor.getWarnLogs().get(0);
-        Assertions.assertThat(warningMessage).contains(TO, SUBJECT, rootCauseMessage, smtpAddressFailedException.getClass().getSimpleName());
+        Assertions.assertThat(warningMessage)
+                  .contains(TO, SUBJECT, rootCauseMessage, smtpAddressFailedException.getClass().getSimpleName());
     }
 
     /**
@@ -321,51 +331,61 @@ public class EmailServiceIT {
     /**
      * Check that the passed {@link SimpleMailMessage} has same subject, body and recipients as the passed
      * {@link MimeMessage}. We then consider them equal.
+     *
      * @param expected The expected email as {@code Email}
-     * @param result The compared email as {@code MimeMessage}
+     * @param result   The compared email as {@code MimeMessage}
      * @throws MessagingException Exception thrown by getters of {@link MimeMessage}
      */
     private void checkEmailVsMimeMessage(final Email expected, final MimeMessage result) throws MessagingException {
         // Check subject
-        assertThat("Expected and actual subjects are different", expected.getSubject(),
+        assertThat("Expected and actual subjects are different",
+                   expected.getSubject(),
                    is(equalTo(result.getSubject())));
         // Check mail body
-        assertThat("Expected and actual bodies are different", expected.getText(),
+        assertThat("Expected and actual bodies are different",
+                   expected.getText(),
                    is(equalTo(GreenMailUtil.getBody(result))));
         // Check mail sender address
-        assertThat("Expected and actual From are different", expected.getFrom(),
+        assertThat("Expected and actual From are different",
+                   expected.getFrom(),
                    is(equalTo(result.getFrom()[0].toString())));
         // Check mail recipients
         final List<String> expectedRecipients = Arrays.asList(expected.getTo());
         final List<Address> resultAddresses = Arrays.asList(result.getRecipients(RecipientType.TO));
-        final List<String> resultRecipients = resultAddresses.stream().map(Address::toString)
-                .collect(Collectors.toList());
+        final List<String> resultRecipients = resultAddresses.stream()
+                                                             .map(Address::toString)
+                                                             .collect(Collectors.toList());
         assertThat(expectedRecipients, is(equalTo(resultRecipients)));
     }
 
     /**
      * Check that the passed {@link SimpleMailMessage} has same subject, body and recipients as the passed
      * {@link MimeMessage}. We then consider them equal.
+     *
      * @param expected The expected email as {@code Email}
-     * @param result The compared email as {@code MimeMessage}
+     * @param result   The compared email as {@code MimeMessage}
      * @throws MessagingException Exception thrown by getters of {@link MimeMessage}
      */
     private void checkSMMVsMimeMessage(final SimpleMailMessage expected, final MimeMessage result)
-            throws MessagingException {
+        throws MessagingException {
         // Check subject
-        assertThat("Expected and actual subjects are different", expected.getSubject(),
+        assertThat("Expected and actual subjects are different",
+                   expected.getSubject(),
                    is(equalTo(result.getSubject())));
         // Check mail body
-        assertThat("Expected and actual bodies are different", expected.getText(),
+        assertThat("Expected and actual bodies are different",
+                   expected.getText(),
                    is(equalTo(GreenMailUtil.getBody(result))));
         // Check mail sender address
-        assertThat("Expected and actual From are different", expected.getFrom(),
+        assertThat("Expected and actual From are different",
+                   expected.getFrom(),
                    is(equalTo(result.getFrom()[0].toString())));
         // Check mail recipients
         final List<String> expectedRecipients = Arrays.asList(expected.getTo());
         final List<Address> resultAddresses = Arrays.asList(result.getRecipients(RecipientType.TO));
-        final List<String> resultRecipients = resultAddresses.stream().map(Address::toString)
-                .collect(Collectors.toList());
+        final List<String> resultRecipients = resultAddresses.stream()
+                                                             .map(Address::toString)
+                                                             .collect(Collectors.toList());
         assertThat(expectedRecipients, is(equalTo(resultRecipients)));
     }
 

@@ -64,11 +64,12 @@ import static fr.cnes.regards.modules.ingest.service.TestData.*;
 
 /**
  * Test for {@link AIPNotificationService}
+ *
  * @author Iliana Ghazali
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_notification_service_it",
-        "regards.amqp.enabled=true", "eureka.client.enabled=false", "regards.ingest.aip.delete.bulk.delay=100" },
-        locations = { "classpath:application-test.properties" })
+    "regards.amqp.enabled=true", "eureka.client.enabled=false", "regards.ingest.aip.delete.bulk.delay=100" },
+    locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
 
@@ -123,18 +124,20 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
 
         // --------------------------------- UPDATE REQUESTS -----------------------------------
         // Update all aips
-        aipService.registerUpdatesCreator(AIPUpdateParametersDto
-                                                  .build(SearchAIPsParameters.build().withSession(SESSION),
-                                                         Lists.newArrayList("ADDED_TAG"), Lists.newArrayList(),
-                                                         Lists.newArrayList(), Lists.newArrayList(),
-                                                         Lists.newArrayList()));
+        aipService.registerUpdatesCreator(AIPUpdateParametersDto.build(SearchAIPsParameters.build()
+                                                                                           .withSession(SESSION),
+                                                                       Lists.newArrayList("ADDED_TAG"),
+                                                                       Lists.newArrayList(),
+                                                                       Lists.newArrayList(),
+                                                                       Lists.newArrayList(),
+                                                                       Lists.newArrayList()));
         ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
         testRequestsSuccess(nbSIP);
 
         // --------------------------------- DELETION REQUESTS ---------------------------------
         // Delete all aips
-        oaisDeletionService.registerOAISDeletionCreator(
-                OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE).withSession(SESSION));
+        oaisDeletionService.registerOAISDeletionCreator(OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE)
+                                                                              .withSession(SESSION));
         ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
         assertDeletedAIPs(nbSIP);
         testRequestsSuccess(nbSIP);
@@ -153,38 +156,40 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
         // Simulate notification errors
         testRequestsError(nbSIP);
         // Retry requests
-        requestService
-                .scheduleRequestRetryJob(SearchRequestsParameters.build().withRequestType(RequestTypeEnum.INGEST));
+        requestService.scheduleRequestRetryJob(SearchRequestsParameters.build()
+                                                                       .withRequestType(RequestTypeEnum.INGEST));
         ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
         testRequestsSuccess(nbSIP);
 
         // --------------------------------- UPDATE REQUESTS -----------------------------------
         // Create aip update requests
-        aipService.registerUpdatesCreator(AIPUpdateParametersDto
-                                                  .build(SearchAIPsParameters.build().withSession(SESSION),
-                                                         Lists.newArrayList("ADDED_TAG"), Lists.newArrayList(),
-                                                         Lists.newArrayList(), Lists.newArrayList(),
-                                                         Lists.newArrayList()));
+        aipService.registerUpdatesCreator(AIPUpdateParametersDto.build(SearchAIPsParameters.build()
+                                                                                           .withSession(SESSION),
+                                                                       Lists.newArrayList("ADDED_TAG"),
+                                                                       Lists.newArrayList(),
+                                                                       Lists.newArrayList(),
+                                                                       Lists.newArrayList(),
+                                                                       Lists.newArrayList()));
         ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
         // Simulate notification errors
         testRequestsError(nbSIP);
         // Retry requests
-        requestService
-                .scheduleRequestRetryJob(SearchRequestsParameters.build().withRequestType(RequestTypeEnum.UPDATE));
+        requestService.scheduleRequestRetryJob(SearchRequestsParameters.build()
+                                                                       .withRequestType(RequestTypeEnum.UPDATE));
         ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
         testRequestsSuccess(nbSIP);
 
         // --------------------------------- DELETION REQUESTS ---------------------------------
         // Create aip deletion requests
-        oaisDeletionService.registerOAISDeletionCreator(
-                OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE).withSession(SESSION));
+        oaisDeletionService.registerOAISDeletionCreator(OAISDeletionPayloadDto.build(SessionDeletionMode.BY_STATE)
+                                                                              .withSession(SESSION));
         ingestServiceTest.waitDuring(FIVE_SECONDS * nbSIP);
         assertDeletedAIPs(nbSIP);
         // Simulate notification errors
         testRequestsError(nbSIP);
         // Retry requests
-        requestService.scheduleRequestRetryJob(
-                SearchRequestsParameters.build().withRequestType(RequestTypeEnum.OAIS_DELETION));
+        requestService.scheduleRequestRetryJob(SearchRequestsParameters.build()
+                                                                       .withRequestType(RequestTypeEnum.OAIS_DELETION));
         ingestServiceTest.waitDuring(THREE_SECONDS * nbSIP);
         testRequestsSuccess(nbSIP);
     }
@@ -200,19 +205,23 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
         storageClient.setBehavior(true, true);
         for (int i = 0; i < nbSIP; i++) {
             // create aips
-            publishSIPEvent(create(UUID.randomUUID().toString(), getRandomTags()), getRandomStorage().get(0), SESSION,
-                            getRandomSessionOwner(), getRandomCategories());
+            publishSIPEvent(create(UUID.randomUUID().toString(), getRandomTags()),
+                            getRandomStorage().get(0),
+                            SESSION,
+                            getRandomSessionOwner(),
+                            getRandomCategories());
         }
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
     }
 
     /**
-     *  Verify and simulate notification success
+     * Verify and simulate notification success
      */
     private void testRequestsSuccess(int nbRequestsExpected) {
         // test requests are not deleted and ready to be notified
         List<AbstractRequest> abstractRequests = abstractRequestRepository.findAll();
-        Assert.assertEquals("The number of requests created is not expected", nbRequestsExpected,
+        Assert.assertEquals("The number of requests created is not expected",
+                            nbRequestsExpected,
                             abstractRequests.size());
         checkNotificationStateAndStep(abstractRequests, "notify");
 
@@ -225,19 +234,21 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
     }
 
     /**
-     *  Verify and simulate notification error
+     * Verify and simulate notification error
      */
     private void testRequestsError(int nbRequestsExpected) {
         // test requests are not deleted and ready to be notified
         List<AbstractRequest> abstractRequests = abstractRequestRepository.findAll();
-        Assert.assertEquals("The number of requests created is not expected", nbRequestsExpected,
+        Assert.assertEquals("The number of requests created is not expected",
+                            nbRequestsExpected,
                             abstractRequests.size());
         checkNotificationStateAndStep(abstractRequests, "notify");
 
         // simulate notifications are in error
         notificationService.handleNotificationError(Sets.newHashSet(abstractRequests));
         // all requests should be present with error state and step
-        Assert.assertEquals("All requests should have been kept", nbRequestsExpected,
+        Assert.assertEquals("All requests should have been kept",
+                            nbRequestsExpected,
                             abstractRequestRepository.count());
         checkNotificationStateAndStep(abstractRequests, "notify_error");
     }

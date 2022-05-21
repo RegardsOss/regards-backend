@@ -40,12 +40,6 @@ import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import fr.cnes.regards.modules.storage.service.file.request.FileReferenceRequestService;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,15 +52,17 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MimeType;
 
+import java.nio.file.Paths;
+import java.util.*;
+
 /**
  * Test class
  *
  * @author Sébastien Binda
- *
  */
 @ActiveProfiles("noscheduler")
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests"},
-        locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests" },
+    locations = { "classpath:application-test.properties" })
 public class StorageLocationServiceIT extends AbstractStorageIT {
 
     @Autowired
@@ -99,12 +95,19 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
 
     private FileReference createFileReference(String storage, Long fileSize) {
         String checksum = UUID.randomUUID().toString();
-        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", "file.test", fileSize,
-                MediaType.APPLICATION_OCTET_STREAM);
+        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum,
+                                                                       "MD5",
+                                                                       "file.test",
+                                                                       fileSize,
+                                                                       MediaType.APPLICATION_OCTET_STREAM);
         FileLocation location = new FileLocation(storage, "anywhere://in/this/directory/" + checksum);
         try {
-            return fileRefService.reference("someone", fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString())
-                    ,"defaultSessionOwner", "defaultSession");
+            return fileRefService.reference("someone",
+                                            fileMetaInfo,
+                                            location,
+                                            Sets.newHashSet(UUID.randomUUID().toString()),
+                                            "defaultSessionOwner",
+                                            "defaultSession");
         } catch (ModuleException e) {
             Assert.fail(e.getMessage());
             return null;
@@ -129,18 +132,28 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
         storageLocationService.monitorStorageLocations(false);
         Assert.assertTrue("There should be file referenced for STAF storage",
                           storageLocationService.search(storage).isPresent());
-        Assert.assertEquals("Total size on STAF storage is invalid", totalSize.longValue(), storageLocationService
-                .search(storage).get().getTotalSizeOfReferencedFilesInKo().longValue());
-        Assert.assertEquals("Total number of files on STAF storage is invalid", 4L,
+        Assert.assertEquals("Total size on STAF storage is invalid",
+                            totalSize.longValue(),
+                            storageLocationService.search(storage)
+                                                  .get()
+                                                  .getTotalSizeOfReferencedFilesInKo()
+                                                  .longValue());
+        Assert.assertEquals("Total number of files on STAF storage is invalid",
+                            4L,
                             storageLocationService.search(storage).get().getNumberOfReferencedFiles().longValue());
         createFileReference(storage, 3 * 1024L);
         totalSize += 3;
         storageLocationService.monitorStorageLocations(false);
         Assert.assertTrue("There should be file referenced for STAF storage",
                           storageLocationService.search(storage).isPresent());
-        Assert.assertEquals("Total size on STAF storage is invalid", totalSize.longValue(), storageLocationService
-                .search(storage).get().getTotalSizeOfReferencedFilesInKo().longValue());
-        Assert.assertEquals("Total number of files on STAF storage invalid", 5L,
+        Assert.assertEquals("Total size on STAF storage is invalid",
+                            totalSize.longValue(),
+                            storageLocationService.search(storage)
+                                                  .get()
+                                                  .getTotalSizeOfReferencedFilesInKo()
+                                                  .longValue());
+        Assert.assertEquals("Total number of files on STAF storage invalid",
+                            5L,
                             storageLocationService.search(storage).get().getNumberOfReferencedFiles().longValue());
     }
 
@@ -174,44 +187,52 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
         Set<StorageLocationDTO> locs = storageLocationService.getAllLocations();
         Assert.assertNotNull("Locations should be retrieved", locs);
         Assert.assertEquals("There should be 6 locations", 6, locs.size());
-        Assert.assertEquals("Location one is missing", 1L,
+        Assert.assertEquals("Location one is missing",
+                            1L,
                             locs.stream().filter(l -> l.getName().equals(storage)).count());
         locs.stream().filter(l -> l.getName().equals(storage)).forEach(loc -> {
             Assert.assertNotNull("Configuration should be set for the location", loc.getConfiguration());
-            Assert.assertEquals("Location should be offline", loc.getConfiguration().getStorageType(),
+            Assert.assertEquals("Location should be offline",
+                                loc.getConfiguration().getStorageType(),
                                 StorageType.OFFLINE);
             Assert.assertEquals("There should be 2 files referenced", 2L, loc.getNbFilesStored().longValue());
             Assert.assertEquals("The total size should be 4ko", 4L, loc.getTotalStoredFilesSizeKo().longValue());
             Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError().longValue());
             Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError().longValue());
         });
-        Assert.assertEquals("Location two is missing", 1L,
+        Assert.assertEquals("Location two is missing",
+                            1L,
                             locs.stream().filter(l -> l.getName().equals(storage2)).count());
         locs.stream().filter(l -> l.getName().equals(storage2)).forEach(loc -> {
             Assert.assertNotNull("Configuration should be set for the location", loc.getConfiguration());
-            Assert.assertEquals("Location should be offline", loc.getConfiguration().getStorageType(),
+            Assert.assertEquals("Location should be offline",
+                                loc.getConfiguration().getStorageType(),
                                 StorageType.OFFLINE);
             Assert.assertEquals("There should be 5 files referenced", 5L, loc.getNbFilesStored().longValue());
             Assert.assertEquals("The total size should be 20ko", 20L, loc.getTotalStoredFilesSizeKo().longValue());
             Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError().longValue());
             Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError().longValue());
         });
-        Assert.assertEquals("Location three is missing", 1L,
+        Assert.assertEquals("Location three is missing",
+                            1L,
                             locs.stream().filter(l -> l.getName().equals(ONLINE_CONF_LABEL)).count());
         locs.stream().filter(l -> l.getName().equals(ONLINE_CONF_LABEL)).forEach(loc -> {
             Assert.assertNotNull("A configuration should be set for the location", loc.getConfiguration());
-            Assert.assertEquals("Location should be offline", loc.getConfiguration().getStorageType(),
+            Assert.assertEquals("Location should be offline",
+                                loc.getConfiguration().getStorageType(),
                                 StorageType.ONLINE);
             Assert.assertEquals("There should be 0 files referenced", 0L, loc.getNbFilesStored().longValue());
             Assert.assertEquals("The total size should be 20ko", 0L, loc.getTotalStoredFilesSizeKo().longValue());
             Assert.assertEquals("There should be no storage error", 0L, loc.getNbStorageError().longValue());
             Assert.assertEquals("There should be no deletion error", 0L, loc.getNbDeletionError().longValue());
         });
-        Assert.assertEquals("Location four is missing", 1L,
+        Assert.assertEquals("Location four is missing",
+                            1L,
                             locs.stream().filter(l -> l.getName().equals(NEARLINE_CONF_LABEL)).count());
         locs.stream().filter(l -> l.getName().equals(NEARLINE_CONF_LABEL)).forEach(loc -> {
             Assert.assertNotNull("A configuration should be set for the location", loc.getConfiguration());
-            Assert.assertEquals("Location should be offline", loc.getConfiguration().getStorageType(),
+            Assert.assertEquals("Location should be offline",
+                                loc.getConfiguration().getStorageType(),
                                 StorageType.NEARLINE);
             Assert.assertEquals("There should be 0 files referenced", 0L, loc.getNbFilesStored().longValue());
             Assert.assertEquals("The total size should be 20ko", 0L, loc.getTotalStoredFilesSizeKo().longValue());
@@ -281,28 +302,44 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
         // assert all requests states have changed
         // deletion requests
         List<FileDeletionRequest> updatedDeletionRequests = this.fileDeletionRequestRepo.findAll();
-        updatedDeletionRequests.forEach(req -> Assert
-                .assertEquals("Request state should have been updated for retry", FileRequestStatus.TO_DO,
-                              req.getStatus()));
+        updatedDeletionRequests.forEach(req -> Assert.assertEquals("Request state should have been updated for retry",
+                                                                   FileRequestStatus.TO_DO,
+                                                                   req.getStatus()));
         // storage requests
         List<FileStorageRequest> updatedStorageRequests = this.fileStorageRequestRepo.findAll();
-        updatedStorageRequests.forEach(req -> Assert
-                .assertEquals("Request state should have been updated for retry", FileRequestStatus.TO_DO,
-                              req.getStatus()));
+        updatedStorageRequests.forEach(req -> Assert.assertEquals("Request state should have been updated for retry",
+                                                                  FileRequestStatus.TO_DO,
+                                                                  req.getStatus()));
 
         // Simulate events and check if they are correctly sent
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(this.publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         List<StepPropertyUpdateRequestEvent> stepEventList = getStepPropertyEvents(argumentCaptor.getAllValues());
         Assert.assertEquals("Unexpected number of StepPropertyUpdateRequestEvents", 4, stepEventList.size());
-        checkStepEvent(stepEventList.get(0), SessionNotifierPropertyEnum.REQUESTS_ERRORS, StepPropertyEventTypeEnum.DEC,
-                       sessionOwner1, session1, String.valueOf(nbDeletionReq));
-        checkStepEvent(stepEventList.get(1), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC, sessionOwner1, session1, String.valueOf(nbDeletionReq));
-        checkStepEvent(stepEventList.get(2), SessionNotifierPropertyEnum.REQUESTS_ERRORS, StepPropertyEventTypeEnum.DEC,
-                       sessionOwner1, session1, String.valueOf(nbStorageReq));
-        checkStepEvent(stepEventList.get(3), SessionNotifierPropertyEnum.REQUESTS_RUNNING,
-                       StepPropertyEventTypeEnum.INC, sessionOwner1, session1, String.valueOf(nbStorageReq));
+        checkStepEvent(stepEventList.get(0),
+                       SessionNotifierPropertyEnum.REQUESTS_ERRORS,
+                       StepPropertyEventTypeEnum.DEC,
+                       sessionOwner1,
+                       session1,
+                       String.valueOf(nbDeletionReq));
+        checkStepEvent(stepEventList.get(1),
+                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.INC,
+                       sessionOwner1,
+                       session1,
+                       String.valueOf(nbDeletionReq));
+        checkStepEvent(stepEventList.get(2),
+                       SessionNotifierPropertyEnum.REQUESTS_ERRORS,
+                       StepPropertyEventTypeEnum.DEC,
+                       sessionOwner1,
+                       session1,
+                       String.valueOf(nbStorageReq));
+        checkStepEvent(stepEventList.get(3),
+                       SessionNotifierPropertyEnum.REQUESTS_RUNNING,
+                       StepPropertyEventTypeEnum.INC,
+                       sessionOwner1,
+                       session1,
+                       String.valueOf(nbStorageReq));
     }
 
     @Test
@@ -326,14 +363,14 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
         // assert all requests states are not changed
         // deletion requests
         List<FileDeletionRequest> updatedDeletionRequests = this.fileDeletionRequestRepo.findAll();
-        updatedDeletionRequests.forEach(req -> Assert
-                .assertEquals("Request state should be in the same state", FileRequestStatus.DELAYED,
-                              req.getStatus()));
+        updatedDeletionRequests.forEach(req -> Assert.assertEquals("Request state should be in the same state",
+                                                                   FileRequestStatus.DELAYED,
+                                                                   req.getStatus()));
         // storage requests
         List<FileStorageRequest> updatedStorageRequests = this.fileStorageRequestRepo.findAll();
-        updatedStorageRequests.forEach(req -> Assert
-                .assertEquals("Request state should be in the same state", FileRequestStatus.PENDING,
-                              req.getStatus()));
+        updatedStorageRequests.forEach(req -> Assert.assertEquals("Request state should be in the same state",
+                                                                  FileRequestStatus.PENDING,
+                                                                  req.getStatus()));
 
         // Simulate events and check if they no StepPropertyUpdateRequestEvents were sent as requests are unchanged
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
@@ -342,17 +379,21 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
         Assert.assertTrue("Unexpected number of StepPropertyUpdateRequestEvents", stepEventList.isEmpty());
     }
 
-
-    private List<FileDeletionRequest> createFileDeletionRequests(int nbRequests, FileRequestStatus requestStatus,
-            String sessionOwner, String session) {
+    private List<FileDeletionRequest> createFileDeletionRequests(int nbRequests,
+                                                                 FileRequestStatus requestStatus,
+                                                                 String sessionOwner,
+                                                                 String session) {
         List<FileDeletionRequest> createdDeletionRequests = new ArrayList<>();
         // init parameters
         // create requests
         for (int i = 0; i < nbRequests; i++) {
             // create file reference
             FileDeletionRequest request = new FileDeletionRequest(createFileReference("LOCAL", 1024L),
-                                                                  true, UUID.randomUUID().toString(), requestStatus,
-                                                                  sessionOwner, session);
+                                                                  true,
+                                                                  UUID.randomUUID().toString(),
+                                                                  requestStatus,
+                                                                  sessionOwner,
+                                                                  session);
             createdDeletionRequests.add(request);
         }
         return this.fileDeletionRequestRepo.saveAll(createdDeletionRequests);
@@ -361,8 +402,10 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
     /**
      * Method to create FileStorageRequests for test
      */
-    private List<FileStorageRequest> createFileStorageRequests(int nbRequests, FileRequestStatus requestStatus,
-            String sessionOwner, String session) {
+    private List<FileStorageRequest> createFileStorageRequests(int nbRequests,
+                                                               FileRequestStatus requestStatus,
+                                                               String sessionOwner,
+                                                               String session) {
         List<FileStorageRequest> createdStorageRequests = new ArrayList<>();
         // init parameters
         String owner = "test";
@@ -375,9 +418,14 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
         String originUrl = "file://" + Paths.get("src/test/resources/input/cnes.png").toAbsolutePath().toString();
         // create requests
         for (int i = 0; i < nbRequests; i++) {
-            FileStorageRequest request = new FileStorageRequest(owner, metaInfos, originUrl, "storage-" + i,
+            FileStorageRequest request = new FileStorageRequest(owner,
+                                                                metaInfos,
+                                                                originUrl,
+                                                                "storage-" + i,
                                                                 Optional.empty(),
-                                                                UUID.randomUUID().toString(), sessionOwner, session);
+                                                                UUID.randomUUID().toString(),
+                                                                sessionOwner,
+                                                                session);
             request.setStatus(requestStatus);
             createdStorageRequests.add(request);
         }

@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.configuration.dao;
 
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalIT;
+import fr.cnes.regards.modules.configuration.domain.Module;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,13 +27,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalIT;
-import fr.cnes.regards.modules.configuration.domain.Module;
-
 /**
- *
  * Class LayoutRepositoryTest
- *
+ * <p>
  * DAO Test
  *
  * @author Sébastien Binda
@@ -44,7 +42,6 @@ public class ModuleRepositoryIT extends AbstractDaoTransactionalIT {
     private IModuleRepository repository;
 
     /**
-     *
      * Common method to save a new module
      *
      * @param pApplicationId
@@ -64,7 +61,6 @@ public class ModuleRepositoryIT extends AbstractDaoTransactionalIT {
     }
 
     /**
-     *
      * Test saving a new module configuration
      *
      * @since 1.0-SNAPSHOT
@@ -79,7 +75,6 @@ public class ModuleRepositoryIT extends AbstractDaoTransactionalIT {
     }
 
     /**
-     *
      * Test updating an existing module.
      *
      * @since 1.0-SNAPSHOT
@@ -110,7 +105,6 @@ public class ModuleRepositoryIT extends AbstractDaoTransactionalIT {
     }
 
     /**
-     *
      * Test deleting a module.
      *
      * @since 1.0-SNAPSHOT

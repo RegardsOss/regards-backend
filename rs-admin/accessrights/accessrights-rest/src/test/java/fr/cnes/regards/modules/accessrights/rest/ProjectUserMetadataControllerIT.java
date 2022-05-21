@@ -50,8 +50,10 @@ public class ProjectUserMetadataControllerIT extends AbstractRegardsTransactiona
     @Before
     public void setUp() {
         Role publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).orElse(null);
-        projectUser = projectUserRepository
-                .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new HashSet<>()));
+        projectUser = projectUserRepository.save(new ProjectUser(EMAIL,
+                                                                 publicRole,
+                                                                 new ArrayList<>(),
+                                                                 new HashSet<>()));
     }
 
     @Test

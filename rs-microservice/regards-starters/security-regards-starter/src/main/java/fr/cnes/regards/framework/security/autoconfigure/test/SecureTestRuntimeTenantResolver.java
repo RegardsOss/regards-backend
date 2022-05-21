@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.framework.security.autoconfigure.test;
 
+import fr.cnes.regards.framework.security.autoconfigure.SecureRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import org.slf4j.MDC;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import fr.cnes.regards.framework.security.autoconfigure.SecureRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
-
 /**
  * Overrides {@link SecureRuntimeTenantResolver} for test context to avoid clear teant.
+ *
  * @author Sébastien Binda
  */
 public class SecureTestRuntimeTenantResolver extends SecureRuntimeTenantResolver {

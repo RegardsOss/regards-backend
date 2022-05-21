@@ -23,6 +23,7 @@ import java.util.Map;
 
 /**
  * Datasource schema migration interface
+ *
  * @author Marc Sordi
  */
 public interface IDatasourceSchemaHelper {
@@ -37,6 +38,7 @@ public interface IDatasourceSchemaHelper {
 
     /**
      * Set datasource before {@link IDatasourceSchemaHelper#migrate()}
+     *
      * @param dataSource datasource to migrate
      */
     void setDataSource(DataSource dataSource);

@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -30,13 +30,14 @@ import java.util.UUID;
  * @author gandrieu
  */
 @Value
-@AllArgsConstructor(onConstructor_={@JsonCreator})
+@AllArgsConstructor(onConstructor_ = { @JsonCreator })
 public class ProcessLabelDTO {
 
     UUID processBusinessId;
+
     String label;
 
     public static ProcessLabelDTO fromPluginConfiguration(PluginConfiguration pc) {
-        return  new ProcessLabelDTO(UUID.fromString(pc.getBusinessId()), pc.getLabel());
+        return new ProcessLabelDTO(UUID.fromString(pc.getBusinessId()), pc.getLabel());
     }
 }

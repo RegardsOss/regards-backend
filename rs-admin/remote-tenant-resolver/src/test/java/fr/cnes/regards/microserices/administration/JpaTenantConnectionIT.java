@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.microserices.administration;
 
-import java.io.File;
-
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.microserices.administration.stubs.ProjectClientStub;
+import fr.cnes.regards.microservices.administration.RemoteTenantAutoConfiguration;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -28,19 +30,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.microserices.administration.stubs.ProjectClientStub;
-import fr.cnes.regards.microservices.administration.RemoteTenantAutoConfiguration;
+import java.io.File;
 
 /**
- *
  * Class JpaTenantConnectionIT
- *
+ * <p>
  * Test with jpa multitenant starter database creation.
  *
  * @author Sébastien Binda
-
  */
 @Ignore("Cannot reach an admin microservice instance in unit test.")
 @RunWith(SpringRunner.class)
@@ -49,10 +46,7 @@ import fr.cnes.regards.microservices.administration.RemoteTenantAutoConfiguratio
 public class JpaTenantConnectionIT {
 
     /**
-     *
      * Check for multitenant resolver throught administration microservice client
-     *
-
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Check for multitenant resolver throught administration microservice client")

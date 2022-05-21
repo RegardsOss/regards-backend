@@ -92,7 +92,9 @@ public final class GeometryFactory {
     }
 
     public static IGeometry createGeometryCollection() {
-        return IGeometry.geometryCollection(IGeometry.point(IGeometry.position(0.0, 10.0)), IGeometry.lineString(
-                IGeometry.toLineStringCoordinates(IGeometry.position(10.0, 13.0), IGeometry.position(25.0, 39.0))));
+        return IGeometry.geometryCollection(IGeometry.point(IGeometry.position(0.0, 10.0)),
+                                            IGeometry.lineString(IGeometry.toLineStringCoordinates(IGeometry.position(
+                                                10.0,
+                                                13.0), IGeometry.position(25.0, 39.0))));
     }
 }

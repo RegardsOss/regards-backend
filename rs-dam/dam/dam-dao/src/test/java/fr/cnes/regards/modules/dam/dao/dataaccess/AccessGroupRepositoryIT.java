@@ -28,7 +28,6 @@ import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=dam_ag_dao" })
 public class AccessGroupRepositoryIT extends AbstractDaoTransactionalIT {

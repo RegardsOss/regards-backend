@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
  * {@link Target#MICROSERVICE} restricted event
+ *
  * @author Marc Sordi
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)

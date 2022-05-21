@@ -19,21 +19,20 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain.parameter;
 
+import org.springframework.util.Assert;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
-import org.springframework.util.Assert;
-
 /**
  * Parameter associated to a plugin configuration
- * @author Christophe Mertz
- * @author Marc SORDI
  *
  * @param <T> parameter type
+ * @author Christophe Mertz
+ * @author Marc SORDI
  */
 public abstract class AbstractPluginParam<T> implements IPluginParam {
 
@@ -114,8 +113,7 @@ public abstract class AbstractPluginParam<T> implements IPluginParam {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        @SuppressWarnings("rawtypes")
-        AbstractPluginParam other = (AbstractPluginParam) obj;
+        @SuppressWarnings("rawtypes") AbstractPluginParam other = (AbstractPluginParam) obj;
 
         if (name == null) {
             return other.name == null;

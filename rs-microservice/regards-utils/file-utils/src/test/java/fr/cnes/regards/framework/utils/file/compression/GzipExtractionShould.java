@@ -77,7 +77,7 @@ public class GzipExtractionShould {
 
     private static void compress(File aFile, File intoGzArchive) throws IOException {
         try (GZIPOutputStream archiveStream = new GZIPOutputStream(new FileOutputStream(intoGzArchive));
-                FileInputStream fileStream = new FileInputStream(aFile)) {
+            FileInputStream fileStream = new FileInputStream(aFile)) {
             byte[] buffer = new byte[1024];
             int amountRead = fileStream.read(buffer);
             while (amountRead > 0) {
@@ -109,28 +109,28 @@ public class GzipExtractionShould {
     public void raise_exception_if_extraction_fails() throws Exception {
         Throwable thrown = catchThrowable(() -> extractor.uncompress(A_NOT_FOUND_ARCHIVE, THE_EXTRACTION_FOLDER));
         assertThat(thrown) //
-                .isInstanceOf(CompressionException.class) //
-                .hasMessage("IO error during GZIP uncompression");
+                           .isInstanceOf(CompressionException.class) //
+                           .hasMessage("IO error during GZIP uncompression");
     }
 
     @Test
     public void verify_extracted_file_existence_before_extraction() throws Exception {
-        Throwable thrown = catchThrowable(
-                () -> extractor.uncompress(AN_ALREADY_EXTRACTED_ARCHIVE, THE_EXTRACTION_FOLDER));
+        Throwable thrown = catchThrowable(() -> extractor.uncompress(AN_ALREADY_EXTRACTED_ARCHIVE,
+                                                                     THE_EXTRACTION_FOLDER));
         assertThat(thrown) //
-                .isInstanceOf(FileAlreadyExistException.class) //
-                .hasMessage("File alreadyExisting already exist");
+                           .isInstanceOf(FileAlreadyExistException.class) //
+                           .hasMessage("File alreadyExisting already exist");
     }
 
     @Test
     public void validate_archive_extension() throws Exception {
-        Throwable thrown = catchThrowable(
-                () -> extractor.uncompress(A_GZIP_ARCHIVE_WITH_BAD_EXTENSION, THE_EXTRACTION_FOLDER));
+        Throwable thrown = catchThrowable(() -> extractor.uncompress(A_GZIP_ARCHIVE_WITH_BAD_EXTENSION,
+                                                                     THE_EXTRACTION_FOLDER));
 
         assertThat(thrown) //
-                .isInstanceOf(CompressionException.class) //
-                .hasMessage("Extension of \"" + A_GZIP_ARCHIVE_WITH_BAD_EXTENSION + "\" isn't valid."
-                                    + " Valid extensions are : .gz, .gzip");
+                           .isInstanceOf(CompressionException.class) //
+                           .hasMessage("Extension of \"" + A_GZIP_ARCHIVE_WITH_BAD_EXTENSION + "\" isn't valid."
+                                           + " Valid extensions are : .gz, .gzip");
     }
 
     @Test

@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.exception;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import org.springframework.http.MediaType;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import java.util.List;
 
 /**
  * UnsupportedMediaTypesException
+ *
  * @author Sébastien Binda
  */
 @SuppressWarnings("serial")
@@ -40,8 +40,10 @@ public class UnsupportedMediaTypesException extends ModuleException {
 
     @Override
     public String getMessage() {
-        String mediaTypesStr = mediaTypes.stream().reduce("", (r, m) -> String.format("%s, %s", r, m.getType()),
-                                                          (s1, s2) -> String.format("%s, %s", s1, s2));
+        String mediaTypesStr = mediaTypes.stream()
+                                         .reduce("",
+                                                 (r, m) -> String.format("%s, %s", r, m.getType()),
+                                                 (s1, s2) -> String.format("%s, %s", s1, s2));
         return String.format("Unsupported media type %s", mediaTypesStr);
     }
 

@@ -18,13 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.service.file.flow;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -34,6 +27,12 @@ import fr.cnes.regards.modules.storage.domain.flow.RetryFlowItem;
 import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.RequestsGroupService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
 
 /**
  * Handler of bus message events {@link RetryFlowItem}s.<br>
@@ -79,7 +78,9 @@ public class RetryFlowItemHandler implements ApplicationListener<ApplicationRead
                 case STORAGE:
                     if (request.getGroupId() != null) {
                         storageService.retryRequest(request.getGroupId());
-                        reqGroupService.granted(request.getGroupId(), FileRequestType.STORAGE, 0,
+                        reqGroupService.granted(request.getGroupId(),
+                                                FileRequestType.STORAGE,
+                                                0,
                                                 storageService.getRequestExpirationDate());
                     } else {
                         storageService.retry(request.getOwners());
@@ -88,23 +89,27 @@ public class RetryFlowItemHandler implements ApplicationListener<ApplicationRead
                 case AVAILABILITY:
                     if (request.getGroupId() != null) {
                         cacheService.retryRequest(request.getGroupId());
-                        reqGroupService.granted(request.getGroupId(), FileRequestType.AVAILABILITY, 0,
+                        reqGroupService.granted(request.getGroupId(),
+                                                FileRequestType.AVAILABILITY,
+                                                0,
                                                 storageService.getRequestExpirationDate());
                     } else {
                         LOGGER.warn("Retry action is not available for availability requests with no request id.");
-                        reqGroupService
-                                .denied(request.getGroupId(), FileRequestType.AVAILABILITY,
-                                        "Retry action is not available for availability requests with no request id.");
+                        reqGroupService.denied(request.getGroupId(),
+                                               FileRequestType.AVAILABILITY,
+                                               "Retry action is not available for availability requests with no request id.");
                     }
                     break;
                 case DELETION:
                     LOGGER.warn("Retry action is not available for file deletion requests.");
-                    reqGroupService.denied(request.getGroupId(), FileRequestType.DELETION,
+                    reqGroupService.denied(request.getGroupId(),
+                                           FileRequestType.DELETION,
                                            "Retry action is not available for file deletion requests.");
                     break;
                 case REFERENCE:
                     LOGGER.warn("Retry action is not available for file reference requests.");
-                    reqGroupService.denied(request.getGroupId(), FileRequestType.REFERENCE,
+                    reqGroupService.denied(request.getGroupId(),
+                                           FileRequestType.REFERENCE,
                                            "Retry action is not available for file reference requests.");
                     break;
                 default:

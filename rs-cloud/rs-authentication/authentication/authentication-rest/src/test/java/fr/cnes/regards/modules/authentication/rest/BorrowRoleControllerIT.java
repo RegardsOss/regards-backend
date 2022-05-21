@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.authentication.rest;
 
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import org.junit.Test;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -35,7 +34,9 @@ public class BorrowRoleControllerIT extends AbstractRegardsIT {
     @Test
     public void testSwitch() {
         performDefaultGet(BorrowRoleController.PATH_BORROW_ROLE + BorrowRoleController.PATH_BORROW_ROLE_TARGET,
-                          customizer().expectStatusOk(), "ERROR", DefaultRole.PUBLIC.toString());
+                          customizer().expectStatusOk(),
+                          "ERROR",
+                          DefaultRole.PUBLIC.toString());
     }
 
 }

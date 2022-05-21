@@ -18,23 +18,22 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureNotificationRequest;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureNotificationRequestEvent;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Service for notify {@link Feature}
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
 public interface IFeatureNotificationService extends IAbstractFeatureService<FeatureNotificationRequest> {
 
@@ -51,6 +50,7 @@ public interface IFeatureNotificationService extends IAbstractFeatureService<Fea
 
     /**
      * Find all {@link FeatureNotificationRequest}s
+     *
      * @return {@link FeatureNotificationRequest}s
      */
     Page<FeatureNotificationRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);

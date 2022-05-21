@@ -29,7 +29,8 @@ import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 
-public class ProjectUserSpecificationsBuilder extends AbstractSpecificationsBuilder<ProjectUser, ProjectUserSearchParameters> {
+public class ProjectUserSpecificationsBuilder
+    extends AbstractSpecificationsBuilder<ProjectUser, ProjectUserSearchParameters> {
 
     @Override
     protected void addSpecificationsFromParameters() {
@@ -53,7 +54,8 @@ public class ProjectUserSpecificationsBuilder extends AbstractSpecificationsBuil
         if (StringUtils.isEmpty(status)) {
             return null;
         } else {
-            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("status"), UserStatus.valueOf(status.toUpperCase()));
+            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("status"),
+                                                                           UserStatus.valueOf(status.toUpperCase()));
         }
     }
 
@@ -66,7 +68,8 @@ public class ProjectUserSpecificationsBuilder extends AbstractSpecificationsBuil
                 Path<Long> maxQuota = root.get("maxQuota");
                 Path<Long> currentQuota = root.get("currentQuota");
 
-                Predicate notNullPredicate = criteriaBuilder.and(criteriaBuilder.isNotNull(maxQuota), criteriaBuilder.isNotNull(currentQuota));
+                Predicate notNullPredicate = criteriaBuilder.and(criteriaBuilder.isNotNull(maxQuota),
+                                                                 criteriaBuilder.isNotNull(currentQuota));
                 Predicate limitedQuotaPredicate = criteriaBuilder.greaterThan(maxQuota, -1L);
 
                 Expression<Long> diff = criteriaBuilder.diff(maxQuota, currentQuota);

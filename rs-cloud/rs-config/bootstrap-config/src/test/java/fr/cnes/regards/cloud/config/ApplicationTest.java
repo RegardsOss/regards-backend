@@ -25,8 +25,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Class ConfigApplicationTest
- *
+ * <p>
  * Test class for Srping Config Server.
+ *
  * @author Sébastien Binda
  */
 @RunWith(SpringRunner.class)

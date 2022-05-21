@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
  * Thrown when an error occurs during the parsing of an OpenSearch request.
+ *
  * @author Xavier-Alexandre Brochard
  */
 @SuppressWarnings("serial")
@@ -43,7 +44,7 @@ public class OpenSearchParseException extends ModuleException { // NOSONAR
 
     /**
      * @param pMessage the message
-     * @param pCause the caught exception which triggered this exception
+     * @param pCause   the caught exception which triggered this exception
      */
     public OpenSearchParseException(String pMessage, Throwable pCause) {
         super(pMessage, pCause);

@@ -20,6 +20,5 @@
  * This package is dedicated to store JPA entities used by the module
  *
  * @author Marc Sordi
- *
  */
 package fr.cnes.regards.modules.ingest.domain.sip;

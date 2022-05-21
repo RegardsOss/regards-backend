@@ -67,9 +67,8 @@ public class ServiceProviderPublicDto {
             return false;
         }
         ServiceProviderPublicDto that = (ServiceProviderPublicDto) o;
-        return Objects.equals(name, that.name)
-            && Objects.equals(authUrl, that.authUrl)
-            && Objects.equals(pluginId, that.pluginId);
+        return Objects.equals(name, that.name) && Objects.equals(authUrl, that.authUrl) && Objects.equals(pluginId,
+                                                                                                          that.pluginId);
     }
 
     @Override

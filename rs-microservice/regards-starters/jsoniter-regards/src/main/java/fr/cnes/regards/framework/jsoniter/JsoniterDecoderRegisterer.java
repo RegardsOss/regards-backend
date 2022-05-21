@@ -10,7 +10,6 @@ import io.vavr.collection.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-
 public class JsoniterDecoderRegisterer {
 
     private final List<Decoder> decoders;
@@ -22,26 +21,24 @@ public class JsoniterDecoderRegisterer {
     private static List<Decoder> registerDecoders(AttributeModelPropertyTypeFinder propTypeFinder, Gson gson) {
         JsoniterSpi.registerTypeImplementation(ConcurrentMap.class, ConcurrentHashMap.class);
 
-        return List.of(
-                MimeTypeJsoniterDecoder.selfRegister(),
-                DataObjectFeatureJsoniterDecoder.selfRegister(gson, propTypeFinder),
-                CollectionFeatureJsoniterDecoder.selfRegister(gson, propTypeFinder),
-                DatasetFeatureJsoniterDecoder.selfRegister(gson, propTypeFinder),
-                DataObjectMetadataJsoniterDecoder.selfRegister(),
-                DataObjectGroupJsoniterDecoder.selfRegister(),
-                DataObjectJsoniterDecoder.selfRegister(),
-                DatasetJsoniterDecoder.selfRegister(),
-                CollectionJsoniterDecoder.selfRegister(),
-                IGeometryJsoniterDecoder.selfRegister(),
-                ICriterionJsoniterDecoder.selfRegister(),
-                IPluginParamJsoniterDecoder.selfRegister(),
-                UUIDJsoniterDecoder.selfRegister(),
-                URLJsoniterDecoder.selfRegister(),
-                OffsetDateTimeJsoniterDecoder.selfRegister(),
-                UniformResourceNameJsoniterDecoder.selfRegister(),
-                IIndexableJsoniterDecoder.selfRegister(),
-                SearchAfterReminderDecoder.selfRegister()
-        );
+        return List.of(MimeTypeJsoniterDecoder.selfRegister(),
+                       DataObjectFeatureJsoniterDecoder.selfRegister(gson, propTypeFinder),
+                       CollectionFeatureJsoniterDecoder.selfRegister(gson, propTypeFinder),
+                       DatasetFeatureJsoniterDecoder.selfRegister(gson, propTypeFinder),
+                       DataObjectMetadataJsoniterDecoder.selfRegister(),
+                       DataObjectGroupJsoniterDecoder.selfRegister(),
+                       DataObjectJsoniterDecoder.selfRegister(),
+                       DatasetJsoniterDecoder.selfRegister(),
+                       CollectionJsoniterDecoder.selfRegister(),
+                       IGeometryJsoniterDecoder.selfRegister(),
+                       ICriterionJsoniterDecoder.selfRegister(),
+                       IPluginParamJsoniterDecoder.selfRegister(),
+                       UUIDJsoniterDecoder.selfRegister(),
+                       URLJsoniterDecoder.selfRegister(),
+                       OffsetDateTimeJsoniterDecoder.selfRegister(),
+                       UniformResourceNameJsoniterDecoder.selfRegister(),
+                       IIndexableJsoniterDecoder.selfRegister(),
+                       SearchAfterReminderDecoder.selfRegister());
     }
 
 }

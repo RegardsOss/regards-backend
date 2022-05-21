@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorIT;
 
 /**
  * Generate DDL with HBM2DDL
+ *
  * @author Marc Sordi
  */
 public class PluginsSQLGeneratorIT extends AbstractScriptGeneratorIT {

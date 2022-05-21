@@ -33,6 +33,7 @@ public class ProcessingApplication {
 
     /**
      * Microservice bootstrap method
+     *
      * @param args microservice bootstrap arguments
      */
     public static void main(final String[] args) {

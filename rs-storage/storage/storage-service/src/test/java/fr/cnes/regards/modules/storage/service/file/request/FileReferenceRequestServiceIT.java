@@ -54,18 +54,17 @@ import java.util.concurrent.ExecutionException;
  * Test class
  *
  * @author Sébastien Binda
- *
  */
 @ActiveProfiles({ "noscheduler" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_reference_tests"},
-        locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_reference_tests" },
+    locations = { "classpath:application-test.properties" })
 public class FileReferenceRequestServiceIT extends AbstractStorageIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceRequestServiceIT.class);
 
-    private static final  String SESSION_OWNER_1 = "SOURCE 1";
+    private static final String SESSION_OWNER_1 = "SOURCE 1";
 
-    private static final  String SESSION_OWNER_2 = "SOURCE 2";
+    private static final String SESSION_OWNER_2 = "SOURCE 2";
 
     private static final String SESSION_1 = "SESSION 1";
 
@@ -82,15 +81,24 @@ public class FileReferenceRequestServiceIT extends AbstractStorageIT {
         // Reference & store a file
         String fileRefChecksum = "file-ref-1";
         String fileRefOwner = "first-owner";
-        FileReference fileRef = this.generateStoredFileReference(fileRefChecksum, fileRefOwner, "file.test",
-                                                                 ONLINE_CONF_LABEL, Optional.empty(),
-                                                                 Optional.empty(), SESSION_OWNER_1, SESSION_1);
+        FileReference fileRef = this.generateStoredFileReference(fileRefChecksum,
+                                                                 fileRefOwner,
+                                                                 "file.test",
+                                                                 ONLINE_CONF_LABEL,
+                                                                 Optional.empty(),
+                                                                 Optional.empty(),
+                                                                 SESSION_OWNER_1,
+                                                                 SESSION_1);
         String fileRefStorage = fileRef.getLocation().getStorage();
 
         // Remove all his owners
         String deletionReqId = UUID.randomUUID().toString();
-        FileDeletionRequestDTO request = FileDeletionRequestDTO
-                .build(fileRefChecksum, fileRefStorage, fileRefOwner, SESSION_OWNER_1, SESSION_1, false);
+        FileDeletionRequestDTO request = FileDeletionRequestDTO.build(fileRefChecksum,
+                                                                      fileRefStorage,
+                                                                      fileRefOwner,
+                                                                      SESSION_OWNER_1,
+                                                                      SESSION_1,
+                                                                      false);
         fileDeletionRequestService.handle(Sets.newHashSet(request), deletionReqId);
 
         Optional<FileReference> oFileRef = fileRefService.search(fileRefStorage, fileRefChecksum);
@@ -104,20 +112,25 @@ public class FileReferenceRequestServiceIT extends AbstractStorageIT {
 
         // Reference the same file for a new owner
         String fileRefNewOwner = "new-owner";
-        this.generateStoredFileReferenceAlreadyReferenced(fileRefChecksum, fileRefStorage, fileRefNewOwner,
-                                                          SESSION_OWNER_2, SESSION_1);
+        this.generateStoredFileReferenceAlreadyReferenced(fileRefChecksum,
+                                                          fileRefStorage,
+                                                          fileRefNewOwner,
+                                                          SESSION_OWNER_2,
+                                                          SESSION_1);
 
         // check that there is always a deletion request in pending state
         Optional<FileDeletionRequest> ofdr = fileDeletionRequestRepo.findByFileReferenceId(fdr.getId());
         fileRefService.search(fileRef.getLocation().getStorage(), fileRef.getMetaInfo().getChecksum());
         Assert.assertTrue("File deletion request should always exists", ofdr.isPresent());
-        Assert.assertEquals("File deletion request should always be running", FileRequestStatus.PENDING,
+        Assert.assertEquals("File deletion request should always be running",
+                            FileRequestStatus.PENDING,
                             ofdr.get().getStatus());
         // check that a new reference request is made to store again the file after deletion request is done
         reqStatusService.checkDelayedStorageRequests();
         Collection<FileStorageRequest> storageReqs = stoReqService.search(fileRefStorage, fileRefChecksum);
         Assert.assertEquals("A new file reference request should exists", 1, storageReqs.size());
-        Assert.assertEquals("A new file reference request should exists with DELAYED status", FileRequestStatus.DELAYED,
+        Assert.assertEquals("A new file reference request should exists with DELAYED status",
+                            FileRequestStatus.DELAYED,
                             storageReqs.stream().findFirst().get().getStatus());
 
         // Check that the file reference is still not referenced as owned by the new owner and the request is still existing
@@ -130,24 +143,32 @@ public class FileReferenceRequestServiceIT extends AbstractStorageIT {
         FileDeletionJobProgressManager manager = new FileDeletionJobProgressManager(fileDeletionRequestService,
                                                                                     new FileDeletionRequestJob());
         manager.deletionSucceed(fdr);
-        fileRefEventHandler.handleBatch(Lists.newArrayList(FileReferenceEvent
-                .build(fileRefChecksum, fileRefStorage, FileReferenceEventType.FULLY_DELETED, null, "Deletion succeed",
-                       oFileRef.get().getLocation(), oFileRef.get().getMetaInfo(), Sets.newHashSet(deletionReqId))));
+        fileRefEventHandler.handleBatch(Lists.newArrayList(FileReferenceEvent.build(fileRefChecksum,
+                                                                                    fileRefStorage,
+                                                                                    FileReferenceEventType.FULLY_DELETED,
+                                                                                    null,
+                                                                                    "Deletion succeed",
+                                                                                    oFileRef.get().getLocation(),
+                                                                                    oFileRef.get().getMetaInfo(),
+                                                                                    Sets.newHashSet(deletionReqId))));
         // Has the handler clear the tenant we have to force it here for tests.
         runtimeTenantResolver.forceTenant(tenant);
         storageReqs = stoReqService.search(fileRefStorage, fileRefChecksum);
         Assert.assertEquals("File storage request still exists", 1, storageReqs.size());
-        Assert.assertEquals("File storage request should still exists with DELAYED status", FileRequestStatus.DELAYED,
+        Assert.assertEquals("File storage request should still exists with DELAYED status",
+                            FileRequestStatus.DELAYED,
                             storageReqs.stream().findFirst().get().getStatus());
         reqStatusService.checkDelayedStorageRequests();
         storageReqs = stoReqService.search(fileRefStorage, fileRefChecksum);
         Assert.assertEquals("File storage request still exists", 1, storageReqs.size());
-        Assert.assertEquals("File storage request should exists with TO_DO status", FileRequestStatus.TO_DO,
+        Assert.assertEquals("File storage request should exists with TO_DO status",
+                            FileRequestStatus.TO_DO,
                             storageReqs.stream().findFirst().get().getStatus());
 
         // Now the deletion job is ended, the file reference request is in {@link FileRequestStatus#TO_DO} state.
         Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
-                                                              Lists.newArrayList(fileRefStorage), Lists.newArrayList());
+                                                              Lists.newArrayList(fileRefStorage),
+                                                              Lists.newArrayList());
         runAndWaitJob(jobs);
 
         storageReqs = stoReqService.search(fileRefStorage, fileRefChecksum);
@@ -163,8 +184,12 @@ public class FileReferenceRequestServiceIT extends AbstractStorageIT {
     @Test
     public void referenceFileWithoutStorage() {
         String owner = "someone";
-        Optional<FileReference> oFileRef = referenceRandomFile(owner, null, "file.test", ONLINE_CONF_LABEL,
-                                                               SESSION_OWNER_1, SESSION_1);
+        Optional<FileReference> oFileRef = referenceRandomFile(owner,
+                                                               null,
+                                                               "file.test",
+                                                               ONLINE_CONF_LABEL,
+                                                               SESSION_OWNER_1,
+                                                               SESSION_1);
         Assert.assertTrue("File reference should have been created", oFileRef.isPresent());
         Collection<FileStorageRequest> storageReqs = stoReqService.search(oFileRef.get().getLocation().getStorage(),
                                                                           oFileRef.get().getMetaInfo().getChecksum());
@@ -174,12 +199,19 @@ public class FileReferenceRequestServiceIT extends AbstractStorageIT {
 
     @Test
     public void referenceFileWithInvalidURL() {
-        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(), "MD5", "file.test",
-                1024L, MediaType.APPLICATION_OCTET_STREAM);
+        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(),
+                                                                       "MD5",
+                                                                       "file.test",
+                                                                       1024L,
+                                                                       MediaType.APPLICATION_OCTET_STREAM);
         FileLocation location = new FileLocation(OFFLINE_CONF_LABEL, "anywhere://in/this/directory/file.test");
         try {
-            fileReqService.reference("someone", fileMetaInfo, location, Sets.newHashSet(UUID.randomUUID().toString()),
-                                     SESSION_OWNER_1, SESSION_1);
+            fileReqService.reference("someone",
+                                     fileMetaInfo,
+                                     location,
+                                     Sets.newHashSet(UUID.randomUUID().toString()),
+                                     SESSION_OWNER_1,
+                                     SESSION_1);
             Assert.fail("Module exception should be thrown here as url is not valid");
         } catch (ModuleException e) {
             // Expected exception

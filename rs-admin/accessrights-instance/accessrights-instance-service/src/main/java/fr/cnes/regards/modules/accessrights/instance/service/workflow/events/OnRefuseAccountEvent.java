@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service.workflow.events;
 
-import org.springframework.context.ApplicationEvent;
-
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import org.springframework.context.ApplicationEvent;
 
 /**
  * Event fired when an account is refused.

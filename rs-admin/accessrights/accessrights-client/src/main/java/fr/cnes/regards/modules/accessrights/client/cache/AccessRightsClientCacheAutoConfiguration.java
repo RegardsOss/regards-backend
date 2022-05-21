@@ -35,7 +35,6 @@ import org.springframework.context.annotation.Profile;
  * SPRING Cache autoconfiguration class
  *
  * @author Sébastien Binda
- *
  */
 @Profile("!test")
 @Configuration

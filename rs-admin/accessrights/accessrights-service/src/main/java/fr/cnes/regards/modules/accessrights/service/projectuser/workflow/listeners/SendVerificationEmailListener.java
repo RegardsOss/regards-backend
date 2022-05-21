@@ -61,12 +61,14 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
     private String noreply;
 
     private final IEmailVerificationTokenService emailVerificationTokenService;
+
     private final IStorageRestClient storageClient;
+
     private final AccessRightsEmailService accessRightsEmailService;
 
-    public SendVerificationEmailListener(IStorageRestClient storageClient, IEmailVerificationTokenService emailVerificationTokenService,
-            AccessRightsEmailService accessRightsEmailService
-    ) {
+    public SendVerificationEmailListener(IStorageRestClient storageClient,
+                                         IEmailVerificationTokenService emailVerificationTokenService,
+                                         AccessRightsEmailService accessRightsEmailService) {
         this.storageClient = storageClient;
         this.emailVerificationTokenService = emailVerificationTokenService;
         this.accessRightsEmailService = accessRightsEmailService;
@@ -93,8 +95,11 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
         } else {
             linkUrlTemplate = "%s?origin_url=%s&token=%s&account_email=%s";
         }
-        String confirmationUrl =
-                String.format(linkUrlTemplate, token.getRequestLink(), UriUtils.encode(token.getOriginUrl(), StandardCharsets.UTF_8.name()), token.getToken(), userEmail);
+        String confirmationUrl = String.format(linkUrlTemplate,
+                                               token.getRequestLink(),
+                                               UriUtils.encode(token.getOriginUrl(), StandardCharsets.UTF_8.name()),
+                                               token.getToken(),
+                                               userEmail);
         data.put("confirmationUrl", confirmationUrl);
 
         // quota management: unlimited / not interesting while storage does not answer
@@ -116,14 +121,15 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
             FeignSecurityManager.reset();
         }
 
-        AccessRightsEmailWrapper wrapper = new AccessRightsEmailWrapper()
-                .setProjectUser(projectUser)
-                .setSubject("[REGARDS] Account Confirmation")
-                .setFrom(noreply)
-                .setTo(Collections.singleton(userEmail))
-                .setTemplate(AccessRightsTemplateConfiguration.EMAIL_ACCOUNT_VALIDATION_TEMPLATE_NAME)
-                .setData(data)
-                .setDefaultMessage("Please click on the following link to confirm your registration: " + data.get("confirmationUrl"));
+        AccessRightsEmailWrapper wrapper = new AccessRightsEmailWrapper().setProjectUser(projectUser)
+                                                                         .setSubject("[REGARDS] Account Confirmation")
+                                                                         .setFrom(noreply)
+                                                                         .setTo(Collections.singleton(userEmail))
+                                                                         .setTemplate(AccessRightsTemplateConfiguration.EMAIL_ACCOUNT_VALIDATION_TEMPLATE_NAME)
+                                                                         .setData(data)
+                                                                         .setDefaultMessage(
+                                                                             "Please click on the following link to confirm your registration: "
+                                                                                 + data.get("confirmationUrl"));
 
         accessRightsEmailService.sendEmail(wrapper);
     }

@@ -34,12 +34,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
-
 @TestPropertySource(
-    properties = {
-        "spring.jpa.properties.hibernate.default_schema=authentication_service_provider_tests",
-    }
-)
+    properties = { "spring.jpa.properties.hibernate.default_schema=authentication_service_provider_tests", })
 public class ServiceProviderCrudServiceIT extends AbstractRegardsTransactionalIT {
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
@@ -52,7 +48,8 @@ public class ServiceProviderCrudServiceIT extends AbstractRegardsTransactionalIT
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-    @Autowired @InjectMocks
+    @Autowired
+    @InjectMocks
     private ServiceProviderCrudServiceImpl service;
 
     @Autowired
@@ -65,8 +62,7 @@ public class ServiceProviderCrudServiceIT extends AbstractRegardsTransactionalIT
     public void setUp() throws ModuleException {
         MockitoAnnotations.initMocks(this);
         repositoryDelegate = repository;
-        repository =
-            Mockito.mock(IServiceProviderRepository.class, AdditionalAnswers.delegatesTo(repository));
+        repository = Mockito.mock(IServiceProviderRepository.class, AdditionalAnswers.delegatesTo(repository));
         ReflectionTestUtils.setField(service, "repository", repository);
 
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -134,9 +130,7 @@ public class ServiceProviderCrudServiceIT extends AbstractRegardsTransactionalIT
     public void save_nok_when_repository_is_failure() {
         ServiceProvider stub = getServiceProvider();
         Exception expected = new RuntimeException("Expected.");
-        doThrow(expected)
-            .when(repository)
-            .save(any());
+        doThrow(expected).when(repository).save(any());
 
         Try<ServiceProvider> actual = service.save(stub);
 
@@ -149,12 +143,10 @@ public class ServiceProviderCrudServiceIT extends AbstractRegardsTransactionalIT
         ServiceProvider stub = getServiceProvider();
         ServiceProvider saved = service.save(stub).get();
 
-        ServiceProvider toUpdate = new ServiceProvider(
-            saved.getName(),
-            "https://chronos.fr/sso/auth.do",
-            "https://chronos.fr/sso/logout.do",
-            saved.getConfiguration()
-        );
+        ServiceProvider toUpdate = new ServiceProvider(saved.getName(),
+                                                       "https://chronos.fr/sso/auth.do",
+                                                       "https://chronos.fr/sso/logout.do",
+                                                       saved.getConfiguration());
 
         Try<ServiceProvider> updated = service.update(saved.getName(), toUpdate);
 
@@ -165,28 +157,34 @@ public class ServiceProviderCrudServiceIT extends AbstractRegardsTransactionalIT
     private ServiceProvider getServiceProvider() {
         try {
             // Set all parameters
-            Set<IPluginParam> parameters = IPluginParam
-                .set(
-                    IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_ID, "I"),
-                    IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET, "Don't"),
-                    IPluginParam.build(OpenIdConnectPlugin.OPENID_REDIRECT_URI, "Feel"),
-                    IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT, "Feel"),
-                    IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT, "Like"),
-                    IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_EMAIL_MAPPING, "Dancin'"),
-                    IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_FIRSTNAME_MAPPING, "Dancin'"),
-                    IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_LASTNAME_MAPPING, "Dancin'"),
-                    IPluginParam.build(OpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT, "When the old Joanna plays")
-                );
+            Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_ID,
+                                                                               "I"),
+                                                            IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET,
+                                                                               "Don't"),
+                                                            IPluginParam.build(OpenIdConnectPlugin.OPENID_REDIRECT_URI,
+                                                                               "Feel"),
+                                                            IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT,
+                                                                               "Feel"),
+                                                            IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT,
+                                                                               "Like"),
+                                                            IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_EMAIL_MAPPING,
+                                                                               "Dancin'"),
+                                                            IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_FIRSTNAME_MAPPING,
+                                                                               "Dancin'"),
+                                                            IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_LASTNAME_MAPPING,
+                                                                               "Dancin'"),
+                                                            IPluginParam.build(OpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT,
+                                                                               "When the old Joanna plays"));
 
-            PluginConfiguration conf = PluginConfiguration.build(OpenIdConnectPlugin.class, OpenIdConnectPlugin.ID, parameters);
+            PluginConfiguration conf = PluginConfiguration.build(OpenIdConnectPlugin.class,
+                                                                 OpenIdConnectPlugin.ID,
+                                                                 parameters);
             conf.setBusinessId(OpenIdConnectPlugin.ID);
             conf.setVersion(OpenIdConnectPlugin.VERSION);
-            return new ServiceProvider(
-                OpenIdConnectPlugin.ID,
-                "https://sso.theia-land.fr/login",
-                "https://sso.theia-land.fr/logout",
-                conf
-            );
+            return new ServiceProvider(OpenIdConnectPlugin.ID,
+                                       "https://sso.theia-land.fr/login",
+                                       "https://sso.theia-land.fr/logout",
+                                       conf);
         } catch (Exception e) {
             Assert.fail();
             return null; // never reached, dummy

@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.catalog.services.domain.annotations;
 
-import java.util.function.Function;
-
-import org.springframework.core.annotation.AnnotationUtils;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
+import org.springframework.core.annotation.AnnotationUtils;
+
+import java.util.function.Function;
 
 /**
  * Function returning the {@link CatalogServicePlugin} annotation on given {@link PluginConfiguration}

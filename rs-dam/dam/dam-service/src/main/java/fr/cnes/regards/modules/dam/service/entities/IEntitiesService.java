@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.modules.dam.service.entities;
 
-import java.util.List;
-import java.util.Set;
-
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.model.domain.IComputedAttribute;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Unparameterized entity service description. This is to be used when the entity type is unknown (ex. CrawlerService)
@@ -54,8 +54,8 @@ public interface IEntitiesService {
      * Retrieve and instanciate the plugins needed to compute all the computed attributes of an entity. We may not be
      * able to compute the attributes here because of pagination of {@link DataObject} cf. CrawlerService, that's why we
      * are just instanciating the plugins.
-     * @param <T> {@link IComputedAttribute}
      *
+     * @param <T>     {@link IComputedAttribute}
      * @param pEntity entity we are interrested to get computation plugins
      * @return instanciated plugins so computation can be executed
      */

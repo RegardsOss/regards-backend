@@ -31,6 +31,7 @@ import java.util.List;
 
 /**
  * Feign client handling {@link AttributeModel}s
+ *
  * @author Xavier-Alexandre Brochard
  */
 @RestClient(name = "rs-dam", contextId = "rs-dam.attribute-model.client")
@@ -53,13 +54,14 @@ public interface IAttributeModelClient {
 
     /**
      * Get the list of {@link AttributeModel}
-     * @param type the type to filter on
+     *
+     * @param type         the type to filter on
      * @param fragmentName the fragment to filter on
      * @return the list wrapped in an HTTP response
      */
-    @GetMapping(path =PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<EntityModel<AttributeModel>>> getAttributes(
-            @RequestParam(value = PARAM_TYPE, required = false) PropertyType type,
-            @RequestParam(value = PARAM_FRAGMENT_NAME, required = false) String fragmentName);
+        @RequestParam(value = PARAM_TYPE, required = false) PropertyType type,
+        @RequestParam(value = PARAM_FRAGMENT_NAME, required = false) String fragmentName);
 
 }

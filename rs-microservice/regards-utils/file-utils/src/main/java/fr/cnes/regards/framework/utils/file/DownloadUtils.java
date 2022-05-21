@@ -1,5 +1,8 @@
 package fr.cnes.regards.framework.utils.file;
 
+import com.google.common.collect.Sets;
+import com.google.common.io.ByteStreams;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,9 +19,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.regex.Pattern;
-
-import com.google.common.collect.Sets;
-import com.google.common.io.ByteStreams;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -39,32 +39,45 @@ public final class DownloadUtils {
      * works as {@link DownloadUtils#downloadThroughProxy} without proxy.
      */
     public static String download(URL source, Path destination, String checksumAlgorithm)
-            throws IOException, NoSuchAlgorithmException {
+        throws IOException, NoSuchAlgorithmException {
         return downloadThroughProxy(source, destination, checksumAlgorithm, Proxy.NO_PROXY, Sets.newHashSet(), null);
     }
 
     /**
      * works as {@link DownloadUtils#downloadThroughProxy} without proxy.
      */
-    public static String download(URL source, Path destination, String checksumAlgorithm,
-            Collection<String> nonProxyHosts, Integer pConnectTimeout) throws IOException, NoSuchAlgorithmException {
-        return downloadThroughProxy(source, destination, checksumAlgorithm, Proxy.NO_PROXY, nonProxyHosts,
+    public static String download(URL source,
+                                  Path destination,
+                                  String checksumAlgorithm,
+                                  Collection<String> nonProxyHosts,
+                                  Integer pConnectTimeout) throws IOException, NoSuchAlgorithmException {
+        return downloadThroughProxy(source,
+                                    destination,
+                                    checksumAlgorithm,
+                                    Proxy.NO_PROXY,
+                                    nonProxyHosts,
                                     pConnectTimeout);
     }
 
     /**
      * Download from the source and write it onto the file system at the destination provided.
      * Use the provided checksumAlgorithm to calculate the checksum at the end for further verification
+     *
      * @return checksum, computed using the provided algorithm, of the file created at destination
      */
-    public static String downloadThroughProxy(URL source, Path destination, String checksumAlgorithm, Proxy proxy,
-            Collection<String> nonProxyHosts, Integer pConnectTimeout) throws NoSuchAlgorithmException, IOException {
+    public static String downloadThroughProxy(URL source,
+                                              Path destination,
+                                              String checksumAlgorithm,
+                                              Proxy proxy,
+                                              Collection<String> nonProxyHosts,
+                                              Integer pConnectTimeout) throws NoSuchAlgorithmException, IOException {
         try (OutputStream os = Files.newOutputStream(destination, StandardOpenOption.CREATE);
-                InputStream sourceStream = DownloadUtils.getInputStreamThroughProxy(source, proxy, nonProxyHosts,
-                                                                                    pConnectTimeout);
-                // lets compute the checksum during the copy!
-                DigestInputStream dis = new DigestInputStream(sourceStream,
-                        MessageDigest.getInstance(checksumAlgorithm))) {
+            InputStream sourceStream = DownloadUtils.getInputStreamThroughProxy(source,
+                                                                                proxy,
+                                                                                nonProxyHosts,
+                                                                                pConnectTimeout);
+            // lets compute the checksum during the copy!
+            DigestInputStream dis = new DigestInputStream(sourceStream, MessageDigest.getInstance(checksumAlgorithm))) {
             ByteStreams.copy(dis, os);
             return ChecksumUtils.getHexChecksum(dis.getMessageDigest().digest());
         }
@@ -73,36 +86,63 @@ public final class DownloadUtils {
     /**
      * same than {@link DownloadUtils#downloadAndCheckChecksum(URL, Path, String, String, Proxy, Collection, Integer)} with {@link Proxy#NO_PROXY} as proxy
      */
-    public static boolean downloadAndCheckChecksum(URL source, Path destination, String checksumAlgorithm,
-            String expectedChecksum, Integer pConnectionTimeout) throws IOException, NoSuchAlgorithmException {
-        return downloadAndCheckChecksum(source, destination, checksumAlgorithm, expectedChecksum, Proxy.NO_PROXY,
-                                        Sets.newHashSet(), pConnectionTimeout);
+    public static boolean downloadAndCheckChecksum(URL source,
+                                                   Path destination,
+                                                   String checksumAlgorithm,
+                                                   String expectedChecksum,
+                                                   Integer pConnectionTimeout)
+        throws IOException, NoSuchAlgorithmException {
+        return downloadAndCheckChecksum(source,
+                                        destination,
+                                        checksumAlgorithm,
+                                        expectedChecksum,
+                                        Proxy.NO_PROXY,
+                                        Sets.newHashSet(),
+                                        pConnectionTimeout);
     }
 
     /**
      * same than {@link DownloadUtils#downloadAndCheckChecksum(URL, Path, String, String, Proxy, Collection, Integer)} with {@link Proxy#NO_PROXY} as proxy and default timeout
      */
-    public static boolean downloadAndCheckChecksum(URL source, Path destination, String checksumAlgorithm,
-            String expectedChecksum) throws IOException, NoSuchAlgorithmException {
-        return downloadAndCheckChecksum(source, destination, checksumAlgorithm, expectedChecksum, Proxy.NO_PROXY,
-                                        Sets.newHashSet(), null);
+    public static boolean downloadAndCheckChecksum(URL source,
+                                                   Path destination,
+                                                   String checksumAlgorithm,
+                                                   String expectedChecksum)
+        throws IOException, NoSuchAlgorithmException {
+        return downloadAndCheckChecksum(source,
+                                        destination,
+                                        checksumAlgorithm,
+                                        expectedChecksum,
+                                        Proxy.NO_PROXY,
+                                        Sets.newHashSet(),
+                                        null);
     }
 
     /**
      * Download a source to the provided destination using the provided proxy.
      * Checks if the checksum computed thanks to checksumAlgorithm match to the expected checksum
+     *
      * @return checksum.equals(expectedChecksum)
      */
-    public static boolean downloadAndCheckChecksum(URL source, Path destination, String checksumAlgorithm,
-            String expectedChecksum, Proxy proxy, Collection<String> nonProxyHosts, Integer pConnectionTimeout)
-            throws IOException, NoSuchAlgorithmException {
-        String checksum = downloadThroughProxy(source, destination, checksumAlgorithm, proxy, nonProxyHosts,
+    public static boolean downloadAndCheckChecksum(URL source,
+                                                   Path destination,
+                                                   String checksumAlgorithm,
+                                                   String expectedChecksum,
+                                                   Proxy proxy,
+                                                   Collection<String> nonProxyHosts,
+                                                   Integer pConnectionTimeout)
+        throws IOException, NoSuchAlgorithmException {
+        String checksum = downloadThroughProxy(source,
+                                               destination,
+                                               checksumAlgorithm,
+                                               proxy,
+                                               nonProxyHosts,
                                                pConnectionTimeout);
         return checksum.toLowerCase().equals(expectedChecksum.toLowerCase());
     }
 
     public static InputStream getInputStreamThroughProxy(URL source, Proxy proxy, Collection<String> nonProxyHosts)
-            throws IOException {
+        throws IOException {
         URLConnection connection;
         if (needProxy(source, nonProxyHosts)) {
             connection = source.openConnection(proxy);
@@ -117,8 +157,10 @@ public final class DownloadUtils {
     /**
      * @param pConnectTimeout Sets a specified timeout value, in milliseconds, to be used when opening a communications link to the resource referenced by this URLConnection
      */
-    public static InputStream getInputStreamThroughProxy(URL source, Proxy proxy, Collection<String> nonProxyHosts,
-            Integer pConnectTimeout) throws IOException {
+    public static InputStream getInputStreamThroughProxy(URL source,
+                                                         Proxy proxy,
+                                                         Collection<String> nonProxyHosts,
+                                                         Integer pConnectTimeout) throws IOException {
         URLConnection connection;
         if (needProxy(source, nonProxyHosts)) {
             connection = source.openConnection(proxy);
@@ -136,9 +178,10 @@ public final class DownloadUtils {
             HttpURLConnection conn = (HttpURLConnection) connection;
             if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 conn.disconnect();
-                throw new FileNotFoundException(
-                        String.format("Error during http/https access for URL %s, got response code : %d",
-                                      source.toString(), conn.getResponseCode()));
+                throw new FileNotFoundException(String.format(
+                    "Error during http/https access for URL %s, got response code : %d",
+                    source.toString(),
+                    conn.getResponseCode()));
             }
         }
         return connection.getInputStream();

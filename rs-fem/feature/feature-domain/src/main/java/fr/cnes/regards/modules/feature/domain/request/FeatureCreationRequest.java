@@ -18,30 +18,21 @@
  */
 package fr.cnes.regards.modules.feature.domain.request;
 
-import java.time.OffsetDateTime;
-import java.util.Set;
-
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.validation.constraints.NotBlank;
-
-import org.hibernate.annotations.Type;
-import org.springframework.util.Assert;
-
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import org.hibernate.annotations.Type;
+import org.springframework.util.Assert;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import java.time.OffsetDateTime;
+import java.util.Set;
 
 /**
  * @author Marc SORDI
- *
  */
 @Entity
 @DiscriminatorValue(FeatureRequestTypeEnum.CREATION_DISCRIMINENT)
@@ -62,9 +53,15 @@ public class FeatureCreationRequest extends AbstractFeatureRequest {
     @JoinColumn(name = "feature_id", foreignKey = @ForeignKey(name = "fk_feature_id"))
     private FeatureEntity featureEntity;
 
-    public static FeatureCreationRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
-            RequestState state, Set<String> errors, Feature feature, FeatureCreationMetadataEntity metadata,
-            FeatureRequestStep step, PriorityLevel priority) {
+    public static FeatureCreationRequest build(String requestId,
+                                               String requestOwner,
+                                               OffsetDateTime requestDate,
+                                               RequestState state,
+                                               Set<String> errors,
+                                               Feature feature,
+                                               FeatureCreationMetadataEntity metadata,
+                                               FeatureRequestStep step,
+                                               PriorityLevel priority) {
         Assert.notNull(feature, "Feature is required");
         FeatureCreationRequest request = new FeatureCreationRequest();
         request.with(requestId, requestOwner, requestDate, state, step, priority, errors);

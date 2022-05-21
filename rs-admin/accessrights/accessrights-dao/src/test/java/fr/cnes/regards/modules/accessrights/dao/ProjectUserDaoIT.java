@@ -45,6 +45,7 @@ import java.util.HashSet;
 
 /**
  * Test class for {@link ProjectUser} DAO module
+ *
  * @author Xavier-Alexandre Brochard
  */
 @RunWith(SpringRunner.class)
@@ -115,19 +116,30 @@ public class ProjectUserDaoIT {
         projectUserRepository.save(user4);
 
         ProjectUserSearchParameters parameters = new ProjectUserSearchParameters().setEmail("user");
-        Page<ProjectUser> result = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(parameters).build(), PageRequest.of(0, 4));
-        Assert.assertEquals("search of users which email contains \"user\" should return 4 users", 4, result.getContent().size());
+        Page<ProjectUser> result = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(
+            parameters).build(), PageRequest.of(0, 4));
+        Assert.assertEquals("search of users which email contains \"user\" should return 4 users",
+                            4,
+                            result.getContent().size());
 
         parameters = new ProjectUserSearchParameters().setEmail("user4");
-        result = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(parameters).build(), PageRequest.of(0, 4));
-        Assert.assertEquals("search of users which email contains \"user4\" should return 1 user", 1, result.getContent().size());
+        result = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(parameters)
+                                                                                     .build(), PageRequest.of(0, 4));
+        Assert.assertEquals("search of users which email contains \"user4\" should return 1 user",
+                            1,
+                            result.getContent().size());
 
         result = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().build(), PageRequest.of(0, 4));
-        Assert.assertEquals("search of users without filters should return ALL users", projectUserRepository.findAll().size(), result.getContent().size());
+        Assert.assertEquals("search of users without filters should return ALL users",
+                            projectUserRepository.findAll().size(),
+                            result.getContent().size());
 
         parameters = new ProjectUserSearchParameters().setStatus(UserStatus.WAITING_ACCOUNT_ACTIVE.toString());
-        result = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(parameters).build(), PageRequest.of(0, 4));
-        Assert.assertEquals("search of users with status active should return ALL users", projectUserRepository.findAll().size(), result.getContent().size());
+        result = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(parameters)
+                                                                                     .build(), PageRequest.of(0, 4));
+        Assert.assertEquals("search of users with status active should return ALL users",
+                            projectUserRepository.findAll().size(),
+                            result.getContent().size());
     }
 
 }

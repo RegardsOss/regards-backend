@@ -18,11 +18,6 @@
  */
 package fr.cnes.regards.modules.model.domain.attributes.restriction;
 
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.validation.constraints.NotNull;
-
 import fr.cnes.regards.modules.model.domain.attributes.restriction.validator.CheckFloatRange;
 import fr.cnes.regards.modules.model.domain.schema.DoubleRange;
 import fr.cnes.regards.modules.model.domain.schema.DoubleRange.Max;
@@ -30,8 +25,12 @@ import fr.cnes.regards.modules.model.domain.schema.DoubleRange.Min;
 import fr.cnes.regards.modules.model.domain.schema.Restriction;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 
+import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.validation.constraints.NotNull;
+
 /**
- *
  * Manage date format restriction for attribute of type :
  * <ul>
  * <li>{@link PropertyType#DOUBLE}</li>
@@ -40,7 +39,6 @@ import fr.cnes.regards.modules.model.dto.properties.PropertyType;
  * </ul>
  *
  * @author Marc Sordi
- *
  */
 @CheckFloatRange
 @Entity
@@ -81,7 +79,7 @@ public class DoubleRangeRestriction extends AbstractRestriction {
     @Override
     public Boolean supports(PropertyType pPropertyType) {
         return PropertyType.DOUBLE.equals(pPropertyType) || PropertyType.DOUBLE_ARRAY.equals(pPropertyType)
-                || PropertyType.DOUBLE_INTERVAL.equals(pPropertyType);
+            || PropertyType.DOUBLE_INTERVAL.equals(pPropertyType);
     }
 
     public Double getMin() {

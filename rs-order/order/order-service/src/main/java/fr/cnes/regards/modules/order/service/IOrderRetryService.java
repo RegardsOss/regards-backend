@@ -13,9 +13,21 @@ public interface IOrderRetryService {
 
     void retry(long orderId, String role, int subOrderDuration);
 
-    void retryDatasetTask(Long datasetTaskId, OrderCounts orderCounts, long orderId, String owner, int subOrderDuration, int priority, String role);
+    void retryDatasetTask(Long datasetTaskId,
+                          OrderCounts orderCounts,
+                          long orderId,
+                          String owner,
+                          int subOrderDuration,
+                          int priority,
+                          String role);
 
-    UUID createStorageSubOrder(DatasetTask datasetTask, Set<OrderDataFile> orderDataFiles, long orderId, String owner, int subOrderDuration, String role, int priority);
+    UUID createStorageSubOrder(DatasetTask datasetTask,
+                               Set<OrderDataFile> orderDataFiles,
+                               long orderId,
+                               String owner,
+                               int subOrderDuration,
+                               String role,
+                               int priority);
 
     void createExternalSubOrder(DatasetTask datasetTask, Set<OrderDataFile> orderDataFiles, long orderId, String owner);
 

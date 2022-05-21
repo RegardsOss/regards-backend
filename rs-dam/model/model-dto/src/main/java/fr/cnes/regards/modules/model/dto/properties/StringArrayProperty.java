@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.model.dto.properties;
  * Represent a {@link PropertyType#STRING_ARRAY} model attribute
  *
  * @author Marc Sordi
- *
  */
 public class StringArrayProperty extends AbstractProperty<String[]> {
 

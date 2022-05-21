@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.modules.jobs.domain;
 
 /**
  * JobInfo status
+ *
  * @author Léo Mieulet
  */
 public enum JobStatus {

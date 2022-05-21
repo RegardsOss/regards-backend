@@ -34,7 +34,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author Marc SORDI
- *
  */
 public abstract class AbstractRecipientSender<E extends ISubscribable> implements IRecipientNotifier, IHandler<E> {
 
@@ -49,7 +48,9 @@ public abstract class AbstractRecipientSender<E extends ISubscribable> implement
 
     @Override
     public Collection<NotificationRequest> send(Collection<NotificationRequest> requestsToSend) {
-        this.publisher.publish(requestsToSend.stream().map(toSend->buildEvent(toSend.getPayload(), toSend.getMetadata())).collect(Collectors.toList()));
+        this.publisher.publish(requestsToSend.stream()
+                                             .map(toSend -> buildEvent(toSend.getPayload(), toSend.getMetadata()))
+                                             .collect(Collectors.toList()));
         return Collections.EMPTY_LIST;
     }
 

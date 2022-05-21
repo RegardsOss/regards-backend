@@ -49,14 +49,15 @@ import java.util.Set;
  * @author Iliana Ghazali
  **/
 
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_snapshot_job_service_it"})
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_snapshot_job_service_it" })
 @ActiveProfiles({ "testAmqp", "noscheduler" })
 public class ManagerSnapshotJobServiceIT extends AbstractManagerServiceUtilsIT {
 
     @Autowired
     private ManagerSnapshotJobService managerSnapshotJobService;
 
-    private static final OffsetDateTime LAST_UPDATED = OffsetDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS);
+    private static final OffsetDateTime LAST_UPDATED = OffsetDateTime.now(ZoneOffset.UTC)
+                                                                     .truncatedTo(ChronoUnit.MICROS);
 
     @Test
     @Purpose("Test the generation of session steps from step request events")
@@ -94,27 +95,39 @@ public class ManagerSnapshotJobServiceIT extends AbstractManagerServiceUtilsIT {
         List<SessionStep> sessionStepList = new ArrayList<>();
 
         // SOURCE 1 -  SESSION 1
-        SessionStep sessionStep0 = new SessionStep("scan", SOURCE_1, SESSION_1, StepTypeEnum.ACQUISITION,
+        SessionStep sessionStep0 = new SessionStep("scan",
+                                                   SOURCE_1,
+                                                   SESSION_1,
+                                                   StepTypeEnum.ACQUISITION,
                                                    new StepState(0, 0, 2));
         sessionStep0.setInputRelated(2);
         sessionStep0.setLastUpdateDate(LAST_UPDATED.minusMinutes(2));
         sessionStepList.add(sessionStep0);
 
-        SessionStep sessionStep1 = new SessionStep("oais", SOURCE_1, SESSION_1, StepTypeEnum.REFERENCING,
+        SessionStep sessionStep1 = new SessionStep("oais",
+                                                   SOURCE_1,
+                                                   SESSION_1,
+                                                   StepTypeEnum.REFERENCING,
                                                    new StepState(0, 0, 3));
         sessionStep1.setOutputRelated(2);
         sessionStep1.setLastUpdateDate(LAST_UPDATED.minusMinutes(1));
         sessionStepList.add(sessionStep1);
 
         // SOURCE 1 -  SESSION 2
-        SessionStep sessionStep2 = new SessionStep("scan", SOURCE_1, SESSION_2, StepTypeEnum.ACQUISITION,
+        SessionStep sessionStep2 = new SessionStep("scan",
+                                                   SOURCE_1,
+                                                   SESSION_2,
+                                                   StepTypeEnum.ACQUISITION,
                                                    new StepState(5, 0, 0));
         sessionStep2.setInputRelated(5);
         sessionStep2.setLastUpdateDate(LAST_UPDATED.minusMinutes(5));
         sessionStepList.add(sessionStep2);
 
         // SOURCE 2 - SESSION 1
-        SessionStep sessionStep3 = new SessionStep("scan", SOURCE_2, SESSION_1, StepTypeEnum.DISSEMINATION,
+        SessionStep sessionStep3 = new SessionStep("scan",
+                                                   SOURCE_2,
+                                                   SESSION_1,
+                                                   StepTypeEnum.DISSEMINATION,
                                                    new StepState(0, 10, 0));
         sessionStep3.setOutputRelated(10);
         sessionStep3.setLastUpdateDate(LAST_UPDATED.minusMinutes(12));
@@ -132,7 +145,10 @@ public class ManagerSnapshotJobServiceIT extends AbstractManagerServiceUtilsIT {
         List<SessionStep> sessionStepList = new ArrayList<>();
         // SOURCE 2 - SESSION 1
         // change sessionStep3 to simulate a sending of the updated sessionStep
-        SessionStep sessionStep3 = new SessionStep("scan", SOURCE_2, SESSION_1, StepTypeEnum.DISSEMINATION,
+        SessionStep sessionStep3 = new SessionStep("scan",
+                                                   SOURCE_2,
+                                                   SESSION_1,
+                                                   StepTypeEnum.DISSEMINATION,
                                                    new StepState(0, 0, 0));
         sessionStep3.setOutputRelated(10);
         sessionStep3.setLastUpdateDate(LAST_UPDATED.minusSeconds(1));

@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.framework.amqp.configuration;
 
-import java.util.Base64;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import fr.cnes.regards.framework.amqp.domain.RabbitMqVhostPermission;
+import fr.cnes.regards.framework.amqp.domain.RabbitVhost;
+import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostPermissionException;
+import fr.cnes.regards.framework.amqp.exception.RemovingRabbitMQVhostException;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
@@ -30,23 +30,18 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.connection.SimpleResourceHolder;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestOperations;
 
-import fr.cnes.regards.framework.amqp.domain.RabbitMqVhostPermission;
-import fr.cnes.regards.framework.amqp.domain.RabbitVhost;
-import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostPermissionException;
-import fr.cnes.regards.framework.amqp.exception.RemovingRabbitMQVhostException;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import java.util.Base64;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * implementation compliant with RabbitMQ v3.6.5
+ *
  * @author svissier
  * @author Marc Sordi
  */
@@ -131,21 +126,28 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin, Initiali
 
     /**
      * Constructor used to initialize properties from AmqpProperties
-     * @param mode {@link VirtualHostMode}
-     * @param tenantResolver retrieve all tenants
-     * @param rabbitmqUserName user name
-     * @param rabbitmqPassword password
-     * @param amqpManagementHost management host
-     * @param amqpManagementPort management port
-     * @param restOperations client REST
+     *
+     * @param mode                           {@link VirtualHostMode}
+     * @param tenantResolver                 retrieve all tenants
+     * @param rabbitmqUserName               user name
+     * @param rabbitmqPassword               password
+     * @param amqpManagementHost             management host
+     * @param amqpManagementPort             management port
+     * @param restOperations                 client REST
      * @param simpleRoutingConnectionFactory connection factory to handle multi-tenancy
-     * @param rabbitAddresses server addresses
-     * @param startupTenants tenant to manage at startup
+     * @param rabbitAddresses                server addresses
+     * @param startupTenants                 tenant to manage at startup
      */
-    public RabbitVirtualHostAdmin(VirtualHostMode mode, ITenantResolver tenantResolver, String rabbitmqUserName,
-            String rabbitmqPassword, String amqpManagementHost, Integer amqpManagementPort,
-            RestOperations restOperations, MultitenantSimpleRoutingConnectionFactory simpleRoutingConnectionFactory,
-            String rabbitAddresses, String[] startupTenants) {
+    public RabbitVirtualHostAdmin(VirtualHostMode mode,
+                                  ITenantResolver tenantResolver,
+                                  String rabbitmqUserName,
+                                  String rabbitmqPassword,
+                                  String amqpManagementHost,
+                                  Integer amqpManagementPort,
+                                  RestOperations restOperations,
+                                  MultitenantSimpleRoutingConnectionFactory simpleRoutingConnectionFactory,
+                                  String rabbitAddresses,
+                                  String[] startupTenants) {
         super();
         this.mode = mode;
         this.tenantResolver = tenantResolver;
@@ -200,7 +202,9 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin, Initiali
         final HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.AUTHORIZATION, setBasic());
         final HttpEntity<Void> request = new HttpEntity<>(headers);
-        final ResponseEntity<List<RabbitVhost>> response = restOperations.exchange(host, HttpMethod.GET, request,
+        final ResponseEntity<List<RabbitVhost>> response = restOperations.exchange(host,
+                                                                                   HttpMethod.GET,
+                                                                                   request,
                                                                                    typeRef);
         vhostList = response.getBody().stream().map(RabbitVhost::getName).collect(Collectors.toList());
         return vhostList;
@@ -230,7 +234,8 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin, Initiali
 
     /**
      * Register {@link ConnectionFactory}
-     * @param virtualHost virtual host
+     *
+     * @param virtualHost        virtual host
      * @param pConnectionFactory related vhost {@link ConnectionFactory}
      */
     private void registerConnectionFactory(String virtualHost, CachingConnectionFactory pConnectionFactory) {
@@ -242,6 +247,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin, Initiali
 
     /**
      * Unregister {@link ConnectionFactory}
+     *
      * @param virtualHost tenant
      */
     private void unregisterConnectionFactory(String virtualHost) {
@@ -270,10 +276,14 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin, Initiali
 
             // Add VHOST using a PUT request
             ResponseEntity<String> response = restOperations.exchange(getRabbitApiVhostEndpoint() + SLASH + virtualHost,
-                                                                      HttpMethod.PUT, request, String.class);
+                                                                      HttpMethod.PUT,
+                                                                      request,
+                                                                      String.class);
             int statusValue = response.getStatusCodeValue();
             if (!isSuccess(statusValue)) {
-                String errorMessage = String.format("Cannot add vhost %s (status %s) : %s", virtualHost, statusValue,
+                String errorMessage = String.format("Cannot add vhost %s (status %s) : %s",
+                                                    virtualHost,
+                                                    statusValue,
                                                     response.getBody());
                 LOGGER.error(errorMessage);
                 throw new RemovingRabbitMQVhostException(errorMessage);
@@ -286,7 +296,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin, Initiali
 
         String[] rabbitHostAndPort = parseRabbitAddresses(rabbitAddresses);
         CachingConnectionFactory connectionFactory = new CachingConnectionFactory(rabbitHostAndPort[0],
-                Integer.parseInt(rabbitHostAndPort[1]));
+                                                                                  Integer.parseInt(rabbitHostAndPort[1]));
         connectionFactory.setVirtualHost(virtualHost);
         connectionFactory.setUsername(rabbitmqUserName);
         connectionFactory.setPassword(rabbitmqPassword);
@@ -305,11 +315,15 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin, Initiali
             headers.add(HttpHeaders.AUTHORIZATION, setBasic());
             HttpEntity<Void> request = new HttpEntity<>(headers);
             ResponseEntity<String> response = restOperations.exchange(getRabbitApiVhostEndpoint() + SLASH + virtualHost,
-                                                                      HttpMethod.DELETE, request, String.class);
+                                                                      HttpMethod.DELETE,
+                                                                      request,
+                                                                      String.class);
             int statusValue = response.getStatusCodeValue();
             // if successful or 404 then the broker is clean
             if (!(isSuccess(statusValue) || (statusValue == HttpStatus.NOT_FOUND.value()))) {
-                String errorMessage = String.format("Cannot remove vhost %s (status %s) : %s", virtualHost, statusValue,
+                String errorMessage = String.format("Cannot remove vhost %s (status %s) : %s",
+                                                    virtualHost,
+                                                    statusValue,
                                                     response.getBody());
                 LOGGER.error(errorMessage);
                 throw new RemovingRabbitMQVhostException(errorMessage);
@@ -333,8 +347,10 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin, Initiali
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.add(HttpHeaders.AUTHORIZATION, setBasic());
         final HttpEntity<RabbitMqVhostPermission> request = new HttpEntity<>(new RabbitMqVhostPermission(), headers);
-        final ResponseEntity<String> response = restOperations
-                .exchange(getRabbitApiPermissionVhostEndpoint(virtualHost), HttpMethod.PUT, request, String.class);
+        final ResponseEntity<String> response = restOperations.exchange(getRabbitApiPermissionVhostEndpoint(virtualHost),
+                                                                        HttpMethod.PUT,
+                                                                        request,
+                                                                        String.class);
         final int statusValue = response.getStatusCodeValue();
         if (!isSuccess(statusValue)) {
             throw new AddingRabbitMQVhostPermissionException(response.getBody() + NEW_LINE_STATUS + statusValue);

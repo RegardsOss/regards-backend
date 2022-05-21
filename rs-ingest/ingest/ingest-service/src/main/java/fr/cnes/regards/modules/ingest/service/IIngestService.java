@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.dto.RequestInfoDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
+
 import java.io.InputStream;
 import java.util.Collection;
 
@@ -30,18 +31,19 @@ import java.util.Collection;
  * Ingest service interface
  *
  * @author Marc Sordi
- *
  */
 public interface IIngestService {
 
     /**
      * Register and schedule ingest requests from flow items
+     *
      * @param items flow items to register as ingest requests and to schedule as an ingestion job
      */
     void handleIngestRequests(Collection<IngestRequestFlowItem> items);
 
     /**
      * Handle SIP collection directly scheduling a generation job
+     *
      * @param sips raw {@link SIPCollection}
      * @throws EntityInvalidException if max bulk size exceeded
      */
@@ -49,6 +51,7 @@ public interface IIngestService {
 
     /**
      * Handle SIP collection directly scheduling a generation job
+     *
      * @param input JSON file containing a SIP collection
      */
     RequestInfoDto handleSIPCollection(InputStream input) throws ModuleException;

@@ -23,8 +23,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 public class ProjectUserUpdateDto extends ProjectUserBaseDto {
 
     private Long id;
-    private Role role;
 
+    private Role role;
 
     public Long getId() {
         return id;

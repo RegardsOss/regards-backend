@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.event;
 
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionDiscarded;
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 
-import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionDiscarded;
-import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
-
 /**
  * This class manages JPA event workflow on local microservice using Spring events
+ *
  * @author Marc Sordi
  */
 public class MultitenantJpaEventPublisher implements ApplicationEventPublisherAware {

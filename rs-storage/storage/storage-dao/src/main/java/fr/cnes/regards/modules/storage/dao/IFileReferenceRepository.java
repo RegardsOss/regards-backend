@@ -36,10 +36,9 @@ import java.util.Set;
  * JPA Repository to handle access to {@link FileReference} entities.
  *
  * @author Sébatien Binda
- *
  */
 public interface IFileReferenceRepository
-        extends JpaRepository<FileReference, Long>, JpaSpecificationExecutor<FileReference> {
+    extends JpaRepository<FileReference, Long>, JpaSpecificationExecutor<FileReference> {
 
     Page<FileReference> findByLocationStorage(String storage, Pageable page);
 
@@ -47,18 +46,21 @@ public interface IFileReferenceRepository
 
     Set<FileReference> findByLocationStorageAndMetaInfoChecksumIn(String storage, Collection<String> checksums);
 
-    Page<FileReference> findByLocationStorageAndMetaInfoTypeIn(String storage, Collection<String> type,
-            Pageable pageable);
+    Page<FileReference> findByLocationStorageAndMetaInfoTypeIn(String storage,
+                                                               Collection<String> type,
+                                                               Pageable pageable);
 
     Set<FileReference> findByMetaInfoChecksum(String checksum);
 
     Set<FileReference> findByMetaInfoChecksumIn(Collection<String> checksums);
 
-    @Query("select fr.location.storage as storage, sum(fr.metaInfo.fileSize) as usedSize, count(*) as numberOfFileReference, max(fr.id) as lastFileReferenceId"
+    @Query(
+        "select fr.location.storage as storage, sum(fr.metaInfo.fileSize) as usedSize, count(*) as numberOfFileReference, max(fr.id) as lastFileReferenceId"
             + " from FileReference fr group by storage")
     Collection<StorageMonitoringAggregation> getTotalFileSizeAggregation();
 
-    @Query("select fr.location.storage as storage, sum(fr.metaInfo.fileSize) as usedSize, count(*) as numberOfFileReference, max(fr.id) as lastFileReferenceId"
+    @Query(
+        "select fr.location.storage as storage, sum(fr.metaInfo.fileSize) as usedSize, count(*) as numberOfFileReference, max(fr.id) as lastFileReferenceId"
             + " from FileReference fr where fr.id > :id group by fr.location.storage")
     Collection<StorageMonitoringAggregation> getTotalFileSizeAggregation(@Param("id") Long fromFileReferenceId);
 
@@ -73,7 +75,7 @@ public interface IFileReferenceRepository
     void removeOwner(@Param("id") Long id, @Param("owner") String owner);
 
     @Query(value = "select exists(select 1 from ta_file_reference_owner where file_ref_id=:id and owner=:owner)",
-            nativeQuery = true)
+        nativeQuery = true)
     boolean isOwnedBy(@Param("id") Long id, @Param("owner") String owner);
 
     Collection<String> findOwnersById(Long fileRefId);

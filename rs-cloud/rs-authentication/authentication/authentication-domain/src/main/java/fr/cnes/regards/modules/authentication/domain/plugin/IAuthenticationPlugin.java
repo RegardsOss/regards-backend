@@ -22,8 +22,9 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
  * Class IAuthenticationProvider
- *
+ * <p>
  * Authentication Provider interface.
+ *
  * @author Sébastien Binda
  */
 @FunctionalInterface
@@ -32,9 +33,10 @@ public interface IAuthenticationPlugin {
 
     /**
      * Check if the couple pName/pPassowrd is valid for the given project pScope
-     * @param pName user login
+     *
+     * @param pName     user login
      * @param pPassword user password
-     * @param pScope user project
+     * @param pScope    user project
      * @return Authentication status UserStatus
      */
     AuthenticationPluginResponse authenticate(String pName, String pPassword, String pScope);

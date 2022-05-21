@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.storage.domain.plugin;
 
-import java.nio.file.Path;
-
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
+
+import java.nio.file.Path;
 
 /**
  * The ProgressManager is used by {@link IStorageLocation} plugins to notidy the upper service of storage action results :
@@ -29,20 +29,23 @@ import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
  * <li>Restoration succeed {@link #restoreSucceed}</li>
  * <li>Restoration failed {@link #restoreFailed}</li>
  * </ul>
+ *
  * @author Sébastien Binda
  */
 public interface IRestorationProgressManager {
 
     /**
      * Notify system that the given {@link FileReference} is restored.
+     *
      * @param FileCacheRequest {@link FileCacheRequest} restored.
      */
     public void restoreSucceed(FileCacheRequest fileRequest, Path restoredFilePath);
 
     /**
      * Notify the system that the given {@link FileReference} couldn't be restored.
+     *
      * @param FileCacheRequest {@link FileCacheRequest} not restored.
-     * @param cause {@link String} error message.
+     * @param cause            {@link String} error message.
      */
     public void restoreFailed(FileCacheRequest fileRequest, String cause);
 

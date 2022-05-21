@@ -28,11 +28,9 @@ import javax.validation.Valid;
 import java.util.List;
 
 /**
- *
  * Tenant connection <b>SYSTEM</b> client
  *
  * @author Marc Sordi
- *
  */
 @RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.tenant-connection-client")
 public interface ITenantConnectionClient {
@@ -41,30 +39,36 @@ public interface ITenantConnectionClient {
 
     /**
      * Allows the system to register a tenant connection
-     * @param microservice target microservice
+     *
+     * @param microservice     target microservice
      * @param tenantConnection connection to register
      * @return registered connection
      */
-    @PostMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<TenantConnection> addTenantConnection(@PathVariable("microservice") String microservice,
-            @Valid @RequestBody TenantConnection tenantConnection);
+                                                         @Valid @RequestBody TenantConnection tenantConnection);
 
     /**
      * Allows the system to update connection state. Only tenant, state and errorCause are useful.
-     * @param microservice target microservice
+     *
+     * @param microservice     target microservice
      * @param tenantConnection connection to update
      * @return updated connection
      */
-    @PutMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<TenantConnection> updateState(@PathVariable("microservice") String microservice,
-            @Valid @RequestBody TenantConnection tenantConnection);
+                                                 @Valid @RequestBody TenantConnection tenantConnection);
 
     /**
      * Retrieve all tenant connections
+     *
      * @param microservice target microservice
      * @return list of connections
      */
-    @GetMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<TenantConnection>> getTenantConnections(@PathVariable("microservice") String microservice);
 
 }

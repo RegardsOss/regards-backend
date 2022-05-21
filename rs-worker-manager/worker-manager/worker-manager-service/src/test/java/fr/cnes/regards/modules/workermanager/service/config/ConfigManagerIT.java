@@ -42,21 +42,29 @@ public class ConfigManagerIT extends AbstractWorkerManagerServiceUtilsIT {
 
     @Test
     public void test() {
-        Assert.assertEquals("Should be able to export conf, 0 at first", 0,
+        Assert.assertEquals("Should be able to export conf, 0 at first",
+                            0,
                             configManager.exportConfiguration(Lists.newArrayList()).getConfiguration().size());
         String workerType = "workerType";
         String contentType3 = "contentType3";
         String contentType2 = "contentType2";
         String contentType1 = "contentType1";
         Set<String> contentTypes1 = Sets.newHashSet(contentType1, contentType2, contentType3);
-        Set<String> errors = configManager.importConfiguration(ModuleConfiguration.build(null, Lists.newArrayList(
-                ModuleConfigurationItem.build(new WorkerConfigDto(workerType, contentTypes1)))), Sets.newHashSet());
+        Set<String> errors = configManager.importConfiguration(ModuleConfiguration.build(null,
+                                                                                         Lists.newArrayList(
+                                                                                             ModuleConfigurationItem.build(
+                                                                                                 new WorkerConfigDto(
+                                                                                                     workerType,
+                                                                                                     contentTypes1)))),
+                                                               Sets.newHashSet());
         Assert.assertEquals("Should not get errors", 0, errors.size());
-        Assert.assertEquals("Should now get a configuration when export", 1,
+        Assert.assertEquals("Should now get a configuration when export",
+                            1,
                             configManager.exportConfiguration(Lists.newArrayList()).getConfiguration().size());
 
         configManager.resetConfiguration();
-        Assert.assertEquals("Should delete any conf", 0,
+        Assert.assertEquals("Should delete any conf",
+                            0,
                             configManager.exportConfiguration(Lists.newArrayList()).getConfiguration().size());
     }
 }

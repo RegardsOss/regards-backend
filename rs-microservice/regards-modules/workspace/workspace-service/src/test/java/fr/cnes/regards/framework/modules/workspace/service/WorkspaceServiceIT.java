@@ -1,5 +1,12 @@
 package fr.cnes.regards.framework.modules.workspace.service;
 
+import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
+import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -7,19 +14,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-
-import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
-import fr.cnes.regards.framework.utils.file.ChecksumUtils;
-
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
 @TestPropertySource(
-        properties = { "regards.cipher.key-location=src/test/resources/testKey", "regards.cipher.iv=1234567812345678" })
+    properties = { "regards.cipher.key-location=src/test/resources/testKey", "regards.cipher.iv=1234567812345678" })
 public class WorkspaceServiceIT extends AbstractRegardsServiceIT {
 
     @Autowired

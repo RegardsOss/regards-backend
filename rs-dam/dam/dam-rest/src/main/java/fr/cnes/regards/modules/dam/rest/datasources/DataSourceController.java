@@ -18,21 +18,6 @@
  */
 package fr.cnes.regards.modules.dam.rest.datasources;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.validation.Valid;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -47,9 +32,19 @@ import fr.cnes.regards.modules.dam.rest.datasources.dto.DataSourceDTO;
 import fr.cnes.regards.modules.dam.rest.datasources.exception.AssociatedDatasetExistsException;
 import fr.cnes.regards.modules.dam.service.datasources.IDataSourceService;
 import fr.cnes.regards.modules.dam.service.entities.IDatasetService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * REST interface for Datasources plugin configuration ie only {@link IDataSourcePlugin} are concerned
+ *
  * @author Christophe Mertz
  * @author oroussel
  */
@@ -79,6 +74,7 @@ public class DataSourceController implements IResourceController<DataSourceDTO> 
 
     /**
      * Retrieve all {@link IDataSourcePlugin} {@link PluginConfiguration}s.
+     *
      * @return a list of {@link PluginConfiguration}
      */
     @ResourceAccess(description = "List all plugin configurations of type IDataSourcePlugin")
@@ -90,19 +86,22 @@ public class DataSourceController implements IResourceController<DataSourceDTO> 
     /**
      * Create a data source.</br>
      * A {@link PluginConfiguration} for the plugin type {@link IDBConnectionPlugin} is created.
+     *
      * @param datasource the DataSource used to create the {@link PluginConfiguration}
      * @return the created data source
      * @throws ModuleException if problem occurs during plugin configuration creation
      */
     @ResourceAccess(description = "Create a DataSource")
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<EntityModel<DataSourceDTO>> createDataSource(
-            @Valid @RequestBody PluginConfiguration datasource) throws ModuleException {
+    public ResponseEntity<EntityModel<DataSourceDTO>> createDataSource(@Valid @RequestBody
+                                                                       PluginConfiguration datasource)
+        throws ModuleException {
         return ResponseEntity.ok(toResource(dataSourceService.createDataSource(datasource)));
     }
 
     /**
      * Get a data source
+     *
      * @param businessId {@link PluginConfiguration} identifier
      * @return a {@link PluginConfiguration}
      * @throws ModuleException if plugin configuration cannot be retrieved
@@ -110,12 +109,13 @@ public class DataSourceController implements IResourceController<DataSourceDTO> 
     @ResourceAccess(description = "Get a DataSource ie a PluginConfiguration of type IDataSourcePlugin")
     @RequestMapping(method = RequestMethod.GET, value = "/{businessId}")
     public ResponseEntity<EntityModel<DataSourceDTO>> getDataSource(
-            @PathVariable(name = "businessId") String businessId) throws ModuleException {
+        @PathVariable(name = "businessId") String businessId) throws ModuleException {
         return ResponseEntity.ok(toResource(dataSourceService.getDataSource(businessId)));
     }
 
     /**
      * Allow to update {@link PluginConfiguration} for the plugin type {@link IDataSourcePlugin}
+     *
      * @param businessId {@link PluginConfiguration} identifier
      * @param dataSource data source to update
      * @return updated {@link PluginConfiguration}
@@ -124,26 +124,28 @@ public class DataSourceController implements IResourceController<DataSourceDTO> 
     @ResourceAccess(description = "Update a plugin configuration of type IDataSourcePlugin")
     @RequestMapping(method = RequestMethod.PUT, value = "/{businessId}")
     public ResponseEntity<EntityModel<DataSourceDTO>> updateDataSource(
-            @PathVariable(name = "businessId") String businessId, @Valid @RequestBody PluginConfiguration dataSource)
-            throws ModuleException {
+        @PathVariable(name = "businessId") String businessId, @Valid @RequestBody PluginConfiguration dataSource)
+        throws ModuleException {
         if (!businessId.equals(dataSource.getBusinessId())) {
-            throw new EntityInconsistentIdentifierException(businessId, dataSource.getBusinessId(),
-                    PluginConfiguration.class);
+            throw new EntityInconsistentIdentifierException(businessId,
+                                                            dataSource.getBusinessId(),
+                                                            PluginConfiguration.class);
         }
         return ResponseEntity.ok(toResource(dataSourceService.updateDataSource(dataSource)));
     }
 
     /**
      * Delete a {@link PluginConfiguration} defined for the plugin type {@link IDataSourcePlugin}
+     *
      * @param businessId {@link PluginConfiguration} identifier
      * @return nothing
      * @throws AssociatedDatasetExistsException
-     * @throws ModuleException if {@link PluginConfiguration} cannot be deleted
+     * @throws ModuleException                  if {@link PluginConfiguration} cannot be deleted
      */
     @ResourceAccess(description = "Delete a plugin configuration of type IDataSourcePlugin")
     @RequestMapping(method = RequestMethod.DELETE, value = "/{businessId}")
     public ResponseEntity<Void> deleteDataSource(@PathVariable(name = "businessId") String businessId)
-            throws AssociatedDatasetExistsException, ModuleException {
+        throws AssociatedDatasetExistsException, ModuleException {
         try {
             dataSourceService.deleteDataSource(businessId);
         } catch (RuntimeException e) {
@@ -172,13 +174,22 @@ public class DataSourceController implements IResourceController<DataSourceDTO> 
     @Override
     public EntityModel<DataSourceDTO> toResource(DataSourceDTO conf, Object... pExtras) {
         EntityModel<DataSourceDTO> resource = resourceService.toResource(conf);
-        resourceService.addLink(resource, this.getClass(), "getDataSource", LinkRels.SELF,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "getDataSource",
+                                LinkRels.SELF,
                                 MethodParamFactory.build(String.class, conf.getBusinessId()));
         if (conf.getAssociatedDatasets() == 0) {
-            resourceService.addLink(resource, this.getClass(), "deleteDataSource", LinkRels.DELETE,
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "deleteDataSource",
+                                    LinkRels.DELETE,
                                     MethodParamFactory.build(String.class, conf.getBusinessId()));
         }
-        resourceService.addLink(resource, this.getClass(), "updateDataSource", LinkRels.UPDATE,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "updateDataSource",
+                                LinkRels.UPDATE,
                                 MethodParamFactory.build(String.class, conf.getBusinessId()),
                                 MethodParamFactory.build(PluginConfiguration.class));
         resourceService.addLink(resource, this.getClass(), "getAllDataSources", LinkRels.LIST);

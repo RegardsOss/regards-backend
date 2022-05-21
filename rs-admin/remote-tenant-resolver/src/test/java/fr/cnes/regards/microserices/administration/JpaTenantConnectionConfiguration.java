@@ -18,8 +18,16 @@
  */
 package fr.cnes.regards.microserices.administration;
 
-import java.util.ArrayList;
-
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.microserices.administration.stubs.ProjectClientStub;
+import fr.cnes.regards.microserices.administration.stubs.ProjectConnectionClientStub;
+import fr.cnes.regards.microservices.administration.RemoteClientAutoConfiguration;
+import fr.cnes.regards.modules.accessrights.client.IMicroserviceResourceClient;
+import fr.cnes.regards.modules.accessrights.client.IRolesClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
+import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -34,25 +42,14 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.PagedModel.PageMetadata;
 import org.springframework.http.ResponseEntity;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.microserices.administration.stubs.ProjectClientStub;
-import fr.cnes.regards.microserices.administration.stubs.ProjectConnectionClientStub;
-import fr.cnes.regards.microservices.administration.RemoteClientAutoConfiguration;
-import fr.cnes.regards.modules.accessrights.client.IMicroserviceResourceClient;
-import fr.cnes.regards.modules.accessrights.client.IRolesClient;
-import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
-import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import java.util.ArrayList;
 
 /**
- *
  * Class JpaTenantConnectionConfiguration
- *
+ * <p>
  * Test configuratiob class
  *
  * @author Sébastien Binda
-
  */
 @Configuration
 @EnableAutoConfiguration(exclude = { RemoteClientAutoConfiguration.class, DataSourceAutoConfiguration.class })
@@ -63,7 +60,6 @@ public class JpaTenantConnectionConfiguration {
      * Stub administration client
      *
      * @return IProjectsClient
-    
      */
     @Bean
     @Qualifier("initProjectConnectionsClient")
@@ -81,11 +77,9 @@ public class JpaTenantConnectionConfiguration {
     }
 
     /**
-     *
      * Stub administration client
      *
      * @return IProjectsClient
-    
      */
     @Bean
     @Primary
@@ -94,11 +88,9 @@ public class JpaTenantConnectionConfiguration {
     }
 
     /**
-     *
      * Stub administration client
      *
      * @return {@link IProjectsClient}
-    
      */
     @Bean
     @Primary
@@ -109,11 +101,9 @@ public class JpaTenantConnectionConfiguration {
     }
 
     /**
-     *
      * Mock AMQP Publisher
      *
      * @return {@link IPublisher}
-    
      */
     @Bean
     IPublisher publisher() {
@@ -121,11 +111,9 @@ public class JpaTenantConnectionConfiguration {
     }
 
     /**
-     *
      * Mock AMQP Subscriber
      *
      * @return {@link ISubscriber}
-    
      */
     @Bean
     ISubscriber subsriber() {
@@ -133,11 +121,9 @@ public class JpaTenantConnectionConfiguration {
     }
 
     /**
-     *
      * Stub administration client
      *
      * @return IProjectsClient
-    
      */
     @Bean
     @Primary
@@ -147,12 +133,13 @@ public class JpaTenantConnectionConfiguration {
         Mockito.when(mock.registerMicroserviceEndpoints(Mockito.anyString(), Mockito.any())).thenReturn(response);
 
         final PageMetadata md = new PageMetadata(0, 0, 0);
-        final PagedModel<EntityModel<ResourcesAccess>> pagedResources = PagedModel.of(new ArrayList<>(), md,
-                new ArrayList<>());
-        final ResponseEntity<PagedModel<EntityModel<ResourcesAccess>>> resourcesResponse = ResponseEntity
-                .ok(pagedResources);
+        final PagedModel<EntityModel<ResourcesAccess>> pagedResources = PagedModel.of(new ArrayList<>(),
+                                                                                      md,
+                                                                                      new ArrayList<>());
+        final ResponseEntity<PagedModel<EntityModel<ResourcesAccess>>> resourcesResponse = ResponseEntity.ok(
+            pagedResources);
         Mockito.when(mock.getAllResourceAccessesByMicroservice(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
-                .thenReturn(resourcesResponse);
+               .thenReturn(resourcesResponse);
         return mock;
     }
 

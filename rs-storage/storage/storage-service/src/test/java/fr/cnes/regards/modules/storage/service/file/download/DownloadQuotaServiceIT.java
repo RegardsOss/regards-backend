@@ -31,36 +31,44 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@TestPropertySource( properties = { "spring.jpa.properties.hibernate.default_schema=storage_download_quota_tests"  })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_download_quota_tests" })
 @RunWith(SpringRunner.class)
 public class DownloadQuotaServiceIT extends AbstractRegardsTransactionalIT {
 
     public static final long MAX_QUOTA = 10L;
+
     public static final long RATE_LIMIT = 600L;
-    @Autowired private IDownloadQuotaRepository quotaRepository;
+
+    @Autowired
+    private IDownloadQuotaRepository quotaRepository;
 
     private IDownloadQuotaRepository quotaRepositoryDelegate;
 
     @MockBean
     private IQuotaManager quotaManager;
 
-    @Autowired private IRuntimeTenantResolver tenantResolver;
+    @Autowired
+    private IRuntimeTenantResolver tenantResolver;
 
-    @Mock private ISubscriber subscriber;
+    @Mock
+    private ISubscriber subscriber;
 
-    @Autowired @InjectMocks private DownloadQuotaService<Unit> quotaService;
+    @Autowired
+    @InjectMocks
+    private DownloadQuotaService<Unit> quotaService;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         quotaRepositoryDelegate = quotaRepository;
-        quotaRepository =
-            Mockito.mock(IDownloadQuotaRepository.class, AdditionalAnswers.delegatesTo(quotaRepository));
+        quotaRepository = Mockito.mock(IDownloadQuotaRepository.class, AdditionalAnswers.delegatesTo(quotaRepository));
         ReflectionTestUtils.setField(quotaService, "quotaRepository", quotaRepository);
 
         tenantResolver.forceTenant(getDefaultTenant());
         quotaService.setCache(Caffeine.newBuilder().build());
-        quotaService.setDefaultLimits(new AtomicReference<>(HashMap.of(getDefaultTenant(), new DefaultDownloadQuotaLimits(MAX_QUOTA, RATE_LIMIT))));
+        quotaService.setDefaultLimits(new AtomicReference<>(HashMap.of(getDefaultTenant(),
+                                                                       new DefaultDownloadQuotaLimits(MAX_QUOTA,
+                                                                                                      RATE_LIMIT))));
     }
 
     @After
@@ -91,40 +99,33 @@ public class DownloadQuotaServiceIT extends AbstractRegardsTransactionalIT {
         // a concurrent write happens while inserting the new quota record
         doAnswer(a -> {
             DownloadQuotaLimits newDownloadQuota = a.getArgument(0, DownloadQuotaLimits.class);
-            Thread concurrentOperation =
-                new Thread(() -> {
-                    tenantResolver.forceTenant(getDefaultTenant());
-                    quotaRepositoryDelegate.save(new DownloadQuotaLimits(newDownloadQuota));
-                });
+            Thread concurrentOperation = new Thread(() -> {
+                tenantResolver.forceTenant(getDefaultTenant());
+                quotaRepositoryDelegate.save(new DownloadQuotaLimits(newDownloadQuota));
+            });
             concurrentOperation.start();
             concurrentOperation.join();
             return quotaRepositoryDelegate.save(newDownloadQuota);
         }).when(quotaRepository).save(any());
 
-//        // but pretend it doesn't exist at first read
-//        // so the existing record appears to the service as a concurrent write
-//        // when it tries to create it
-//        doReturn(Optional.empty())
-//            .when(quotaRepository)
-//            .findByUserEmail(userEmail);
+        //        // but pretend it doesn't exist at first read
+        //        // so the existing record appears to the service as a concurrent write
+        //        // when it tries to create it
+        //        doReturn(Optional.empty())
+        //            .when(quotaRepository)
+        //            .findByUserEmail(userEmail);
 
         // also, the quotaManager is bypassed completely because we don't care in this test
-        doReturn(
-            Tuple.of(
-                new UserQuotaAggregate(0L),
-                new UserRateAggregate(0L)
-            )
-        ).when(quotaManager).get(any());
+        doReturn(Tuple.of(new UserQuotaAggregate(0L), new UserRateAggregate(0L))).when(quotaManager).get(any());
         doNothing().when(quotaManager).increment(any());
         doNothing().when(quotaManager).decrement(any());
 
         // when
         // we execute a noop
-        Try<Unit> result = quotaService.withQuota(userEmail, quotaHandler ->
-            Try.success(Unit.UNIT)
-                .peek(__ -> quotaHandler.start())
-                .peek(__ -> quotaHandler.stop())
-        );
+        Try<Unit> result = quotaService.withQuota(userEmail,
+                                                  quotaHandler -> Try.success(Unit.UNIT)
+                                                                     .peek(__ -> quotaHandler.start())
+                                                                     .peek(__ -> quotaHandler.stop()));
 
         // then
         // a first find request is made to the quotaRepository but returns nothing

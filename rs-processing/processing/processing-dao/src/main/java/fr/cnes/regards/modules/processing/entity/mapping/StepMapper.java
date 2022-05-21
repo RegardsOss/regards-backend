@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.entity.mapping;
 
 import fr.cnes.regards.modules.processing.domain.PStep;
@@ -35,18 +35,12 @@ import java.time.ZoneId;
 public class StepMapper implements DomainEntityMapper.Step {
 
     public StepEntity toEntity(PStep step) {
-        return new StepEntity(
-                step.getStatus(),
-                step.getTime().toEpochSecond() * 1000L,
-                step.getMessage()
-        );
+        return new StepEntity(step.getStatus(), step.getTime().toEpochSecond() * 1000L, step.getMessage());
     }
 
     public PStep toDomain(StepEntity entity) {
-        return PStep.from(
-                entity.getStatus(),
-                OffsetDateTime.ofInstant(Instant.ofEpochMilli(entity.getEpochTs()), ZoneId.of("UTC")),
-                entity.getMessage()
-        );
+        return PStep.from(entity.getStatus(),
+                          OffsetDateTime.ofInstant(Instant.ofEpochMilli(entity.getEpochTs()), ZoneId.of("UTC")),
+                          entity.getMessage());
     }
 }

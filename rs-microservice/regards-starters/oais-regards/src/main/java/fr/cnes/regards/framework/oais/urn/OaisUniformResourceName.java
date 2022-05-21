@@ -18,20 +18,19 @@
  */
 package fr.cnes.regards.framework.oais.urn;
 
-import java.util.UUID;
-import java.util.regex.Pattern;
-
-import javax.persistence.Convert;
-
 import fr.cnes.regards.framework.oais.urn.converters.OaisUrnConverter;
 import fr.cnes.regards.framework.oais.validator.RegardsOaisUrn;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 
+import javax.persistence.Convert;
+import java.util.UUID;
+import java.util.regex.Pattern;
+
 /**
  * allow us to create URN with the following format:
  * URN:OAISIdentifier:entityType:tenant:UUID(entityId):Vversion[,order][:REVrevision]
- *
+ * <p>
  * <br/>
  * Example:
  * <ul>
@@ -48,8 +47,13 @@ public class OaisUniformResourceName extends UniformResourceName {
     /**
      * Constructor setting the given parameters as attributes
      */
-    public OaisUniformResourceName(OAISIdentifier oaisIdentifier, EntityType entityType, String tenant, UUID entityId,
-            int version, Long order, String revision) {
+    public OaisUniformResourceName(OAISIdentifier oaisIdentifier,
+                                   EntityType entityType,
+                                   String tenant,
+                                   UUID entityId,
+                                   int version,
+                                   Long order,
+                                   String revision) {
         super(oaisIdentifier.name(), entityType, tenant, entityId, version, order, revision);
     }
 
@@ -57,13 +61,23 @@ public class OaisUniformResourceName extends UniformResourceName {
         // for testing purpose
     }
 
-    public OaisUniformResourceName(OAISIdentifier identifier, EntityType entityType, String tenant, UUID entityId, Long order, String revision) {
+    public OaisUniformResourceName(OAISIdentifier identifier,
+                                   EntityType entityType,
+                                   String tenant,
+                                   UUID entityId,
+                                   Long order,
+                                   String revision) {
         super(identifier.name(), entityType, tenant, entityId, order, revision);
     }
 
     public static OaisUniformResourceName build(UniformResourceName urn) {
-        return new OaisUniformResourceName(OAISIdentifier.valueOf(urn.getIdentifier()), urn.getEntityType(),
-                urn.getTenant(), urn.getEntityId(), urn.getVersion(), urn.getOrder(), urn.getRevision());
+        return new OaisUniformResourceName(OAISIdentifier.valueOf(urn.getIdentifier()),
+                                           urn.getEntityType(),
+                                           urn.getTenant(),
+                                           urn.getEntityId(),
+                                           urn.getVersion(),
+                                           urn.getOrder(),
+                                           urn.getRevision());
     }
 
     public void setIdentifier(OAISIdentifier oaisIdentifier) {
@@ -94,7 +108,7 @@ public class OaisUniformResourceName extends UniformResourceName {
         String[] versionWithOrder = stringFragment[5].split(",");
         boolean last = versionWithOrder[0].contains(LAST_VALUE);
         Integer version = null;
-        if(!last) {
+        if (!last) {
             // if this is not a last URN then lets compute version
             version = Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length()));
         }
@@ -107,7 +121,7 @@ public class OaisUniformResourceName extends UniformResourceName {
             // Revision is precised
             revision = stringFragment[6].substring(REVISION_PREFIX.length());
         }
-        if(last) {
+        if (last) {
             return new OaisUniformResourceName(identifier, entityType, tenant, entityId, order, revision);
         } else {
             return new OaisUniformResourceName(identifier, entityType, tenant, entityId, version, order, revision);
@@ -117,14 +131,26 @@ public class OaisUniformResourceName extends UniformResourceName {
     /**
      * Build a pseudo random UUID starting with 00000000-0000-0000-0000
      */
-    public static OaisUniformResourceName pseudoRandomUrn(OAISIdentifier oaisIdentifier, EntityType entityType,
-            String tenant, int version) {
-        return new OaisUniformResourceName(oaisIdentifier, entityType, tenant,
-                UUID.fromString("0-0-0-0-" + (int) (Math.random() * Integer.MAX_VALUE)), version, null, null);
+    public static OaisUniformResourceName pseudoRandomUrn(OAISIdentifier oaisIdentifier,
+                                                          EntityType entityType,
+                                                          String tenant,
+                                                          int version) {
+        return new OaisUniformResourceName(oaisIdentifier,
+                                           entityType,
+                                           tenant,
+                                           UUID.fromString("0-0-0-0-" + (int) (Math.random() * Integer.MAX_VALUE)),
+                                           version,
+                                           null,
+                                           null);
     }
 
     public static OaisUniformResourceName clone(OaisUniformResourceName template, Long order) {
-        return new OaisUniformResourceName(OAISIdentifier.valueOf(template.getIdentifier()), template.getEntityType(),
-                template.getTenant(), template.getEntityId(), template.getVersion(), order, null);
+        return new OaisUniformResourceName(OAISIdentifier.valueOf(template.getIdentifier()),
+                                           template.getEntityType(),
+                                           template.getTenant(),
+                                           template.getEntityId(),
+                                           template.getVersion(),
+                                           order,
+                                           null);
     }
 }

@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.security.domain;
 
 /**
  * This exception is thrown when resource have insufficient or inconsistent security configuration
+ *
  * @author msordi
  */
 public class ResourceMappingException extends Exception {
@@ -28,6 +29,7 @@ public class ResourceMappingException extends Exception {
 
     /**
      * Resource mapping exception
+     *
      * @param pMessage error message
      */
     public ResourceMappingException(String pMessage) {

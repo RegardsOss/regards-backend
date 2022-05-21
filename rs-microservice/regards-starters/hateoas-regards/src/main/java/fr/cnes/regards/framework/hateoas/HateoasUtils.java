@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 
 /**
  * General utility methods for working with {@link ResponseEntity}s and {@link EntityModel}s.
+ *
  * @author xbrochar
  */
 public final class HateoasUtils {
@@ -48,9 +49,10 @@ public final class HateoasUtils {
 
     /**
      * Wraps an object in a {@link EntityModel}.
+     *
      * @param toWrap The resource to wrap
-     * @param links The resource's links
-     * @param <T> The resource type
+     * @param links  The resource's links
+     * @param <T>    The resource type
      * @return The wrap resource
      */
     public static <T> EntityModel<T> wrap(T toWrap, Link... links) {
@@ -59,8 +61,9 @@ public final class HateoasUtils {
 
     /**
      * Wraps an list of objects in a list {@link EntityModel}s.
+     *
      * @param toWrap The resource to wrap
-     * @param <T> The resource type
+     * @param <T>    The resource type
      * @return The wrap resource
      */
     public static <T> List<EntityModel<T>> wrapList(List<T> toWrap) {
@@ -73,8 +76,9 @@ public final class HateoasUtils {
 
     /**
      * Wraps a collection of objects in a collection of {@link EntityModel}s.
+     *
      * @param toWrap The resource to wrap
-     * @param <T> The resource type
+     * @param <T>    The resource type
      * @return The wrap resource
      */
     public static <T> Collection<EntityModel<T>> wrapCollection(Collection<T> toWrap) {
@@ -87,8 +91,9 @@ public final class HateoasUtils {
 
     /**
      * Unwraps a {@link EntityModel}.
+     *
      * @param wrapped The wrapped resource
-     * @param <T> The wrapped resource type
+     * @param <T>     The wrapped resource type
      * @return The unwrapped resource
      */
     public static <T> T unwrap(EntityModel<T> wrapped) {
@@ -101,8 +106,9 @@ public final class HateoasUtils {
 
     /**
      * Unwraps a {@link List} of {@link EntityModel}s.
+     *
      * @param wrapped A list of resources
-     * @param <T> The wrapped resource type
+     * @param <T>     The wrapped resource type
      * @return The unwrapped list of resources
      */
     public static <T> List<T> unwrapList(List<EntityModel<T>> wrapped) {
@@ -119,8 +125,9 @@ public final class HateoasUtils {
 
     /**
      * Unwraps a {@link Collection} of {@link EntityModel}s.
+     *
      * @param wrapped A collection of resources
-     * @param <T> The wrapped resource type
+     * @param <T>     The wrapped resource type
      * @return The unwrapped list of resources
      */
     public static <T> List<T> unwrapCollection(Collection<EntityModel<T>> wrapped) {
@@ -129,8 +136,9 @@ public final class HateoasUtils {
 
     /**
      * Transforms a collection to a paged resources of resource(without links) of one page with all the elements.
+     *
      * @param elements elements to wrap
-     * @return PagedModel<Resource                                                               <                                                               ?>> of one page containing all base elements
+     * @return PagedModel<Resource < ?>> of one page containing all base elements
      */
     public static <T> PagedModel<EntityModel<T>> wrapToPagedResources(Collection<T> elements) {
         List<EntityModel<T>> elementResources = elements.stream().map(EntityModel::of).collect(Collectors.toList());
@@ -139,11 +147,13 @@ public final class HateoasUtils {
 
     /**
      * Retrieve all elements from a hateoas paginated endpoint
+     *
      * @param pageSize number of elements to retrieve by page
-     * @param request request to execute for each page
+     * @param request  request to execute for each page
      * @return {@link List} of results
      */
-    public static <T> List<T> retrieveAllPages(int pageSize, Function<Pageable, ResponseEntity<PagedModel<EntityModel<T>>>> request) {
+    public static <T> List<T> retrieveAllPages(int pageSize,
+                                               Function<Pageable, ResponseEntity<PagedModel<EntityModel<T>>>> request) {
         List<T> results = new ArrayList<>();
         PagedModel<EntityModel<T>> page = null;
         PageMetadata metadata = null;

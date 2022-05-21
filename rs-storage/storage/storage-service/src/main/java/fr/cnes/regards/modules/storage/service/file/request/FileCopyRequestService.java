@@ -18,24 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
-import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -61,7 +44,22 @@ import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.job.FileCopyRequestsCreatorJob;
+import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
 import net.javacrumbs.shedlock.core.LockConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Service to handle {@link FileCopyRequest}s.
@@ -118,18 +116,22 @@ public class FileCopyRequestService {
 
     /**
      * Initialize new copy requests from Flow items.
+     *
      * @param items
      */
     public void copy(Collection<CopyFlowItem> items) {
         for (CopyFlowItem item : items) {
             copy(item.getFiles(), item.getGroupId());
-            reqGrpService.granted(item.getGroupId(), FileRequestType.COPY, item.getFiles().size(),
+            reqGrpService.granted(item.getGroupId(),
+                                  FileRequestType.COPY,
+                                  item.getFiles().size(),
                                   getRequestExpirationDate());
         }
     }
 
     /**
      * Initialize new copy requests for a given group identifier
+     *
      * @param requests
      * @param groupId
      */
@@ -147,7 +149,7 @@ public class FileCopyRequestService {
      * The copy request should be handled next by the {@link FileRequestScheduler#handleFileCopyRequests()} method.
      *
      * @param requestDto {@link FileCopyRequestDTO} to handle.
-     * @param groupId request group identifier.
+     * @param groupId    request group identifier.
      * @return {@link FileCopyRequest} created if any.
      */
     public Optional<FileCopyRequest> copy(FileCopyRequestDTO requestDto, String groupId) {
@@ -165,11 +167,14 @@ public class FileCopyRequestService {
             // get file meta info to copy
             Set<FileReference> refs = fileRefService.search(requestDto.getChecksum());
             if (refs.isEmpty()) {
-                String message = String
-                        .format("File copy request refused for file %s to %s storage location. Cause file does not exists in any known storage location.",
-                                requestDto.getChecksum(), requestDto.getStorage());
+                String message = String.format(
+                    "File copy request refused for file %s to %s storage location. Cause file does not exists in any known storage location.",
+                    requestDto.getChecksum(),
+                    requestDto.getStorage());
                 LOGGER.warn("[COPY REQUEST] {}", message);
-                notificationClient.notify(message, "File copy request refused", NotificationLevel.WARNING,
+                notificationClient.notify(message,
+                                          "File copy request refused",
+                                          NotificationLevel.WARNING,
                                           DefaultRole.PROJECT_ADMIN);
                 // notify denied request to the session agent
                 this.sessionNotifier.incrementDeniedRequests(sessionOwner, session);
@@ -177,21 +182,34 @@ public class FileCopyRequestService {
                 // Check if destination file already exists
                 if (refs.stream().anyMatch(r -> r.getLocation().getStorage().equals(requestDto.getStorage()))) {
                     FileReference existingfileRef = refs.stream()
-                            .filter(r -> r.getLocation().getStorage().equals(requestDto.getStorage())).findFirst()
-                            .get();
+                                                        .filter(r -> r.getLocation()
+                                                                      .getStorage()
+                                                                      .equals(requestDto.getStorage()))
+                                                        .findFirst()
+                                                        .get();
                     String message = String.format("File to copy %s already exists for destination storage %s",
-                                                   requestDto.getChecksum(), requestDto.getStorage());
+                                                   requestDto.getChecksum(),
+                                                   requestDto.getStorage());
                     LOGGER.debug("[COPY REQUEST] {}", message);
                     publisher.copySuccess(existingfileRef, message, groupId);
-                    reqGrpService.requestSuccess(groupId, FileRequestType.COPY, requestDto.getChecksum(),
-                                                 requestDto.getStorage(), requestDto.getSubDirectory(),
-                                                 existingfileRef.getLazzyOwners(), existingfileRef);
+                    reqGrpService.requestSuccess(groupId,
+                                                 FileRequestType.COPY,
+                                                 requestDto.getChecksum(),
+                                                 requestDto.getStorage(),
+                                                 requestDto.getSubDirectory(),
+                                                 existingfileRef.getLazzyOwners(),
+                                                 existingfileRef);
                 } else {
                     LOGGER.debug("[COPY REQUEST] Create copy request for group {}", groupId);
-                    FileCopyRequest newRequest = copyRepository
-                            .save(new FileCopyRequest(groupId, refs.stream().findFirst().get().getMetaInfo(),
-                                                      requestDto.getSubDirectory(), requestDto.getStorage(),
-                                                      sessionOwner, session));
+                    FileCopyRequest newRequest = copyRepository.save(new FileCopyRequest(groupId,
+                                                                                         refs.stream()
+                                                                                             .findFirst()
+                                                                                             .get()
+                                                                                             .getMetaInfo(),
+                                                                                         requestDto.getSubDirectory(),
+                                                                                         requestDto.getStorage(),
+                                                                                         sessionOwner,
+                                                                                         session));
                     request = Optional.of(newRequest);
                     // notify request is running
                     this.sessionNotifier.incrementRunningRequests(sessionOwner, session);
@@ -203,13 +221,15 @@ public class FileCopyRequestService {
 
     /**
      * Handle the case of a copy requests already exists.<br>
+     *
      * @param requestDto {@link FileCopyRequestDTO} new request to handle.
-     * @param request {@link FileCopyRequest} existing request.
+     * @param request    {@link FileCopyRequest} existing request.
      * @param newGroupId New request group idenfitier.
      * @return updated {@link FileCopyRequest}
      */
-    private FileCopyRequest handleAlreadyExists(FileCopyRequestDTO requestDto, FileCopyRequest request,
-            String newGroupId) {
+    private FileCopyRequest handleAlreadyExists(FileCopyRequestDTO requestDto,
+                                                FileCopyRequest request,
+                                                String newGroupId) {
         if (request.getStatus() == FileRequestStatus.ERROR) {
             // decrement the number of errors to the session agent
             String sessionOwner = requestDto.getSessionOwner();
@@ -228,13 +248,17 @@ public class FileCopyRequestService {
 
     /**
      * Schedule availability requests for all copy requests.<br>
+     *
      * @param status status of copy requests to schedule.
      */
     public void scheduleCopyRequests(FileRequestStatus status) {
         try {
-            lockingTaskExecutors
-                    .executeWithLock(new CopyRequestTask(fileCacheReqService, copyRepository, reqGrpService, status),
-                                     new LockConfiguration(COPY_PROCESS_LOCK, Instant.now().plusSeconds(1200)));
+            lockingTaskExecutors.executeWithLock(new CopyRequestTask(fileCacheReqService,
+                                                                     copyRepository,
+                                                                     reqGrpService,
+                                                                     status),
+                                                 new LockConfiguration(COPY_PROCESS_LOCK,
+                                                                       Instant.now().plusSeconds(1200)));
         } catch (Throwable e) {
             LOGGER.trace("[COPY FLOW HANDLER] Copy process delayed. A copy process is already running.", e);
         }
@@ -242,8 +266,9 @@ public class FileCopyRequestService {
 
     /**
      * Handle many {@link FileCopyRequestDTO} to copy files to a given storage location.
+     *
      * @param requests copy requests
-     * @param groupId business request identifier
+     * @param groupId  business request identifier
      */
     public void handle(Collection<FileCopyRequestDTO> requests, String groupId) {
         for (FileCopyRequestDTO request : requests) {
@@ -253,12 +278,14 @@ public class FileCopyRequestService {
 
     /**
      * Handle copy request success.
-     * @param request {@link FileCopyRequest} succeeded request.
+     *
+     * @param request    {@link FileCopyRequest} succeeded request.
      * @param newFileRef {@link FileReference} new file reference. Copy of the original file reference.
      */
     public void handleSuccess(FileCopyRequest request, FileReference newFileRef) {
         String successMessage = String.format("File %s (checksum: %s) successfully copied in %s storage location",
-                                              request.getMetaInfo().getFileName(), request.getMetaInfo().getChecksum(),
+                                              request.getMetaInfo().getFileName(),
+                                              request.getMetaInfo().getChecksum(),
                                               request.getStorage());
         LOGGER.debug("[COPY SUCCESS] {}", successMessage);
 
@@ -272,9 +299,13 @@ public class FileCopyRequestService {
             }
         }
         publisher.copySuccess(newFileRef, successMessage, request.getGroupId());
-        reqGrpService.requestSuccess(request.getGroupId(), FileRequestType.COPY, request.getMetaInfo().getChecksum(),
-                                     request.getStorage(), request.getStorageSubDirectory(),
-                                     newFileRef.getLazzyOwners(), newFileRef);
+        reqGrpService.requestSuccess(request.getGroupId(),
+                                     FileRequestType.COPY,
+                                     request.getMetaInfo().getChecksum(),
+                                     request.getStorage(),
+                                     request.getStorageSubDirectory(),
+                                     newFileRef.getLazzyOwners(),
+                                     newFileRef);
 
         // Delete the copy request
         copyRepository.delete(request);
@@ -285,20 +316,28 @@ public class FileCopyRequestService {
 
     /**
      * Handle copy request error.
-     * @param request {@link FileCopyRequest} error request.
+     *
+     * @param request    {@link FileCopyRequest} error request.
      * @param errorCause
      */
     public void handleError(FileCopyRequest request, String errorCause) {
         LOGGER.error("[COPY ERROR] Error copying file {} (checksum: {}) to {} storage location. Cause : {}",
-                     request.getMetaInfo().getFileName(), request.getMetaInfo().getChecksum(), request.getStorage(),
+                     request.getMetaInfo().getFileName(),
+                     request.getMetaInfo().getChecksum(),
+                     request.getStorage(),
                      errorCause);
         // Update copy request to error status
         request.setStatus(FileRequestStatus.ERROR);
         request.setErrorCause(errorCause);
         update(request);
         publisher.copyError(request, errorCause);
-        reqGrpService.requestError(request.getGroupId(), FileRequestType.COPY, request.getMetaInfo().getChecksum(),
-                                   request.getStorage(), null, Sets.newHashSet(), errorCause);
+        reqGrpService.requestError(request.getGroupId(),
+                                   FileRequestType.COPY,
+                                   request.getMetaInfo().getChecksum(),
+                                   request.getStorage(),
+                                   null,
+                                   Sets.newHashSet(),
+                                   errorCause);
         // notify session agent of the error success
         String sessionOwner = request.getSessionOwner();
         String session = request.getSession();
@@ -308,6 +347,7 @@ public class FileCopyRequestService {
 
     /**
      * Search for a {@link FileCopyRequest} for the given checksum and given storage copy destination.
+     *
      * @param checksum
      * @param storage
      * @return {@link FileCopyRequest} if any
@@ -319,6 +359,7 @@ public class FileCopyRequestService {
 
     /**
      * Search for a {@link FileCopyRequest} for the given checksum.
+     *
      * @param checksum
      * @return {@link FileCopyRequest} if any
      */
@@ -329,6 +370,7 @@ public class FileCopyRequestService {
 
     /**
      * Search for a {@link FileCopyRequest} associated to the given {@link FileReferenceEvent}.
+     *
      * @param event
      * @return {@link FileCopyRequest} if any
      */
@@ -376,22 +418,36 @@ public class FileCopyRequestService {
     /**
      * Schedule a job to create {@link FileCopyRequest}s for the given criterion
      */
-    public JobInfo scheduleJob(String storageLocationId, String sourcePath, String destinationStorageId,
-            Optional<String> destinationPath, Collection<String> types, String sessionOwner, String session) {
+    public JobInfo scheduleJob(String storageLocationId,
+                               String sourcePath,
+                               String destinationStorageId,
+                               Optional<String> destinationPath,
+                               Collection<String> types,
+                               String sessionOwner,
+                               String session) {
         Set<JobParameter> parameters = Sets.newHashSet();
-        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_SOURCE_ID_PARMETER_NAME, storageLocationId));
+        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_SOURCE_ID_PARMETER_NAME,
+                                        storageLocationId));
         parameters.add(new JobParameter(FileCopyRequestsCreatorJob.STORAGE_LOCATION_DESTINATION_ID_PARMETER_NAME,
-                destinationStorageId));
+                                        destinationStorageId));
         parameters.add(new JobParameter(FileCopyRequestsCreatorJob.SOURCE_PATH_PARMETER_NAME, sourcePath));
-        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.DESTINATION_PATH_PARMETER_NAME, destinationPath.orElse("")));
+        parameters.add(new JobParameter(FileCopyRequestsCreatorJob.DESTINATION_PATH_PARMETER_NAME,
+                                        destinationPath.orElse("")));
         parameters.add(new JobParameter(FileCopyRequestsCreatorJob.FILE_TYPES_PARMETER_NAME, types));
         parameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION_OWNER_PARMETER_NAME, sessionOwner));
         parameters.add(new JobParameter(FileCopyRequestsCreatorJob.SESSION_PARMETER_NAME, session));
 
-        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false, StorageJobsPriority.FILE_COPY_JOB,
-                                                                    parameters, authResolver.getUser(), FileCopyRequestsCreatorJob.class.getName()));
+        JobInfo jobInfo = jobInfoService.createAsQueued(new JobInfo(false,
+                                                                    StorageJobsPriority.FILE_COPY_JOB,
+                                                                    parameters,
+                                                                    authResolver.getUser(),
+                                                                    FileCopyRequestsCreatorJob.class.getName()));
         LOGGER.debug("[COPY REQUESTS] Job scheduled to copy files from {}(dir={}) to {}(dir={}) for types {}.",
-                     storageLocationId, sourcePath, destinationStorageId, destinationPath.orElse(""), types);
+                     storageLocationId,
+                     sourcePath,
+                     destinationStorageId,
+                     destinationPath.orElse(""),
+                     types);
         return jobInfo;
     }
 
@@ -408,14 +464,18 @@ public class FileCopyRequestService {
 
     /**
      * Inform if for the given storage a deletion process is running
+     *
      * @param storage
      * @return boolean
      */
     public boolean isCopyRunning(String storage) {
         boolean isRunning = false;
         // Does a deletion job exists ?
-        isRunning = jobInfoService.retrieveJobsCount(FileCopyRequestsCreatorJob.class.getName(), JobStatus.PENDING,
-                                                     JobStatus.QUEUED, JobStatus.RUNNING, JobStatus.TO_BE_RUN) > 0;
+        isRunning = jobInfoService.retrieveJobsCount(FileCopyRequestsCreatorJob.class.getName(),
+                                                     JobStatus.PENDING,
+                                                     JobStatus.QUEUED,
+                                                     JobStatus.RUNNING,
+                                                     JobStatus.TO_BE_RUN) > 0;
         if (!isRunning) {
             isRunning = copyRepository.existsByStorageAndStatusIn(storage,
                                                                   Sets.newHashSet(FileRequestStatus.RUNNING_STATUS));
@@ -425,6 +485,7 @@ public class FileCopyRequestService {
 
     /**
      * Check if a copy request exists for the given file reference
+     *
      * @return
      */
     public boolean existsByChecksumAndStatusIn(String checksum, Collection<FileRequestStatus> status) {
@@ -440,6 +501,7 @@ public class FileCopyRequestService {
 
     /**
      * Retrieve expiration date for deletion request
+     *
      * @return
      */
     public OffsetDateTime getRequestExpirationDate() {

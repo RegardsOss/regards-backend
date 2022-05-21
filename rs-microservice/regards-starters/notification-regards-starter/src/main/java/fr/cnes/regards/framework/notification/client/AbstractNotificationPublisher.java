@@ -18,26 +18,24 @@
  */
 package fr.cnes.regards.framework.notification.client;
 
-import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.util.MimeType;
-
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisherContract;
 import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
 import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.framework.notification.NotificationDtoBuilder;
 import fr.cnes.regards.framework.notification.NotificationLevel;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.util.MimeType;
+
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * An implementation of the notification client using asynchronous messaging
  *
  * @author Marc SORDI
- *
  */
 @Service
 public abstract class AbstractNotificationPublisher implements INotificationClientContract {
@@ -46,23 +44,32 @@ public abstract class AbstractNotificationPublisher implements INotificationClie
     private String applicationName;
 
     @Override
-    public void notifyRoles(String message, String title, NotificationLevel level, MimeType mimeType,
-            Set<String> roles) {
+    public void notifyRoles(String message,
+                            String title,
+                            NotificationLevel level,
+                            MimeType mimeType,
+                            Set<String> roles) {
         publish(new NotificationDtoBuilder(message, title, level, applicationName).withMimeType(mimeType)
-                        .toRoles(roles));
+                                                                                  .toRoles(roles));
     }
 
     @Override
     public void notify(String message, String title, NotificationLevel level, MimeType mimeType, String... users) {
         publish(new NotificationDtoBuilder(message, title, level, applicationName).withMimeType(mimeType)
-                        .toUsers(Arrays.stream(users).collect(Collectors.toSet())));
+                                                                                  .toUsers(Arrays.stream(users)
+                                                                                                 .collect(Collectors.toSet())));
     }
 
     @Override
-    public void notifyUserAndRoles(String message, String title, NotificationLevel level, MimeType mimeType,
-            String user, Set<String> roles) {
+    public void notifyUserAndRoles(String message,
+                                   String title,
+                                   NotificationLevel level,
+                                   MimeType mimeType,
+                                   String user,
+                                   Set<String> roles) {
         publish(new NotificationDtoBuilder(message, title, level, applicationName).withMimeType(mimeType)
-                        .toRolesAndUsers(roles, Sets.newHashSet(user)));
+                                                                                  .toRolesAndUsers(roles,
+                                                                                                   Sets.newHashSet(user)));
     }
 
     private void publish(NotificationDTO notification) {

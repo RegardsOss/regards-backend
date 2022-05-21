@@ -23,7 +23,6 @@ import org.locationtech.jts.geom.Polygon;
 import org.springframework.core.convert.converter.Converter;
 
 /**
- *
  * @author Xavier-Alexandre Brochard
  */
 public class PolygonToArray implements Converter<Polygon, double[][][]> {

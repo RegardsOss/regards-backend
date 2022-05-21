@@ -1,12 +1,6 @@
 package fr.cnes.regards.modules.storage.domain.event;
 
-import java.util.Collection;
-import java.util.Set;
-
-import org.springframework.util.Assert;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
@@ -17,6 +11,10 @@ import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
+import org.springframework.util.Assert;
+
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * Bus message event sent when a {@link FileReference} is created, modified or deleted.
@@ -70,6 +68,7 @@ public class FileReferenceEvent implements ISubscribable {
 
     /**
      * Build a file reference event with a file location.
+     *
      * @param checksum
      * @param type
      * @param owners
@@ -78,9 +77,14 @@ public class FileReferenceEvent implements ISubscribable {
      * @param groupIds
      * @return {@link FileReferenceEvent}
      */
-    public static FileReferenceEvent build(String checksum, String originStorage, FileReferenceEventType type,
-            Collection<String> owners, String message, FileLocation location, FileReferenceMetaInfo metaInfo,
-            Collection<String> groupIds) {
+    public static FileReferenceEvent build(String checksum,
+                                           String originStorage,
+                                           FileReferenceEventType type,
+                                           Collection<String> owners,
+                                           String message,
+                                           FileLocation location,
+                                           FileReferenceMetaInfo metaInfo,
+                                           Collection<String> groupIds) {
         Assert.notNull(checksum, "Checksum is mandatory");
         Assert.notNull(type, "Type is mandatory");
         Assert.notNull(groupIds, "GroupIds is mandatory");

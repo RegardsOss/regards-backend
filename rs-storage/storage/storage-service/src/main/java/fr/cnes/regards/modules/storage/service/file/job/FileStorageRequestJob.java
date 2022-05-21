@@ -18,20 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.service.file.job;
 
-import java.awt.Dimension;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -44,6 +30,19 @@ import fr.cnes.regards.modules.storage.domain.database.request.FileStorageReques
 import fr.cnes.regards.modules.storage.domain.plugin.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+
+import java.awt.*;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map;
 
 /**
  * Storage of file references job. This jobs is scheduled to store a bundle of file reference,
@@ -51,7 +50,6 @@ import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestSe
  * The storage jobs are used to storage files on a specific storage location.
  *
  * @author Sébastien Binda
- *
  */
 public class FileStorageRequestJob extends AbstractJob<Void> {
 
@@ -84,7 +82,7 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         plgBusinessId = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();
         workingSubset = parameters.get(WORKING_SUB_SET).getValue();
         nbRequestToHandle = workingSubset.getFileReferenceRequests().size();
@@ -118,12 +116,14 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
                     progressManager.storageFailed(req,
                                                   String.format("File %s (checksum: %s) not handled by storage job. %s",
                                                                 req.getMetaInfo().getFileName(),
-                                                                req.getMetaInfo().getChecksum(), errorCause));
+                                                                req.getMetaInfo().getChecksum(),
+                                                                errorCause));
                 }
             }
             progressManager.bulkSave();
             logger.info("[STORAGE JOB] storage job handled in {}ms for {} storage requests",
-                        System.currentTimeMillis() - start, nbRequestToHandle);
+                        System.currentTimeMillis() - start,
+                        nbRequestToHandle);
         }
     }
 
@@ -135,13 +135,15 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
     /**
      * Calculate dimensions of the given file to store.<br>
      * This methods do the calculation only if the mimeType of the file is compatible with <image/*> type.
+     *
      * @param fileRefRequest to calculate for image dimension
      */
     public static void calculateImageDimension(FileStorageRequest fileRefRequest) {
         try {
-            if (((fileRefRequest.getMetaInfo().getHeight() == null)
-                    || (fileRefRequest.getMetaInfo().getWidth() == null))
-                    && fileRefRequest.getMetaInfo().getMimeType().isCompatibleWith(MediaType.valueOf("image/*"))) {
+            if (((fileRefRequest.getMetaInfo().getHeight() == null) || (fileRefRequest.getMetaInfo().getWidth()
+                == null)) && fileRefRequest.getMetaInfo()
+                                           .getMimeType()
+                                           .isCompatibleWith(MediaType.valueOf("image/*"))) {
                 URL localUrl = new URL(fileRefRequest.getOriginUrl());
                 if (localUrl.getProtocol().equals("file")) {
                     Path filePath = Paths.get(localUrl.toURI().getPath());
@@ -150,15 +152,15 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
                         fileRefRequest.getMetaInfo().setHeight(((Number) dimension.getHeight()).intValue());
                         fileRefRequest.getMetaInfo().setWidth(((Number) dimension.getWidth()).intValue());
                     } else {
-                        STATIC_LOGGER
-                                .warn("Error calculating image file height/width. Cause : File {} is not accessible.",
-                                      fileRefRequest.getOriginUrl());
+                        STATIC_LOGGER.warn(
+                            "Error calculating image file height/width. Cause : File {} is not accessible.",
+                            fileRefRequest.getOriginUrl());
                     }
                 }
             }
         } catch (IOException | URISyntaxException e) {
             STATIC_LOGGER.warn(String.format("Error calculating image file height/width. Cause : %s", e.getMessage()),
-                                e);
+                               e);
         }
     }
 

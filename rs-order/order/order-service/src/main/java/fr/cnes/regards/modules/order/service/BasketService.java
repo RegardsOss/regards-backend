@@ -28,11 +28,7 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
-import fr.cnes.regards.modules.order.domain.basket.Basket;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
-import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
+import fr.cnes.regards.modules.order.domain.basket.*;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
@@ -48,6 +44,14 @@ import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.SearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Service;
+
+import javax.persistence.EntityNotFoundException;
 import java.time.OffsetDateTime;
 import java.util.Iterator;
 import java.util.Map;
@@ -56,13 +60,6 @@ import java.util.SortedSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.persistence.EntityNotFoundException;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Service;
 
 /**
  * @author oroussel
@@ -116,7 +113,8 @@ public class BasketService implements IBasketService {
     }
 
     @Override
-    public Basket addSelection(Long basketId, BasketSelectionRequest selectionRequest) throws EmptySelectionException, TooManyItemsSelectedInBasketException {
+    public Basket addSelection(Long basketId, BasketSelectionRequest selectionRequest)
+        throws EmptySelectionException, TooManyItemsSelectedInBasketException {
         Basket basket = repos.findOneById(basketId);
         if (basket == null) {
             throw new EntityNotFoundException("Basket with id " + basketId + " doesn't exist");
@@ -125,15 +123,19 @@ public class BasketService implements IBasketService {
         try {
             FeignSecurityManager.asUser(authResolver.getUser(), authResolver.getRole());
             // Retrieve summary for all datasets matching the search request from the new selection to add.
-            DocFilesSummary summary = complexSearchClient
-                    .computeDatasetsSummary(buildSearchRequest(selectionRequest, 0, 1)).getBody();
+            DocFilesSummary summary = complexSearchClient.computeDatasetsSummary(buildSearchRequest(selectionRequest,
+                                                                                                    0,
+                                                                                                    1)).getBody();
             // If global summary contains no files => EmptySelection
             if (summary.getFilesCount() == 0l) {
                 throw new EmptySelectionException();
             }
             // Create a map to find more easiely a basket dataset selection from dataset IpId
-            Map<String, BasketDatasetSelection> basketDsSelectionMap = basket.getDatasetSelections().stream()
-                    .collect(Collectors.toMap(BasketDatasetSelection::getDatasetIpid, Function.identity()));
+            Map<String, BasketDatasetSelection> basketDsSelectionMap = basket.getDatasetSelections()
+                                                                             .stream()
+                                                                             .collect(Collectors.toMap(
+                                                                                 BasketDatasetSelection::getDatasetIpid,
+                                                                                 Function.identity()));
             // Parsing results
             for (Map.Entry<String, DocFilesSubSummary> entry : summary.getSubSummariesMap().entrySet()) {
                 // For each dataset of the returned sumary, update the already existing BasketDatasetSelection of the user basket.
@@ -152,7 +154,8 @@ public class BasketService implements IBasketService {
                     // Retrieve global information about the new dataset
                     EntityFeature feature = searchClient.getDataset(UniformResourceName.fromString(datasetIpId),
                                                                     SearchEngineMappings.getJsonHeaders())
-                            .getBody().getContent();
+                                                        .getBody()
+                                                        .getContent();
                     datasetSelection = new BasketDatasetSelection();
                     datasetSelection.setDatasetIpid(datasetIpId);
                     datasetSelection.setDatasetLabel(feature.getLabel());
@@ -169,9 +172,10 @@ public class BasketService implements IBasketService {
                 // if not, add the selection without check
                 // if yes, get the associated process and check if the updated number of items to process is
                 // less that the limit defined.
-                if(datasetSelection.getProcessDatasetDescription() != null) {
-                    checkLimitElementsInOrder(datasetSelection.getProcessDatasetDescription().getProcessBusinessId().toString(),
-                            datasetSelection);
+                if (datasetSelection.getProcessDatasetDescription() != null) {
+                    checkLimitElementsInOrder(datasetSelection.getProcessDatasetDescription()
+                                                              .getProcessBusinessId()
+                                                              .toString(), datasetSelection);
                 }
 
                 // Update DatasetSelection (summary)
@@ -185,7 +189,7 @@ public class BasketService implements IBasketService {
 
     @Override
     public Basket removeDatasetSelection(Basket basket, Long datasetId) {
-        for (Iterator<BasketDatasetSelection> i = basket.getDatasetSelections().iterator(); i.hasNext();) {
+        for (Iterator<BasketDatasetSelection> i = basket.getDatasetSelections().iterator(); i.hasNext(); ) {
             if (i.next().getId().equals(datasetId)) {
                 i.remove();
                 repos.save(basket);
@@ -197,12 +201,12 @@ public class BasketService implements IBasketService {
 
     @Override
     public Basket removeDatedItemsSelection(Basket basket, Long datasetId, OffsetDateTime itemsSelectionDate) {
-        for (Iterator<BasketDatasetSelection> j = basket.getDatasetSelections().iterator(); j.hasNext();) {
+        for (Iterator<BasketDatasetSelection> j = basket.getDatasetSelections().iterator(); j.hasNext(); ) {
             BasketDatasetSelection dsSelection = j.next();
             if (dsSelection.getId().equals(datasetId)) {
                 // Search for item selections to remove
-                for (Iterator<BasketDatedItemsSelection> i = dsSelection.getItemsSelections().iterator(); i
-                        .hasNext();) {
+                for (Iterator<BasketDatedItemsSelection> i = dsSelection.getItemsSelections()
+                                                                        .iterator(); i.hasNext(); ) {
                     if (i.next().getSelectionRequest().getSelectionDate().equals(itemsSelectionDate)) {
                         i.remove();
                         break;
@@ -222,15 +226,15 @@ public class BasketService implements IBasketService {
     }
 
     @Override
-    public Basket attachProcessing(
-            Basket basket,
-            Long datasetId,
-            @Nullable ProcessDatasetDescription desc
-    ) throws TooManyItemsSelectedInBasketException {
+    public Basket attachProcessing(Basket basket, Long datasetId, @Nullable ProcessDatasetDescription desc)
+        throws TooManyItemsSelectedInBasketException {
         // find dataset selection with selected id
-        BasketDatasetSelection basketSelection = basket.getDatasetSelections().stream()
-                .filter(ds -> ds.getId().equals(datasetId))
-                .findFirst().orElseThrow(() -> new EntityNotFoundException("Basket selection with id " + datasetId + " doesn't exist"));
+        BasketDatasetSelection basketSelection = basket.getDatasetSelections()
+                                                       .stream()
+                                                       .filter(ds -> ds.getId().equals(datasetId))
+                                                       .findFirst()
+                                                       .orElseThrow(() -> new EntityNotFoundException(
+                                                           "Basket selection with id " + datasetId + " doesn't exist"));
         // check the number of items in the basket only if a process is associated to the dataset
         if (desc != null) {
             checkLimitElementsInOrder(desc.getProcessBusinessId().toString(), basketSelection);
@@ -240,18 +244,20 @@ public class BasketService implements IBasketService {
         return basket;
     }
 
-    private void checkLimitElementsInOrder(String processBusinessId,
-                                           BasketDatasetSelection basketSelection) throws TooManyItemsSelectedInBasketException {
+    private void checkLimitElementsInOrder(String processBusinessId, BasketDatasetSelection basketSelection)
+        throws TooManyItemsSelectedInBasketException {
         // retrieve the processing to get configuration parameters
         ResponseEntity<PProcessDTO> processResponse = processingClient.findByUuid(processBusinessId);
         if (processResponse.getBody() != null && processResponse.getStatusCode() == HttpStatus.OK) {
             OrderProcessInfoMapper orderProcessInfoMapper = new OrderProcessInfoMapper();
-            OrderProcessInfo processInfo =
-                    orderProcessInfoMapper.fromMap(processResponse.getBody().getProcessInfo()).getOrElseThrow(() -> new OrderProcessingService.UnparsableProcessInfoException(
-                            String.format("Unparsable description info from process plugin with id %s", processBusinessId)));
+            OrderProcessInfo processInfo = orderProcessInfoMapper.fromMap(processResponse.getBody().getProcessInfo())
+                                                                 .getOrElseThrow(() -> new OrderProcessingService.UnparsableProcessInfoException(
+                                                                     String.format(
+                                                                         "Unparsable description info from process plugin with id %s",
+                                                                         processBusinessId)));
 
             // limit the number of items ordered only if forbidSplitInSuborders is active
-            if(processInfo.getForbidSplitInSuborders()) {
+            if (processInfo.getForbidSplitInSuborders()) {
                 // check if the number of items in the basket does not exceed maximum number of items configured
                 // by the process. The numberOfElementsToCheck is init to 0 by default in case there is no limit
                 // configured in the process
@@ -260,24 +266,38 @@ public class BasketService implements IBasketService {
                 SizeLimit sizeLimit = processInfo.getSizeLimit();
                 switch (sizeLimit.getType()) {
                     case FEATURES:
-                        numberOfElementsToCheck = selectedItemsInOrder.stream().map(BasketDatedItemsSelection::getObjectsCount).reduce(0, Integer::sum);
+                        numberOfElementsToCheck = selectedItemsInOrder.stream()
+                                                                      .map(BasketDatedItemsSelection::getObjectsCount)
+                                                                      .reduce(0, Integer::sum);
                         break;
                     case FILES:
-                        numberOfElementsToCheck =
-                                selectedItemsInOrder.stream().map(item -> item.getFileTypesCount().values().stream().reduce(0L, Long::sum)).reduce(0L, Long::sum);
+                        numberOfElementsToCheck = selectedItemsInOrder.stream()
+                                                                      .map(item -> item.getFileTypesCount()
+                                                                                       .values()
+                                                                                       .stream()
+                                                                                       .reduce(0L, Long::sum))
+                                                                      .reduce(0L, Long::sum);
                         break;
                     case BYTES:
-                        numberOfElementsToCheck =
-                                selectedItemsInOrder.stream().map(item -> item.getFileTypesSizes().values().stream().reduce(0L, Long::sum)).reduce(0L, Long::sum);
+                        numberOfElementsToCheck = selectedItemsInOrder.stream()
+                                                                      .map(item -> item.getFileTypesSizes()
+                                                                                       .values()
+                                                                                       .stream()
+                                                                                       .reduce(0L, Long::sum))
+                                                                      .reduce(0L, Long::sum);
                         break;
                     default:
                         break;
                 }
                 if (numberOfElementsToCheck > processInfo.getSizeLimit().getLimit()) {
-                    throw new TooManyItemsSelectedInBasketException(String.format("The number of selected \"%s\" in " +
-                                                                                          "the basket [%d] exceeds the maximum number of \"%s\" allowed [%d]. Please, decrease the " +
-                                                                                          "number of selected items or contact the administrator for more information.",
-                                                                                  sizeLimit.getType(), numberOfElementsToCheck, sizeLimit.getType(), processInfo.getSizeLimit().getLimit()));
+                    throw new TooManyItemsSelectedInBasketException(String.format("The number of selected \"%s\" in "
+                                                                                      + "the basket [%d] exceeds the maximum number of \"%s\" allowed [%d]. Please, decrease the "
+                                                                                      + "number of selected items or contact the administrator for more information.",
+                                                                                  sizeLimit.getType(),
+                                                                                  numberOfElementsToCheck,
+                                                                                  sizeLimit.getType(),
+                                                                                  processInfo.getSizeLimit()
+                                                                                             .getLimit()));
                 }
             }
         }
@@ -309,11 +329,9 @@ public class BasketService implements IBasketService {
         return repos.save(basket);
     }
 
-    private Basket attachProcessToDatasetSelectionAndSaveBasket(
-            Basket basket,
-            BasketDatasetSelection ds,
-            ProcessDatasetDescription desc
-    ) {
+    private Basket attachProcessToDatasetSelectionAndSaveBasket(Basket basket,
+                                                                BasketDatasetSelection ds,
+                                                                ProcessDatasetDescription desc) {
         ds.setProcessDatasetDescription(desc);
         Basket modified = repos.save(basket);
         return modified;
@@ -321,24 +339,26 @@ public class BasketService implements IBasketService {
 
     /**
      * Create dated items selection
+     *
      * @param selectionRequest opensearch request from which this selection is created
-     * @param subSummary dataset  selection (sub-)summary
+     * @param subSummary       dataset  selection (sub-)summary
      * @return dated items selection (what else ?)
      */
     private BasketDatedItemsSelection createItemsSelection(BasketSelectionRequest selectionRequest,
-            DocFilesSubSummary subSummary) {
+                                                           DocFilesSubSummary subSummary) {
         // Create a new basket dated items selection
         BasketDatedItemsSelection itemsSelection = new BasketDatedItemsSelection();
         itemsSelection.setSelectionRequest(selectionRequest);
         itemsSelection.setObjectsCount((int) subSummary.getDocumentsCount());
-        DataTypeSelection.ALL.getFileTypes().stream()
-            .map(DataType::toString)
-            .flatMap(ft -> Stream.of(ft, ft+"_ref", ft+"_!ref"))
-            .forEach(ft -> {
-                FilesSummary fs = subSummary.getFileTypesSummaryMap().get(ft);
-                itemsSelection.setFileTypeCount(ft, fs.getFilesCount());
-                itemsSelection.setFileTypeSize(ft, fs.getFilesSize());
-            });
+        DataTypeSelection.ALL.getFileTypes()
+                             .stream()
+                             .map(DataType::toString)
+                             .flatMap(ft -> Stream.of(ft, ft + "_ref", ft + "_!ref"))
+                             .forEach(ft -> {
+                                 FilesSummary fs = subSummary.getFileTypesSummaryMap().get(ft);
+                                 itemsSelection.setFileTypeCount(ft, fs.getFilesCount());
+                                 itemsSelection.setFileTypeSize(ft, fs.getFilesSize());
+                             });
         itemsSelection.setDate(selectionRequest.getSelectionDate());
         return itemsSelection;
     }
@@ -349,31 +369,36 @@ public class BasketService implements IBasketService {
      */
     private void computeSummaryAndUpdateDatasetSelection(BasketDatasetSelection datasetSelection) {
 
-        DocFilesSummary curDsSelectionSummary = complexSearchClient
-                .computeDatasetsSummary(buildSearchRequest(datasetSelection, 0, 1)).getBody();
+        DocFilesSummary curDsSelectionSummary = complexSearchClient.computeDatasetsSummary(buildSearchRequest(
+            datasetSelection,
+            0,
+            1)).getBody();
         // Take into account only asked datasetIpId (sub-)summary
         DocFilesSubSummary curDsSelectionSubSummary = curDsSelectionSummary.getSubSummariesMap()
-                .get(datasetSelection.getDatasetIpid());
+                                                                           .get(datasetSelection.getDatasetIpid());
         // Occurs only in tests
         if (curDsSelectionSubSummary == null) {
             datasetSelection.setObjectsCount(0);
         } else {
             datasetSelection.setObjectsCount((int) curDsSelectionSubSummary.getDocumentsCount());
-            curDsSelectionSubSummary.getFileTypesSummaryMap()
-                .forEach((fileType, fs) -> {
-                    datasetSelection.setFileTypeCount(fileType, fs.getFilesCount());
-                    datasetSelection.setFileTypeSize(fileType, fs.getFilesSize());
-                });
+            curDsSelectionSubSummary.getFileTypesSummaryMap().forEach((fileType, fs) -> {
+                datasetSelection.setFileTypeCount(fileType, fs.getFilesCount());
+                datasetSelection.setFileTypeSize(fileType, fs.getFilesSize());
+            });
         }
     }
 
-    public static ComplexSearchRequest buildSearchRequest(BasketSelectionRequest bascketSelectionRequest, int page,
-            int size) {
+    public static ComplexSearchRequest buildSearchRequest(BasketSelectionRequest bascketSelectionRequest,
+                                                          int page,
+                                                          int size) {
         ComplexSearchRequest complexReq = new ComplexSearchRequest(DataTypeSelection.ALL.getFileTypes(), page, size);
         complexReq.getRequests()
-                .add(new SearchRequest(bascketSelectionRequest.getEngineType(), bascketSelectionRequest.getDatasetUrn(),
-                        bascketSelectionRequest.getSearchParameters(), bascketSelectionRequest.getEntityIdsToInclude(),
-                        bascketSelectionRequest.getEntityIdsToExclude(), bascketSelectionRequest.getSelectionDate()));
+                  .add(new SearchRequest(bascketSelectionRequest.getEngineType(),
+                                         bascketSelectionRequest.getDatasetUrn(),
+                                         bascketSelectionRequest.getSearchParameters(),
+                                         bascketSelectionRequest.getEntityIdsToInclude(),
+                                         bascketSelectionRequest.getEntityIdsToExclude(),
+                                         bascketSelectionRequest.getSelectionDate()));
         return complexReq;
 
     }
@@ -383,13 +408,14 @@ public class BasketService implements IBasketService {
         datasetSelection.getItemsSelections().forEach(selectionItem -> {
             // If selected dataset is not defined in the item selection request, use the one from the datasetSelection.
             String datasetUrn = Optional.ofNullable(selectionItem.getSelectionRequest().getDatasetUrn())
-                    .orElse(datasetSelection.getDatasetIpid());
+                                        .orElse(datasetSelection.getDatasetIpid());
             request.getRequests()
-                    .add(new SearchRequest(selectionItem.getSelectionRequest().getEngineType(), datasetUrn,
-                            selectionItem.getSelectionRequest().getSearchParameters(),
-                            selectionItem.getSelectionRequest().getEntityIdsToInclude(),
-                            selectionItem.getSelectionRequest().getEntityIdsToExclude(),
-                            selectionItem.getSelectionRequest().getSelectionDate()));
+                   .add(new SearchRequest(selectionItem.getSelectionRequest().getEngineType(),
+                                          datasetUrn,
+                                          selectionItem.getSelectionRequest().getSearchParameters(),
+                                          selectionItem.getSelectionRequest().getEntityIdsToInclude(),
+                                          selectionItem.getSelectionRequest().getEntityIdsToExclude(),
+                                          selectionItem.getSelectionRequest().getSelectionDate()));
         });
         return request;
     }

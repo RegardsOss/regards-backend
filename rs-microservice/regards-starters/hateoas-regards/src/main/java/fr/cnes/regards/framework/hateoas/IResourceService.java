@@ -27,13 +27,15 @@ import org.springframework.util.Assert;
 
 /**
  * Hypermedia resource service
+ *
  * @author msordi
  */
 public interface IResourceService {
 
     /**
      * Convert object to resource
-     * @param <T> element to convert
+     *
+     * @param <T>    element to convert
      * @param object object
      * @return {@link EntityModel}
      */
@@ -45,14 +47,18 @@ public interface IResourceService {
     /**
      * Utility method to add a build link to the specified {@link RepresentationModel}
      */
-    void addLink(RepresentationModel<?> resource, Class<?> controller, String methodName, LinkRelation rel,
-            MethodParam<?>... methodParams);
+    void addLink(RepresentationModel<?> resource,
+                 Class<?> controller,
+                 String methodName,
+                 LinkRelation rel,
+                 MethodParam<?>... methodParams);
 
     /**
      * Build a link for a single method
-     * @param controller controller
-     * @param methodName method name
-     * @param rel rel name
+     *
+     * @param controller   controller
+     * @param methodName   method name
+     * @param rel          rel name
      * @param methodParams method parameters
      */
     Link buildLink(Class<?> controller, String methodName, LinkRelation rel, MethodParam<?>... methodParams);
@@ -60,27 +66,33 @@ public interface IResourceService {
     /**
      * Utility method to add a build link with parameters to the specified {@link RepresentationModel}
      */
-    <C> void addLinkWithParams(RepresentationModel<?> resource, Class<C> controller, String methodName,
-            LinkRelation rel, MethodParam<?>... methodParams);
+    <C> void addLinkWithParams(RepresentationModel<?> resource,
+                               Class<C> controller,
+                               String methodName,
+                               LinkRelation rel,
+                               MethodParam<?>... methodParams);
 
     /**
      * Custom way of building link handling request params.
-     *
+     * <p>
      * For example, an endpoint like getSomething(@RequestParam String name) mapped to: "/something" will generate a
      * link like "http://someting?name=myName"
-     *
+     * <p>
      * BUT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! It cannot handle type conversion, even if you declared the correct
      * Spring {@link Converter}.
-     *
+     * <p>
      * For example, an endpoint like getSomething(@RequestParam ComplexEntity entity) mapped to: "/something" will
      * generate a conversion error, telling that it could not find the appropriate converter, even if you defined in
      * your classpath a converter implementing Converter<ComplexEntity, String>
-     * @param <C> controller type
-     * @param controller controller
-     * @param methodName method name
-     * @param rel rel name
+     *
+     * @param <C>          controller type
+     * @param controller   controller
+     * @param methodName   method name
+     * @param rel          rel name
      * @param methodParams method parameters
      */
-    <C> Link buildLinkWithParams(Class<C> controller, String methodName, LinkRelation rel,
-            MethodParam<?>... methodParams);
+    <C> Link buildLinkWithParams(Class<C> controller,
+                                 String methodName,
+                                 LinkRelation rel,
+                                 MethodParam<?>... methodParams);
 }

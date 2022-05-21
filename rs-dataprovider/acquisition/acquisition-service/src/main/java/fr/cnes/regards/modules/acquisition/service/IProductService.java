@@ -18,35 +18,26 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
-import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
-import fr.cnes.regards.modules.acquisition.domain.ProductState;
-import fr.cnes.regards.modules.acquisition.domain.ProductsPage;
+import fr.cnes.regards.modules.acquisition.domain.*;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.exception.SIPGenerationException;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.ingest.client.RequestInfo;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
- *
  * @author Christophe Mertz
- *
  */
 public interface IProductService {
 
@@ -58,7 +49,7 @@ public interface IProductService {
      * After product SIP generation, save the product state and submit its SIP in the SIP data flow (within the same transaction)
      */
     Product saveAndSubmitSIP(Product product, AcquisitionProcessingChain acquisitionChain)
-            throws SIPGenerationException;
+        throws SIPGenerationException;
 
     /**
      * @return all {@link Product}
@@ -67,12 +58,14 @@ public interface IProductService {
 
     /**
      * Load one specified {@link Product}
+     *
      * @param id {@link Product}
      */
     Product loadProduct(Long id) throws ModuleException;
 
     /**
      * Retrieve one specified {@link Product}
+     *
      * @param productName a product name
      */
     Product retrieve(String productName) throws ModuleException;
@@ -84,23 +77,25 @@ public interface IProductService {
 
     /**
      * Delete products
+     *
      * @param chain
      * @param session
      */
     void deleteBySession(AcquisitionProcessingChain chain, String session);
 
     /**
-     *
      * @param chain
      */
     void deleteByProcessingChain(AcquisitionProcessingChain chain);
 
-    JobInfo scheduleProductsDeletionJob(AcquisitionProcessingChain chain, Optional<String> session,
-            boolean deleteChain);
+    JobInfo scheduleProductsDeletionJob(AcquisitionProcessingChain chain,
+                                        Optional<String> session,
+                                        boolean deleteChain);
 
     /**
      * Delete products per page
-     * @param chain chain which product should belong to
+     *
+     * @param chain   chain which product should belong to
      * @param session if present, delete only product of this session. If not, delete products from all sessions belonging to this chain
      * @return true if and only if there is a next page to handle
      */
@@ -108,44 +103,49 @@ public interface IProductService {
 
     /**
      * @return page of products related to specified
-     *         acquisition chain.
+     * acquisition chain.
      */
     Page<Product> findChainProducts(AcquisitionProcessingChain chain, Pageable pageable);
 
     /**
      * Schedule {@link Product} SIP generations
+     *
      * @param products products for which SIP generation has to be scheduled
-     * @param chain related chain reference
+     * @param chain    related chain reference
      */
     JobInfo scheduleProductSIPGenerations(Set<Product> products, AcquisitionProcessingChain chain);
 
     /**
      * Count number of products associated to the given {@link AcquisitionProcessingChain} and in the given state
+     *
      * @param processingChain {@link AcquisitionProcessingChain}
-     * @param productStates {@link ProductState}s
+     * @param productStates   {@link ProductState}s
      * @return number of matching {@link Product}
      */
     long countByChainAndStateIn(AcquisitionProcessingChain processingChain, List<ProductState> productStates);
 
     /**
      * Count number of products associated to the given {@link AcquisitionProcessingChain} and in the given state
-     * @param processingChain {@link AcquisitionProcessingChain}
+     *
+     * @param processingChain  {@link AcquisitionProcessingChain}
      * @param productSipStates {@link ProductState}s
      * @return number of matching {@link Product}
      */
     long countByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain,
-            List<ISipState> productSipStates);
+                                             List<ISipState> productSipStates);
 
     /**
      * Count number of generation job that is actually running
+     *
      * @param processingChain {@link AcquisitionProcessingChain}
      * @param productSipState {@link ISipState}s
      */
     long countSIPGenerationJobInfoByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain,
-            ISipState productSipState);
+                                                                 ISipState productSipState);
 
     /**
      * Check if a product exists for the given chain and the given associated SIP state
+     *
      * @param processingChain {@link AcquisitionProcessingChain}
      * @param productSipState {@link ISipState}
      * @return boolean
@@ -157,11 +157,12 @@ public interface IProductService {
      * If product is completed or finished, a SIP generation job is scheduled.
      *
      * @param processingChain the related {@link AcquisitionProcessingChain}
-     * @param session job session
+     * @param session         job session
      * @return the existing {@link Product} corresponding to the product name
      */
-    Set<Product> linkAcquisitionFilesToProducts(AcquisitionProcessingChain processingChain, String session,
-            List<AcquisitionFile> validFiles) throws ModuleException;
+    Set<Product> linkAcquisitionFilesToProducts(AcquisitionProcessingChain processingChain,
+                                                String session,
+                                                List<AcquisitionFile> validFiles) throws ModuleException;
 
     /**
      * Handle product {@link fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob} failure
@@ -170,6 +171,7 @@ public interface IProductService {
 
     /**
      * Handle {@link SIPGenerationJob} success.
+     *
      * @param jobInfo
      */
     void handleSipGenerationSuccess(JobInfo jobInfo);
@@ -186,6 +188,7 @@ public interface IProductService {
 
     /**
      * Count number of {@link Product} associated to the given {@link AcquisitionProcessingChain}
+     *
      * @param chain {@link AcquisitionProcessingChain}
      * @return number of {@link Product}
      */
@@ -193,17 +196,24 @@ public interface IProductService {
 
     /**
      * Search for {@link Product} entities matching parameters
-     * @param state {@link ProductState}s
-     * @param sipState {@link SIPState}s
-     * @param productName {@link String}
-     * @param session {@link String}
+     *
+     * @param state             {@link ProductState}s
+     * @param sipState          {@link SIPState}s
+     * @param productName       {@link String}
+     * @param session           {@link String}
      * @param processingChainId {@likn Long} id of {@link AcquisitionProcessingChain}
-     * @param from {@link OffsetDateTime}
+     * @param from              {@link OffsetDateTime}
      * @param pageable
      * @return {@link Product}s
      */
-    Page<Product> search(List<ProductState> state, List<ISipState> sipState, String productName, String session,
-            Long processingChainId, OffsetDateTime from, Boolean noSession, Pageable pageable);
+    Page<Product> search(List<ProductState> state,
+                         List<ISipState> sipState,
+                         String productName,
+                         String session,
+                         Long processingChainId,
+                         OffsetDateTime from,
+                         Boolean noSession,
+                         Pageable pageable);
 
     /**
      * Search for a {@link Product} by his name
@@ -212,6 +222,7 @@ public interface IProductService {
 
     /**
      * Stop all product jobs for a specified processing chain
+     *
      * @param processingChain related processing chain
      * @throws ModuleException if error occurs!
      */
@@ -220,6 +231,7 @@ public interface IProductService {
     /**
      * Check if all product jobs for a specified processing chain are stopped. Unstable product states are rolled back
      * programmatically when related product job is stopped.
+     *
      * @param processingChain related processing chain
      * @return true if all jobs are stopped and cleaned
      * @throws ModuleException if error occurs!
@@ -248,18 +260,21 @@ public interface IProductService {
 
     /**
      * Manage product state of updated products and schedule them for SIP generation as soon as possible
+     *
      * @return Number of scheduled products
      */
     long manageUpdatedProducts(AcquisitionProcessingChain processingChain);
 
     /**
      * Same action as {@link #manageUpdatedProducts(AcquisitionProcessingChain)} but in a new transaction and by page
+     *
      * @return whether there is a product page remaining to managed
      */
     ProductsPage manageUpdatedProductsByPage(AcquisitionProcessingChain processingChain);
 
     /**
      * Save success and errors products in DB and submit success ones to ingest microservice for ingestion
+     *
      * @param processingChain
      * @param success
      * @param errors

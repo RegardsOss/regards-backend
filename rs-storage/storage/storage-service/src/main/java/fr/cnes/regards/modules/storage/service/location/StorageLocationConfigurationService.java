@@ -18,24 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.service.location;
 
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.module.rest.exception.*;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
@@ -43,6 +27,13 @@ import fr.cnes.regards.modules.storage.dao.IStorageLocationConfigurationRepostor
 import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.*;
 
 /**
  * Service to handle configuration of storge locations.<br>
@@ -68,7 +59,7 @@ public class StorageLocationConfigurationService {
      * Creates a new configuration for a storage location.
      */
     public StorageLocationConfiguration create(String name, PluginConfiguration toBeCreated, Long allocatedSizeInKo)
-            throws ModuleException {
+        throws ModuleException {
         PluginConfiguration pluginConf = null;
         if (storageLocConfRepo.existsByName(name)) {
             throw new EntityAlreadyExistsException(String.format("Storage location configuration %s, already exists.",
@@ -89,6 +80,7 @@ public class StorageLocationConfigurationService {
 
     /**
      * Search for all storage location configuration of the given storage type.
+     *
      * @param type {@link StorageType}
      */
     public List<StorageLocationConfiguration> search(StorageType type) {
@@ -104,6 +96,7 @@ public class StorageLocationConfigurationService {
 
     /**
      * Search for the configuration of a given storage location.
+     *
      * @param storageId storage id
      * @return {@link StorageLocationConfiguration}
      */
@@ -114,12 +107,13 @@ public class StorageLocationConfigurationService {
     /**
      * Return the highest prioritized storage location for the given storage location list and the given type.
      * This method can return an empty optional value in case no configuration match the given storage location list.
+     *
      * @param storageIds storage ids
-     * @param type storage type
+     * @param type       storage type
      * @return {@link StorageLocationConfiguration}
      */
     public Optional<StorageLocationConfiguration> searchActiveHigherPriority(Collection<String> storageIds,
-            StorageType type) {
+                                                                             StorageType type) {
         Optional<StorageLocationConfiguration> storage = Optional.empty();
         Set<StorageLocationConfiguration> confs;
         if (type != null) {
@@ -129,7 +123,7 @@ public class StorageLocationConfigurationService {
         }
         for (StorageLocationConfiguration c : confs) {
             if (c.getPluginConfiguration().isActive() && (!storage.isPresent() || c.getPriority() < storage.get()
-                    .getPriority())) {
+                                                                                                           .getPriority())) {
                 storage = Optional.of(c);
             }
         }
@@ -137,7 +131,6 @@ public class StorageLocationConfigurationService {
     }
 
     /**
-     *
      * Return the highest prioritized storage location for the given storage location list.
      * This method can return an empty optional value in case no configuration match the given storage location list.
      */
@@ -147,17 +140,19 @@ public class StorageLocationConfigurationService {
 
     /**
      * Return the first active storage location of the given type.
+     *
      * @param storageType storage type
      * @return {@link StorageLocationConfiguration}
      */
     @Nullable
     public StorageLocationConfiguration getFirstActive(StorageType storageType) {
-        return storageLocConfRepo
-                .findFirstByStorageTypeAndPluginConfigurationActiveOrderByPriorityAsc(storageType, true);
+        return storageLocConfRepo.findFirstByStorageTypeAndPluginConfigurationActiveOrderByPriorityAsc(storageType,
+                                                                                                       true);
     }
 
     /**
      * Increase the priority of the given plugin configuration. To do so, it may change the priority of others plugin configuration.
+     *
      * @param storageId storage id
      * @throws EntityNotFoundException if no {@link StorageLocationConfiguration} corresponding to {@code storageId} exists
      */
@@ -165,8 +160,9 @@ public class StorageLocationConfigurationService {
         Optional<StorageLocationConfiguration> oActual = search(storageId);
         if (oActual.isPresent()) {
             StorageLocationConfiguration actual = oActual.get();
-            StorageLocationConfiguration other = storageLocConfRepo
-                    .findOneByStorageTypeAndPriority(actual.getStorageType(), actual.getPriority() - 1);
+            StorageLocationConfiguration other = storageLocConfRepo.findOneByStorageTypeAndPriority(actual.getStorageType(),
+                                                                                                    actual.getPriority()
+                                                                                                        - 1);
             // is there someone which has a greater priority?
             if (other != null) {
                 Long actualPriority = actual.getPriority();
@@ -186,6 +182,7 @@ public class StorageLocationConfigurationService {
 
     /**
      * Decrease the priority of the given plugin configuration. To do so, it may change the priority of others plugin configuration.
+     *
      * @param storageId storage id
      * @throws EntityNotFoundException if no {@link StorageLocationConfiguration} corresponding to {@code storageId} exists
      */
@@ -193,8 +190,9 @@ public class StorageLocationConfigurationService {
         Optional<StorageLocationConfiguration> oActual = search(storageId);
         if (oActual.isPresent()) {
             StorageLocationConfiguration actual = oActual.get();
-            StorageLocationConfiguration other = storageLocConfRepo
-                    .findOneByStorageTypeAndPriority(actual.getStorageType(), actual.getPriority() + 1);
+            StorageLocationConfiguration other = storageLocConfRepo.findOneByStorageTypeAndPriority(actual.getStorageType(),
+                                                                                                    actual.getPriority()
+                                                                                                        + 1);
             // is there someone which has a lower priority?
             if (other != null) {
                 Long actualPriority = actual.getPriority();
@@ -214,6 +212,7 @@ public class StorageLocationConfigurationService {
 
     /**
      * Retrieve a {@link StorageLocationConfiguration} by id.
+     *
      * @param id storage id
      * @return {@link StorageLocationConfiguration}
      * @throws EntityNotFoundException if no {@link StorageLocationConfiguration} corresponding to {@code id} exists
@@ -228,13 +227,14 @@ public class StorageLocationConfigurationService {
 
     /**
      * Update a {@link StorageLocationConfiguration} by id.
+     *
      * @param storageId existing conf id
-     * @param updated {@link StorageLocationConfiguration} new conf
+     * @param updated   {@link StorageLocationConfiguration} new conf
      * @return {@link StorageLocationConfiguration}
      * @throws EntityNotFoundException if no {@link StorageLocationConfiguration} corresponding to {@code storageId} exists
      */
     public StorageLocationConfiguration update(String storageId, StorageLocationConfiguration updated)
-            throws ModuleException {
+        throws ModuleException {
 
         if (!storageId.equals(updated.getName())) {
             throw new EntityInconsistentIdentifierException(storageId,
@@ -256,7 +256,7 @@ public class StorageLocationConfigurationService {
                     pluginService.updatePluginConfiguration(updated.getPluginConfiguration());
                 } else {
                     throw new EntityInvalidException("Storage location plugin cannot be updated! "
-                                    + "If you made a mistake you have to delete the old one and create a new one.");
+                                                         + "If you made a mistake you have to delete the old one and create a new one.");
                 }
             }
         } else if (updated.getPluginConfiguration() != null) {
@@ -274,6 +274,7 @@ public class StorageLocationConfigurationService {
 
     /**
      * Delete a {@link StorageLocationConfiguration} by id.
+     *
      * @param pluginConfId plugin conf id
      * @throws ModuleException in accordance with {@link fr.cnes.regards.framework.modules.plugins.service.PluginService#deletePluginConfiguration(String)}
      */
@@ -287,9 +288,9 @@ public class StorageLocationConfigurationService {
                 pluginService.deletePluginConfiguration(toDelete.getPluginConfiguration().getBusinessId());
             }
             // Increase all the priorities of those which are less prioritized than the one to delete
-            Set<StorageLocationConfiguration> lessPrioritizeds = storageLocConfRepo
-                    .findAllByStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(toDelete.getStorageType(),
-                                                                                  toDelete.getPriority());
+            Set<StorageLocationConfiguration> lessPrioritizeds = storageLocConfRepo.findAllByStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(
+                toDelete.getStorageType(),
+                toDelete.getPriority());
             for (StorageLocationConfiguration lessPrioritized : lessPrioritizeds) {
                 lessPrioritized.setPriority(lessPrioritized.getPriority() - 1);
             }
@@ -301,8 +302,8 @@ public class StorageLocationConfigurationService {
      * Return the actual lowest priority value for the given storage type
      */
     public Long getLowestPriority(StorageType storageType) {
-        StorageLocationConfiguration lowestPrioritizedStorage = storageLocConfRepo
-                .findFirstByStorageTypeOrderByPriorityDesc(storageType);
+        StorageLocationConfiguration lowestPrioritizedStorage = storageLocConfRepo.findFirstByStorageTypeOrderByPriorityDesc(
+            storageType);
         if (lowestPrioritizedStorage == null) {
             // in case there is no one yet, lets give it the highest priority
             return null;
@@ -317,9 +318,9 @@ public class StorageLocationConfigurationService {
                 return location.allowPhysicalDeletion();
             } catch (NotAvailablePluginConfigurationException e) {
                 LOGGER.debug(String.format(
-                        "StorageLocationConfiguration %s is considered not allowing physical file delete because "
-                                + "underlying PluginConfiguration is not available",
-                        conf.getName()), e);
+                    "StorageLocationConfiguration %s is considered not allowing physical file delete because "
+                        + "underlying PluginConfiguration is not available",
+                    conf.getName()), e);
                 return false;
             }
         } else {

@@ -18,24 +18,17 @@
  */
 package fr.cnes.regards.framework.geojson;
 
-import javax.validation.Valid;
+import fr.cnes.regards.framework.geojson.geometry.*;
 
-import fr.cnes.regards.framework.geojson.geometry.GeometryCollection;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.geojson.geometry.LineString;
-import fr.cnes.regards.framework.geojson.geometry.MultiLineString;
-import fr.cnes.regards.framework.geojson.geometry.MultiPoint;
-import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
-import fr.cnes.regards.framework.geojson.geometry.Point;
-import fr.cnes.regards.framework.geojson.geometry.Polygon;
-import fr.cnes.regards.framework.geojson.geometry.Unlocated;
+import javax.validation.Valid;
 
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJson base feature representation<br/>
- *
+ * <p>
  * This is the base class for implementing GeoJson feature. Extend it to create your own.
- * @param <P> wrapper for properties
+ *
+ * @param <P>  wrapper for properties
  * @param <ID> is an optional Feature identifier of type {@link String} or {@link Number}
  * @author Marc Sordi
  */
@@ -125,8 +118,7 @@ public abstract class AbstractFeature<P, ID> extends AbstractGeoJsonObject {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        @SuppressWarnings("rawtypes")
-        AbstractFeature other = (AbstractFeature) obj;
+        @SuppressWarnings("rawtypes") AbstractFeature other = (AbstractFeature) obj;
         if (id == null) {
             return other.id == null;
         } else if (!id.equals(other.id)) {

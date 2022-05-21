@@ -55,8 +55,8 @@ import static org.mockito.Mockito.when;
  * @author Marc Sordi
  */
 @MultitenantTransactional
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=license",
-    "regards.amqp.enabled=true" })
+@TestPropertySource(
+    properties = { "spring.jpa.properties.hibernate.default_schema=license", "regards.amqp.enabled=true" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
 public class LicenseControllerIT extends AbstractRegardsTransactionalIT {
 
@@ -82,7 +82,7 @@ public class LicenseControllerIT extends AbstractRegardsTransactionalIT {
     @Before
     public void setupDefaultUser() {
         Role publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString())
-            .orElseThrow(() -> new AssertionError("Public role isn't setup in Role Database"));
+                                        .orElseThrow(() -> new AssertionError("Public role isn't setup in Role Database"));
 
         ProjectUserSetup userSetup = new ProjectUserSetup(projectUserRepository);
         userSetup.addUser(getDefaultUserEmail(),
@@ -98,8 +98,8 @@ public class LicenseControllerIT extends AbstractRegardsTransactionalIT {
 
     private ResponseEntity<EntityModel<Project>> defaultTenantResponse() {
         return ResponseEntity.status(HttpStatus.OK.value())
-            .headers(new HttpHeaders())
-            .body(EntityModel.of(aProjectWithLicence()));
+                             .headers(new HttpHeaders())
+                             .body(EntityModel.of(aProjectWithLicence()));
     }
 
     private Project aProjectWithLicence() {

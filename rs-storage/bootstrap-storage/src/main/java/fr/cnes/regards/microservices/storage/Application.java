@@ -18,19 +18,16 @@
  */
 package fr.cnes.regards.microservices.storage;
 
+import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
-
 /**
- *
  * Start microservice storage
  *
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
 @MicroserviceInfo(name = "storage", version = "2.0.0-SNAPSHOT")

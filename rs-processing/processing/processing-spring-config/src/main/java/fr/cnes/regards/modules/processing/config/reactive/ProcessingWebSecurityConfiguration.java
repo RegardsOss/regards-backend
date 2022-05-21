@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.config.reactive;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +28,10 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import reactor.core.publisher.Mono;
+
 /**
  * This class is the SecurityWebFilterChain config for reactive application.
+ *
  * @author gandrieu
  */
 @Configuration
@@ -40,37 +42,46 @@ import reactor.core.publisher.Mono;
 public class ProcessingWebSecurityConfiguration {
 
     private final AuthenticationManager authenticationManager;
+
     private final SecurityContextRepository securityContextRepository;
 
     @Autowired
     public ProcessingWebSecurityConfiguration(AuthenticationManager authenticationManager,
-            SecurityContextRepository securityContextRepository) {
+                                              SecurityContextRepository securityContextRepository) {
         this.authenticationManager = authenticationManager;
         this.securityContextRepository = securityContextRepository;
     }
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-        return http
-                .exceptionHandling()
-                .authenticationEntryPoint((swe, e) -> {
-                    return Mono.fromRunnable(() -> {
-                        swe.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-                    });
-                }).accessDeniedHandler((swe, e) -> {
-                    return Mono.fromRunnable(() -> {
-                        swe.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
-                    });
-                }).and()
-                .csrf().disable()
-                .formLogin().disable()
-                .httpBasic().disable()
-                .authenticationManager(authenticationManager)
-                .securityContextRepository(securityContextRepository)
-                .authorizeExchange()
-                .pathMatchers(HttpMethod.OPTIONS).permitAll()
-                .pathMatchers("/**").permitAll() // TODO restrict this?
-                .anyExchange().authenticated()
-                .and().build();
+        return http.exceptionHandling()
+                   .authenticationEntryPoint((swe, e) -> {
+                       return Mono.fromRunnable(() -> {
+                           swe.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                       });
+                   })
+                   .accessDeniedHandler((swe, e) -> {
+                       return Mono.fromRunnable(() -> {
+                           swe.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+                       });
+                   })
+                   .and()
+                   .csrf()
+                   .disable()
+                   .formLogin()
+                   .disable()
+                   .httpBasic()
+                   .disable()
+                   .authenticationManager(authenticationManager)
+                   .securityContextRepository(securityContextRepository)
+                   .authorizeExchange()
+                   .pathMatchers(HttpMethod.OPTIONS)
+                   .permitAll()
+                   .pathMatchers("/**")
+                   .permitAll() // TODO restrict this?
+                   .anyExchange()
+                   .authenticated()
+                   .and()
+                   .build();
     }
 }

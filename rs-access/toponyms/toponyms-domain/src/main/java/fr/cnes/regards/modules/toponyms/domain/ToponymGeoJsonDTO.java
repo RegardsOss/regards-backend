@@ -2,8 +2,8 @@ package fr.cnes.regards.modules.toponyms.domain;
 
 /**
  * POJO to transfer the geojson received in backend-for-frontend ENDPOINT to {@link ToponymGeoJson}
- * @author Iliana
  *
+ * @author Iliana
  */
 public class ToponymGeoJsonDTO {
 

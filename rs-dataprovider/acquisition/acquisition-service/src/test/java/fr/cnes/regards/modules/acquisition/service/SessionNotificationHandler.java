@@ -39,7 +39,7 @@ import java.util.List;
 @Component
 @Profile("!nomonitoring")
 public class SessionNotificationHandler
-        implements IHandler<StepPropertyUpdateRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
+    implements IHandler<StepPropertyUpdateRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
 
     List<StepPropertyUpdateRequestEvent> events = Lists.newArrayList();
 
@@ -60,18 +60,27 @@ public class SessionNotificationHandler
 
     private void log(StepPropertyUpdateRequestEvent event) {
         StepPropertyInfo eventInfo = event.getStepProperty().getStepPropertyInfo();
-        LOGGER.info("[{}] {}.{}={} {}", eventInfo.getState(), event.getStepProperty().getStepId(),
-                    event.getStepProperty(), event.getType(), eventInfo.getValue());
+        LOGGER.info("[{}] {}.{}={} {}",
+                    eventInfo.getState(),
+                    event.getStepProperty().getStepId(),
+                    event.getStepProperty(),
+                    event.getType(),
+                    eventInfo.getValue());
     }
 
-    public long getPropertyCount(String source, String session, String step, String property, StepPropertyEventTypeEnum type) {
+    public long getPropertyCount(String source,
+                                 String session,
+                                 String step,
+                                 String property,
+                                 StepPropertyEventTypeEnum type) {
         return events.stream()
-                     .filter(e ->
-                                    e.getStepProperty().getSource().equals(source) &&
-                                    e.getStepProperty().getSession().equals(session) &&
-                                    e.getStepProperty().getStepId().equals(step) &&
-                                    e.getStepProperty().getStepPropertyInfo().getProperty().equals(property) &&
-                                    e.getType() == type)
+                     .filter(e -> e.getStepProperty().getSource().equals(source) && e.getStepProperty()
+                                                                                     .getSession()
+                                                                                     .equals(session)
+                         && e.getStepProperty().getStepId().equals(step) && e.getStepProperty()
+                                                                             .getStepPropertyInfo()
+                                                                             .getProperty()
+                                                                             .equals(property) && e.getType() == type)
                      .map(event -> Long.parseLong(event.getStepProperty().getStepPropertyInfo().getValue()))
                      .reduce(0L, Long::sum);
     }

@@ -18,10 +18,8 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
+import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,8 +30,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Léo Mieulet
@@ -43,6 +42,7 @@ public interface IAbstractRequestRepository extends JpaRepository<AbstractReques
 
     /**
      * Retrieve a page of {@link AbstractRequest} matching the provided specification
+     *
      * @param aipEntitySpecification criteria spec
      * @return a page of {@link AbstractRequest}
      */
@@ -50,6 +50,7 @@ public interface IAbstractRequestRepository extends JpaRepository<AbstractReques
 
     /**
      * Retrieve a list of {@link AbstractRequest} referencing the provided specification
+     *
      * @param aipEntitySpecification criteria spec
      * @return a list of {@link AbstractRequest}
      */
@@ -68,7 +69,8 @@ public interface IAbstractRequestRepository extends JpaRepository<AbstractReques
 
     /**
      * Update the state of list of entities using their ids
-     * @param ids request ids
+     *
+     * @param ids   request ids
      * @param state new state
      * @return number of entities updated
      */
@@ -78,6 +80,7 @@ public interface IAbstractRequestRepository extends JpaRepository<AbstractReques
 
     /**
      * Find all requests by id (used only in case of notification)
+     *
      * @param requestIds ids of the requests
      * @return requests
      */

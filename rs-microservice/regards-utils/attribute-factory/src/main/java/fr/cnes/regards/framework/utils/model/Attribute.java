@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.framework.utils.model;
 
+import fr.cnes.regards.framework.utils.metamodel.MetaAttribute;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import fr.cnes.regards.framework.utils.metamodel.MetaAttribute;
 
 /**
  * Cette interface permet d'abstraire la relation d'une entite avec la valeur d'un attribut qui la compose.
  *
  * @author Christophe Mertz
- *
  */
 public class Attribute {
 
@@ -78,8 +77,7 @@ public class Attribute {
     /**
      * Ajoute une valeur a l'attribut. La classe de l'objet en entree doit correspondre avec la classe de l'attribut.
      *
-     * @param value
-     *            La nouvelle valeur de l'attribut.
+     * @param value La nouvelle valeur de l'attribut.
      */
     public void addValue(Object value) {
         valueList.add(value);
@@ -94,7 +92,7 @@ public class Attribute {
 
     /**
      * @param attribute positionne
-     *            le méta attribut
+     *                  le méta attribut
      */
     public void setMetaAttribute(MetaAttribute attribute) {
         metaAttribute = attribute;
@@ -104,8 +102,7 @@ public class Attribute {
      * Cette methode permet de ajouter le nom du meta-attribut definissant l'attribut non-standard. La methode est
      * utilisee lors de l'ingestion. Cette methode ne fonctionnera pas sur un plate-forme Windows.
      *
-     * @param string
-     *            Le chemin xml contenant le nom de l'attribut non-standard.
+     * @param string Le chemin xml contenant le nom de l'attribut non-standard.
      */
     public void setMetaAttribute(String string) {
         // processing path "XXXXX/XXXXX/XXXXX/FINAL" to get only final name "FINAL"
@@ -117,8 +114,7 @@ public class Attribute {
      * Cette methode permet de mettre a jour le nom du meta-attribut definissant l'objet attribut. Cette methode est
      * utilisee lors de la lecture des fichiers descriptor.
      *
-     * @param string
-     *            Le nom du meta-attribut.
+     * @param string Le nom du meta-attribut.
      */
     public void setMetaAttributeName(String string) {
         metaAttribute.setName(string);
@@ -182,8 +178,7 @@ public class Attribute {
     /**
      * Set method.
      *
-     * @param valueList
-     *            the valueList to set
+     * @param valueList the valueList to set
      */
     @SuppressWarnings("unchecked")
     public void setValueList(List<?> valueList) {

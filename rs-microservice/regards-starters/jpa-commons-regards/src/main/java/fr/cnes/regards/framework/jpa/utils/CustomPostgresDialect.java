@@ -26,11 +26,11 @@ import org.hibernate.type.StandardBasicTypes;
  * Current dialect in use in REGARDS
  * This class add some custom Postgres functions and expressions you can use in Specification classes,
  * allowing us to query the database using custom SQL, mostly to use JSONB operators
- *
+ * <p>
  * Keep in mind that every operators containing question mark cannot be written here
  * as JDBC would interpret the question mark as a prepared value not provided,
  * so we've created some pre-defined function to make an alias to the operator, in order to fix this issue
- *
+ * <p>
  * You can find the function name of an operator with the following SQL :
  * SELECT oprname, oprcode  FROM pg_operator WHERE oprname = '&!'
  *
@@ -75,7 +75,8 @@ public class CustomPostgresDialect extends PostgreSQL10Dialect {
 
     public CustomPostgresDialect() {
         super();
-        super.registerFunction(EMPTY_STRING_ARRAY, new SQLFunctionTemplate(StandardBasicTypes.BOOLEAN, "ARRAY[]::text[]"));
+        super.registerFunction(EMPTY_STRING_ARRAY,
+                               new SQLFunctionTemplate(StandardBasicTypes.BOOLEAN, "ARRAY[]::text[]"));
         super.registerFunction(STRING_LITERAL, new SQLFunctionTemplate(StandardBasicTypes.STRING, "?1::text"));
         super.registerFunction(JSONB_LITERAL, new SQLFunctionTemplate(StandardBasicTypes.STRING, "?1::jsonb"));
         super.registerFunction(JSONB_CONTAINS, new SQLFunctionTemplate(StandardBasicTypes.BOOLEAN, "?1 @> ?2"));

@@ -18,24 +18,21 @@
  */
 package fr.cnes.regards.modules.model.service.validation.validator.restriction;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.validation.Errors;
-
 import com.google.common.collect.Range;
-
 import fr.cnes.regards.modules.model.domain.attributes.restriction.DoubleRangeRestriction;
 import fr.cnes.regards.modules.model.dto.properties.DoubleArrayProperty;
 import fr.cnes.regards.modules.model.dto.properties.DoubleIntervalProperty;
 import fr.cnes.regards.modules.model.dto.properties.DoubleProperty;
 import fr.cnes.regards.modules.model.service.validation.validator.AbstractPropertyValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.validation.Errors;
 
 /**
  * Validate {@link DoubleProperty}, {@link DoubleArrayProperty} or {@link DoubleIntervalProperty} value with a
  * {@link DoubleRangeRestriction}
  *
  * @author Marc Sordi
- *
  */
 public class DoubleRangeValidator extends AbstractPropertyValidator {
 
@@ -58,7 +55,7 @@ public class DoubleRangeValidator extends AbstractPropertyValidator {
     @Override
     public boolean supports(Class<?> clazz) {
         return clazz == DoubleProperty.class || clazz == DoubleArrayProperty.class
-                || clazz == DoubleIntervalProperty.class;
+            || clazz == DoubleIntervalProperty.class;
     }
 
     @Override
@@ -96,10 +93,8 @@ public class DoubleRangeValidator extends AbstractPropertyValidator {
     /**
      * Check value is in restriction range
      *
-     * @param pValue
-     *            value
-     * @param pErrors
-     *            errors
+     * @param pValue  value
+     * @param pErrors errors
      */
     private void checkRange(Double pValue, Errors pErrors) {
         if (restriction.isMinExcluded()) {
@@ -124,7 +119,8 @@ public class DoubleRangeValidator extends AbstractPropertyValidator {
     }
 
     private void reject(Errors pErrors) {
-        pErrors.reject("error.double.value.not.in.required.range", String
-                .format("Value not consistent with restriction range for attribute \"%s\".", attributeKey));
+        pErrors.reject("error.double.value.not.in.required.range",
+                       String.format("Value not consistent with restriction range for attribute \"%s\".",
+                                     attributeKey));
     }
 }

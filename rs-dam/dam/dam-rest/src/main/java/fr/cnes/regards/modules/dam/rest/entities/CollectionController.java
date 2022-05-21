@@ -18,11 +18,15 @@
  */
 package fr.cnes.regards.modules.dam.rest.entities;
 
-import java.io.IOException;
-import java.util.Set;
-
-import javax.validation.Valid;
-
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.modules.dam.domain.entities.Collection;
+import fr.cnes.regards.modules.dam.service.entities.ICollectionService;
+import fr.cnes.regards.modules.model.service.validation.ValidationMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,25 +40,15 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.modules.dam.domain.entities.Collection;
-import fr.cnes.regards.modules.dam.service.entities.ICollectionService;
-import fr.cnes.regards.modules.model.service.validation.ValidationMode;
+import javax.validation.Valid;
+import java.io.IOException;
+import java.util.Set;
 
 /**
  * Collection API
+ *
  * @author lmieulet
  */
 @RestController
@@ -83,6 +77,7 @@ public class CollectionController implements IResourceController<Collection> {
 
     /**
      * Entry point to retrieve {@link Collection}s
+     *
      * @param label
      * @param pageable
      * @param assembler
@@ -91,9 +86,9 @@ public class CollectionController implements IResourceController<Collection> {
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "endpoint to retrieve the list fo all collections")
     public ResponseEntity<PagedModel<EntityModel<Collection>>> retrieveCollections(
-            @RequestParam(name = "label", required = false) String label,
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<Collection> assembler) {
+        @RequestParam(name = "label", required = false) String label,
+        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        PagedResourcesAssembler<Collection> assembler) {
         final Page<Collection> collections = collectionService.search(label, pageable);
         final PagedModel<EntityModel<Collection>> resources = toPagedResources(collections, assembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
@@ -101,6 +96,7 @@ public class CollectionController implements IResourceController<Collection> {
 
     /**
      * Entry point to retrieve a collection using its id
+     *
      * @param id {@link Collection} id
      * @return {@link Collection} as a {@link EntityModel}
      * @throws ModuleException
@@ -108,7 +104,7 @@ public class CollectionController implements IResourceController<Collection> {
     @RequestMapping(method = RequestMethod.GET, value = COLLECTION_MAPPING)
     @ResourceAccess(description = "Retrieve a collection")
     public HttpEntity<EntityModel<Collection>> retrieveCollection(@PathVariable("collection_id") Long id)
-            throws ModuleException {
+        throws ModuleException {
         final Collection collection = collectionService.load(id);
         final EntityModel<Collection> resource = toResource(collection);
         return new ResponseEntity<>(resource, HttpStatus.OK);
@@ -116,9 +112,10 @@ public class CollectionController implements IResourceController<Collection> {
 
     /**
      * Entry point to update a collection using its id
-     * @param id {@link Collection} id
+     *
+     * @param id           {@link Collection} id
      * @param inCollection {@link Collection}
-     * @param result for validation of entites' properties
+     * @param result       for validation of entites' properties
      * @return update {@link Collection} as a {@link EntityModel}
      * @throws ModuleException if error occurs! @
      * @throws IOException
@@ -126,7 +123,9 @@ public class CollectionController implements IResourceController<Collection> {
     @RequestMapping(method = RequestMethod.PUT, value = COLLECTION_MAPPING)
     @ResourceAccess(description = "Update a collection")
     public HttpEntity<EntityModel<Collection>> updateCollection(@PathVariable("collection_id") Long id,
-            @Valid @RequestBody Collection inCollection, BindingResult result) throws ModuleException, IOException {
+                                                                @Valid @RequestBody Collection inCollection,
+                                                                BindingResult result)
+        throws ModuleException, IOException {
         collectionService.checkAndOrSetModel(inCollection);
         // Validate dynamic model
         collectionService.validate(inCollection, result, ValidationMode.UPDATE);
@@ -138,6 +137,7 @@ public class CollectionController implements IResourceController<Collection> {
 
     /**
      * Entry point to delete a collection using its id
+     *
      * @param id {@link Collection} id
      * @return nothing
      * @throws ModuleException
@@ -151,8 +151,9 @@ public class CollectionController implements IResourceController<Collection> {
 
     /**
      * Entry point to create a collection
+     *
      * @param inCollection {@link Collection} to create
-     * @param result validation errors
+     * @param result       validation errors
      * @return {@link Collection} as a {@link EntityModel}
      * @throws ModuleException if validation fails
      * @throws IOException
@@ -160,7 +161,8 @@ public class CollectionController implements IResourceController<Collection> {
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "create a new collection according to what is passed as parameter")
     public ResponseEntity<EntityModel<Collection>> createCollection(@Valid @RequestBody Collection inCollection,
-            BindingResult result) throws ModuleException, IOException {
+                                                                    BindingResult result)
+        throws ModuleException, IOException {
         collectionService.checkAndOrSetModel(inCollection);
         // Validate dynamic model
         collectionService.validate(inCollection, result, ValidationMode.CREATION);
@@ -172,7 +174,8 @@ public class CollectionController implements IResourceController<Collection> {
 
     /**
      * Entry point to handle dissociation of {@link Collection} specified by its id to other entities
-     * @param id {@link Collection} id
+     *
+     * @param id              {@link Collection} id
      * @param toBeDissociated entity to dissociate
      * @return {@link Collection} as a {@link EntityModel}
      * @throws ModuleException if error occurs
@@ -180,14 +183,15 @@ public class CollectionController implements IResourceController<Collection> {
     @RequestMapping(method = RequestMethod.PUT, value = COLLECTION_DISSOCIATE_MAPPING)
     @ResourceAccess(description = "Dissociate a collection from  a list of entities")
     public HttpEntity<Void> dissociate(@PathVariable("collection_id") final Long id,
-            @Valid @RequestBody final Set<String> toBeDissociated) throws ModuleException {
+                                       @Valid @RequestBody final Set<String> toBeDissociated) throws ModuleException {
         collectionService.dissociate(id, toBeDissociated);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**
      * Entry point to handle association of {@link Collection} specified by its id to other entities
-     * @param id {@link Collection} id
+     *
+     * @param id                 {@link Collection} id
      * @param toBeAssociatedWith entities to be associated
      * @return {@link Collection} as a {@link EntityModel}
      * @throws ModuleException if error occurs
@@ -195,7 +199,7 @@ public class CollectionController implements IResourceController<Collection> {
     @RequestMapping(method = RequestMethod.PUT, value = COLLECTION_ASSOCIATE_MAPPING)
     @ResourceAccess(description = "Associate the collection of id collection_id to the list of entities in parameter")
     public HttpEntity<Void> associate(@PathVariable("collection_id") final Long id,
-            @Valid @RequestBody final Set<String> toBeAssociatedWith) throws ModuleException {
+                                      @Valid @RequestBody final Set<String> toBeAssociatedWith) throws ModuleException {
         collectionService.associate(id, toBeAssociatedWith);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -203,22 +207,40 @@ public class CollectionController implements IResourceController<Collection> {
     @Override
     public EntityModel<Collection> toResource(final Collection element, final Object... extras) {
         final EntityModel<Collection> resource = resourceService.toResource(element);
-        resourceService.addLink(resource, this.getClass(), "retrieveCollection", LinkRels.SELF,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "retrieveCollection",
+                                LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, element.getId()));
-        resourceService.addLink(resource, this.getClass(), "retrieveCollections", LinkRels.LIST,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "retrieveCollections",
+                                LinkRels.LIST,
                                 MethodParamFactory.build(String.class, element.getLabel()),
                                 MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
-        resourceService.addLink(resource, this.getClass(), "deleteCollection", LinkRels.DELETE,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "deleteCollection",
+                                LinkRels.DELETE,
                                 MethodParamFactory.build(Long.class, element.getId()));
-        resourceService.addLink(resource, this.getClass(), "updateCollection", LinkRels.UPDATE,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "updateCollection",
+                                LinkRels.UPDATE,
                                 MethodParamFactory.build(Long.class, element.getId()),
                                 MethodParamFactory.build(Collection.class),
                                 MethodParamFactory.build(BindingResult.class));
-        resourceService.addLink(resource, this.getClass(), "dissociate", LinkRelation.of("dissociate"),
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "dissociate",
+                                LinkRelation.of("dissociate"),
                                 MethodParamFactory.build(Long.class, element.getId()),
                                 MethodParamFactory.build(Set.class));
-        resourceService.addLink(resource, this.getClass(), "associate", LinkRelation.of("associate"),
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "associate",
+                                LinkRelation.of("associate"),
                                 MethodParamFactory.build(Long.class, element.getId()),
                                 MethodParamFactory.build(Set.class));
         return resource;

@@ -42,7 +42,7 @@ import java.util.List;
  */
 @Component
 public class ReferenceFlowItemHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<ReferenceFlowItem> {
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<ReferenceFlowItem> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ReferenceFlowItemHandler.class);
 
@@ -68,7 +68,8 @@ public class ReferenceFlowItemHandler
         LOGGER.info("[REFERENCE FLOW HANDLER] Bulk saving {} AddFileRefFlowItem...", messages.size());
         long start = System.currentTimeMillis();
         fileRefReqService.reference(messages);
-        LOGGER.info("[REFERENCE FLOW HANDLER] {} AddFileRefFlowItem handled in {} ms", messages.size(),
+        LOGGER.info("[REFERENCE FLOW HANDLER] {} AddFileRefFlowItem handled in {} ms",
+                    messages.size(),
                     System.currentTimeMillis() - start);
     }
 

@@ -25,9 +25,10 @@ import org.springframework.context.annotation.Profile;
 
 /**
  * Class MicroserviceClientsAutoConfiguration
- *
+ * <p>
  * Auto-configuration to enable feign clients needed by this auto-configure module. This configuration is alone in order
  * to allow tests to exclude Feign clients configuration.
+ *
  * @author Sébastien Binda
  * .
  */

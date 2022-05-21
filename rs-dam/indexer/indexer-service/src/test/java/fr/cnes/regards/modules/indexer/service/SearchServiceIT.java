@@ -92,10 +92,15 @@ public class SearchServiceIT {
             for (double lat = 0; lat < 90; lat += 0.1) {
                 String label = "POINT_" + format.format(lon) + "_" + format.format(lat);
                 DataObject object = new DataObject(model, tenant, label, label);
-                object.setIpId(new OaisUniformResourceName(OAISIdentifier.SIP, EntityType.DATA, tenant,
-                        UUID.randomUUID(), 1, null, null));
+                object.setIpId(new OaisUniformResourceName(OAISIdentifier.SIP,
+                                                           EntityType.DATA,
+                                                           tenant,
+                                                           UUID.randomUUID(),
+                                                           1,
+                                                           null,
+                                                           null));
                 Point point = IGeometry.point(EsHelper.scaled(lon), EsHelper.scaled(lat))
-                        .withCrs(Crs.MARS_49900.toString());
+                                       .withCrs(Crs.MARS_49900.toString());
                 object.setNormalizedGeometry(point);
                 object.setWgs84(toWgs84(point));
                 dos.add(object);
@@ -119,10 +124,15 @@ public class SearchServiceIT {
             for (double lat = 0; lat < 89; lat += 2) {
                 String label = "POLYGON_" + format.format(lon) + "_" + format.format(lat);
                 DataObject object = new DataObject(model, tenant, label, label);
-                object.setIpId(new OaisUniformResourceName(OAISIdentifier.SIP, EntityType.DATA, tenant,
-                        UUID.randomUUID(), 1, null, null));
+                object.setIpId(new OaisUniformResourceName(OAISIdentifier.SIP,
+                                                           EntityType.DATA,
+                                                           tenant,
+                                                           UUID.randomUUID(),
+                                                           1,
+                                                           null,
+                                                           null));
                 Polygon polygon = IGeometry.simplePolygon(lon, lat, lon + 1, lat, lon + 1, lat + 1, lon, lat + 1)
-                        .withCrs(Crs.MARS_49900.toString());
+                                           .withCrs(Crs.MARS_49900.toString());
                 object.setNormalizedGeometry(polygon);
                 object.setWgs84(toWgs84(polygon));
                 dos.add(object);
@@ -141,13 +151,19 @@ public class SearchServiceIT {
     }
 
     private void computeCircleNotSymetricTest(double[] center, Double distance) {
-        this.computeCircleTest("NOT SYMETRIC", center, distance,
+        this.computeCircleTest("NOT SYMETRIC",
+                               center,
+                               distance,
                                ICriterion.intersectsCircle(center, distance.toString()));
     }
 
     private void computeCircleOnOnlyPolygonsSymetricTest(double[] center, Double distance) {
-        this.computeCircleTest("SYMETRIC POLYGONS", center, distance,
-                               ICriterion.and(ICriterion.startsWith("feature.label", "POLYGON", StringMatchType.KEYWORD),
+        this.computeCircleTest("SYMETRIC POLYGONS",
+                               center,
+                               distance,
+                               ICriterion.and(ICriterion.startsWith("feature.label",
+                                                                    "POLYGON",
+                                                                    StringMatchType.KEYWORD),
                                               ICriterion.intersectsCircle(center, distance.toString())));
     }
 
@@ -171,9 +187,10 @@ public class SearchServiceIT {
                     if (object.getNormalizedGeometry() instanceof Point) {
                         Point point = object.getNormalizedGeometry();
                         double error = GeoHelper.getDistance(point.getCoordinates().getLongitude(),
-                                                             point.getCoordinates().getLatitude(), center[0], center[1],
-                                                             Crs.MARS_49900)
-                                - distance;
+                                                             point.getCoordinates().getLatitude(),
+                                                             center[0],
+                                                             center[1],
+                                                             Crs.MARS_49900) - distance;
                         maxErrorDistance = Math.max(maxErrorDistance, error);
                         System.out.printf("Error (%s): %f m \n", object.getLabel(), error);
                     } else {
@@ -192,11 +209,14 @@ public class SearchServiceIT {
         } while (!ended);
         System.out.printf("\n%s SEARCH (radius: %d km):\n", label, (int) (distance / 1000));
         System.out.println("---------------------------------");
-        System.out
-                .printf("Result count: %d, results in error: %d (%s %%), max distance error : %d (%s %%) (search only duration: %d ms)\n\n",
-                        page.getTotalElements(), errorCount,
-                        format.format((100. * errorCount) / page.getTotalElements()), (int) maxErrorDistance,
-                        format.format((100. * maxErrorDistance) / distance), duration);
+        System.out.printf(
+            "Result count: %d, results in error: %d (%s %%), max distance error : %d (%s %%) (search only duration: %d ms)\n\n",
+            page.getTotalElements(),
+            errorCount,
+            format.format((100. * errorCount) / page.getTotalElements()),
+            (int) maxErrorDistance,
+            format.format((100. * maxErrorDistance) / distance),
+            duration);
     }
 
     private void computePolygonTest(String label, ICriterion criterion, int expectedCount) {
@@ -337,79 +357,93 @@ public class SearchServiceIT {
 
     @Test
     public void testConvexSimplePolygonNearEquatorOnlyPolygonsInto() {
-        ICriterion criterion = ICriterion
-                .and(ICriterion.startsWith("feature.label", "POLYGON", StringMatchType.KEYWORD), ICriterion.intersectsPolygon(new double[][][] {
-                        { { 0.3, 0.3 }, { 0.6, 0.3 }, { 0.6, 0.6 }, { 0.3, 0.6 }, { 0.3, 0.3 } } }));
+        ICriterion criterion = ICriterion.and(ICriterion.startsWith("feature.label",
+                                                                    "POLYGON",
+                                                                    StringMatchType.KEYWORD),
+                                              ICriterion.intersectsPolygon(new double[][][] {
+                                                  { { 0.3, 0.3 }, { 0.6, 0.3 }, { 0.6, 0.6 }, { 0.3, 0.6 },
+                                                      { 0.3, 0.3 } } }));
         computePolygonTest("INNER POLYGON", criterion, 1);
     }
 
     @Test
     public void testConvexSimplePolygonNearEquatorOnlyPolygonsEqual() {
-        ICriterion criterion = ICriterion
-                .and(ICriterion.startsWith("feature.label", "POLYGON", StringMatchType.KEYWORD), ICriterion.intersectsPolygon(new double[][][] {
-                        { { 0., 0. }, { 1., 0. }, { 1., 1. }, { 0., 1. }, { 0., 0. } } }));
+        ICriterion criterion = ICriterion.and(ICriterion.startsWith("feature.label",
+                                                                    "POLYGON",
+                                                                    StringMatchType.KEYWORD),
+                                              ICriterion.intersectsPolygon(new double[][][] {
+                                                  { { 0., 0. }, { 1., 0. }, { 1., 1. }, { 0., 1. }, { 0., 0. } } }));
         computePolygonTest("EQUAL POLYGON", criterion, 1);
     }
 
     @Test
     public void testConvexSimplePolygonNearEquatorOnlyPolygonsContains() {
-        ICriterion criterion = ICriterion
-                .and(ICriterion.startsWith("feature.label", "POLYGON", StringMatchType.KEYWORD), ICriterion.intersectsPolygon(new double[][][] {
-                        { { -0.3, -0.3 }, { 1.3, -0.3 }, { 1.3, 1.3 }, { -0.3, 1.3 }, { -0.3, -0.3 } } }));
+        ICriterion criterion = ICriterion.and(ICriterion.startsWith("feature.label",
+                                                                    "POLYGON",
+                                                                    StringMatchType.KEYWORD),
+                                              ICriterion.intersectsPolygon(new double[][][] {
+                                                  { { -0.3, -0.3 }, { 1.3, -0.3 }, { 1.3, 1.3 }, { -0.3, 1.3 },
+                                                      { -0.3, -0.3 } } }));
         computePolygonTest("CONTAINS POLYGON", criterion, 1);
     }
 
     @Test
     public void testConvexSimplePolygonNearEquatorOnlyPolygonsIntersects() {
-        ICriterion criterion = ICriterion
-                .and(ICriterion.startsWith("feature.label", "POLYGON", StringMatchType.KEYWORD), ICriterion.intersectsPolygon(new double[][][] {
-                        { { 0.6, 0.6 }, { 1.3, 0.6 }, { 1.3, 1.3 }, { 0.6, 1.3 }, { 0.6, 0.6 } } }));
+        ICriterion criterion = ICriterion.and(ICriterion.startsWith("feature.label",
+                                                                    "POLYGON",
+                                                                    StringMatchType.KEYWORD),
+                                              ICriterion.intersectsPolygon(new double[][][] {
+                                                  { { 0.6, 0.6 }, { 1.3, 0.6 }, { 1.3, 1.3 }, { 0.6, 1.3 },
+                                                      { 0.6, 0.6 } } }));
         computePolygonTest("INTERSECT POLYGON", criterion, 1);
     }
 
     @Test
     public void testConvexSimplePolygonNearEquatorInto() {
         ICriterion criterion = ICriterion.intersectsPolygon(new double[][][] {
-                { { 0.3, 0.3 }, { 0.6, 0.3 }, { 0.6, 0.6 }, { 0.3, 0.6 }, { 0.3, 0.3 } } });
+            { { 0.3, 0.3 }, { 0.6, 0.3 }, { 0.6, 0.6 }, { 0.3, 0.6 }, { 0.3, 0.3 } } });
         // 4 * 4 points + 1 polygon
         computePolygonTest("INNER POLYGON", criterion, 17);
     }
 
     @Test
     public void testConvexSimplePolygonNearEquatorEqual() {
-        ICriterion criterion = ICriterion
-                .intersectsPolygon(new double[][][] { { { 0., 0. }, { 1., 0. }, { 1., 1. }, { 0., 1. }, { 0., 0. } } });
+        ICriterion criterion = ICriterion.intersectsPolygon(new double[][][] {
+            { { 0., 0. }, { 1., 0. }, { 1., 1. }, { 0., 1. }, { 0., 0. } } });
         computePolygonTest("EQUAL POLYGON", criterion, 122);
     }
 
     @Test
     public void testConvexSimplePolygonNearEquatorContains() {
         ICriterion criterion = ICriterion.intersectsPolygon(new double[][][] {
-                { { -0.3, -0.3 }, { 1.3, -0.3 }, { 1.3, 1.3 }, { -0.3, 1.3 }, { -0.3, -0.3 } } });
+            { { -0.3, -0.3 }, { 1.3, -0.3 }, { 1.3, 1.3 }, { -0.3, 1.3 }, { -0.3, -0.3 } } });
         computePolygonTest("CONTAINS POLYGON", criterion, 197);
     }
 
     @Test
     public void testConvexSimplePolygonNearEquatorIntersects() {
         ICriterion criterion = ICriterion.intersectsPolygon(new double[][][] {
-                { { 0.6, 0.6 }, { 1.3, 0.6 }, { 1.3, 1.3 }, { 0.6, 1.3 }, { 0.6, 0.6 } } });
+            { { 0.6, 0.6 }, { 1.3, 0.6 }, { 1.3, 1.3 }, { 0.6, 1.3 }, { 0.6, 0.6 } } });
         computePolygonTest("INTERSECT POLYGON", criterion, 65);
     }
 
     @Test
     public void testConcaveSimplePolygonNearEquatorOnlyPolygonsOuto() {
-        ICriterion criterion = ICriterion.and(ICriterion.startsWith("feature.label", "POLYGON", StringMatchType.KEYWORD),
-                                              ICriterion.intersectsPolygon(new double[][][] { { { -0.3, -0.3 },
-                                                      { 1.3, -0.3 }, { 1.3, 1.3 }, { -0.3, 1.3 }, { -0.3, 1.1 },
-                                                      { 1.1, 1.1 }, { 1.1, -0.1 }, { -0.3, -0.1 }, { -0.3, -0.3 } } }));
+        ICriterion criterion = ICriterion.and(ICriterion.startsWith("feature.label",
+                                                                    "POLYGON",
+                                                                    StringMatchType.KEYWORD),
+                                              ICriterion.intersectsPolygon(new double[][][] {
+                                                  { { -0.3, -0.3 }, { 1.3, -0.3 }, { 1.3, 1.3 }, { -0.3, 1.3 },
+                                                      { -0.3, 1.1 }, { 1.1, 1.1 }, { 1.1, -0.1 }, { -0.3, -0.1 },
+                                                      { -0.3, -0.3 } } }));
         computePolygonTest("CONCAVE BANANA POLYGON", criterion, 0);
     }
 
     @Test
     public void testConcaveSimplePolygonNearEquator() {
-        ICriterion criterion = ICriterion
-                .intersectsPolygon(new double[][][] { { { -0.3, -0.3 }, { 1.3, -0.3 }, { 1.3, 1.3 }, { -0.3, 1.3 },
-                        { -0.3, 1.1 }, { 1.1, 1.1 }, { 1.1, -0.1 }, { -0.3, -0.1 }, { -0.3, -0.3 } } });
+        ICriterion criterion = ICriterion.intersectsPolygon(new double[][][] {
+            { { -0.3, -0.3 }, { 1.3, -0.3 }, { 1.3, 1.3 }, { -0.3, 1.3 }, { -0.3, 1.1 }, { 1.1, 1.1 }, { 1.1, -0.1 },
+                { -0.3, -0.1 }, { -0.3, -0.3 } } });
         computePolygonTest("CONCAVE BANANA POLYGON", criterion, 75);
     }
 

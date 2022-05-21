@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.rest;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
@@ -76,17 +76,17 @@ public class PMonitoringController implements IResourceController<ExecutionMonit
 
     @GetMapping
     @ResourceAccess(
-            description = "List executions filtered by tenant/user/date/status depending on the given parameters",
-            role = DefaultRole.ADMIN)
+        description = "List executions filtered by tenant/user/date/status depending on the given parameters",
+        role = DefaultRole.ADMIN)
     public HttpEntity<PagedModel<EntityModel<ExecutionMonitoringDTO>>> executions(
-            @RequestParam(name = TENANT_PARAM) String tenant,
-            @RequestParam(name = STATUS_PARAM) List<ExecutionStatus> status,
-            @RequestParam(name = USER_EMAIL_PARAM, required = false) String userEmail,
-            @RequestParam(name = PROCESS_BID_PARAM, required = false) String processBid,
-            @RequestParam(name = DATE_FROM_PARAM, defaultValue = "2000-01-01T00:00:00.000Z") String fromStr,
-            @RequestParam(name = DATE_TO_PARAM, defaultValue = "2100-01-01T00:00:00.000Z") String toStr,
-            @RequestParam(name = PAGE_PARAM, defaultValue = DEFAULT_PAGE) int page,
-            @RequestParam(name = SIZE_PARAM, defaultValue = DEFAULT_SIZE) int size) {
+        @RequestParam(name = TENANT_PARAM) String tenant,
+        @RequestParam(name = STATUS_PARAM) List<ExecutionStatus> status,
+        @RequestParam(name = USER_EMAIL_PARAM, required = false) String userEmail,
+        @RequestParam(name = PROCESS_BID_PARAM, required = false) String processBid,
+        @RequestParam(name = DATE_FROM_PARAM, defaultValue = "2000-01-01T00:00:00.000Z") String fromStr,
+        @RequestParam(name = DATE_TO_PARAM, defaultValue = "2100-01-01T00:00:00.000Z") String toStr,
+        @RequestParam(name = PAGE_PARAM, defaultValue = DEFAULT_PAGE) int page,
+        @RequestParam(name = SIZE_PARAM, defaultValue = DEFAULT_SIZE) int size) {
         LOGGER.debug("status={}", status);
         LOGGER.debug("userEmail={}", userEmail);
         LOGGER.debug("from={}", fromStr);
@@ -99,12 +99,12 @@ public class PMonitoringController implements IResourceController<ExecutionMonit
 
         PageRequest paged = PageRequest.of(page, size, Sort.by(Direction.DESC, "created"));
         return monitoringService.getExecutionsPageForCriteria(tenant, status, processBid, userEmail, from, to, paged)
-                .map(p -> {
-                    // Reset context request attributes with requested one.
-                    RequestContextHolder.setRequestAttributes(ctxRequestAttributes);
-                    return new ResponseEntity<>(this.toPagedResources(p, assembler), HttpStatus.OK);
-                })
-                .block();
+                                .map(p -> {
+                                    // Reset context request attributes with requested one.
+                                    RequestContextHolder.setRequestAttributes(ctxRequestAttributes);
+                                    return new ResponseEntity<>(this.toPagedResources(p, assembler), HttpStatus.OK);
+                                })
+                                .block();
     }
 
     @Override

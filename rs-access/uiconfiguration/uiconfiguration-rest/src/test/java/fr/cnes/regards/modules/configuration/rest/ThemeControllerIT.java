@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.configuration.rest;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.modules.configuration.dao.IThemeRepository;
+import fr.cnes.regards.modules.configuration.domain.Theme;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -25,15 +29,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.modules.configuration.dao.IThemeRepository;
-import fr.cnes.regards.modules.configuration.domain.Theme;
-
 /**
- *
  * Class InstanceLayoutControllerIT
- *
+ * <p>
  * IT Tests for REST Controller
  *
  * @author Sébastien Binda
@@ -77,7 +75,6 @@ public class ThemeControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     /**
-     *
      * Test retrieve all themes
      *
      * @since 1.0-SNAPSHOT
@@ -97,7 +94,9 @@ public class ThemeControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void testGetOneTheme() {
         performDefaultGet(ThemeController.ROOT_MAPPING + ThemeController.THEME_ID_MAPPING,
-                          customizer().expectStatusOk(), "Error getting one theme", theme.getId());
+                          customizer().expectStatusOk(),
+                          "Error getting one theme",
+                          theme.getId());
     }
 
     /**
@@ -109,10 +108,13 @@ public class ThemeControllerIT extends AbstractRegardsTransactionalIT {
     public void testDeleteOneTheme() {
 
         performDefaultDelete(ThemeController.ROOT_MAPPING + ThemeController.THEME_ID_MAPPING,
-                             customizer().expectStatusOk(), "Error deleting one theme", theme.getId());
+                             customizer().expectStatusOk(),
+                             "Error deleting one theme",
+                             theme.getId());
 
         performDefaultGet(ThemeController.ROOT_MAPPING + ThemeController.THEME_ID_MAPPING,
-                          customizer().expectStatusNotFound(), "The deleted theme should not pe present anymore",
+                          customizer().expectStatusNotFound(),
+                          "The deleted theme should not pe present anymore",
                           theme.getId());
     }
 
@@ -124,7 +126,9 @@ public class ThemeControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void testSaveTheme() {
         final Theme theme = createTheme(true, "NewTheme");
-        performDefaultPost(ThemeController.ROOT_MAPPING, theme, customizer().expectStatusOk(),
+        performDefaultPost(ThemeController.ROOT_MAPPING,
+                           theme,
+                           customizer().expectStatusOk(),
                            "Error saving new theme");
 
         performDefaultGet(ThemeController.ROOT_MAPPING,
@@ -140,8 +144,11 @@ public class ThemeControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void testUpdateTheme() {
         theme.setActive(true);
-        performDefaultPut(ThemeController.ROOT_MAPPING + ThemeController.THEME_ID_MAPPING, theme,
-                          customizer().expectStatusOk(), "Error saving new theme", theme.getId());
+        performDefaultPut(ThemeController.ROOT_MAPPING + ThemeController.THEME_ID_MAPPING,
+                          theme,
+                          customizer().expectStatusOk(),
+                          "Error saving new theme",
+                          theme.getId());
     }
 
 }

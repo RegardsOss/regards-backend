@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.module.rest.exception;
 
 /**
  * Main module exception
+ *
  * @author Marc Sordi
  */
 @SuppressWarnings("serial")

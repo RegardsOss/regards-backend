@@ -41,9 +41,10 @@ public interface IModelClient {
 
     /**
      * Retrieve the models of a given type (optional)
+     *
      * @return the models
      */
     @GetMapping(path = IModelClient.TYPE_MAPPING)
     ResponseEntity<List<EntityModel<Model>>> getModels(
-            @RequestParam(value = "type", required = false) EntityType pType);
+        @RequestParam(value = "type", required = false) EntityType pType);
 }

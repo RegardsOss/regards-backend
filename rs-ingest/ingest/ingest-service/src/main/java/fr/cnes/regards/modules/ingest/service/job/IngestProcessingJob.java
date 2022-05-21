@@ -49,6 +49,7 @@ import java.util.*;
 
 /**
  * This job manages processing chain for AIP generation from a SIP
+ *
  * @author Marc Sordi
  * @author Sébastien Binda
  */
@@ -91,7 +92,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
 
         // Load ingest requests
         Type type = new TypeToken<Set<Long>>() {
@@ -215,7 +216,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
             } catch (ProcessingStepException e) {
                 if (request.getState() != InternalRequestState.WAITING_VERSIONING_MODE
-                        && request.getState() != InternalRequestState.IGNORED) {
+                    && request.getState() != InternalRequestState.IGNORED) {
                     logger.error("SIP \"{}\" ingestion error", request.getSip().getId());
                     sipInError++;
                     String msg = String.format("Error while ingesting SIP \"%s\" in request \"%s\"",
@@ -247,7 +248,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         }
 
         // if there are requests to be notified again, send them to notifier
-        if(!notificationRequests.isEmpty()) {
+        if (!notificationRequests.isEmpty()) {
             aipNotificationService.sendRequestsToNotifier(notificationRequests);
         }
     }

@@ -78,16 +78,22 @@ public class WorkerConfigServiceIT extends AbstractWorkerManagerServiceUtilsIT {
 
     @Test
     public void testInvalidConfEmptyAttribute() {
-        Assert.assertEquals("should return an error when empty content type", 1,
-                            workerConfigService.importConfiguration(
-                                    Sets.newHashSet(new WorkerConfigDto("workerInvalid", new HashSet<>()))).size());
-        Assert.assertEquals("should return an error when empty worker type", 1, workerConfigService.importConfiguration(
-                Sets.newHashSet(new WorkerConfigDto("", Sets.newHashSet("contentType")))).size());
+        Assert.assertEquals("should return an error when empty content type",
+                            1,
+                            workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto("workerInvalid",
+                                                                                                        new HashSet<>())))
+                                               .size());
+        Assert.assertEquals("should return an error when empty worker type",
+                            1,
+                            workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto("",
+                                                                                                        Sets.newHashSet(
+                                                                                                            "contentType"))))
+                                               .size());
     }
 
     @Test
     public void testInvalidContentTypes()
-            throws EntityOperationForbiddenException, EntityInvalidException, EntityNotFoundException {
+        throws EntityOperationForbiddenException, EntityInvalidException, EntityNotFoundException {
 
         String workerType = "workerType";
         String workerType2 = "workerType2";
@@ -102,13 +108,18 @@ public class WorkerConfigServiceIT extends AbstractWorkerManagerServiceUtilsIT {
         Set<String> contentTypes2 = Sets.newHashSet(contentType4, contentType5);
         // also contains the contentType1
         Set<String> contentTypes3 = Sets.newHashSet(contentType1, contentType2, contentType4, contentType6);
-        Assert.assertEquals("no error on initial import", 0,
-                            workerConfigService.importConfiguration(
-                                    Sets.newHashSet(new WorkerConfigDto(workerType, contentTypes1),
-                                                    new WorkerConfigDto(workerType2, contentTypes2))).size());
-        Assert.assertEquals("should return an error when importing conflicting content types", 1,
-                            workerConfigService.importConfiguration(
-                                    Sets.newHashSet(new WorkerConfigDto(workerType3, contentTypes3))).size());
+        Assert.assertEquals("no error on initial import",
+                            0,
+                            workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType,
+                                                                                                        contentTypes1),
+                                                                                    new WorkerConfigDto(workerType2,
+                                                                                                        contentTypes2)))
+                                               .size());
+        Assert.assertEquals("should return an error when importing conflicting content types",
+                            1,
+                            workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType3,
+                                                                                                        contentTypes3)))
+                                               .size());
 
         String contentType7 = "contentType6";
         String workerType4 = "workerType4";
@@ -118,7 +129,9 @@ public class WorkerConfigServiceIT extends AbstractWorkerManagerServiceUtilsIT {
                                            Lists.newArrayList(contentType7));
 
         Assert.assertEquals("should return an error when importing conflicting content types with SKIP_CONTENT_TYPES",
-                            1, workerConfigService.importConfiguration(
-                        Sets.newHashSet(new WorkerConfigDto(workerType4, contentTypes7))).size());
+                            1,
+                            workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType4,
+                                                                                                        contentTypes7)))
+                                               .size());
     }
 }

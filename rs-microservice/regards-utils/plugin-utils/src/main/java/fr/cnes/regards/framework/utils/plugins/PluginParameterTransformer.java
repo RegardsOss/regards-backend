@@ -18,36 +18,19 @@
  */
 package fr.cnes.regards.framework.utils.plugins;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
+import com.google.gson.*;
+import fr.cnes.regards.framework.gson.GsonCustomizer;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
-
-import fr.cnes.regards.framework.gson.GsonCustomizer;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.JsonCollectionPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.JsonMapPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.JsonObjectPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.PluginParamType;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Gson service for plugin parameter transformation
@@ -64,7 +47,8 @@ public class PluginParameterTransformer {
 
     private static Gson gsonInstance;
 
-    private PluginParameterTransformer() {}
+    private PluginParameterTransformer() {
+    }
 
     public static void setup(Gson gson) {
         gsonInstance = gson;
@@ -95,7 +79,8 @@ public class PluginParameterTransformer {
             value = getPojoValue(param, field);
         } else {
             String message = String.format("Value transformation not available for parameter \"%s\" of type \"%s\"",
-                                           param.getName(), param.getType());
+                                           param.getName(),
+                                           param.getType());
             LOGGER.error(message);
             throw new PluginUtilsRuntimeException(message);
         }
@@ -108,7 +93,8 @@ public class PluginParameterTransformer {
             LOGGER.debug(TRANSFO_MESSAGE, param.getName(), param.getType());
             ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
             // Get first generic type
-            return transformValue((JsonCollectionPluginParam) param, field.getType(),
+            return transformValue((JsonCollectionPluginParam) param,
+                                  field.getType(),
                                   parameterizedType.getActualTypeArguments()[0]);
         } else {
             LOGGER.debug(SKIP_TRANSFO_MESSAGE, param.getName());
@@ -210,7 +196,8 @@ public class PluginParameterTransformer {
     }
 
     private static PluginUtilsRuntimeException propagateException(Throwable t, IPluginParam source) {
-        String message = String.format("Cannot transform \"%s\" parameter value with name \"%s\"", source.getType(),
+        String message = String.format("Cannot transform \"%s\" parameter value with name \"%s\"",
+                                       source.getType(),
                                        source.getName());
         LOGGER.error(message, t);
         return new PluginUtilsRuntimeException(message, t);

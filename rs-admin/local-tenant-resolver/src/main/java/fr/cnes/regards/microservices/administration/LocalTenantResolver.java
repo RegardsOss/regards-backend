@@ -18,22 +18,19 @@
  */
 package fr.cnes.regards.microservices.administration;
 
-import java.util.Set;
-
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.project.service.ITenantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.project.service.ITenantService;
+import java.util.Set;
 
 /**
- *
  * Class LocalTenantResolver
- *
+ * <p>
  * Administration microservice local tenant resolver.
  *
  * @author CS
-
  */
 public class LocalTenantResolver implements ITenantResolver {
 

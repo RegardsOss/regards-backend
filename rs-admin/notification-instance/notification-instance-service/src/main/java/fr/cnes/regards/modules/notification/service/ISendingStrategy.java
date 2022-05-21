@@ -31,10 +31,8 @@ public interface ISendingStrategy {
     /**
      * Send the passed notification
      *
-     * @param pNotification
-     *            The notification to send
-     * @param pRecipients
-     *            The list of recipients' emails
+     * @param pNotification The notification to send
+     * @param pRecipients   The list of recipients' emails
      */
     void send(Notification pNotification, String[] pRecipients);
 }

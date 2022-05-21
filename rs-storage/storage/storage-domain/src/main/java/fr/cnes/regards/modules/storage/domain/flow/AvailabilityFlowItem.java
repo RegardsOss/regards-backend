@@ -18,14 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.domain.flow;
 
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Set;
-
-import org.springframework.util.Assert;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
@@ -33,6 +26,11 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
+import org.springframework.util.Assert;
+
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * Flow message to request file(s) to be available for download.<br/>
@@ -67,13 +65,15 @@ public class AvailabilityFlowItem implements ISubscribable {
 
     /**
      * Build a availability request item.
+     *
      * @param checksums
      * @param expirationDate
      * @param groupId
      * @return {@link AvailabilityFlowItem}
      */
-    public static AvailabilityFlowItem build(Collection<String> checksums, OffsetDateTime expirationDate,
-            String groupId) {
+    public static AvailabilityFlowItem build(Collection<String> checksums,
+                                             OffsetDateTime expirationDate,
+                                             String groupId) {
         AvailabilityFlowItem item = new AvailabilityFlowItem();
         Assert.notNull(checksums, "Checksums is mandatory");
         Assert.notEmpty(checksums, "Checksums is mandatory");

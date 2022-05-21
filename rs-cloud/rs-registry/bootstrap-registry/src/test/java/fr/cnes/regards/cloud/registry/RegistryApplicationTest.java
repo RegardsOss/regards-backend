@@ -8,8 +8,9 @@ import org.springframework.test.context.web.WebAppConfiguration;
 
 /**
  * Class RegistryApplicationTest
- *
+ * <p>
  * Configuration class for spring context tests
+ *
  * @author Sébastien Binda
  */
 @RunWith(SpringRunner.class)

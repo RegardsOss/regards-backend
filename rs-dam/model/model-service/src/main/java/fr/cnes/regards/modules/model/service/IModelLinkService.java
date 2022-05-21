@@ -25,7 +25,6 @@ import java.util.Set;
  * This service has to be implemented in the other modules.
  *
  * @author Marc SORDI
- *
  */
 public interface IModelLinkService {
 

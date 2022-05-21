@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.modules.indexer.domain.facet.adapters.gson;
 
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import fr.cnes.regards.modules.indexer.domain.facet.StringFacet;
+
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Simplify the serialization of {@link StringFacet#valueMap}.
@@ -50,9 +50,13 @@ public class StringFacetSerializer implements JsonSerializer<StringFacet> {
         public AdaptedFacet(StringFacet facet) {
             super();
             attributeName = facet.getAttributeName();
-            values = facet.getValues().entrySet().stream()
-                    .map(entry -> new AdaptedFacetValue(entry.getKey(), entry.getValue(), facet.getAttributeName()))
-                    .collect(Collectors.toList());
+            values = facet.getValues()
+                          .entrySet()
+                          .stream()
+                          .map(entry -> new AdaptedFacetValue(entry.getKey(),
+                                                              entry.getValue(),
+                                                              facet.getAttributeName()))
+                          .collect(Collectors.toList());
             others = facet.getOthers();
         }
 
@@ -88,7 +92,7 @@ public class StringFacetSerializer implements JsonSerializer<StringFacet> {
         private final Long count;
 
         private final String openSearchQuery;
-        
+
         public AdaptedFacetValue(String word, Long count, String attributeName) {
             super();
             this.word = word;

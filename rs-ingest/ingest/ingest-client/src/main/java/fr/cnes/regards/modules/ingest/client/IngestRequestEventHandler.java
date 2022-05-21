@@ -41,7 +41,7 @@ import java.util.Set;
  */
 @Component
 public class IngestRequestEventHandler
-        implements IBatchHandler<IngestRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
+    implements IBatchHandler<IngestRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestRequestEventHandler.class);
 
@@ -75,8 +75,10 @@ public class IngestRequestEventHandler
         Set<RequestInfo> granted = Sets.newHashSet();
         Set<RequestInfo> denied = Sets.newHashSet();
         for (IngestRequestEvent event : events) {
-            RequestInfo info = RequestInfo
-                    .build(event.getRequestId(), event.getProviderId(), event.getSipId(), event.getErrors());
+            RequestInfo info = RequestInfo.build(event.getRequestId(),
+                                                 event.getProviderId(),
+                                                 event.getSipId(),
+                                                 event.getErrors());
             switch (event.getState()) {
                 case SUCCESS:
                     success.add(info);
@@ -110,7 +112,8 @@ public class IngestRequestEventHandler
             listener.onSuccess(success);
             success.clear();
         }
-        LOGGER.info("[INGEST RESPONSES HANDLER] {} IngestRequestEvent handled in {} ms", events.size(),
+        LOGGER.info("[INGEST RESPONSES HANDLER] {} IngestRequestEvent handled in {} ms",
+                    events.size(),
                     System.currentTimeMillis() - start);
     }
 

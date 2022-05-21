@@ -1,29 +1,28 @@
 /**
  * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
- *
+ * <p>
  * This file is part of REGARDS.
- *
+ * <p>
  * REGARDS is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * REGARDS is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.web.bind.annotation.RequestMethod;
-
-import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
  * Unit testing of {@link ResourcesAccess}
@@ -66,8 +65,13 @@ public class ResourcesAccessTest {
 
     @Before
     public void setUp() {
-        resourcesAccess = new ResourcesAccess(id, description, microservice, resource, controller, verb,
-                DefaultRole.ADMIN);
+        resourcesAccess = new ResourcesAccess(id,
+                                              description,
+                                              microservice,
+                                              resource,
+                                              controller,
+                                              verb,
+                                              DefaultRole.ADMIN);
     }
 
     /**
@@ -104,8 +108,13 @@ public class ResourcesAccessTest {
      */
     @Test
     public void testResourcesAccessWithEverything() {
-        final ResourcesAccess testResources = new ResourcesAccess(id, description, microservice, resource, controller,
-                verb, DefaultRole.ADMIN);
+        final ResourcesAccess testResources = new ResourcesAccess(id,
+                                                                  description,
+                                                                  microservice,
+                                                                  resource,
+                                                                  controller,
+                                                                  verb,
+                                                                  DefaultRole.ADMIN);
 
         Assert.assertEquals(id, testResources.getId());
         Assert.assertEquals(description, testResources.getDescription());
@@ -119,8 +128,12 @@ public class ResourcesAccessTest {
      */
     @Test
     public void testResourcesAccessWithoutID() {
-        final ResourcesAccess testResources = new ResourcesAccess(description, microservice, resource, controller, verb,
-                DefaultRole.ADMIN);
+        final ResourcesAccess testResources = new ResourcesAccess(description,
+                                                                  microservice,
+                                                                  resource,
+                                                                  controller,
+                                                                  verb,
+                                                                  DefaultRole.ADMIN);
 
         Assert.assertNull(testResources.getId());
         Assert.assertEquals(description, testResources.getDescription());

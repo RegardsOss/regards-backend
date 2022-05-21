@@ -24,8 +24,9 @@ import org.springframework.stereotype.Component;
 
 /**
  * Class SpringBeanHelper
- *
+ * <p>
  * Static Helper to get a Spring Bean from anywhere
+ *
  * @author Sébastien Binda
  */
 @Component
@@ -43,6 +44,7 @@ public class SpringBeanHelper implements BeanFactoryAware {
 
     /**
      * Get bean factory
+     *
      * @return {@link BeanFactory}
      */
     public BeanFactory getBeanFactory() {
@@ -56,7 +58,8 @@ public class SpringBeanHelper implements BeanFactoryAware {
 
     /**
      * Get a Bean referenced in the Spring context
-     * @param <T> bean for class
+     *
+     * @param <T>       bean for class
      * @param beanClass Bean class to obtain
      * @return Bean
      */

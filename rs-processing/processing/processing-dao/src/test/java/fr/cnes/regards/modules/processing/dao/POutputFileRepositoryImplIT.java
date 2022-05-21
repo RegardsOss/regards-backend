@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.dao;
 
 import fr.cnes.regards.modules.processing.domain.POutputFile;
@@ -44,20 +44,19 @@ public class POutputFileRepositoryImplIT extends AbstractRepoIT {
         ExecutionEntity exec = makeExecutionEntity();
 
         List<POutputFile> files = RandomUtils.randomList(POutputFile.class, 10)
-            .map(o -> o.withExecId(exec.getId()).withPersisted(false));
+                                             .map(o -> o.withExecId(exec.getId()).withPersisted(false));
 
         List<POutputFile> persistedOutputFiles = domainOutputFilesRepo.save(Flux.fromIterable(files))
-            .collect(List.collector())
-            .block();
+                                                                      .collect(List.collector())
+                                                                      .block();
 
         // WHEN
         List<POutputFile> queriedOutputFiles = domainOutputFilesRepo.findByExecId(exec.getId())
-            .collect(List.collector())
-            .block();
+                                                                    .collect(List.collector())
+                                                                    .block();
 
         // THEN
-        assertThat(queriedOutputFiles)
-            .containsExactlyInAnyOrder(persistedOutputFiles.toJavaArray(POutputFile[]::new));
+        assertThat(queriedOutputFiles).containsExactlyInAnyOrder(persistedOutputFiles.toJavaArray(POutputFile[]::new));
 
     }
 
@@ -66,48 +65,48 @@ public class POutputFileRepositoryImplIT extends AbstractRepoIT {
         // GIVEN
         ExecutionEntity exec = makeExecutionEntity();
 
-        POutputFile notDwnNotDlt = randomInstance(POutputFile.class)
-                .withExecId(exec.getId())
-                .withDownloaded(false)
-                .withDeleted(false)
-                .withPersisted(false);
-        POutputFile dwnNotDlt = randomInstance(POutputFile.class)
-                .withExecId(exec.getId())
-                .withDownloaded(true)
-                .withDeleted(false)
-                .withPersisted(false);
-        POutputFile dwnDlt = randomInstance(POutputFile.class)
-                .withExecId(exec.getId())
-                .withDownloaded(true)
-                .withDeleted(true)
-                .withPersisted(false);
+        POutputFile notDwnNotDlt = randomInstance(POutputFile.class).withExecId(exec.getId())
+                                                                    .withDownloaded(false)
+                                                                    .withDeleted(false)
+                                                                    .withPersisted(false);
+        POutputFile dwnNotDlt = randomInstance(POutputFile.class).withExecId(exec.getId())
+                                                                 .withDownloaded(true)
+                                                                 .withDeleted(false)
+                                                                 .withPersisted(false);
+        POutputFile dwnDlt = randomInstance(POutputFile.class).withExecId(exec.getId())
+                                                              .withDownloaded(true)
+                                                              .withDeleted(true)
+                                                              .withPersisted(false);
 
-        domainOutputFilesRepo.save(Flux.just(notDwnNotDlt, dwnNotDlt, dwnDlt))
-            .collect(List.collector())
-            .block();
+        domainOutputFilesRepo.save(Flux.just(notDwnNotDlt, dwnNotDlt, dwnDlt)).collect(List.collector()).block();
 
         // WHEN
         List<POutputFile> fetched = domainOutputFilesRepo.findByDownloadedIsTrueAndDeletedIsFalse()
-            .doOnNext(o -> LOGGER.info(o.toString()))
-            .filter(o -> o.getExecId().equals(exec.getId()))
-            .collect(List.collector()).block();
+                                                         .doOnNext(o -> LOGGER.info(o.toString()))
+                                                         .filter(o -> o.getExecId().equals(exec.getId()))
+                                                         .collect(List.collector())
+                                                         .block();
 
         // THEN
-        assertThat(fetched.map(POutputFile::getId))
-            .containsExactlyInAnyOrder(dwnNotDlt.getId());
+        assertThat(fetched.map(POutputFile::getId)).containsExactlyInAnyOrder(dwnNotDlt.getId());
     }
 
     private ExecutionEntity makeExecutionEntity() {
         BatchEntity batch = entityBatchRepo.save(randomInstance(BatchEntity.class).withPersisted(false)).block();
 
         OffsetDateTime lastUpdated = nowUtc().minusMinutes(3);
-        return entityExecRepo
-                .save(randomInstance(ExecutionEntity.class).withBatchId(batch.getId()).withTenant(batch.getTenant())
-                              .withUserEmail(batch.getUserEmail())
-                              .withProcessBusinessId(batch.getProcessBusinessId()).withCurrentStatus(SUCCESS)
-                              .withLastUpdated(lastUpdated).withTimeoutAfterMillis(1_000L).withSteps(
-                                Steps.of(new StepEntity(REGISTERED, toEpochMillisUTC(lastUpdated), "registered msg")))
-                              .withPersisted(false)).block();
+        return entityExecRepo.save(randomInstance(ExecutionEntity.class).withBatchId(batch.getId())
+                                                                        .withTenant(batch.getTenant())
+                                                                        .withUserEmail(batch.getUserEmail())
+                                                                        .withProcessBusinessId(batch.getProcessBusinessId())
+                                                                        .withCurrentStatus(SUCCESS)
+                                                                        .withLastUpdated(lastUpdated)
+                                                                        .withTimeoutAfterMillis(1_000L)
+                                                                        .withSteps(Steps.of(new StepEntity(REGISTERED,
+                                                                                                           toEpochMillisUTC(
+                                                                                                               lastUpdated),
+                                                                                                           "registered msg")))
+                                                                        .withPersisted(false)).block();
     }
 
 }

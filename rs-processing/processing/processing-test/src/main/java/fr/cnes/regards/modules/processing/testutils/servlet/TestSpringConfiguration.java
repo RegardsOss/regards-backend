@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.testutils.servlet;
 
 import com.google.gson.Gson;
@@ -89,56 +89,56 @@ import static io.r2dbc.spi.ConnectionFactoryOptions.*;
  * @author gandrieu
  */
 @Configuration
-@EnableAutoConfiguration(exclude = {
-        R2dbcMigrateAutoConfiguration.class,
-        Oauth2AutoConfiguration.class,
-})
+@EnableAutoConfiguration(exclude = { R2dbcMigrateAutoConfiguration.class, Oauth2AutoConfiguration.class, })
 @EnableWebMvc
 @EnableJpaRepositories
-@EnableFeignClients(basePackageClasses = {
-        IAccountsClient.class,
-        IRolesClient.class,
-        IStorageRestClient.class
-})
+@EnableFeignClients(basePackageClasses = { IAccountsClient.class, IRolesClient.class, IStorageRestClient.class })
 @ContextConfiguration(
-        classes = { DefaultTestFeignConfiguration.class, AppDaoTestConfiguration.class, AmqpTestConfiguration.class })
-@Import({
-        MultitenantAutoConfiguration.class,
-        MicroserviceAutoConfiguration.class,
-        AmqpAutoConfiguration.class,
-        DataSourcesAutoConfiguration.class,
-        MultitenantJpaAutoConfiguration.class,
-        JacksonAutoConfiguration.class,
-        FeignClientConfiguration.class,
-        GsonAutoConfiguration.class,
-})
+    classes = { DefaultTestFeignConfiguration.class, AppDaoTestConfiguration.class, AmqpTestConfiguration.class })
+@Import({ MultitenantAutoConfiguration.class, MicroserviceAutoConfiguration.class, AmqpAutoConfiguration.class,
+    DataSourcesAutoConfiguration.class, MultitenantJpaAutoConfiguration.class, JacksonAutoConfiguration.class,
+    FeignClientConfiguration.class, GsonAutoConfiguration.class, })
 public class TestSpringConfiguration implements WebMvcConfigurer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestSpringConfiguration.class);
 
-    @Value("${regards.processing.r2dbc.host:localhost}") public String r2dbcHost;
-    @Value("${regards.processing.r2dbc.port:5433}") public Integer r2dbcPort;
-    @Value("${regards.processing.r2dbc.username:user}") public String r2dbcUsername;
-    @Value("${regards.processing.r2dbc.password:secret}") public String r2dbcPassword;
-    @Value("${regards.processing.r2dbc.dbname:testdb}") public String r2dbcDbname;
-    @Value("${regards.processing.r2dbc.schema:testschema}") public String r2dbcSchema;
+    @Value("${regards.processing.r2dbc.host:localhost}")
+    public String r2dbcHost;
 
-    @Autowired private GsonProperties properties;
-    @Autowired private ApplicationContext applicationContext;
+    @Value("${regards.processing.r2dbc.port:5433}")
+    public Integer r2dbcPort;
 
-    @Bean @ConditionalOnMissingBean
+    @Value("${regards.processing.r2dbc.username:user}")
+    public String r2dbcUsername;
+
+    @Value("${regards.processing.r2dbc.password:secret}")
+    public String r2dbcPassword;
+
+    @Value("${regards.processing.r2dbc.dbname:testdb}")
+    public String r2dbcDbname;
+
+    @Value("${regards.processing.r2dbc.schema:testschema}")
+    public String r2dbcSchema;
+
+    @Autowired
+    private GsonProperties properties;
+
+    @Autowired
+    private ApplicationContext applicationContext;
+
+    @Bean
+    @ConditionalOnMissingBean
     public ConnectionFactory connectionFactory() {
-        Builder builder = builder()
-                .option(DRIVER, "pool")
-                .option(ACQUIRE_RETRY, 5)
-                .option(MAX_ACQUIRE_TIME, Duration.ofSeconds(5))
-                .option(PROTOCOL, "postgresql")
-                .option(HOST, r2dbcHost)
-                .option(PORT, r2dbcPort)
-                .option(DATABASE, r2dbcDbname)
-                .option(SCHEMA, r2dbcSchema)
-                .option(USER, r2dbcUsername)
-                .option(PASSWORD, r2dbcPassword);
+        Builder builder = builder().option(DRIVER, "pool")
+                                   .option(ACQUIRE_RETRY, 5)
+                                   .option(MAX_ACQUIRE_TIME, Duration.ofSeconds(5))
+                                   .option(PROTOCOL, "postgresql")
+                                   .option(HOST, r2dbcHost)
+                                   .option(PORT, r2dbcPort)
+                                   .option(DATABASE, r2dbcDbname)
+                                   .option(SCHEMA, r2dbcSchema)
+                                   .option(USER, r2dbcUsername)
+                                   .option(PASSWORD, r2dbcPassword);
         return ConnectionFactories.get(builder.build());
     }
 
@@ -156,12 +156,12 @@ public class TestSpringConfiguration implements WebMvcConfigurer {
     @Bean
     @ConditionalOnMissingBean
     public GsonBuilderFactory gsonBuilderFactory() {
-        return new GsonBuilderFactory(properties, applicationContext){
-            @Override public GsonBuilder newBuilder() {
-                GsonBuilder builder = GsonCustomizer.gsonBuilder(
-                        Optional.ofNullable(properties),
-                        Optional.ofNullable(applicationContext)
-                );
+        return new GsonBuilderFactory(properties, applicationContext) {
+
+            @Override
+            public GsonBuilder newBuilder() {
+                GsonBuilder builder = GsonCustomizer.gsonBuilder(Optional.ofNullable(properties),
+                                                                 Optional.ofNullable(applicationContext));
                 ServiceLoader<TypedGsonTypeAdapter> loader = ServiceLoader.load(TypedGsonTypeAdapter.class);
                 loader.iterator().forEachRemaining(tr -> {
                     builder.registerTypeAdapter(tr.type(), tr.serializer());
@@ -174,38 +174,47 @@ public class TestSpringConfiguration implements WebMvcConfigurer {
     }
 
     /**
-    @Bean public IRolesClient iRolesClient() {
-        return Mockito.mock(IRolesClient.class);
-    }
-
-    @Bean public IStorageRestClient iStorageRestClient() {
-        return Mockito.mock(IStorageRestClient.class);
-    }
+     * @Bean public IRolesClient iRolesClient() {
+     * return Mockito.mock(IRolesClient.class);
+     * }
+     * @Bean public IStorageRestClient iStorageRestClient() {
+     * return Mockito.mock(IStorageRestClient.class);
+     * }
      */
 
-    @Value("${regards.test.role:USER_ROLE}") public String role;
-    @Value("${regards.test.user:a@a.a}") public String user;
-    @Value("${regards.test.tenant:PROJECTA}") public String tenant;
+    @Value("${regards.test.role:USER_ROLE}")
+    public String role;
 
-    @Bean @Qualifier("defaultRole")
+    @Value("${regards.test.user:a@a.a}")
+    public String user;
+
+    @Value("${regards.test.tenant:PROJECTA}")
+    public String tenant;
+
+    @Bean
+    @Qualifier("defaultRole")
     public String defaultRole() {
         return role;
     }
 
-    @Bean @Qualifier("defaultUser")
+    @Bean
+    @Qualifier("defaultUser")
     public String defaultUser() {
         return user;
     }
 
-    @Bean @Qualifier("defaultTenant")
+    @Bean
+    @Qualifier("defaultTenant")
     public String defaultTenant() {
         return tenant;
     }
 
-    @Autowired @Qualifier("gson")
+    @Autowired
+    @Qualifier("gson")
     public Gson gson;
 
-    @Autowired @Qualifier("prettyGson")
+    @Autowired
+    @Qualifier("prettyGson")
     public Gson prettyGson;
 
     @Override
@@ -220,6 +229,7 @@ public class TestSpringConfiguration implements WebMvcConfigurer {
     @Bean
     public MethodAuthorizationService methodAuthorizationService() {
         return new MethodAuthorizationService() {
+
             @Override
             public Boolean hasAccess(JWTAuthentication pJWTAuthentication, Method pMethod) {
                 return true;
@@ -233,9 +243,10 @@ public class TestSpringConfiguration implements WebMvcConfigurer {
         return new SecureTestRuntimeTenantResolver(TENANT_PROJECTA);
     }
 
-    @Bean @ConditionalOnMissingBean
+    @Bean
+    @ConditionalOnMissingBean
     public IRoleCheckerService roleCheckerService() {
-        return (a,b) -> Mono.just(true);
+        return (a, b) -> Mono.just(true);
     }
 
 }

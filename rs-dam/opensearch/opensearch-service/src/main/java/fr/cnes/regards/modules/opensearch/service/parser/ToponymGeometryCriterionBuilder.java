@@ -23,11 +23,13 @@ import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Creates {@link ICriterion} from multiple toponym geometry types.
+ *
  * @author Iliana Ghazali
  */
 public class ToponymGeometryCriterionBuilder {
@@ -37,6 +39,7 @@ public class ToponymGeometryCriterionBuilder {
 
     /**
      * Creates a {@link ICriterion} from Polygon or MultiPolygon
+     *
      * @param toponymGeometry geometry of a toponym in {@link IGeometry} format
      * @return {@link ICriterion}
      * @throws InvalidGeometryException if the toponymGeometry is different from a Polygon or a MultiPolygon

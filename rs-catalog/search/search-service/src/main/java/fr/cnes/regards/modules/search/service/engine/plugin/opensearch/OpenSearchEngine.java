@@ -83,12 +83,13 @@ import java.util.stream.Collectors;
 
 /**
  * OpenSearch engine plugin
+ *
  * @author Marc Sordi
  * @author Sébastien Binda
  */
 @Plugin(id = OpenSearchEngine.ENGINE_ID, author = "REGARDS Team", contact = "regards@c-s.fr",
-        description = "Native search engine", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",
-        version = "1.0.0", markdown = "OpensearchEngine.md")
+    description = "Native search engine", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",
+    version = "1.0.0", markdown = "OpensearchEngine.md")
 public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescription, Object, List<String>> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenSearchEngine.class);
@@ -162,7 +163,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     private EarthObservationExtension earthObservationExtension;
 
     @PluginParameter(name = PARAMETERS_CONFIGURATION, label = "Parameters configuration", optional = true,
-            markdown = "OpensearchParameter.md")
+        markdown = "OpensearchParameter.md")
     private List<ParameterConfiguration> paramConfigurations = Lists.newArrayList();
 
     @PluginInit
@@ -179,22 +180,27 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     }
 
     @Override
-    public ResponseEntity<Object> search(SearchContext context, ISearchEngine<?, ?, ?, ?> parser,
-            IEntityLinkBuilder linkBuilder) throws ModuleException {
-        FacetPage<AbstractEntity<EntityFeature>> facetPage = catalogSearchService.search(parser.parse(context), context.getSearchType(), null,
-                                                                  getPagination(context));
+    public ResponseEntity<Object> search(SearchContext context,
+                                         ISearchEngine<?, ?, ?, ?> parser,
+                                         IEntityLinkBuilder linkBuilder) throws ModuleException {
+        FacetPage<AbstractEntity<EntityFeature>> facetPage = catalogSearchService.search(parser.parse(context),
+                                                                                         context.getSearchType(),
+                                                                                         null,
+                                                                                         getPagination(context));
         return ResponseEntity.ok(formatResponse(facetPage, context, linkBuilder));
     }
 
     @Override
     public ResponseEntity<Object> getEntity(SearchContext context, IEntityLinkBuilder linkBuilder)
-            throws ModuleException {
+        throws ModuleException {
         // Retrieve entity
         AbstractEntity<EntityFeature> entity = catalogSearchService.get(context.getUrn().get());
         // add fake pagination for whatever reason it seems we have to response a list and not a single item....
         context.setPageable(PageRequest.of(0, 1));
-        FacetPage<AbstractEntity<EntityFeature>> facetPage = new FacetPage<>(Collections.singletonList(entity), Sets.newHashSet(),
-                getPagination(context), 1);
+        FacetPage<AbstractEntity<EntityFeature>> facetPage = new FacetPage<>(Collections.singletonList(entity),
+                                                                             Sets.newHashSet(),
+                                                                             getPagination(context),
+                                                                             1);
         return ResponseEntity.ok(formatResponse(facetPage, context, linkBuilder));
     }
 
@@ -209,7 +215,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     @Override
     public ResponseEntity<OpenSearchDescription> extra(SearchContext context, IEntityLinkBuilder linkBuilder)
-            throws ModuleException {
+        throws ModuleException {
         if (context.getExtra().isPresent() && context.getExtra().get().equalsIgnoreCase(EXTRA_DESCRIPTION)) {
 
             // If the descriptor is asked for a specific dataset, first get the dataset.
@@ -222,11 +228,16 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
             MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
             headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE);
-            return new ResponseEntity<>(
-                    descriptionBuilder.build(context, parse(context),
-                                             Arrays.asList(mediaExtension, regardsExtension, timeExtension, earthObservationExtension),
-                                             paramConfigurations, engineConfiguration, dataset, linkBuilder),
-                    headers, HttpStatus.OK);
+            return new ResponseEntity<>(descriptionBuilder.build(context,
+                                                                 parse(context),
+                                                                 Arrays.asList(mediaExtension,
+                                                                               regardsExtension,
+                                                                               timeExtension,
+                                                                               earthObservationExtension),
+                                                                 paramConfigurations,
+                                                                 engineConfiguration,
+                                                                 dataset,
+                                                                 linkBuilder), headers, HttpStatus.OK);
         } else {
             return ISearchEngine.super.extra(context, linkBuilder);
         }
@@ -241,29 +252,40 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         ICriterion criterion = parse(context.getQueryParams());
         // Manage dataset URN path parameter as criterion
         if (context.getDatasetUrn().isPresent()) {
-            criterion = ICriterion
-                    .and(criterion,
-                         ICriterion.eq(StaticProperties.FEATURE_TAGS_PATH, context.getDatasetUrn().get().toString(), StringMatchType.KEYWORD));
+            criterion = ICriterion.and(criterion,
+                                       ICriterion.eq(StaticProperties.FEATURE_TAGS_PATH,
+                                                     context.getDatasetUrn().get().toString(),
+                                                     StringMatchType.KEYWORD));
         }
         return criterion;
     }
 
     /**
      * Format search response for the given {@link MediaType} in the {@link SearchContext}
-     * @param page search response
+     *
+     * @param page    search response
      * @param context {@link SearchContext} containing MediaType
      * @return formatted response
      * @throws UnsupportedMediaTypesException from {@link #getBuilder(SearchContext)}
      */
-    private Object formatResponse(FacetPage<AbstractEntity<EntityFeature>> page, SearchContext context, IEntityLinkBuilder linkBuilder)
-            throws UnsupportedMediaTypesException {
+    private Object formatResponse(FacetPage<AbstractEntity<EntityFeature>> page,
+                                  SearchContext context,
+                                  IEntityLinkBuilder linkBuilder) throws UnsupportedMediaTypesException {
         IResponseFormatter<?> builder = getBuilder(context);
-        builder.addMetadata(UUID.randomUUID().toString(), engineConfiguration, linkBuilder
-                .buildExtraLink(resourceService, context, IanaLinkRelations.SELF, EXTRA_DESCRIPTION).getHref(), context,
-                            configuration, page, linkBuilder.buildPaginationLinks(resourceService, page, context));
+        builder.addMetadata(UUID.randomUUID().toString(),
+                            engineConfiguration,
+                            linkBuilder.buildExtraLink(resourceService,
+                                                       context,
+                                                       IanaLinkRelations.SELF,
+                                                       EXTRA_DESCRIPTION).getHref(),
+                            context,
+                            configuration,
+                            page,
+                            linkBuilder.buildPaginationLinks(resourceService, page, context));
         page.getContent()
-                .forEach(e -> builder.addEntity(e, paramConfigurations,
-                                                linkBuilder.buildEntityLinks(resourceService, context, e.getFeature())));
+            .forEach(e -> builder.addEntity(e,
+                                            paramConfigurations,
+                                            linkBuilder.buildEntityLinks(resourceService, context, e.getFeature())));
         return builder.build();
     }
 
@@ -274,17 +296,20 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         // Find AttributeModel for each parameter
         List<SearchParameter> attributes = buildParameters(queryParams);
 
-        return ICriterion.and(timeExtension.buildCriterion(attributes), mediaExtension.buildCriterion(attributes),
-                              regardsExtension.buildCriterion(attributes), earthObservationExtension.buildCriterion(attributes));
+        return ICriterion.and(timeExtension.buildCriterion(attributes),
+                              mediaExtension.buildCriterion(attributes),
+                              regardsExtension.buildCriterion(attributes),
+                              earthObservationExtension.buildCriterion(attributes));
     }
 
     private Pair<AttributeModel, ParameterConfiguration> getParameterAttribute(String queryParam)
-            throws OpenSearchUnknownParameter {
+        throws OpenSearchUnknownParameter {
         String attributePath;
         ParameterConfiguration conf;
         // Check if parameter key is an alias from configuration
         Optional<ParameterConfiguration> aliasConf = paramConfigurations.stream()
-                .filter(p -> queryParam.equals(p.getAllias())).findFirst();
+                                                                        .filter(p -> queryParam.equals(p.getAllias()))
+                                                                        .findFirst();
         if (aliasConf.isPresent()) {
             // If it is an alias retrieve regards parameter path from the configuration
             conf = aliasConf.get();
@@ -293,14 +318,17 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
             // If not retrieve regards parameter path
             attributePath = queryParam;
             // Search configuration if any
-            conf = paramConfigurations.stream().filter(p -> p.getAttributeModelJsonPath().equals(attributePath))
-                    .findFirst().orElse(null);
+            conf = paramConfigurations.stream()
+                                      .filter(p -> p.getAttributeModelJsonPath().equals(attributePath))
+                                      .findFirst()
+                                      .orElse(null);
         }
         return Pair.of(finder.findByName(attributePath), conf);
     }
 
     /**
      * Build {@link SearchParameter}s by reading given queryParams.
+     *
      * @param queryParams Map key=parameter name value=parameter value.
      * @return {@link SearchParameter}s
      */
@@ -309,13 +337,13 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         for (Entry<String, List<String>> queryParam : queryParams.entrySet()) {
             try {
                 // Ignore special query parameter (q, scope, token...) or empty values
-                if (validQueryParam(queryParam.getKey()) &&
-                        ((queryParam.getValue().size() > 1)
-                                || !Strings.isNullOrEmpty(queryParam.getValue().get(0)))) {
-                    Pair<AttributeModel, ParameterConfiguration> attributeConf = getParameterAttribute(queryParam
-                            .getKey());
-                    searchParameters.add(new SearchParameter(queryParam.getKey(), attributeConf.getLeft(),
-                            attributeConf.getRight(), queryParam.getValue()));
+                if (validQueryParam(queryParam.getKey()) && ((queryParam.getValue().size() > 1)
+                    || !Strings.isNullOrEmpty(queryParam.getValue().get(0)))) {
+                    Pair<AttributeModel, ParameterConfiguration> attributeConf = getParameterAttribute(queryParam.getKey());
+                    searchParameters.add(new SearchParameter(queryParam.getKey(),
+                                                             attributeConf.getLeft(),
+                                                             attributeConf.getRight(),
+                                                             queryParam.getValue()));
                 }
             } catch (OpenSearchUnknownParameter e) {
                 LOGGER.warn("Parameter not found in REGARDS models attributes. Cause : {}", e.getMessage());
@@ -345,6 +373,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     /**
      * Retrieve a response builder from existing ones matching the {@link MediaType} from the {@link SearchContext}
+     *
      * @param context {@link SearchContext}
      * @return {@link IResponseFormatter}
      * @throws UnsupportedMediaTypesException when asked media type is not handled
@@ -355,8 +384,10 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
         if (context.getHeaders().getAccept().stream().anyMatch(MediaType.APPLICATION_JSON::isCompatibleWith)) {
             responseBuilder = new GeojsonResponseFormatter(currentTenant);
-        } else if (context.getHeaders().getAccept().stream()
-                .anyMatch(MediaType.APPLICATION_ATOM_XML::isCompatibleWith)) {
+        } else if (context.getHeaders()
+                          .getAccept()
+                          .stream()
+                          .anyMatch(MediaType.APPLICATION_ATOM_XML::isCompatibleWith)) {
             responseBuilder = new AtomResponseFormatter(gson, currentTenant);
         } else {
             throw new UnsupportedMediaTypesException(context.getHeaders().getAccept());
@@ -375,10 +406,14 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         // Extract optional request parameters
         String partialText = context.getQueryParams().getFirst(LegacySearchEngine.PARTIAL_TEXT);
         // Do business search
-        List<String> values = searchService.retrieveEnumeratedPropertyValues(criterion, context.getSearchType(),
-                                                                             context.getPropertyNames().stream()
-                                                                                     .findFirst().get(),
-                                                                             context.getMaxCount().get(), partialText);
+        List<String> values = searchService.retrieveEnumeratedPropertyValues(criterion,
+                                                                             context.getSearchType(),
+                                                                             context.getPropertyNames()
+                                                                                    .stream()
+                                                                                    .findFirst()
+                                                                                    .get(),
+                                                                             context.getMaxCount().get(),
+                                                                             partialText);
         // Build response
         return ResponseEntity.ok(values);
     }
@@ -388,7 +423,8 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         // Convert parameters to business criterion considering dataset
         ICriterion criterion = parse(context);
         // Compute summary
-        DocFilesSummary summary = searchService.computeDatasetsSummary(criterion, context.getSearchType(),
+        DocFilesSummary summary = searchService.computeDatasetsSummary(criterion,
+                                                                       context.getSearchType(),
                                                                        context.getDatasetUrn().orElse(null),
                                                                        context.getDateTypes().get());
         // Build response
@@ -446,9 +482,10 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     @Override
     public ResponseEntity<List<EntityModel<? extends PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
-            throws ModuleException {
-        List<PropertyBound<?>> bounds = catalogSearchService
-                .retrievePropertiesBounds(context.getPropertyNames(), parse(context), context.getSearchType());
+        throws ModuleException {
+        List<PropertyBound<?>> bounds = catalogSearchService.retrievePropertiesBounds(context.getPropertyNames(),
+                                                                                      parse(context),
+                                                                                      context.getSearchType());
         return ResponseEntity.ok(bounds.stream().map(EntityModel::of).collect(Collectors.toList()));
     }
 
@@ -457,7 +494,8 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         List<Link> result = new ArrayList<>();
         String datasetUrn = element.getDatasetUrn();
         if (datasetUrn != null) {
-            result.add(resourceService.buildLink(searchEngineControllerClass, "searchSingleDatasetExtra",
+            result.add(resourceService.buildLink(searchEngineControllerClass,
+                                                 "searchSingleDatasetExtra",
                                                  LinkRelation.of(EXTRA_DESCRIPTION),
                                                  MethodParamFactory.build(String.class,
                                                                           element.getConfiguration().getPluginId()),
@@ -467,7 +505,8 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                                                  MethodParamFactory.build(MultiValueMap.class),
                                                  MethodParamFactory.build(Pageable.class)));
         } else {
-            result.add(resourceService.buildLink(searchEngineControllerClass, "searchAllDataobjectsExtra",
+            result.add(resourceService.buildLink(searchEngineControllerClass,
+                                                 "searchAllDataobjectsExtra",
                                                  LinkRelation.of(EXTRA_DESCRIPTION),
                                                  MethodParamFactory.build(String.class,
                                                                           element.getConfiguration().getPluginId()),

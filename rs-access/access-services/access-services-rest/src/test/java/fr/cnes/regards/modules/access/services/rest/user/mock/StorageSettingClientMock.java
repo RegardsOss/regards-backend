@@ -31,10 +31,13 @@ public class StorageSettingClientMock implements IStorageSettingClient {
 
     @Override
     public ResponseEntity<List<EntityModel<DynamicTenantSettingDto>>> retrieveAll(Set<String> names) {
-        List<DynamicTenantSettingDto> DEFAULT_STORAGE_SETTING_STUB = Arrays
-                .asList(StorageSetting.MAX_QUOTA.setValue(DEFAULT_QUOTA_LIMITS_STUB_MAX_QUOTA),
-                        StorageSetting.RATE_LIMIT.setValue(DEFAULT_QUOTA_LIMITS_STUB_RATE_LIMIT)).stream()
-                .map(DynamicTenantSettingDto::new).collect(Collectors.toList());
+        List<DynamicTenantSettingDto> DEFAULT_STORAGE_SETTING_STUB = Arrays.asList(StorageSetting.MAX_QUOTA.setValue(
+                                                                                       DEFAULT_QUOTA_LIMITS_STUB_MAX_QUOTA),
+                                                                                   StorageSetting.RATE_LIMIT.setValue(
+                                                                                       DEFAULT_QUOTA_LIMITS_STUB_RATE_LIMIT))
+                                                                           .stream()
+                                                                           .map(DynamicTenantSettingDto::new)
+                                                                           .collect(Collectors.toList());
         return new ResponseEntity<>(HateoasUtils.wrapList(DEFAULT_STORAGE_SETTING_STUB), HttpStatus.OK);
     }
 

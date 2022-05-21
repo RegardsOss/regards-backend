@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.utils.random;
 
 import io.vavr.control.Option;
@@ -32,8 +32,7 @@ public class VavrOptionRandomizer<T> extends AbstractRandomizer<Option<T>> {
 
     private Randomizer<? extends T> valueRandomizer;
 
-    public VavrOptionRandomizer(Randomizer<Boolean> booleanRandomizer,
-            Randomizer<? extends T> valueRandomizer) {
+    public VavrOptionRandomizer(Randomizer<Boolean> booleanRandomizer, Randomizer<? extends T> valueRandomizer) {
         super();
         this.booleanRandomizer = booleanRandomizer;
         this.valueRandomizer = valueRandomizer;
@@ -58,7 +57,8 @@ public class VavrOptionRandomizer<T> extends AbstractRandomizer<Option<T>> {
         this.valueRandomizer = valueRandomizer;
     }
 
-    @Override public Option<T> getRandomValue() {
+    @Override
+    public Option<T> getRandomValue() {
         if (booleanRandomizer.getRandomValue()) {
             return Option.of(valueRandomizer.getRandomValue());
         } else {

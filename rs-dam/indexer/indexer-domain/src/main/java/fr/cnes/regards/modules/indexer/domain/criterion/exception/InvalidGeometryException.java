@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.indexer.domain.criterion.exception;
 
 /**
  * Exception thrown when a geometry format is not recognized by criterion builders.
+ *
  * @author Sébastien Binda
  */
 @SuppressWarnings("serial")
@@ -29,8 +30,10 @@ public class InvalidGeometryException extends Exception {
         super();
     }
 
-    public InvalidGeometryException(String message, Throwable cause, boolean enableSuppression,
-            boolean writableStackTrace) {
+    public InvalidGeometryException(String message,
+                                    Throwable cause,
+                                    boolean enableSuppression,
+                                    boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 

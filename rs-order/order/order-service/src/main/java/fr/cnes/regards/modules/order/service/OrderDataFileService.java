@@ -97,10 +97,14 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
 
     private final Set<String> noProxyHosts = Sets.newHashSet();
 
-    public OrderDataFileService(IOrderDataFileRepository orderDataFileRepository, IOrderJobService orderJobService,
-                                IOrderDataFileService orderDataFileService, IFilesTasksRepository filesTasksRepository,
-                                IOrderRepository orderRepository, IStorageRestClient storageClient,
-                                IAuthenticationResolver authResolver, IProcessingEventSender processingEventSender) {
+    public OrderDataFileService(IOrderDataFileRepository orderDataFileRepository,
+                                IOrderJobService orderJobService,
+                                IOrderDataFileService orderDataFileService,
+                                IFilesTasksRepository filesTasksRepository,
+                                IOrderRepository orderRepository,
+                                IStorageRestClient storageClient,
+                                IAuthenticationResolver authResolver,
+                                IProcessingEventSender processingEventSender) {
         this.orderDataFileRepository = orderDataFileRepository;
         this.orderJobService = orderJobService;
         this.self = orderDataFileService;
@@ -113,8 +117,9 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
 
     @Override
     public void afterPropertiesSet() {
-        proxy = Strings.isNullOrEmpty(proxyHost) ? Proxy.NO_PROXY
-                : new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+        proxy = Strings.isNullOrEmpty(proxyHost) ?
+            Proxy.NO_PROXY :
+            new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
         if (noProxyHostsString != null) {
             Collections.addAll(noProxyHosts, noProxyHostsString.split("\\s*,\\s*"));
         }
@@ -132,12 +137,15 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
         FilesTask filesTask = filesTasksRepository.findDistinctByFilesContaining(dataFile);
         // In case FilesTask does not yet exist
         if (filesTask != null) {
-            if (filesTask.getFiles().stream()
-                    .allMatch(f -> (f.getState() == FileState.DOWNLOADED) || (f.getState() == FileState.ERROR)
-                            || (f.getState() == FileState.DOWNLOAD_ERROR)
-                            || (f.getState() == FileState.PROCESSING_ERROR))) {
+            if (filesTask.getFiles()
+                         .stream()
+                         .allMatch(f -> (f.getState() == FileState.DOWNLOADED) || (f.getState() == FileState.ERROR) || (
+                             f.getState() == FileState.DOWNLOAD_ERROR) || (f.getState()
+                             == FileState.PROCESSING_ERROR))) {
                 filesTask.setEnded(true);
-                LOGGER.trace("File task {} on order {} has ended (no more file to download)", filesTask.getId(), filesTask.getOrderId());
+                LOGGER.trace("File task {} on order {} has ended (no more file to download)",
+                             filesTask.getId(),
+                             filesTask.getOrderId());
             }
             // ...and if it is waiting for user
             filesTask.computeWaitingForUser();
@@ -146,7 +154,7 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
             Order order = orderRepository.findSimpleById(filesTask.getOrderId());
             boolean wasWaitingForUser = order.isWaitingForUser();
             boolean isNowWaitingForUser = filesTasksRepository.findByOrderId(filesTask.getOrderId())
-                    .anyMatch(FilesTask::isWaitingForUser);
+                                                              .anyMatch(FilesTask::isWaitingForUser);
             order.setWaitingForUser(isNowWaitingForUser);
             if (wasWaitingForUser != isNowWaitingForUser) {
                 LOGGER.trace("Order {} no longer waits for user download", filesTask.getOrderId());
@@ -166,15 +174,16 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
     @Override
     public void launchNextFilesTasks(Iterable<OrderDataFile> dataFiles) {
         // Look at FilesTasks if they are ended (no more file to download)...
-        List<FilesTask> filesTasks = filesTasksRepository
-                .findDistinctByFilesIn(io.vavr.collection.List.ofAll(dataFiles).toJavaList());
+        List<FilesTask> filesTasks = filesTasksRepository.findDistinctByFilesIn(io.vavr.collection.List.ofAll(dataFiles)
+                                                                                                       .toJavaList());
         Long orderId = null;
         // Update all these FileTasks
         for (FilesTask filesTask : filesTasks) {
-            if (filesTask.getFiles().stream()
-                    .allMatch(f -> (f.getState() == FileState.DOWNLOADED) || (f.getState() == FileState.ERROR)
-                            || (f.getState() == FileState.DOWNLOAD_ERROR)
-                            || (f.getState() == FileState.PROCESSING_ERROR))) {
+            if (filesTask.getFiles()
+                         .stream()
+                         .allMatch(f -> (f.getState() == FileState.DOWNLOADED) || (f.getState() == FileState.ERROR) || (
+                             f.getState() == FileState.DOWNLOAD_ERROR) || (f.getState()
+                             == FileState.PROCESSING_ERROR))) {
                 filesTask.setEnded(true);
             }
             // Save order id for later
@@ -190,7 +199,11 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
             boolean wasWaitingForUser = order.isWaitingForUser();
             order.setWaitingForUser(filesTasksRepository.findByOrderId(orderId).anyMatch(t -> t.isWaitingForUser()));
             LOGGER.debug("Update order {} | WaitingForUser from {} to {} - status {} - available files count {}",
-                         order.getId(), wasWaitingForUser, order.isWaitingForUser(), order.getStatus(), order.getAvailableFilesCount());
+                         order.getId(),
+                         wasWaitingForUser,
+                         order.isWaitingForUser(),
+                         order.getStatus(),
+                         order.getAvailableFilesCount());
             orderRepository.save(order);
         }
     }
@@ -198,13 +211,16 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
     @Override
     public OrderDataFile load(Long dataFileId) throws NoSuchElementException {
         Optional<OrderDataFile> dataFile = orderDataFileRepository.findById(dataFileId);
-        return dataFile.orElseThrow(() -> new NoSuchElementException(
-                String.format("Data file with id: %d doesn't exist.", dataFileId)));
+        return dataFile.orElseThrow(() -> new NoSuchElementException(String.format(
+            "Data file with id: %d doesn't exist.",
+            dataFileId)));
     }
 
     @Override
     public OrderDataFile find(Long orderId, UniformResourceName aipId, String checksum) throws NoSuchElementException {
-        Optional<OrderDataFile> dataFileOpt = orderDataFileRepository.findFirstByChecksumAndIpIdAndOrderId(checksum, aipId, orderId);
+        Optional<OrderDataFile> dataFileOpt = orderDataFileRepository.findFirstByChecksumAndIpIdAndOrderId(checksum,
+                                                                                                           aipId,
+                                                                                                           orderId);
         if (!dataFileOpt.isPresent()) {
             throw new NoSuchElementException();
         }
@@ -242,13 +258,15 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
 
     /**
      * Download a file not stored with storage microservice.
+     *
      * @param dataFile
      * @return {@link InputStreamResource} of the file
      */
     private ResponseEntity<InputStreamResource> downloadReferenceFile(OrderDataFile dataFile) {
         HttpHeaders headers = new HttpHeaders();
-        String filename = dataFile.getFilename() != null ? dataFile.getFilename()
-                : dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
+        String filename = dataFile.getFilename() != null ?
+            dataFile.getFilename() :
+            dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
         headers.setContentDisposition(ContentDisposition.builder("attachment").filename(filename).build());
         if (dataFile.getFilesize() != null) {
             headers.setContentLength(dataFile.getFilesize());
@@ -269,6 +287,7 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
 
     /**
      * Download a file stored on storage microservice
+     *
      * @param dataFile
      * @return {@link InputStreamResource} of the file
      */
@@ -277,8 +296,10 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
             InputStreamResource isr = null;
             Response response = storageClient.downloadFile(dataFile.getChecksum(), false);
             if (response.status() != HttpStatus.OK.value()) {
-                LOGGER.error("Error downloading file {} from storage : {} : {}", dataFile.getChecksum(),
-                             response.status(), response.reason());
+                LOGGER.error("Error downloading file {} from storage : {} : {}",
+                             dataFile.getChecksum(),
+                             response.status(),
+                             response.reason());
                 dataFile.setState(FileState.DOWNLOAD_ERROR);
                 dataFile.setDownloadError(response.reason());
                 if (response.body() != null) {
@@ -286,14 +307,16 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
                 }
             } else {
                 Function<ResponseStreamProxy, Void> beforeClose = (ResponseStreamProxy stream) -> {
-                    LOGGER.info("Download of file {} succeeded with {}bytes", dataFile.getFilename(),
+                    LOGGER.info("Download of file {} succeeded with {}bytes",
+                                dataFile.getFilename(),
                                 stream.getStreamReadCount());
                     if (stream.getStreamReadCount() >= dataFile.getFilesize()) {
                         dataFile.setState(FileState.DOWNLOADED);
                         processingEventSender.sendDownloadedFilesNotification(Collections.singleton(dataFile));
                     } else {
-                        String message = "Cannot completely retrieve data file from storage, only "
-                                + stream.getStreamReadCount() + "/" + dataFile.getFilesize() + " bytes";
+                        String message =
+                            "Cannot completely retrieve data file from storage, only " + stream.getStreamReadCount()
+                                + "/" + dataFile.getFilesize() + " bytes";
                         dataFile.setState(FileState.DOWNLOAD_ERROR);
                         dataFile.setDownloadError(message);
                         LOGGER.error(message);
@@ -337,20 +360,30 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
         Map<Long, Long> totalSizeMap = totalOrderFiles.stream().collect(Collectors.toMap(getOrderIdFct, getValueFct));
 
         // Map { order_id -> treated files size  }
-        Map<Long, Long> treatedSizeMap = orderDataFileRepository
-                .selectSumSizesByOrderIdAndStates(now, FileState.AVAILABLE, FileState.DOWNLOADED,
-                                                  FileState.DOWNLOAD_ERROR, FileState.PROCESSING_ERROR, FileState.ERROR)
-                .stream().collect(Collectors.toMap(getOrderIdFct, getValueFct));
+        Map<Long, Long> treatedSizeMap = orderDataFileRepository.selectSumSizesByOrderIdAndStates(now,
+                                                                                                  FileState.AVAILABLE,
+                                                                                                  FileState.DOWNLOADED,
+                                                                                                  FileState.DOWNLOAD_ERROR,
+                                                                                                  FileState.PROCESSING_ERROR,
+                                                                                                  FileState.ERROR)
+                                                                .stream()
+                                                                .collect(Collectors.toMap(getOrderIdFct, getValueFct));
         // Map { order_id -> files in error count } Files with status DOWNLOAD_ERROR are not taken into account
         // because they are not considered as errors (available from storage)
-        Map<Long, Long> errorCountMap = orderDataFileRepository.selectCountFilesByOrderIdAndStates(now, FileState.ERROR).stream()
-                .collect(Collectors.toMap(getOrderIdFct, getValueFct));
-        Map<Long, Long> processErrorCountMap = orderDataFileRepository
-                .selectCountFilesByOrderIdAndStates4AllOrders(now, FileState.PROCESSING_ERROR).stream()
-                .collect(Collectors.toMap(getOrderIdFct, getValueFct));
+        Map<Long, Long> errorCountMap = orderDataFileRepository.selectCountFilesByOrderIdAndStates(now, FileState.ERROR)
+                                                               .stream()
+                                                               .collect(Collectors.toMap(getOrderIdFct, getValueFct));
+        Map<Long, Long> processErrorCountMap = orderDataFileRepository.selectCountFilesByOrderIdAndStates4AllOrders(now,
+                                                                                                                    FileState.PROCESSING_ERROR)
+                                                                      .stream()
+                                                                      .collect(Collectors.toMap(getOrderIdFct,
+                                                                                                getValueFct));
         // Map {order_id -> available files count }
-        Map<Long, Long> availableCountMap = orderDataFileRepository.selectCountFilesByOrderIdAndStates4AllOrders(now, FileState.AVAILABLE)
-                .stream().collect(Collectors.toMap(getOrderIdFct, getValueFct));
+        Map<Long, Long> availableCountMap = orderDataFileRepository.selectCountFilesByOrderIdAndStates4AllOrders(now,
+                                                                                                                 FileState.AVAILABLE)
+                                                                   .stream()
+                                                                   .collect(Collectors.toMap(getOrderIdFct,
+                                                                                             getValueFct));
 
         // Update all orders completion values
         for (Order order : orders) {
@@ -358,7 +391,8 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
             long treatedSize = treatedSizeMap.getOrDefault(order.getId(), 0L);
             int previousPercentCompleted = order.getPercentCompleted();
             order.setPercentCompleted((int) Math.floorDiv(100L * treatedSize, totalSize));
-            long errorCount = errorCountMap.getOrDefault(order.getId(), 0L) + processErrorCountMap.getOrDefault(order.getId(), 0L);
+            long errorCount =
+                errorCountMap.getOrDefault(order.getId(), 0L) + processErrorCountMap.getOrDefault(order.getId(), 0L);
             order.setFilesInErrorCount((int) errorCount);
             long availableCount = availableCountMap.getOrDefault(order.getId(), 0L);
             int previousAvailableFilesCount = order.getAvailableFilesCount();
@@ -367,9 +401,14 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
                 order.setAvailableFilesCount((int) availableCount);
             }
             LOGGER.debug("Update order {} | AvailableFilesCount from {} to {} | state {} | is waiting for user {} "
-                                 + "| PercentCompleted from {} to {}",
-                         order.getId(), previousAvailableFilesCount, order.getAvailableFilesCount(),
-                         order.getStatus(), order.isWaitingForUser(), previousPercentCompleted, order.getPercentCompleted());
+                             + "| PercentCompleted from {} to {}",
+                         order.getId(),
+                         previousAvailableFilesCount,
+                         order.getAvailableFilesCount(),
+                         order.getStatus(),
+                         order.isWaitingForUser(),
+                         previousPercentCompleted,
+                         order.getPercentCompleted());
             updateOrderIfFinished(order, errorCount);
         }
         return orders;

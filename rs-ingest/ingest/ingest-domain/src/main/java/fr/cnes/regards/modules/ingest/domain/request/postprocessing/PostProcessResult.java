@@ -20,11 +20,11 @@
 
 package fr.cnes.regards.modules.ingest.domain.request.postprocessing;
 
-import java.util.Map;
-import java.util.Set;
-
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
  * POJO to handle results from ingest post processing plugins
@@ -81,6 +81,6 @@ public class PostProcessResult {
     @Override
     public String toString() {
         return "PostProcessResult{" + "errors=" + errors + ", successes=" + successes + ", interrupted=" + interrupted
-                + '}';
+            + '}';
     }
 }

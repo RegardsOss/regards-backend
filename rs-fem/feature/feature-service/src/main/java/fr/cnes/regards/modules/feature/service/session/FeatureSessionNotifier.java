@@ -29,7 +29,6 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
 import fr.cnes.regards.modules.feature.domain.request.ILightFeatureCreationRequest;
 import org.springframework.stereotype.Service;
 
-
 @Service
 @MultitenantTransactional
 public class FeatureSessionNotifier {
@@ -72,8 +71,7 @@ public class FeatureSessionNotifier {
                                                                  property.getName(),
                                                                  String.valueOf(nbProducts),
                                                                  property.isInputRelated(),
-                                                                 property.isOutputRelated()
-        );
+                                                                 property.isOutputRelated());
         StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source, session, stepPropertyInfo);
         sessionNotificationClient.increment(step);
     }
@@ -98,7 +96,6 @@ public class FeatureSessionNotifier {
         decrementCount(request.getMetadata().getSessionOwner(), request.getMetadata().getSession(), property);
     }
 
-
     public void decrementCount(String source, String session, FeatureSessionProperty property) {
         decrementCount(source, session, property, 1L);
     }
@@ -110,8 +107,7 @@ public class FeatureSessionNotifier {
                                                                  property.getName(),
                                                                  String.valueOf(nbProducts),
                                                                  property.isInputRelated(),
-                                                                 property.isOutputRelated()
-        );
+                                                                 property.isOutputRelated());
         StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source, session, stepPropertyInfo);
         sessionNotificationClient.decrement(step);
     }

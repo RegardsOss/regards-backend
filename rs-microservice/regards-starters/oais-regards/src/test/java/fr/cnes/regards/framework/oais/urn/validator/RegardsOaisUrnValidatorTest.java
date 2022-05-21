@@ -18,21 +18,20 @@
  */
 package fr.cnes.regards.framework.oais.urn.validator;
 
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+import fr.cnes.regards.framework.oais.validator.RegardsOaisUrn;
+import fr.cnes.regards.framework.urn.EntityType;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.util.Set;
 import java.util.UUID;
-
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
-import fr.cnes.regards.framework.oais.validator.RegardsOaisUrn;
-import fr.cnes.regards.framework.urn.EntityType;
 
 /**
  * @author Sylvain Vissiere-Guerinet

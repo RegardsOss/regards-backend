@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.repository;
 
-import org.springframework.data.repository.CrudRepository;
-
 import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.pojo.Company;
+import org.springframework.data.repository.CrudRepository;
 
 /**
  * Class CompanyRepository
- *
+ * <p>
  * JPA Company Repository
+ *
  * @author CS
  */
 public interface ICompanyRepository extends CrudRepository<Company, Long> {

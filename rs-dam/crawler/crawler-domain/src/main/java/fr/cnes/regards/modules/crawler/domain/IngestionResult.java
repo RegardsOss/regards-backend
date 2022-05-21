@@ -4,6 +4,7 @@ import java.time.OffsetDateTime;
 
 /**
  * Ingestion result summary
+ *
  * @author oroussel
  */
 public class IngestionResult {

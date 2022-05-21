@@ -18,35 +18,23 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.domain.accountunlock;
 
-import java.time.LocalDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.validation.Valid;
-
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+
+import javax.persistence.*;
+import javax.validation.Valid;
+import java.time.LocalDateTime;
 
 /**
  * Token for account unlocking process.
  *
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
- *
  */
 @InstanceEntity
 @Entity
 @Table(name = "t_account_unlock_token",
-        uniqueConstraints = @UniqueConstraint(name = "uk_account_unlock_token_account_id",
-                columnNames = { "account_id" }))
+    uniqueConstraints = @UniqueConstraint(name = "uk_account_unlock_token_account_id", columnNames = { "account_id" }))
 public class AccountUnlockToken {
 
     /**
@@ -96,7 +84,8 @@ public class AccountUnlockToken {
 
     /**
      * Constructor
-     * @param pToken the the token string
+     *
+     * @param pToken   the the token string
      * @param pAccount the linked account
      */
     public AccountUnlockToken(final String pToken, final Account pAccount) {
@@ -110,8 +99,7 @@ public class AccountUnlockToken {
     /**
      * Calculate expiration date
      *
-     * @param pExpiryTimeInMinutes
-     *            the expiration time in minutes
+     * @param pExpiryTimeInMinutes the expiration time in minutes
      * @return the expiration date
      */
     private LocalDateTime calculateExpiryDate(final long pExpiryTimeInMinutes) {
@@ -119,10 +107,7 @@ public class AccountUnlockToken {
     }
 
     /**
-     *
      * Update token expiracy date from the current date.
-     *
-    
      */
     public void updateExipracyDate() {
         this.expiryDate = calculateExpiryDate(EXPIRATION);
@@ -136,8 +121,7 @@ public class AccountUnlockToken {
     }
 
     /**
-     * @param pId
-     *            the id to set
+     * @param pId the id to set
      */
     public void setId(final Long pId) {
         id = pId;
@@ -151,8 +135,7 @@ public class AccountUnlockToken {
     }
 
     /**
-     * @param pToken
-     *            the token to set
+     * @param pToken the token to set
      */
     public void setToken(final String pToken) {
         token = pToken;
@@ -166,8 +149,7 @@ public class AccountUnlockToken {
     }
 
     /**
-     * @param pAccount
-     *            the {@link Account} to set
+     * @param pAccount the {@link Account} to set
      */
     public void setAccount(final Account pAccount) {
         account = pAccount;
@@ -181,8 +163,7 @@ public class AccountUnlockToken {
     }
 
     /**
-     * @param pExpiryDate
-     *            the expiryDate to set
+     * @param pExpiryDate the expiryDate to set
      */
     public void setExpiryDate(final LocalDateTime pExpiryDate) {
         expiryDate = pExpiryDate;
@@ -196,8 +177,7 @@ public class AccountUnlockToken {
     }
 
     /**
-     * @param pVerified
-     *            the verified to set
+     * @param pVerified the verified to set
      */
     public void setVerified(final boolean pVerified) {
         verified = pVerified;

@@ -26,8 +26,11 @@ public abstract class AbstractPluginConfEvent {
      */
     private Set<String> pluginTypes;
 
-    protected AbstractPluginConfEvent(Long pPluginConfId, String pluginBusinnessId, String label,
-            PluginServiceAction pAction, Set<String> pPluginTypes) {
+    protected AbstractPluginConfEvent(Long pPluginConfId,
+                                      String pluginBusinnessId,
+                                      String label,
+                                      PluginServiceAction pAction,
+                                      Set<String> pPluginTypes) {
         super();
         this.pluginConfId = pPluginConfId;
         this.pluginBusinnessId = pluginBusinnessId;

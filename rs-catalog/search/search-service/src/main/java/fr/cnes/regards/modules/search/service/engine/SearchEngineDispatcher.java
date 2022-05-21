@@ -44,7 +44,7 @@ import java.util.*;
 
 /**
  * Search engine service dispatcher.<br/>
- *
+ * <p>
  * Each methods acts as a proxy for search engine.<br/>
  * <ul>
  * <li>First, context debugging may be display</li>
@@ -53,7 +53,6 @@ import java.util.*;
  * </ul>
  *
  * @author Marc Sordi
- *
  */
 @Service
 public class SearchEngineDispatcher implements ISearchEngineDispatcher {
@@ -78,7 +77,7 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
     @SuppressWarnings("unchecked")
     @Override
     public <T> ResponseEntity<T> dispatchRequest(SearchContext context, IEntityLinkBuilder linkBuilder)
-            throws ModuleException {
+        throws ModuleException {
 
         // Validate search context
         Errors errors = new MapBindingResult(new HashMap<>(), "searchContext");
@@ -120,7 +119,7 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
             context.getHeaders().forEach((key, values) -> LOGGER.debug("Header : {} -> {}", key, values.toString()));
             if (context.getQueryParams() != null) {
                 context.getQueryParams()
-                        .forEach((key, values) -> LOGGER.debug("Query param : {} -> {}", key, values.toString()));
+                       .forEach((key, values) -> LOGGER.debug("Query param : {} -> {}", key, values.toString()));
             }
             LOGGER.debug(context.getPageable() == null ? "No pagination" : context.getPageable().toString());
         }
@@ -144,7 +143,8 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
     }
 
     private ISearchEngine<?, ?, ?, ?> getSearchEngineParser(SearchContext context,
-            ISearchEngine<?, ?, ?, ?> searchEngine) throws ModuleException {
+                                                            ISearchEngine<?, ?, ?, ?> searchEngine)
+        throws ModuleException {
         if (context.getEngineRequestParserType() != null) {
             try {
                 return getSearchEngine(context.getDatasetUrn(), context.getEngineRequestParserType());
@@ -160,7 +160,7 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
 
     @Override
     public ISearchEngine<?, ?, ?, ?> getSearchEngine(Optional<UniformResourceName> datasetUrn, String engineType)
-            throws ModuleException {
+        throws ModuleException {
         SearchEngineConfiguration conf = searchEngineService.retrieveConf(datasetUrn, engineType);
         try {
             return pluginService.getPlugin(conf.getConfiguration().getId());
@@ -171,6 +171,7 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
 
     /**
      * Compute a {@link SearchRequest} to a {@link ICriterion}
+     *
      * @throws ModuleException
      */
     @Override
@@ -183,9 +184,11 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
                                                                       searchRequest.getEngineType());
 
         // Open search request
-        SearchContext context = SearchContext.build(SearchType.DATAOBJECTS, searchRequest.getEngineType(),
+        SearchContext context = SearchContext.build(SearchType.DATAOBJECTS,
+                                                    searchRequest.getEngineType(),
                                                     SearchEngineMappings.getJsonHeaders(),
-                                                    searchRequest.getSearchParameters(), PageRequest.of(0, 1));
+                                                    searchRequest.getSearchParameters(),
+                                                    PageRequest.of(0, 1));
         if (searchRequest.getDatasetUrn() != null) {
             context = context.withDatasetUrn(UniformResourceName.fromString(searchRequest.getDatasetUrn()));
         }
@@ -213,7 +216,10 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
             for (String ipId : searchRequest.getEntityIdsToExclude()) {
                 values.add(ipId);
             }
-            reqCrit = ICriterion.and(reqCrit, ICriterion.not(ICriterion.in(StaticProperties.IP_ID, StringMatchType.KEYWORD,values)));
+            reqCrit = ICriterion.and(reqCrit,
+                                     ICriterion.not(ICriterion.in(StaticProperties.IP_ID,
+                                                                  StringMatchType.KEYWORD,
+                                                                  values)));
             values.clear();
         }
 

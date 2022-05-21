@@ -26,7 +26,6 @@ import fr.cnes.regards.modules.order.domain.basket.Basket;
 import java.util.Set;
 import java.util.UUID;
 
-
 public interface IOrderCreationService {
 
     /**
@@ -65,6 +64,11 @@ public interface IOrderCreationService {
      * @param priority
      * @return
      */
-    UUID createStorageSubOrder(DatasetTask dsTask, Set<OrderDataFile> bucketFiles, Order order, int subOrderDuration, String role, int priority);
+    UUID createStorageSubOrder(DatasetTask dsTask,
+                               Set<OrderDataFile> bucketFiles,
+                               Order order,
+                               int subOrderDuration,
+                               String role,
+                               int priority);
 
 }

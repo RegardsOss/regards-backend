@@ -133,20 +133,24 @@ public class SessionNotifier {
     // GENERIC METHODS TO BUILD NOTIFICATIONS
 
     // INC
+
     /**
      * Send an INC event to {@link ISessionAgentClient}
      *
-     * @param source   also called sessionOwner, originator of the request
-     * @param session  tags the data processed with the same name
-     * @param property property to be notified
-     * @param nbProducts  value to increment the corresponding property
+     * @param source     also called sessionOwner, originator of the request
+     * @param session    tags the data processed with the same name
+     * @param property   property to be notified
+     * @param nbProducts value to increment the corresponding property
      */
-    public void incrementCount(String source, String session, SessionNotifierPropertyEnum property,
-            int nbProducts) {
+    public void incrementCount(String source, String session, SessionNotifierPropertyEnum property, int nbProducts) {
         if (source != null && session != null) {
-            StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source, session,
-                                                 new StepPropertyInfo(StepTypeEnum.STORAGE, property.getState(),
-                                                                      property.getName(), String.valueOf(nbProducts),
+            StepProperty step = new StepProperty(GLOBAL_SESSION_STEP,
+                                                 source,
+                                                 session,
+                                                 new StepPropertyInfo(StepTypeEnum.STORAGE,
+                                                                      property.getState(),
+                                                                      property.getName(),
+                                                                      String.valueOf(nbProducts),
                                                                       property.isInputRelated(),
                                                                       property.isOutputRelated()));
             sessionNotificationClient.increment(step);
@@ -154,20 +158,24 @@ public class SessionNotifier {
     }
 
     // DEC
+
     /**
      * Send an DEC event to {@link ISessionAgentClient}
      *
-     * @param source   also called sessionOwner, originator of the request
-     * @param session  tags the data processed with the same name
-     * @param property property to be notified
-     * @param nbProducts  value to decrement the corresponding property
+     * @param source     also called sessionOwner, originator of the request
+     * @param session    tags the data processed with the same name
+     * @param property   property to be notified
+     * @param nbProducts value to decrement the corresponding property
      */
-    public void decrementCount(String source, String session, SessionNotifierPropertyEnum property,
-            int nbProducts) {
+    public void decrementCount(String source, String session, SessionNotifierPropertyEnum property, int nbProducts) {
         if (source != null && session != null) {
-            StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source, session,
-                                                 new StepPropertyInfo(StepTypeEnum.STORAGE, property.getState(),
-                                                                      property.getName(), String.valueOf(nbProducts),
+            StepProperty step = new StepProperty(GLOBAL_SESSION_STEP,
+                                                 source,
+                                                 session,
+                                                 new StepPropertyInfo(StepTypeEnum.STORAGE,
+                                                                      property.getState(),
+                                                                      property.getName(),
+                                                                      String.valueOf(nbProducts),
                                                                       property.isInputRelated(),
                                                                       property.isOutputRelated()));
             sessionNotificationClient.decrement(step);

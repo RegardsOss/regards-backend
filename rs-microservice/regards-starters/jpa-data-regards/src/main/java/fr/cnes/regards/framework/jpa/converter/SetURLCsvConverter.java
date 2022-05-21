@@ -1,5 +1,9 @@
 package fr.cnes.regards.framework.jpa.converter;
 
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 import java.net.MalformedURLException;
@@ -8,13 +12,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import fr.cnes.regards.framework.utils.RsRuntimeException;
-
 /**
  * Converter for {@link Set} of {@link URL}, based on {@link SetStringCsvConverter}.
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Converter
@@ -29,8 +29,9 @@ public class SetURLCsvConverter implements AttributeConverter<Set<URL>, String> 
         if (urls.isEmpty()) {
             return null;
         }
-        return stringConverter
-                .convertToDatabaseColumn(urls.stream().map(URL::toExternalForm).collect(Collectors.toSet()));
+        return stringConverter.convertToDatabaseColumn(urls.stream()
+                                                           .map(URL::toExternalForm)
+                                                           .collect(Collectors.toSet()));
     }
 
     @Override

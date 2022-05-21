@@ -18,14 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.service.job;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -36,13 +29,16 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 /**
- *
  * Job to schedule deletion of {@link Product} and {@link AcquisitionProcessingChain}
  *
  * @author Sébastien Binda
- *
  */
 public class DeleteProductsJob extends AbstractJob<Void> {
 
@@ -76,7 +72,7 @@ public class DeleteProductsJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         chainId = getValue(parameters, CHAIN_ID_PARAM);
         sessionName = (String) getOptionalValue(parameters, SESSION_NAME_PARAM).orElse(null);
         deleteChain = getValue(parameters, DELETE_CHAIN_PARAM);

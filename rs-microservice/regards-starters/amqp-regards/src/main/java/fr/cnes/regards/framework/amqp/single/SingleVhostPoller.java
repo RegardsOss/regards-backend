@@ -18,25 +18,27 @@
  */
 package fr.cnes.regards.framework.amqp.single;
 
-import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-
 import fr.cnes.regards.framework.amqp.AbstractPoller;
 import fr.cnes.regards.framework.amqp.IPoller;
+import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 /**
  * Single virtual host publisher implementation
+ *
  * @author Marc Sordi
  */
 public class SingleVhostPoller extends AbstractPoller implements IPoller {
 
     private final IRuntimeTenantResolver threadTenantResolver;
 
-    public SingleVhostPoller(IRabbitVirtualHostAdmin virtualHostAdmin, RabbitTemplate rabbitTemplate,
-            IAmqpAdmin amqpAdmin, IRuntimeTenantResolver threadTenantResolver) {
+    public SingleVhostPoller(IRabbitVirtualHostAdmin virtualHostAdmin,
+                             RabbitTemplate rabbitTemplate,
+                             IAmqpAdmin amqpAdmin,
+                             IRuntimeTenantResolver threadTenantResolver) {
         super(virtualHostAdmin, rabbitTemplate, amqpAdmin);
         this.threadTenantResolver = threadTenantResolver;
     }

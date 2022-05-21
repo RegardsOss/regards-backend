@@ -18,16 +18,14 @@
  */
 package fr.cnes.regards.modules.model.domain.validator;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+
 /**
- *
  * @author Sébastien Binda
- *
  */
 public class JsonStringValidator implements ConstraintValidator<JsonString, String> {
 

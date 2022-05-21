@@ -24,10 +24,13 @@ import java.lang.annotation.*;
 
 @Documented
 @Constraint(validatedBy = ServiceProviderNameValidator.class)
-@Target( { ElementType.METHOD, ElementType.FIELD })
+@Target({ ElementType.METHOD, ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ServiceProviderName {
+
     String message() default "Invalid Service Provider name";
+
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
 }

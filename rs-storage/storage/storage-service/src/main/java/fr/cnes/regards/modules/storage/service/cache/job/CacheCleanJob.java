@@ -18,17 +18,15 @@
  */
 package fr.cnes.regards.modules.storage.service.cache.job;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Cache purge job.<br>
  * Job to delete expired files from cache system.
  *
  * @author Sébastien Binda
- *
  */
 public class CacheCleanJob extends AbstractJob<Void> {
 

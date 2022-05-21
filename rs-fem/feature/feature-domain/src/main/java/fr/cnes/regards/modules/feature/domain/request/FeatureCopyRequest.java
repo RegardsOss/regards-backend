@@ -18,12 +18,6 @@
  */
 package fr.cnes.regards.modules.feature.domain.request;
 
-import java.time.OffsetDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
@@ -31,10 +25,15 @@ import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
+import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import java.time.OffsetDateTime;
+
 /**
  * Contain a storage path to add to a {@link Feature} of a {@link FeatureEntity}
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
 @Entity
 @DiscriminatorValue(FeatureRequestTypeEnum.COPY_DISCRIMINENT)
@@ -46,9 +45,15 @@ public class FeatureCopyRequest extends AbstractFeatureRequest {
     @Column(name = "checksum", nullable = false)
     private String checksum;
 
-    public static FeatureCopyRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
-            FeatureRequestStep step, PriorityLevel priority, FeatureUniformResourceName urn, String storage,
-            RequestState state, String checksum) {
+    public static FeatureCopyRequest build(String requestId,
+                                           String requestOwner,
+                                           OffsetDateTime requestDate,
+                                           FeatureRequestStep step,
+                                           PriorityLevel priority,
+                                           FeatureUniformResourceName urn,
+                                           String storage,
+                                           RequestState state,
+                                           String checksum) {
         FeatureCopyRequest request = new FeatureCopyRequest();
         request.with(requestId, requestOwner, requestDate, priority, state, step);
         request.setStep(step);

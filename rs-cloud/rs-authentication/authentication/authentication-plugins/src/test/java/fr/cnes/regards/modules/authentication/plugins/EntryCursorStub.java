@@ -18,18 +18,19 @@
  */
 package fr.cnes.regards.modules.authentication.plugins;
 
-import java.util.Iterator;
-import java.util.List;
-
 import org.apache.directory.api.ldap.model.cursor.ClosureMonitor;
 import org.apache.directory.api.ldap.model.cursor.EntryCursor;
 import org.apache.directory.api.ldap.model.entry.Entry;
 import org.apache.directory.api.ldap.model.message.SearchResultDone;
 
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * Class EntryCursorStub
- *
+ * <p>
  * Stub class to test LDAP authentication plugin
+ *
  * @author Sébastien Binda
  * @author Christophe Mertz
  */

@@ -27,17 +27,18 @@ import org.springframework.test.context.TestPropertySource;
  * Then you can safely run the test : <br/>
  * 1] To do that, annotate your class with following code.
  * <code>
+ *
+ * @author Marc Sordi
+ * @author Léo Mieulet
  * @TestPropertySource(properties = {"regards.jpa.multitenant.migrationTool=FLYWAYDB"})
  * </code>
  * Then execute your test. It should execute FLYWAY migration (all SQL files in your module) against the public schema.
  * 2] Comment the annotation you added above your class and execute another time the test (this time using HBM2DDL).
  * You can now find in the target folder the SQL diff that you can use to complete your FLYWAY migration.
- *
- * @author Marc Sordi
- * @author Léo Mieulet
  */
-@TestPropertySource(properties = { "regards.jpa.multitenant.migrationTool=HBM2DDL",
-        "regards.jpa.multitenant.embedded=false", "regards.jpa.multitenant.outputFile=target/project_script.sql",
+@TestPropertySource(
+    properties = { "regards.jpa.multitenant.migrationTool=HBM2DDL", "regards.jpa.multitenant.embedded=false",
+        "regards.jpa.multitenant.outputFile=target/project_script.sql",
         "spring.jpa.properties.hibernate.default_schema=public" })
 public abstract class AbstractScriptGeneratorIT extends AbstractDaoIT {
 

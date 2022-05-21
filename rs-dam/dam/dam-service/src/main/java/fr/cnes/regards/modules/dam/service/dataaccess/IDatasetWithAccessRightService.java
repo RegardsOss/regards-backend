@@ -18,29 +18,30 @@
  */
 package fr.cnes.regards.modules.dam.service.dataaccess;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.dto.DatasetWithAccessRight;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Service to handle association between {@link Dataset} and {@link AccessRight} entities.
+ *
  * @author Sébastien Binda
  */
 public interface IDatasetWithAccessRightService {
 
     /**
      * Search for {@link AccessRight}s of all {@link Dataset}s matching the filters and the given access group name.
+     *
      * @param datasetLabelFilter Filter on dataset label.
-     * @param accessGroupName search {@link AccessRight}s of the given access group.
+     * @param accessGroupName    search {@link AccessRight}s of the given access group.
      * @param pageRequest
      * @return {@link DatasetWithAccessRight}
      * @throws ModuleException
      */
     Page<DatasetWithAccessRight> search(String datasetLabelFilter, String accessGroupName, Pageable pageRequest)
-            throws ModuleException;
+        throws ModuleException;
 
 }

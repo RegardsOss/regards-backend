@@ -23,6 +23,7 @@ import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 
 /**
  * This class is used to map a data source attribute to an attribute of a {@link Model}
+ *
  * @author Christophe Mertz
  * @author oroussel
  */
@@ -95,9 +96,10 @@ public abstract class AbstractAttributeMapping {
 
     /**
      * Constructor with all attributes
-     * @param name the attribute name in the model
+     *
+     * @param name      the attribute name in the model
      * @param nameSpace the attribute name space in the model
-     * @param type the attribute type in the model @see {@link PropertyType}
+     * @param type      the attribute type in the model @see {@link PropertyType}
      * @param mappingDS The attribute name in the data source
      */
     protected AbstractAttributeMapping(String name, String nameSpace, PropertyType type, String mappingDS) {
@@ -113,13 +115,14 @@ public abstract class AbstractAttributeMapping {
 
     /**
      * Get the {@link PropertyType} for a static attribute
+     *
      * @param staticAttrName of one of the static attribute :
-     *            <li>{@value #PRIMARY_KEY}
-     *            <li>{@value #LAST_UPDATE}
-     *            <li>{@value #LABEL}
-     *            <li>{@value #RAW_DATA}
-     *            <li>{@value #THUMBNAIL}
-     *            <li>{@value #GEOMETRY}
+     *                       <li>{@value #PRIMARY_KEY}
+     *                       <li>{@value #LAST_UPDATE}
+     *                       <li>{@value #LABEL}
+     *                       <li>{@value #RAW_DATA}
+     *                       <li>{@value #THUMBNAIL}
+     *                       <li>{@value #GEOMETRY}
      * @return the {@link PropertyType}
      */
     public static PropertyType getStaticAttributeType(String staticAttrName) {

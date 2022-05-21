@@ -18,6 +18,7 @@
  */
 /**
  * This package contains Gson converters for specific types
+ *
  * @author Sylvain Vissiere-Guerinet
  */
 package fr.cnes.regards.framework.oais.urn.converters;

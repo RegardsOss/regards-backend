@@ -18,22 +18,22 @@
  */
 package fr.cnes.regards.modules.dam.service.entities;
 
-import org.springframework.stereotype.Service;
-import org.springframework.validation.Errors;
-import org.springframework.validation.Validator;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.dam.service.entities.validation.AbstractEntityValidationService;
 import fr.cnes.regards.modules.model.service.validation.IModelFinder;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
 
 /**
  * Specific EntityService for data objects.
  * By now it concerns only data object validation.
  * <b>NOTE : this service is not transactional because data objects are not persisted into database, only
  * ElasticSearch</b>
+ *
  * @author oroussel
  */
 @Service

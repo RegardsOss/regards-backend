@@ -18,18 +18,18 @@
  */
 package fr.cnes.regards.modules.storage.domain.dto.request;
 
-import java.util.Collection;
-import java.util.Set;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.dto.FileLocationDTO;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceMetaInfoDTO;
 
+import java.util.Collection;
+import java.util.Set;
+
 /**
  * DTO represents results information about request from a group of requests.
+ *
  * @author Sébastien Binda
  */
 public class RequestResultInfoDTO {
@@ -69,8 +69,13 @@ public class RequestResultInfoDTO {
      */
     private String errorCause;
 
-    public static RequestResultInfoDTO build(String groupId, String checksum, String storage, String storePath,
-            Collection<String> owners, FileReference fileReference, String errorCause) {
+    public static RequestResultInfoDTO build(String groupId,
+                                             String checksum,
+                                             String storage,
+                                             String storePath,
+                                             Collection<String> owners,
+                                             FileReference fileReference,
+                                             String errorCause) {
         RequestResultInfoDTO dto = new RequestResultInfoDTO();
         dto.groupId = groupId;
         dto.requestChecksum = checksum;
@@ -81,16 +86,22 @@ public class RequestResultInfoDTO {
         }
         if (fileReference != null) {
             // Do not add in fileReferenceDTO all owners of the file but only the requested ones. The number of global owners can be huge.
-            dto.resultFile = FileReferenceDTO
-                    .build(fileReference.getStorageDate(), FileReferenceMetaInfoDTO.build(fileReference.getMetaInfo()),
-                           FileLocationDTO.build(fileReference.getLocation()), dto.getRequestOwners());
+            dto.resultFile = FileReferenceDTO.build(fileReference.getStorageDate(),
+                                                    FileReferenceMetaInfoDTO.build(fileReference.getMetaInfo()),
+                                                    FileLocationDTO.build(fileReference.getLocation()),
+                                                    dto.getRequestOwners());
         }
         dto.errorCause = errorCause;
         return dto;
     }
 
-    public static RequestResultInfoDTO build(String groupId, String checksum, String storage, String storePath,
-            Collection<String> owners, FileReferenceDTO resultFile, String errorCause) {
+    public static RequestResultInfoDTO build(String groupId,
+                                             String checksum,
+                                             String storage,
+                                             String storePath,
+                                             Collection<String> owners,
+                                             FileReferenceDTO resultFile,
+                                             String errorCause) {
         RequestResultInfoDTO dto = new RequestResultInfoDTO();
         dto.groupId = groupId;
         dto.requestChecksum = checksum;

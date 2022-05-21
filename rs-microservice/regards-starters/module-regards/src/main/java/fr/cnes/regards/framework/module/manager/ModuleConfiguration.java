@@ -22,6 +22,7 @@ import java.util.List;
 
 /**
  * Module configuration wrapper
+ *
  * @author Marc Sordi
  */
 public class ModuleConfiguration {
@@ -48,8 +49,9 @@ public class ModuleConfiguration {
         this.module = module;
     }
 
-    public static ModuleConfiguration build(ModuleInformation info, boolean resetBeforeImport,
-            List<ModuleConfigurationItem<?>> configuration) {
+    public static ModuleConfiguration build(ModuleInformation info,
+                                            boolean resetBeforeImport,
+                                            List<ModuleConfigurationItem<?>> configuration) {
         ModuleConfiguration moduleConfiguration = new ModuleConfiguration();
         moduleConfiguration.setModule(info);
         moduleConfiguration.setConfiguration(configuration);

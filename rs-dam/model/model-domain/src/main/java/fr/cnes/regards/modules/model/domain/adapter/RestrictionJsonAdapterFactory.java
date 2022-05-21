@@ -19,21 +19,12 @@
 package fr.cnes.regards.modules.model.domain.adapter;
 
 import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.AbstractRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.DoubleRangeRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.EnumerationRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.IntegerRangeRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.JsonSchemaRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.LongRangeRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.PatternRestriction;
-import fr.cnes.regards.modules.model.domain.attributes.restriction.RestrictionType;
+import fr.cnes.regards.modules.model.domain.attributes.restriction.*;
 
 /**
- *
  * Restriction adapter
  *
  * @author Marc Sordi
- *
  */
 public class RestrictionJsonAdapterFactory extends PolymorphicTypeAdapterFactory<AbstractRestriction> {
 

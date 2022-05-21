@@ -26,6 +26,7 @@ import java.util.Set;
 
 /**
  * POJO Containing information to add entity into user basket
+ *
  * @author Sébastien Binda
  */
 public class BasketSelectionRequest {

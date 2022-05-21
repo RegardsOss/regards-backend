@@ -18,13 +18,11 @@
  */
 package fr.cnes.regards.framework.amqp.domain;
 
+import com.rabbitmq.client.Channel;
+import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.MessageConversionException;
-
-import com.rabbitmq.client.Channel;
-
-import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 
 /**
  * @author Marc SORDI

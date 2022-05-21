@@ -35,7 +35,6 @@ import java.util.Set;
  * JPA Repository to handle access to {@link FileStorageRequest} entities.
  *
  * @author Sébatien Binda
- *
  */
 public interface IFileStorageRequestRepository extends JpaRepository<FileStorageRequest, Long> {
 
@@ -57,24 +56,31 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
 
     Page<FileStorageRequest> findAllByStorageAndStatus(String storage, FileRequestStatus status, Pageable page);
 
-    Page<FileStorageRequest> findAllByStorageAndStatusAndIdGreaterThan(String storage, FileRequestStatus status,
-            Long id, Pageable page);
+    Page<FileStorageRequest> findAllByStorageAndStatusAndIdGreaterThan(String storage,
+                                                                       FileRequestStatus status,
+                                                                       Long id,
+                                                                       Pageable page);
 
     Page<FileStorageRequest> findAllByStorageAndStatusAndOwnersInAndIdGreaterThan(String storage,
-            FileRequestStatus status, Collection<String> owners, Long id, Pageable page);
+                                                                                  FileRequestStatus status,
+                                                                                  Collection<String> owners,
+                                                                                  Long id,
+                                                                                  Pageable page);
 
     @Query("select storage from FileStorageRequest where status = :status")
     Set<String> findStoragesByStatus(@Param("status") FileRequestStatus status);
 
     @Modifying
     @Query("update FileStorageRequest fcr set fcr.status = :status, fcr.errorCause = :errorCause where fcr.id = :id")
-    int updateError(@Param("status") FileRequestStatus status, @Param("errorCause") String errorCause,
-            @Param("id") Long id);
+    int updateError(@Param("status") FileRequestStatus status,
+                    @Param("errorCause") String errorCause,
+                    @Param("id") Long id);
 
     @Modifying
     @Query("update FileStorageRequest fsr set fsr.status = :status, fsr.jobId = :jobId where fsr.id = :id")
-    int updateStatusAndJobId(@Param("status") FileRequestStatus status, @Param("jobId") String jobId,
-            @Param("id") Long id);
+    int updateStatusAndJobId(@Param("status") FileRequestStatus status,
+                             @Param("jobId") String jobId,
+                             @Param("id") Long id);
 
     void deleteByStorage(String storageLocationId);
 
@@ -88,10 +94,14 @@ public interface IFileStorageRequestRepository extends JpaRepository<FileStorage
 
     Page<FileStorageRequest> findByStatus(FileRequestStatus delayed, Pageable page);
 
-    Page<FileStorageRequest> findByStatusAndSessionOwnerAndSession(FileRequestStatus error, String source, String session, Pageable pageToRequest);
+    Page<FileStorageRequest> findByStatusAndSessionOwnerAndSession(FileRequestStatus error,
+                                                                   String source,
+                                                                   String session,
+                                                                   Pageable pageToRequest);
 
-    boolean existsByStorageAndMetaInfoChecksumAndStatusIn(String storage, String checksum,
-            Set<FileRequestStatus> ruuningStatus);
+    boolean existsByStorageAndMetaInfoChecksumAndStatusIn(String storage,
+                                                          String checksum,
+                                                          Set<FileRequestStatus> ruuningStatus);
 
     Set<FileStorageRequest> findByMetaInfoChecksumIn(Set<String> checksums);
 

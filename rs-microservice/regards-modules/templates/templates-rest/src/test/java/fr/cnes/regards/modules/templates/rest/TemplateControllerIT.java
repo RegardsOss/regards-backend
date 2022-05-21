@@ -18,16 +18,6 @@
  */
 package fr.cnes.regards.modules.templates.rest;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -36,9 +26,19 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.templates.dao.ITemplateRepository;
 import fr.cnes.regards.modules.templates.domain.Template;
 import fr.cnes.regards.modules.templates.test.TemplateTestConstants;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Templates integration test
+ *
  * @author Xavier-Alexandre Brochard
  */
 @RegardsTransactional
@@ -93,7 +93,8 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
 
         performDefaultGet(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID,
                           customizer().expect(MockMvcResultMatchers.status().isOk()),
-                          "Unable to retrieve the template.", template.getId());
+                          "Unable to retrieve the template.",
+                          template.getId());
     }
 
     /**
@@ -109,7 +110,8 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
 
         performDefaultGet(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID,
                           customizer().expect(MockMvcResultMatchers.status().isNotFound()),
-                          "Unable to retrieve the template.", TemplateTestConstants.WRONG_ID);
+                          "Unable to retrieve the template.",
+                          TemplateTestConstants.WRONG_ID);
     }
 
     /**
@@ -126,8 +128,10 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
         templateRepository.save(template);
         template.setContent("Raph a enfin appris à coder sur le back");
 
-        performDefaultPut(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID, template,
-                          customizer().expect(MockMvcResultMatchers.status().isOk()), "Unable to update the template.",
+        performDefaultPut(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID,
+                          template,
+                          customizer().expect(MockMvcResultMatchers.status().isOk()),
+                          "Unable to update the template.",
                           template.getId());
     }
 
@@ -144,9 +148,11 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
         // Set inexistent id
         template.setId(TemplateTestConstants.WRONG_ID);
 
-        performDefaultPut(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID, template,
+        performDefaultPut(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID,
+                          template,
                           customizer().expect(MockMvcResultMatchers.status().isNotFound()),
-                          "Unable to update the template.", template.getId());
+                          "Unable to update the template.",
+                          template.getId());
     }
 
     /**
@@ -162,8 +168,10 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
         // Set inexistent id
         template.setId(TemplateTestConstants.ID);
 
-        performDefaultPut(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID, template,
+        performDefaultPut(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID,
+                          template,
                           customizer().expect(MockMvcResultMatchers.status().isBadRequest()),
-                          "Unable to update the template.", TemplateTestConstants.WRONG_ID);
+                          "Unable to update the template.",
+                          TemplateTestConstants.WRONG_ID);
     }
 }

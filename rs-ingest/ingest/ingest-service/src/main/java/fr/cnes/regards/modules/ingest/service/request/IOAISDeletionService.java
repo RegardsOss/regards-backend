@@ -34,12 +34,12 @@ import java.util.Set;
  *
  * @author Léo Mieulet
  * @author Sébastien Binda
- *
  */
 public interface IOAISDeletionService {
 
     /**
      * Search a {@link OAISDeletionCreatorRequest} by is id.
+     *
      * @param requestId
      * @return {@link OAISDeletionCreatorRequest}
      */
@@ -47,6 +47,7 @@ public interface IOAISDeletionService {
 
     /**
      * Search {@link OAISDeletionCreatorRequest}s by ids.
+     *
      * @param deleteRequestIds
      * @return {@link OAISDeletionCreatorRequest}
      */
@@ -54,6 +55,7 @@ public interface IOAISDeletionService {
 
     /**
      * Register deletion request from flow item
+     *
      * @param request to register as deletion request
      */
     void registerOAISDeletionCreator(OAISDeletionPayloadDto request);

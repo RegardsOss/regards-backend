@@ -22,8 +22,6 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.modules.workermanager.dto.events.internal.WorkerConfUpdatedEvent;
 import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigCacheService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -41,7 +39,7 @@ import java.util.List;
 @Component
 @Profile("!nohandler")
 public class WorkerConfUpdatedEventHandler
-        implements IBatchHandler<WorkerConfUpdatedEvent>, ApplicationListener<ApplicationReadyEvent> {
+    implements IBatchHandler<WorkerConfUpdatedEvent>, ApplicationListener<ApplicationReadyEvent> {
 
     @Autowired
     private ISubscriber subscriber;

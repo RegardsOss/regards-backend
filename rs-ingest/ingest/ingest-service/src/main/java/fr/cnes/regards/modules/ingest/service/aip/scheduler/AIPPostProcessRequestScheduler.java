@@ -19,22 +19,7 @@
 
 package fr.cnes.regards.modules.ingest.service.aip.scheduler;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -48,9 +33,22 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.IngestPostProcessingJob;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Service to handle {@link IngestPostProcessingJob}. Create {@link AIPPostProcessRequest} to post-process aips.
+ *
  * @author Iliana Ghazali
  */
 @Service
@@ -73,8 +71,11 @@ public class AIPPostProcessRequestScheduler {
     private Integer aipRequestIterationLimit;
 
     public AIPPostProcessRequestScheduler(IAIPPostProcessRequestRepository aipPostProcessRequestRepository,
-            IAbstractRequestRepository abstractRequestRepository, IAuthenticationResolver authResolver, JobInfoService jobInfoService,
-            @Value("${regards.ingest.aips.postprocess.scan.iteration-limit:100}") Integer aipRequestIterationLimit) {
+                                          IAbstractRequestRepository abstractRequestRepository,
+                                          IAuthenticationResolver authResolver,
+                                          JobInfoService jobInfoService,
+                                          @Value("${regards.ingest.aips.postprocess.scan.iteration-limit:100}")
+                                          Integer aipRequestIterationLimit) {
         this.aipPostProcessRequestRepository = aipPostProcessRequestRepository;
         this.abstractRequestRepository = abstractRequestRepository;
         this.authResolver = authResolver;
@@ -96,19 +97,25 @@ public class AIPPostProcessRequestScheduler {
 
         if (!waitingRequest.isEmpty()) {
             // Make a list of content ids
-            List<Long> requestIds = waitingRequest.getContent().stream().map(AIPPostProcessRequest::getId)
-                    .collect(Collectors.toList());
+            List<Long> requestIds = waitingRequest.getContent()
+                                                  .stream()
+                                                  .map(AIPPostProcessRequest::getId)
+                                                  .collect(Collectors.toList());
             // Change these requests state
             abstractRequestRepository.updateStates(requestIds, InternalRequestState.RUNNING);
 
             // Schedule aipPostProcessing jobs
             Set<JobParameter> jobParameters = Sets.newHashSet();
             jobParameters.add(new JobParameter(IngestPostProcessingJob.AIP_POST_PROCESS_REQUEST_IDS, requestIds));
-            jobInfo = new JobInfo(false, IngestJobPriority.POST_PROCESSING_JOB, jobParameters,
-                    authResolver.getUser(), IngestPostProcessingJob.class.getName());
+            jobInfo = new JobInfo(false,
+                                  IngestJobPriority.POST_PROCESSING_JOB,
+                                  jobParameters,
+                                  authResolver.getUser(),
+                                  IngestPostProcessingJob.class.getName());
             jobInfoService.createAsQueued(jobInfo);
             LOGGER.debug("[AIP POSTPROCESS SCHEDULER] 1 Job scheduled for {} AIPPostProcessRequest(s) in {} ms",
-                         waitingRequest.getNumberOfElements(), System.currentTimeMillis() - start);
+                         waitingRequest.getNumberOfElements(),
+                         System.currentTimeMillis() - start);
         }
         return jobInfo;
 

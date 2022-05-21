@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.dam.dao.entities;
 
-import java.util.Optional;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.LocalFile;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
 
 public interface ILocalFileRepository extends JpaRepository<LocalFile, Long> {
 

@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  * Data file invalid charset exception
  *
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("serial")
 public class InvalidCharsetException extends ModuleException {

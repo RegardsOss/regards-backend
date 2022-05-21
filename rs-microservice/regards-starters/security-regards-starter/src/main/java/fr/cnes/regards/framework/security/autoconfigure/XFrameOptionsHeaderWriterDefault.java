@@ -1,15 +1,15 @@
 package fr.cnes.regards.framework.security.autoconfigure;
 
+import com.google.common.base.Strings;
+import com.google.common.net.HttpHeaders;
+import org.springframework.security.web.header.HeaderWriter;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.security.web.header.HeaderWriter;
-
-import com.google.common.base.Strings;
-import com.google.common.net.HttpHeaders;
-
 /**
  * Set the value of header X-FRAME-OPTIONS to "DENY" if none has been provided by dev. Respect the given value otherwise
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class XFrameOptionsHeaderWriterDefault implements HeaderWriter {

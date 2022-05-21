@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.service;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.processing.domain.service.IPUserAuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.stereotype.Component;
+
 /**
  * This class is the implementation for the {@link IPUserAuthService} interface.
  *
@@ -41,22 +42,24 @@ public class PUserAuthServiceImpl implements IPUserAuthService {
         this.feignSecurityManager = feignSecurityManager;
     }
 
-    @Override public PUserAuth authFromUserEmailAndRole(String tenant, String email, String role) {
+    @Override
+    public PUserAuth authFromUserEmailAndRole(String tenant, String email, String role) {
         try {
             FeignSecurityManager.asUser(email, role);
             String jwtToken = feignSecurityManager.getToken();
             return new PUserAuth(tenant, email, role, jwtToken);
-        }
-        finally {
+        } finally {
             FeignSecurityManager.reset();
         }
     }
 
-    @Override public PUserAuth authFromBatch(PBatch batch) {
+    @Override
+    public PUserAuth authFromBatch(PBatch batch) {
         return authFromUserEmailAndRole(batch.getTenant(), batch.getUser(), batch.getUserRole());
     }
 
-    @Override public PUserAuth fromContext(SecurityContext ctx) {
+    @Override
+    public PUserAuth fromContext(SecurityContext ctx) {
         JWTAuthentication authentication = (JWTAuthentication) ctx.getAuthentication();
         UserDetails user = authentication.getUser();
         return new PUserAuth(authentication.getTenant(), user.getEmail(), user.getRole(), authentication.getJwt());

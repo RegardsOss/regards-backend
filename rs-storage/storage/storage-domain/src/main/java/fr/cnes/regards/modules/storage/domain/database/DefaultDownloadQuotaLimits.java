@@ -48,8 +48,7 @@ public class DefaultDownloadQuotaLimits {
             return false;
         }
         DefaultDownloadQuotaLimits that = (DefaultDownloadQuotaLimits) o;
-        return Objects.equals(maxQuota, that.maxQuota) &&
-            Objects.equals(rateLimit, that.rateLimit);
+        return Objects.equals(maxQuota, that.maxQuota) && Objects.equals(rateLimit, that.rateLimit);
     }
 
     @Override

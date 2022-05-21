@@ -18,30 +18,25 @@
  */
 package fr.cnes.regards.modules.dam.service.entities.plugins;
 
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
-import fr.cnes.regards.modules.dam.plugin.entities.AbstractDataObjectComputePlugin;
-import fr.cnes.regards.modules.dam.plugin.entities.CountPlugin;
-import fr.cnes.regards.modules.dam.plugin.entities.IntSumComputePlugin;
-import fr.cnes.regards.modules.dam.plugin.entities.LongSumComputePlugin;
-import fr.cnes.regards.modules.dam.plugin.entities.MaxDateComputePlugin;
-import fr.cnes.regards.modules.dam.plugin.entities.MinDateComputePlugin;
+import fr.cnes.regards.modules.dam.plugin.entities.*;
 import fr.cnes.regards.modules.model.domain.schema.Attribute;
 import fr.cnes.regards.modules.model.domain.schema.Computation;
 import fr.cnes.regards.modules.model.domain.schema.ParamPluginType;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.service.exception.ImportException;
 import fr.cnes.regards.modules.model.service.xml.IComputationPluginService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.util.Set;
 
 /**
  * Initialize computation plugin for DAM module
+ *
  * @author Marc SORDI
  */
 @Service
@@ -73,9 +68,11 @@ public class DamComputationPluginService implements IComputationPluginService {
                     pluginClass = LongSumComputePlugin.class;
                     break;
                 default:
-                    String message = String
-                            .format("Only LONG and INTEGER attribute types are supported for sum_compute plugin"
-                                    + " (attribute %s with type %s)", xmlAtt.getName(), xmlAtt.getType());
+                    String message = String.format(
+                        "Only LONG and INTEGER attribute types are supported for sum_compute plugin"
+                            + " (attribute %s with type %s)",
+                        xmlAtt.getName(),
+                        xmlAtt.getType());
                     LOGGER.error(message);
                     throw new ImportException(message);
             }
@@ -88,10 +85,10 @@ public class DamComputationPluginService implements IComputationPluginService {
                     pluginClass = MinDateComputePlugin.class;
                     break;
                 default:
-                    String message = String.format(
-                                                   "Only DATE attribute types are supported for min_compute plugin"
-                                                           + " (attribute %s with type %s)",
-                                                   xmlAtt.getName(), xmlAtt.getType());
+                    String message = String.format("Only DATE attribute types are supported for min_compute plugin"
+                                                       + " (attribute %s with type %s)",
+                                                   xmlAtt.getName(),
+                                                   xmlAtt.getType());
                     LOGGER.error(message);
                     throw new ImportException(message);
             }
@@ -104,10 +101,10 @@ public class DamComputationPluginService implements IComputationPluginService {
                     pluginClass = MaxDateComputePlugin.class;
                     break;
                 default:
-                    String message = String.format(
-                                                   "Only DATE attribute types are supported for max_compute plugin"
-                                                           + " (attribute %s with type %s)",
-                                                   xmlAtt.getName(), xmlAtt.getType());
+                    String message = String.format("Only DATE attribute types are supported for max_compute plugin"
+                                                       + " (attribute %s with type %s)",
+                                                   xmlAtt.getName(),
+                                                   xmlAtt.getType());
                     LOGGER.error(message);
                     throw new ImportException(message);
             }
@@ -119,11 +116,12 @@ public class DamComputationPluginService implements IComputationPluginService {
         return createPluginConfiguration(xmlAtt, pluginClass, xmlParamPluginType);
     }
 
-    private PluginConfiguration createPluginConfiguration(Attribute xmlAtt, Class<?> pluginClass,
-            ParamPluginType xmlParamPluginType) throws ImportException {
+    private PluginConfiguration createPluginConfiguration(Attribute xmlAtt,
+                                                          Class<?> pluginClass,
+                                                          ParamPluginType xmlParamPluginType) throws ImportException {
 
         PluginConfiguration compConf = new PluginConfiguration(xmlAtt.getComputation().getLabel(),
-                pluginClass.getAnnotation(Plugin.class).id());
+                                                               pluginClass.getAnnotation(Plugin.class).id());
         // Add plugin parameters (from attribute and associated fragment)
         Set<IPluginParam> parameters = IPluginParam.set();
         // Some plugins need parameters (in this case, xmlParamPluginType contains them as attributes)

@@ -68,11 +68,12 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
 
     private DownloadQuotaService<T> self;
 
-    private AtomicReference<Map<String, DefaultDownloadQuotaLimits>> defaultLimits = new AtomicReference<>(
-            HashMap.empty());
+    private AtomicReference<Map<String, DefaultDownloadQuotaLimits>> defaultLimits = new AtomicReference<>(HashMap.empty());
 
-    private Cache<QuotaKey, DownloadQuotaLimits> cache = Caffeine.newBuilder().expireAfterAccess(30, TimeUnit.MINUTES)
-            .maximumSize(10_000).build();
+    private Cache<QuotaKey, DownloadQuotaLimits> cache = Caffeine.newBuilder()
+                                                                 .expireAfterAccess(30, TimeUnit.MINUTES)
+                                                                 .maximumSize(10_000)
+                                                                 .build();
 
     private StorageSettingService storageSettingService;
 
@@ -80,10 +81,14 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
     }
 
     @Autowired
-    public DownloadQuotaService(IDownloadQuotaRepository quotaRepository, IQuotaManager quotaManager,
-            ITenantResolver tenantResolver, IRuntimeTenantResolver runtimeTenantResolver, ISubscriber subscriber,
-            ApplicationContext applicationContext, IDynamicTenantSettingService dynamicTenantSettingService,
-            StorageSettingService storageSettingService) {
+    public DownloadQuotaService(IDownloadQuotaRepository quotaRepository,
+                                IQuotaManager quotaManager,
+                                ITenantResolver tenantResolver,
+                                IRuntimeTenantResolver runtimeTenantResolver,
+                                ISubscriber subscriber,
+                                ApplicationContext applicationContext,
+                                IDynamicTenantSettingService dynamicTenantSettingService,
+                                StorageSettingService storageSettingService) {
         this.quotaRepository = quotaRepository;
         this.quotaManager = quotaManager;
         this.tenantResolver = tenantResolver;
@@ -164,8 +169,7 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
         if (oldDefault.isEmpty()) {
             defaultLimits.updateAndGet(m -> m.put(runtimeTenantResolver.getTenant(),
                                                   new DefaultDownloadQuotaLimits(newDefaultQuota,
-                                                                                 StorageSetting.RATE_LIMIT
-                                                                                         .getDefaultValue())));
+                                                                                 StorageSetting.RATE_LIMIT.getDefaultValue())));
         } else {
             defaultLimits.updateAndGet(m -> m.put(runtimeTenantResolver.getTenant(),
                                                   new DefaultDownloadQuotaLimits(newDefaultQuota,
@@ -177,8 +181,9 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
     public void changeDefaultRateLimits(Long newDefaultRate) {
         Option<DefaultDownloadQuotaLimits> oldDefault = defaultLimits.get().get(runtimeTenantResolver.getTenant());
         if (oldDefault.isEmpty()) {
-            defaultLimits.updateAndGet(m -> m.put(runtimeTenantResolver.getTenant(), new DefaultDownloadQuotaLimits(
-                    StorageSetting.MAX_QUOTA.getDefaultValue(), newDefaultRate)));
+            defaultLimits.updateAndGet(m -> m.put(runtimeTenantResolver.getTenant(),
+                                                  new DefaultDownloadQuotaLimits(StorageSetting.MAX_QUOTA.getDefaultValue(),
+                                                                                 newDefaultRate)));
         } else {
             defaultLimits.updateAndGet(m -> m.put(runtimeTenantResolver.getTenant(),
                                                   new DefaultDownloadQuotaLimits(oldDefault.get().getMaxQuota(),
@@ -189,14 +194,22 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
     @Override
     public Try<DownloadQuotaLimitsDto> upsertDownloadQuotaLimits(DownloadQuotaLimitsDto newLimits) {
         return Option.ofOptional(quotaRepository.findByEmail(newLimits.getEmail()))
-                .map(limits -> new DownloadQuotaLimits(limits.getId(), limits.getTenant(), limits.getEmail(),
-                                                       newLimits.getMaxQuota(), newLimits.getRateLimit()))
-                .orElse(Option.of(new DownloadQuotaLimits(runtimeTenantResolver.getTenant(), newLimits.getEmail(),
-                                                          newLimits.getMaxQuota(), newLimits.getRateLimit())))
-                .map(quotaRepository::save).toTry().peek(limits -> {
-                    QuotaKey key = QuotaKey.make(runtimeTenantResolver.getTenant(), newLimits.getEmail());
-                    cache.put(key, limits);
-                }).map(DownloadQuotaLimitsDto::fromDownloadQuotaLimits);
+                     .map(limits -> new DownloadQuotaLimits(limits.getId(),
+                                                            limits.getTenant(),
+                                                            limits.getEmail(),
+                                                            newLimits.getMaxQuota(),
+                                                            newLimits.getRateLimit()))
+                     .orElse(Option.of(new DownloadQuotaLimits(runtimeTenantResolver.getTenant(),
+                                                               newLimits.getEmail(),
+                                                               newLimits.getMaxQuota(),
+                                                               newLimits.getRateLimit())))
+                     .map(quotaRepository::save)
+                     .toTry()
+                     .peek(limits -> {
+                         QuotaKey key = QuotaKey.make(runtimeTenantResolver.getTenant(), newLimits.getEmail());
+                         cache.put(key, limits);
+                     })
+                     .map(DownloadQuotaLimitsDto::fromDownloadQuotaLimits);
     }
 
     @Override
@@ -207,17 +220,22 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
 
     @Override
     public Try<List<DownloadQuotaLimitsDto>> getDownloadQuotaLimits(String[] userEmails) {
-        return Arrays.stream(userEmails).map(userEmail -> {
-            QuotaKey key = QuotaKey.make(runtimeTenantResolver.getTenant(), userEmail);
-            return cacheUserQuota(userEmail, key);
-        }).map(quotaLimits -> quotaLimits.map(DownloadQuotaLimitsDto::fromDownloadQuotaLimits))
-                .reduce(Either.<ListUserQuotaLimitsResultException, io.vavr.collection.List<DownloadQuotaLimitsDto>>right(
-                        io.vavr.collection.List.empty()), (e, t) -> t.isSuccess() ?
-                                e.map(l -> l.append(t.get())) :
-                                e.isRight() ?
-                                        Either.left(ListUserQuotaLimitsResultException.make(t.getCause())) :
-                                        e.mapLeft(err -> err.compose(ListUserQuotaLimitsResultException.make(t.getCause()))),
-                        (l, r) -> l).map(io.vavr.collection.List::toJavaList).toTry();
+        return Arrays.stream(userEmails)
+                     .map(userEmail -> {
+                         QuotaKey key = QuotaKey.make(runtimeTenantResolver.getTenant(), userEmail);
+                         return cacheUserQuota(userEmail, key);
+                     })
+                     .map(quotaLimits -> quotaLimits.map(DownloadQuotaLimitsDto::fromDownloadQuotaLimits))
+                     .reduce(Either.<ListUserQuotaLimitsResultException, io.vavr.collection.List<DownloadQuotaLimitsDto>>right(
+                                 io.vavr.collection.List.empty()),
+                             (e, t) -> t.isSuccess() ?
+                                 e.map(l -> l.append(t.get())) :
+                                 e.isRight() ?
+                                     Either.left(ListUserQuotaLimitsResultException.make(t.getCause())) :
+                                     e.mapLeft(err -> err.compose(ListUserQuotaLimitsResultException.make(t.getCause()))),
+                             (l, r) -> l)
+                     .map(io.vavr.collection.List::toJavaList)
+                     .toTry();
     }
 
     @Override
@@ -226,28 +244,37 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
         QuotaKey key = QuotaKey.make(runtimeTenantResolver.getTenant(), userEmail);
 
         return cacheUserQuota(userEmail, key).flatMap(quota -> Try.of(() -> quotaManager.get(quota))
-                .map(quotaAndRate -> new UserCurrentQuotas(userEmail, quota.getMaxQuota(), quota.getRateLimit(),
-                                                           quotaAndRate._1.getCounter(), quotaAndRate._2.getGauge())))
-                .get();
+                                                                  .map(quotaAndRate -> new UserCurrentQuotas(userEmail,
+                                                                                                             quota.getMaxQuota(),
+                                                                                                             quota.getRateLimit(),
+                                                                                                             quotaAndRate._1.getCounter(),
+                                                                                                             quotaAndRate._2.getGauge())))
+                                             .get();
     }
 
     @Override
     public Try<List<UserCurrentQuotas>> getCurrentQuotas(String[] userEmails) {
-        return Arrays.stream(userEmails).map(userEmail -> Try.of(() -> getCurrentQuotas(userEmail)))
-                .reduce(Either.<ListUserQuotaLimitsResultException, io.vavr.collection.List<UserCurrentQuotas>>right(
-                        io.vavr.collection.List.empty()), (e, t) -> t.isSuccess() ?
-                                e.map(l -> l.append(t.get())) :
-                                e.isRight() ?
-                                        Either.left(ListUserQuotaLimitsResultException.make(t.getCause())) :
-                                        e.mapLeft(err -> err.compose(ListUserQuotaLimitsResultException.make(t.getCause()))),
-                        (l, r) -> l).map(io.vavr.collection.List::toJavaList).toTry();
+        return Arrays.stream(userEmails)
+                     .map(userEmail -> Try.of(() -> getCurrentQuotas(userEmail)))
+                     .reduce(Either.<ListUserQuotaLimitsResultException, io.vavr.collection.List<UserCurrentQuotas>>right(
+                                 io.vavr.collection.List.empty()),
+                             (e, t) -> t.isSuccess() ?
+                                 e.map(l -> l.append(t.get())) :
+                                 e.isRight() ?
+                                     Either.left(ListUserQuotaLimitsResultException.make(t.getCause())) :
+                                     e.mapLeft(err -> err.compose(ListUserQuotaLimitsResultException.make(t.getCause()))),
+                             (l, r) -> l)
+                     .map(io.vavr.collection.List::toJavaList)
+                     .toTry();
     }
 
     @VisibleForTesting
     protected Try<DownloadQuotaLimits> cacheUserQuota(String userEmail, QuotaKey key) {
         DefaultDownloadQuotaLimits defaults = getDefaultLimits();
-        return Try.of(() -> cache.get(key, __ -> self
-                .findOrCreateDownloadQuota(userEmail, defaults.getMaxQuota(), defaults.getRateLimit())));
+        return Try.of(() -> cache.get(key,
+                                      __ -> self.findOrCreateDownloadQuota(userEmail,
+                                                                           defaults.getMaxQuota(),
+                                                                           defaults.getRateLimit())));
     }
 
     /**
@@ -348,18 +375,21 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
             } catch (DataIntegrityViolationException e) {
                 //This case means that we could not create the quota for this user in DB because another process (from storage)
                 // has done it for use while we were trying to see if it already existed. So lets simply get the one created for us
-                return Option.of(e.getRootCause()).filter(t -> t instanceof PSQLException)
-                        .filter(t -> t.getMessage().contains(UK_DOWNLOAD_QUOTA_LIMITS_EMAIL))
-                        .flatMap(throwable -> Option.ofOptional(quotaRepository.findByEmail(userEmail)))
-                        .getOrElseThrow(() -> e);
+                return Option.of(e.getRootCause())
+                             .filter(t -> t instanceof PSQLException)
+                             .filter(t -> t.getMessage().contains(UK_DOWNLOAD_QUOTA_LIMITS_EMAIL))
+                             .flatMap(throwable -> Option.ofOptional(quotaRepository.findByEmail(userEmail)))
+                             .getOrElseThrow(() -> e);
             }
         });
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public DownloadQuotaLimits createDownloadQuota(String userEmail, Long maxQuota, Long rateLimit) {
-        return quotaRepository
-                .save(new DownloadQuotaLimits(runtimeTenantResolver.getTenant(), userEmail, maxQuota, rateLimit));
+        return quotaRepository.save(new DownloadQuotaLimits(runtimeTenantResolver.getTenant(),
+                                                            userEmail,
+                                                            maxQuota,
+                                                            rateLimit));
     }
 
     private DefaultDownloadQuotaLimits getDefaultLimits() {
@@ -419,8 +449,8 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
             public Seq<Throwable> causes() {
                 Throwable cause = getCause();
                 return (cause instanceof ListUserQuotaLimitsResultException) ?
-                        ((ListUserQuotaLimitsResultException) cause).causes() :
-                        io.vavr.collection.List.of(cause);
+                    ((ListUserQuotaLimitsResultException) cause).causes() :
+                    io.vavr.collection.List.of(cause);
             }
         }
 
@@ -436,8 +466,8 @@ public class DownloadQuotaService<T> implements IQuotaService<T>, IBatchHandler<
             @Override
             public Seq<Throwable> causes() {
                 return causes.flatMap(cause -> (cause instanceof ListUserQuotaLimitsResultException) ?
-                        ((ListUserQuotaLimitsResultException) cause).causes() :
-                        io.vavr.collection.List.of(cause));
+                    ((ListUserQuotaLimitsResultException) cause).causes() :
+                    io.vavr.collection.List.of(cause));
             }
         }
     }

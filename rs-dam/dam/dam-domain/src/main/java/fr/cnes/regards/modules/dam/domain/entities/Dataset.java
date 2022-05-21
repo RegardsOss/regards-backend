@@ -18,26 +18,15 @@
  */
 package fr.cnes.regards.modules.dam.domain.entities;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Transient;
-
-import io.vavr.control.Option;
-import org.hibernate.annotations.Type;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DatasetFeature;
 import fr.cnes.regards.modules.dam.domain.entities.metadata.DatasetMetadata;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.model.domain.Model;
-import org.springframework.util.Assert;
+import io.vavr.control.Option;
+import org.hibernate.annotations.Type;
 
-import java.util.Set;
+import javax.persistence.*;
 
 /**
  * Dataset feature decorator
@@ -63,7 +52,7 @@ public class Dataset extends AbstractEntity<DatasetFeature> {
      */
     @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name = "ds_plugin_conf_id", foreignKey = @ForeignKey(name = "fk_ds_plugin_conf_id"), nullable = true,
-            updatable = false)
+        updatable = false)
     private PluginConfiguration plgConfDataSource;
 
     /**
@@ -104,15 +93,13 @@ public class Dataset extends AbstractEntity<DatasetFeature> {
         super(model, new DatasetFeature(tenant, providerId, label));
     }
 
-    public Dataset(
-            Model model,
-            DatasetFeature feature,
-            PluginConfiguration plgConfDataSource,
-            String dataModel,
-            ICriterion subsettingClause,
-            String openSearchSubsettingClause,
-            DatasetMetadata metadata
-    ) {
+    public Dataset(Model model,
+                   DatasetFeature feature,
+                   PluginConfiguration plgConfDataSource,
+                   String dataModel,
+                   ICriterion subsettingClause,
+                   String openSearchSubsettingClause,
+                   DatasetMetadata metadata) {
         super(model, feature);
         this.plgConfDataSource = plgConfDataSource;
         this.dataModel = dataModel;
@@ -124,7 +111,8 @@ public class Dataset extends AbstractEntity<DatasetFeature> {
     /**
      * Get the ICriterion tree containing DATA_SOURCE_ID restriction ie different from saved subsetting clause and
      * opensearch one which are user-friendly (do not contain views of intern structure)
-     * @return  {@link ICriterion}
+     *
+     * @return {@link ICriterion}
      */
     public ICriterion getSubsettingClause() {
         ICriterion subsettingCrit = subsettingClause;
@@ -139,6 +127,7 @@ public class Dataset extends AbstractEntity<DatasetFeature> {
 
     /**
      * Set the subsetting clause
+     *
      * @param subsettingClause
      */
     public void setSubsettingClause(ICriterion subsettingClause) {
@@ -166,6 +155,7 @@ public class Dataset extends AbstractEntity<DatasetFeature> {
 
     /**
      * Set the data model
+     *
      * @param dataModel
      */
     public void setDataModel(String dataModel) {

@@ -21,10 +21,12 @@ package fr.cnes.regards.modules.access.services.domain.user;
 public class ProjectUserCreateDto extends ProjectUserBaseDto {
 
     private String roleName;
-    private String password;
-    private String originUrl;
-    private String requestLink;
 
+    private String password;
+
+    private String originUrl;
+
+    private String requestLink;
 
     public String getRoleName() {
         return roleName;

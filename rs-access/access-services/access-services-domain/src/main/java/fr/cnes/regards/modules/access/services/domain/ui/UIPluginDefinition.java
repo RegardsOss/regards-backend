@@ -18,33 +18,18 @@
  */
 package fr.cnes.regards.modules.access.services.domain.ui;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
-
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.access.services.domain.validation.NotEmptyFieldsIfService;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
- *
  * Class Plugin
- *
+ * <p>
  * Entity to describe an IHM Plugin definition.
  *
  * @author Sébastien Binda
@@ -93,27 +78,27 @@ public class UIPluginDefinition {
 
     /**
      * Application modes
-     *
+     * <p>
      * FetchType.EAGER : It is only an enumeration of values. No need to define a entity graph for this.
      */
     @NotNull
     @Column(name = "application_mode", nullable = false)
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "t_ui_plugin_application_mode", joinColumns = @JoinColumn(name = "ui_plugin_id"),
-            foreignKey = @ForeignKey(name = "fk_ui_plugin_application_mode_ui_plugin_id"))
+        foreignKey = @ForeignKey(name = "fk_ui_plugin_application_mode_ui_plugin_id"))
     @Enumerated(EnumType.STRING)
     private Set<ServiceScope> applicationModes = new HashSet<>();
 
     /**
      * Entity Types to which this plugin is applicable
-     *
+     * <p>
      * FetchType.EAGER : It is only an enumeration of values. No need to define a entity graph for this.
      */
     @NotNull
     @Column(name = "entity_type", nullable = false)
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "t_ui_plugin_entity_type", joinColumns = @JoinColumn(name = "ui_plugin_id"),
-            foreignKey = @ForeignKey(name = "fk_ui_plugin_entity_type_ui_plugin_id"))
+        foreignKey = @ForeignKey(name = "fk_ui_plugin_entity_type_ui_plugin_id"))
     @Enumerated(EnumType.STRING)
     private Set<EntityType> entityTypes = new HashSet<>();
 

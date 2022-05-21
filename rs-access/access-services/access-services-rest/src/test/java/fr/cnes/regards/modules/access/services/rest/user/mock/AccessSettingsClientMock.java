@@ -18,11 +18,13 @@
  */
 package fr.cnes.regards.modules.access.services.rest.user.mock;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.google.common.collect.Lists;
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.hateoas.*;
+import fr.cnes.regards.framework.jpa.json.GsonUtil;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSettingDto;
+import fr.cnes.regards.modules.accessrights.client.IAccessRightSettingClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.EntityModel;
@@ -30,22 +32,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.Lists;
-import com.google.gson.Gson;
-import fr.cnes.regards.framework.hateoas.HateoasUtils;
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.jpa.json.GsonUtil;
-import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
-import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSettingDto;
-import fr.cnes.regards.modules.accessrights.client.IAccessRightSettingClient;
-import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Primary
 @Component
-public class AccessSettingsClientMock implements IAccessRightSettingClient, IResourceController<DynamicTenantSettingDto> {
+public class AccessSettingsClientMock
+    implements IAccessRightSettingClient, IResourceController<DynamicTenantSettingDto> {
 
     public static final List<String> ACCESS_SETTINGS_STUB_GROUPS = Lists.newArrayList("dummy");
 
@@ -53,10 +48,12 @@ public class AccessSettingsClientMock implements IAccessRightSettingClient, IRes
 
     static {
         GsonUtil.setGson(new Gson());
-        ACCESS_SETTINGS_STUB = Arrays
-                .asList(AccessSettings.DEFAULT_GROUPS_SETTING.setValue(ACCESS_SETTINGS_STUB_GROUPS),
-                        AccessSettings.DEFAULT_ROLE_SETTING,
-                        AccessSettings.MODE_SETTING).stream().map(DynamicTenantSettingDto::new).collect(Collectors.toList());
+        ACCESS_SETTINGS_STUB = Arrays.asList(AccessSettings.DEFAULT_GROUPS_SETTING.setValue(ACCESS_SETTINGS_STUB_GROUPS),
+                                             AccessSettings.DEFAULT_ROLE_SETTING,
+                                             AccessSettings.MODE_SETTING)
+                                     .stream()
+                                     .map(DynamicTenantSettingDto::new)
+                                     .collect(Collectors.toList());
     }
 
     @Autowired
@@ -73,7 +70,8 @@ public class AccessSettingsClientMock implements IAccessRightSettingClient, IRes
     }
 
     @Override
-    public EntityModel<DynamicTenantSettingDto> toResource(final DynamicTenantSettingDto element, final Object... extras) {
+    public EntityModel<DynamicTenantSettingDto> toResource(final DynamicTenantSettingDto element,
+                                                           final Object... extras) {
         EntityModel<DynamicTenantSettingDto> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrieveAll", LinkRels.SELF);
         resourceService.addLink(resource,

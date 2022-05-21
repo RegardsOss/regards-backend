@@ -18,14 +18,6 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
-import java.util.Optional;
-
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -34,6 +26,13 @@ import fr.cnes.regards.modules.notification.dao.INotificationSettingsRepository;
 import fr.cnes.regards.modules.notification.domain.NotificationFrequency;
 import fr.cnes.regards.modules.notification.domain.NotificationSettings;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationSettingsDTO;
+import org.hamcrest.CoreMatchers;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import java.util.Optional;
 
 /**
  * Test class for {@link NotificationSettingsService}.
@@ -74,8 +73,7 @@ public class NotificationSettingsServiceTest {
     /**
      * Check that the system allows to retrieve the notification settings of currently logged user.
      *
-     * @throws EntityNotFoundException
-     *             thrown when no current user could be found
+     * @throws EntityNotFoundException thrown when no current user could be found
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_CQA_040")
@@ -101,8 +99,7 @@ public class NotificationSettingsServiceTest {
     /**
      * Check that the system creates empty settings when trying to retrieve not existing settings.
      *
-     * @throws EntityNotFoundException
-     *             thrown when no current user could be found
+     * @throws EntityNotFoundException thrown when no current user could be found
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_CQA_040")
@@ -129,8 +126,7 @@ public class NotificationSettingsServiceTest {
     /**
      * Check that the system allows to update notification settings.
      *
-     * @throws EntityNotFoundException
-     *             thrown when no current user could be found
+     * @throws EntityNotFoundException thrown when no current user could be found
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_CQA_040")
@@ -172,8 +168,7 @@ public class NotificationSettingsServiceTest {
     /**
      * Check that the system allows to update notification settings.
      *
-     * @throws EntityNotFoundException
-     *             thrown when no current user could be found
+     * @throws EntityNotFoundException thrown when no current user could be found
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_CQA_040")
@@ -215,8 +210,7 @@ public class NotificationSettingsServiceTest {
     /**
      * Check that the system allows to update notification settings.
      *
-     * @throws EntityNotFoundException
-     *             thrown when no current user could be found
+     * @throws EntityNotFoundException thrown when no current user could be found
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_CQA_040")
@@ -258,8 +252,7 @@ public class NotificationSettingsServiceTest {
     /**
      * Check that the system allows to update notification settings.
      *
-     * @throws EntityNotFoundException
-     *             thrown when no current user could be found
+     * @throws EntityNotFoundException thrown when no current user could be found
      */
     @Test
     @Requirement("REGARDS_DSL_DAM_CQA_040")

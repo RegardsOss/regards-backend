@@ -80,28 +80,44 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
 
     @Value("${http.proxy.host:#{null}}")
     private String proxyHost;
+
     @Value("${http.proxy.port:#{null}}")
     private Integer proxyPort;
+
     @Value("${http.proxy.noproxy:#{null}}")
     private String noProxyHostsString;
 
     private final Set<String> noProxyHosts = Sets.newHashSet();
+
     private Proxy proxy;
 
     private final IOrderRepository orderRepository;
+
     private final IOrderDataFileService dataFileService;
+
     private final IOrderJobService orderJobService;
+
     private final IAuthenticationResolver authResolver;
+
     private final OrderHelperService orderHelperService;
+
     private final IProjectsClient projectClient;
+
     private final IStorageRestClient storageClient;
+
     private final IRuntimeTenantResolver runtimeTenantResolver;
+
     private final IProcessingEventSender processingEventSender;
 
-    public OrderDownloadService(IOrderRepository orderRepository, IOrderDataFileService dataFileService, IOrderJobService orderJobService,
-                                IAuthenticationResolver authResolver, OrderHelperService orderHelperService, IProjectsClient projectClient,
-                                IStorageRestClient storageClient, IRuntimeTenantResolver runtimeTenantResolver, IProcessingEventSender processingEventSender
-    ) {
+    public OrderDownloadService(IOrderRepository orderRepository,
+                                IOrderDataFileService dataFileService,
+                                IOrderJobService orderJobService,
+                                IAuthenticationResolver authResolver,
+                                OrderHelperService orderHelperService,
+                                IProjectsClient projectClient,
+                                IStorageRestClient storageClient,
+                                IRuntimeTenantResolver runtimeTenantResolver,
+                                IProcessingEventSender processingEventSender) {
         this.orderRepository = orderRepository;
         this.dataFileService = dataFileService;
         this.orderJobService = orderJobService;
@@ -113,15 +129,15 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
         this.processingEventSender = processingEventSender;
     }
 
-
     @Override
     public void afterPropertiesSet() {
-        proxy = Strings.isNullOrEmpty(proxyHost) ? Proxy.NO_PROXY : new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+        proxy = Strings.isNullOrEmpty(proxyHost) ?
+            Proxy.NO_PROXY :
+            new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
         if (noProxyHostsString != null) {
             Collections.addAll(noProxyHosts, noProxyHostsString.split("\\s*,\\s*"));
         }
     }
-
 
     @Override
     public void downloadOrderCurrentZip(String orderOwner, List<OrderDataFile> inDataFiles, OutputStream os) {
@@ -144,7 +160,14 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
                     int timeout = 10_000;
                     String dataObjectIpId = dataFile.getIpId().toString();
                     dataFile.setDownloadError(null);
-                    downloadDataFileToZip(downloadErrorFiles, externalDlErrorPrefix, zos, dataFiles, i, dataFile, timeout, dataObjectIpId);
+                    downloadDataFileToZip(downloadErrorFiles,
+                                          externalDlErrorPrefix,
+                                          zos,
+                                          dataFiles,
+                                          i,
+                                          dataFile,
+                                          timeout,
+                                          dataObjectIpId);
                 } else { // Managed by Storage
                     String aip = dataFile.getIpId().toString();
                     dataFile.setDownloadError(null);
@@ -167,9 +190,12 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
                     if ((response == null) || (response.status() != HttpStatus.OK.value())) {
                         downloadErrorFiles.add(Pair.of(dataFile, humanizeError(Optional.ofNullable(response))));
                         i.remove();
-                        LOGGER.warn("Cannot retrieve data file from storage (aip : {}, checksum : {})", aip, dataFile.getChecksum());
-                        dataFile.setDownloadError("Cannot retrieve data file from storage, feign downloadFile method returns "
-                                                          + (response == null ? "null" : response.toString()));
+                        LOGGER.warn("Cannot retrieve data file from storage (aip : {}, checksum : {})",
+                                    aip,
+                                    dataFile.getChecksum());
+                        dataFile.setDownloadError(
+                            "Cannot retrieve data file from storage, feign downloadFile method returns " + (
+                                response == null ? "null" : response.toString()));
                     } else { // Download ok
                         try (InputStream is = response.body().asInputStream()) {
                             readInputStreamAndAddToZip(downloadErrorFiles, zos, dataFiles, i, dataFile, aip, is);
@@ -180,7 +206,9 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
             if (!downloadErrorFiles.isEmpty()) {
                 zos.putArchiveEntry(new ZipArchiveEntry("NOTICE.txt"));
                 StringJoiner joiner = new StringJoiner("\n");
-                downloadErrorFiles.forEach(p -> joiner.add(String.format("Failed to download file (%s): %s.", p.getLeft().getFilename(), p.getRight())));
+                downloadErrorFiles.forEach(p -> joiner.add(String.format("Failed to download file (%s): %s.",
+                                                                         p.getLeft().getFilename(),
+                                                                         p.getRight())));
                 zos.write(joiner.toString().getBytes());
                 zos.closeArchiveEntry();
             }
@@ -204,10 +232,17 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
     }
 
     protected void downloadDataFileToZip(List<Pair<OrderDataFile, String>> downloadErrorFiles,
-                                         String externalDlErrorPrefix, ZipArchiveOutputStream zos, Multiset<String> dataFiles,
-                                         Iterator<OrderDataFile> i, OrderDataFile dataFile, int timeout, String dataObjectIpId
-    ) {
-        try (InputStream is = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy, noProxyHosts, timeout)) {
+                                         String externalDlErrorPrefix,
+                                         ZipArchiveOutputStream zos,
+                                         Multiset<String> dataFiles,
+                                         Iterator<OrderDataFile> i,
+                                         OrderDataFile dataFile,
+                                         int timeout,
+                                         String dataObjectIpId) {
+        try (InputStream is = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()),
+                                                                       proxy,
+                                                                       noProxyHosts,
+                                                                       timeout)) {
             readInputStreamAndAddToZip(downloadErrorFiles, zos, dataFiles, i, dataFile, dataObjectIpId, is);
         } catch (IOException e) {
             String stack = getStack(e);
@@ -247,9 +282,12 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
     }
 
     private void readInputStreamAndAddToZip(List<Pair<OrderDataFile, String>> downloadErrorFiles,
-                                            ZipArchiveOutputStream zos, Multiset<String> dataFiles, Iterator<OrderDataFile> i, OrderDataFile dataFile,
-                                            String dataObjectIpId, InputStream is
-    ) throws IOException {
+                                            ZipArchiveOutputStream zos,
+                                            Multiset<String> dataFiles,
+                                            Iterator<OrderDataFile> i,
+                                            OrderDataFile dataFile,
+                                            String dataObjectIpId,
+                                            InputStream is) throws IOException {
         // Add filename to multiset
         String filename = dataFile.getFilename();
         if (filename == null) {
@@ -277,12 +315,12 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
             if (copiedBytes != dataFile.getFilesize()) {
                 i.remove();
                 LOGGER.warn("Cannot completely download data file (data object IP_ID: {}, file name: {})",
-                            dataObjectIpId, dataFile.getFilename()
-                );
-                String downloadError = String
-                        .format("Cannot completely download data file from storage, only %d/%d bytes", copiedBytes,
-                                dataFile.getFilesize()
-                        );
+                            dataObjectIpId,
+                            dataFile.getFilename());
+                String downloadError = String.format(
+                    "Cannot completely download data file from storage, only %d/%d bytes",
+                    copiedBytes,
+                    dataFile.getFilesize());
                 downloadErrorFiles.add(Pair.of(dataFile, downloadError));
                 dataFile.setDownloadError(downloadError);
             }
@@ -292,7 +330,8 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
     @Override
     public void downloadOrderMetalink(Long orderId, OutputStream os) {
         Order order = orderRepository.findSimpleById(orderId);
-        String tokenRequestParam = IOrderService.ORDER_TOKEN + "=" + orderHelperService.generateToken4PublicEndpoint(order);
+        String tokenRequestParam =
+            IOrderService.ORDER_TOKEN + "=" + orderHelperService.generateToken4PublicEndpoint(order);
         String scopeRequestParam = IOrderService.SCOPE + "=" + runtimeTenantResolver.getTenant();
 
         List<OrderDataFile> files = dataFileService.findAll(orderId);
@@ -310,8 +349,9 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
         // For all data files
         for (OrderDataFile file : files) {
             FileType xmlFile = factory.createFileType();
-            String filename = file.getFilename() != null ? file.getFilename()
-                    : file.getUrl().substring(file.getUrl().lastIndexOf('/') + 1);
+            String filename = file.getFilename() != null ?
+                file.getFilename() :
+                file.getUrl().substring(file.getUrl().lastIndexOf('/') + 1);
             xmlFile.setIdentity(filename);
             xmlFile.setName(filename);
             if (file.getFilesize() != null) {
@@ -350,8 +390,8 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
             // Enable validation
             InputStream in = this.getClass().getClassLoader().getResourceAsStream(METALINK_XML_SCHEMA_NAME);
             StreamSource xsdSource = new StreamSource(in);
-            jaxbMarshaller
-                    .setSchema(SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(xsdSource));
+            jaxbMarshaller.setSchema(SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
+                                                  .newSchema(xsdSource));
 
             // Marshall data
             jaxbMarshaller.marshal(factory.createMetalink(xmlMetalink), os);

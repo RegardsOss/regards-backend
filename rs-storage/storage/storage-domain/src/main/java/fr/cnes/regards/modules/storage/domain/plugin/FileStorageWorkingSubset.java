@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.storage.domain.plugin;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+
 import java.util.Collection;
 import java.util.Set;
-
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
 
 /**
  * Default implementation for simple file workingsubsets.

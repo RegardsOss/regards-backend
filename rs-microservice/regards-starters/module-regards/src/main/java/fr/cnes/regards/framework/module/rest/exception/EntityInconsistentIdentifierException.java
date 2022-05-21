@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.module.rest.exception;
 
 /**
  * Exception indicating an update request is inconsistent cause URL path id not equals to body id.
+ *
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet
  */
@@ -32,20 +33,25 @@ public class EntityInconsistentIdentifierException extends EntityException {
     public EntityInconsistentIdentifierException(final Long pathId, final Long bodyId, final Class<?> entityClass) {
         // CHECKSTYLE:OFF
         super(String.format(
-                "Inconsistent entity update request for \"%s\". Path identifier \"%s\" does not match request body identifier \"%s\".",
-                entityClass.getName(), pathId, bodyId));
+            "Inconsistent entity update request for \"%s\". Path identifier \"%s\" does not match request body identifier \"%s\".",
+            entityClass.getName(),
+            pathId,
+            bodyId));
         // CHECKSTYLE:ON
     }
 
     /**
      * Constructor setting the exception message thanks to the given parameters
      */
-    public EntityInconsistentIdentifierException(final String pPathName, final String pBodyName,
-            final Class<?> pEntityClass) {
+    public EntityInconsistentIdentifierException(final String pPathName,
+                                                 final String pBodyName,
+                                                 final Class<?> pEntityClass) {
         // CHECKSTYLE:OFF
         super(String.format(
-                "Inconsistent entity update request for \"%s\". Path identifier \"%s\" does not match request body identifier \"%s\".",
-                pEntityClass.getName(), pPathName, pBodyName));
+            "Inconsistent entity update request for \"%s\". Path identifier \"%s\" does not match request body identifier \"%s\".",
+            pEntityClass.getName(),
+            pPathName,
+            pBodyName));
         // CHECKSTYLE:ON
     }
 }

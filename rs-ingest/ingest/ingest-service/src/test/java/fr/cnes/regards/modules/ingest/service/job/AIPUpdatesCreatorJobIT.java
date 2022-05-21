@@ -23,11 +23,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateState;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTagTask;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTaskType;
-import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
+import fr.cnes.regards.modules.ingest.domain.request.update.*;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
@@ -35,11 +31,6 @@ import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
 import org.awaitility.Awaitility;
 import org.awaitility.Durations;
 import org.awaitility.core.ConditionTimeoutException;
@@ -54,14 +45,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author Léo Mieulet
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=update_scanner_job", "regards.amqp.enabled=true",
-                "regards.ingest.aip.update.bulk.delay=100000000",
-                "eureka.client.enabled=false", "regards.ingest.request.schedule.delay=100000000" },
-        locations = { "classpath:application-test.properties" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=update_scanner_job", "regards.amqp.enabled=true",
+        "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false",
+        "regards.ingest.request.schedule.delay=100000000" }, locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
 
@@ -76,7 +71,6 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
 
     @Autowired
     private IAIPService aipService;
-
 
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY");
 
@@ -107,23 +101,41 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
     public void initData() {
 
         long nbSIP = 6;
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_0,
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0),
+                        STORAGE_1,
+                        SESSION_0,
+                        SESSION_OWNER_0,
                         CATEGORIES_0);
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_1, SESSION_0, SESSION_OWNER_1,
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0),
+                        STORAGE_1,
+                        SESSION_0,
+                        SESSION_OWNER_1,
                         CATEGORIES_1);
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1), STORAGE_1, SESSION_0, SESSION_OWNER_0,
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1),
+                        STORAGE_1,
+                        SESSION_0,
+                        SESSION_OWNER_0,
                         CATEGORIES_0);
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1), STORAGE_1, SESSION_1, SESSION_OWNER_1,
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1),
+                        STORAGE_1,
+                        SESSION_1,
+                        SESSION_OWNER_1,
                         CATEGORIES_1);
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1), STORAGE_2, SESSION_1, SESSION_OWNER_1,
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_1),
+                        STORAGE_2,
+                        SESSION_1,
+                        SESSION_OWNER_1,
                         CATEGORIES_0);
-        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0), STORAGE_2, SESSION_1, SESSION_OWNER_0,
+        publishSIPEvent(create(UUID.randomUUID().toString(), TAG_0),
+                        STORAGE_2,
+                        SESSION_1,
+                        SESSION_OWNER_0,
                         CATEGORIES_0);
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
         // Wait STORE_META request over
         // delete requests, if notification are active mock success of notifications to delete ingest requests
-        if(!initDefaultNotificationSettings()) {
+        if (!initDefaultNotificationSettings()) {
             ingestServiceTest.waitAllRequestsFinished(nbSIP * 5000);
         } else {
             mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
@@ -133,8 +145,9 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
 
     /**
      * Helper method to wait for DB ingestion
+     *
      * @param expectedTasks expected count of task in db
-     * @param timeout in ms
+     * @param timeout       in ms
      * @throws InterruptedException
      */
     public void waitForTaskCreated(long expectedTasks, long timeout) {
@@ -152,9 +165,15 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
     public void testScanJob() throws ModuleException {
         storageClient.setBehavior(true, true);
         initData();
-        aipService.registerUpdatesCreator(AIPUpdateParametersDto
-                .build(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0), TAG_2,
-                       TAG_1, CATEGORIES_2, CATEGORIES_1, Lists.newArrayList(STORAGE_3)));
+        aipService.registerUpdatesCreator(AIPUpdateParametersDto.build(SearchAIPsParameters.build()
+                                                                                           .withSession(SESSION_0)
+                                                                                           .withSessionOwner(
+                                                                                               SESSION_OWNER_0),
+                                                                       TAG_2,
+                                                                       TAG_1,
+                                                                       CATEGORIES_2,
+                                                                       CATEGORIES_1,
+                                                                       Lists.newArrayList(STORAGE_3)));
         long nbSipConcerned = 2;
         long nbTasksPerSip = 5;
         waitForTaskCreated(nbSipConcerned * nbTasksPerSip, 10_000);
@@ -166,9 +185,15 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
         initData();
         generateFakeRunningTasks();
 
-        aipService.registerUpdatesCreator(AIPUpdateParametersDto
-                .build(SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0), TAG_2,
-                       TAG_1, CATEGORIES_2, CATEGORIES_1, Lists.newArrayList(STORAGE_3)));
+        aipService.registerUpdatesCreator(AIPUpdateParametersDto.build(SearchAIPsParameters.build()
+                                                                                           .withSession(SESSION_0)
+                                                                                           .withSessionOwner(
+                                                                                               SESSION_OWNER_0),
+                                                                       TAG_2,
+                                                                       TAG_1,
+                                                                       CATEGORIES_2,
+                                                                       CATEGORIES_1,
+                                                                       Lists.newArrayList(STORAGE_3)));
         long nbInitialTasks = 6;
         long nbSipConcerned = 2;
         long nbTasksPerSip = 5;
@@ -177,8 +202,9 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
         Pageable pageRequest = PageRequest.of(0, 200);
         Awaitility.await().atMost(Durations.TEN_SECONDS).until(() -> {
             runtimeTenantResolver.forceTenant(getDefaultTenant());
-            return aipUpdateRequestRepository.findAllByState(InternalRequestState.BLOCKED,
-                                                             pageRequest).getTotalElements() >= nbSipConcerned * nbTasksPerSip;
+            return
+                aipUpdateRequestRepository.findAllByState(InternalRequestState.BLOCKED, pageRequest).getTotalElements()
+                    >= nbSipConcerned * nbTasksPerSip;
         });
         Page<AIPUpdateRequest> blocked = aipUpdateRequestRepository.findAllByState(InternalRequestState.BLOCKED,
                                                                                    pageRequest);
@@ -189,8 +215,11 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
         // Init some running tasks
         List<AIPEntity> aips = aipRepository.findAll();
         for (AIPEntity aip : aips) {
-            List<AbstractAIPUpdateTask> updateTasks = Lists.newArrayList(AIPUpdateTagTask
-                    .build(AIPUpdateTaskType.ADD_TAG, AIPUpdateState.READY, Lists.newArrayList("TOTO", "TITI")));
+            List<AbstractAIPUpdateTask> updateTasks = Lists.newArrayList(AIPUpdateTagTask.build(AIPUpdateTaskType.ADD_TAG,
+                                                                                                AIPUpdateState.READY,
+                                                                                                Lists.newArrayList(
+                                                                                                    "TOTO",
+                                                                                                    "TITI")));
             List<AIPUpdateRequest> requests = AIPUpdateRequest.build(aip, updateTasks, false);
             for (AIPUpdateRequest r : requests) {
                 r.setState(InternalRequestState.RUNNING);

@@ -19,16 +19,15 @@
 
 package fr.cnes.regards.framework.gson.strategy;
 
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
-
-import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
-
 /**
  * Class GsonIgnoreExclusionStrategy
+ *
  * @author Christophe Mertz
  * @author Marc Sordi
  */
@@ -58,7 +57,8 @@ public class GsonIgnoreExclusionStrategy implements ExclusionStrategy {
     public boolean shouldSkipField(FieldAttributes pFieldAttributes) {
         final boolean isSkipped = pFieldAttributes.getAnnotation(GsonIgnore.class) != null;
         if (isSkipped) {
-            LOGGER.debug(String.format("Skipping field %s in class %s.", pFieldAttributes.getName(),
+            LOGGER.debug(String.format("Skipping field %s in class %s.",
+                                       pFieldAttributes.getName(),
                                        pFieldAttributes.getClass()));
         }
         return isSkipped;

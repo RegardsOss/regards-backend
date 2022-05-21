@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.repository;
 
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
@@ -50,27 +50,42 @@ public class ProcessRepositoryImplIT extends AbstractProcessingIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessRepositoryImplIT.class);
 
-    @Autowired IPProcessRepository processRepo;
-    @Autowired IRightsPluginConfigurationRepository rpcRepo;
-    @Autowired IPluginConfigurationRepository pluginConfRepo;
-    @Autowired IWorkloadEngineRepository engineRepo;
-    @Autowired ITenantResolver tenantResolver;
+    @Autowired
+    IPProcessRepository processRepo;
+
+    @Autowired
+    IRightsPluginConfigurationRepository rpcRepo;
+
+    @Autowired
+    IPluginConfigurationRepository pluginConfRepo;
+
+    @Autowired
+    IWorkloadEngineRepository engineRepo;
+
+    @Autowired
+    ITenantResolver tenantResolver;
 
     @After
     public void cleanUp() {
-        for(String tenant : tenantResolver.getAllTenants()) {
+        for (String tenant : tenantResolver.getAllTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             rpcRepo.deleteAll();
             pluginConfRepo.deleteAll();
         }
     }
 
-    @Test public void batch_save_then_getOne_byId() {
+    @Test
+    public void batch_save_then_getOne_byId() {
         // GIVEN
 
         runtimeTenantResolver.forceTenant(TENANT_PROJECTA);
         engineRepo.register(new IWorkloadEngine() {
-            @Override public String name() { return "JOBS"; }
+
+            @Override
+            public String name() {
+                return "JOBS";
+            }
+
             @Override
             public Mono<PExecution> run(ExecutionContext context) {
                 return Mono.empty(); // Won't be used
@@ -90,13 +105,18 @@ public class ProcessRepositoryImplIT extends AbstractProcessingIT {
 
         pc.setMetaDataAndPluginId(plugins.get("UselessProcessPlugin"));
 
-        RightsPluginConfiguration rpc = new RightsPluginConfiguration(null, pc, processBusinessId, "ADMIN", new String[]{}, true);
+        RightsPluginConfiguration rpc = new RightsPluginConfiguration(null,
+                                                                      pc,
+                                                                      processBusinessId,
+                                                                      "ADMIN",
+                                                                      new String[] {},
+                                                                      true);
         rpcRepo.save(rpc);
 
         // WHEN
         PProcess process = processRepo.findByTenantAndProcessBusinessID(TENANT_PROJECTA, processBusinessId)
-                .doOnError(t -> LOGGER.error(t.getMessage(), t))
-                .block();
+                                      .doOnError(t -> LOGGER.error(t.getMessage(), t))
+                                      .block();
 
         // THEN
         LOGGER.info("Found process: {}", process);

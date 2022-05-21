@@ -19,32 +19,15 @@
 package fr.cnes.regards.modules.indexer.dao.builder;
 
 import com.google.common.base.Preconditions;
-
 import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
-import fr.cnes.regards.modules.indexer.domain.criterion.AbstractMultiCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.BooleanMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.BoundaryBoxCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.CircleCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.DateMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.DateRangeCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.EmptyCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.FieldExistsCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterionVisitor;
-import fr.cnes.regards.modules.indexer.domain.criterion.IntMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.LongMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.NotCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.PolygonCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchAnyCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMultiMatchCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.*;
 import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
 
 /**
  * Criterion visitor implementation to manage a criterion containing geometric criterions on other CRS (as Mars or Astro
  * ones). The only geometric criterion found is a PolygonCriterion one.
  * All polygon criterions must be modified with projected coordinates.
+ *
  * @author oroussel
  */
 public class GeoCriterionWithPolygonOrBboxVisitor implements ICriterionVisitor<ICriterion> {
@@ -138,7 +121,7 @@ public class GeoCriterionWithPolygonOrBboxVisitor implements ICriterionVisitor<I
     @Override
     public ICriterion visitBoundaryBoxCriterion(BoundaryBoxCriterion criterion) {
         double[][] fromBbox = new double[][] { { criterion.getMinX(), criterion.getMinY() },
-                { criterion.getMaxX(), criterion.getMaxY() } };
+            { criterion.getMaxX(), criterion.getMaxY() } };
         double[][] toBbox = GeoHelper.transform(fromBbox, crs, Crs.WGS_84);
         // DON'T TOUCH THE F$%CKING LONGITUDES !!! (180 -> -180 which is very annoying for a cap Bbox and
         // longitudes are not impacted by projection transformations)
@@ -148,7 +131,7 @@ public class GeoCriterionWithPolygonOrBboxVisitor implements ICriterionVisitor<I
     @Override
     public ICriterion visitCircleCriterion(CircleCriterion criterion) {
         throw new IllegalArgumentException(
-                "GeoCriterionWithPolygonOrBboxVisitor shouldn't visit a criterion tree with CircleCriterion");
+            "GeoCriterionWithPolygonOrBboxVisitor shouldn't visit a criterion tree with CircleCriterion");
     }
 
     @Override

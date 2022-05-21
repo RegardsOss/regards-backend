@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 public class CannotWaitForEffectivePauseException extends ModuleException {
 
     public CannotWaitForEffectivePauseException() {
-        super("Order has not been asked to be paused. You must first ask for a job pause before waiting for its complete pause.");
+        super(
+            "Order has not been asked to be paused. You must first ask for a job pause before waiting for its complete pause.");
     }
 }

@@ -22,6 +22,7 @@ import com.google.common.base.Preconditions;
 
 /**
  * Pair of comparison operator and value
+ *
  * @param <T> value type
  * @author oroussel
  */

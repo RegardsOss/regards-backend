@@ -21,33 +21,17 @@ package fr.cnes.regards.modules.ingest.domain.request;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
-
-import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorColumn;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Basic request properties
@@ -57,11 +41,9 @@ import org.hibernate.annotations.TypeDefs;
  */
 @Entity
 @Table(name = "t_request",
-    indexes = {
-            @Index(name = "idx_request_search", columnList = "session_owner,session_name,provider_id"),
-            @Index(name = "idx_request_aip_id", columnList = "aip_id"),
-            @Index(name = "idx_request_remote_step_group_ids", columnList = "remote_step_group_ids")
-})
+    indexes = { @Index(name = "idx_request_search", columnList = "session_owner,session_name,provider_id"),
+        @Index(name = "idx_request_aip_id", columnList = "aip_id"),
+        @Index(name = "idx_request_remote_step_group_ids", columnList = "remote_step_group_ids") })
 @DiscriminatorColumn(name = "dtype", length = AbstractRequest.MAX_TYPE_LENGTH)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
@@ -99,7 +81,6 @@ public abstract class AbstractRequest {
      */
     @Column(name = "remote_step_deadline")
     private OffsetDateTime remoteStepDeadline;
-
 
     @Column(length = 128, name = "session_owner")
     private String sessionOwner;

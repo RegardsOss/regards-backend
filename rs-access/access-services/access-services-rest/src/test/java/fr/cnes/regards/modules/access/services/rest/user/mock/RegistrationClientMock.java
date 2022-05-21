@@ -20,29 +20,36 @@ import java.util.Set;
 public class RegistrationClientMock implements IRegistrationClient {
 
     public static final String ACCESS_REQUEST_STUB_EMAIL = "foo@bar.com";
+
     public static final String ACCESS_REQUEST_STUB_FIRSTNAME = "foo";
+
     public static final String ACCESS_REQUEST_STUB_LASTNAME = "bar";
+
     public static final String ACCESS_REQUEST_STUB_ROLE = "role";
+
     public static final List<MetaData> ACCESS_REQUEST_STUB_META = Collections.emptyList();
+
     public static final String ACCESS_REQUEST_STUB_PASSWORD = "password";
+
     public static final String ACCESS_REQUEST_STUB_ORIGIN_URL = "originURL";
+
     public static final String ACCESS_REQUEST_STUB_REQUEST_LINK = "requestLink";
+
     public static final String ACCESS_REQUEST_STUB_ORIGIN = "origin";
+
     public static final Set<String> ACCESS_REQUEST_STUB_ACCESS_GROUPS = new HashSet<>(Collections.singletonList("group1"));
 
-    public static final AccessRequestDto ACCESS_REQUEST_STUB = new AccessRequestDto(
-            ACCESS_REQUEST_STUB_EMAIL,
-            ACCESS_REQUEST_STUB_FIRSTNAME,
-            ACCESS_REQUEST_STUB_LASTNAME,
-            ACCESS_REQUEST_STUB_ROLE,
-            ACCESS_REQUEST_STUB_META,
-            ACCESS_REQUEST_STUB_PASSWORD,
-            ACCESS_REQUEST_STUB_ORIGIN_URL,
-            ACCESS_REQUEST_STUB_REQUEST_LINK,
-            ACCESS_REQUEST_STUB_ORIGIN,
-            ACCESS_REQUEST_STUB_ACCESS_GROUPS,
-            0L
-    );
+    public static final AccessRequestDto ACCESS_REQUEST_STUB = new AccessRequestDto(ACCESS_REQUEST_STUB_EMAIL,
+                                                                                    ACCESS_REQUEST_STUB_FIRSTNAME,
+                                                                                    ACCESS_REQUEST_STUB_LASTNAME,
+                                                                                    ACCESS_REQUEST_STUB_ROLE,
+                                                                                    ACCESS_REQUEST_STUB_META,
+                                                                                    ACCESS_REQUEST_STUB_PASSWORD,
+                                                                                    ACCESS_REQUEST_STUB_ORIGIN_URL,
+                                                                                    ACCESS_REQUEST_STUB_REQUEST_LINK,
+                                                                                    ACCESS_REQUEST_STUB_ORIGIN,
+                                                                                    ACCESS_REQUEST_STUB_ACCESS_GROUPS,
+                                                                                    0L);
 
     @Override
     public ResponseEntity<EntityModel<AccessRequestDto>> requestAccess(@Valid AccessRequestDto pAccessRequest) {

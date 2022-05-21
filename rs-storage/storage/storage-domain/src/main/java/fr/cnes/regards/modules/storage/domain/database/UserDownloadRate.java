@@ -35,13 +35,7 @@ public class UserDownloadRate {
 
     private final LocalDateTime expiry;
 
-    public UserDownloadRate(
-        String instance,
-        String tenant,
-        String email,
-        Long gauge,
-        LocalDateTime expiry
-    ) {
+    public UserDownloadRate(String instance, String tenant, String email, Long gauge, LocalDateTime expiry) {
         this.id = null;
         this.instance = instance;
         this.tenant = tenant;
@@ -50,14 +44,7 @@ public class UserDownloadRate {
         this.expiry = expiry;
     }
 
-    public UserDownloadRate(
-        Long id,
-        String instance,
-        String tenant,
-        String email,
-        Long gauge,
-        LocalDateTime expiry
-    ) {
+    public UserDownloadRate(Long id, String instance, String tenant, String email, Long gauge, LocalDateTime expiry) {
         this.id = id;
         this.instance = instance;
         this.tenant = tenant;
@@ -99,12 +86,10 @@ public class UserDownloadRate {
             return false;
         }
         UserDownloadRate that = (UserDownloadRate) o;
-        return Objects.equals(id, that.id) &&
-            Objects.equals(instance, that.instance) &&
-            Objects.equals(tenant, that.tenant) &&
-            Objects.equals(email, that.email) &&
-            Objects.equals(gauge, that.gauge) &&
-            Objects.equals(expiry, that.expiry);
+        return Objects.equals(id, that.id) && Objects.equals(instance, that.instance) && Objects.equals(tenant,
+                                                                                                        that.tenant)
+            && Objects.equals(email, that.email) && Objects.equals(gauge, that.gauge) && Objects.equals(expiry,
+                                                                                                        that.expiry);
     }
 
     @Override

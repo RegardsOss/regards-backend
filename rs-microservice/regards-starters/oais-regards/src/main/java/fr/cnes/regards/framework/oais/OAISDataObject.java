@@ -18,19 +18,19 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import java.util.HashSet;
-import java.util.Set;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * OAIS data object
+ *
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
  */

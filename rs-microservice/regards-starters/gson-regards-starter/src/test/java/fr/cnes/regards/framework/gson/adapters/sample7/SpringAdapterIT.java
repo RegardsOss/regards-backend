@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.framework.gson.adapters.sample7;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
+import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactoryBean;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,13 +31,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParseException;
-import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactoryBean;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test {@link GsonTypeAdapterFactoryBean}
+ *
  * @author Marc Sordi
  */
 @RunWith(SpringRunner.class)

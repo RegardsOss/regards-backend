@@ -18,26 +18,29 @@
  */
 package fr.cnes.regards.framework.amqp.single;
 
-import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-
 import fr.cnes.regards.framework.amqp.AbstractPublisher;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 /**
  * Single virtual host publisher implementation
+ *
  * @author Marc Sordi
  */
 public class SingleVhostPublisher extends AbstractPublisher implements IPublisher {
 
     private final IRuntimeTenantResolver threadTenantResolver;
 
-    public SingleVhostPublisher(RabbitTemplate rabbitTemplate, RabbitAdmin rabbitAdmin, IAmqpAdmin amqpAdmin,
-            IRabbitVirtualHostAdmin rabbitVirtualHostAdmin, IRuntimeTenantResolver threadTenantResolver) {
+    public SingleVhostPublisher(RabbitTemplate rabbitTemplate,
+                                RabbitAdmin rabbitAdmin,
+                                IAmqpAdmin amqpAdmin,
+                                IRabbitVirtualHostAdmin rabbitVirtualHostAdmin,
+                                IRuntimeTenantResolver threadTenantResolver) {
         super(rabbitTemplate, rabbitAdmin, amqpAdmin, rabbitVirtualHostAdmin);
         this.threadTenantResolver = threadTenantResolver;
     }

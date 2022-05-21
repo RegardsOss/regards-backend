@@ -39,8 +39,8 @@ import java.util.List;
  **/
 public class ListAdapter<E> extends TypeAdapter<List<E>> {
 
-
     public static final TypeAdapterFactory FACTORY = new TypeAdapterFactory() {
+
         @Override
         public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
             Class<T> rawType = (Class<T>) type.getRawType();

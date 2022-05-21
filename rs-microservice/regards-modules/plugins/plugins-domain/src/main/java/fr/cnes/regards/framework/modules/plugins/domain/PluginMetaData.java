@@ -19,16 +19,16 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-
 /**
  * Plugin meta-data representation
+ *
  * @author Christophe Mertz
  */
 public class PluginMetaData implements Comparable<PluginMetaData> {

@@ -18,10 +18,6 @@
  */
 package fr.cnes.regards.modules.feature.dto.event.in;
 
-import java.time.OffsetDateTime;
-
-import javax.validation.constraints.NotNull;
-
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
@@ -29,6 +25,9 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
 import fr.cnes.regards.modules.feature.dto.validation.ValidFeatureEvent;
+
+import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
 
 /**
  * Request for new feature creation using event driven mechanism
@@ -42,13 +41,16 @@ public class FeatureCreationRequestEvent extends AbstractCreationRequestEvent im
     @NotNull(message = "Feature is required")
     private Feature feature;
 
-    public static FeatureCreationRequestEvent build(String requestOwner, FeatureCreationSessionMetadata metadata,
-            Feature feature) {
+    public static FeatureCreationRequestEvent build(String requestOwner,
+                                                    FeatureCreationSessionMetadata metadata,
+                                                    Feature feature) {
         return build(requestOwner, metadata, feature, OffsetDateTime.now().minusSeconds(1));
     }
 
-    public static FeatureCreationRequestEvent build(String requestOwner, FeatureCreationSessionMetadata metadata,
-            Feature feature, OffsetDateTime requestDate) {
+    public static FeatureCreationRequestEvent build(String requestOwner,
+                                                    FeatureCreationSessionMetadata metadata,
+                                                    Feature feature,
+                                                    OffsetDateTime requestDate) {
         FeatureCreationRequestEvent event = new FeatureCreationRequestEvent();
         event.setFeature(feature);
         event.setRequestId(generateRequestId());
@@ -58,8 +60,10 @@ public class FeatureCreationRequestEvent extends AbstractCreationRequestEvent im
         return event;
     }
 
-    public static FeatureCreationRequestEvent build(String requestOwner, String requestId,
-            FeatureCreationSessionMetadata metadata, Feature feature) {
+    public static FeatureCreationRequestEvent build(String requestOwner,
+                                                    String requestId,
+                                                    FeatureCreationSessionMetadata metadata,
+                                                    Feature feature) {
         FeatureCreationRequestEvent event = new FeatureCreationRequestEvent();
         event.setFeature(feature);
         event.setRequestId(requestId);

@@ -127,12 +127,23 @@ public class StorageClientMock implements IStorageClient {
                     groupIds.add(UUID.randomUUID().toString());
                 }
                 if (!isAvailable) {
-                    notAvailable.add(new FileReferenceEventDTO(
-                            FileReferenceEvent.build(c, null, FileReferenceEventType.AVAILABILITY_ERROR, null, "", null,
-                                                     null, groupIds)));
+                    notAvailable.add(new FileReferenceEventDTO(FileReferenceEvent.build(c,
+                                                                                        null,
+                                                                                        FileReferenceEventType.AVAILABILITY_ERROR,
+                                                                                        null,
+                                                                                        "",
+                                                                                        null,
+                                                                                        null,
+                                                                                        groupIds)));
                 } else {
-                    available.add(new FileReferenceEventDTO(FileReferenceEvent
-                            .build(c, null, FileReferenceEventType.AVAILABLE, null, "", null, null, groupIds)));
+                    available.add(new FileReferenceEventDTO(FileReferenceEvent.build(c,
+                                                                                     null,
+                                                                                     FileReferenceEventType.AVAILABLE,
+                                                                                     null,
+                                                                                     "",
+                                                                                     null,
+                                                                                     null,
+                                                                                     groupIds)));
                 }
             }
             listener.onFileNotAvailable(notAvailable);

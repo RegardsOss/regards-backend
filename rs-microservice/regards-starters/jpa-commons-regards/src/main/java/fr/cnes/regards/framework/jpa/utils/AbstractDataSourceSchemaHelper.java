@@ -26,6 +26,7 @@ import java.util.Map;
 
 /**
  * Common helper features
+ *
  * @author Marc Sordi
  */
 public abstract class AbstractDataSourceSchemaHelper implements IDatasourceSchemaHelper {

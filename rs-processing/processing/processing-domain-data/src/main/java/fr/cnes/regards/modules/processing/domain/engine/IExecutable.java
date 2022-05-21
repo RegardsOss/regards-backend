@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.engine;
 
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
@@ -29,9 +29,9 @@ import java.util.function.Function;
 /**
  * This interface defines an executable which is a function taking a context
  * and returning an updated context.
- *
+ * <p>
  * Executables can be chained using {@link #andThen(String, IExecutable)}.
- *
+ * <p>
  * This interface also defines several basic constructors for executables.
  *
  * @author gandrieu
@@ -65,14 +65,14 @@ public interface IExecutable {
 
     /**
      * IExecutable instances are chainable, thanks to the {@link Mono#flatMap(Function)} method.
+     *
      * @param next the next executable to launch after this one.
      * @return a new executable with this and next in sequence.
      */
     default IExecutable andThen(String name, IExecutable next) {
-        return ctx1 -> execute(ctx1)
-            .doOnNext(c -> LOGGER.debug("Starting execution of '{}'", name))
-            .flatMap(next::execute)
-            .doOnNext(c -> LOGGER.debug("Finished execution of '{}'", name));
+        return ctx1 -> execute(ctx1).doOnNext(c -> LOGGER.debug("Starting execution of '{}'", name))
+                                    .flatMap(next::execute)
+                                    .doOnNext(c -> LOGGER.debug("Finished execution of '{}'", name));
     }
 
     default IExecutable onError(Function2<ExecutionContext, Throwable, Mono<ExecutionContext>> recover) {

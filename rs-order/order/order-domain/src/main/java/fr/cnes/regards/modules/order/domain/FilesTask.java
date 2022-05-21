@@ -28,15 +28,16 @@ import java.util.stream.Collectors;
 
 /**
  * A sub-order task is a job that manage a set of data files.
- *
+ * <p>
  * This task specifically monitors the life cycle of instances of OrderDataFiles,
  * that is: files meant to be downloaded by the end user in the context of an order.
- *
+ * <p>
  * This task has an internal state allowing to prevent the rest of the order
  * to be processed. The "waitingForUser" flag means that no more StorageFilesJob
  * will be run until the user has downloaded the available files.
- *
+ * <p>
  * Associated job calls
+ *
  * @author oroussel
  */
 @Entity
@@ -118,12 +119,12 @@ public class FilesTask extends LeafTask {
      */
     public void computeWaitingForUser() {
         Set<OrderDataFile> notInErrorFiles = files.stream()
-                .filter(f -> (f.getState() != FileState.ERROR)
-                        && (f.getState() != FileState.DOWNLOAD_ERROR)
-                        && (f.getState() != FileState.PROCESSING_ERROR))
-                .collect(Collectors.toSet());
+                                                  .filter(f -> (f.getState() != FileState.ERROR) && (f.getState()
+                                                      != FileState.DOWNLOAD_ERROR) && (f.getState()
+                                                      != FileState.PROCESSING_ERROR))
+                                                  .collect(Collectors.toSet());
         // Not in error nor download_error files are all available
-        this.waitingForUser = !notInErrorFiles.isEmpty()
-                && notInErrorFiles.stream().allMatch(f -> f.getState() == FileState.AVAILABLE);
+        this.waitingForUser =
+            !notInErrorFiles.isEmpty() && notInErrorFiles.stream().allMatch(f -> f.getState() == FileState.AVAILABLE);
     }
 }

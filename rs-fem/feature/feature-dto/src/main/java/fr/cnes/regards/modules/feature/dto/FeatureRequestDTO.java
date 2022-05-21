@@ -18,19 +18,17 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
-import java.time.OffsetDateTime;
-import java.util.Set;
-
-import javax.validation.constraints.NotNull;
-
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+
+import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
+import java.util.Set;
 
 /**
  * DTO to provides information about feature requests.
  *
  * @author Sébastien Binda
- *
  */
 public class FeatureRequestDTO {
 

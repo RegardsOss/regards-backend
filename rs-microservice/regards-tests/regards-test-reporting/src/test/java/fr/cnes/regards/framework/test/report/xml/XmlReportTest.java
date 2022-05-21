@@ -18,20 +18,20 @@
  */
 package fr.cnes.regards.framework.test.report.xml;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.file.Paths;
-
+import fr.cnes.regards.framework.test.report.exception.ReportException;
+import fr.cnes.regards.framework.test.report.xls.XlsxHelper;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.test.report.exception.ReportException;
-import fr.cnes.regards.framework.test.report.xls.XlsxHelper;
+import java.io.UnsupportedEncodingException;
+import java.nio.file.Paths;
 
 /**
  * Test XML report marshalling/unmarshalling
+ *
  * @author msordi
  */
 public class XmlReportTest {

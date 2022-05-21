@@ -21,20 +21,14 @@ package fr.cnes.regards.modules.workermanager.service.flow;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
-import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
-import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.modules.workercommon.dto.WorkerResponseStatus;
 import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
-import fr.cnes.regards.modules.workermanager.domain.config.WorkerManagerSettings;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.events.RawMessageBuilder;
@@ -46,11 +40,8 @@ import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
 import fr.cnes.regards.modules.workermanager.service.flow.mock.ResponseMockHandler;
 import fr.cnes.regards.modules.workermanager.service.flow.mock.WorkerRequestMockHandler;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
-import fr.cnes.regards.modules.workermanager.service.sessions.SessionService;
-import fr.cnes.regards.modules.workermanager.service.sessions.WorkerStepPropertyEnum;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionTimeoutException;
-import org.junit.Assert;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,21 +49,25 @@ import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.nio.charset.StandardCharsets;
-import java.sql.Time;
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
-public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT  {
+public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractWorkerManagerIT.class);
 
     public static final String BODY_CONTENT = "{\"test\":\"value\",\"map\": { \"values\": [1,2,3]}}";
 
     public final static String DEFAULT_SOURCE = "REGARDS";
+
     public final static String DEFAULT_SESSION = "test-it";
+
     public final static String DEFAULT_WORKER = "WorkerTest";
+
     public final static String DEFAULT_CONTENT_TYPE = RequestHandlerConfiguration.AVAILABLE_CONTENT_TYPE;
 
     @Autowired
@@ -120,7 +115,7 @@ public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT  
         workerRequestMock.reset();
     }
 
-    protected Request createRequest(String requestId,RequestStatus status) {
+    protected Request createRequest(String requestId, RequestStatus status) {
         Request request = new Request();
         request.setRequestId(requestId);
         request.setStatus(status);
@@ -137,15 +132,15 @@ public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT  
 
     protected WorkerResponseEvent createWorkerResponseEvent(String requestId, WorkerResponseStatus status) {
         WorkerResponseEvent event = new WorkerResponseEvent();
-        event.setHeader(EventHeadersHelper.REQUEST_ID_HEADER , requestId);
+        event.setHeader(EventHeadersHelper.REQUEST_ID_HEADER, requestId);
         event.setStatus(status);
         return event;
     }
 
     protected WorkerRequestDlqEvent createWorkerDlqRequestEvent(String requestId, String stackStrace) {
         WorkerRequestDlqEvent event = new WorkerRequestDlqEvent();
-        event.setHeader(EventHeadersHelper.REQUEST_ID_HEADER , requestId);
-        event.setHeader(EventHeadersHelper.DLQ_ERROR_STACKTRACE_HEADER , stackStrace);
+        event.setHeader(EventHeadersHelper.REQUEST_ID_HEADER, requestId);
+        event.setHeader(EventHeadersHelper.DLQ_ERROR_STACKTRACE_HEADER, stackStrace);
         return event;
     }
 
@@ -162,8 +157,11 @@ public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT  
     }
 
     protected Message createEvent(Optional<String> contentType) {
-        return RawMessageBuilder.build(getDefaultTenant(), contentType.orElse(null),
-                                       DEFAULT_SOURCE, DEFAULT_SESSION, UUID.randomUUID().toString(),
+        return RawMessageBuilder.build(getDefaultTenant(),
+                                       contentType.orElse(null),
+                                       DEFAULT_SOURCE,
+                                       DEFAULT_SESSION,
+                                       UUID.randomUUID().toString(),
                                        BODY_CONTENT.getBytes(StandardCharsets.UTF_8));
     }
 
@@ -196,7 +194,11 @@ public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT  
             return requestRepository.findByStatus(status).size() == expected;
         } catch (ConditionTimeoutException e) {
             LOGGER.error("ERROR waiting for {} requests in status {}. Got {} after {}{} ",
-                         expected,status.toString(), requestRepository.findByStatus(status).size(), count, timeUnit.toString());
+                         expected,
+                         status.toString(),
+                         requestRepository.findByStatus(status).size(),
+                         count,
+                         timeUnit.toString());
             return false;
         }
     }
@@ -225,16 +227,25 @@ public abstract class AbstractWorkerManagerIT extends AbstractRegardsServiceIT  
         }
     }
 
-
-    protected void broadcastMessage(Message message,Optional<String> routingKey) {
+    protected void broadcastMessage(Message message, Optional<String> routingKey) {
         publisher.broadcast(amqpAdmin.getBroadcastExchangeName(RequestEvent.class.getTypeName(),
                                                                Target.ONE_PER_MICROSERVICE_TYPE),
-                            Optional.empty(), routingKey, Optional.empty(), 0, message, new HashMap<>());
+                            Optional.empty(),
+                            routingKey,
+                            Optional.empty(),
+                            0,
+                            message,
+                            new HashMap<>());
     }
 
-    protected void broadcastMessages(List<Message> messages,Optional<String> routingKey) {
+    protected void broadcastMessages(List<Message> messages, Optional<String> routingKey) {
         publisher.broadcastAll(amqpAdmin.getBroadcastExchangeName(RequestEvent.class.getTypeName(),
-                                                               Target.ONE_PER_MICROSERVICE_TYPE),
-                            Optional.empty(), routingKey, Optional.empty(), 0, messages, new HashMap<>());
+                                                                  Target.ONE_PER_MICROSERVICE_TYPE),
+                               Optional.empty(),
+                               routingKey,
+                               Optional.empty(),
+                               0,
+                               messages,
+                               new HashMap<>());
     }
 }

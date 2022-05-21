@@ -45,11 +45,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test of {@link FeatureServiceIT}
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_data_object" }, locations = {
-        "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_data_object" },
+    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
 @ActiveProfiles(value = { "noscheduler", "noFemHandler" })
 public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -58,28 +58,47 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
 
     @Test
     public void testFindAll() {
-        String model = mockModelClient("feature_model_01.xml", cps, factory, this.getDefaultTenant(),
+        String model = mockModelClient("feature_model_01.xml",
+                                       cps,
+                                       factory,
+                                       this.getDefaultTenant(),
                                        modelAttrAssocClientMock);
 
-        FeatureEntity firstFeature = FeatureEntity
-                .build("owner", "session",
-                       Feature.build("id2", "owner",
-                                     FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA,
-                                                                      "peps", UUID.randomUUID(), 1),
-                                     IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model),
-                       null, model);
+        FeatureEntity firstFeature = FeatureEntity.build("owner",
+                                                         "session",
+                                                         Feature.build("id2",
+                                                                       "owner",
+                                                                       FeatureUniformResourceName.build(
+                                                                           FeatureIdentifier.FEATURE,
+                                                                           EntityType.DATA,
+                                                                           "peps",
+                                                                           UUID.randomUUID(),
+                                                                           1),
+                                                                       IGeometry.point(IGeometry.position(10.0, 20.0)),
+                                                                       EntityType.DATA,
+                                                                       model),
+                                                         null,
+                                                         model);
 
         this.featureRepo.save(firstFeature);
 
         OffsetDateTime date = OffsetDateTime.now();
 
-        FeatureEntity secondFeature = FeatureEntity
-                .build("owner", "session",
-                       Feature.build("id2", "owner",
-                                     FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA,
-                                                                      "peps", UUID.randomUUID(), 1),
-                                     IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model),
-                       null, model);
+        FeatureEntity secondFeature = FeatureEntity.build("owner",
+                                                          "session",
+                                                          Feature.build("id2",
+                                                                        "owner",
+                                                                        FeatureUniformResourceName.build(
+                                                                            FeatureIdentifier.FEATURE,
+                                                                            EntityType.DATA,
+                                                                            "peps",
+                                                                            UUID.randomUUID(),
+                                                                            1),
+                                                                        IGeometry.point(IGeometry.position(10.0, 20.0)),
+                                                                        EntityType.DATA,
+                                                                        model),
+                                                          null,
+                                                          model);
         secondFeature.getFeature().addProperty(IProperty.buildString("data_type", "TYPE01"));
 
         this.featureRepo.save(secondFeature);
@@ -90,7 +109,10 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
         Page<FeatureEntityDto> results = featureService.findAll(selection, page);
         assertEquals(2, results.getNumberOfElements());
 
-        Optional<FeatureEntityDto> dofOpt = results.getContent().stream().filter(fed -> fed.getId().equals(secondFeature.getId())).findFirst();
+        Optional<FeatureEntityDto> dofOpt = results.getContent()
+                                                   .stream()
+                                                   .filter(fed -> fed.getId().equals(secondFeature.getId()))
+                                                   .findFirst();
         assertTrue(dofOpt.isPresent(), "Entity researched not found");
         FeatureEntityDto dof = dofOpt.get();
         // compare values inside the DataObjectFeature and those of the FeatureEntity should be the same
@@ -100,39 +122,33 @@ public class FeatureServiceIT extends AbstractFeatureMultitenantServiceIT {
         assertEquals(secondFeature.getFeature().getModel(), dof.getFeature().getModel());
 
         // Retrieve with an unknown model
-        selection = FeaturesSelectionDTO.build()
-                .withModel("unknown");
+        selection = FeaturesSelectionDTO.build().withModel("unknown");
         results = featureService.findAll(selection, page);
         assertEquals(0, results.getNumberOfElements());
 
         // Retrieve from model and  lastUpdateDate to retrieve only second feature
-        selection = FeaturesSelectionDTO.build()
-                .withModel(model)
-                .withFrom(date);
+        selection = FeaturesSelectionDTO.build().withModel(model).withFrom(date);
         results = featureService.findAll(selection, page);
         assertEquals(1, results.getNumberOfElements());
 
-        selection = FeaturesSelectionDTO.build()
-                .withId(firstFeature.getId())
-                .withId(secondFeature.getId());
+        selection = FeaturesSelectionDTO.build().withId(firstFeature.getId()).withId(secondFeature.getId());
         results = featureService.findAll(selection, page);
         assertEquals(2, results.getNumberOfElements());
 
-        selection = FeaturesSelectionDTO.build()
-                .withId(secondFeature.getId());
+        selection = FeaturesSelectionDTO.build().withId(secondFeature.getId());
         results = featureService.findAll(selection, page);
         assertEquals(1, results.getNumberOfElements());
 
         selection = FeaturesSelectionDTO.build()
-                .withSelectionMode(SearchSelectionMode.EXCLUDE)
-                .withId(firstFeature.getId())
-                .withId(secondFeature.getId());
+                                        .withSelectionMode(SearchSelectionMode.EXCLUDE)
+                                        .withId(firstFeature.getId())
+                                        .withId(secondFeature.getId());
         results = featureService.findAll(selection, page);
         assertEquals(0, results.getNumberOfElements());
 
         selection = FeaturesSelectionDTO.build()
-                .withSelectionMode(SearchSelectionMode.EXCLUDE)
-                .withId(secondFeature.getId());
+                                        .withSelectionMode(SearchSelectionMode.EXCLUDE)
+                                        .withId(secondFeature.getId());
         results = featureService.findAll(selection, page);
         assertEquals(1, results.getNumberOfElements());
 

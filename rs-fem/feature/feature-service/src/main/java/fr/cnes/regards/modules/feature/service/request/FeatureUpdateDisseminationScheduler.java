@@ -83,8 +83,10 @@ public class FeatureUpdateDisseminationScheduler extends AbstractTaskScheduler {
     @Autowired
     private LockingTaskExecutors lockingTaskExecutors;
 
-    @Scheduled(initialDelayString = "${regards.feature.update.dissemination.request.scheduling.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-            fixedDelayString = "${regards.feature.update.dissemination.request.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+    @Scheduled(initialDelayString = "${regards.feature.update.dissemination.request.scheduling.initial.delay:"
+        + DEFAULT_INITIAL_DELAY + "}",
+        fixedDelayString = "${regards.feature.update.dissemination.request.scheduling.delay:" + DEFAULT_SCHEDULING_DELAY
+            + "}")
     public void scheduleUpdateRequests() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {

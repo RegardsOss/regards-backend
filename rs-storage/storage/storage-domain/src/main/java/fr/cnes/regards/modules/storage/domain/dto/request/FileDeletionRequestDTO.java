@@ -24,9 +24,9 @@ import org.springframework.util.Assert;
 /**
  * Information about a file for a deletion request.<br/>
  * Mandatory information are : <ul>
- *  <li> Checksum of the file to delete</li>
- *  <li> Storage location where to delete the file</li>
- *  <li> Owner of the file who ask for deletion </li>
+ * <li> Checksum of the file to delete</li>
+ * <li> Storage location where to delete the file</li>
+ * <li> Owner of the file who ask for deletion </li>
  * </ul>
  * See {@link DeletionFlowItem} for more information about deletion request process.
  *
@@ -91,6 +91,7 @@ public class FileDeletionRequestDTO {
 
     /**
      * Build a new file deletion request information
+     *
      * @param checksum
      * @param storage
      * @param owner
@@ -99,8 +100,12 @@ public class FileDeletionRequestDTO {
      * @param forceDelete
      * @return {@link FileDeletionRequestDTO}
      */
-    public static FileDeletionRequestDTO build(String checksum, String storage, String owner,
-            String sessionOwner, String session, boolean forceDelete) {
+    public static FileDeletionRequestDTO build(String checksum,
+                                               String storage,
+                                               String owner,
+                                               String sessionOwner,
+                                               String session,
+                                               boolean forceDelete) {
         FileDeletionRequestDTO request = new FileDeletionRequestDTO();
 
         Assert.notNull(checksum, "Checksum is mandatory.");

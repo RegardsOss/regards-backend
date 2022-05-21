@@ -36,7 +36,8 @@ import java.util.List;
 public class RequestScanTask implements Task {
 
     // Statuses of requests that can are deletable/re-dispatchable
-    public static final List<RequestStatus> BLOCKED_REQUESTS_STATUSES = Lists.newArrayList(RequestStatus.ERROR, RequestStatus.NO_WORKER_AVAILABLE,
+    public static final List<RequestStatus> BLOCKED_REQUESTS_STATUSES = Lists.newArrayList(RequestStatus.ERROR,
+                                                                                           RequestStatus.NO_WORKER_AVAILABLE,
                                                                                            RequestStatus.INVALID_CONTENT);
 
     private final RequestScanService requestScanService;
@@ -45,8 +46,9 @@ public class RequestScanTask implements Task {
 
     private final RequestStatus newStatus;
 
-    public RequestScanTask(RequestScanService requestScanService, SearchRequestParameters filters,
-            RequestStatus newStatus) {
+    public RequestScanTask(RequestScanService requestScanService,
+                           SearchRequestParameters filters,
+                           RequestStatus newStatus) {
         this.requestScanService = requestScanService;
         this.filters = filters;
         this.newStatus = newStatus;
@@ -63,9 +65,11 @@ public class RequestScanTask implements Task {
         // Override filter's status when:
         // - no status or empty status
         // - status invalid
-        if (filters.getStatuses() == null ||
-                filters.getStatuses().getValues().isEmpty() ||
-                filters.getStatuses().getValues().stream().anyMatch(status -> !BLOCKED_REQUESTS_STATUSES.contains(status))) {
+        if (filters.getStatuses() == null || filters.getStatuses().getValues().isEmpty() || filters.getStatuses()
+                                                                                                   .getValues()
+                                                                                                   .stream()
+                                                                                                   .anyMatch(status -> !BLOCKED_REQUESTS_STATUSES.contains(
+                                                                                                       status))) {
             filters.withStatusesIncluded(BLOCKED_REQUESTS_STATUSES);
         }
 

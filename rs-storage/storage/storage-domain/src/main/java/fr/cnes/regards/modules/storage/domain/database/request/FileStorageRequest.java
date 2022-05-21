@@ -18,37 +18,18 @@
  */
 package fr.cnes.regards.modules.storage.domain.database.request;
 
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.ElementCollection;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-
-import org.springframework.util.Assert;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
+import org.springframework.util.Assert;
+
+import javax.persistence.*;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Database definition of the table containing the requests to store files.
@@ -57,9 +38,9 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
  */
 @Entity
 @Table(name = "t_file_storage_request",
-        indexes = { @Index(name = "idx_file_storage_request", columnList = "storage, checksum"),
-                @Index(name = "idx_file_storage_request_cs", columnList = "checksum"),
-                @Index(name = "idx_file_storage_request_storage", columnList = "storage") })
+    indexes = { @Index(name = "idx_file_storage_request", columnList = "storage, checksum"),
+        @Index(name = "idx_file_storage_request_cs", columnList = "checksum"),
+        @Index(name = "idx_file_storage_request_storage", columnList = "storage") })
 public class FileStorageRequest {
 
     public static final String FILE_STORAGE_REQUEST_NEED_A_OWNER = "File storage request need a owner !";
@@ -78,14 +59,14 @@ public class FileStorageRequest {
     @Column(name = "group_id", nullable = false, length = 128)
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "ta_storage_request_group_ids", joinColumns = @JoinColumn(name = "file_storage_request_id",
-            foreignKey = @ForeignKey(name = "fk_ta_storage_request_group_ids_t_file_storage_request")))
+        foreignKey = @ForeignKey(name = "fk_ta_storage_request_group_ids_t_file_storage_request")))
     private final Set<String> groupIds = Sets.newHashSet();
 
     @Column(name = "owner")
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "ta_file_storage_request_owners",
-            joinColumns = @JoinColumn(name = "file_storage_request_id",
-                    foreignKey = @ForeignKey(name = "fk_ta_file_storage_request_owners_t_file_storage_request")))
+        joinColumns = @JoinColumn(name = "file_storage_request_id",
+            foreignKey = @ForeignKey(name = "fk_ta_file_storage_request_owners_t_file_storage_request")))
     private final Set<String> owners = Sets.newHashSet();
 
     @Column(name = "origin_url", length = FileLocation.URL_MAX_LENGTH)
@@ -125,8 +106,14 @@ public class FileStorageRequest {
         this.creationDate = OffsetDateTime.now();
     }
 
-    public FileStorageRequest(String owner, FileReferenceMetaInfo metaInfos, String originUrl, String storage,
-            Optional<String> storageSubDirectory, String groupId, String sessionOwner, String session) {
+    public FileStorageRequest(String owner,
+                              FileReferenceMetaInfo metaInfos,
+                              String originUrl,
+                              String storage,
+                              Optional<String> storageSubDirectory,
+                              String groupId,
+                              String sessionOwner,
+                              String session) {
         super();
         Assert.notNull(owner, FILE_STORAGE_REQUEST_NEED_A_OWNER);
         Assert.notNull(originUrl, "File storage request need an origin location !");
@@ -148,8 +135,14 @@ public class FileStorageRequest {
         this.session = session;
     }
 
-    public FileStorageRequest(Collection<String> owners, FileReferenceMetaInfo metaInfos, String originUrl,
-            String storage, Optional<String> storageSubDirectory, String groupId, String sessionOwner, String session) {
+    public FileStorageRequest(Collection<String> owners,
+                              FileReferenceMetaInfo metaInfos,
+                              String originUrl,
+                              String storage,
+                              Optional<String> storageSubDirectory,
+                              String groupId,
+                              String sessionOwner,
+                              String session) {
         super();
         Assert.notNull(owners, FILE_STORAGE_REQUEST_NEED_A_OWNER);
         Assert.isTrue(!owners.isEmpty(), FILE_STORAGE_REQUEST_NEED_A_OWNER);
@@ -174,6 +167,7 @@ public class FileStorageRequest {
 
     /**
      * Update an existing request from a new received request.
+     *
      * @param request
      * @param groupId
      */

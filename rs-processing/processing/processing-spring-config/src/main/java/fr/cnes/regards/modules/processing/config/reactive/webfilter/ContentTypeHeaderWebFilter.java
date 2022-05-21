@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.config.reactive.webfilter;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -30,7 +30,7 @@ import reactor.core.publisher.Mono;
  * Adding an 'application/json' Content-Type header for all response which don't have one already.
  *
  * @author Guillaume Andrieu
-*/
+ */
 @Component
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
 public class ContentTypeHeaderWebFilter implements WebFilter {

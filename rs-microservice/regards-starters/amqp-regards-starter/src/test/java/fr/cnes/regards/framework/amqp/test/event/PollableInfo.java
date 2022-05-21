@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
  * {@link IPollable} information event
+ *
  * @author Marc Sordi
  */
 @Event(target = Target.ALL)

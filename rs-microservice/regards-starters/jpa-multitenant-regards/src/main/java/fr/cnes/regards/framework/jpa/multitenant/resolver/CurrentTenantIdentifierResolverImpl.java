@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.resolver;
 
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-
 /**
  * Spring component used by Hibernate to determine the tenant to use during the datasource connection creation.
+ *
  * @author Sébastien Binda
  * .
  */

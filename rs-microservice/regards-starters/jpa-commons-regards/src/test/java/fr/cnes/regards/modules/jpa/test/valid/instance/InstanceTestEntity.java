@@ -18,14 +18,15 @@
  */
 package fr.cnes.regards.modules.jpa.test.valid.instance;
 
-import javax.persistence.Entity;
-
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+
+import javax.persistence.Entity;
 
 /**
  * Class InstanceTestEntity
- *
+ * <p>
  * Test class
+ *
  * @author CS
  */
 @Entity

@@ -18,20 +18,6 @@
  */
 package fr.cnes.regards.modules.templates.rest;
 
-import java.util.List;
-
-import javax.validation.Valid;
-
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -42,9 +28,17 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.templates.domain.Template;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
 
 /**
  * Rest controller defining endpoint for managing {@link Template}s.
+ *
  * @author Xavier-Alexandre Brochard
  */
 @RestController
@@ -63,6 +57,7 @@ public class TemplateController implements IResourceController<Template> {
 
     /**
      * Constructor
+     *
      * @param pTemplateService the template service
      * @param pResourceService the resource service
      */
@@ -92,14 +87,15 @@ public class TemplateController implements IResourceController<Template> {
     @RequestMapping(value = "/{template_id}", method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieves the email template of given id")
     public ResponseEntity<EntityModel<Template>> findById(@PathVariable("template_id") final Long pId)
-            throws EntityNotFoundException {
+        throws EntityNotFoundException {
         final Template template = templateService.findById(pId);
         return new ResponseEntity<>(toResource(template), HttpStatus.OK);
     }
 
     /**
      * Updates the template of passed id
-     * @param id the updated template id
+     *
+     * @param id       the updated template id
      * @param template the updated template
      * @return void
      * @throws EntityException <br>
@@ -110,7 +106,7 @@ public class TemplateController implements IResourceController<Template> {
     @RequestMapping(value = "/{template_id}", method = RequestMethod.PUT)
     @ResourceAccess(description = "Update the email template with given id with given values")
     public ResponseEntity<Void> update(@PathVariable("template_id") final Long id,
-            @Valid @RequestBody final Template template) throws EntityException {
+                                       @Valid @RequestBody final Template template) throws EntityException {
         templateService.update(id, template);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -123,9 +119,15 @@ public class TemplateController implements IResourceController<Template> {
     @Override
     public EntityModel<Template> toResource(final Template element, final Object... extras) {
         final EntityModel<Template> resource = resourceService.toResource(element);
-        resourceService.addLink(resource, getClass(), "findById", LinkRels.SELF,
+        resourceService.addLink(resource,
+                                getClass(),
+                                "findById",
+                                LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, element.getId()));
-        resourceService.addLink(resource, getClass(), "update", LinkRels.UPDATE,
+        resourceService.addLink(resource,
+                                getClass(),
+                                "update",
+                                LinkRels.UPDATE,
                                 MethodParamFactory.build(Long.class, element.getId()),
                                 MethodParamFactory.build(Template.class, element));
         return resource;

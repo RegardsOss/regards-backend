@@ -18,19 +18,7 @@
  */
 package fr.cnes.regards.modules.authentication.service.role;
 
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
-
 import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -41,6 +29,16 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
+
+import java.util.List;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -83,8 +81,8 @@ public class BorrowRoleServiceTest {
     public void testSwitchToRole() throws JwtException, EntityOperationForbiddenException {
         // mock the role client answer
         List<Role> borrowableRolesForAdmin = Lists.newArrayList(roleAdmin, roleRegisteredUser, rolePublic);
-        ResponseEntity<List<EntityModel<Role>>> mockedResponse = new ResponseEntity<>(
-                HateoasUtils.wrapList(borrowableRolesForAdmin), HttpStatus.OK);
+        ResponseEntity<List<EntityModel<Role>>> mockedResponse = new ResponseEntity<>(HateoasUtils.wrapList(
+            borrowableRolesForAdmin), HttpStatus.OK);
         Mockito.when(mockedRoleClient.getBorrowableRoles()).thenReturn(mockedResponse);
         // mock JWTAuthentication
         JwtService.injectToken("test", "ADMIN", "test@test.test", "test@test.test");
@@ -105,8 +103,8 @@ public class BorrowRoleServiceTest {
     public void testSwitchToRoleUnborrowable() throws JwtException, EntityOperationForbiddenException {
         // mock the role client answer
         List<Role> borrowableRolesForAdmin = Lists.newArrayList();
-        ResponseEntity<List<EntityModel<Role>>> mockedResponse = new ResponseEntity<>(
-                HateoasUtils.wrapList(borrowableRolesForAdmin), HttpStatus.OK);
+        ResponseEntity<List<EntityModel<Role>>> mockedResponse = new ResponseEntity<>(HateoasUtils.wrapList(
+            borrowableRolesForAdmin), HttpStatus.OK);
         Mockito.when(mockedRoleClient.getBorrowableRoles()).thenReturn(mockedResponse);
         // mock JWTAuthentication
         JwtService.injectToken("test", DefaultRole.PUBLIC.toString(), "test@test.test", "test@test.test");

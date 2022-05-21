@@ -48,13 +48,12 @@ import java.util.stream.Collectors;
  * Legacy search engine for compatibility with legacy system
  *
  * @author Marc Sordi
- *
  */
 @Plugin(id = LegacySearchEngine.PLUGIN_ID, author = "REGARDS Team", contact = "regards@c-s.fr",
-        description = "Legacy search engine", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",
-        version = "1.0.0")
+    description = "Legacy search engine", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",
+    version = "1.0.0")
 public class LegacySearchEngine implements
-        ISearchEngine<FacettedPagedModel<EntityModel<EntityFeature>>, Void, EntityModel<EntityFeature>, List<String>> {
+    ISearchEngine<FacettedPagedModel<EntityModel<EntityFeature>>, Void, EntityModel<EntityFeature>, List<String>> {
 
     public static final String PLUGIN_ID = SearchEngineMappings.LEGACY_PLUGIN_ID;
 
@@ -118,23 +117,28 @@ public class LegacySearchEngine implements
         ICriterion criterion = parse(context.getQueryParams());
         // Manage dataset URN path parameter as criterion
         if (context.getDatasetUrn().isPresent()) {
-            criterion = ICriterion
-                    .and(criterion,
-                         ICriterion.eq(StaticProperties.FEATURE_TAGS_PATH, context.getDatasetUrn().get().toString(), StringMatchType.KEYWORD));
+            criterion = ICriterion.and(criterion,
+                                       ICriterion.eq(StaticProperties.FEATURE_TAGS_PATH,
+                                                     context.getDatasetUrn().get().toString(),
+                                                     StringMatchType.KEYWORD));
         }
         return criterion;
     }
 
     @Override
     public ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> search(SearchContext context,
-            ISearchEngine<?, ?, ?, ?> parser, IEntityLinkBuilder linkBuilder) throws ModuleException {
+                                                                                 ISearchEngine<?, ?, ?, ?> parser,
+                                                                                 IEntityLinkBuilder linkBuilder)
+        throws ModuleException {
         // Convert parameters to business criterion considering dataset
         return doSearch(parser.parse(context), context, linkBuilder);
 
     }
 
     public ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> doSearch(ICriterion criterion,
-            SearchContext context, IEntityLinkBuilder linkBuilder) throws ModuleException {
+                                                                                   SearchContext context,
+                                                                                   IEntityLinkBuilder linkBuilder)
+        throws ModuleException {
         // Extract facets: beware, theorically there should be only one facets parameter with values separated by ","
         // but take all cases into account
         List<String> facets = context.getQueryParams().get(FACETS);
@@ -142,7 +146,9 @@ public class LegacySearchEngine implements
             facets = facets.stream().flatMap(f -> Arrays.stream(f.split(","))).collect(Collectors.toList());
         }
         // Do business search
-        FacetPage<EntityFeature> facetPage = searchService.search(criterion, context.getSearchType(), facets,
+        FacetPage<EntityFeature> facetPage = searchService.search(criterion,
+                                                                  context.getSearchType(),
+                                                                  facets,
                                                                   context.getPageable());
         // Build and return HATEOAS response
         return ResponseEntity.ok(toResources(context, facetPage, linkBuilder));
@@ -152,16 +158,22 @@ public class LegacySearchEngine implements
      * Format response with HATEOAS
      */
     private FacettedPagedModel<EntityModel<EntityFeature>> toResources(SearchContext context,
-            FacetPage<EntityFeature> facetPage, IEntityLinkBuilder linkBuilder) {
+                                                                       FacetPage<EntityFeature> facetPage,
+                                                                       IEntityLinkBuilder linkBuilder) {
 
-        FacettedPagedModel<EntityModel<EntityFeature>> pagedResource = FacettedPagedModel
-                .wrap(facetPage.getContent(), new PagedModel.PageMetadata(facetPage.getSize(), facetPage.getNumber(),
-                        facetPage.getTotalElements(), facetPage.getTotalPages()),
-                      facetPage.getFacets());
+        FacettedPagedModel<EntityModel<EntityFeature>> pagedResource = FacettedPagedModel.wrap(facetPage.getContent(),
+                                                                                               new PagedModel.PageMetadata(
+                                                                                                   facetPage.getSize(),
+                                                                                                   facetPage.getNumber(),
+                                                                                                   facetPage.getTotalElements(),
+                                                                                                   facetPage.getTotalPages()),
+                                                                                               facetPage.getFacets());
 
         // Add entity links
         for (EntityModel<EntityFeature> resource : pagedResource.getContent()) {
-            resource.add(linkBuilder.buildEntityLinks(resourceService, context, resource.getContent().getEntityType(),
+            resource.add(linkBuilder.buildEntityLinks(resourceService,
+                                                      context,
+                                                      resource.getContent().getEntityType(),
                                                       resource.getContent().getId()));
         }
 
@@ -177,8 +189,10 @@ public class LegacySearchEngine implements
         return pagedResource;
     }
 
-    private void addPaginationLink(RepresentationModel<?> resource, SearchContext context, LinkRelation rel,
-            IEntityLinkBuilder linkBuilder) {
+    private void addPaginationLink(RepresentationModel<?> resource,
+                                   SearchContext context,
+                                   LinkRelation rel,
+                                   IEntityLinkBuilder linkBuilder) {
 
         int pageNumber;
         if (LinkRels.SELF.equals(rel)) {
@@ -204,7 +218,7 @@ public class LegacySearchEngine implements
 
     @Override
     public ResponseEntity<EntityModel<EntityFeature>> getEntity(SearchContext context, IEntityLinkBuilder linkBuilder)
-            throws ModuleException {
+        throws ModuleException {
         // Retrieve entity
         EntityFeature entity = searchService.get(context.getUrn().get());
         // Prepare resource
@@ -220,10 +234,14 @@ public class LegacySearchEngine implements
         // Extract optional request parameters
         String partialText = context.getQueryParams().getFirst(PARTIAL_TEXT);
         // Do business search
-        List<String> values = searchService.retrieveEnumeratedPropertyValues(criterion, context.getSearchType(),
-                                                                             context.getPropertyNames().stream()
-                                                                                     .findFirst().get(),
-                                                                             context.getMaxCount().get(), partialText);
+        List<String> values = searchService.retrieveEnumeratedPropertyValues(criterion,
+                                                                             context.getSearchType(),
+                                                                             context.getPropertyNames()
+                                                                                    .stream()
+                                                                                    .findFirst()
+                                                                                    .get(),
+                                                                             context.getMaxCount().get(),
+                                                                             partialText);
         // Build response
         return ResponseEntity.ok(values);
     }
@@ -233,7 +251,8 @@ public class LegacySearchEngine implements
         // Convert parameters to business criterion considering dataset
         ICriterion criterion = parse(context);
         // Compute summary
-        DocFilesSummary summary = searchService.computeDatasetsSummary(criterion, context.getSearchType(),
+        DocFilesSummary summary = searchService.computeDatasetsSummary(criterion,
+                                                                       context.getSearchType(),
                                                                        context.getDatasetUrn().orElse(null),
                                                                        context.getDateTypes().get());
         // Build response
@@ -242,9 +261,10 @@ public class LegacySearchEngine implements
 
     @Override
     public ResponseEntity<List<EntityModel<? extends PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
-            throws ModuleException {
-        List<PropertyBound<?>> bounds = catalogSearchService
-                .retrievePropertiesBounds(context.getPropertyNames(), parse(context), context.getSearchType());
+        throws ModuleException {
+        List<PropertyBound<?>> bounds = catalogSearchService.retrievePropertiesBounds(context.getPropertyNames(),
+                                                                                      parse(context),
+                                                                                      context.getSearchType());
         return ResponseEntity.ok(bounds.stream().map(EntityModel::of).collect(Collectors.toList()));
     }
 }

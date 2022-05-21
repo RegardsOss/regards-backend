@@ -18,28 +18,19 @@
  */
 package fr.cnes.regards.modules.feature.domain.request;
 
-import java.time.OffsetDateTime;
-import java.util.Set;
-
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-
-import org.hibernate.annotations.Type;
-
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
+import java.time.OffsetDateTime;
+import java.util.Set;
 
 /**
  * @author Kevin Marchois
- *
  */
 @Entity
 @DiscriminatorValue(FeatureRequestTypeEnum.DELETION_DISCRIMINENT)
@@ -47,7 +38,7 @@ public class FeatureDeletionRequest extends AbstractFeatureRequest {
 
     @Id
     @SequenceGenerator(name = "featureDeleteRequestSequence", initialValue = 1,
-            sequenceName = "seq_feature_deletion_request")
+        sequenceName = "seq_feature_deletion_request")
     @GeneratedValue(generator = "featureDeleteRequestSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
@@ -58,10 +49,10 @@ public class FeatureDeletionRequest extends AbstractFeatureRequest {
     @Type(type = "jsonb")
     private Feature toNotify;
 
-    @Column(name="sessionToNotify", length=255)
+    @Column(name = "sessionToNotify", length = 255)
     private String sessionToNotify;
 
-    @Column(name="sourceToNotify", length=255)
+    @Column(name = "sourceToNotify", length = 255)
     private String sourceToNotify;
 
     /**
@@ -70,9 +61,14 @@ public class FeatureDeletionRequest extends AbstractFeatureRequest {
     @Column(name = "already_deleted")
     private boolean alreadyDeleted;
 
-    public static FeatureDeletionRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
-            RequestState state, Set<String> errors, FeatureRequestStep step, PriorityLevel priority,
-            FeatureUniformResourceName urn) {
+    public static FeatureDeletionRequest build(String requestId,
+                                               String requestOwner,
+                                               OffsetDateTime requestDate,
+                                               RequestState state,
+                                               Set<String> errors,
+                                               FeatureRequestStep step,
+                                               PriorityLevel priority,
+                                               FeatureUniformResourceName urn) {
         FeatureDeletionRequest request = new FeatureDeletionRequest();
         request.with(requestId, requestOwner, requestDate, state, step, priority, errors);
         request.setUrn(urn);

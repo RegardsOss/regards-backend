@@ -18,21 +18,20 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service.passwordreset;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationListener;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.service.workflow.AccessRightTemplateConf;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Listen to {@link OnPasswordResetEvent} in order to send a password reset to the user when required.
@@ -60,15 +59,13 @@ public class PasswordResetListener implements ApplicationListener<OnPasswordRese
     private final IEmailClient emailClient;
 
     /**
-     * @param pPasswordResetService
-     *            the password reset service
-     * @param pTemplateService
-     *            the template service
-     * @param pEmailClient
-     *            the email client
+     * @param pPasswordResetService the password reset service
+     * @param pTemplateService      the template service
+     * @param pEmailClient          the email client
      */
     public PasswordResetListener(final IPasswordResetService pPasswordResetService,
-            final ITemplateService pTemplateService, final IEmailClient pEmailClient) {
+                                 final ITemplateService pTemplateService,
+                                 final IEmailClient pEmailClient) {
         super();
         passwordResetService = pPasswordResetService;
         templateService = pTemplateService;
@@ -83,8 +80,7 @@ public class PasswordResetListener implements ApplicationListener<OnPasswordRese
     /**
      * Send a password reset email based on information stored in the passed event
      *
-     * @param event
-     *            the init event
+     * @param event the init event
      */
     private void sendPasswordResetEmail(final OnPasswordResetEvent event) {
         // Retrieve the account
@@ -113,7 +109,10 @@ public class PasswordResetListener implements ApplicationListener<OnPasswordRese
             } else {
                 linkUrlTemplate = "%s?origin_url=%s&token=%s&account_email=%s";
             }
-            final String linkUrl = String.format(linkUrlTemplate, event.getRequestLink(), event.getOriginUrl(), token,
+            final String linkUrl = String.format(linkUrlTemplate,
+                                                 event.getRequestLink(),
+                                                 event.getOriginUrl(),
+                                                 token,
                                                  account.getEmail());
             message = "Please click on the following link to set a new password for your account: " + linkUrl;
         }

@@ -50,6 +50,7 @@ public final class CompressionUtil {
     /**
      * Cette methode permet de determiner a partir du nom du fichier
      * s'il s'agit d'un fichier que l'on sait decompresser.
+     *
      * @param pFile le fichier à tester
      * @return un booleen
      */

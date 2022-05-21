@@ -18,19 +18,17 @@
  */
 package fr.cnes.regards.modules.model.domain.attributes.restriction;
 
+import fr.cnes.regards.modules.model.domain.schema.Restriction;
+import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
-import fr.cnes.regards.modules.model.domain.schema.Restriction;
-import fr.cnes.regards.modules.model.dto.properties.PropertyType;
-
 /**
- *
  * Restriction for {@link PropertyType#JSON} to add jsonSchema validation
  *
  * @author Sébastien Binda
- *
  */
 @Entity
 @DiscriminatorValue("JSON_SCHEMA")

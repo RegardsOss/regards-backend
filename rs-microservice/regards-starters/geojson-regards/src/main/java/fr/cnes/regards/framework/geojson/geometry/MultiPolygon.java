@@ -18,16 +18,17 @@
  */
 package fr.cnes.regards.framework.geojson.geometry;
 
+import fr.cnes.regards.framework.geojson.GeoJsonType;
+import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import fr.cnes.regards.framework.geojson.GeoJsonType;
-import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
-
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJson MultiPolygon representation<br/>
+ *
  * @author Marc Sordi
  */
 public class MultiPolygon extends AbstractGeometry<List<PolygonPositions>> {
@@ -53,8 +54,9 @@ public class MultiPolygon extends AbstractGeometry<List<PolygonPositions>> {
      */
     public static MultiPolygon fromArray(double[][][][] lonLatsArrays) {
         MultiPolygon multiPolygon = new MultiPolygon();
-        multiPolygon.coordinates.addAll(Arrays.asList(
-                Arrays.stream(lonLatsArrays).map(PolygonPositions::fromArray).toArray(PolygonPositions[]::new)));
+        multiPolygon.coordinates.addAll(Arrays.asList(Arrays.stream(lonLatsArrays)
+                                                            .map(PolygonPositions::fromArray)
+                                                            .toArray(PolygonPositions[]::new)));
         return multiPolygon;
     }
 }

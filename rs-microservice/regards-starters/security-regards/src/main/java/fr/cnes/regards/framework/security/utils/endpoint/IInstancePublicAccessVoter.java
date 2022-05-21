@@ -22,8 +22,9 @@ import org.springframework.security.access.AccessDecisionVoter;
 
 /**
  * Class IInstanceAdminAccessVoter
- *
+ * <p>
  * Interface to implement specific MetodAuthroization voter for Instance administrator user.
+ *
  * @author Sébastien Binda
  */
 public interface IInstancePublicAccessVoter extends AccessDecisionVoter<Object> {

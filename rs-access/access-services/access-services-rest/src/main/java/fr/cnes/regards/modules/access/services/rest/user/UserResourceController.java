@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 
 /**
  * User resource management API
+ *
  * @author Marc Sordi
  */
 @RestController
@@ -65,44 +66,47 @@ public class UserResourceController implements IResourceController<ResourcesAcce
 
     /**
      * Retrieve the {@link List} of {@link ResourcesAccess} for the account given threw its <code>email</code>.
-     * @param userLogin The account <code>email</code>
+     *
+     * @param userLogin        The account <code>email</code>
      * @param borrowedRoleName The borrowed {@link Role} <code>name</code> if the user is connected with a borrowed role. Optional.
      * @return the {@link List} list of resources access
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve the list of specific user accesses", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<List<EntityModel<ResourcesAccess>>> retrieveProjectUserResources(
-            @PathVariable("user_email") String userLogin,
-            @RequestParam(value = "borrowedRoleName", required = false) String borrowedRoleName) {
-        ResponseEntity<List<EntityModel<ResourcesAccess>>> response =
-            userResourceClient.retrieveProjectUserResources(userLogin, borrowedRoleName);
-        return response.getStatusCode().is2xxSuccessful()
-            ? new ResponseEntity<>(
-                toResources(
-                    response.getBody().stream().map(EntityModel::getContent).collect(Collectors.toList()),
-                    userLogin
-                )
-            ,
-            response.getHeaders(),
-            response.getStatusCode())
-            : response;
+        @PathVariable("user_email") String userLogin,
+        @RequestParam(value = "borrowedRoleName", required = false) String borrowedRoleName) {
+        ResponseEntity<List<EntityModel<ResourcesAccess>>> response = userResourceClient.retrieveProjectUserResources(
+            userLogin,
+            borrowedRoleName);
+        return response.getStatusCode().is2xxSuccessful() ?
+            new ResponseEntity<>(toResources(response.getBody()
+                                                     .stream()
+                                                     .map(EntityModel::getContent)
+                                                     .collect(Collectors.toList()), userLogin),
+                                 response.getHeaders(),
+                                 response.getStatusCode()) :
+            response;
     }
 
     /**
      * Update the the {@link List} of <code>permissions</code>.
-     * @param login The {@link ProjectUser}'s <code>login</code>
+     *
+     * @param login                   The {@link ProjectUser}'s <code>login</code>
      * @param updatedUserAccessRights The {@link List} of {@link ResourcesAccess} to set
      * @return void
      */
     @RequestMapping(method = RequestMethod.PUT)
     @ResourceAccess(description = "Update the list of specific user accesses", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> updateProjectUserResources(@PathVariable("user_email") String login,
-            @Valid @RequestBody List<ResourcesAccess> updatedUserAccessRights) {
+                                                           @Valid @RequestBody
+                                                           List<ResourcesAccess> updatedUserAccessRights) {
         return userResourceClient.updateProjectUserResources(login, updatedUserAccessRights);
     }
 
     /**
      * Remove all specific user accesses
+     *
      * @param userLogin user email
      * @return {@link Void}
      */
@@ -119,11 +123,22 @@ public class UserResourceController implements IResourceController<ResourcesAcce
         String email = (String) extras[0];
 
         EntityModel<ResourcesAccess> resource = hateoasService.toResource(element);
-        hateoasService.addLink(resource, this.getClass(), "retrieveProjectUserResources", LinkRels.SELF,
-                               MethodParamFactory.build(String.class, email), MethodParamFactory.build(String.class));
-        hateoasService.addLink(resource, this.getClass(), "updateProjectUserResources", LinkRels.UPDATE,
-                               MethodParamFactory.build(String.class, email), MethodParamFactory.build(List.class));
-        hateoasService.addLink(resource, this.getClass(), "removeProjectUserResources", LinkRels.DELETE,
+        hateoasService.addLink(resource,
+                               this.getClass(),
+                               "retrieveProjectUserResources",
+                               LinkRels.SELF,
+                               MethodParamFactory.build(String.class, email),
+                               MethodParamFactory.build(String.class));
+        hateoasService.addLink(resource,
+                               this.getClass(),
+                               "updateProjectUserResources",
+                               LinkRels.UPDATE,
+                               MethodParamFactory.build(String.class, email),
+                               MethodParamFactory.build(List.class));
+        hateoasService.addLink(resource,
+                               this.getClass(),
+                               "removeProjectUserResources",
+                               LinkRels.DELETE,
                                MethodParamFactory.build(String.class, email));
         return resource;
     }

@@ -18,21 +18,21 @@
  */
 package fr.cnes.regards.framework.gson.stream;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import com.google.gson.stream.JsonReader;
 import fr.cnes.regards.framework.gson.exception.GsonUtilException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
  * GSON reader
+ *
  * @author Marc Sordi
  */
 public final class GsonReader {
@@ -47,9 +47,10 @@ public final class GsonReader {
 
     /**
      * Read object from input stream
-     * @param <T> object type
+     *
+     * @param <T>          object type
      * @param pInputStream input stream
-     * @param pClass object type
+     * @param pClass       object type
      * @return object
      * @throws GsonUtilException if error occurs!
      */

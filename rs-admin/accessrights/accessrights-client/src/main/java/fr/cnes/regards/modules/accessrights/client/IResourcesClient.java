@@ -44,40 +44,36 @@ public interface IResourcesClient {
     /**
      * Retrieve resource accesses available to the user
      *
-     * @param pPageable
-     *            pagination information
-     * @param pPagedResourcesAssembler
-     *            page assembler
+     * @param pPageable                pagination information
+     * @param pPagedResourcesAssembler page assembler
      * @return list of user resource accesses
      */
-    @GetMapping(value = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = ROOT_TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<ResourcesAccess>>> getAllResourceAccesses(@RequestParam("page") int pPage,
-            @RequestParam("size") int pSize);
+                                                                                    @RequestParam("size") int pSize);
 
     /**
-     *
      * Retrieve the ResourceAccess with given id {@link Long} exists.
      *
-     * @param pResourceId
-     *            resource id
+     * @param pResourceId resource id
      * @return {@link ResourcesAccess}
      */
-    @GetMapping(value = ROOT_TYPE_MAPPING + RESOURCE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = ROOT_TYPE_MAPPING + RESOURCE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<ResourcesAccess>> getResourceAccess(@PathVariable("resource_id") final Long pResourceId);
 
     /**
-     *
      * Update given resource access informations
      *
-     * @param pResourceId
-     *            Resource access identifier
-     * @param pResourceAccessToUpdate
-     *            Resource access to update
+     * @param pResourceId             Resource access identifier
+     * @param pResourceAccessToUpdate Resource access to update
      * @return updated ResourcesAccess
      */
-    @PutMapping(value = ROOT_TYPE_MAPPING + RESOURCE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = ROOT_TYPE_MAPPING + RESOURCE_MAPPING, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<ResourcesAccess>> updateResourceAccess(
-            @PathVariable("resource_id") final Long pResourceId,
-            @Valid @RequestBody final ResourcesAccess pResourceAccessToUpdate);
+        @PathVariable("resource_id") final Long pResourceId,
+        @Valid @RequestBody final ResourcesAccess pResourceAccessToUpdate);
 
 }

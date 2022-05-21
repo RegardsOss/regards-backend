@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events;
 
-import org.springframework.context.ApplicationEvent;
-
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import org.springframework.context.ApplicationEvent;
 
 /**
  * Use this event in order to react to when the admin grants accessto a project user.

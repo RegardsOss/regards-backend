@@ -25,7 +25,6 @@ import org.springframework.boot.actuate.health.Health.Builder;
  * AMQP Health indicator
  *
  * @author Marc SORDI
- *
  */
 public class AmqpHealthIndicator extends AbstractHealthIndicator {
 

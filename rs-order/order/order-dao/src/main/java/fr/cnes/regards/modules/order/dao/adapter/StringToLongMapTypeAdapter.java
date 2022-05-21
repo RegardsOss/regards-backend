@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.order.dao.adapter;
 
 import com.google.gson.TypeAdapter;
@@ -33,8 +33,7 @@ public class StringToLongMapTypeAdapter extends MapAdapter<StringToLongMap> {
 
     @Override
     public void write(JsonWriter out, StringToLongMap value) throws IOException {
-        @SuppressWarnings("rawtypes")
-        TypeAdapter<Map> mapAdapter = gson.getAdapter(Map.class);
+        @SuppressWarnings("rawtypes") TypeAdapter<Map> mapAdapter = gson.getAdapter(Map.class);
         mapAdapter.write(out, value);
     }
 

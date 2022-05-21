@@ -24,16 +24,13 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
-import fr.cnes.regards.modules.workermanager.dto.requests.SessionsRequestsInfo;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
 import fr.cnes.regards.modules.workermanager.service.sessions.SessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.Type;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Job to delete {@link Request}s
@@ -59,9 +56,10 @@ public class DeleteRequestJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         // lets instantiate the plugin to use
         Type type = new TypeToken<Set<Long>>() {
+
         }.getType();
         ids = getValue(parameters, REQUEST_DB_IDS, type);
         nbRequestToHandle = ids.size();
@@ -75,8 +73,9 @@ public class DeleteRequestJob extends AbstractJob<Void> {
 
         requestService.deleteRequests(requestService.searchRequests(ids));
 
-        logger.info("[DELETE REQUEST JOB] {} request(s) deleted in {} ms", nbRequestToHandle,
-                     System.currentTimeMillis() - start);
+        logger.info("[DELETE REQUEST JOB] {} request(s) deleted in {} ms",
+                    nbRequestToHandle,
+                    System.currentTimeMillis() - start);
     }
 
     @Override

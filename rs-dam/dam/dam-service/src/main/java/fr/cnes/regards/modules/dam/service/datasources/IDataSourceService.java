@@ -19,14 +19,15 @@
 
 package fr.cnes.regards.modules.dam.service.datasources;
 
-import java.util.List;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 
+import java.util.List;
+
 /**
  * DataSource façade of PluginService ie a service specific to PluginConfigurations of type IDataSourcePlugin
+ *
  * @author Christophe Mertz
  * @author oroussel
  */
@@ -34,12 +35,14 @@ public interface IDataSourceService {
 
     /**
      * Get all {@link PluginConfiguration} datasources.</br>
+     *
      * @return all PluginConfigurations of type IDataSourcePlugin.
      */
     List<PluginConfiguration> getAllDataSources();
 
     /**
      * Create a datasource {@link PluginConfiguration}.</br>
+     *
      * @param dataSource datasource {@link PluginConfiguration} to create
      * @return created {@link PluginConfiguration}
      * @throws ModuleException
@@ -48,6 +51,7 @@ public interface IDataSourceService {
 
     /**
      * Get datasource {@link PluginConfiguration}.
+     *
      * @param businessId a {@link PluginConfiguration} business identifier
      * @return {@link PluginConfiguration}
      * @throws EntityNotFoundException if entity does not exist
@@ -56,6 +60,7 @@ public interface IDataSourceService {
 
     /**
      * Update datasource {@link PluginConfiguration}
+     *
      * @param dataSource {@link PluginConfiguration} to update
      * @return updated {@link PluginConfiguration}
      * @throws ModuleException
@@ -64,6 +69,7 @@ public interface IDataSourceService {
 
     /**
      * Delete datasource {@link PluginConfiguration}.
+     *
      * @param id {@link PluginConfiguration} business id
      * @throws ModuleException
      */

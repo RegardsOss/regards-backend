@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  * Data file invalid filename exception
  *
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("serial")
 public class InvalidFilenameException extends ModuleException {

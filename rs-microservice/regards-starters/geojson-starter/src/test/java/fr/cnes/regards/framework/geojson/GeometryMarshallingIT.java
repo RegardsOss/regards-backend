@@ -68,8 +68,9 @@ public class GeometryMarshallingIT {
                 context.addBeanSerializerModifier(new BeanSerializerModifier() {
 
                     @Override
-                    public JsonSerializer<?> modifySerializer(SerializationConfig config, BeanDescription desc,
-                            JsonSerializer<?> serializer) {
+                    public JsonSerializer<?> modifySerializer(SerializationConfig config,
+                                                              BeanDescription desc,
+                                                              JsonSerializer<?> serializer) {
                         if (IGeometry.class.isAssignableFrom(desc.getBeanClass())) {
                             return new GeometryCustomSerializer((JsonSerializer<Object>) serializer);
                         }
@@ -183,7 +184,7 @@ public class GeometryMarshallingIT {
 
         @Override
         public void serialize(IGeometry geometry, JsonGenerator jsonGenerator, SerializerProvider serializerProvider)
-                throws IOException {
+            throws IOException {
             if (geometry.getType() == GeoJsonType.UNLOCATED) {
                 jsonGenerator.writeObject(null);
             } else {

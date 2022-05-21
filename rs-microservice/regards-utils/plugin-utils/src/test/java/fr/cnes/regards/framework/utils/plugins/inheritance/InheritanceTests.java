@@ -18,18 +18,18 @@
  */
 package fr.cnes.regards.framework.utils.plugins.inheritance;
 
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.Set;
 
 /**
  * Test plugin with inheritance
+ *
  * @author Marc Sordi
  */
 public class InheritanceTests {
@@ -37,9 +37,9 @@ public class InheritanceTests {
     @Test
     public void test() throws NotAvailablePluginConfigurationException {
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(BasicPlugin.FIELD_NAME_STRING, "hello!"),
-                     IPluginParam.build(BasicPlugin.INHERITED_FIELD_NAME_STRING, "inherited hello!"));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(BasicPlugin.FIELD_NAME_STRING, "hello!"),
+                                                        IPluginParam.build(BasicPlugin.INHERITED_FIELD_NAME_STRING,
+                                                                           "inherited hello!"));
 
         PluginUtils.setup(this.getClass().getPackage().getName());
         IBasicPlugin plugin = PluginUtils.getPlugin(PluginConfiguration.build(BasicPlugin.class, "", parameters), null);

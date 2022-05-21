@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.dao;
 
 import fr.cnes.regards.modules.processing.domain.POutputFile;
@@ -43,15 +43,16 @@ public class POutputFileRepositoryImpl implements IPOutputFilesRepository {
 
     @Autowired
     public POutputFileRepositoryImpl(IOutputFileEntityRepository entityOutputFileRepo,
-            DomainEntityMapper.OutputFile mapper) {
+                                     DomainEntityMapper.OutputFile mapper) {
         this.entityOutputFileRepo = entityOutputFileRepo;
         this.mapper = mapper;
     }
 
     @Override
     public Flux<POutputFile> save(Flux<POutputFile> files) {
-        return entityOutputFileRepo.saveAll(files.map(mapper::toEntity)).map(OutputFileEntity::persisted)
-                .map(mapper::toDomain);
+        return entityOutputFileRepo.saveAll(files.map(mapper::toEntity))
+                                   .map(OutputFileEntity::persisted)
+                                   .map(mapper::toDomain);
     }
 
     @Override

@@ -18,15 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.acquisition.dao.AcquisitionFileSpecifications;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
@@ -36,11 +27,19 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Service to handle {@link AcquisitionFile}
- * @author Sébastien Binda
  *
+ * @author Sébastien Binda
  */
 @MultitenantTransactional
 @Service
@@ -87,8 +86,12 @@ public class AcquisitionFileService implements IAcquisitionFileService {
     }
 
     @Override
-    public Page<AcquisitionFile> search(String filePath, List<AcquisitionFileState> state, Long productId, Long chainId,
-            OffsetDateTime from, Pageable pageable) {
+    public Page<AcquisitionFile> search(String filePath,
+                                        List<AcquisitionFileState> state,
+                                        Long productId,
+                                        Long chainId,
+                                        OffsetDateTime from,
+                                        Pageable pageable) {
         return fileRepository.findAll(AcquisitionFileSpecifications.search(filePath, state, productId, chainId, from),
                                       pageable);
     }

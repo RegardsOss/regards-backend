@@ -18,23 +18,23 @@
  */
 package fr.cnes.regards.framework.security.controller;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.security.domain.ResourceMapping;
-import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import java.util.List;
 
 /**
  * Class ResourcesControllerTest
- *
+ * <p>
  * Tests for resources controller
+ *
  * @author CS
  */
 public class ResourcesControllerTest {
@@ -42,8 +42,7 @@ public class ResourcesControllerTest {
     /**
      * SecurityResourcesController
      */
-    private final SecurityResourcesController controller = new SecurityResourcesController(
-            new MethodAuthorizationService());
+    private final SecurityResourcesController controller = new SecurityResourcesController(new MethodAuthorizationService());
 
     /**
      * Check the /resources common endpoint that retrieves all resources of a microservice.

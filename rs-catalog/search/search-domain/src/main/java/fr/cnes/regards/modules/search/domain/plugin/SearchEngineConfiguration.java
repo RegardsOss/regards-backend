@@ -18,30 +18,21 @@
  */
 package fr.cnes.regards.modules.search.domain.plugin;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
-
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+
 /**
  * Configuration POJO for {@link ISearchEngine} plugins.
+ *
  * @author Sébastien Binda
  */
 @Entity
 @Table(name = "t_search_engine_conf",
-        uniqueConstraints = { @UniqueConstraint(columnNames = { "plugin_conf_id", "dataset_urn" }) })
+    uniqueConstraints = { @UniqueConstraint(columnNames = { "plugin_conf_id", "dataset_urn" }) })
 public class SearchEngineConfiguration {
 
     @Id

@@ -26,6 +26,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * An utility class for field documentation.
+ *
  * @author Marc Sordi
  */
 public class ConstrainedFields {
@@ -38,7 +39,8 @@ public class ConstrainedFields {
 
     /**
      * Field doc tool
-     * @param path payload and property path
+     *
+     * @param path        payload and property path
      * @param description description
      */
     public FieldDescriptor withPath(String path, String description) {
@@ -47,9 +49,10 @@ public class ConstrainedFields {
 
     /**
      * Field doc tool
-     * @param payloadPath payload path
+     *
+     * @param payloadPath  payload path
      * @param propertyPath property path (in POJO)
-     * @param description description
+     * @param description  description
      */
     public FieldDescriptor withPath(String payloadPath, String propertyPath, String description) {
         return withPath(payloadPath, propertyPath, description, null);
@@ -57,28 +60,35 @@ public class ConstrainedFields {
 
     /**
      * Field doc tool
-     * @param payloadPath payload path
-     * @param propertyPath property path (in POJO)
-     * @param description description
+     *
+     * @param payloadPath      payload path
+     * @param propertyPath     property path (in POJO)
+     * @param description      description
      * @param extraConstraints extra doc for constraints
      */
-    public FieldDescriptor withPath(String payloadPath, String propertyPath, String description,
-            String extraConstraints) {
+    public FieldDescriptor withPath(String payloadPath,
+                                    String propertyPath,
+                                    String description,
+                                    String extraConstraints) {
         return withPath(null, payloadPath, propertyPath, description, extraConstraints);
     }
 
     /**
      * Field doc tool
+     *
      * @param payloadPrefixPath payload path prefix
-     * @param payloadPath payload path
-     * @param propertyPath property path (in POJO)
-     * @param description description
-     * @param extraConstraints extra doc for constraints
+     * @param payloadPath       payload path
+     * @param propertyPath      property path (in POJO)
+     * @param description       description
+     * @param extraConstraints  extra doc for constraints
      */
-    public FieldDescriptor withPath(String payloadPrefixPath, String payloadPath, String propertyPath,
-            String description, String extraConstraints) {
-        StringBuilder constraints = new StringBuilder(StringUtils.collectionToDelimitedString(
-                constraintDescriptions.descriptionsForProperty(propertyPath), ", "));
+    public FieldDescriptor withPath(String payloadPrefixPath,
+                                    String payloadPath,
+                                    String propertyPath,
+                                    String description,
+                                    String extraConstraints) {
+        StringBuilder constraints = new StringBuilder(StringUtils.collectionToDelimitedString(constraintDescriptions.descriptionsForProperty(
+            propertyPath), ", "));
         if (extraConstraints != null) {
             if (constraints.length() > 0) {
                 if (!constraints.toString().endsWith(". ")) {
@@ -99,12 +109,15 @@ public class ConstrainedFields {
             fullPayloadPath = payloadPath;
         }
 
-        return PayloadDocumentation.fieldWithPath(fullPayloadPath).description(description)
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value(constraints));
+        return PayloadDocumentation.fieldWithPath(fullPayloadPath)
+                                   .description(description)
+                                   .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                         .value(constraints));
     }
 
     /**
      * Mark every sub property to the provided path to ignore
+     *
      * @param payloadPath payload path
      */
     public FieldDescriptor ignoreSubsectionWithPath(String payloadPath) {

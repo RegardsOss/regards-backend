@@ -35,8 +35,9 @@ import java.util.List;
 
 /**
  * Class MultiTenancyDaoTest
- *
+ * <p>
  * Unit tests for multitenancy DAO
+ *
  * @author CS
  */
 @RunWith(SpringRunner.class)
@@ -52,7 +53,7 @@ public class InstanceDaoIT {
 
     /**
      * Unit test to check that the spring JPA multitenancy context is loaded successfully
-     *
+     * <p>
      * S
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")

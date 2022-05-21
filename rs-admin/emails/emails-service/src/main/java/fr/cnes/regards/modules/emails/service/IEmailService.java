@@ -18,32 +18,34 @@
  */
 package fr.cnes.regards.modules.emails.service;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.emails.domain.Email;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.SimpleMailMessage;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.emails.domain.Email;
+import java.util.List;
 
 /**
  * Strategy interface to handle CRUD operations on EmailDTO entities and mailing tasks
+ *
  * @author Xavier-Alexandre Brochard
  */
 public interface IEmailService {
 
     /**
      * Retrieve the list of emails
+     *
      * @return A {@code List} of {@code Email}s
      */
     List<Email> retrieveEmails();
 
     /**
      * Helper method to send mail without creating SimpleMailMessage before call
+     *
      * @param message email message
      * @param subject email subject
-     * @param from email sender, if you don't care about who is sending, set null to use default.
-     * @param to recipients
+     * @param from    email sender, if you don't care about who is sending, set null to use default.
+     * @param to      recipients
      */
     default Email sendEmail(String message, String subject, String from, String... to) {
         SimpleMailMessage mail = new SimpleMailMessage();
@@ -56,6 +58,7 @@ public interface IEmailService {
 
     /**
      * Send given email to given recipients and save a representation in DB.
+     *
      * @param pEmail The ready-to-send email. Must not be <code>null</code>.
      * @return The sent email
      */
@@ -69,6 +72,7 @@ public interface IEmailService {
 
     /**
      * Retrieve email
+     *
      * @param id The email id
      * @return The email as {@link Email}
      */
@@ -76,18 +80,21 @@ public interface IEmailService {
 
     /**
      * Re-send email
+     *
      * @param id The email id
      */
     void resendEmail(Long id) throws ModuleException;
 
     /**
      * Delete email
+     *
      * @param id The email id
      */
     void deleteEmail(Long id);
 
     /**
      * Check if an email exist
+     *
      * @param id The email id
      * @return <code>true</code> if exists, else <code>false</code>
      */

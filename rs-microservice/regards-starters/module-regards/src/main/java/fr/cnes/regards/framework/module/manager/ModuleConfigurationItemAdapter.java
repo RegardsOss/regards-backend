@@ -18,11 +18,6 @@
  */
 package fr.cnes.regards.framework.module.manager;
 
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.TypeAdapter;
@@ -30,9 +25,14 @@ import com.google.gson.internal.Streams;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 /**
  * Automatic (de)serializer for configuration POJO. Only non generic POJOs are accepted!
+ *
  * @author Marc Sordi
  */
 @SuppressWarnings("rawtypes")

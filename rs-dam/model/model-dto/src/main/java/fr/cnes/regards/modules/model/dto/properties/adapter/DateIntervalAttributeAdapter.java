@@ -18,35 +18,35 @@
  */
 package fr.cnes.regards.modules.model.dto.properties.adapter;
 
-import java.io.IOException;
-import java.time.OffsetDateTime;
-
 import com.google.common.collect.Range;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.modules.model.dto.properties.AbstractProperty;
 import fr.cnes.regards.modules.model.dto.properties.DateIntervalProperty;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 
+import java.io.IOException;
+import java.time.OffsetDateTime;
+
 /**
  * AbstractIntervalAttributeTypeAdapter specialization to manage DateIntervalAttribute.<br/>
  * This adapter is taken into account by GSon if adapted class contains annotation @JsonAdapter.
+ *
  * @author oroussel
  */
 public class DateIntervalAttributeAdapter
-        extends AbstractIntervalAttributeTypeAdapter<OffsetDateTime, DateIntervalProperty> {
+    extends AbstractIntervalAttributeTypeAdapter<OffsetDateTime, DateIntervalProperty> {
 
     @Override
     protected void writeValueLowerBound(JsonWriter pOut, AbstractProperty<Range<OffsetDateTime>> pValue)
-            throws IOException {
+        throws IOException {
         pOut.value(OffsetDateTimeAdapter.format(pValue.getValue().lowerEndpoint()));
     }
 
     @Override
     protected void writeValueUpperBound(JsonWriter pOut, AbstractProperty<Range<OffsetDateTime>> pValue)
-            throws IOException {
+        throws IOException {
         pOut.value(OffsetDateTimeAdapter.format(pValue.getValue().upperEndpoint()));
     }
 

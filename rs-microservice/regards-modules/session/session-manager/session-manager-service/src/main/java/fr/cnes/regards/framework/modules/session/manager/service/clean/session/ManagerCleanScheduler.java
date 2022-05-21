@@ -27,7 +27,6 @@ import fr.cnes.regards.framework.modules.session.manager.domain.Source;
 import fr.cnes.regards.framework.modules.session.manager.service.update.ManagerSnapshotJob;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import java.time.Instant;
 import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
@@ -37,6 +36,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+
+import java.time.Instant;
 
 /**
  * Scheduler to clean old {@link fr.cnes.regards.framework.modules.session.commons.domain.SessionStep},
@@ -88,7 +89,7 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
      */
     @Scheduled(cron = "${regards.session.manager.clean.session.cron:0 0 0 1-7 * SUN}")
     public void scheduleCleanSession() {
-       scheduleJob();
+        scheduleJob();
     }
 
     /**
@@ -105,11 +106,12 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
                     lockingTaskExecutors.executeWithLock(cleanProcessTask,
                                                          new LockConfiguration(microserviceName + "_clean-session",
                                                                                Instant.now()
-                                                                                       .plusSeconds(MAX_TASK_DELAY)));
+                                                                                      .plusSeconds(MAX_TASK_DELAY)));
                 } else {
                     LOGGER.warn("[MANAGER CLEAN SESSION SCHEDULER] - {} could not be executed because "
-                                        + "AgentSnapshotJobs did not finished on time. Waited for {}ms.",
-                                CLEAN_SESSION_TITLE, System.currentTimeMillis() - startTime);
+                                    + "AgentSnapshotJobs did not finished on time. Waited for {}ms.",
+                                CLEAN_SESSION_TITLE,
+                                System.currentTimeMillis() - startTime);
                 }
             } catch (Throwable e) {
                 handleSchedulingError(CLEAN_SESSION, CLEAN_SESSION_TITLE, e);
@@ -118,6 +120,7 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
             }
         }
     }
+
     @Override
     protected Logger getLogger() {
         return LOGGER;
@@ -126,6 +129,7 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
     /**
      * Wait for {@link ManagerSnapshotJob}s in states {@link JobStatus#QUEUED}, {@link JobStatus#PENDING} or
      * {@link JobStatus#RUNNING} to end
+     *
      * @param startTime beginning of the wait
      * @return if {@link ManagerSnapshotJob}s have ended before the end of the wait
      */
@@ -138,20 +142,21 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
         long maxWait = startTime + waitDuration;
 
         do {
-            count = this.jobService
-                    .retrieveJobsCount(ManagerSnapshotJob.class.getName(), JobStatus.QUEUED, JobStatus.PENDING,
-                                       JobStatus.RUNNING);
+            count = this.jobService.retrieveJobsCount(ManagerSnapshotJob.class.getName(),
+                                                      JobStatus.QUEUED,
+                                                      JobStatus.PENDING,
+                                                      JobStatus.RUNNING);
             currentWait = System.currentTimeMillis();
             // wait 45s if jobs are currently running
             if (count != 0L) {
                 LOGGER.info("[MANAGER CLEAN SESSION SCHEDULER] Waiting for ManagerSnapshotJobs ending to start "
-                                    + "ManagerCleanJob ... Current number of {} in running, pending or queued "
-                                    + "states {}.", ManagerSnapshotJob.class.getName(), count);
+                                + "ManagerCleanJob ... Current number of {} in running, pending or queued "
+                                + "states {}.", ManagerSnapshotJob.class.getName(), count);
                 try {
                     Thread.sleep(sleepDuration);
                 } catch (InterruptedException e) {
                     LOGGER.warn("[MANAGER CLEAN SESSION SCHEDULER] - the thread was interrupted while waiting for "
-                                        + "ManagerSnapshotJob ending", e);
+                                    + "ManagerSnapshotJob ending", e);
                     // Restore interrupted state
                     Thread.currentThread().interrupt();
                 }

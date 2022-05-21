@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.framework.utils.parser.builder;
 
+import fr.cnes.regards.framework.utils.parser.rule.IRule;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.core.builders.QueryTreeBuilder;
 import org.apache.lucene.queryparser.flexible.core.nodes.*;
 import org.apache.lucene.queryparser.flexible.standard.nodes.RegexpQueryNode;
 
-import fr.cnes.regards.framework.utils.parser.rule.IRule;
-
 /**
  * Build rule tree
+ *
  * @author Marc SORDI
  */
 public class RuleQueryTreeBuilder extends QueryTreeBuilder implements IRuleBuilder {

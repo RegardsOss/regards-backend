@@ -18,19 +18,19 @@
  */
 package fr.cnes.regards.framework.feign;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Supplier;
-
+import feign.Contract;
 import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.PathVariableParameterProcessor;
 import org.springframework.cloud.openfeign.annotation.RequestHeaderParameterProcessor;
 import org.springframework.cloud.openfeign.support.SpringMvcContract;
 
-import feign.Contract;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Supply the custom SpringMvcContract to use with Feign.
+ *
  * @author Xavier-Alexandre Brochard
  */
 public class FeignContractSupplier implements Supplier<Contract> {
@@ -43,6 +43,7 @@ public class FeignContractSupplier implements Supplier<Contract> {
     /**
      * Customize the default AnnotatedArgumentsProcessors in order to use
      * our CustomRequestParamParameterProcessor instead of the RequestParamParameterProcessor
+     *
      * @return the list of processors
      */
     private List<AnnotatedParameterProcessor> getCustomAnnotatedArgumentsProcessors() {

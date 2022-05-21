@@ -1,19 +1,12 @@
 package fr.cnes.regards.framework.utils.parser;
 
-import java.util.regex.Matcher;
-
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import fr.cnes.regards.framework.utils.parser.rule.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
-import fr.cnes.regards.framework.utils.parser.rule.AndRule;
-import fr.cnes.regards.framework.utils.parser.rule.IRule;
-import fr.cnes.regards.framework.utils.parser.rule.NotRule;
-import fr.cnes.regards.framework.utils.parser.rule.OrRule;
-import fr.cnes.regards.framework.utils.parser.rule.PropertyRule;
-import fr.cnes.regards.framework.utils.parser.rule.RegexpPropertyRule;
+import java.util.regex.Matcher;
 
 public class JsonObjectMatchVisitor implements IRuleVisitor<Boolean> {
 

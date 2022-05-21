@@ -18,6 +18,12 @@
  */
 package fr.cnes.regards.modules.dam.client.dataaccess;
 
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.feign.FeignClientBuilder;
+import fr.cnes.regards.framework.feign.TokenClientProvider;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,20 +39,11 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.gson.Gson;
-
-import fr.cnes.regards.framework.feign.FeignClientBuilder;
-import fr.cnes.regards.framework.feign.TokenClientProvider;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
-
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @TestPropertySource(locations = "classpath:test.properties",
-        properties = { "spring.jpa.properties.hibernate.default_schema=dam_ar_client_it" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=dam_ar_client_it" })
 @DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
 public class IAccessRightClientIT extends AbstractRegardsWebIT {
 
@@ -72,23 +69,23 @@ public class IAccessRightClientIT extends AbstractRegardsWebIT {
     @Before
     public void init() {
         jwtService.injectMockToken(getDefaultTenant(), DEFAULT_ROLE);
-        client = FeignClientBuilder.build(
-                                          new TokenClientProvider<>(IAccessRightClient.class,
-                                                  "http://" + serverAddress + ":" + getPort(), feignSecurityManager),
-                                          gson);
+        client = FeignClientBuilder.build(new TokenClientProvider<>(IAccessRightClient.class,
+                                                                    "http://" + serverAddress + ":" + getPort(),
+                                                                    feignSecurityManager), gson);
         FeignSecurityManager.asSystem();
     }
 
     /**
-     *
      * Check that the access right Feign Client handle the pagination parameters.
      *
      * @since 1.0-SNAPSHOT
      */
     @Test
     public void testRetrieveAccessRightsList() {
-        ResponseEntity<PagedModel<EntityModel<AccessRight>>> accessRights = client.retrieveAccessRightsList(null, null,
-                                                                                                            0, 10);
+        ResponseEntity<PagedModel<EntityModel<AccessRight>>> accessRights = client.retrieveAccessRightsList(null,
+                                                                                                            null,
+                                                                                                            0,
+                                                                                                            10);
         Assert.assertTrue(accessRights.getStatusCode().equals(HttpStatus.OK));
     }
 

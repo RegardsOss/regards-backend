@@ -59,8 +59,7 @@ public class AIPNotificationSettingsService extends AbstractSettingService imple
     public AIPNotificationSettingsService(IDynamicTenantSettingService dynamicTenantSettingService,
                                           ITenantResolver tenantsResolver,
                                           IRuntimeTenantResolver runtimeTenantResolver,
-                                          AIPNotificationSettingsService aipNotificationSettingsService
-    ) {
+                                          AIPNotificationSettingsService aipNotificationSettingsService) {
         super(dynamicTenantSettingService);
         this.tenantsResolver = tenantsResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;

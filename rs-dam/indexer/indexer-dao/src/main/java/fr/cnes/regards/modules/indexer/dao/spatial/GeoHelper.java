@@ -57,11 +57,13 @@ import java.util.function.Predicate;
 
 /**
  * Geo spatial utilities class
+ *
  * @author oroussel
  */
 public class GeoHelper {
 
-    private GeoHelper() {}
+    private GeoHelper() {
+    }
 
     /**
      * Radius used by ASTRO projection (perfect sphere used, no flattening)
@@ -146,27 +148,27 @@ public class GeoHelper {
     }
 
     public static double[] getPointAtDirectionOnEarth(double srcLon, double srcLat, double azimuth, double distance)
-            throws TransformException {
+        throws TransformException {
         return getPointAtDirection(srcLon, srcLat, azimuth, distance, Crs.WGS_84);
     }
 
     public static double[] getPointAtDirectionOnEarth(double[] srcLonLat, double azimuth, double distance)
-            throws TransformException {
+        throws TransformException {
         return getPointAtDirection(srcLonLat, azimuth, distance, Crs.WGS_84);
     }
 
     public static double[] getPointAtDirectionOnMars(double srcLon, double srcLat, double azimuth, double distance)
-            throws TransformException {
+        throws TransformException {
         return getPointAtDirection(srcLon, srcLat, azimuth, distance, Crs.MARS_49900);
     }
 
     public static double[] getPointAtDirectionOnMars(double[] srcLonLat, double azimuth, double distance)
-            throws TransformException {
+        throws TransformException {
         return getPointAtDirection(srcLonLat, azimuth, distance, Crs.MARS_49900);
     }
 
     public static double[] getPointAtDirection(double[] srcLonLat, double azimuth, double distance, Crs crs)
-            throws TransformException {
+        throws TransformException {
         GeodeticCalculator calc = calcMap.get(crs);
         calc.setStartingGeographicPoint(srcLonLat[0], srcLonLat[1]);
         calc.setDirection(azimuth, distance);
@@ -174,7 +176,7 @@ public class GeoHelper {
     }
 
     public static double[] getPointAtDirection(double srcLon, double srcLat, double azimuth, double distance, Crs crs)
-            throws TransformException {
+        throws TransformException {
         GeodeticCalculator calc = calcMap.get(crs);
         calc.setStartingGeographicPoint(srcLon, srcLat);
         calc.setDirection(azimuth, distance);
@@ -264,8 +266,8 @@ public class GeoHelper {
      * Does criterion tree contain a PolygonCriterion or a BoundaryBoxCriterion ?
      */
     public static boolean containsPolygonOrBboxCriterion(ICriterion criterion) {
-        PredicateCriterionVisitor visitor = new PredicateCriterionVisitor(
-                crit -> (crit instanceof PolygonCriterion) || (crit instanceof BoundaryBoxCriterion));
+        PredicateCriterionVisitor visitor = new PredicateCriterionVisitor(crit -> (crit instanceof PolygonCriterion)
+            || (crit instanceof BoundaryBoxCriterion));
         return criterion.accept(visitor);
     }
 
@@ -299,7 +301,7 @@ public class GeoHelper {
         positions.add(firstPos);
         for (int n = 1; n < 9; n++) {
             positions.add(new Position(firstPos.getLongitude() + (n * longitudeStep),
-                    firstPos.getLatitude() + (n * latitudeStep)));
+                                       firstPos.getLatitude() + (n * latitudeStep)));
         }
         positions.add(lastPos);
         return positions;
@@ -423,6 +425,7 @@ public class GeoHelper {
 
     /**
      * Normalize lineString
+     *
      * @return a LineString or a MultiLineString if it crosses dateLine
      */
     public static IGeometry normalizeLineString(LineString lineString) {
@@ -538,20 +541,19 @@ public class GeoHelper {
         // Let's submit the polygon to the ES java library in order to clean it
         List<double[][][]> normalizedMultiPolygon = sanitizePolygon(inPolygon);
 
-
         // Second normalization phase only if pole management is asked to be done
         if (settings.getShouldManagePolesOnGeometries()) {
             for (int i = 0; i < normalizedMultiPolygon.size(); i++) {
                 double[][] exteriorRing = normalizedMultiPolygon.get(i)[0];
                 double[][] doubles = cleanPolePolygon(exteriorRing, northPoleIn, southPoleIn);
-                normalizedMultiPolygon.set(i, new double[][][]{doubles});
+                normalizedMultiPolygon.set(i, new double[][][] { doubles });
             }
         }
 
         // Case of last longitude as 359.999999999 and first 0.0 for example, or -90 and 270, ...
-//        if (exteriorRing[exteriorRing.length - 1] != exteriorRing[0]) {
-//            exteriorRing[exteriorRing.length - 1] = exteriorRing[0];
-//        }
+        //        if (exteriorRing[exteriorRing.length - 1] != exteriorRing[0]) {
+        //            exteriorRing[exteriorRing.length - 1] = exteriorRing[0];
+        //        }
         return normalizedMultiPolygon;
     }
 
@@ -583,7 +585,8 @@ public class GeoHelper {
                         return getSymetricPolygon(cleanPolePolygon(getSymetricPolygon(exteriorRing), true, false));
                     } else { // Both poles...ouch, this will be tricky...but who knows...
                         // Work with ecuadorian symetric polygon as if north pole is south pole
-                        exteriorRing = getSymetricPolygon(normalizePolygonAroundNorthPole(getSymetricPolygon(exteriorRing)));
+                        exteriorRing = getSymetricPolygon(normalizePolygonAroundNorthPole(getSymetricPolygon(
+                            exteriorRing)));
                     }
                 }
             }
@@ -592,20 +595,18 @@ public class GeoHelper {
     }
 
     private static double[][][] esGeometryToPolygon(Geometry geometry) {
-        double [][][] currentPolygon = new double[1][][];
-        double [][] coordinates = new double[geometry.getCoordinates().length][];
+        double[][][] currentPolygon = new double[1][][];
+        double[][] coordinates = new double[geometry.getCoordinates().length][];
         int i = 0;
         for (Coordinate coordinate : geometry.getCoordinates()) {
-            coordinates[i] = new double[]{
-                    coordinate.getX(), coordinate.getY()
-            };
+            coordinates[i] = new double[] { coordinate.getX(), coordinate.getY() };
             i++;
         }
         currentPolygon[0] = coordinates;
         return currentPolygon;
     }
 
-    public static String getGeometryAsText(List<double [][][]> multiPolygon){
+    public static String getGeometryAsText(List<double[][][]> multiPolygon) {
         StringJoiner sb = new StringJoiner(",", "[", "]");
         for (int i = 0; i < multiPolygon.size(); i++) {
             StringJoiner polygonSb = new StringJoiner(",", "[", "]");
@@ -622,8 +623,8 @@ public class GeoHelper {
         return sb.toString();
     }
 
-    private static List<double [][][]> sanitizeMultiPolygon(double[][][][] multiPolygon) {
-        List<double [][][]> outMultipolygons = new ArrayList<>();
+    private static List<double[][][]> sanitizeMultiPolygon(double[][][][] multiPolygon) {
+        List<double[][][]> outMultipolygons = new ArrayList<>();
         // iterate over outMultipolygons in this multipolygon
         for (int i = 0; i < multiPolygon.length; i++) {
             // Any polygon can be splited into several polygons
@@ -636,11 +637,12 @@ public class GeoHelper {
      * Clean using the ES library the provided polygon.
      * We also simplify polygons and removes any holes
      * We can split a polygon into several polygons if they cross the date line
+     *
      * @param polygon a single polygon
      * @return one or more polygon
      */
-    public static List<double [][][]> sanitizePolygon(double[][][] polygon) {
-        List<double [][][]> outMultipolygons = new ArrayList<>();
+    public static List<double[][][]> sanitizePolygon(double[][][] polygon) {
+        List<double[][][]> outMultipolygons = new ArrayList<>();
         GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(PrecisionModel.FLOATING));
 
         // We just keep the external line that describes this polygon. All others lines (holes) are ignored
@@ -651,8 +653,9 @@ public class GeoHelper {
             coordinatesBuilder.coordinate(new Coordinate(inExteriorRing[i][0], inExteriorRing[i][1]));
         }
         // ES will split polygon into several polygons if that's easier to read
-        Geometry geometry = new PolygonBuilder(coordinatesBuilder, Orientation.COUNTER_CLOCKWISE)
-                .buildS4JGeometry(geometryFactory, true);
+        Geometry geometry = new PolygonBuilder(coordinatesBuilder, Orientation.COUNTER_CLOCKWISE).buildS4JGeometry(
+            geometryFactory,
+            true);
 
         // Save polygons into the resulting outMultipolygons
         if (geometry.getGeometryType().equals("MultiPolygon")) {
@@ -685,6 +688,7 @@ public class GeoHelper {
 
     /**
      * Normalize a polygon around North Pole but not passing through it
+     *
      * @param exteriorRing polygon exterior ring
      * @return modified or replaced exterior ring
      */
@@ -716,10 +720,10 @@ public class GeoHelper {
             rightCutPoint[1] = leftCutPoint[1] = medianLatitude;
             // Add rightCutPoint, (rightCutPoint longitude, 90°), (leftCutPoint longitude, 90°), leftCutPoint
             double[][] arrayAroundPole = new double[][] { rightCutPoint, { rightCutPoint[0], 90.0 },
-                    { leftCutPoint[0], 90.0 }, leftCutPoint };
-            exteriorRing = ObjectArrays.concat(
-                                               ObjectArrays.concat(Arrays.copyOfRange(exteriorRing, 0, idxMaxLon),
-                                                                   arrayAroundPole, double[].class),
+                { leftCutPoint[0], 90.0 }, leftCutPoint };
+            exteriorRing = ObjectArrays.concat(ObjectArrays.concat(Arrays.copyOfRange(exteriorRing, 0, idxMaxLon),
+                                                                   arrayAroundPole,
+                                                                   double[].class),
                                                Arrays.copyOfRange(exteriorRing, idxMaxLon, exteriorRing.length),
                                                double[].class);
             // The last point has a longitude != than first which is not correct, let's use the same
@@ -730,26 +734,28 @@ public class GeoHelper {
                 rightCutPoint[0] = MAX_CHEATED_LONGITUDE;
                 leftCutPoint[0] = 0.0;
                 // If both latitude are equals, median latitude is same else use Thales theorem
-                double medianLatitude = rightBorderLat == leftBorderLat ? rightBorderLat
-                        : ((leftBorderLon * (rightBorderLat - leftBorderLat))
-                                / ((leftBorderLon + MAX_CHEATED_LONGITUDE) - rightBorderLon)) + leftBorderLat;
+                double medianLatitude = rightBorderLat == leftBorderLat ?
+                    rightBorderLat :
+                    ((leftBorderLon * (rightBorderLat - leftBorderLat)) / ((leftBorderLon + MAX_CHEATED_LONGITUDE)
+                        - rightBorderLon)) + leftBorderLat;
                 rightCutPoint[1] = leftCutPoint[1] = medianLatitude;
             } else { // Cut meridian is dateline => max longitude is 180
                 rightCutPoint[0] = 180.0;
                 leftCutPoint[0] = -180.0;
                 // If both latitude are equals, median latitude is same else use Thales theorem
-                double medianLatitude = rightBorderLat == leftBorderLat ? rightBorderLat
-                        : (((180.0 - leftBorderLon) * (rightBorderLat - leftBorderLat))
-                                / ((180.0 - leftBorderLon) + rightBorderLon + 180.0)) + leftBorderLat;
+                double medianLatitude = rightBorderLat == leftBorderLat ?
+                    rightBorderLat :
+                    (((180.0 - leftBorderLon) * (rightBorderLat - leftBorderLat)) / ((180.0 - leftBorderLon)
+                        + rightBorderLon + 180.0)) + leftBorderLat;
                 rightCutPoint[1] = leftCutPoint[1] = medianLatitude;
             }
 
             // Add rightCutPoint, (rightCutPoint longitude, 90°), (leftCutPoint longitude, 90°), leftCutPoint
             double[][] arrayAroundPole = new double[][] { rightCutPoint, { rightCutPoint[0], 90.0 },
-                    { leftCutPoint[0], 90.0 }, leftCutPoint };
-            exteriorRing = ObjectArrays.concat(
-                                               ObjectArrays.concat(Arrays.copyOfRange(exteriorRing, 0, idxMaxLon + 1),
-                                                                   arrayAroundPole, double[].class),
+                { leftCutPoint[0], 90.0 }, leftCutPoint };
+            exteriorRing = ObjectArrays.concat(ObjectArrays.concat(Arrays.copyOfRange(exteriorRing, 0, idxMaxLon + 1),
+                                                                   arrayAroundPole,
+                                                                   double[].class),
                                                Arrays.copyOfRange(exteriorRing, idxMaxLon + 1, exteriorRing.length),
                                                double[].class);
         }
@@ -793,8 +799,8 @@ public class GeoHelper {
         for (int i = startIdx; i < lineString.length; i++) {
             // Take the "eastmost" max (except if it is at index 0 which means it is already the rightest, think as
             // cycle array)
-            if ((lineString[i][1] > 0.0) && ((lineString[i][0] > lineString[idxMaxLon][0])
-                    || ((lineString[i][0] == lineString[idxMaxLon][0]) && (i != 0)))) {
+            if ((lineString[i][1] > 0.0) && ((lineString[i][0] > lineString[idxMaxLon][0]) || (
+                (lineString[i][0] == lineString[idxMaxLon][0]) && (i != 0)))) {
                 idxMaxLon = i;
             }
         }
@@ -939,6 +945,7 @@ public class GeoHelper {
     /**
      * ICriterionVisitor permitting to find a certain type of ICriterion from a ICriterion tree (a CircleCriterion for
      * example)
+     *
      * @param <T> type of Icriterion to find
      */
     @SuppressWarnings("unchecked")
@@ -1096,8 +1103,11 @@ public class GeoHelper {
 
         @Override
         public Boolean visitPoint(Point geometry) {
-            return GeoHelper.getDistance(point[0], point[1], geometry.getCoordinates().getLongitude(),
-                                         geometry.getCoordinates().getLatitude(), crs) < distance;
+            return GeoHelper.getDistance(point[0],
+                                         point[1],
+                                         geometry.getCoordinates().getLongitude(),
+                                         geometry.getCoordinates().getLatitude(),
+                                         crs) < distance;
         }
 
         @Override
@@ -1107,8 +1117,15 @@ public class GeoHelper {
             Position lastPosition = null;
             for (Position position : positions) {
                 if (lastPosition != null) {
-                    boolean found = createIntermediatePositions(lastPosition, position).stream().anyMatch(p -> GeoHelper
-                            .getDistance(point[0], point[1], p.getLongitude(), p.getLatitude(), crs) < distance);
+                    boolean found = createIntermediatePositions(lastPosition, position).stream()
+                                                                                       .anyMatch(p ->
+                                                                                                     GeoHelper.getDistance(
+                                                                                                         point[0],
+                                                                                                         point[1],
+                                                                                                         p.getLongitude(),
+                                                                                                         p.getLatitude(),
+                                                                                                         crs)
+                                                                                                         < distance);
                     if (found) {
                         return found;
                     }
@@ -1165,8 +1182,11 @@ public class GeoHelper {
 
         @Override
         public Double visitPoint(Point geometry) {
-            return GeoHelper.getDistance(point[0], point[1], geometry.getCoordinates().getLongitude(),
-                                         geometry.getCoordinates().getLatitude(), crs);
+            return GeoHelper.getDistance(point[0],
+                                         point[1],
+                                         geometry.getCoordinates().getLongitude(),
+                                         geometry.getCoordinates().getLatitude(),
+                                         crs);
         }
 
         @Override
@@ -1178,12 +1198,16 @@ public class GeoHelper {
             double distance = Double.POSITIVE_INFINITY;
             for (Position position : positions) {
                 if (lastPosition != null) {
-                    distance = FastMath
-                            .min(distance,
-                                 createIntermediatePositions(lastPosition, position).stream()
-                                         .mapToDouble(p -> GeoHelper.getDistance(point[0], point[1], p.getLongitude(),
-                                                                                 p.getLatitude(), crs))
-                                         .min().getAsDouble());
+                    distance = FastMath.min(distance,
+                                            createIntermediatePositions(lastPosition, position).stream()
+                                                                                               .mapToDouble(p -> GeoHelper.getDistance(
+                                                                                                   point[0],
+                                                                                                   point[1],
+                                                                                                   p.getLongitude(),
+                                                                                                   p.getLatitude(),
+                                                                                                   crs))
+                                                                                               .min()
+                                                                                               .getAsDouble());
                 }
                 lastPosition = position;
             }

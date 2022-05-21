@@ -18,20 +18,19 @@
  */
 package fr.cnes.regards.modules.feature.dto.urn;
 
-import java.util.UUID;
-import java.util.regex.Pattern;
-
-import javax.persistence.Convert;
-
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.framework.urn.validator.RegardsUrn;
 import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
 
+import javax.persistence.Convert;
+import java.util.UUID;
+import java.util.regex.Pattern;
+
 /**
  * allow us to create URN with the following format:
  * URN:FeatureIdentifier:entityType:tenant:UUID(entityId):Vversion[,order][:REVrevision]
- *
+ * <p>
  * <br/>
  * Example:
  * <ul>
@@ -47,8 +46,11 @@ public class FeatureUniformResourceName extends UniformResourceName {
 
     public static final int MAX_SIZE = 132;
 
-    public static FeatureUniformResourceName build(FeatureIdentifier identifier, EntityType entityType, String tenant,
-            UUID entityId, int version) {
+    public static FeatureUniformResourceName build(FeatureIdentifier identifier,
+                                                   EntityType entityType,
+                                                   String tenant,
+                                                   UUID entityId,
+                                                   int version) {
         FeatureUniformResourceName urn = new FeatureUniformResourceName();
         urn.setIdentifier(identifier.name());
         urn.setEntityId(entityId);
@@ -58,8 +60,13 @@ public class FeatureUniformResourceName extends UniformResourceName {
         return urn;
     }
 
-    public FeatureUniformResourceName(FeatureIdentifier oaisIdentifier, EntityType entityType, String tenant,
-            UUID entityId, int version, Long order, String revision) {
+    public FeatureUniformResourceName(FeatureIdentifier oaisIdentifier,
+                                      EntityType entityType,
+                                      String tenant,
+                                      UUID entityId,
+                                      int version,
+                                      Long order,
+                                      String revision) {
         super(oaisIdentifier.name(), entityType, tenant, entityId, version, order, revision);
     }
 
@@ -67,14 +74,18 @@ public class FeatureUniformResourceName extends UniformResourceName {
         // for testing purpose
     }
 
-    public FeatureUniformResourceName(FeatureIdentifier identifier, EntityType entityType, String tenant, UUID entityId,
-            Long order, String revision) {
+    public FeatureUniformResourceName(FeatureIdentifier identifier,
+                                      EntityType entityType,
+                                      String tenant,
+                                      UUID entityId,
+                                      Long order,
+                                      String revision) {
         super(identifier.name(), entityType, tenant, entityId, order, revision);
     }
 
     public static boolean isValidUrn(String urn) {
-        return UniformResourceName.isValidUrn(urn)
-                && (FeatureIdentifier.FEATURE.toString().equals(urn.split(DELIMITER)[1]));
+        return UniformResourceName.isValidUrn(urn) && (FeatureIdentifier.FEATURE.toString()
+                                                                                .equals(urn.split(DELIMITER)[1]));
     }
 
     /**
@@ -125,17 +136,22 @@ public class FeatureUniformResourceName extends UniformResourceName {
      * Build a pseudo random UUID starting with 00000000-0000-0000-0000 for test purpose only.
      * Use {@link #build(FeatureIdentifier, EntityType, String, UUID, int, Long, String)} in production.
      */
-    public static FeatureUniformResourceName pseudoRandomUrn(FeatureIdentifier identifier, EntityType entityType,
-            String tenant, int version) {
-        return FeatureUniformResourceName.build(identifier, entityType, tenant,
+    public static FeatureUniformResourceName pseudoRandomUrn(FeatureIdentifier identifier,
+                                                             EntityType entityType,
+                                                             String tenant,
+                                                             int version) {
+        return FeatureUniformResourceName.build(identifier,
+                                                entityType,
+                                                tenant,
                                                 UUID.fromString("0-0-0-0-" + (int) (Math.random() * Integer.MAX_VALUE)),
                                                 version);
     }
 
     public static FeatureUniformResourceName clone(FeatureUniformResourceName template, Long order) {
-        return FeatureUniformResourceName
-                .build(FeatureIdentifier.valueOf(template.getIdentifier()), template.getEntityType(),
-                       template.getTenant(), template.getEntityId(), template.getVersion())
-                .withOrder(order);
+        return FeatureUniformResourceName.build(FeatureIdentifier.valueOf(template.getIdentifier()),
+                                                template.getEntityType(),
+                                                template.getTenant(),
+                                                template.getEntityId(),
+                                                template.getVersion()).withOrder(order);
     }
 }

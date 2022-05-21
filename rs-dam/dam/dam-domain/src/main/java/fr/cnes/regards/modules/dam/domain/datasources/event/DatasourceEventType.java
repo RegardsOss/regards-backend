@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.dam.domain.datasources.event;
 
 /**
  * @author sbinda
- *
  */
 public enum DatasourceEventType {
 

@@ -81,11 +81,11 @@ public class AIPDeleteService implements IAIPDeleteService {
 
     @Override
     public boolean deletionAlreadyPending(AIPEntity aip) {
-        return oaisDeletionRequestRepository
-                .existsByAipIdAndStateIn(aip.getId(),
-                                         Sets.newHashSet(InternalRequestState.CREATED, InternalRequestState.BLOCKED,
-                                                         InternalRequestState.RUNNING,
-                                                         InternalRequestState.TO_SCHEDULE));
+        return oaisDeletionRequestRepository.existsByAipIdAndStateIn(aip.getId(),
+                                                                     Sets.newHashSet(InternalRequestState.CREATED,
+                                                                                     InternalRequestState.BLOCKED,
+                                                                                     InternalRequestState.RUNNING,
+                                                                                     InternalRequestState.TO_SCHEDULE));
     }
 
     @Override
@@ -101,31 +101,42 @@ public class AIPDeleteService implements IAIPDeleteService {
             // Retrieve all linked files
             for (ContentInformation ci : aipEntity.getAip().getProperties().getContentInformations()) {
                 OAISDataObject dataObject = ci.getDataObject();
-                filesToDelete.addAll(getFileDeletionEvents(aipId, aipEntity.getSessionOwner(), aipEntity.getSession(),
-                                                           dataObject.getChecksum(), dataObject.getLocations()));
+                filesToDelete.addAll(getFileDeletionEvents(aipId,
+                                                           aipEntity.getSessionOwner(),
+                                                           aipEntity.getSession(),
+                                                           dataObject.getChecksum(),
+                                                           dataObject.getLocations()));
             }
         }
 
         // Publish event to delete AIP files and AIPs itself
         Collection<RequestInfo> deleteRequestInfos = storageClient.delete(filesToDelete);
 
-        request.setRemoteStepGroupIds(deleteRequestInfos.stream().map(RequestInfo::getGroupId)
-                                              .collect(Collectors.toList()));
+        request.setRemoteStepGroupIds(deleteRequestInfos.stream()
+                                                        .map(RequestInfo::getGroupId)
+                                                        .collect(Collectors.toList()));
         // Put the request as un-schedule.
         // The answering event from storage will put again the request to be executed
         request.setState(InternalRequestState.TO_SCHEDULE);
         oaisDeletionRequestRepository.save(request);
     }
 
-    private List<FileDeletionRequestDTO> getFileDeletionEvents(String owner, String sessionOwner, String session,
-            String fileChecksum, Set<OAISDataObjectLocation> locations) {
+    private List<FileDeletionRequestDTO> getFileDeletionEvents(String owner,
+                                                               String sessionOwner,
+                                                               String session,
+                                                               String fileChecksum,
+                                                               Set<OAISDataObjectLocation> locations) {
         List<FileDeletionRequestDTO> events = new ArrayList<>();
         for (OAISDataObjectLocation location : locations) {
             // Ignore if the file is yet stored
             if (location.getStorage() != null) {
                 // Create the storage delete event
-                events.add(FileDeletionRequestDTO
-                                   .build(fileChecksum, location.getStorage(), owner, sessionOwner, session, false));
+                events.add(FileDeletionRequestDTO.build(fileChecksum,
+                                                        location.getStorage(),
+                                                        owner,
+                                                        sessionOwner,
+                                                        session,
+                                                        false));
             }
         }
         return events;
@@ -138,7 +149,8 @@ public class AIPDeleteService implements IAIPDeleteService {
         if (!aipsRelatedToSip.isEmpty()) {
             // we can find any aip from one sip as they are generated at same time so they all have the same session information
             AIPEntity aipForSessionInfo = aipsRelatedToSip.stream().findAny().get();
-            sessionNotifier.productDeleted(aipForSessionInfo.getSessionOwner(), aipForSessionInfo.getSession(),
+            sessionNotifier.productDeleted(aipForSessionInfo.getSessionOwner(),
+                                           aipForSessionInfo.getSession(),
                                            aipsRelatedToSip);
             aipsRelatedToSip.forEach(entity -> entity.setState(AIPState.DELETED));
             if (deleteIrrevocably) {

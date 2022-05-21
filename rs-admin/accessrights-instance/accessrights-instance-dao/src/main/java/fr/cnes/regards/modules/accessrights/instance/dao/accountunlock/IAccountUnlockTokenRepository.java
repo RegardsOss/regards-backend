@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.dao.accountunlock;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.stream.Stream;
-
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.AccountUnlockToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-import fr.cnes.regards.modules.accessrights.instance.domain.Account;
-import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.AccountUnlockToken;
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * Interface for a JPA auto-generated CRUD repository managing {@link AccountUnlockToken}s.<br>
@@ -54,8 +53,7 @@ public interface IAccountUnlockTokenRepository extends JpaRepository<AccountUnlo
     /**
      * Delete all {@link AccountUnlockToken}s for the passed {@link Account}
      *
-     * @param pAccount
-     *            the account
+     * @param pAccount the account
      */
     void deleteAllByAccount(Account pAccount);
 }

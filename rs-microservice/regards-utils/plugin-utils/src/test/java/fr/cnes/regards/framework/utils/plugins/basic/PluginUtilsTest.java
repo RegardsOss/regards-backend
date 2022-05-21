@@ -18,16 +18,6 @@
  */
 package fr.cnes.regards.framework.utils.plugins.basic;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParamDescriptor;
@@ -38,9 +28,19 @@ import fr.cnes.regards.framework.utils.plugins.PluginParameterUtils.PrimitiveObj
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Unit testing of {@link PluginUtils}.
+ *
  * @author Christophe Mertz
  */
 public class PluginUtilsTest extends PluginUtilsTestConstants {
@@ -101,6 +101,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
     /**
      * Get a {@link SamplePlugin} with a specific parameters
+     *
      * @throws NotAvailablePluginConfigurationException
      */
     @Test
@@ -109,10 +110,12 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
         LOGGER.debug(STARTING + toString());
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
-                     IPluginParam.build(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS),
-                     IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, "chris_test_1"));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE,
+                                                                           PluginUtilsTest.TRUE),
+                                                        IPluginParam.build(SamplePlugin.FIELD_NAME_COEF,
+                                                                           PluginUtilsTest.TROIS),
+                                                        IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX,
+                                                                           "chris_test_1"));
 
         // instantiate plugin
         samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
@@ -131,6 +134,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
     /**
      * Get a {@link SamplePlugin} with a specific parameters
+     *
      * @throws NotAvailablePluginConfigurationException
      */
     @Test
@@ -139,16 +143,18 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
         LOGGER.debug(STARTING + toString());
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
-                     IPluginParam.build(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS).dynamic(),
-                     IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, "suffix"));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE,
+                                                                           PluginUtilsTest.TRUE),
+                                                        IPluginParam.build(SamplePlugin.FIELD_NAME_COEF,
+                                                                           PluginUtilsTest.TROIS).dynamic(),
+                                                        IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, "suffix"));
 
         IPluginParam dynParam = IPluginParam.build(SamplePlugin.FIELD_NAME_COEF, -1);
 
         // instantiate plugin
         samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
-                                             new HashMap<>(), dynParam);
+                                             new HashMap<>(),
+                                             dynParam);
 
         Assert.assertNotNull(samplePlugin);
 
@@ -164,10 +170,11 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
         LOGGER.debug(STARTING + toString());
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
-                     IPluginParam.build(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS).dynamic(),
-                     IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, "a suffix"));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE,
+                                                                           PluginUtilsTest.TRUE),
+                                                        IPluginParam.build(SamplePlugin.FIELD_NAME_COEF,
+                                                                           PluginUtilsTest.TROIS).dynamic(),
+                                                        IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, "a suffix"));
 
         // instantiate plugin
         samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
@@ -185,6 +192,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
     /**
      * Get a {@link SamplePlugin} with a specific parameters
+     *
      * @throws NotAvailablePluginConfigurationException
      */
     @Test
@@ -193,18 +201,22 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
         LOGGER.debug(STARTING + toString());
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
-                     IPluginParam.build(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS).dynamic(),
-                     IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, "a suffix")
-                             .dynamic(PluginUtilsTest.RED, PluginUtilsTest.BLUE, PluginUtilsTest.GREEN));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE,
+                                                                           PluginUtilsTest.TRUE),
+                                                        IPluginParam.build(SamplePlugin.FIELD_NAME_COEF,
+                                                                           PluginUtilsTest.TROIS).dynamic(),
+                                                        IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, "a suffix")
+                                                                    .dynamic(PluginUtilsTest.RED,
+                                                                             PluginUtilsTest.BLUE,
+                                                                             PluginUtilsTest.GREEN));
 
         // Init a dynamic parameter
         IPluginParam dyn = IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.BLUE);
 
         // instantiate plugin
         samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
-                                             new HashMap<>(), dyn);
+                                             new HashMap<>(),
+                                             dyn);
 
         Assert.assertNotNull(samplePlugin);
 
@@ -217,6 +229,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
     /**
      * Get a {@link SamplePlugin} with a specific parameters
+     *
      * @throws NotAvailablePluginConfigurationException
      */
     @Test
@@ -225,11 +238,15 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
         LOGGER.debug(STARTING + toString());
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
-                     IPluginParam.build(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS).dynamic(),
-                     IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.RED)
-                             .dynamic(PluginUtilsTest.RED, PluginUtilsTest.BLUE, PluginUtilsTest.GREEN));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE,
+                                                                           PluginUtilsTest.TRUE),
+                                                        IPluginParam.build(SamplePlugin.FIELD_NAME_COEF,
+                                                                           PluginUtilsTest.TROIS).dynamic(),
+                                                        IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX,
+                                                                           PluginUtilsTest.RED)
+                                                                    .dynamic(PluginUtilsTest.RED,
+                                                                             PluginUtilsTest.BLUE,
+                                                                             PluginUtilsTest.GREEN));
 
         // instantiate plugin
         samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
@@ -246,17 +263,22 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
     /**
      * Get a {@link SamplePlugin} with a specific parameters @ An error occurs
+     *
      * @throws NotAvailablePluginConfigurationException
      */
     @Test(expected = PluginUtilsRuntimeException.class)
     public void getSamplePluginWithUnknownDynamicParameterWithValues() throws NotAvailablePluginConfigurationException {
         LOGGER.debug(STARTING + toString());
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
-                     IPluginParam.build(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS).dynamic(),
-                     IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.RED)
-                             .dynamic(PluginUtilsTest.RED, PluginUtilsTest.BLUE, PluginUtilsTest.GREEN));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE,
+                                                                           PluginUtilsTest.TRUE),
+                                                        IPluginParam.build(SamplePlugin.FIELD_NAME_COEF,
+                                                                           PluginUtilsTest.TROIS).dynamic(),
+                                                        IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX,
+                                                                           PluginUtilsTest.RED)
+                                                                    .dynamic(PluginUtilsTest.RED,
+                                                                             PluginUtilsTest.BLUE,
+                                                                             PluginUtilsTest.GREEN));
 
         // Init a dynamic parameter
         IPluginParam dyn = IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.CINQ);
@@ -267,6 +289,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
     /**
      * Used the default parameter value when the Integer parameter is missing
+     *
      * @throws NotAvailablePluginConfigurationException
      */
     @Test
@@ -276,9 +299,10 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         LOGGER.debug(STARTING + toString());
 
         // Set parameters : Missing coeff parameter
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
-                     IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.RED));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE,
+                                                                           PluginUtilsTest.TRUE),
+                                                        IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX,
+                                                                           PluginUtilsTest.RED));
 
         // instantiate plugin
         PluginUtils.setup(SamplePlugin.class.getPackage().getName());
@@ -298,9 +322,10 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         LOGGER.debug(STARTING + toString());
 
         // Set parameters : Missing suffix parameter
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
-                     IPluginParam.build(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.CINQ));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE,
+                                                                           PluginUtilsTest.TRUE),
+                                                        IPluginParam.build(SamplePlugin.FIELD_NAME_COEF,
+                                                                           PluginUtilsTest.CINQ));
 
         PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters), new HashMap<>());
 
@@ -310,6 +335,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
     /**
      * Unable to get {@link SamplePlugin} an Integer parameter is missing
+     *
      * @throws NotAvailablePluginConfigurationException
      */
     @Test(expected = PluginUtilsRuntimeException.class)
@@ -317,10 +343,12 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         LOGGER.debug(STARTING + toString());
 
         // Set parameters
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
-                     IPluginParam.build(SampleErrorPlugin.FIELD_NAME_SUFFIX, "chris_test_4"),
-                     IPluginParam.build(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.CINQ));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE,
+                                                                           PluginUtilsTest.TRUE),
+                                                        IPluginParam.build(SampleErrorPlugin.FIELD_NAME_SUFFIX,
+                                                                           "chris_test_4"),
+                                                        IPluginParam.build(SamplePlugin.FIELD_NAME_COEF,
+                                                                           PluginUtilsTest.CINQ));
 
         // instantiate plugin
         PluginUtils.getPlugin(PluginConfiguration.build(SampleErrorPlugin.class, "", parameters), new HashMap<>());

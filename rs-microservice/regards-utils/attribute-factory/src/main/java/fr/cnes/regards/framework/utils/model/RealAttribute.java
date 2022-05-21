@@ -22,9 +22,8 @@ import fr.cnes.regards.framework.utils.metamodel.MetaAttribute;
 
 /**
  * Cette classe permet de modeliser la notion d'attribut a valeur de type "reel".
- * 
- * @author Christophe Mertz
  *
+ * @author Christophe Mertz
  */
 public class RealAttribute extends Attribute {
 

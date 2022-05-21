@@ -18,11 +18,15 @@
  */
 package fr.cnes.regards.modules.model.service.xml;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.google.common.collect.Iterables;
+import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.domain.schema.Fragment;
+import fr.cnes.regards.modules.model.domain.schema.Model;
+import fr.cnes.regards.modules.model.service.exception.ExportException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -31,21 +35,15 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
-
-import com.google.common.collect.Iterables;
-
-import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
-import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.model.domain.schema.Fragment;
-import fr.cnes.regards.modules.model.domain.schema.Model;
-import fr.cnes.regards.modules.model.service.exception.ExportException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Help to manage model XML export based on XML schema definition
+ *
  * @author Marc Sordi
  */
 public final class XmlExportHelper {
@@ -65,26 +63,28 @@ public final class XmlExportHelper {
     }
 
     public static void exportFragment(OutputStream os,
-            fr.cnes.regards.modules.model.domain.attributes.Fragment fragment, List<AttributeModel> attributes)
-            throws ExportException {
+                                      fr.cnes.regards.modules.model.domain.attributes.Fragment fragment,
+                                      List<AttributeModel> attributes) throws ExportException {
         write(os, Fragment.class, toXmlFragment(fragment, attributes));
     }
 
-    public static void exportModel(OutputStream os, fr.cnes.regards.modules.model.domain.Model model,
-            List<ModelAttrAssoc> attributes) throws ExportException {
+    public static void exportModel(OutputStream os,
+                                   fr.cnes.regards.modules.model.domain.Model model,
+                                   List<ModelAttrAssoc> attributes) throws ExportException {
         write(os, Model.class, toXmlModel(model, attributes));
     }
 
     /**
      * Build a {@link Model} based on a {@link fr.cnes.regards.modules.dam.domain.models.Model} and its related
      * {@link ModelAttrAssoc}
-     * @param model {@link fr.cnes.regards.modules.dam.domain.models.Model}
+     *
+     * @param model      {@link fr.cnes.regards.modules.dam.domain.models.Model}
      * @param attributes list of {@link ModelAttrAssoc}
      * @return serializable {@link Model}
      * @throws ExportException if error occurs!
      */
     private static Model toXmlModel(fr.cnes.regards.modules.model.domain.Model model, List<ModelAttrAssoc> attributes)
-            throws ExportException {
+        throws ExportException {
 
         // Manage model
         final Model xmlModel = model.toXml();
@@ -99,8 +99,7 @@ public final class XmlExportHelper {
         }
 
         // Get default fragment
-        final Fragment xmlDefaultFragment = xmlFragmentMap
-                .remove(fr.cnes.regards.modules.model.domain.attributes.Fragment.getDefaultName());
+        final Fragment xmlDefaultFragment = xmlFragmentMap.remove(fr.cnes.regards.modules.model.domain.attributes.Fragment.getDefaultName());
         if (xmlDefaultFragment != null) {
             xmlModel.getAttribute().addAll(xmlDefaultFragment.getAttribute());
         }
@@ -115,7 +114,8 @@ public final class XmlExportHelper {
 
     /**
      * Dispatch {@link ModelAttrAssoc} in its related fragment navigating through {@link AttributeModel}
-     * @param fragmentMap {@link Fragment} map
+     *
+     * @param fragmentMap    {@link Fragment} map
      * @param modelAttrAssoc {@link ModelAttrAssoc} to dispatch
      */
     private static void dispatchAttribute(Map<String, Fragment> fragmentMap, ModelAttrAssoc modelAttrAssoc) {
@@ -137,12 +137,13 @@ public final class XmlExportHelper {
     /**
      * Build a {@link Fragment} based on a {@link fr.cnes.regards.modules.model.domain.attributes.Fragment} and its
      * related {@link AttributeModel}
-     * @param fragment {@link fr.cnes.regards.modules.model.domain.attributes.Fragment}
+     *
+     * @param fragment   {@link fr.cnes.regards.modules.model.domain.attributes.Fragment}
      * @param attributes list of {@link AttributeModel}
      * @return {@link Fragment}
      */
     private static Fragment toXmlFragment(fr.cnes.regards.modules.model.domain.attributes.Fragment fragment,
-            List<AttributeModel> attributes) {
+                                          List<AttributeModel> attributes) {
 
         // Manage fragment
         final Fragment xmlFragment = fragment.toXml();
@@ -159,9 +160,10 @@ public final class XmlExportHelper {
 
     /**
      * Write {@link JAXBElement} to {@link OutputStream}
-     * @param <T> {@link JAXBElement} type
-     * @param os {@link OutputStream}
-     * @param clazz {@link JAXBElement} type
+     *
+     * @param <T>         {@link JAXBElement} type
+     * @param os          {@link OutputStream}
+     * @param clazz       {@link JAXBElement} type
      * @param jaxbElement {@link JAXBElement}
      * @throws ExportException if error occurs!
      */
@@ -178,8 +180,8 @@ public final class XmlExportHelper {
             // Enable validation
             final InputStream in = XmlExportHelper.class.getClassLoader().getResourceAsStream(XML_SCHEMA_NAME);
             final StreamSource xsdSource = new StreamSource(in);
-            jaxbMarshaller
-                    .setSchema(SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(xsdSource));
+            jaxbMarshaller.setSchema(SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
+                                                  .newSchema(xsdSource));
 
             // Marshall data
             jaxbMarshaller.marshal(jaxbElement, os);

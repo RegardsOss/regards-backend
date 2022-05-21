@@ -36,6 +36,7 @@ import java.util.UUID;
 
 /**
  * Test multi transaction synchronization with AMQP and database transactions.
+ *
  * @author Marc Sordi
  */
 @RunWith(SpringRunner.class)
@@ -157,6 +158,7 @@ public class MultiTransactionIT {
 
     /**
      * Generate a {@link Todo} with a random unique label
+     *
      * @return random {@link Todo}
      */
     private Todo genTodo() {

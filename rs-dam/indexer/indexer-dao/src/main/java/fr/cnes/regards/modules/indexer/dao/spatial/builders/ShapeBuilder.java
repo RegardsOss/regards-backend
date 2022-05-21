@@ -35,7 +35,7 @@ import java.util.*;
  * Basic class for building GeoJSON shapes like Polygons, Linestrings, etc
  */
 public abstract class ShapeBuilder<T extends Shape, G extends org.elasticsearch.geometry.Geometry, E extends ShapeBuilder<T, G, E>>
-        //implements NamedWriteable//, ToXContentObject
+    //implements NamedWriteable//, ToXContentObject
 {
 
     protected static final Logger LOGGER = LogManager.getLogger(ShapeBuilder.class);
@@ -62,26 +62,37 @@ public abstract class ShapeBuilder<T extends Shape, G extends org.elasticsearch.
 
     public static final GeometryFactory FACTORY = SPATIAL_CONTEXT.getShapeFactory().getGeometryFactory();
 
-    /** We're expecting some geometries might cross the dateline. */
+    /**
+     * We're expecting some geometries might cross the dateline.
+     */
     protected final boolean wrapdateline = SPATIAL_CONTEXT.isGeo();
 
-    /** It's possible that some geometries in a MULTI* shape might overlap. With the possible exception of GeometryCollection,
+    /**
+     * It's possible that some geometries in a MULTI* shape might overlap. With the possible exception of GeometryCollection,
      * this normally isn't allowed.
      */
     protected static final boolean MULTI_POLYGON_MAY_OVERLAP = false;
 
-    /** @see JtsGeometry#validate() */
+    /**
+     * @see JtsGeometry#validate()
+     */
     protected static final boolean AUTO_VALIDATE_JTS_GEOMETRY = true;
 
-    /** @see JtsGeometry#index() */
+    /**
+     * @see JtsGeometry#index()
+     */
     protected static final boolean AUTO_INDEX_JTS_GEOMETRY = true;//may want to turn off once SpatialStrategy impls do it.
 
-    /** default ctor */
+    /**
+     * default ctor
+     */
     protected ShapeBuilder() {
         coordinates = new ArrayList<>();
     }
 
-    /** ctor from list of coordinates */
+    /**
+     * ctor from list of coordinates
+     */
     protected ShapeBuilder(List<Coordinate> coordinates) {
         if (coordinates == null || coordinates.size() == 0) {
             throw new IllegalArgumentException("cannot create point collection with empty set of points");
@@ -96,6 +107,7 @@ public abstract class ShapeBuilder<T extends Shape, G extends org.elasticsearch.
 
     /**
      * Add a array of coordinates to the collection
+     *
      * @param coordinates array of {@link Coordinate}s to add
      * @return this
      */
@@ -105,6 +117,7 @@ public abstract class ShapeBuilder<T extends Shape, G extends org.elasticsearch.
 
     /**
      * Add a collection of coordinates to the collection
+     *
      * @param coordinates array of {@link Coordinate}s to add
      * @return this
      */
@@ -115,6 +128,7 @@ public abstract class ShapeBuilder<T extends Shape, G extends org.elasticsearch.
 
     /**
      * Copy all coordinate to a new Array
+     *
      * @param closed if set to true the first point of the array is repeated as last element
      * @return Array of coordinates
      */
@@ -142,6 +156,7 @@ public abstract class ShapeBuilder<T extends Shape, G extends org.elasticsearch.
      * Create a new Shape from this builder. Since calling this method could change the
      * defined shape. (by inserting new coordinates or change the position of points)
      * the builder looses its validity. So this method should only be called once on a builder
+     *
      * @return new {@link Shape} defined by the builder
      */
     public abstract T buildS4J();
@@ -154,17 +169,20 @@ public abstract class ShapeBuilder<T extends Shape, G extends org.elasticsearch.
         }
     }
 
-    /** tracks number of dimensions for this shape */
+    /**
+     * tracks number of dimensions for this shape
+     */
     public abstract int numDimensions();
 
     /**
      * Calculate the intersection of a line segment and a vertical dateline.
-     * @param p1 start-point of the line segment
-     * @param p2 end-point of the line segment
+     *
+     * @param p1       start-point of the line segment
+     * @param p2       end-point of the line segment
      * @param dateline x-coordinate of the vertical dateline
      * @return position of the intersection in the open range (0..1] if the line
-     *         segment intersects with the line segment. Otherwise this method
-     *         returns {@link Double#NaN}
+     * segment intersects with the line segment. Otherwise this method
+     * returns {@link Double#NaN}
      */
     protected static final double intersection(Coordinate p1, Coordinate p2, double dateline) {
         if (p1.x == p2.x && p1.x != dateline) {
@@ -185,8 +203,9 @@ public abstract class ShapeBuilder<T extends Shape, G extends org.elasticsearch.
      * Calculate all intersections of line segments and a vertical line. The
      * Array of edges will be ordered asc by the y-coordinate of the
      * intersections of edges.
+     *
      * @param dateline x-coordinate of the dateline
-     * @param edges set of edges that may intersect with the dateline
+     * @param edges    set of edges that may intersect with the dateline
      * @return number of intersecting edges
      */
     protected static int intersections(double dateline, Edge[] edges) {
@@ -224,8 +243,8 @@ public abstract class ShapeBuilder<T extends Shape, G extends org.elasticsearch.
      * Checks the number of dateline intersections detected for a component. If there is only
      * one, it clears it as it means that the component just touches the dateline.
      *
-     * @param edges    set of edges that may intersect with the dateline
-     * @param component    The component to check
+     * @param edges     set of edges that may intersect with the dateline
+     * @param component The component to check
      * @return true if the component touches the dateline.
      */
     private static boolean clearComponentTouchingDateline(Edge[] edges, int component) {
@@ -250,6 +269,7 @@ public abstract class ShapeBuilder<T extends Shape, G extends org.elasticsearch.
      * fields for a dateline intersection and component id
      */
     protected static final class Edge {
+
         Coordinate coordinate; // coordinate of the start point
 
         Edge next; // next segment
@@ -258,7 +278,8 @@ public abstract class ShapeBuilder<T extends Shape, G extends org.elasticsearch.
 
         int component = -1; // id of the component this edge belongs to
 
-        public static final Coordinate MAX_COORDINATE = new Coordinate(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
+        public static final Coordinate MAX_COORDINATE = new Coordinate(Double.POSITIVE_INFINITY,
+                                                                       Double.POSITIVE_INFINITY);
 
         protected Edge(Coordinate coordinate, Edge next, Coordinate intersection) {
             this.coordinate = coordinate;
@@ -279,7 +300,8 @@ public abstract class ShapeBuilder<T extends Shape, G extends org.elasticsearch.
             if (next != null) {
                 // self-loop throws an invalid shape
                 if (this.coordinate.equals(next.coordinate)) {
-                    throw new InvalidShapeException("Provided shape has duplicate consecutive coordinates at: " + this.coordinate);
+                    throw new InvalidShapeException(
+                        "Provided shape has duplicate consecutive coordinates at: " + this.coordinate);
                 }
                 this.next = next;
             }
@@ -288,8 +310,7 @@ public abstract class ShapeBuilder<T extends Shape, G extends org.elasticsearch.
         /**
          * Set the intersection of this line segment to the given position
          *
-         * @param position
-         *            position of the intersection [0..1]
+         * @param position position of the intersection [0..1]
          * @return the {@link Coordinate} of the intersection
          */
         protected Coordinate intersection(double position) {
@@ -317,6 +338,7 @@ public abstract class ShapeBuilder<T extends Shape, G extends org.elasticsearch.
     protected static final IntersectionOrder INTERSECTION_ORDER = new IntersectionOrder();
 
     private static final class IntersectionOrder implements Comparator<Edge> {
+
         @Override
         public int compare(Edge o1, Edge o2) {
             return Double.compare(o1.intersect.y, o2.intersect.y);
@@ -326,7 +348,6 @@ public abstract class ShapeBuilder<T extends Shape, G extends org.elasticsearch.
     protected static final boolean debugEnabled() {
         return LOGGER.isDebugEnabled() || DEBUG;
     }
-
 
     @Override
     public boolean equals(Object o) {

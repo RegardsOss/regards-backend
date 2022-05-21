@@ -71,20 +71,26 @@ public class AmqpTestConfiguration {
             }
 
             @Override
-            public <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver,
-                    String queueName, String exchangeName) {
+            public <E extends ISubscribable> void subscribeTo(Class<E> eventType,
+                                                              IHandler<E> receiver,
+                                                              String queueName,
+                                                              String exchangeName) {
                 subscriber.subscribeTo(eventType, receiver, queueName, exchangeName, true);
             }
 
             @Override
-            public <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver,
-                    String queueName, String exchangeName, boolean purgeQueue) {
+            public <E extends ISubscribable> void subscribeTo(Class<E> eventType,
+                                                              IHandler<E> receiver,
+                                                              String queueName,
+                                                              String exchangeName,
+                                                              boolean purgeQueue) {
                 subscriber.subscribeTo(eventType, receiver, queueName, exchangeName, true);
             }
 
             @Override
-            public <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver,
-                    boolean purgeQueue) {
+            public <E extends ISubscribable> void subscribeTo(Class<E> eventType,
+                                                              IHandler<E> receiver,
+                                                              boolean purgeQueue) {
                 subscriber.subscribeTo(eventType, receiver, true);
             }
 
@@ -105,7 +111,8 @@ public class AmqpTestConfiguration {
 
             @Override
             public <E extends ISubscribable> void purgeQueue(Class<E> eventType,
-                    Class<? extends IHandler<E>> handlerType, Optional<String> queueName) {
+                                                             Class<? extends IHandler<E>> handlerType,
+                                                             Optional<String> queueName) {
                 subscriber.purgeQueue(eventType, handlerType, queueName);
             }
         };
@@ -113,6 +120,7 @@ public class AmqpTestConfiguration {
 
     /**
      * Subscriber mock
+     *
      * @return {@link ISubscriber}
      */
     @Bean
@@ -124,6 +132,7 @@ public class AmqpTestConfiguration {
 
     /**
      * Instance subscriber mock
+     *
      * @return {@link IInstanceSubscriber}
      */
     @Bean
@@ -135,6 +144,7 @@ public class AmqpTestConfiguration {
 
     /**
      * Publisher mock
+     *
      * @return {@link IPublisher}
      */
     @Bean
@@ -146,6 +156,7 @@ public class AmqpTestConfiguration {
 
     /**
      * Instance publisher mock
+     *
      * @return {@link IPublisher}
      */
     @Bean

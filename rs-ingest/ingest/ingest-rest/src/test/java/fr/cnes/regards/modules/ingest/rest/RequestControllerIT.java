@@ -58,10 +58,9 @@ import java.util.stream.Collectors;
  * {@link RequestDto} REST API testing
  *
  * @author Léo Mieulet
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=request_controller_it",
-        "regards.aips.save-metadata.bulk.delay=100", "regards.ingest.aip.delete.bulk.delay=100" })
+    "regards.aips.save-metadata.bulk.delay=100", "regards.ingest.aip.delete.bulk.delay=100" })
 @ContextConfiguration(classes = { AIPControllerIT.Config.class })
 @ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
 public class RequestControllerIT extends AbstractRegardsTransactionalIT {
@@ -107,19 +106,13 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
 
         SearchRequestsParameters body = SearchRequestsParameters.build();
         for (int i = 0; i < 1000; i = i + 1) {
-            AIPUpdatesCreatorRequest someRequest = AIPUpdatesCreatorRequest.build(AIPUpdateParametersDto
-                                                                                          .build(SearchAIPsParameters
-                                                                                                         .build()
-                                                                                                         .withSession(
-                                                                                                                 SESSION_0)
-                                                                                                         .withSessionOwner(
-                                                                                                                 SESSION_OWNER_0),
-                                                                                                 TAG_2,
-                                                                                                 TAG_3,
-                                                                                                 CATEGORIES_2,
-                                                                                                 CATEGORIES_0,
-                                                                                                 Lists.newArrayList(
-                                                                                                         STORAGE_3)));
+            AIPUpdatesCreatorRequest someRequest = AIPUpdatesCreatorRequest.build(AIPUpdateParametersDto.build(
+                SearchAIPsParameters.build().withSession(SESSION_0).withSessionOwner(SESSION_OWNER_0),
+                TAG_2,
+                TAG_3,
+                CATEGORIES_2,
+                CATEGORIES_0,
+                Lists.newArrayList(STORAGE_3)));
             aipUpdatesCreatorRepository.save(someRequest);
         }
 
@@ -135,42 +128,45 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
     public void chooseVersioning() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusNoContent();
         ChooseVersioningRequestParameters body = ChooseVersioningRequestParameters.build()
-                .withNewVersioningMode(VersioningMode.INC_VERSION);
+                                                                                  .withNewVersioningMode(VersioningMode.INC_VERSION);
 
         // Add request parameters documentation
         requestBuilderCustomizer.documentRequestBody(getVersioningBodyDescriptors());
 
         performDefaultPut(RequestController.TYPE_MAPPING + RequestController.VERSIONING_CHOICE_PATH,
-                           body,
-                           requestBuilderCustomizer,
-                           "Should schedule a job to update versioning mode of manual requests requests");
+                          body,
+                          requestBuilderCustomizer,
+                          "Should schedule a job to update versioning mode of manual requests requests");
     }
 
     @Test
     public void chooseVersioning422() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY);
         ChooseVersioningRequestParameters body = ChooseVersioningRequestParameters.build()
-                .withNewVersioningMode(VersioningMode.MANUAL);
+                                                                                  .withNewVersioningMode(VersioningMode.MANUAL);
 
         // Add request parameters documentation
         requestBuilderCustomizer.documentRequestBody(getVersioningBodyDescriptors());
 
         performDefaultPut(RequestController.TYPE_MAPPING + RequestController.VERSIONING_CHOICE_PATH,
-                           body,
-                           requestBuilderCustomizer,
-                           "Should be refused as manual is the mode we are replacing requests");
+                          body,
+                          requestBuilderCustomizer,
+                          "Should be refused as manual is the mode we are replacing requests");
     }
 
     private List<FieldDescriptor> getVersioningBodyDescriptors() {
         List<FieldDescriptor> params = getSearchBodyDescriptors();
         ConstrainedFields constrainedFields = new ConstrainedFields(ChooseVersioningRequestParameters.class);
         params.add(constrainedFields.withPath("newVersioningMode", "newVersioningMode", "new versioning mode to apply")
-                           .type(JSON_STRING_TYPE).optional()
-                           .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                           .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                               .value("Optional. Multiple values allowed. Allowed values : " + Arrays
-                                                       .stream(VersioningMode.values()).map(mode -> mode.toString())
-                                                       .collect(Collectors.joining(", ")))));
+                                    .type(JSON_STRING_TYPE)
+                                    .optional()
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(JSON_STRING_TYPE))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value("Optional. Multiple values allowed. Allowed values : "
+                                                                     + Arrays.stream(VersioningMode.values())
+                                                                             .map(mode -> mode.toString())
+                                                                             .collect(Collectors.joining(", ")))));
         return params;
     }
 
@@ -219,53 +215,74 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
         ConstrainedFields constrainedFields = new ConstrainedFields(SearchRequestsParameters.class);
 
         params.add(constrainedFields.withPath("requestType", "requestType", "Request type filter")
-                           .type(JSON_STRING_TYPE).optional()
-                           .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                           .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                               .value("Optional. Multiple values allowed. Allowed values : "
-                                                              + queryTypeValues.toString())));
+                                    .type(JSON_STRING_TYPE)
+                                    .optional()
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(JSON_STRING_TYPE))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value("Optional. Multiple values allowed. Allowed values : "
+                                                                     + queryTypeValues.toString())));
 
-        params.add(constrainedFields.withPath("state", "state", "State").type(JSON_STRING_TYPE).optional()
-                           .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                           .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                               .value("Optional. Multiple values allowed. Allowed values : "
-                                                              + stateValues.toString())));
+        params.add(constrainedFields.withPath("state", "state", "State")
+                                    .type(JSON_STRING_TYPE)
+                                    .optional()
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(JSON_STRING_TYPE))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value("Optional. Multiple values allowed. Allowed values : "
+                                                                     + stateValues.toString())));
 
         params.add(constrainedFields.withPath("stateExcluded", "stateExcluded", "State excluded (ignored)")
-                           .type(JSON_STRING_TYPE).optional()
-                           .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                           .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                               .value("Optional. Multiple values allowed. Allowed values : "
-                                                              + stateValues.toString())));
+                                    .type(JSON_STRING_TYPE)
+                                    .optional()
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(JSON_STRING_TYPE))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value("Optional. Multiple values allowed. Allowed values : "
+                                                                     + stateValues.toString())));
 
         params.add(constrainedFields.withPath("creationDate.from", "from", "ISO Date time filtering on creation date")
-                           .optional().type(JSON_STRING_TYPE)
-                           .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
-                                               .value(OffsetDateTime.class.getSimpleName()))
-                           .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                               .value("Optional. Required format : yyyy-MM-dd'T'HH:mm:ss.SSSZ")));
+                                    .optional()
+                                    .type(JSON_STRING_TYPE)
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(OffsetDateTime.class.getSimpleName()))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value(
+                                                              "Optional. Required format : yyyy-MM-dd'T'HH:mm:ss.SSSZ")));
 
         params.add(constrainedFields.withPath("creationDate.to", "to", "ISO Date time filtering on creation date")
-                           .optional().type(JSON_STRING_TYPE)
-                           .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
-                                               .value(OffsetDateTime.class.getSimpleName()))
-                           .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                               .value("Optional. Required format : yyyy-MM-dd'T'HH:mm:ss.SSSZ")));
+                                    .optional()
+                                    .type(JSON_STRING_TYPE)
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(OffsetDateTime.class.getSimpleName()))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value(
+                                                              "Optional. Required format : yyyy-MM-dd'T'HH:mm:ss.SSSZ")));
 
-        params.add(constrainedFields.withPath("providerId", "providerId", "Provider id filter").optional()
-                           .type(JSON_STRING_TYPE)
-                           .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                           .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                               .value("Optional. If you add the % character, we will use the like operator to match entities")));
+        params.add(constrainedFields.withPath("providerId", "providerId", "Provider id filter")
+                                    .optional()
+                                    .type(JSON_STRING_TYPE)
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(JSON_STRING_TYPE))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value(
+                                                              "Optional. If you add the % character, we will use the like operator to match entities")));
 
-        params.add(constrainedFields.withPath("sessionOwner", "sessionOwner", "Session owner filter").optional()
-                           .type(JSON_STRING_TYPE)
-                           .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                           .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional.")));
+        params.add(constrainedFields.withPath("sessionOwner", "sessionOwner", "Session owner filter")
+                                    .optional()
+                                    .type(JSON_STRING_TYPE)
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(JSON_STRING_TYPE))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value("Optional.")));
 
-        params.add(constrainedFields.withPath("session", "session", "Session filter").optional().type(JSON_STRING_TYPE)
-                           .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                           .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional.")));
+        params.add(constrainedFields.withPath("session", "session", "Session filter")
+                                    .optional()
+                                    .type(JSON_STRING_TYPE)
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                          .value(JSON_STRING_TYPE))
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                          .value("Optional.")));
         return params;
     }
 
@@ -289,33 +306,41 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
         fields.add(constrainedFields.withPath(prefix + "id", "id", "Request id"));
 
         fields.add(constrainedFields.withPath(prefix + "creationDate", "creationDate", "Date of Request creation")
-                           .type(OffsetDateTime.class.getSimpleName()));
+                                    .type(OffsetDateTime.class.getSimpleName()));
 
-        fields.add(constrainedFields
-                           .withPath(prefix + "remoteStepDeadline", "remoteStepDeadline", "Date of Request timeout")
-                           .type(OffsetDateTime.class.getSimpleName()).optional());
+        fields.add(constrainedFields.withPath(prefix + "remoteStepDeadline",
+                                              "remoteStepDeadline",
+                                              "Date of Request timeout")
+                                    .type(OffsetDateTime.class.getSimpleName())
+                                    .optional());
 
         fields.add(constrainedFields.withPath(prefix + "state",
                                               "state",
                                               "Request state. Allowed values : " + stateValues.toString())
-                           .type(JSON_STRING_TYPE).optional());
+                                    .type(JSON_STRING_TYPE)
+                                    .optional());
 
         fields.add(constrainedFields.withPath(prefix + "dtype",
                                               "dtype",
                                               "Request type. Allowed values : " + queryTypeValues.toString())
-                           .type(JSON_STRING_TYPE).optional());
+                                    .type(JSON_STRING_TYPE)
+                                    .optional());
 
         fields.add(constrainedFields.withPath(prefix + "sessionOwner", "sessionOwner", "Session owner")
-                           .type(JSON_STRING_TYPE).optional());
+                                    .type(JSON_STRING_TYPE)
+                                    .optional());
 
-        fields.add(constrainedFields.withPath(prefix + "session", "session", "Session").type(JSON_STRING_TYPE)
-                           .optional());
+        fields.add(constrainedFields.withPath(prefix + "session", "session", "Session")
+                                    .type(JSON_STRING_TYPE)
+                                    .optional());
 
-        fields.add(constrainedFields.withPath(prefix + "providerId", "providerId", "Provider id").type(JSON_STRING_TYPE)
-                           .optional());
+        fields.add(constrainedFields.withPath(prefix + "providerId", "providerId", "Provider id")
+                                    .type(JSON_STRING_TYPE)
+                                    .optional());
 
         fields.add(constrainedFields.withPath(prefix + "errors", "errors", "List of errors associated to the request")
-                           .type(JSON_ARRAY_TYPE).optional());
+                                    .type(JSON_ARRAY_TYPE)
+                                    .optional());
 
         return fields;
     }

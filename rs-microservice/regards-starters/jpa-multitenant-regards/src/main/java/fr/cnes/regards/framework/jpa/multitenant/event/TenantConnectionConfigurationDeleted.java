@@ -28,6 +28,7 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
  * Event that informs a tenant connection is delete and has to be remove from JPA management.<br/>
  * This event must only be handled by the starter in each microservice instance. When the connection is deleted, the
  * starter sends to all microservice instances of the current type a {@link TenantConnectionDiscarded}.
+ *
  * @author Sébastien Binda
  */
 @Event(target = Target.ALL)

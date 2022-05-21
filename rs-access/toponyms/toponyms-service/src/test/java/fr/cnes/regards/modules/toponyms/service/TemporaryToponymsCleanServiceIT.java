@@ -5,32 +5,30 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.modules.toponyms.dao.ToponymsRepository;
 import fr.cnes.regards.modules.toponyms.domain.Toponym;
 import fr.cnes.regards.modules.toponyms.domain.ToponymMetadata;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.TestPropertySource;
 
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test of {@link TemporaryToponymsCleanService}
- * @author Iliana Ghazali
  *
+ * @author Iliana Ghazali
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=toponyms_service_clean_it"})
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=toponyms_service_clean_it" })
 @RegardsTransactional
 public class TemporaryToponymsCleanServiceIT extends AbstractRegardsIT {
-
 
     @Autowired
     private ToponymsRepository toponymsRepository;
 
     @Autowired
     private TemporaryToponymsCleanService toponymCleanService;
-
 
     private int nbToponyms = 10;
 
@@ -40,7 +38,8 @@ public class TemporaryToponymsCleanServiceIT extends AbstractRegardsIT {
     public void testCleanUp() {
         initNotVisibleToponyms();
         toponymCleanService.clean();
-        Assert.assertEquals(this.nbToponyms - this.nbExpired , toponymsRepository.findByVisible(false, PageRequest.of(0, 100)).getTotalElements());
+        Assert.assertEquals(this.nbToponyms - this.nbExpired,
+                            toponymsRepository.findByVisible(false, PageRequest.of(0, 100)).getTotalElements());
 
     }
 
@@ -48,7 +47,7 @@ public class TemporaryToponymsCleanServiceIT extends AbstractRegardsIT {
         List<Toponym> notVisibleToponyms = new ArrayList<>();
         for (int i = 0; i < nbToponyms; i++) {
             ToponymMetadata toponymMetaData = new ToponymMetadata();
-            if(i < nbExpired) {
+            if (i < nbExpired) {
                 toponymMetaData.setExpirationDate(OffsetDateTime.now());
             } else {
                 toponymMetaData.setExpirationDate(OffsetDateTime.now().plusDays(20));

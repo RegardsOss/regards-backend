@@ -1,5 +1,11 @@
 package fr.cnes.regards.framework.encryption;
 
+import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
+import fr.cnes.regards.framework.encryption.exception.EncryptionException;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -13,15 +19,9 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
-import fr.cnes.regards.framework.encryption.exception.EncryptionException;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
-
 /**
  * Implementation of {@link IEncryptionService} which uses Blowfish as algorithm
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class BlowfishEncryptionService implements IEncryptionService {
@@ -40,20 +40,22 @@ public class BlowfishEncryptionService implements IEncryptionService {
     public String encrypt(String toEncrypt) throws EncryptionException {
         if ((secretKey == null) || (ivParamSpec == null)) {
             throw new IllegalStateException(
-                    "You cannot encrypt data before the key and initialization vector has been set.");
+                "You cannot encrypt data before the key and initialization vector has been set.");
         }
         try {
             Cipher blowfish = Cipher.getInstance(BLOWFISH_INSTANCE);
 
             blowfish.init(Cipher.ENCRYPT_MODE, secretKey, ivParamSpec);
             return DatatypeConverter.printBase64Binary(blowfish.doFinal(toEncrypt.getBytes()));
-        } catch (InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException e) {
+        } catch (InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException |
+                 NoSuchPaddingException e) {
             //those two exception should never occur
             LOG.error("There was an issue with encryption using Blowfish", e);
             throw new RsRuntimeException(e);
         } catch (BadPaddingException | IllegalBlockSizeException e) {
-            throw new EncryptionException(
-                    String.format("\"%s\" could not be encrypted using %s", toEncrypt, BLOWFISH_INSTANCE), e);
+            throw new EncryptionException(String.format("\"%s\" could not be encrypted using %s",
+                                                        toEncrypt,
+                                                        BLOWFISH_INSTANCE), e);
         }
     }
 
@@ -61,30 +63,33 @@ public class BlowfishEncryptionService implements IEncryptionService {
     public String decrypt(String toDecrypt) throws EncryptionException {
         if ((secretKey == null) || (ivParamSpec == null)) {
             throw new IllegalStateException(
-                    "You cannot decrypt data before the key and initialization vector has been set.");
+                "You cannot decrypt data before the key and initialization vector has been set.");
         }
         try {
             Cipher blowfish = Cipher.getInstance(BLOWFISH_INSTANCE);
             blowfish.init(Cipher.DECRYPT_MODE, secretKey, ivParamSpec);
             return new String(blowfish.doFinal(DatatypeConverter.parseBase64Binary(toDecrypt)));
-        } catch (InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException e) {
+        } catch (InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException |
+                 NoSuchPaddingException e) {
             //those two exception should never occur
             LOG.error("There was an issue with encryption using Blowfish", e);
             throw new RsRuntimeException(e);
         } catch (BadPaddingException | IllegalBlockSizeException e) {
-            throw new EncryptionException(
-                    String.format("\"%s\" could not be decrypted using %s", toDecrypt, BLOWFISH_INSTANCE), e);
+            throw new EncryptionException(String.format("\"%s\" could not be decrypted using %s",
+                                                        toDecrypt,
+                                                        BLOWFISH_INSTANCE), e);
         }
     }
 
     /**
      * Initialize BlowfishEncryptionService by setting its secret key and initialization vector.
+     *
      * @throws InvalidAlgorithmParameterException in case the initialization vector is not valid
      * @throws InvalidKeyException                in case the key is not valid
      * @throws IOException                        because of Files.readAllLines
      */
     public void init(CipherProperties properties)
-            throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
+        throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
         String key = Files.readAllLines(properties.getKeyLocation()).get(0);
         secretKey = new SecretKeySpec(key.getBytes(), BLOWFISH_NAME);
         ivParamSpec = new IvParameterSpec(properties.getIv().getBytes());

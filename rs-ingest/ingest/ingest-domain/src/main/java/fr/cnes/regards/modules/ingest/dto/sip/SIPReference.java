@@ -18,20 +18,17 @@
  */
 package fr.cnes.regards.modules.ingest.dto.sip;
 
-import java.net.URL;
-import java.security.MessageDigest;
+import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-
-import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm;
+import java.net.URL;
+import java.security.MessageDigest;
 
 /**
- *
  * This class represents a SIP passed by reference
  *
  * @author Marc Sordi
- *
  */
 public class SIPReference {
 

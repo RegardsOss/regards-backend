@@ -17,10 +17,8 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- *
  * This package groups all processing chain steps
  *
  * @author Marc Sordi
- *
  */
 package fr.cnes.regards.modules.ingest.service.chain.step;

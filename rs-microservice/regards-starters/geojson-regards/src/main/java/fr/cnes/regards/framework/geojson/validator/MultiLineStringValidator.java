@@ -18,15 +18,16 @@
  */
 package fr.cnes.regards.framework.geojson.validator;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-
 import fr.cnes.regards.framework.geojson.coordinates.Positions;
 import fr.cnes.regards.framework.geojson.geometry.MultiLineString;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
 
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+
 /**
  * Validate {@link Polygon} structure
+ *
  * @author Marc Sordi
  */
 public class MultiLineStringValidator implements ConstraintValidator<MultiLineStringConstraints, MultiLineString> {

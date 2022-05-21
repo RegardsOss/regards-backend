@@ -16,13 +16,16 @@ import java.util.List;
 @Primary
 @Component
 public class UserResourceClientMock implements IUserResourceClient {
+
     @Override
-    public ResponseEntity<List<EntityModel<ResourcesAccess>>> retrieveProjectUserResources(String pUserLogin, String pBorrowedRoleName) {
+    public ResponseEntity<List<EntityModel<ResourcesAccess>>> retrieveProjectUserResources(String pUserLogin,
+                                                                                           String pBorrowedRoleName) {
         return null;
     }
 
     @Override
-    public ResponseEntity<Void> updateProjectUserResources(String pLogin, @Valid List<ResourcesAccess> pUpdatedUserAccessRights) {
+    public ResponseEntity<Void> updateProjectUserResources(String pLogin,
+                                                           @Valid List<ResourcesAccess> pUpdatedUserAccessRights) {
         return null;
     }
 

@@ -67,14 +67,18 @@ public class FeatureNotifierListener implements INotifierRequestListener {
     }
 
     private void handleNotificationIssue(List<NotifierEvent> denied) {
-        LOG.debug(RECEIVED_FROM_NOTIFIER_FORMAT, denied.size(), NotifierEvent.class.getSimpleName(),
+        LOG.debug(RECEIVED_FROM_NOTIFIER_FORMAT,
+                  denied.size(),
+                  NotifierEvent.class.getSimpleName(),
                   NotificationState.ERROR);
         List<String> requestIds = denied.stream().map(NotifierEvent::getRequestId).collect(Collectors.toList());
         Set<AbstractFeatureRequest> errorRequest = abstractFeatureRequestRepo.findAllByRequestIdIn(requestIds);
         if (!errorRequest.isEmpty()) {
             featureNotificationService.handleNotificationError(errorRequest,
                                                                FeatureRequestStep.REMOTE_NOTIFICATION_ERROR);
-            LOG.debug(HANDLED_FROM_NOTIFIER_FORMAT, denied.size(), NotificationState.ERROR,
+            LOG.debug(HANDLED_FROM_NOTIFIER_FORMAT,
+                      denied.size(),
+                      NotificationState.ERROR,
                       NotifierEvent.class.getSimpleName());
         }
     }
@@ -85,21 +89,25 @@ public class FeatureNotifierListener implements INotifierRequestListener {
 
     @Override
     public void onRequestSuccess(List<NotifierEvent> success) {
-        LOG.debug(RECEIVED_FROM_NOTIFIER_FORMAT, success.size(), NotifierEvent.class.getSimpleName(),
+        LOG.debug(RECEIVED_FROM_NOTIFIER_FORMAT,
+                  success.size(),
+                  NotifierEvent.class.getSimpleName(),
                   NotificationState.SUCCESS);
 
         List<String> requestIds = success.stream().map(NotifierEvent::getRequestId).collect(Collectors.toList());
         Set<AbstractFeatureRequest> associatedFeatureRequests = abstractFeatureRequestRepo.findAllByRequestIdIn(
-                requestIds);
+            requestIds);
         featureUpdateDisseminationService.savePutRequests(success, associatedFeatureRequests);
         handleFeatureNotificationRequests(success, associatedFeatureRequests);
     }
 
     private void handleFeatureNotificationRequests(List<NotifierEvent> success,
-            Set<AbstractFeatureRequest> associatedFeatureRequests) {
+                                                   Set<AbstractFeatureRequest> associatedFeatureRequests) {
         if (!associatedFeatureRequests.isEmpty()) {
             featureNotificationService.handleNotificationSuccess(associatedFeatureRequests);
-            LOG.debug(HANDLED_FROM_NOTIFIER_FORMAT, success.size(), NotificationState.SUCCESS,
+            LOG.debug(HANDLED_FROM_NOTIFIER_FORMAT,
+                      success.size(),
+                      NotificationState.SUCCESS,
                       NotifierEvent.class.getSimpleName());
         }
     }

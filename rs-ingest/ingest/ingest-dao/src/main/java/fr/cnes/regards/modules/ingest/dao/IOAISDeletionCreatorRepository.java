@@ -18,15 +18,16 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionCreatorRequest;
-
 /**
  * {@link OAISDeletionCreatorRequest} repository
+ *
  * @author Sébastien Binda
  */
 @Repository
 public interface IOAISDeletionCreatorRepository extends JpaRepository<OAISDeletionCreatorRequest, Long> {
+
 }

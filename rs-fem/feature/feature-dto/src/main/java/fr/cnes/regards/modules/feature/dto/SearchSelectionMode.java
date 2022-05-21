@@ -19,10 +19,9 @@
 package fr.cnes.regards.modules.feature.dto;
 
 /**
- *
  * Selection mode for {@link FeatureRequestsSelectionDTO} request id selection filters.
- * @author Sébastien Binda
  *
+ * @author Sébastien Binda
  */
 public enum SearchSelectionMode {
 

@@ -18,16 +18,17 @@
  */
 package fr.cnes.regards.framework.jpa.converter;
 
+import com.google.common.collect.Sets;
+
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 import java.util.Collections;
 import java.util.Set;
 import java.util.StringJoiner;
 
-import com.google.common.collect.Sets;
-
 /**
  * Allow to convert a {@link Set} of String to a simple String which each value is separated by a comma
+ *
  * @author Sylvain Vissiere-Guerinet
  */
 @Converter

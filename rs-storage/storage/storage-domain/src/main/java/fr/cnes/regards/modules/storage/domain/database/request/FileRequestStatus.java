@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.modules.storage.domain.database.request;
 
-import java.util.Set;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
+
+import java.util.Set;
 
 /**
  * Enumeration for possible status of a {@link FileReference}

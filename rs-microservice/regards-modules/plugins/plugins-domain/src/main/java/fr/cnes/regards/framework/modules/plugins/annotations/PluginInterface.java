@@ -18,14 +18,11 @@
  */
 package fr.cnes.regards.framework.modules.plugins.annotations;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Annotate a plugin type.
+ *
  * @author Christophe Mertz
  */
 @Target({ ElementType.TYPE })
@@ -35,6 +32,7 @@ public @interface PluginInterface {
 
     /**
      * Parameter description to explain the expected value if the name is not explicit enough.
+     *
      * @return plugin type's description
      */
     String description() default "";

@@ -35,11 +35,9 @@ import java.util.Objects;
  * @author Sébastien Binda
  */
 @Entity
-@Table(name = "t_workermanager_request",
-        indexes = { @Index(name = "idx_worker_request_id", columnList = "request_id"),
-                @Index(name = "idx_worker_request_content_type", columnList = "content_type")},
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_t_workermanager_request_requestid", columnNames = { "request_id" }) })
+@Table(name = "t_workermanager_request", indexes = { @Index(name = "idx_worker_request_id", columnList = "request_id"),
+    @Index(name = "idx_worker_request_content_type", columnList = "content_type") }, uniqueConstraints = {
+    @UniqueConstraint(name = "uk_t_workermanager_request_requestid", columnNames = { "request_id" }) })
 public class Request {
 
     @Id
@@ -174,8 +172,10 @@ public class Request {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Request that = (Request) o;
         return getRequestId().equals(that.getRequestId());
     }
@@ -186,9 +186,12 @@ public class Request {
     }
 
     public RequestDTO toDTO() {
-        return new RequestDTO(this.requestId, this.creationDate,
-                              this.contentType, this.source,
-                              this.session, this.status,
+        return new RequestDTO(this.requestId,
+                              this.creationDate,
+                              this.contentType,
+                              this.source,
+                              this.session,
+                              this.status,
                               this.dispatchedWorkerType,
                               this.error);
     }

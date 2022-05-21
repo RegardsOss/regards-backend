@@ -17,10 +17,8 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- *
  * Restriction validator package
- * 
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
 package fr.cnes.regards.modules.model.domain.attributes.restriction.validator;

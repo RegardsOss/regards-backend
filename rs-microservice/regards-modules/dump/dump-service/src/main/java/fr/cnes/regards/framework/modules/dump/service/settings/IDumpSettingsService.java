@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.modules.dump.domain.DumpParameters;
 
 import java.time.OffsetDateTime;
 
-
 public interface IDumpSettingsService {
 
     DumpParameters getDumpParameters();

@@ -23,8 +23,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  * Class ITestController
- *
+ * <p>
  * Test controller interface
+ *
  * @author CS
  */
 @RequestMapping("/tests")

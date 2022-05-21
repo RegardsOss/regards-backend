@@ -31,7 +31,7 @@ import java.util.List;
 
 /**
  * Service for generator auto discovery
- *
+ * <p>
  * Look at spring.factories
  */
 @Service
@@ -49,9 +49,12 @@ public class RandomGeneratorResolver {
 
         // Find a generator builder
         RandomGeneratorBuilder<?> builder = generatorBuilders.stream()
-                .filter(rgb -> rgb.getFunctionName().equals(fd.getFunctionName())).findFirst().orElseThrow(
-                        () -> new IllegalArgumentException(
-                                String.format("Unsupported function %s", fd.getFunctionName())));
+                                                             .filter(rgb -> rgb.getFunctionName()
+                                                                               .equals(fd.getFunctionName()))
+                                                             .findFirst()
+                                                             .orElseThrow(() -> new IllegalArgumentException(String.format(
+                                                                 "Unsupported function %s",
+                                                                 fd.getFunctionName())));
 
         RandomGenerator<?> rg = builder.build(fd, propertyGetter);
         rg.parseParameters();

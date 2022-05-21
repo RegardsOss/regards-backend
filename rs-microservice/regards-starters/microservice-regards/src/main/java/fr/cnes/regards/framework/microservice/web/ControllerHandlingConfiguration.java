@@ -24,10 +24,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 /**
- *
  * Provide our own {@link RequestMappingHandlerMapping} instance to customize controller detection.
- * @author Marc SORDI
  *
+ * @author Marc SORDI
  */
 public class ControllerHandlingConfiguration implements WebMvcRegistrations {
 

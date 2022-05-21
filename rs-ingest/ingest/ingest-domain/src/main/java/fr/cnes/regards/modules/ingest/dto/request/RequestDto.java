@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.dto.request;
 
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+
 import java.time.OffsetDateTime;
 import java.util.Set;
 

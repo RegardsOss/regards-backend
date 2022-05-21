@@ -41,7 +41,7 @@ public class MailVerificationTest extends UserAccessUpdateTest {
         EmailVerificationToken emailToken = new EmailVerificationToken(givenUser, "", "");
 
         Assertions.assertThatExceptionOfType(EntityTransitionForbiddenException.class)
-            .isThrownBy(() -> userWorkflowManager.verifyEmail(emailToken));
+                  .isThrownBy(() -> userWorkflowManager.verifyEmail(emailToken));
     }
 
     @Test
@@ -51,7 +51,7 @@ public class MailVerificationTest extends UserAccessUpdateTest {
         emailToken.setExpiryDate(LocalDateTime.now().minusHours(1));
 
         Assertions.assertThatExceptionOfType(EntityOperationForbiddenException.class)
-            .isThrownBy(() -> userWorkflowManager.verifyEmail(emailToken));
+                  .isThrownBy(() -> userWorkflowManager.verifyEmail(emailToken));
     }
 
     @Test

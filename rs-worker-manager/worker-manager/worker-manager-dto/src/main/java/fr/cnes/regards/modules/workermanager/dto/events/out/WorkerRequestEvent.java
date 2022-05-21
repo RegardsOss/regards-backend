@@ -30,7 +30,7 @@ import javax.validation.constraints.NotNull;
  * @autor Sébastien Binda
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON,
-        routingKey = WorkerRequestEvent.DLQ_ROOTING_KEY)
+    routingKey = WorkerRequestEvent.DLQ_ROOTING_KEY)
 public class WorkerRequestEvent implements ISubscribable, IMessagePropertiesAware {
 
     public final static String DLQ_ROOTING_KEY = "regards.worker.manager.request.dlq";

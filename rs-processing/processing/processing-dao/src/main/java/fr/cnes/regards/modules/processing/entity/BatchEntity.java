@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.entity;
 
 import lombok.*;
@@ -31,7 +31,8 @@ import java.util.UUID;
  *
  * @author gandrieu
  */
-@Data @With
+@Data
+@With
 @AllArgsConstructor
 @RequiredArgsConstructor
 @NoArgsConstructor
@@ -39,28 +40,36 @@ import java.util.UUID;
 @Table("t_batch")
 public class BatchEntity implements Persistable<UUID> {
 
-    @Id @NonNull
+    @Id
+    @NonNull
     private UUID id;
 
-    @Column("process_business_id") @NonNull
+    @Column("process_business_id")
+    @NonNull
     private UUID processBusinessId;
 
-    @Column("correlation_id") @NonNull
+    @Column("correlation_id")
+    @NonNull
     private String correlationId;
 
-    @Column("tenant") @NonNull
+    @Column("tenant")
+    @NonNull
     private String tenant;
 
-    @Column("user_email") @NonNull
+    @Column("user_email")
+    @NonNull
     private String userEmail;
 
-    @Column("user_role") @NonNull
+    @Column("user_role")
+    @NonNull
     private String userRole;
 
-    @Column("parameters") @NonNull
+    @Column("parameters")
+    @NonNull
     private ParamValues parameters;
 
-    @Column("filesets") @NonNull
+    @Column("filesets")
+    @NonNull
     private FileStatsByDataset filesets;
 
     /**
@@ -76,7 +85,8 @@ public class BatchEntity implements Persistable<UUID> {
         return this;
     }
 
-    @Override public boolean isNew() {
+    @Override
+    public boolean isNew() {
         return !persisted;
     }
 }

@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.size;
 
 import lombok.Value;
@@ -29,11 +29,19 @@ import lombok.Value;
 @Value
 public class FileSetStatistics {
 
-    /** The dataset ID this file set comes from*/
+    /**
+     * The dataset ID this file set comes from
+     */
     String dataset;
-    /** The total number of executions to be launched */
+
+    /**
+     * The total number of executions to be launched
+     */
     int executionCount;
-    /** The total number of bytes to be treated */
+
+    /**
+     * The total number of bytes to be treated
+     */
     long totalBytes;
 
 }

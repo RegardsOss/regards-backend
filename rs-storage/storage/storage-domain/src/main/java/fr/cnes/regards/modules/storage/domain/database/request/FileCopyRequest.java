@@ -1,38 +1,24 @@
 package fr.cnes.regards.modules.storage.domain.database.request;
 
-import java.time.OffsetDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 
+import javax.persistence.*;
+import java.time.OffsetDateTime;
+
 @Entity
 @Table(name = "t_file_copy_request",
-        indexes = { @Index(name = "idx_file_copy_request", columnList = "storage, checksum"),
-                @Index(name = "idx_file_copy_request_grp", columnList = "group_id"),
-                @Index(name = "idx_file_copy_request_cache_grp", columnList = "cache_group_id"),
-                @Index(name = "idx_file_copy_request_storage_grp", columnList = "storage_group_id") },
-        uniqueConstraints = { @UniqueConstraint(name = "t_file_copy_request_checksum_storage",
-                columnNames = { "checksum", "storage" }) })
+    indexes = { @Index(name = "idx_file_copy_request", columnList = "storage, checksum"),
+        @Index(name = "idx_file_copy_request_grp", columnList = "group_id"),
+        @Index(name = "idx_file_copy_request_cache_grp", columnList = "cache_group_id"),
+        @Index(name = "idx_file_copy_request_storage_grp", columnList = "storage_group_id") }, uniqueConstraints = {
+    @UniqueConstraint(name = "t_file_copy_request_checksum_storage", columnNames = { "checksum", "storage" }) })
 public class FileCopyRequest {
 
     /**
-    * Internal database unique identifier
-    */
+     * Internal database unique identifier
+     */
     @Id
     @SequenceGenerator(name = "fileStorageRequestSequence", initialValue = 1, sequenceName = "seq_file_storage_request")
     @GeneratedValue(generator = "fileStorageRequestSequence", strategy = GenerationType.SEQUENCE)
@@ -81,8 +67,12 @@ public class FileCopyRequest {
         this.creationDate = OffsetDateTime.now();
     }
 
-    public FileCopyRequest(String groupId, FileReferenceMetaInfo metaInfo, String storageSubDirectory, String storage,
-            String sessionOwner, String session) {
+    public FileCopyRequest(String groupId,
+                           FileReferenceMetaInfo metaInfo,
+                           String storageSubDirectory,
+                           String storage,
+                           String sessionOwner,
+                           String session) {
         super();
         this.groupId = groupId;
         this.metaInfo = metaInfo;

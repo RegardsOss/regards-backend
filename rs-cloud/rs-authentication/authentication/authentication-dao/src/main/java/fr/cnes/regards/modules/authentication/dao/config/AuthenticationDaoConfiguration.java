@@ -24,9 +24,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ComponentScan(basePackageClasses = {
-    DomainEntityMapperImpl.class,
-    ServiceProviderRepositoryImpl.class
-})
+@ComponentScan(basePackageClasses = { DomainEntityMapperImpl.class, ServiceProviderRepositoryImpl.class })
 public class AuthenticationDaoConfiguration {
+
 }

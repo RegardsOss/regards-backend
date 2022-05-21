@@ -1,17 +1,17 @@
 package fr.cnes.regards.modules.dam.domain.entities.metadata;
 
-import java.util.HashSet;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-
 /**
  * DataObject metadata. This object is only used by Elasticsearch
+ *
  * @author oroussel
  */
 public class DataObjectMetadata {
@@ -95,6 +95,7 @@ public class DataObjectMetadata {
 
     /**
      * Remove given ipId from all values (groups multimap AND modelNames multimap)
+     *
      * @param datasetIpId
      */
     public void removeDatasetIpId(String datasetIpId) {
@@ -119,12 +120,13 @@ public class DataObjectMetadata {
      * Retrieve a map of { group -> data access}. data access is a true boolean if at least one associated dataset
      * grants
      * data access, false otherwise
+     *
      * @return {@link Map} bteween group name and associated Access
      */
     public Map<String, Boolean> getGroupsAccessRightsMap() {
         return Maps.transformValues(groups.asMap(),
                                     rights -> rights.stream()
-                                            .anyMatch(datasetAccessRight -> datasetAccessRight.isAccessRight()));
+                                                    .anyMatch(datasetAccessRight -> datasetAccessRight.isAccessRight()));
     }
 
     public void addModelName(String modelName, String datasetIpId) {

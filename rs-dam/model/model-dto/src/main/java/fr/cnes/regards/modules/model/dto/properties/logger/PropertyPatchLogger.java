@@ -23,12 +23,13 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Logger to log modification on properties
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
 public class PropertyPatchLogger {
 
-    private PropertyPatchLogger() {}
+    private PropertyPatchLogger() {
+    }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PropertyPatchLogger.class);
 

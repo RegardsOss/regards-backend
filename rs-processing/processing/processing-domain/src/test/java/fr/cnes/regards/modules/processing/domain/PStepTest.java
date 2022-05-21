@@ -14,14 +14,15 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain;
 
 import fr.cnes.regards.modules.processing.testutils.AbstractMarshallingTest;
 
 public class PStepTest extends AbstractMarshallingTest<PStep> {
 
-    @Override public Class<PStep> testedType() {
+    @Override
+    public Class<PStep> testedType() {
         return PStep.class;
     }
 

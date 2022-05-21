@@ -19,13 +19,12 @@
 package fr.cnes.regards.modules.acquisition.domain;
 
 /**
- *
- *                   ACQUIRING
- *                   /      \
- *                  /        \
- *  UPDATED -- COMPLETED --> INVALID
- *     \           |
- *      \______ FINISHED
+ * ACQUIRING
+ * /      \
+ * /        \
+ * UPDATED -- COMPLETED --> INVALID
+ * \           |
+ * \______ FINISHED
  *
  * @author Christophe Mertz
  */

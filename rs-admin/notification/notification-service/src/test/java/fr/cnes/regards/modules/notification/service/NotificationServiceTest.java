@@ -53,6 +53,7 @@ import java.util.stream.Collectors;
 
 /**
  * Test class for {@link NotificationService}.
+ *
  * @author Xavier-Alexandre Brochard
  * @author Sylvain Vissiere-Guerinet
  */
@@ -221,9 +222,13 @@ public class NotificationServiceTest {
         projectUserService = Mockito.mock(IProjectUserService.class);
 
         // Instanciate the tested service
-        notificationService = new NotificationService(notificationRepository, roleService, projectUserService,
-                Mockito.mock(ApplicationEventPublisher.class), authenticationResolver, NotificationMode.MULTITENANT,
-                notificationService);
+        notificationService = new NotificationService(notificationRepository,
+                                                      roleService,
+                                                      projectUserService,
+                                                      Mockito.mock(ApplicationEventPublisher.class),
+                                                      authenticationResolver,
+                                                      NotificationMode.MULTITENANT,
+                                                      notificationService);
     }
 
     /**
@@ -238,6 +243,7 @@ public class NotificationServiceTest {
         // Define expected
         List<INotificationWithoutMessage> expected = new ArrayList<>();
         expected.add(new INotificationWithoutMessage() {
+
             @Override
             public OffsetDateTime getDate() {
                 return null;
@@ -277,9 +283,10 @@ public class NotificationServiceTest {
         // Mock methods
         Mockito.when(authenticationResolver.getUser()).thenReturn(RECIPIENT_0);
         Mockito.when(authenticationResolver.getRole()).thenReturn(ROLE_NAME_0);
-        Mockito.when(notificationRepository.findByRecipientsContaining(RECIPIENT_0, ROLE_NAME_0,
+        Mockito.when(notificationRepository.findByRecipientsContaining(RECIPIENT_0,
+                                                                       ROLE_NAME_0,
                                                                        PageRequest.of(0, 100)))
-                .thenReturn(new PageImpl<>(expected));
+               .thenReturn(new PageImpl<>(expected));
 
         // Call tested method
         Page<INotificationWithoutMessage> actual = notificationService.retrieveNotifications(PageRequest.of(0, 100));
@@ -288,8 +295,8 @@ public class NotificationServiceTest {
         Assert.assertThat(actual, CoreMatchers.is(CoreMatchers.equalTo(new PageImpl<>(expected))));
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(notificationRepository).findByRecipientsContaining(RECIPIENT_0, ROLE_NAME_0,
-                                                                          PageRequest.of(0, 100));
+        Mockito.verify(notificationRepository)
+               .findByRecipientsContaining(RECIPIENT_0, ROLE_NAME_0, PageRequest.of(0, 100));
     }
 
     /**
@@ -316,7 +323,7 @@ public class NotificationServiceTest {
         dto.setLevel(NotificationLevel.INFO);
 
         Mockito.when(roleService.getDescendants(roleService.retrieveRole(ROLE_NAME_0)))
-                .thenReturn(Sets.newHashSet(new Role(ROLE_NAME_0)));
+               .thenReturn(Sets.newHashSet(new Role(ROLE_NAME_0)));
 
         // Define expected
         Notification expected = new Notification();
@@ -339,6 +346,7 @@ public class NotificationServiceTest {
 
     /**
      * Check that the system fails when trying to retrieve a non existing notification.
+     *
      * @throws EntityNotFoundException Thrown if no entity with expected id could be found
      */
     @Test(expected = EntityNotFoundException.class)
@@ -356,6 +364,7 @@ public class NotificationServiceTest {
 
     /**
      * Check that the system allows to retrieve a notification.
+     *
      * @throws EntityNotFoundException Thrown if no entity with expected id could be found
      */
     @Test
@@ -385,6 +394,7 @@ public class NotificationServiceTest {
 
     /**
      * Check that the system allows to update the parameter generating or not a notification.
+     *
      * @throws EntityNotFoundException Thrown when no {@link Notification} with passed id could not be found
      */
     @Test
@@ -415,6 +425,7 @@ public class NotificationServiceTest {
 
     /**
      * Check that the system fails when trying to update a non existing notification.
+     *
      * @throws EntityNotFoundException Thrown when no {@link Notification} with passed id could not be found
      */
     @Test(expected = EntityNotFoundException.class)
@@ -432,6 +443,7 @@ public class NotificationServiceTest {
 
     /**
      * Check that the system fails when trying to delete a non existing notification.
+     *
      * @throws EntityNotFoundException Thrown when no {@link Notification} with passed id could not be found
      */
     @Test(expected = EntityNotFoundException.class)
@@ -448,6 +460,7 @@ public class NotificationServiceTest {
 
     /**
      * Check that the system allorws to delete a notification.
+     *
      * @throws EntityNotFoundException Thrown when no {@link Notification} with passed id could not be found
      */
     @Test
@@ -480,7 +493,7 @@ public class NotificationServiceTest {
 
         // Mock the repository returned value
         Mockito.when(notificationRepository.findByStatus(NotificationStatus.UNREAD, PageRequest.of(0, 100)))
-                .thenReturn(new PageImpl<>(expected));
+               .thenReturn(new PageImpl<>(expected));
 
         // Perform the update
         Page<Notification> actual = notificationService.retrieveNotificationsToSend(PageRequest.of(0, 100));
@@ -507,20 +520,22 @@ public class NotificationServiceTest {
         PageImpl<ProjectUser> expectedPage = new PageImpl<>(expected);
         // Mock
         Mockito.when(roleService.retrieveRoleProjectUserList(Mockito.anyString(), Mockito.any(Pageable.class)))
-                .thenReturn(expectedPage);
+               .thenReturn(expectedPage);
         // Result
         Set<String> actual = notificationService.findRecipients(notification);
 
         // Compare
         Assert.assertEquals(expected.size(), actual.size());
-        Assert.assertTrue(actual
-                .containsAll(expected.stream().map(ProjectUser::getEmail).collect(Collectors.toList())));
+        Assert.assertTrue(actual.containsAll(expected.stream()
+                                                     .map(ProjectUser::getEmail)
+                                                     .collect(Collectors.toList())));
     }
 
     /**
      * Check that the passed {@link Role} has same attributes as the passed {@link Role}.
+     *
      * @param pExpected The expected role0
-     * @param pActual The actual role0
+     * @param pActual   The actual role0
      */
     private void checkFieldsEqual(Notification pExpected, Notification pActual) {
         Assert.assertThat(pActual.getId(), CoreMatchers.is(CoreMatchers.equalTo(pExpected.getId())));

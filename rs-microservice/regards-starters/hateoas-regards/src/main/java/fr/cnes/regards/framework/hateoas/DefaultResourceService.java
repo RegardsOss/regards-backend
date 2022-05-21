@@ -41,6 +41,7 @@ import java.util.List;
 
 /**
  * Default resource service based on security starter
+ *
  * @author msordi
  */
 public class DefaultResourceService implements IResourceService {
@@ -57,6 +58,7 @@ public class DefaultResourceService implements IResourceService {
 
     /**
      * Constructor
+     *
      * @param pAccessDecisionManager {@link AccessDecisionManager} for deciding that an access is granted or denied
      */
     public DefaultResourceService(AccessDecisionManager pAccessDecisionManager) {
@@ -65,8 +67,11 @@ public class DefaultResourceService implements IResourceService {
     }
 
     @Override
-    public void addLink(RepresentationModel<?> resource, final Class<?> controller, final String methodName,
-            LinkRelation rel, final MethodParam<?>... methodParams) {
+    public void addLink(RepresentationModel<?> resource,
+                        final Class<?> controller,
+                        final String methodName,
+                        LinkRelation rel,
+                        final MethodParam<?>... methodParams) {
 
         Assert.notNull(resource, "Resource should not be null");
         Link link = buildLink(controller, methodName, rel, methodParams);
@@ -116,15 +121,15 @@ public class DefaultResourceService implements IResourceService {
 
     /**
      * Custom way of adding link to a resource handling request params.
-     *
+     * <p>
      * For example, an endpoint like getSomething(@RequestParam String name)
      * mapped to: "/something"
      * will generate a link like
      * "http://someting?name=myName"
-     *
+     * <p>
      * BUT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      * It cannot handle type conversion, even if you declared the correct Spring {@link Converter}.
-     *
+     * <p>
      * For example, an endpoint like
      * getSomething(@RequestParam ComplexEntity entity)
      * mapped to: "/something"
@@ -132,8 +137,11 @@ public class DefaultResourceService implements IResourceService {
      * even if you defined in your classpath a converter implementing Converter<ComplexEntity, String>
      */
     @Override
-    public <C> void addLinkWithParams(RepresentationModel<?> resource, final Class<C> controller,
-            final String methodName, LinkRelation rel, final MethodParam<?>... methodParams) {
+    public <C> void addLinkWithParams(RepresentationModel<?> resource,
+                                      final Class<C> controller,
+                                      final String methodName,
+                                      LinkRelation rel,
+                                      final MethodParam<?>... methodParams) {
 
         Assert.notNull(resource, "Resource should not be null");
         Link link = buildLinkWithParams(controller, methodName, rel, methodParams);
@@ -144,8 +152,10 @@ public class DefaultResourceService implements IResourceService {
     }
 
     @Override
-    public <C> Link buildLinkWithParams(Class<C> controller, String methodName, LinkRelation rel,
-            MethodParam<?>... methodParams) {
+    public <C> Link buildLinkWithParams(Class<C> controller,
+                                        String methodName,
+                                        LinkRelation rel,
+                                        MethodParam<?>... methodParams) {
         Assert.notNull(controller, "Controller should not be null");
         Assert.notNull(methodName, "Method name should not be null");
         Assert.notNull(rel, "Relation should not be null");
@@ -181,26 +191,29 @@ public class DefaultResourceService implements IResourceService {
 
     /**
      * Retrieve a method from a class
-     * @param pController class
-     * @param pMethodName method name
+     *
+     * @param pController     class
+     * @param pMethodName     method name
      * @param pParameterTypes parameter types
      * @return associated {@link Method}
      * @throws MethodException if method cannot be retrieved
      */
     private Method getMethod(final Class<?> pController, final String pMethodName, final Class<?>... pParameterTypes)
-            throws MethodException {
+        throws MethodException {
         try {
             final Method method = pController.getMethod(pMethodName, pParameterTypes);
             checkAuthorization(method);
             return method;
         } catch (final NoSuchMethodException e) {
-            final String message = MessageFormat.format("No such method {0} in controller {1}.", pMethodName,
+            final String message = MessageFormat.format("No such method {0} in controller {1}.",
+                                                        pMethodName,
                                                         pController.getCanonicalName());
             LOGGER.error(message, e);
             throw new MethodException(message);
         } catch (final SecurityException e) {
             final String message = MessageFormat.format("Security exception accessing method {0} in controller {1}.",
-                                                        pMethodName, pController.getCanonicalName());
+                                                        pMethodName,
+                                                        pController.getCanonicalName());
             LOGGER.error(message, e);
             throw new MethodException(message);
         }
@@ -208,6 +221,7 @@ public class DefaultResourceService implements IResourceService {
 
     /**
      * Check if method is accessible regarding security authorities
+     *
      * @param pMethod method to check
      * @throws MethodException if method not authorized
      */

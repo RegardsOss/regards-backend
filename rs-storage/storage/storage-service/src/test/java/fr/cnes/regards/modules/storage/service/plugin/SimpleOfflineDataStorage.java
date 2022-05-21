@@ -18,13 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.service.plugin;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.Set;
-
-import org.apache.commons.lang.NotImplementedException;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
@@ -32,21 +25,20 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
-import fr.cnes.regards.modules.storage.domain.plugin.FileDeletionWorkingSubset;
-import fr.cnes.regards.modules.storage.domain.plugin.FileRestorationWorkingSubset;
-import fr.cnes.regards.modules.storage.domain.plugin.FileStorageWorkingSubset;
-import fr.cnes.regards.modules.storage.domain.plugin.IDeletionProgressManager;
-import fr.cnes.regards.modules.storage.domain.plugin.IOnlineStorageLocation;
-import fr.cnes.regards.modules.storage.domain.plugin.IStorageProgressManager;
-import fr.cnes.regards.modules.storage.domain.plugin.PreparationResponse;
+import fr.cnes.regards.modules.storage.domain.plugin.*;
+import org.apache.commons.lang.NotImplementedException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * @author Binda sébastien
- *
  */
 @Plugin(author = "REGARDS Team", description = "Plugin handling the storage on local file system",
-        id = "SimpleOfflineTest", version = "1.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-        url = "https://regardsoss.github.io/")
+    id = "SimpleOfflineTest", version = "1.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
+    url = "https://regardsoss.github.io/")
 public class SimpleOfflineDataStorage implements IOnlineStorageLocation {
 
     @PluginInit
@@ -54,8 +46,7 @@ public class SimpleOfflineDataStorage implements IOnlineStorageLocation {
     }
 
     @Override
-    public PreparationResponse<FileStorageWorkingSubset, FileStorageRequest> prepareForStorage(
-            Collection<FileStorageRequest> fileReferenceRequests) {
+    public PreparationResponse<FileStorageWorkingSubset, FileStorageRequest> prepareForStorage(Collection<FileStorageRequest> fileReferenceRequests) {
         throw new NotImplementedException();
     }
 
@@ -65,8 +56,7 @@ public class SimpleOfflineDataStorage implements IOnlineStorageLocation {
     }
 
     @Override
-    public PreparationResponse<FileDeletionWorkingSubset, FileDeletionRequest> prepareForDeletion(
-            Collection<FileDeletionRequest> fileDeletionRequests) {
+    public PreparationResponse<FileDeletionWorkingSubset, FileDeletionRequest> prepareForDeletion(Collection<FileDeletionRequest> fileDeletionRequests) {
         throw new NotImplementedException();
     }
 
@@ -81,8 +71,7 @@ public class SimpleOfflineDataStorage implements IOnlineStorageLocation {
     }
 
     @Override
-    public PreparationResponse<FileRestorationWorkingSubset, FileCacheRequest> prepareForRestoration(
-            Collection<FileCacheRequest> requests) {
+    public PreparationResponse<FileRestorationWorkingSubset, FileCacheRequest> prepareForRestoration(Collection<FileCacheRequest> requests) {
         throw new NotImplementedException();
     }
 

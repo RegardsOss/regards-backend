@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.framework.authentication.internal;
 
-import java.util.Arrays;
-
+import fr.cnes.regards.framework.security.filter.CorsFilter;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -34,15 +34,14 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
-import fr.cnes.regards.framework.security.filter.CorsFilter;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import java.util.Arrays;
 
 /**
  * Class AuthorizationServerConfiguration
- *
+ * <p>
  * Spring Oauth2 Authorization server configuration. Configuration to authenticate users and get tokens.
+ *
  * @author Sébastien Binda
-
  */
 public class Oauth2AuthorizationServerConfigurer extends AuthorizationServerConfigurerAdapter {
 
@@ -83,9 +82,14 @@ public class Oauth2AuthorizationServerConfigurer extends AuthorizationServerConf
      */
     private final AuthenticationManager authenticationManager;
 
-    public Oauth2AuthorizationServerConfigurer(final String resourceId, final String jwtSecret, final String clientUser,
-            final String clientSecret, final String grantType, final AuthenticationManager authenticationManager,
-            final JWTService jwtService, Integer acessTokenValidityInSec) {
+    public Oauth2AuthorizationServerConfigurer(final String resourceId,
+                                               final String jwtSecret,
+                                               final String clientUser,
+                                               final String clientSecret,
+                                               final String grantType,
+                                               final AuthenticationManager authenticationManager,
+                                               final JWTService jwtService,
+                                               Integer acessTokenValidityInSec) {
         super();
         this.resourceId = resourceId;
         this.jwtSecret = jwtSecret;
@@ -99,6 +103,7 @@ public class Oauth2AuthorizationServerConfigurer extends AuthorizationServerConf
 
     /**
      * Create custom token enhancer to add custom claims in the JWT token generated.
+     *
      * @return CustomTokenEnhancer
      */
     private TokenEnhancer tokenEnhancer() {
@@ -107,6 +112,7 @@ public class Oauth2AuthorizationServerConfigurer extends AuthorizationServerConf
 
     /**
      * Create token store for spring JWT manager
+     *
      * @return TokenStore
      */
     private TokenStore tokenStore() {
@@ -115,6 +121,7 @@ public class Oauth2AuthorizationServerConfigurer extends AuthorizationServerConf
 
     /**
      * Create the Oauth2 token to JWT Token converter
+     *
      * @return JwtAccessTokenConverter
      */
     private JwtAccessTokenConverter accessTokenConverter() {
@@ -128,14 +135,20 @@ public class Oauth2AuthorizationServerConfigurer extends AuthorizationServerConf
         final TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
         tokenEnhancerChain.setTokenEnhancers(Arrays.asList(tokenEnhancer(), accessTokenConverter()));
 
-        pEndpoints.tokenStore(tokenStore()).authenticationManager(this.authenticationManager)
-                .accessTokenConverter(accessTokenConverter()).tokenEnhancer(tokenEnhancerChain);
+        pEndpoints.tokenStore(tokenStore())
+                  .authenticationManager(this.authenticationManager)
+                  .accessTokenConverter(accessTokenConverter())
+                  .tokenEnhancer(tokenEnhancerChain);
     }
 
     @Override
     public void configure(final ClientDetailsServiceConfigurer clients) throws Exception {
-        clients.inMemory().withClient(clientUser).authorizedGrantTypes(grantType).resourceIds(resourceId)
-                .secret(clientSecret).accessTokenValiditySeconds(acessTokenValidityInSec);
+        clients.inMemory()
+               .withClient(clientUser)
+               .authorizedGrantTypes(grantType)
+               .resourceIds(resourceId)
+               .secret(clientSecret)
+               .accessTokenValiditySeconds(acessTokenValidityInSec);
     }
 
     @Override
@@ -145,6 +158,7 @@ public class Oauth2AuthorizationServerConfigurer extends AuthorizationServerConf
 
     /**
      * Create token services
+     *
      * @return DefaultTokenServices
      */
     @Bean

@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.dto.sip.validator;
 
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
  * Check that a SIP has a valid SIP identifier
  *
  * @author Marc Sordi
- *
  */
 public class CheckSIPIdValidator implements ConstraintValidator<CheckSIPId, SIP> {
 

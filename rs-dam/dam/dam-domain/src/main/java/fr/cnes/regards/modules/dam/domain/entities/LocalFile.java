@@ -18,25 +18,16 @@
  */
 package fr.cnes.regards.modules.dam.domain.entities;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import javax.persistence.*;
 
 /**
  * Document locally stored on rs-dam
+ *
  * @author Léo Mieulet
  */
 @Entity
 @Table(name = "t_local_storage", uniqueConstraints = @UniqueConstraint(columnNames = { "entity_id", "file_checksum" },
-        name = "uk_t_local_storage_document_file_checksum"))
+    name = "uk_t_local_storage_document_file_checksum"))
 @SequenceGenerator(name = "localStorageSequence", initialValue = 1, sequenceName = "documentLS_Sequence")
 public class LocalFile {
 
@@ -52,7 +43,7 @@ public class LocalFile {
      */
     @ManyToOne
     @JoinColumn(name = "entity_id", foreignKey = @ForeignKey(name = "fk_ls_entity_id"), nullable = false,
-            updatable = false)
+        updatable = false)
     private AbstractEntity<?> entity;
 
     /**

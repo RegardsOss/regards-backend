@@ -19,16 +19,8 @@
 package fr.cnes.regards.framework.modules.session.manager.domain;
 
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -48,7 +40,6 @@ public class SourceStepAggregation {
     @GeneratedValue(generator = "sourceAggSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
-
     /**
      * Type of session step
      */
@@ -57,18 +48,17 @@ public class SourceStepAggregation {
     @Enumerated(value = EnumType.STRING)
     private StepTypeEnum type;
 
-
     /**
      * Number of events related to inputs
      */
-    @Column(name="total_in")
+    @Column(name = "total_in")
     @NotNull
     private long totalIn = 0L;
 
     /**
      * Number of events related to outputs
      */
-    @Column(name="total_out")
+    @Column(name = "total_out")
     @NotNull
     private long totalOut = 0L;
 
@@ -84,7 +74,7 @@ public class SourceStepAggregation {
         this.type = type;
     }
 
-    public SourceStepAggregation(){
+    public SourceStepAggregation() {
     }
 
     public StepTypeEnum getType() {
@@ -122,6 +112,6 @@ public class SourceStepAggregation {
     @Override
     public String toString() {
         return "SourceStepAggregation{" + "id=" + id + ", type=" + type + ", totalIn=" + totalIn + ", totalOut="
-                + totalOut + ", state=" + state + '}';
+            + totalOut + ", state=" + state + '}';
     }
 }

@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.framework.feign;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-
+import com.google.common.io.ByteStreams;
+import feign.Response;
+import feign.codec.ErrorDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -30,9 +29,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
-import com.google.common.io.ByteStreams;
-import feign.Response;
-import feign.codec.ErrorDecoder;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
 
 /**
  * Intercept Feign error to write custom log and decode the body into an object
@@ -40,6 +39,7 @@ import feign.codec.ErrorDecoder;
  * It will deserialize the body, using {@link org.springframework.cloud.openfeign.support.SpringDecoder}, into a
  * SOMETHING instance accessible
  * into the {@link FeignResponseDecodedException} thrown.
+ *
  * @author CS
  */
 public class ClientErrorDecoder extends ErrorDecoder.Default implements ErrorDecoder {
@@ -51,10 +51,13 @@ public class ClientErrorDecoder extends ErrorDecoder.Default implements ErrorDec
 
     @Override
     public Exception decode(final String methodKey, final Response response) {
-        LOGGER.error(String.format("Remote call to %s. Response is : %d - %s", methodKey, response.status(),
+        LOGGER.error(String.format("Remote call to %s. Response is : %d - %s",
+                                   methodKey,
+                                   response.status(),
                                    response.reason()));
         HttpHeaders responseHeaders = new HttpHeaders();
-        response.headers().entrySet()
+        response.headers()
+                .entrySet()
                 .forEach(entry -> responseHeaders.put(entry.getKey(), new ArrayList<>(entry.getValue())));
 
         byte[] responseBody;

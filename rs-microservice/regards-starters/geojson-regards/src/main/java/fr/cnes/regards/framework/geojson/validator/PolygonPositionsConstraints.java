@@ -18,18 +18,15 @@
  */
 package fr.cnes.regards.framework.geojson.validator;
 
+import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
+
 import javax.validation.Constraint;
 import javax.validation.Payload;
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
+import java.lang.annotation.*;
 
 /**
  * {@link PolygonPositions} validation annotation
+ *
  * @author Marc Sordi
  */
 @Retention(RetentionPolicy.RUNTIME)

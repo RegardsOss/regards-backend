@@ -18,12 +18,6 @@
  */
 package fr.cnes.regards.modules.access.services.service.link;
 
-import java.util.ArrayList;
-
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -38,6 +32,11 @@ import fr.cnes.regards.modules.access.services.domain.event.LinkUiPluginsDataset
 import fr.cnes.regards.modules.access.services.domain.ui.LinkUIPluginsDatasets;
 import fr.cnes.regards.modules.dam.domain.entities.event.BroadcastEntityEvent;
 import fr.cnes.regards.modules.dam.domain.entities.event.EventType;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 
 /**
  * Service handling properly how the mapping of plugin configurations to datasets is done.
@@ -95,7 +94,7 @@ public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsServi
      */
     @Override
     public LinkUIPluginsDatasets updateLink(final String pDatasetId, final LinkUIPluginsDatasets pUpdatedLink)
-            throws EntityNotFoundException, EntityInvalidException {
+        throws EntityNotFoundException, EntityInvalidException {
         if (!pDatasetId.equals(pUpdatedLink.getDatasetId())) {
             throw new EntityInvalidException(String.format("Invalid datasetId %s ", pDatasetId));
         }
@@ -114,6 +113,7 @@ public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsServi
 
     /**
      * Delete a link
+     *
      * @param pLinkUIPluginsDatasets the link to delete
      */
     private void deleteLink(LinkUIPluginsDatasets pLinkUIPluginsDatasets) { // NOSONAR

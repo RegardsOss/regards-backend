@@ -18,22 +18,22 @@
  */
 package fr.cnes.regards.framework.utils.plugins.free;
 
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.framework.utils.plugins.generics.PluginWithBoolean;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Set;
 
 /**
  * Free plugin tests
+ *
  * @author Marc Sordi
  */
 public class PluginFreeTest {
@@ -46,13 +46,17 @@ public class PluginFreeTest {
 
         String expected = "string1";
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(PluginWithBoolean.FIELD_NAME_STRING, "string").dynamic(expected, "string2"));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(PluginWithBoolean.FIELD_NAME_STRING,
+                                                                           "string").dynamic(expected, "string2"));
 
-        PluginConfiguration conf = new PluginConfiguration("", parameters, FreePluginWithString.class.getAnnotation(Plugin.class).id());
+        PluginConfiguration conf = new PluginConfiguration("",
+                                                           parameters,
+                                                           FreePluginWithString.class.getAnnotation(Plugin.class).id());
 
         PluginUtils.setup(this.getClass().getPackage().getName());
-        IFreePlugin plugin = PluginUtils.getPlugin(conf, FreePluginWithString.class.getCanonicalName(), null,
+        IFreePlugin plugin = PluginUtils.getPlugin(conf,
+                                                   FreePluginWithString.class.getCanonicalName(),
+                                                   null,
                                                    IPluginParam.build(PluginWithBoolean.FIELD_NAME_STRING, expected));
         Assert.assertNotNull(plugin);
         Assert.assertEquals(expected, plugin.doIt());

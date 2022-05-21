@@ -18,19 +18,18 @@
  */
 package fr.cnes.regards.framework.geojson;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.restdocs.payload.FieldDescriptor;
-
 import com.google.common.base.Strings;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
+import org.springframework.restdocs.payload.FieldDescriptor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Builds the description of all fields found in {@link PluginConfiguration}.
+ *
  * @author Christophe Mertz
  */
 public class PluginConfigurationFieldDescriptors {
@@ -62,22 +61,24 @@ public class PluginConfigurationFieldDescriptors {
             lfd.add(pluginConfField.withPath(addPrefix("id"), "id", "Unique identifier").type("Long"));
         }
         lfd.add(pluginConfField.withPath(addPrefix("pluginId"), "pluginId", "Plugin configuration identifier")
-                .type(STRING));
+                               .type(STRING));
         lfd.add(pluginConfField.withPath(addPrefix("label"), "label", "A label to identify the configuration")
-                .type(STRING));
+                               .type(STRING));
         lfd.add(pluginConfField.withPath(addPrefix("version"), "version", "The version of the configuration")
-                .type(STRING).optional());
-        lfd.add(pluginConfField
-                .withPath(addPrefix("priorityOrder"), "priorityOrder", "The priority order of the configuration")
-                .type("Integer"));
+                               .type(STRING)
+                               .optional());
+        lfd.add(pluginConfField.withPath(addPrefix("priorityOrder"),
+                                         "priorityOrder",
+                                         "The priority order of the configuration").type("Integer"));
         lfd.add(pluginConfField.withPath(addPrefix("active"), "active", "If true, the configuration is active")
-                .type("Boolean"));
-        lfd.add(pluginConfField
-                .withPath(addPrefix("iconUrl"), "iconUrl", "Icon of the plugin", "It must be an URL to a svg file")
-                .type("URL"));
-        lfd.add(pluginConfField
-                .withPath(addPrefix("parameters"), "parameters", "The parameters configuration of the plugin")
-                .type("Array"));
+                               .type("Boolean"));
+        lfd.add(pluginConfField.withPath(addPrefix("iconUrl"),
+                                         "iconUrl",
+                                         "Icon of the plugin",
+                                         "It must be an URL to a svg file").type("URL"));
+        lfd.add(pluginConfField.withPath(addPrefix("parameters"),
+                                         "parameters",
+                                         "The parameters configuration of the plugin").type("Array"));
 
         lfd.addAll(buildPluginParameterDescription("parameters[]."));
 
@@ -93,7 +94,8 @@ public class PluginConfigurationFieldDescriptors {
         lfd.add(representationInformationField.withPath(addPrefix(prefix, "name"), "name", "The parameter name"));
         lfd.add(representationInformationField.withPath(addPrefix(prefix, "value"), "value", "The parameter name"));
         //        lfd.add(representationInformationField.withPath(addPrefix(prefix, "pluginConfiguration"), "pluginConfiguration", "This is used when a plugin parameter leads to a plugin configuration"));
-        lfd.add(representationInformationField.withPath(addPrefix(prefix, "dynamic"), "dynamic",
+        lfd.add(representationInformationField.withPath(addPrefix(prefix, "dynamic"),
+                                                        "dynamic",
                                                         "The parameter is dynamic"));
         //        lfd.add(representationInformationField.withPath(addPrefix(prefix, "dynamicsValues"), "dynamicsValues",
         //                                                        "The set of possible values for the dynamic parameter"));

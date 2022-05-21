@@ -62,5 +62,5 @@ public class EmailVerificationDto {
     public String getRequestLink() {
         return requestLink;
     }
-    
+
 }

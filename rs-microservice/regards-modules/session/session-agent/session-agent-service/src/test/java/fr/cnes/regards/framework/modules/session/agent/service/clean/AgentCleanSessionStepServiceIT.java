@@ -44,7 +44,7 @@ import java.util.List;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_clean_service_it",
-        "regards.session-agent.limit.store.session-steps=30"})
+    "regards.session-agent.limit.store.session-steps=30" })
 @ActiveProfiles({ "noscheduler" })
 public class AgentCleanSessionStepServiceIT extends AbstractAgentServiceUtilsIT {
 
@@ -118,57 +118,81 @@ public class AgentCleanSessionStepServiceIT extends AbstractAgentServiceUtilsIT 
         List<StepPropertyUpdateRequest> stepRequests = new ArrayList<>();
 
         // ACQUISITION - SOURCE 1 / scan event OWNER 1
-        StepPropertyUpdateRequest step1 = new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_1,
+        StepPropertyUpdateRequest step1 = new StepPropertyUpdateRequest("scan",
+                                                                        SOURCE_1,
+                                                                        OWNER_1,
                                                                         CREATION_DATE.plusSeconds(1),
                                                                         StepPropertyEventTypeEnum.INC,
-                                                                        new StepPropertyUpdateRequestInfo(
-                                                                                StepTypeEnum.ACQUISITION,
-                                                                                StepPropertyStateEnum.SUCCESS,
-                                                                                "gen.products", "10", true, false));
+                                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
+                                                                                                          StepPropertyStateEnum.SUCCESS,
+                                                                                                          "gen.products",
+                                                                                                          "10",
+                                                                                                          true,
+                                                                                                          false));
 
-        StepPropertyUpdateRequest step2 = new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_1,
+        StepPropertyUpdateRequest step2 = new StepPropertyUpdateRequest("scan",
+                                                                        SOURCE_1,
+                                                                        OWNER_1,
                                                                         CREATION_DATE.plusMinutes(1),
                                                                         StepPropertyEventTypeEnum.INC,
-                                                                        new StepPropertyUpdateRequestInfo(
-                                                                                StepTypeEnum.ACQUISITION,
-                                                                                StepPropertyStateEnum.SUCCESS,
-                                                                                "gen.products", "10", true, false));
+                                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
+                                                                                                          StepPropertyStateEnum.SUCCESS,
+                                                                                                          "gen.products",
+                                                                                                          "10",
+                                                                                                          true,
+                                                                                                          false));
         step2.setRegistrationDate(step2.getCreationDate());
 
         // REFERENCING - SOURCE 1 / oais event OWNER 1
-        StepPropertyUpdateRequest step3 = new StepPropertyUpdateRequest("oais", SOURCE_1, OWNER_1,
+        StepPropertyUpdateRequest step3 = new StepPropertyUpdateRequest("oais",
+                                                                        SOURCE_1,
+                                                                        OWNER_1,
                                                                         CREATION_DATE.plusDays(limitStore),
                                                                         StepPropertyEventTypeEnum.INC,
-                                                                        new StepPropertyUpdateRequestInfo(
-                                                                                StepTypeEnum.REFERENCING,
-                                                                                StepPropertyStateEnum.SUCCESS,
-                                                                                "gen.products", "6", false, true));
+                                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.REFERENCING,
+                                                                                                          StepPropertyStateEnum.SUCCESS,
+                                                                                                          "gen.products",
+                                                                                                          "6",
+                                                                                                          false,
+                                                                                                          true));
 
         // ACQUISITION - SOURCE 1 / scan event OWNER 2
-        StepPropertyUpdateRequest step4 = new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_2,
+        StepPropertyUpdateRequest step4 = new StepPropertyUpdateRequest("scan",
+                                                                        SOURCE_1,
+                                                                        OWNER_2,
                                                                         CREATION_DATE.plusSeconds(1),
                                                                         StepPropertyEventTypeEnum.INC,
-                                                                        new StepPropertyUpdateRequestInfo(
-                                                                                StepTypeEnum.ACQUISITION,
-                                                                                StepPropertyStateEnum.SUCCESS,
-                                                                                "gen.products", "8", true, false));
+                                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
+                                                                                                          StepPropertyStateEnum.SUCCESS,
+                                                                                                          "gen.products",
+                                                                                                          "8",
+                                                                                                          true,
+                                                                                                          false));
 
-        StepPropertyUpdateRequest step5 = new StepPropertyUpdateRequest("scan", SOURCE_1, OWNER_2,
+        StepPropertyUpdateRequest step5 = new StepPropertyUpdateRequest("scan",
+                                                                        SOURCE_1,
+                                                                        OWNER_2,
                                                                         CREATION_DATE.plusDays(limitStore + 1),
                                                                         StepPropertyEventTypeEnum.INC,
-                                                                        new StepPropertyUpdateRequestInfo(
-                                                                                StepTypeEnum.ACQUISITION,
-                                                                                StepPropertyStateEnum.SUCCESS,
-                                                                                "gen.products", "4", true, false));
+                                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
+                                                                                                          StepPropertyStateEnum.SUCCESS,
+                                                                                                          "gen.products",
+                                                                                                          "4",
+                                                                                                          true,
+                                                                                                          false));
 
         // REFERENCING - SOURCE 2 / oais event OWNER 1
-        StepPropertyUpdateRequest step6 = new StepPropertyUpdateRequest("oais", SOURCE_2, OWNER_1,
+        StepPropertyUpdateRequest step6 = new StepPropertyUpdateRequest("oais",
+                                                                        SOURCE_2,
+                                                                        OWNER_1,
                                                                         CREATION_DATE.plusDays(limitStore + 1),
                                                                         StepPropertyEventTypeEnum.INC,
-                                                                        new StepPropertyUpdateRequestInfo(
-                                                                                StepTypeEnum.REFERENCING,
-                                                                                StepPropertyStateEnum.SUCCESS,
-                                                                                "gen.products", "6", false, true));
+                                                                        new StepPropertyUpdateRequestInfo(StepTypeEnum.REFERENCING,
+                                                                                                          StepPropertyStateEnum.SUCCESS,
+                                                                                                          "gen.products",
+                                                                                                          "6",
+                                                                                                          false,
+                                                                                                          true));
         // set registration dates to creation dates
         step1.setRegistrationDate(step1.getCreationDate());
         step2.setRegistrationDate(step2.getCreationDate());

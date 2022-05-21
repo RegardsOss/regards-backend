@@ -18,22 +18,19 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import java.net.MalformedURLException;
-import java.nio.file.Path;
-
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+
 /**
- *
  * {@link OAISDataObject} storage location information
  *
  * @author Marc SORDI
- *
  */
 public class OAISDataObjectLocation {
 
@@ -51,7 +48,7 @@ public class OAISDataObjectLocation {
      */
     @NotNull(message = URL_REQUIRED)
     @Pattern(regexp = "\\b[a-zA-Z]+://?[-a-zA-Z0-9+&@#/%'?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%'=~_|]",
-            message = "URl should respect URL format from RFC 1738")
+        message = "URl should respect URL format from RFC 1738")
     private String url;
 
     /**

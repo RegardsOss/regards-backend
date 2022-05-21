@@ -59,20 +59,20 @@ public class CacheEntry {
      * Iterate over the list of WorkerIns and remove instances that are outdated
      */
     private void removeOutdatedWorkerIns() {
-        this.workerInsList.removeIf(
-                cacheWorkerInstance -> !isValidHeartBeat(cacheWorkerInstance.getLastHeartBeatDate(), expireInCacheDuration));
+        this.workerInsList.removeIf(cacheWorkerInstance -> !isValidHeartBeat(cacheWorkerInstance.getLastHeartBeatDate(),
+                                                                             expireInCacheDuration));
     }
 
     /**
      * Function used to check if an heartbeat is considered valid
+     *
      * @param lastHeartBeatDate
      * @param expireInCacheDuration
      * @return
      */
     public static boolean isValidHeartBeat(OffsetDateTime lastHeartBeatDate, long expireInCacheDuration) {
         OffsetDateTime now = OffsetDateTime.now();
-        boolean valid = lastHeartBeatDate.plusSeconds(expireInCacheDuration)
-                .isAfter(now);
+        boolean valid = lastHeartBeatDate.plusSeconds(expireInCacheDuration).isAfter(now);
         if (!valid) {
             LOGGER.warn("Invalid heartbeat from {} received at {}", lastHeartBeatDate, now);
         }

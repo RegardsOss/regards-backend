@@ -18,6 +18,14 @@
  */
 package fr.cnes.regards.framework.modules.jobs.domain;
 
+import com.google.gson.reflect.TypeToken;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.framework.modules.jobs.domain.exception.JobWorkspaceException;
+import fr.cnes.regards.framework.modules.jobs.domain.function.CheckedSupplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.file.Path;
@@ -25,18 +33,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.gson.reflect.TypeToken;
-
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobWorkspaceException;
-import fr.cnes.regards.framework.modules.jobs.domain.function.CheckedSupplier;
-
 /**
  * Interface for all regards jobs
+ *
  * @param <R> result type
  * @author Léo Mieulet
  * @author oroussel
@@ -49,6 +48,7 @@ public interface IJob<R> extends Runnable {
      * Manage job result.
      * <br/>
      * <b>Override this method for the result to be stored in its {@link JobInfo}</b>
+     *
      * @return The Job result
      */
     default R getResult() {
@@ -57,6 +57,7 @@ public interface IJob<R> extends Runnable {
 
     /**
      * If the job needs a workspace, JobService create one for it before executing job and clean it after execution
+     *
      * @return does the job need a workspace ?
      */
     default boolean needWorkspace() {
@@ -65,6 +66,7 @@ public interface IJob<R> extends Runnable {
 
     /**
      * If the job needs a workspace, JobService create one for it before executing job and clean it after execution
+     *
      * @param workspaceSupplier workspace supplier that is also called by the method to set workspace path
      */
     void setWorkspace(CheckedSupplier<Path, IOException> workspaceSupplier) throws JobWorkspaceException;
@@ -83,15 +85,17 @@ public interface IJob<R> extends Runnable {
      * if all needed parameters are specified</b> and <b>store them</b> for use in job execution.
      * <br/>
      * <b>Beware : do nothing by default, this method must be overridden.</b>
+     *
      * @param parameters non null parameter map
      */
     default void setParameters(Map<String, JobParameter> parameters) // NOSONAR
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
     }
 
     /**
      * To manage completion estimated date and percentComplete property, a job should provide the number of times it
      * will call {@link #advanceCompletion()} during its execution.
+     *
      * @return 100 by default
      */
     default int getCompletionCount() {
@@ -105,6 +109,7 @@ public interface IJob<R> extends Runnable {
 
     /**
      * Reject a job because <b>a parameter is missing</b>
+     *
      * @param parameterName missing parameter name
      * @throws JobParameterMissingException the related exception
      */
@@ -116,8 +121,9 @@ public interface IJob<R> extends Runnable {
 
     /**
      * Reject a job because <b>a parameter is invalid</b>
+     *
      * @param parameterName related parameter
-     * @param reason reason for invalidity
+     * @param reason        reason for invalidity
      * @throws JobParameterInvalidException the related exception
      */
     static void handleInvalidParameter(String parameterName, String reason) throws JobParameterInvalidException {
@@ -128,12 +134,14 @@ public interface IJob<R> extends Runnable {
 
     /**
      * Reject a job because <b>a parameter is invalid</b>
+     *
      * @param parameterName related parameter
-     * @param reason reason for invalidity
+     * @param reason        reason for invalidity
      * @throws JobParameterInvalidException the related exception
      */
     static void handleInvalidParameter(String parameterName, Exception reason) throws JobParameterInvalidException {
-        String errorMessage = String.format("Invalid job parameter \"%s\" : \"%s\"", parameterName,
+        String errorMessage = String.format("Invalid job parameter \"%s\" : \"%s\"",
+                                            parameterName,
                                             reason.getMessage());
         ILOGGER.error(errorMessage, reason);
         throw new JobParameterInvalidException(errorMessage);
@@ -141,19 +149,21 @@ public interface IJob<R> extends Runnable {
 
     /**
      * Get a required non null parameter value
-     * @param parameters map of parameters
+     *
+     * @param parameters    map of parameters
      * @param parameterName parameter name to retrieve
-     * @param type to return (may be guessed for simple type, use {@link TypeToken#getType()} instead)
+     * @param type          to return (may be guessed for simple type, use {@link TypeToken#getType()} instead)
      * @return the parameter value
      * @throws JobParameterMissingException if parameter does not exist
      * @throws JobParameterInvalidException if parameter value is null
      */
     static <T> T getValue(Map<String, JobParameter> parameters, String parameterName, Type type)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         JobParameter parameter = parameters.get(parameterName);
         if (parameter == null) {
             handleMissingParameter(parameterName);
-        } else if (parameter.getValue() == null) { // NOSONAR : an exception is thrown when calling handleMissingParameter
+        } else if (parameter.getValue()
+            == null) { // NOSONAR : an exception is thrown when calling handleMissingParameter
             handleInvalidParameter(parameterName, "Null value");
         } else {
             return type == null ? parameter.getValue() : parameter.getValue(type);
@@ -163,15 +173,16 @@ public interface IJob<R> extends Runnable {
     }
 
     static <T> T getValue(Map<String, JobParameter> parameters, String parameterName)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         return getValue(parameters, parameterName, null);
     }
 
     /**
      * Get parameter value as an Optional
-     * @param parameters map of parameters
+     *
+     * @param parameters    map of parameters
      * @param parameterName parameter name to retrieve
-     * @param type to return (may be guessed for simple type, use {@link TypeToken#getType()} instead)
+     * @param type          to return (may be guessed for simple type, use {@link TypeToken#getType()} instead)
      * @return an {@link java.util.Optional} parameter value
      */
     static <T> Optional<T> getOptionalValue(Map<String, JobParameter> parameters, String parameterName, Type type) {

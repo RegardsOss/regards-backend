@@ -31,6 +31,12 @@ import fr.cnes.regards.framework.modules.session.manager.domain.Source;
 import fr.cnes.regards.framework.modules.session.manager.domain.SourceStepAggregation;
 import fr.cnes.regards.framework.modules.session.manager.service.AbstractManagerServiceUtilsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
@@ -38,11 +44,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 
 /**
  * Test for {@link ManagerSnapshotService}
@@ -53,7 +54,8 @@ import org.springframework.test.context.TestPropertySource;
 @ActiveProfiles(value = { "noscheduler" })
 public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsIT {
 
-    private static final OffsetDateTime LAST_UPDATED = OffsetDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MICROS);
+    private static final OffsetDateTime LAST_UPDATED = OffsetDateTime.now(ZoneOffset.UTC)
+                                                                     .truncatedTo(ChronoUnit.MICROS);
 
     @Autowired
     private ISessionStepRepository sessionStepRepo;
@@ -86,7 +88,8 @@ public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsIT {
         // update session snapshot
         snapshotProcess = this.snapshotProcessRepo.findBySource(SOURCE_1).orElse(null);
         Assert.assertEquals("Snapshot process should have been updated with the most recent SessionStep",
-                            LAST_UPDATED.minusMinutes(8), snapshotProcess.getLastUpdateDate());
+                            LAST_UPDATED.minusMinutes(8),
+                            snapshotProcess.getLastUpdateDate());
 
         // modify step2
         SessionStep sessionStep2Updated = sessionStepsCreated.get(2);
@@ -103,7 +106,8 @@ public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsIT {
         // update session snapshot
         snapshotProcess = this.snapshotProcessRepo.findBySource(SOURCE_1).orElse(null);
         Assert.assertEquals("Snapshot process should have been updated with the most recent SessionStep",
-                            LAST_UPDATED.plusMinutes(9), snapshotProcess.getLastUpdateDate());
+                            LAST_UPDATED.plusMinutes(9),
+                            snapshotProcess.getLastUpdateDate());
         // update steps
         SessionStep sessionStep1Updated = sessionStepsCreated.get(1);
         sessionStep1Updated.getState().setErrors(0);
@@ -125,7 +129,8 @@ public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsIT {
 
         snapshotProcess = this.snapshotProcessRepo.findBySource(SOURCE_1).orElse(null);
         Assert.assertEquals("Snapshot process should have been updated with the most recent SessionStep",
-                            LAST_UPDATED.plusMinutes(62), snapshotProcess.getLastUpdateDate());
+                            LAST_UPDATED.plusMinutes(62),
+                            snapshotProcess.getLastUpdateDate());
         checkRun3Results(sessionStepsCreated);
     }
 
@@ -133,20 +138,29 @@ public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsIT {
         List<SessionStep> sessionStepList = new ArrayList<>();
 
         // SESSION 1
-        SessionStep sessionStep0 = new SessionStep("scan", SOURCE_1, SESSION_1, StepTypeEnum.ACQUISITION,
+        SessionStep sessionStep0 = new SessionStep("scan",
+                                                   SOURCE_1,
+                                                   SESSION_1,
+                                                   StepTypeEnum.ACQUISITION,
                                                    new StepState(0, 0, 2));
         sessionStep0.setInputRelated(2);
         sessionStep0.setLastUpdateDate(LAST_UPDATED.minusMinutes(10));
         sessionStep0.setRegistrationDate(sessionStep0.getLastUpdateDate());
 
-        SessionStep sessionStep1 = new SessionStep("oais", SOURCE_1, SESSION_1, StepTypeEnum.REFERENCING,
+        SessionStep sessionStep1 = new SessionStep("oais",
+                                                   SOURCE_1,
+                                                   SESSION_1,
+                                                   StepTypeEnum.REFERENCING,
                                                    new StepState(2, 0, 0));
         sessionStep1.setOutputRelated(2);
         sessionStep1.setLastUpdateDate(LAST_UPDATED.minusMinutes(9));
         sessionStep1.setRegistrationDate(sessionStep1.getLastUpdateDate());
 
         // SESSION 2
-        SessionStep sessionStep2 = new SessionStep("storage", SOURCE_1, SESSION_2, StepTypeEnum.STORAGE,
+        SessionStep sessionStep2 = new SessionStep("storage",
+                                                   SOURCE_1,
+                                                   SESSION_2,
+                                                   StepTypeEnum.STORAGE,
                                                    new StepState(0, 4, 0));
         sessionStep2.setOutputRelated(4);
         sessionStep2.setLastUpdateDate(LAST_UPDATED.minusMinutes(8));
@@ -154,27 +168,33 @@ public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsIT {
 
         // SESSION 3
         // create future event - should not be taken into account until run2
-        SessionStep sessionStep3 = new SessionStep("storage", SOURCE_1, SESSION_3, StepTypeEnum.STORAGE,
+        SessionStep sessionStep3 = new SessionStep("storage",
+                                                   SOURCE_1,
+                                                   SESSION_3,
+                                                   StepTypeEnum.STORAGE,
                                                    new StepState(0, 0, 0));
         sessionStep3.setOutputRelated(10);
         sessionStep3.setLastUpdateDate(LAST_UPDATED.plusMinutes(2));
         sessionStep3.setRegistrationDate(sessionStep3.getLastUpdateDate());
 
-
-        SessionStep sessionStep4 = new SessionStep("metacatalog", SOURCE_1, SESSION_3, StepTypeEnum.DISSEMINATION,
+        SessionStep sessionStep4 = new SessionStep("metacatalog",
+                                                   SOURCE_1,
+                                                   SESSION_3,
+                                                   StepTypeEnum.DISSEMINATION,
                                                    new StepState(0, 0, 4));
         sessionStep4.setOutputRelated(10);
         sessionStep4.setLastUpdateDate(LAST_UPDATED.plusMinutes(7));
         sessionStep4.setRegistrationDate(sessionStep4.getLastUpdateDate());
 
-
         // create future event - should not be taken into account until run3
-        SessionStep sessionStep5 = new SessionStep("scan", SOURCE_1, SESSION_4, StepTypeEnum.ACQUISITION,
+        SessionStep sessionStep5 = new SessionStep("scan",
+                                                   SOURCE_1,
+                                                   SESSION_4,
+                                                   StepTypeEnum.ACQUISITION,
                                                    new StepState(0, 0, 3));
         sessionStep5.setInputRelated(5);
         sessionStep5.setLastUpdateDate(LAST_UPDATED.plusMinutes(52));
         sessionStep5.setRegistrationDate(sessionStep5.getLastUpdateDate());
-
 
         sessionStepList.add(sessionStep0);
         sessionStepList.add(sessionStep1);
@@ -204,7 +224,8 @@ public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsIT {
                     Assert.assertTrue("Wrong session state", session.getManagerState().isRunning());
                     Assert.assertFalse("Wrong session state", session.getManagerState().isWaiting());
                     Assert.assertTrue("Wrong session state", session.getManagerState().isErrors());
-                    Assert.assertEquals("Wrong session lastUpdateDate", LAST_UPDATED.minusMinutes(9),
+                    Assert.assertEquals("Wrong session lastUpdateDate",
+                                        LAST_UPDATED.minusMinutes(9),
                                         session.getLastUpdateDate());
                     break;
                 case SESSION_2:
@@ -215,7 +236,8 @@ public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsIT {
                     Assert.assertFalse("Wrong session state", session.getManagerState().isRunning());
                     Assert.assertTrue("Wrong session state", session.getManagerState().isWaiting());
                     Assert.assertFalse("Wrong session state", session.getManagerState().isErrors());
-                    Assert.assertEquals("Wrong session lastUpdateDate", LAST_UPDATED.minusMinutes(8),
+                    Assert.assertEquals("Wrong session lastUpdateDate",
+                                        LAST_UPDATED.minusMinutes(8),
                                         session.getLastUpdateDate());
                     break;
                 default:
@@ -284,7 +306,8 @@ public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsIT {
                     Assert.assertTrue("Wrong session state", session.getManagerState().isRunning());
                     Assert.assertFalse("Wrong session state", session.getManagerState().isWaiting());
                     Assert.assertTrue("Wrong session state", session.getManagerState().isErrors());
-                    Assert.assertEquals("Wrong session lastUpdateDate", LAST_UPDATED.minusMinutes(9),
+                    Assert.assertEquals("Wrong session lastUpdateDate",
+                                        LAST_UPDATED.minusMinutes(9),
                                         session.getLastUpdateDate());
                     break;
                 case SESSION_2:
@@ -295,7 +318,8 @@ public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsIT {
                     Assert.assertFalse("Wrong session state", session.getManagerState().isRunning());
                     Assert.assertTrue("Wrong session state", session.getManagerState().isWaiting());
                     Assert.assertFalse("Wrong session state", session.getManagerState().isErrors());
-                    Assert.assertEquals("Wrong session lastUpdateDate", LAST_UPDATED.plusMinutes(9),
+                    Assert.assertEquals("Wrong session lastUpdateDate",
+                                        LAST_UPDATED.plusMinutes(9),
                                         session.getLastUpdateDate());
                     break;
 
@@ -309,7 +333,8 @@ public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsIT {
                     Assert.assertTrue("Wrong session state", session.getManagerState().isRunning());
                     Assert.assertFalse("Wrong session state", session.getManagerState().isWaiting());
                     Assert.assertFalse("Wrong session state", session.getManagerState().isErrors());
-                    Assert.assertEquals("Wrong session lastUpdateDate", LAST_UPDATED.plusMinutes(7),
+                    Assert.assertEquals("Wrong session lastUpdateDate",
+                                        LAST_UPDATED.plusMinutes(7),
                                         session.getLastUpdateDate());
                     break;
                 default:
@@ -385,7 +410,8 @@ public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsIT {
                     Assert.assertTrue("Wrong session state", session.getManagerState().isRunning());
                     Assert.assertFalse("Wrong session state", session.getManagerState().isWaiting());
                     Assert.assertFalse("Wrong session state", session.getManagerState().isErrors());
-                    Assert.assertEquals("Wrong session lastUpdateDate", LAST_UPDATED.plusMinutes(62),
+                    Assert.assertEquals("Wrong session lastUpdateDate",
+                                        LAST_UPDATED.plusMinutes(62),
                                         session.getLastUpdateDate());
                     break;
                 case SESSION_2:
@@ -396,7 +422,8 @@ public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsIT {
                     Assert.assertFalse("Wrong session state", session.getManagerState().isRunning());
                     Assert.assertFalse("Wrong session state", session.getManagerState().isWaiting());
                     Assert.assertFalse("Wrong session state", session.getManagerState().isErrors());
-                    Assert.assertEquals("Wrong session lastUpdateDate", LAST_UPDATED.plusMinutes(56),
+                    Assert.assertEquals("Wrong session lastUpdateDate",
+                                        LAST_UPDATED.plusMinutes(56),
                                         session.getLastUpdateDate());
                     break;
 
@@ -410,7 +437,8 @@ public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsIT {
                     Assert.assertFalse("Wrong session state", session.getManagerState().isRunning());
                     Assert.assertFalse("Wrong session state", session.getManagerState().isWaiting());
                     Assert.assertFalse("Wrong session state", session.getManagerState().isErrors());
-                    Assert.assertEquals("Wrong session lastUpdateDate", LAST_UPDATED.plusMinutes(60),
+                    Assert.assertEquals("Wrong session lastUpdateDate",
+                                        LAST_UPDATED.plusMinutes(60),
                                         session.getLastUpdateDate());
                     break;
                 case SESSION_4:
@@ -421,7 +449,8 @@ public class ManagerSnapshotServiceIT extends AbstractManagerServiceUtilsIT {
                     Assert.assertTrue("Wrong session state", session.getManagerState().isRunning());
                     Assert.assertFalse("Wrong session state", session.getManagerState().isWaiting());
                     Assert.assertFalse("Wrong session state", session.getManagerState().isErrors());
-                    Assert.assertEquals("Wrong session lastUpdateDate", LAST_UPDATED.plusMinutes(52),
+                    Assert.assertEquals("Wrong session lastUpdateDate",
+                                        LAST_UPDATED.plusMinutes(52),
                                         session.getLastUpdateDate());
                     break;
                 default:

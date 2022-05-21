@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.order.service.processing;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -54,14 +54,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
-@TestPropertySource(properties = {
-        "spring.jpa.properties.hibernate.default_schema=order_processing_test_it_scope_item",
-})
+@TestPropertySource(
+    properties = { "spring.jpa.properties.hibernate.default_schema=order_processing_test_it_scope_item", })
 public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderServiceTestIT.class);
 
-    OrderProcessInfoMapper processInfoMapper  = new OrderProcessInfoMapper();
+    OrderProcessInfoMapper processInfoMapper = new OrderProcessInfoMapper();
 
     @Before
     public void initProjectUser() {
@@ -69,7 +68,8 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
         role.setName(DefaultRole.REGISTERED_USER.name());
         ProjectUser projectUser = new ProjectUser();
         projectUser.setRole(role);
-        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(EntityModel.of(projectUser), HttpStatus.OK));
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString()))
+               .thenReturn(new ResponseEntity<>(EntityModel.of(projectUser), HttpStatus.OK));
     }
 
     @Test
@@ -97,70 +97,65 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
 
     private void simpleOrderWithProcessItemFiles() throws Exception {
         // The important params are those:
-        OrderProcessInfo processInfo = new OrderProcessInfo(
-                Scope.FEATURE,
-                Cardinality.ONE_PER_INPUT_FILE,
-                List.of(DataType.RAWDATA),
-                new SizeLimit(SizeLimit.Type.FILES, 1L),
-                new MultiplierResultSizeForecast(1d), Boolean.FALSE
-        );
-        launchOrderAndExpectResults(processInfo,10, Collections.singletonList(OrderStatus.RUNNING));
+        OrderProcessInfo processInfo = new OrderProcessInfo(Scope.FEATURE,
+                                                            Cardinality.ONE_PER_INPUT_FILE,
+                                                            List.of(DataType.RAWDATA),
+                                                            new SizeLimit(SizeLimit.Type.FILES, 1L),
+                                                            new MultiplierResultSizeForecast(1d),
+                                                            Boolean.FALSE);
+        launchOrderAndExpectResults(processInfo, 10, Collections.singletonList(OrderStatus.RUNNING));
     }
-
-
 
     private void simpleOrderWithProcessSuborderFeatures() throws Exception {
         // The important params are those:
-        OrderProcessInfo processInfo = new OrderProcessInfo(
-                Scope.SUBORDER,
-                Cardinality.ONE_PER_FEATURE,
-                List.of(DataType.RAWDATA),
-                new SizeLimit(SizeLimit.Type.FILES, 4L),
-                new MultiplierResultSizeForecast(1d), Boolean.FALSE
-        );
-        launchOrderAndExpectResults(processInfo,3, Collections.singletonList(OrderStatus.RUNNING));
+        OrderProcessInfo processInfo = new OrderProcessInfo(Scope.SUBORDER,
+                                                            Cardinality.ONE_PER_FEATURE,
+                                                            List.of(DataType.RAWDATA),
+                                                            new SizeLimit(SizeLimit.Type.FILES, 4L),
+                                                            new MultiplierResultSizeForecast(1d),
+                                                            Boolean.FALSE);
+        launchOrderAndExpectResults(processInfo, 3, Collections.singletonList(OrderStatus.RUNNING));
     }
 
     private void simpleOrderWithProcessSuborderExecution() throws Exception {
         // The important params are those:
-        OrderProcessInfo processInfo = new OrderProcessInfo(
-                Scope.SUBORDER,
-                Cardinality.ONE_PER_EXECUTION,
-                List.of(DataType.RAWDATA),
-                new SizeLimit(SizeLimit.Type.FILES, 5L),
-                new MultiplierResultSizeForecast(1d), Boolean.FALSE
-        );
-        launchOrderAndExpectResults(processInfo,2, Collections.singletonList(OrderStatus.RUNNING));
+        OrderProcessInfo processInfo = new OrderProcessInfo(Scope.SUBORDER,
+                                                            Cardinality.ONE_PER_EXECUTION,
+                                                            List.of(DataType.RAWDATA),
+                                                            new SizeLimit(SizeLimit.Type.FILES, 5L),
+                                                            new MultiplierResultSizeForecast(1d),
+                                                            Boolean.FALSE);
+        launchOrderAndExpectResults(processInfo, 2, Collections.singletonList(OrderStatus.RUNNING));
     }
-
 
     @Test
     public void simpleOrderWithProcessSuborderExecutionWithForbidSplitValid() throws Exception {
         // The important params are those:
-        OrderProcessInfo processInfo = new OrderProcessInfo(
-                Scope.SUBORDER,
-                Cardinality.ONE_PER_EXECUTION,
-                List.of(DataType.RAWDATA),
-                new SizeLimit(SizeLimit.Type.FEATURES, 10L),
-                new MultiplierResultSizeForecast(1d), Boolean.TRUE
-        );
-        launchOrderAndExpectResults(processInfo,1, Collections.singletonList(OrderStatus.RUNNING));
+        OrderProcessInfo processInfo = new OrderProcessInfo(Scope.SUBORDER,
+                                                            Cardinality.ONE_PER_EXECUTION,
+                                                            List.of(DataType.RAWDATA),
+                                                            new SizeLimit(SizeLimit.Type.FEATURES, 10L),
+                                                            new MultiplierResultSizeForecast(1d),
+                                                            Boolean.TRUE);
+        launchOrderAndExpectResults(processInfo, 1, Collections.singletonList(OrderStatus.RUNNING));
     }
 
     @Test
     public void simpleOrderWithProcessSuborderExecutionWithForbidSplitInvalid() throws Exception {
         // The important params are those:
-        OrderProcessInfo processInfo = new OrderProcessInfo(
-                Scope.SUBORDER,
-                Cardinality.ONE_PER_EXECUTION,
-                List.of(DataType.QUICKLOOK_SD),
-                new SizeLimit(SizeLimit.Type.FEATURES, 9L),
-                new MultiplierResultSizeForecast(1d), Boolean.TRUE
-        );
-        launchOrderAndExpectResults(processInfo,0, Collections.singletonList(OrderStatus.FAILED));
+        OrderProcessInfo processInfo = new OrderProcessInfo(Scope.SUBORDER,
+                                                            Cardinality.ONE_PER_EXECUTION,
+                                                            List.of(DataType.QUICKLOOK_SD),
+                                                            new SizeLimit(SizeLimit.Type.FEATURES, 9L),
+                                                            new MultiplierResultSizeForecast(1d),
+                                                            Boolean.TRUE);
+        launchOrderAndExpectResults(processInfo, 0, Collections.singletonList(OrderStatus.FAILED));
     }
 
-    private void launchOrderAndExpectResults(OrderProcessInfo processInfo, int expectedExecutions, java.util.List<OrderStatus> expectedOrderStatus) throws EntityInvalidException, InterruptedException, IOException {
+    private void launchOrderAndExpectResults(OrderProcessInfo processInfo,
+                                             int expectedExecutions,
+                                             java.util.List<OrderStatus> expectedOrderStatus)
+        throws EntityInvalidException, InterruptedException, IOException {
         //########################
         //######## GIVE
         // These parameters are necessary for tests but do not define the test behaviour:
@@ -168,7 +163,10 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
         Map<String, String> processParameters = HashMap.of("param", "value").toJavaMap();
         String defaultTenant = getDefaultTenant();
         tenantResolver.forceTenant(defaultTenant);
-        ProcessingMock processingMock = new ProcessingMock(runtimeTenantResolver, publisher, taskExecutor, batchCorrelations);
+        ProcessingMock processingMock = new ProcessingMock(runtimeTenantResolver,
+                                                           publisher,
+                                                           taskExecutor,
+                                                           batchCorrelations);
         AtomicInteger sendProcessingRequestCallCount = new AtomicInteger();
         String orderOwner = randomLabel("simpleOrder");
         Basket basket = createBasket(orderOwner, defaultTenant, processBusinessId, processParameters);
@@ -176,20 +174,20 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
         CountDownLatch orderCreatedLatch = new CountDownLatch(1);
         CountDownLatch receivedExecutionResultsLatch = new CountDownLatch(expectedExecutions);
 
-        setupMocksAndHandlers(
-                processBusinessId,
-                processInfoMapper,
-                processInfo,
-                defaultTenant,
-                processingMock,
-                sendProcessingRequestCallCount,
-                orderOwner,
-                orderCreatedLatch,
-                receivedExecutionResultsLatch
-        );
+        setupMocksAndHandlers(processBusinessId,
+                              processInfoMapper,
+                              processInfo,
+                              defaultTenant,
+                              processingMock,
+                              sendProcessingRequestCallCount,
+                              orderOwner,
+                              orderCreatedLatch,
+                              receivedExecutionResultsLatch);
 
-        Long storageJobsSuccessBefore = jobInfoRepos.countByClassNameAndStatusStatusIn(StorageFilesJob.class.getName(), JobStatus.SUCCEEDED);
-        Long execJobsSuccessBefore = jobInfoRepos.countByClassNameAndStatusStatusIn(ProcessExecutionJob.class.getName(), JobStatus.SUCCEEDED);
+        Long storageJobsSuccessBefore = jobInfoRepos.countByClassNameAndStatusStatusIn(StorageFilesJob.class.getName(),
+                                                                                       JobStatus.SUCCEEDED);
+        Long execJobsSuccessBefore = jobInfoRepos.countByClassNameAndStatusStatusIn(ProcessExecutionJob.class.getName(),
+                                                                                    JobStatus.SUCCEEDED);
 
         //########################
         //######## WHEN
@@ -202,17 +200,19 @@ public class OrderProcessingServiceIT extends AbstractOrderProcessingServiceIT {
 
         assertProcessingEventSizes(expectedExecutions, processingMock, storageJobsSuccessBefore, execJobsSuccessBefore);
 
-        if(expectedExecutions > 0) {
+        if (expectedExecutions > 0) {
             showMetalink(order);
         }
-        
+
         List<ExecResultHandlerResultEvent> execResultEvents = execResultHandlerResultEventHandler.getEvents();
         assertThat(execResultEvents).hasSize(expectedExecutions);
 
         // check the status of the event processed
-        java.util.List<OrderCreationService.OrderCreationCompletedEvent> orderExecutions = orderCreationCompletedEventHandler.getEvents().asJava();
+        java.util.List<OrderCreationService.OrderCreationCompletedEvent> orderExecutions = orderCreationCompletedEventHandler.getEvents()
+                                                                                                                             .asJava();
         assertThat(orderExecutions).isNotEmpty();
-        assertTrue("Unexpected status after order execution", expectedOrderStatus.contains(orderExecutions.get(0).getOrder().getStatus()));
+        assertTrue("Unexpected status after order execution",
+                   expectedOrderStatus.contains(orderExecutions.get(0).getOrder().getStatus()));
     }
 
 }

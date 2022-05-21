@@ -48,9 +48,11 @@ import java.util.List;
 @Service
 @MultitenantTransactional
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
-public class FeatureNotificationSettingsService extends AbstractSettingService implements IFeatureNotificationSettingsService {
+public class FeatureNotificationSettingsService extends AbstractSettingService
+    implements IFeatureNotificationSettingsService {
 
     private final ITenantResolver tenantsResolver;
+
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     private FeatureNotificationSettingsService self;
@@ -58,8 +60,7 @@ public class FeatureNotificationSettingsService extends AbstractSettingService i
     public FeatureNotificationSettingsService(IDynamicTenantSettingService dynamicTenantSettingService,
                                               ITenantResolver tenantsResolver,
                                               IRuntimeTenantResolver runtimeTenantResolver,
-                                              FeatureNotificationSettingsService featureNotificationSettingsService
-    ) {
+                                              FeatureNotificationSettingsService featureNotificationSettingsService) {
         super(dynamicTenantSettingService);
         this.tenantsResolver = tenantsResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;

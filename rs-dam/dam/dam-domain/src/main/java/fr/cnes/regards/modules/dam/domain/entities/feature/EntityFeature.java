@@ -118,8 +118,10 @@ public abstract class EntityFeature extends AbstractFeature<Set<IProperty<?>>, U
             ObjectProperty fragment = (ObjectProperty) this.propertyMap.get(name.substring(0, name.indexOf('.')));
             String propName = name.substring(name.indexOf('.') + 1);
             if (fragment != null) {
-                Optional<IProperty<?>> attOpt = fragment.getValue().stream().filter(p -> p.getName().equals(propName))
-                        .findFirst();
+                Optional<IProperty<?>> attOpt = fragment.getValue()
+                                                        .stream()
+                                                        .filter(p -> p.getName().equals(propName))
+                                                        .findFirst();
                 return attOpt.orElse(null);
             }
             return null;
@@ -130,7 +132,7 @@ public abstract class EntityFeature extends AbstractFeature<Set<IProperty<?>>, U
         if (staticPropertyMap == null) {
             Set<IProperty<?>> staticProperties = new HashSet<>();
             // Unique identifier
-            staticProperties.add(IProperty.buildString(StaticProperties.FEATURE_ID,id.toString()));
+            staticProperties.add(IProperty.buildString(StaticProperties.FEATURE_ID, id.toString()));
             // Virtual identifier
             staticProperties.add(IProperty.buildString(StaticProperties.FEATURE_VIRTUAL_ID, virtualId.toString()));
             // Version
@@ -138,13 +140,14 @@ public abstract class EntityFeature extends AbstractFeature<Set<IProperty<?>>, U
             // Is last version
             staticProperties.add(IProperty.buildBoolean(StaticProperties.FEATURE_IS_LAST_VERSION, last));
             // SIP identifier alias provider identifier
-            staticProperties.add(IProperty.buildString(StaticProperties.FEATURE_PROVIDER_ID,providerId));
+            staticProperties.add(IProperty.buildString(StaticProperties.FEATURE_PROVIDER_ID, providerId));
             // Required label for minimal display purpose
-            staticProperties.add(IProperty.buildString(StaticProperties.FEATURE_LABEL,label));
+            staticProperties.add(IProperty.buildString(StaticProperties.FEATURE_LABEL, label));
             // Related model name
-            staticProperties.add(IProperty.buildString(StaticProperties.FEATURE_MODEL,model));
+            staticProperties.add(IProperty.buildString(StaticProperties.FEATURE_MODEL, model));
             // Tags
-            staticProperties.add(IProperty.buildStringArray(StaticProperties.FEATURE_TAGS, tags.toArray(new String[0])));
+            staticProperties.add(IProperty.buildStringArray(StaticProperties.FEATURE_TAGS,
+                                                            tags.toArray(new String[0])));
 
             staticPropertyMap = Maps.uniqueIndex(staticProperties, IProperty::getName);
         }

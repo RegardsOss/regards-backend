@@ -47,11 +47,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- *
  * @author Iliana Ghazali
  */
-@TestPropertySource(properties = { "spring.application.name=rs-test","spring.jpa.properties.hibernate.default_schema=dumpit",
-        "regards.json.dump.max.per.sub.zip=4","regards.cipher.key-location=src/test/resources/testKey",
+@TestPropertySource(
+    properties = { "spring.application.name=rs-test", "spring.jpa.properties.hibernate.default_schema=dumpit",
+        "regards.json.dump.max.per.sub.zip=4", "regards.cipher.key-location=src/test/resources/testKey",
         "regards.cipher.iv=1234567812345678" })
 public class DumpServiceIT extends AbstractRegardsServiceTransactionalIT {
 
@@ -97,7 +97,8 @@ public class DumpServiceIT extends AbstractRegardsServiceTransactionalIT {
         }
         // Get list of created zips
         List<String> listValidNames = Arrays.stream(this.tmpZipLocationPath.toFile().listFiles())
-                .map(file -> file.getName()).collect(Collectors.toList());
+                                            .map(file -> file.getName())
+                                            .collect(Collectors.toList());
 
         // Generate Dump
         OffsetDateTime creationDate = OffsetDateTime.now();
@@ -119,10 +120,10 @@ public class DumpServiceIT extends AbstractRegardsServiceTransactionalIT {
         File dump = listDump[0];
         String dumpName = dump.getName();
         String zipNameRegex =
-                "^dump_json_" + this.microservice + "_" + OffsetDateTimeAdapter.format(creationDate) + "\\.zip$";
+            "^dump_json_" + this.microservice + "_" + OffsetDateTimeAdapter.format(creationDate) + "\\.zip$";
         Assert.assertFalse("The name of the created zip \"" + dumpName
-                                   + "\" is incorrect and should match the following pattern : dump_json_microservice_dumpdate ("
-                                   + zipNameRegex + ")", !dumpName.matches(zipNameRegex));
+                               + "\" is incorrect and should match the following pattern : dump_json_microservice_dumpdate ("
+                               + zipNameRegex + ")", !dumpName.matches(zipNameRegex));
 
         // check the number of zip entries in dumpZip
         List<String> listZipNames = TestUtils.readZipEntryNames(dump);

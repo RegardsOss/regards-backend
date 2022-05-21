@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.framework.hateoas;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.validation.Valid;
-
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,14 +36,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
-import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test HATEOAS link generation
+ *
  * @author msordi
  */
 public class DefaultResourceServiceTest {
@@ -122,8 +121,9 @@ public class DefaultResourceServiceTest {
     public void testNotAuthorizedLinkCreation() {
 
         // Deny all acess
-        Mockito.doThrow(new AccessDeniedException("Mock")).when(accessDecisionManager)
-                .decide(Mockito.eq(jwtAuth), Mockito.any(), Mockito.eq(null));
+        Mockito.doThrow(new AccessDeniedException("Mock"))
+               .when(accessDecisionManager)
+               .decide(Mockito.eq(jwtAuth), Mockito.any(), Mockito.eq(null));
 
         final PojoController pojoController = new PojoController(resourceServiceMock);
         final List<EntityModel<Pojo>> pojos = pojoController.getPojos();
@@ -133,6 +133,7 @@ public class DefaultResourceServiceTest {
 
     /**
      * Sample pojo
+     *
      * @author msordi
      */
     static class Pojo {
@@ -171,6 +172,7 @@ public class DefaultResourceServiceTest {
 
     /**
      * Pojo controller
+     *
      * @author msordi
      */
     @RestController
@@ -212,9 +214,15 @@ public class DefaultResourceServiceTest {
         @Override
         public EntityModel<Pojo> toResource(Pojo element, Object... extras) {
             final EntityModel<Pojo> resource = resourceService.toResource(element);
-            resourceService.addLink(resource, PojoController.class, GET_METHOD_NAME, LinkRels.SELF,
+            resourceService.addLink(resource,
+                                    PojoController.class,
+                                    GET_METHOD_NAME,
+                                    LinkRels.SELF,
                                     MethodParamFactory.build(Long.class, element.getId()));
-            resourceService.addLink(resource, PojoController.class, UPDATE_METHOD_NAME, LinkRels.UPDATE,
+            resourceService.addLink(resource,
+                                    PojoController.class,
+                                    UPDATE_METHOD_NAME,
+                                    LinkRels.UPDATE,
                                     MethodParamFactory.build(Pojo.class));
             return resource;
         }

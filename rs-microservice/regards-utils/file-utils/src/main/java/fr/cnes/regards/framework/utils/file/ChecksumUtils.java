@@ -27,12 +27,13 @@ public final class ChecksumUtils {
 
     /**
      * Compute checksum and closes provided input stream
+     *
      * @return checksum computed from the input stream thanks to the algorithm as an hexadecimal string.
      * @throws NoSuchAlgorithmException if checksumAlgorithm is not handled and known by the java process
      * @throws IOException              see possible causes from InputStream
      */
     public static String computeHexChecksum(Path filePath, String checksumAlgorithm)
-            throws NoSuchAlgorithmException, IOException {
+        throws NoSuchAlgorithmException, IOException {
         try (InputStream is = Files.newInputStream(filePath)) {
             return computeHexChecksum(is, checksumAlgorithm);
         }
@@ -40,12 +41,13 @@ public final class ChecksumUtils {
 
     /**
      * Compute checksum and closes provided input stream
+     *
      * @return checksum computed from the input stream thanks to the algorithm as an hexadecimal string.
      * @throws NoSuchAlgorithmException if checksumAlgorithm is not handled and known by the java process
      * @throws IOException              see possible causes from InputStream
      */
     public static String computeHexChecksum(InputStream is, String checksumAlgorithm)
-            throws NoSuchAlgorithmException, IOException {
+        throws NoSuchAlgorithmException, IOException {
         MessageDigest md = MessageDigest.getInstance(checksumAlgorithm);
         try (DigestInputStream dis = new DigestInputStream(is, md)) {
             /* Read decorated stream (dis) to EOF as normal... */
@@ -62,7 +64,7 @@ public final class ChecksumUtils {
      * @return checksum for specified text and algorithm
      */
     public static String computeHexChecksum(String text, String checksumAlgorithm)
-            throws NoSuchAlgorithmException, IOException {
+        throws NoSuchAlgorithmException, IOException {
         try (InputStream inputStream = new ByteArrayInputStream(text.getBytes())) {
             return ChecksumUtils.computeHexChecksum(inputStream, checksumAlgorithm);
         }

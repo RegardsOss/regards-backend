@@ -19,20 +19,13 @@
  */
 package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.pojo;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * Class User
- *
+ * <p>
  * JPA Company Entity. For projects multitenancy databases.
+ *
  * @author CS
  */
 @Entity
@@ -76,8 +69,9 @@ public class User {
 
     /**
      * Constructor
+     *
      * @param pFirstName User first name
-     * @param pLastName User last name
+     * @param pLastName  User last name
      */
     public User(String pFirstName, String pLastName) {
         super();
@@ -87,9 +81,10 @@ public class User {
 
     /**
      * Constructor
+     *
      * @param pFirstName User first name
-     * @param pLastName User last name
-     * @param pCompany User's Company
+     * @param pLastName  User last name
+     * @param pCompany   User's Company
      */
     public User(String pFirstName, String pLastName, Company pCompany) {
         super();
@@ -100,6 +95,7 @@ public class User {
 
     /**
      * Getter
+     *
      * @return User identifier
      */
     public Long getId() {
@@ -108,6 +104,7 @@ public class User {
 
     /**
      * Setter
+     *
      * @param pId User identifier
      */
     public void setId(Long pId) {
@@ -116,6 +113,7 @@ public class User {
 
     /**
      * Getter
+     *
      * @return User firstName
      */
     public String getFirstName() {
@@ -124,6 +122,7 @@ public class User {
 
     /**
      * Getter
+     *
      * @return User lastName
      */
     public String getLastName() {
@@ -132,6 +131,7 @@ public class User {
 
     /**
      * Getter
+     *
      * @return User's company
      */
     public Company getCompany() {
@@ -140,6 +140,7 @@ public class User {
 
     /**
      * Setter
+     *
      * @param pFirstName User firstName
      */
     public void setFirstName(String pFirstName) {
@@ -148,6 +149,7 @@ public class User {
 
     /**
      * Setter
+     *
      * @param pLastName User lastName
      */
     public void setLastName(String pLastName) {
@@ -156,6 +158,7 @@ public class User {
 
     /**
      * Setter
+     *
      * @param pCompany User's company
      */
     public void setCompany(Company pCompany) {

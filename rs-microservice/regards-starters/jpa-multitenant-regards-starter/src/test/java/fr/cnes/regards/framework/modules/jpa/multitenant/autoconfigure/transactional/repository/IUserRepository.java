@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.repository;
 
-import org.springframework.data.repository.CrudRepository;
-
 import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.pojo.User;
+import org.springframework.data.repository.CrudRepository;
 
 /**
  * Class CompanyRepository
- *
+ * <p>
  * JPA User Repository
+ *
  * @author CS
  */
 public interface IUserRepository extends CrudRepository<User, Long> {

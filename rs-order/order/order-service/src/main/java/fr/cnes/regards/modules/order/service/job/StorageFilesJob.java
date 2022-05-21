@@ -43,12 +43,11 @@ import java.util.stream.Stream;
 
 /**
  * Job  to ensure with storage microservice that order files are availables to download.
- *
+ * <p>
  * When using processing, this job launches the {@link ProcessExecutionJob} referenced in
  * the {@link #processJobInfoId} field.
  *
  * @author Sébastien Binda
- *
  */
 public class StorageFilesJob extends AbstractJob<Void> {
 
@@ -99,27 +98,23 @@ public class StorageFilesJob extends AbstractJob<Void> {
     private IOrderDataFileService orderDataFileService;
 
     @Override
-    public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterInvalidException {
+    public void setParameters(Map<String, JobParameter> parameters) throws JobParameterInvalidException {
         if ((parameters.size() < 4) || (parameters.size() > 5)) {
             throw new JobParameterInvalidException(
-                    "Four or five parameters are expected : 'files', 'subOrderAvailabilityDurationHours', 'user' and 'userRole', and optionally 'processJobInfo'."
-            );
+                "Four or five parameters are expected : 'files', 'subOrderAvailabilityDurationHours', 'user' and 'userRole', and optionally 'processJobInfo'.");
         }
         for (JobParameter param : parameters.values()) {
-            boolean paramIsIncompatible =
-                Stream.<Function<JobParameter, Boolean>>of(
-                    FilesJobParameter::isCompatible,
-                    SubOrderAvailabilityPeriodJobParameter::isCompatible,
-                    UserJobParameter::isCompatible,
-                    UserRoleJobParameter::isCompatible,
-                    ProcessJobInfoJobParameter::isCompatible
-                ).noneMatch(f -> f.apply(param));
+            boolean paramIsIncompatible = Stream.<Function<JobParameter, Boolean>>of(FilesJobParameter::isCompatible,
+                                                                                     SubOrderAvailabilityPeriodJobParameter::isCompatible,
+                                                                                     UserJobParameter::isCompatible,
+                                                                                     UserRoleJobParameter::isCompatible,
+                                                                                     ProcessJobInfoJobParameter::isCompatible)
+                                                .noneMatch(f -> f.apply(param));
             if (paramIsIncompatible) {
                 throw new JobParameterInvalidException(
-                        "Please use ProcessJobInfoJobParameter, FilesJobParameter, SubOrderAvailabilityPeriodJobParameter, UserJobParameter and "
-                                + "UserRoleJobParameter in place of JobParameter (these "
-                                + "classes are here to facilitate your life so please use them.");
+                    "Please use ProcessJobInfoJobParameter, FilesJobParameter, SubOrderAvailabilityPeriodJobParameter, UserJobParameter and "
+                        + "UserRoleJobParameter in place of JobParameter (these "
+                        + "classes are here to facilitate your life so please use them.");
             }
             if (FilesJobParameter.isCompatible(param)) {
                 Long[] fileIds = param.getValue();
@@ -148,9 +143,12 @@ public class StorageFilesJob extends AbstractJob<Void> {
         subscriber.subscribe(this);
 
         try {
-            storageClient.makeAvailable(dataFilesMultimap.keySet(), OffsetDateTime.now().plusHours(subOrderAvailabilityDurationHours));
-            dataFilesMultimap.forEach((cs, f) -> logger.debug("Order job is waiting for {} file {} - {} availability.", dataFilesMultimap.size(),
-                                                          f.getFilename(), cs));
+            storageClient.makeAvailable(dataFilesMultimap.keySet(),
+                                        OffsetDateTime.now().plusHours(subOrderAvailabilityDurationHours));
+            dataFilesMultimap.forEach((cs, f) -> logger.debug("Order job is waiting for {} file {} - {} availability.",
+                                                              dataFilesMultimap.size(),
+                                                              f.getFilename(),
+                                                              cs));
             // Wait for remaining files availability from storage
             this.semaphore.acquire();
             logger.debug("All files ({}) are available.", dataFilesMultimap.keySet().size());
@@ -166,19 +164,19 @@ public class StorageFilesJob extends AbstractJob<Void> {
             subscriber.unsubscribe(this);
 
             processJobInfoId
-                    // NO PROCESSING
-                    .onEmpty(() ->
-                    // All order data files statuses are updated into database (if there is no process to launch)
-                    dataFileService.save(dataFilesMultimap.values()))
-                    // PROCESSING TO BE LAUNCHED
-                    .peek(id -> {
-                        // Delete the OrderDataFiles which were only temporary input files
-                        orderDataFileRepository.deleteAll(dataFilesMultimap.values());
-                        // Enqueue the processing job because all of its dependencies are ready (if there is a process to launch)
-                        jobInfoService.enqueueJobForId(id);
-                        // Nudge the order job service to enqueue next storage files jobs.
-                        orderJobService.manageUserOrderStorageFilesJobInfos(user);
-                    });
+                // NO PROCESSING
+                .onEmpty(() ->
+                             // All order data files statuses are updated into database (if there is no process to launch)
+                             dataFileService.save(dataFilesMultimap.values()))
+                // PROCESSING TO BE LAUNCHED
+                .peek(id -> {
+                    // Delete the OrderDataFiles which were only temporary input files
+                    orderDataFileRepository.deleteAll(dataFilesMultimap.values());
+                    // Enqueue the processing job because all of its dependencies are ready (if there is a process to launch)
+                    jobInfoService.enqueueJobForId(id);
+                    // Nudge the order job service to enqueue next storage files jobs.
+                    orderJobService.manageUserOrderStorageFilesJobInfos(user);
+                });
         }
     }
 
@@ -187,7 +185,7 @@ public class StorageFilesJob extends AbstractJob<Void> {
         availableFilesOrderedByThisJob.retainAll(dataFilesMultimap.keySet());
         availableFilesOrderedByThisJob.removeAll(alreadyHandledFiles);
         List<OrderDataFile> handledOrderDataFiles = new ArrayList<>(availableFilesOrderedByThisJob.size());
-        for (String available: availableFilesOrderedByThisJob) {
+        for (String available : availableFilesOrderedByThisJob) {
             Collection<OrderDataFile> dataFiles = dataFilesMultimap.get(available);
             for (OrderDataFile df : dataFiles) {
                 logger.debug("File {} - {} is now in state: {}.", df.getFilename(), df.getChecksum(), fileState);

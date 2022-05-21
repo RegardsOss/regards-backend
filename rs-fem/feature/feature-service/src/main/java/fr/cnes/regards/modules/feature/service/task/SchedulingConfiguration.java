@@ -20,16 +20,15 @@
 package fr.cnes.regards.modules.feature.service.task;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Enable Scheduling
  *
  * @author Marc SORDI
- *
  */
 @Configuration
 @EnableScheduling
 public class SchedulingConfiguration {
+
 }

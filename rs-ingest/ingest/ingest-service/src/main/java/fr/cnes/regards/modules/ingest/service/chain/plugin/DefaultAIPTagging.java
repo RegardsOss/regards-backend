@@ -18,9 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.plugin;
 
-import java.util.List;
-import java.util.Map;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -28,6 +25,9 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.ingest.domain.exception.TagAIPException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipTagging;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Default AIP tagging plugin that can manage either tags or links or both.<br/>
@@ -39,20 +39,18 @@ import fr.cnes.regards.modules.ingest.dto.aip.AIP;
  * <li>FRANCE</li>
  * <li>SPATIAL</li>
  * </ul>
- *
+ * <p>
  * Sample links:
  * <ul>
  * <li>CNES -> http://www.cnes.fr</li>
  * <li>FITS -> https://www.iana.org/assignments/media-types/application/fits</li>
  * </ul>
  *
- *
  * @author Marc Sordi
- *
  */
 @Plugin(author = "REGARDS Team", description = "Default plugin for AIP tagging", id = "DefaultAIPTagging",
-        version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-        url = "https://regardsoss.github.io/")
+    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
+    url = "https://regardsoss.github.io/")
 public class DefaultAIPTagging implements IAipTagging {
 
     public static final String FIELD_NAME_TAGS = "tags"; // Useful for testing
@@ -60,7 +58,7 @@ public class DefaultAIPTagging implements IAipTagging {
     public static final String FIELD_NAME_LINKS = "links"; // Useful for testing
 
     @PluginParameter(label = "Tags",
-            description = "List of tags useful to classify AIP for business purpose and harvesting", optional = true)
+        description = "List of tags useful to classify AIP for business purpose and harvesting", optional = true)
     private List<String> tags;
 
     @PluginParameter(keylabel = "Link tag", label = "Link", description = "List of links", optional = true)
@@ -70,8 +68,8 @@ public class DefaultAIPTagging implements IAipTagging {
     public void init() {
         // At least, one tag or link is required
         if ((tags == null || tags.isEmpty()) && (links == null || links.isEmpty())) {
-            throw new PluginUtilsRuntimeException(
-                    String.format("Tags or links is required in default tag plugin : %s", this.getClass().getName()));
+            throw new PluginUtilsRuntimeException(String.format("Tags or links is required in default tag plugin : %s",
+                                                                this.getClass().getName()));
         }
     }
 

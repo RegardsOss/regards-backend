@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 /**
  * This event must be sent when a new tenant is created and after default role creation to register microservice
  * resources.
+ *
  * @author Marc Sordi
  */
 @Event(target = Target.ALL)

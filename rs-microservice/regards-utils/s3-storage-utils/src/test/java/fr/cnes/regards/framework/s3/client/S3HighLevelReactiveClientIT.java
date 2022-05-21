@@ -58,21 +58,31 @@ public class S3HighLevelReactiveClientIT {
     public void testWriteReadDeleteSmall() {
         String rootPath = "some/root/path";
 
-        StorageConfig config = StorageConfig.builder().endpoint(s3Host).bucket(bucket).region(region).key(key)
-                .secret(secret).rootPath(rootPath).build();
+        StorageConfig config = StorageConfig.builder()
+                                            .endpoint(s3Host)
+                                            .bucket(bucket)
+                                            .region(region)
+                                            .key(key)
+                                            .secret(secret)
+                                            .rootPath(rootPath)
+                                            .build();
 
         S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(), 1024);
 
         Flux<ByteBuffer> buffers = DataBufferUtils.read(new ClassPathResource("small.txt"),
-                                                        new DefaultDataBufferFactory(), 1024)
-                .map(DataBuffer::asByteBuffer);
+                                                        new DefaultDataBufferFactory(),
+                                                        1024).map(DataBuffer::asByteBuffer);
         StorageCommandID cmdId = new StorageCommandID("askId", UUID.randomUUID());
 
         String entryKey = config.entryKey("small.txt");
         long size = 427L;
         StorageEntry entry = StorageEntry.builder()
-                .checksum(Option.of(Tuple.of("MD5", "706126bf6d8553708227dba90694e81c"))).config(config)
-                .size(Option.some(size)).fullPath(entryKey).data(buffers).build();
+                                         .checksum(Option.of(Tuple.of("MD5", "706126bf6d8553708227dba90694e81c")))
+                                         .config(config)
+                                         .size(Option.some(size))
+                                         .fullPath(entryKey)
+                                         .data(buffers)
+                                         .build();
 
         client.check(StorageCommand.check(config, cmdId, entryKey)).block().matchCheckResult(present -> {
             fail("Should be absent");
@@ -93,14 +103,15 @@ public class S3HighLevelReactiveClientIT {
             return false;
         });
 
-        client.check(StorageCommand.check(config, cmdId, entryKey)).block()
-                .matchCheckResult(present -> true, absent -> {
-                    fail("Should be present");
-                    return false;
-                }, unreachableStorage -> {
-                    fail("s3 unreachable");
-                    return false;
-                });
+        client.check(StorageCommand.check(config, cmdId, entryKey))
+              .block()
+              .matchCheckResult(present -> true, absent -> {
+                  fail("Should be present");
+                  return false;
+              }, unreachableStorage -> {
+                  fail("s3 unreachable");
+                  return false;
+              });
 
         client.read(StorageCommand.read(config, cmdId, entryKey)).block().matchReadResult(pipe -> {
             pipe.getEntry().doOnNext(e -> LOGGER.info("entry: {}", readString(e))).block();
@@ -113,14 +124,15 @@ public class S3HighLevelReactiveClientIT {
             return false;
         });
 
-        client.delete(StorageCommand.delete(config, cmdId, entryKey)).block()
-                .matchDeleteResult(success -> true, unreachable -> {
-                    fail("Delete failed: Unreachable");
-                    return false;
-                }, failure -> {
-                    fail("Delete failed");
-                    return false;
-                });
+        client.delete(StorageCommand.delete(config, cmdId, entryKey))
+              .block()
+              .matchDeleteResult(success -> true, unreachable -> {
+                  fail("Delete failed: Unreachable");
+                  return false;
+              }, failure -> {
+                  fail("Delete failed");
+                  return false;
+              });
 
         client.check(StorageCommand.check(config, cmdId, entryKey)).block().matchCheckResult(present -> {
             fail("Should be absent");
@@ -136,8 +148,14 @@ public class S3HighLevelReactiveClientIT {
     public void testWriteBig() {
         String rootPath = "some/root/path";
 
-        StorageConfig config = StorageConfig.builder().endpoint(s3Host).bucket(bucket).region(region).key(key)
-                .secret(secret).rootPath(rootPath).build();
+        StorageConfig config = StorageConfig.builder()
+                                            .endpoint(s3Host)
+                                            .bucket(bucket)
+                                            .region(region)
+                                            .key(key)
+                                            .secret(secret)
+                                            .rootPath(rootPath)
+                                            .build();
 
         S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(Schedulers.immediate(), 5 * 1024 * 1024);
 
@@ -150,8 +168,12 @@ public class S3HighLevelReactiveClientIT {
         String entryKey = config.entryKey("big.txt");
 
         StorageEntry entry = StorageEntry.builder()
-                .checksum(Option.of(Tuple.of("MD5", "706126bf6d8553708227dba90694e81c"))).config(config)
-                .size(Option.some(size)).fullPath(entryKey).data(buffers).build();
+                                         .checksum(Option.of(Tuple.of("MD5", "706126bf6d8553708227dba90694e81c")))
+                                         .config(config)
+                                         .size(Option.some(size))
+                                         .fullPath(entryKey)
+                                         .data(buffers)
+                                         .build();
 
         client.write(StorageCommand.write(config, cmdId, entryKey, entry)).block().matchWriteResult(success -> {
             assertThat(success.getSize()).isEqualTo(size);
@@ -164,14 +186,15 @@ public class S3HighLevelReactiveClientIT {
             return false;
         });
 
-        client.check(StorageCommand.check(config, cmdId, entryKey)).block()
-                .matchCheckResult(present -> true, absent -> {
-                    fail("Should be present");
-                    return false;
-                }, unreachableStorage -> {
-                    fail("s3 unreachable");
-                    return false;
-                });
+        client.check(StorageCommand.check(config, cmdId, entryKey))
+              .block()
+              .matchCheckResult(present -> true, absent -> {
+                  fail("Should be present");
+                  return false;
+              }, unreachableStorage -> {
+                  fail("s3 unreachable");
+                  return false;
+              });
 
         client.read(StorageCommand.read(config, cmdId, entryKey)).block().matchReadResult(pipe -> {
             pipe.getEntry().doOnNext(e -> {
@@ -188,14 +211,15 @@ public class S3HighLevelReactiveClientIT {
             return false;
         });
 
-        client.delete(StorageCommand.delete(config, cmdId, entryKey)).block()
-                .matchDeleteResult(success -> true, unreachable -> {
-                    fail("Delete failed: Unreachable");
-                    return false;
-                }, failure -> {
-                    fail("Delete failed");
-                    return false;
-                });
+        client.delete(StorageCommand.delete(config, cmdId, entryKey))
+              .block()
+              .matchDeleteResult(success -> true, unreachable -> {
+                  fail("Delete failed: Unreachable");
+                  return false;
+              }, failure -> {
+                  fail("Delete failed");
+                  return false;
+              });
 
         client.check(StorageCommand.check(config, cmdId, entryKey)).block().matchCheckResult(present -> {
             fail("Should be absent");
@@ -208,8 +232,9 @@ public class S3HighLevelReactiveClientIT {
     }
 
     private String readString(StorageEntry e) {
-        return DataBufferUtils.join(e.getData().map(bb -> new DefaultDataBufferFactory().wrap(bb))).block()
-                .toString(StandardCharsets.UTF_8);
+        return DataBufferUtils.join(e.getData().map(bb -> new DefaultDataBufferFactory().wrap(bb)))
+                              .block()
+                              .toString(StandardCharsets.UTF_8);
     }
 
 }

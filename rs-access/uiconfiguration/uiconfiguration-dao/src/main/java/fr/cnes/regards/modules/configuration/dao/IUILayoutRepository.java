@@ -18,16 +18,14 @@
  */
 package fr.cnes.regards.modules.configuration.dao;
 
-import java.util.Optional;
-
+import fr.cnes.regards.modules.configuration.domain.UILayout;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import fr.cnes.regards.modules.configuration.domain.UILayout;
+import java.util.Optional;
 
 /**
- *
  * Class ILayoutRepository
- *
+ * <p>
  * JPA Repository for Layout entities
  *
  * @author Sébastien Binda
@@ -36,7 +34,6 @@ import fr.cnes.regards.modules.configuration.domain.UILayout;
 public interface IUILayoutRepository extends JpaRepository<UILayout, Long> {
 
     /**
-     *
      * Retrieve layout for the given application id.
      *
      * @param pApplicationId

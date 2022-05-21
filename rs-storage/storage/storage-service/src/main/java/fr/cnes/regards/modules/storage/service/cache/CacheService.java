@@ -18,29 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.service.cache;
 
-import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort.Direction;
-import org.springframework.stereotype.Service;
-import org.springframework.util.MimeType;
-
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -60,6 +37,28 @@ import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storage.service.StorageJobsPriority;
 import fr.cnes.regards.modules.storage.service.cache.job.CacheCleanJob;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.stereotype.Service;
+import org.springframework.util.MimeType;
+
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Service to manage temporary accessibility of {@link FileReference} stored with a {@link INearlineStorageLocation}
@@ -67,13 +66,12 @@ import fr.cnes.regards.modules.storage.service.cache.job.CacheCleanJob;
  * When a file is requested by restore method this service retrieve the file from the
  * nearline datastorage plugin and copy it into his internal cache (Local disk)<br/>
  * As the cache maximum size is limited, this service queues the file requests and handle them when it is possible<br/>
- *
+ * <p>
  * Files in cache are purged when :
  * <ul>
  * <li>Files are outdated in cache ({@link CacheFile#getExpirationDate()} date is past.</li>
  * <li>Cache is full and no outdated files are in cache, then the older {@link CacheFile}s are deleted.</li>
  * </ul>
- *
  *
  * @author Sylvain VISSIERE-GUERINET
  * @author Sébastien Binda
@@ -105,8 +103,14 @@ public class CacheService {
      * Creates a new cache file if the checksum does not match an existing file.
      * If file already exists in cache, updates the associated information.
      */
-    public void addFile(String checksum, Long fileSize, String fileName, MimeType mimeType, String type, URL location,
-            OffsetDateTime expirationDate, String groupId) {
+    public void addFile(String checksum,
+                        Long fileSize,
+                        String fileName,
+                        MimeType mimeType,
+                        String type,
+                        URL location,
+                        OffsetDateTime expirationDate,
+                        String groupId) {
         Optional<CacheFile> oCf = search(checksum);
         CacheFile cachedFile;
         if (!oCf.isPresent()) {
@@ -155,6 +159,7 @@ public class CacheService {
 
     /**
      * Retrieve a file from the cache by is checksum.
+     *
      * @return {@link CacheFile}
      */
     public Optional<CacheFile> getCacheFile(String checksum) {
@@ -163,13 +168,15 @@ public class CacheService {
 
     /**
      * Retrieve all {@link FileReference}s available in cache.
+     *
      * @param groupId new availability request business identifier. This id is added to the already existing cache files.
      * @return {@link FileReference}s available
      */
     public Set<FileReference> getFilesAvailableInCache(Set<FileReference> fileReferences, String groupId) {
         Set<FileReference> availables = Sets.newHashSet();
-        Set<String> checksums = fileReferences.stream().map(f -> f.getMetaInfo().getChecksum())
-                .collect(Collectors.toSet());
+        Set<String> checksums = fileReferences.stream()
+                                              .map(f -> f.getMetaInfo().getChecksum())
+                                              .collect(Collectors.toSet());
         Set<CacheFile> cacheFiles = cachedFileRepository.findAllByChecksumIn(checksums);
         Set<String> cacheFileChecksums = cacheFiles.stream().map(cf -> {
             // Add new request id to the cache file
@@ -187,6 +194,7 @@ public class CacheService {
 
     /**
      * Return the current size of the cache in bytes.
+     *
      * @return {@link Long}
      */
     public Long getCacheSizeUsedBytes() {
@@ -219,6 +227,7 @@ public class CacheService {
      * <li>1. Disk deletion of the physical files</li>
      * <li>2. Database deletion of the {@link CacheFile}s
      * </ul>
+     *
      * @param filesToDelete {@link Set}<{@link CacheFile}> to delete.
      */
     public void deleteCachedFiles(Collection<CacheFile> filesToDelete) {
@@ -274,11 +283,14 @@ public class CacheService {
      */
     public Path getTenantCachePath() {
         return dynamicTenantSettingService.read(StorageSetting.CACHE_PATH_NAME)
-                .orElseThrow(() -> new RsRuntimeException("Tenant cache path has not been initialized")).getValue();
+                                          .orElseThrow(() -> new RsRuntimeException(
+                                              "Tenant cache path has not been initialized"))
+                                          .getValue();
     }
 
     /**
      * Calculate a file path in the cache system by creating a sub folder for each 2 character of its checksum.
+     *
      * @return file path
      */
     public String getFilePath(String fileChecksum) {
@@ -287,6 +299,7 @@ public class CacheService {
 
     /**
      * Calculate a file path in the cache system by creating a sub folder for each 2 character of its checksum.
+     *
      * @return file path
      */
     public String getCacheDirectoryPath(String fileChecksum) {
@@ -316,8 +329,9 @@ public class CacheService {
 
     private Long getMaxCacheSizeKo() {
         return dynamicTenantSettingService.read(StorageSetting.CACHE_MAX_SIZE_NAME)
-                .orElseThrow(() -> new RsRuntimeException("Max cache size setting has not been initialized"))
-                .getValue();
+                                          .orElseThrow(() -> new RsRuntimeException(
+                                              "Max cache size setting has not been initialized"))
+                                          .getValue();
     }
 
     public long getTotalCachedFiles() {
@@ -345,10 +359,16 @@ public class CacheService {
 
     public void scheduleCacheCleanUp(String jobOwner) {
         Set<JobParameter> parameters = Sets.newHashSet();
-        if (jobService.retrieveJobsCount(CacheCleanJob.class.getName(), JobStatus.PENDING, JobStatus.RUNNING,
-                                         JobStatus.QUEUED, JobStatus.TO_BE_RUN) == 0) {
-            jobService.createAsQueued(new JobInfo(false, StorageJobsPriority.CACHE_PURGE, parameters,
-                                                  jobOwner, CacheCleanJob.class.getName()));
+        if (jobService.retrieveJobsCount(CacheCleanJob.class.getName(),
+                                         JobStatus.PENDING,
+                                         JobStatus.RUNNING,
+                                         JobStatus.QUEUED,
+                                         JobStatus.TO_BE_RUN) == 0) {
+            jobService.createAsQueued(new JobInfo(false,
+                                                  StorageJobsPriority.CACHE_PURGE,
+                                                  parameters,
+                                                  jobOwner,
+                                                  CacheCleanJob.class.getName()));
         }
     }
 }

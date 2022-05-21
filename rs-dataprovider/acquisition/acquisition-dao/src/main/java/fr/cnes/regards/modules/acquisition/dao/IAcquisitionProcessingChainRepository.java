@@ -38,7 +38,8 @@ import java.util.Optional;
  * @author Marc Sordi
  */
 @Repository
-public interface IAcquisitionProcessingChainRepository extends JpaRepository<AcquisitionProcessingChain, Long>, JpaSpecificationExecutor<AcquisitionProcessingChain> {
+public interface IAcquisitionProcessingChainRepository
+    extends JpaRepository<AcquisitionProcessingChain, Long>, JpaSpecificationExecutor<AcquisitionProcessingChain> {
 
     Long countById(Long id);
 
@@ -51,6 +52,7 @@ public interface IAcquisitionProcessingChainRepository extends JpaRepository<Acq
 
     /**
      * Find all active and not running processing chain for a specified mode
+     *
      * @param mode chain processing mode
      * @return all chains
      */
@@ -64,16 +66,20 @@ public interface IAcquisitionProcessingChainRepository extends JpaRepository<Acq
         return findByModeAndActiveTrueAndLockedFalse(AcquisitionProcessingChainMode.AUTO);
     }
 
-    @Query("select chain.validationPluginConf from AcquisitionProcessingChain chain,PluginConfiguration conf where chain.id = ?1 and chain.validationPluginConf.id = conf.id")
+    @Query(
+        "select chain.validationPluginConf from AcquisitionProcessingChain chain,PluginConfiguration conf where chain.id = ?1 and chain.validationPluginConf.id = conf.id")
     Optional<PluginConfiguration> findOneValidationPlugin(Long chainId);
 
-    @Query("select chain.productPluginConf from AcquisitionProcessingChain chain,PluginConfiguration conf where chain.id = ?1 and chain.productPluginConf.id = conf.id")
+    @Query(
+        "select chain.productPluginConf from AcquisitionProcessingChain chain,PluginConfiguration conf where chain.id = ?1 and chain.productPluginConf.id = conf.id")
     Optional<PluginConfiguration> findOneProductPlugin(Long chainId);
 
-    @Query("select chain.generateSipPluginConf from AcquisitionProcessingChain chain,PluginConfiguration conf where chain.id = ?1 and chain.generateSipPluginConf.id = conf.id")
+    @Query(
+        "select chain.generateSipPluginConf from AcquisitionProcessingChain chain,PluginConfiguration conf where chain.id = ?1 and chain.generateSipPluginConf.id = conf.id")
     Optional<PluginConfiguration> findOneGenerateSipPlugin(Long chainId);
 
-    @Query("select chain.postProcessSipPluginConf from AcquisitionProcessingChain chain,PluginConfiguration conf where chain.id = ?1 and chain.postProcessSipPluginConf.id = conf.id")
+    @Query(
+        "select chain.postProcessSipPluginConf from AcquisitionProcessingChain chain,PluginConfiguration conf where chain.id = ?1 and chain.postProcessSipPluginConf.id = conf.id")
     Optional<PluginConfiguration> findOnePostProcessSipPlugin(Long chainId);
 
     @Modifying
@@ -92,6 +98,7 @@ public interface IAcquisitionProcessingChainRepository extends JpaRepository<Acq
 
     @EntityGraph(value = "graph.acquisition.chain.complete", type = EntityGraph.EntityGraphType.LOAD)
     @Override
-    Page<AcquisitionProcessingChain> findAll(Specification<AcquisitionProcessingChain> specification, Pageable pageable);
+    Page<AcquisitionProcessingChain> findAll(Specification<AcquisitionProcessingChain> specification,
+                                             Pageable pageable);
 
 }

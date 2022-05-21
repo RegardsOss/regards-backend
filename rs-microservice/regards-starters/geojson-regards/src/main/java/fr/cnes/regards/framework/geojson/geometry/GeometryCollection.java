@@ -18,15 +18,16 @@
  */
 package fr.cnes.regards.framework.geojson.geometry;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import fr.cnes.regards.framework.geojson.AbstractGeoJsonObject;
 import fr.cnes.regards.framework.geojson.GeoJsonType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJson GeometryCollection representation
+ *
  * @author Marc Sordi
  */
 public class GeometryCollection extends AbstractGeoJsonObject implements IGeometry {

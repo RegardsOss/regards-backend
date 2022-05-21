@@ -18,25 +18,21 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
-import java.time.OffsetDateTime;
-import java.util.Collection;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
-import fr.cnes.regards.modules.storage.domain.flow.CopyFlowItem;
-import fr.cnes.regards.modules.storage.domain.flow.DeletionFlowItem;
-import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
-import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
+import fr.cnes.regards.modules.storage.domain.flow.*;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
+
+import java.time.OffsetDateTime;
+import java.util.Collection;
 
 /**
  * Client interface for requesting the file storage service
- *
+ * <p>
  * Client requests are done asynchronously.
  * To listen to the feedback messages, you have to implement your own message handler listening to {@link FileReferenceEvent}.
  * Be sure to check that the message is intended for you by validating the owner.
@@ -49,6 +45,7 @@ public interface IStorageClient {
      * Requests storage of a file from a local accessible URL to a destination storage defined
      * by {@link PluginConfiguration#getBusinessId()} of {@link IStorageLocation} plugin.
      * <br/>
+     *
      * @param file {@link FileStorageRequestDTO} information about file to store
      * @return {@link RequestInfo} containing a unique request id. This request id can
      * be used to identify responses in {@link IStorageRequestListener} implementation.
@@ -58,6 +55,7 @@ public interface IStorageClient {
     /**
      * Request storage of a collection of files from a local accessible URL to a destination storage defined
      * by {@link PluginConfiguration#getBusinessId()} of {@link IStorageLocation} plugin.
+     *
      * @param files {@link FileStorageRequestDTO} information about files to store
      * @return {@link RequestInfo}s containing a unique request id for each group of requests. a group can contains
      * {@link StorageFlowItem#MAX_REQUEST_PER_GROUP} at most. Those request info can be used to identify responses
@@ -67,18 +65,21 @@ public interface IStorageClient {
 
     /**
      * Retry all registered request in error associated to the given {@link RequestInfo}
+     *
      * @param requestInfo containing a unique request id.
      */
     void storeRetry(RequestInfo requestInfo);
 
     /**
      * Retry all registered request in error associated to the given owners.
+     *
      * @param requestInfo containing a unique request id.
      */
     void storeRetry(Collection<String> owners);
 
     /**
      * Retry all registered request in error associated to the given {@link RequestInfo}
+     *
      * @param requestInfo containing a unique request id.
      */
     void availabilityRetry(RequestInfo requestInfo);
@@ -97,6 +98,7 @@ public interface IStorageClient {
      * Request to reference a collection of files at given storage locations. With this request, files is not moved,
      * there are only referenced.
      * <br/>
+     *
      * @param files {@link FileReferenceRequestDTO} information about files to reference
      * @return {@link RequestInfo}s containing a unique request id for each group of requests. a group can contains
      * {@link ReferenceFlowItem#MAX_REQUEST_PER_GROUP} at most. Those request info can be used to identify responses
@@ -151,9 +153,9 @@ public interface IStorageClient {
     /**
      * Requests that files identified by their checksums be put online so that they can be downloaded by a third party component.
      *
-     * @param checksums list of file checksums
+     * @param checksums      list of file checksums
      * @param expirationDate date until which the file must be available
-     * (after this date, the system could proceed to a possible cleaning of its cache, only offline files are concerned!)
+     *                       (after this date, the system could proceed to a possible cleaning of its cache, only offline files are concerned!)
      * @return {@link RequestInfo}s containing a unique request id for each group of requests. a group can contains
      * {@link AvailabilityFlowItem#MAX_REQUEST_PER_GROUP} at most. Those request info can be used to identify responses
      * in {@link IStorageRequestListener} implementation.

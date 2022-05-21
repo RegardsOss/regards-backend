@@ -18,19 +18,17 @@
  */
 package fr.cnes.regards.modules.storage.domain.flow;
 
-import java.util.Collection;
-import java.util.Set;
-
-import javax.validation.Valid;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
+
+import javax.validation.Valid;
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * Flow message to request a new file storage.<br/>
@@ -72,6 +70,7 @@ public class StorageFlowItem implements ISubscribable {
 
     /**
      * Build a storage request message for one file
+     *
      * @param file
      * @param groupId
      * @return {@link StorageFlowItem}
@@ -85,6 +84,7 @@ public class StorageFlowItem implements ISubscribable {
 
     /**
      * Build a storage request message fr many files
+     *
      * @param files
      * @param groupId
      * @return {@link StorageFlowItem}
@@ -98,8 +98,9 @@ public class StorageFlowItem implements ISubscribable {
 
     @Override
     public String toString() {
-        return "FileStorageFlowItem [" + (files != null ? "files=" + files + ", " : "")
-                + (groupId != null ? "groupId=" + groupId : "") + "]";
+        return "FileStorageFlowItem [" + (files != null ? "files=" + files + ", " : "") + (groupId != null ?
+            "groupId=" + groupId :
+            "") + "]";
     }
 
 }

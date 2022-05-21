@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.modules.authentication.service.role;
 
-import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
+import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -30,6 +29,7 @@ public interface IBorrowRoleService {
 
     /**
      * generate a new JWT for the given role if the current user can switch to this role
+     *
      * @return couple (new JWT, Role name wanted)
      */
     DefaultOAuth2AccessToken switchTo(String pTargetRoleName) throws JwtException, EntityOperationForbiddenException;

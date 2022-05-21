@@ -31,6 +31,6 @@ public interface RandomGeneratorBuilder<T extends RandomGenerator<?>> {
     default T build(FunctionDescriptor fd, IPropertyGetter propertyGetter) {
         // Default implementation does not use property getter!
         // FIXME sbinda
-       return build(fd);
+        return build(fd);
     }
 }

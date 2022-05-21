@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.modules.search.service.cache;
 
-import java.util.List;
-
+import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
+import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupCache;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -36,18 +38,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.google.common.collect.Lists;
-
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupCache;
+import java.util.List;
 
 /**
  * Test verifying {@link IAccessGroupCache} caching facilities.<br>
  * Widely inspired by Oliver Gierke (lead dev. of Spring Data project) example below.
  *
- * @see "http://stackoverflow.com/questions/24221569/how-to-test-springs-declarative-caching-support-on-spring-data-repositories"
  * @author Xavier-Alexandre Brochard
+ * @see "http://stackoverflow.com/questions/24221569/how-to-test-springs-declarative-caching-support-on-spring-data-repositories"
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration

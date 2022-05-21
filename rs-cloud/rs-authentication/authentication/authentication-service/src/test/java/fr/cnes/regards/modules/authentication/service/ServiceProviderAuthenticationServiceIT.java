@@ -35,10 +35,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.spy;
 
 @TestPropertySource(
-    properties = {
-        "spring.jpa.properties.hibernate.default_schema=authentication_service_provider_tests",
-    }
-)
+    properties = { "spring.jpa.properties.hibernate.default_schema=authentication_service_provider_tests", })
 public class ServiceProviderAuthenticationServiceIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
@@ -71,22 +68,18 @@ public class ServiceProviderAuthenticationServiceIT extends AbstractRegardsTrans
         MockitoAnnotations.initMocks(this);
 
         repositoryDelegate = repository;
-        repository =
-            Mockito.mock(IServiceProviderRepository.class, AdditionalAnswers.delegatesTo(repository));
+        repository = Mockito.mock(IServiceProviderRepository.class, AdditionalAnswers.delegatesTo(repository));
 
         pluginServiceDelegate = pluginService;
-        pluginService =
-            Mockito.mock(IPluginService.class, AdditionalAnswers.delegatesTo(pluginService));
+        pluginService = Mockito.mock(IPluginService.class, AdditionalAnswers.delegatesTo(pluginService));
 
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
-        service = spy(new ServiceProviderAuthenticationServiceImpl(
-            repository,
-            pluginService,
-            runtimeTenantResolver,
-            userAccountManager,
-            jwtService
-        ));
+        service = spy(new ServiceProviderAuthenticationServiceImpl(repository,
+                                                                   pluginService,
+                                                                   runtimeTenantResolver,
+                                                                   userAccountManager,
+                                                                   jwtService));
     }
 
     @Test
@@ -105,7 +98,8 @@ public class ServiceProviderAuthenticationServiceIT extends AbstractRegardsTrans
         ServiceProvider sp = repository.save(makeServiceProviderOk());
         System.out.println(gson.toJson(sp));
 
-        Try<IServiceProviderPlugin<ServiceProviderAuthenticationParams, ServiceProviderAuthenticationInfo.AuthenticationInfo>> plugin = service.getPlugin(sp.getName());
+        Try<IServiceProviderPlugin<ServiceProviderAuthenticationParams, ServiceProviderAuthenticationInfo.AuthenticationInfo>> plugin = service.getPlugin(
+            sp.getName());
         assertThat(plugin.isSuccess()).isTrue();
         assertThat(plugin.get()).isInstanceOf(OpenIdConnectPlugin.class);
     }
@@ -113,54 +107,44 @@ public class ServiceProviderAuthenticationServiceIT extends AbstractRegardsTrans
     @Test
     public void getPlugin_nok() {
         ServiceProvider sp = repository.save(makeServiceProviderNok());
-        Try<IServiceProviderPlugin<ServiceProviderAuthenticationParams, ServiceProviderAuthenticationInfo.AuthenticationInfo>> plugin = service.getPlugin(sp.getName());
+        Try<IServiceProviderPlugin<ServiceProviderAuthenticationParams, ServiceProviderAuthenticationInfo.AuthenticationInfo>> plugin = service.getPlugin(
+            sp.getName());
         assertThat(plugin.isFailure()).isTrue();
         assertThat(plugin.getCause()).isInstanceOf(PluginMetadataNotFoundRuntimeException.class);
     }
 
     private ServiceProvider makeServiceProviderOk() throws EncryptionException {
-        PluginConfiguration pluginConf = new PluginConfiguration(
-            "THEIA",
-            OpenIdConnectPlugin.ID
-        );
+        PluginConfiguration pluginConf = new PluginConfiguration("THEIA", OpenIdConnectPlugin.ID);
         pluginConf.setVersion(OpenIdConnectPlugin.VERSION);
-        Set<IPluginParam> parameters = IPluginParam
-            .set(
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_ID, "I"),
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET, encryptionService.encrypt("Don't")),
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_REDIRECT_URI, "Feel"),
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT, "Feel"),
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT, "Like"),
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_EMAIL_MAPPING, "Dancin'"),
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_FIRSTNAME_MAPPING, "Dancin'"),
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_LASTNAME_MAPPING, "Dancin'"),
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT, "Rather be home with no-one if I can't get down with you-ou-ou")
-            );
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_ID, "I"),
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET,
+                                                                           encryptionService.encrypt("Don't")),
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_REDIRECT_URI,
+                                                                           "Feel"),
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT,
+                                                                           "Feel"),
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT,
+                                                                           "Like"),
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_EMAIL_MAPPING,
+                                                                           "Dancin'"),
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_FIRSTNAME_MAPPING,
+                                                                           "Dancin'"),
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_LASTNAME_MAPPING,
+                                                                           "Dancin'"),
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT,
+                                                                           "Rather be home with no-one if I can't get down with you-ou-ou"));
         pluginConf.setParameters(parameters);
-        return new ServiceProvider(
-            "THEIA",
-            "https://sso.theia-land.fr/login",
-            "https://sso.theia-land.fr/logout",
-            pluginConf
-        );
+        return new ServiceProvider("THEIA",
+                                   "https://sso.theia-land.fr/login",
+                                   "https://sso.theia-land.fr/logout",
+                                   pluginConf);
     }
 
     private ServiceProvider makeServiceProviderNok() {
-        PluginConfiguration pluginConf = new PluginConfiguration(
-            "I've",
-            "been"
-        );
+        PluginConfiguration pluginConf = new PluginConfiguration("I've", "been");
         pluginConf.setVersion("through");
-        Set<IPluginParam> parameters = IPluginParam
-            .set(
-                IPluginParam.build("the", "desert")
-            );
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build("the", "desert"));
         pluginConf.setParameters(parameters);
-        return new ServiceProvider(
-            "On a horse",
-            "with no name",
-            "with no name",
-            pluginConf
-        ); // La, la, la, la, la, la
+        return new ServiceProvider("On a horse", "with no name", "with no name", pluginConf); // La, la, la, la, la, la
     }
 }

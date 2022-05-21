@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.forecast;
 
 import io.vavr.control.Try;
@@ -44,6 +44,7 @@ public interface IRunningDurationForecast {
     }
 
     interface Parser {
+
         Try<IRunningDurationForecast> parseRunningDurationForecast(String str);
     }
 }

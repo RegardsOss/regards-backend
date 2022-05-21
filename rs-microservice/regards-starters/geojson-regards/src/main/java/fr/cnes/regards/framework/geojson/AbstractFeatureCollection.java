@@ -26,8 +26,9 @@ import java.util.List;
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJson base feature collection representation
- *
+ * <p>
  * This is the base class for implementing GeoJson feature collection. Extend it to create your own.
+ *
  * @param <F> represents feature type
  * @author Marc Sordi
  */

@@ -48,8 +48,9 @@ import java.util.List;
 
 /**
  * Class LocalAuthoritiesProviderIT
- *
+ * <p>
  * Test for administration local AuthoritiesProvider
+ *
  * @author Sébastien Binda
  */
 @RunWith(RegardsSpringRunner.class)
@@ -109,22 +110,42 @@ public class LocalAuthoritiesProviderIT {
         roleFactory.withId(0L).withAuthorizedAddresses(addresses).withDefault(false).withNative(true);
 
         Role publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString())
-                .orElseGet(() -> roleRepository.save(roleFactory.createPublic()));
+                                        .orElseGet(() -> roleRepository.save(roleFactory.createPublic()));
 
         roleFactory.withParentRole(publicRole);
 
         roleRepository.findOneByName(AuthoritiesTestConfiguration.ROLE_NAME)
-                .ifPresent(role -> roleRepository.deleteById(role.getId()));
+                      .ifPresent(role -> roleRepository.deleteById(role.getId()));
         roleRepository.save(roleFactory.withName(AuthoritiesTestConfiguration.ROLE_NAME).create());
 
-        resourcesAccessRepository.save(new ResourcesAccess(0L, "description", microserviceName, "/resource",
-                "Controller", RequestMethod.GET, DefaultRole.ADMIN));
-        resourcesAccessRepository.save(new ResourcesAccess(0L, "description", microserviceName, "/resource",
-                "Controller", RequestMethod.PUT, DefaultRole.ADMIN));
-        resourcesAccessRepository.save(new ResourcesAccess(0L, "description", microserviceName, "/resource",
-                "Controller", RequestMethod.POST, DefaultRole.ADMIN));
-        resourcesAccessRepository.save(new ResourcesAccess(0L, "description", microserviceName, "/resource",
-                "Controller", RequestMethod.DELETE, DefaultRole.ADMIN));
+        resourcesAccessRepository.save(new ResourcesAccess(0L,
+                                                           "description",
+                                                           microserviceName,
+                                                           "/resource",
+                                                           "Controller",
+                                                           RequestMethod.GET,
+                                                           DefaultRole.ADMIN));
+        resourcesAccessRepository.save(new ResourcesAccess(0L,
+                                                           "description",
+                                                           microserviceName,
+                                                           "/resource",
+                                                           "Controller",
+                                                           RequestMethod.PUT,
+                                                           DefaultRole.ADMIN));
+        resourcesAccessRepository.save(new ResourcesAccess(0L,
+                                                           "description",
+                                                           microserviceName,
+                                                           "/resource",
+                                                           "Controller",
+                                                           RequestMethod.POST,
+                                                           DefaultRole.ADMIN));
+        resourcesAccessRepository.save(new ResourcesAccess(0L,
+                                                           "description",
+                                                           microserviceName,
+                                                           "/resource",
+                                                           "Controller",
+                                                           RequestMethod.DELETE,
+                                                           DefaultRole.ADMIN));
     }
 
     @Test

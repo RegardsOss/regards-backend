@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.dto;
 
 import lombok.AllArgsConstructor;
@@ -29,13 +29,15 @@ import java.util.UUID;
  *
  * @author gandrieu
  */
-@Value @With
+@Value
+@With
 @AllArgsConstructor
 @Builder(toBuilder = true)
 
 public class PBatchResponse {
 
     UUID batchId;
+
     String correlationId;
 
 }

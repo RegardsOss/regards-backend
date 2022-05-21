@@ -103,13 +103,13 @@ public class SessionAgentServiceAutoConfiguration {
     }
 
     @Bean
-    public AgentSnapshotService agentSnapshotService(){
+    public AgentSnapshotService agentSnapshotService() {
         return new AgentSnapshotService();
     }
 
     @Bean
     @Profile("!noscheduler")
-    public AgentSnapshotScheduler agentSnapshotScheduler(){
+    public AgentSnapshotScheduler agentSnapshotScheduler() {
         return new AgentSnapshotScheduler();
     }
 }

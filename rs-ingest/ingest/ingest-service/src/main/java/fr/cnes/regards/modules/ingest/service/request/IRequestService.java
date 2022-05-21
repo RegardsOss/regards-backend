@@ -18,16 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.transaction.annotation.Propagation;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
@@ -35,6 +25,15 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.transaction.annotation.Propagation;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * @author Léo Mieulet
@@ -57,6 +56,7 @@ public interface IRequestService {
 
     /**
      * Retrieve all requests matching provided criteria
+     *
      * @param filters
      * @param pageable
      * @return a page of entities
@@ -65,6 +65,7 @@ public interface IRequestService {
 
     /**
      * Retrieve all requests matching provided criteria
+     *
      * @param filters
      * @param pageable
      * @return a page of DTO entities
@@ -73,6 +74,7 @@ public interface IRequestService {
 
     /**
      * Delete all requests linked to provided aips
+     *
      * @param aipsRelatedToSip
      */
     void deleteAllByAip(Set<AIPEntity> aipsRelatedToSip);
@@ -80,6 +82,7 @@ public interface IRequestService {
     /**
      * Save provided requests into the repository
      * If requests cannot be run right now, their status will change to pending
+     *
      * @param requests of the same type. Can concern several sessions
      * @return number of scheduled requests
      */
@@ -88,9 +91,9 @@ public interface IRequestService {
     /**
      * Save provided request into the repository
      * If the request cannot be run right now, the request status will change to pending
+     *
      * @param request the request to save
      * @return
-     *
      * @deprecated Use {@link #scheduleRequests(List)} instead to improve performances.
      */
     @Deprecated
@@ -98,6 +101,7 @@ public interface IRequestService {
 
     /**
      * Check the given request is runnable or should  be delayed.
+     *
      * @param request
      * @return
      */
@@ -106,6 +110,7 @@ public interface IRequestService {
     /**
      * Abort every {@link fr.cnes.regards.modules.ingest.domain.request.InternalRequestState#RUNNING}. <br>
      * This is an asynchronous method. So tenant has to be given in order to be able to do database queries.
+     *
      * @param tenant
      */
     @Async
@@ -114,23 +119,27 @@ public interface IRequestService {
     /**
      * Allows to abort request page by page and save the process of abortion per page and stop jobs at the end of
      * each page and not at the end of everything
+     *
      * @param filters
      * @param pageRequest
      * @param jobIdsAlreadyStopped this parameters should initially be empty and then reused between each page handling
      * @return next page to treat
      */
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
-    Page<AbstractRequest> abortCurrentRequestPage(SearchRequestsParameters filters, Pageable pageRequest,
-            Set<UUID> jobIdsAlreadyStopped);
+    Page<AbstractRequest> abortCurrentRequestPage(SearchRequestsParameters filters,
+                                                  Pageable pageRequest,
+                                                  Set<UUID> jobIdsAlreadyStopped);
 
     /**
      * Fetch a page of requests and try to unblock them
+     *
      * @param requestType the type of requests to retrieve and unblock, if possible
      */
     void unblockRequests(RequestTypeEnum requestType);
 
     /**
      * Associate a job to a {@link AbstractRequest}
+     *
      * @param request the request that will start shortly
      *                must be a request type that needs to be run by jobs
      */
@@ -138,12 +147,14 @@ public interface IRequestService {
 
     /**
      * Schedule a job to delete all requests matching provided filters
+     *
      * @param filters
      */
     void scheduleRequestDeletionJob(SearchRequestsParameters filters);
 
     /**
      * Schedule a job to retry all requests matching provided filters from {@link fr.cnes.regards.modules.ingest.domain.request.InternalRequestState} ERROR to CREATED
+     *
      * @param filters
      */
     void scheduleRequestRetryJob(SearchRequestsParameters filters);
@@ -154,6 +165,7 @@ public interface IRequestService {
 
     /**
      * Delete the provided {@link AbstractRequest}, ensure related jobs are unlocked
+     *
      * @param request the request to delete
      */
     void deleteRequest(AbstractRequest request);

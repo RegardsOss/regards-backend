@@ -18,19 +18,12 @@
  */
 package fr.cnes.regards.modules.notification.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
+import fr.cnes.regards.framework.jpa.IIdentifiable;
+
+import javax.persistence.*;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-
-import fr.cnes.regards.framework.jpa.IIdentifiable;
 
 /**
  * Wraps the different project projectUserEmail's settings available for notifications configuration.
@@ -124,40 +117,35 @@ public class NotificationSettings implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pDays
-     *            the days to set
+     * @param pDays the days to set
      */
     public void setDays(final Integer pDays) {
         days = pDays;
     }
 
     /**
-     * @param pFrequency
-     *            the frequency to set
+     * @param pFrequency the frequency to set
      */
     public void setFrequency(final NotificationFrequency pFrequency) {
         frequency = pFrequency;
     }
 
     /**
-     * @param pHours
-     *            the hours to set
+     * @param pHours the hours to set
      */
     public void setHours(final Integer pHours) {
         hours = pHours;
     }
 
     /**
-     * @param pId
-     *            the id to set
+     * @param pId the id to set
      */
     public void setId(final Long pId) {
         id = pId;
     }
 
     /**
-     * @param pUser
-     *            the projectUserEmail to set
+     * @param pUser the projectUserEmail to set
      */
     public void setProjectUserEmail(final String pUser) {
         projectUserEmail = pUser;

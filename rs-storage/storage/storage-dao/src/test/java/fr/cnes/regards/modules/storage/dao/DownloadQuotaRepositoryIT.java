@@ -33,17 +33,16 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDateTime;
 import java.util.Random;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 
-@TestPropertySource(
-    properties = {
-        "spring.jpa.properties.hibernate.default_schema=storage_download_gauge_dao",
-//        "regards.jpa.multitenant.tenants[0].url=jdbc:tc:postgresql:///GaugeRepositoryIT",
-//        "regards.jpa.multitenant.tenants[0].tenant=PROJECT"
-    }
-)
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_download_gauge_dao",
+    //        "regards.jpa.multitenant.tenants[0].url=jdbc:tc:postgresql:///GaugeRepositoryIT",
+    //        "regards.jpa.multitenant.tenants[0].tenant=PROJECT"
+})
 @ContextConfiguration(classes = { DefaultDaoTestConfiguration.class, StorageDaoConfiguration.class })
 public class DownloadQuotaRepositoryIT extends AbstractMultitenantServiceIT {
 
@@ -68,10 +67,13 @@ public class DownloadQuotaRepositoryIT extends AbstractMultitenantServiceIT {
         Random rand = new Random();
 
         long iter = 10_000;
-        for (int i=0; i<iter; i++) {
+        for (int i = 0; i < iter; i++) {
             executor.submit(() -> {
                 runtimeTenantResolver.forceTenant(getDefaultTenant());
-                repo.upsertOrCombineDownloadRate(String.valueOf(rand.nextInt(instanceCount)), email, 1L, LocalDateTime.now());
+                repo.upsertOrCombineDownloadRate(String.valueOf(rand.nextInt(instanceCount)),
+                                                 email,
+                                                 1L,
+                                                 LocalDateTime.now());
                 runtimeTenantResolver.clearTenant();
             });
         }
@@ -85,7 +87,6 @@ public class DownloadQuotaRepositoryIT extends AbstractMultitenantServiceIT {
         assertEquals(iter, userRate.getGauge().longValue());
     }
 
-
     @Test
     public void upsertOrCombineDownloadQuota_should_insert_or_accumulate() throws InterruptedException {
         ExecutorService executor = Executors.newFixedThreadPool(3);
@@ -95,7 +96,7 @@ public class DownloadQuotaRepositoryIT extends AbstractMultitenantServiceIT {
         Random rand = new Random();
 
         long iter = 10_000;
-        for (int i=0; i<iter; i++) {
+        for (int i = 0; i < iter; i++) {
             executor.submit(() -> {
                 runtimeTenantResolver.forceTenant(getDefaultTenant());
                 repo.upsertOrCombineDownloadQuota(String.valueOf(rand.nextInt(instanceCount)), email, 1L);

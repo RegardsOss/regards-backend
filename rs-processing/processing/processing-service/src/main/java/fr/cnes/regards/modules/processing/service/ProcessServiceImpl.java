@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.service;
 
 import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
@@ -23,6 +23,7 @@ import fr.cnes.regards.modules.processing.domain.service.IProcessService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+
 /**
  * This class is the implementation for the {@link IProcessService} interface.
  *
@@ -39,8 +40,7 @@ public class ProcessServiceImpl implements IProcessService {
     }
 
     public Flux<PProcessDTO> findByTenant(String tenant) {
-        return processRepo.findAllByTenant(tenant)
-                .map(PProcessDTO::fromProcess);
+        return processRepo.findAllByTenant(tenant).map(PProcessDTO::fromProcess);
     }
 
 }

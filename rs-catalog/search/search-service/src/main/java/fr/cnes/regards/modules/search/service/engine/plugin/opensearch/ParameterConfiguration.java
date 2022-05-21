@@ -23,6 +23,7 @@ import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 
 /**
  * Configuration of an opensearch parameter.
+ *
  * @author Sébastien Binda
  */
 public class ParameterConfiguration {
@@ -31,43 +32,43 @@ public class ParameterConfiguration {
      * Opensearch parameter name
      */
     @PluginParameter(name = "allias",
-            label = "Opensearch name of the parameter to request. If not specified the attributeModelJsonPath is used.",
-            description = "Name of the parameter that will be used in opensearch requests.", optional = true)
+        label = "Opensearch name of the parameter to request. If not specified the attributeModelJsonPath is used.",
+        description = "Name of the parameter that will be used in opensearch requests.", optional = true)
     private String allias;
 
     /**
      * Opensearch parameter name
      */
     @PluginParameter(name = "name", label = "Name of the extension parameter",
-            description = "Name that will be handled by opensearch parameters extensions. Example in time extension the parameter {time:start} name is start")
+        description = "Name that will be handled by opensearch parameters extensions. Example in time extension the parameter {time:start} name is start")
     private String name;
 
     /**
      * Opensearch parameter namespace
      */
     @PluginParameter(name = "namespace", label = "Namespace of the extension parameter",
-            description = "Namespace that will be handled by opensearch parameters extensions. Example in time extension the parameter {time:start} namespace is time")
+        description = "Namespace that will be handled by opensearch parameters extensions. Example in time extension the parameter {time:start} namespace is time")
     private String namespace;
 
     /**
      * Does the parameter handle the option values when writting the description xml file.
      */
     @PluginParameter(name = "optionsEnabled", label = "Enable generation of possible values.",
-            description = "Enable the generation of possible values of the parameter in the opensearch descriptor xml file. Be carful, this option can rise the generation time of the opensearch descriptor xml file.")
+        description = "Enable the generation of possible values of the parameter in the opensearch descriptor xml file. Be carful, this option can rise the generation time of the opensearch descriptor xml file.")
     private boolean optionsEnabled;
 
     /**
      * Maximum number of options or -1 for all values.
      */
     @PluginParameter(name = "optionsCardinality", label = "Limit number of possbile values", optional = true,
-            description = "Only used if the optionsEnabled parameter is set to TRUE. Limit the number of possbile values of the parameter in the opensearch descriptor xml file.")
+        description = "Only used if the optionsEnabled parameter is set to TRUE. Limit the number of possbile values of the parameter in the opensearch descriptor xml file.")
     private int optionsCardinality;
 
     /**
      * Regards {@link AttributeModel} json path.
      */
     @PluginParameter(name = "attributeModelJsonPath", label = "Full json path of associated REGARDS attribute",
-            description = "Full jsonpath is  : properties.<optional fragment name>.<attribute name>")
+        description = "Full jsonpath is  : properties.<optional fragment name>.<attribute name>")
     private String attributeModelJsonPath;
 
     public String getName() {

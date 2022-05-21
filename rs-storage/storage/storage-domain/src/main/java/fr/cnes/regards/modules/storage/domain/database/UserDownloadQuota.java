@@ -32,12 +32,7 @@ public class UserDownloadQuota {
 
     private final Long counter;
 
-    public UserDownloadQuota(
-        String instance,
-        String tenant,
-        String email,
-        Long counter
-    ) {
+    public UserDownloadQuota(String instance, String tenant, String email, Long counter) {
         this.id = null;
         this.instance = instance;
         this.tenant = tenant;
@@ -45,13 +40,7 @@ public class UserDownloadQuota {
         this.counter = counter;
     }
 
-    public UserDownloadQuota(
-        Long id,
-        String instance,
-        String tenant,
-        String email,
-        Long counter
-    ) {
+    public UserDownloadQuota(Long id, String instance, String tenant, String email, Long counter) {
         this.id = id;
         this.instance = instance;
         this.tenant = tenant;
@@ -88,11 +77,9 @@ public class UserDownloadQuota {
             return false;
         }
         UserDownloadQuota that = (UserDownloadQuota) o;
-        return Objects.equals(id, that.id) &&
-            Objects.equals(instance, that.instance) &&
-            Objects.equals(tenant, that.tenant) &&
-            Objects.equals(email, that.email) &&
-            Objects.equals(counter, that.counter);
+        return Objects.equals(id, that.id) && Objects.equals(instance, that.instance) && Objects.equals(tenant,
+                                                                                                        that.tenant)
+            && Objects.equals(email, that.email) && Objects.equals(counter, that.counter);
     }
 
     @Override

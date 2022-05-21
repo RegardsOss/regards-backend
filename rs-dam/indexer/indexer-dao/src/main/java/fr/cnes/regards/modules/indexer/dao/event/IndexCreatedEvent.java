@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.indexer.dao.event;
 
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import org.springframework.context.ApplicationEvent;
 
 public class IndexCreatedEvent extends ApplicationEvent {

@@ -60,12 +60,13 @@ import java.util.*;
 
 /**
  * Performances tests for creating and store new file references.
+ *
  * @author Sébastien Binda
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(
-        properties = { "spring.jpa.show-sql=false", "spring.jpa.properties.hibernate.default_schema=storage_perf_tests"},
-        locations = { "classpath:application-test.properties" })
+    properties = { "spring.jpa.show-sql=false", "spring.jpa.properties.hibernate.default_schema=storage_perf_tests" },
+    locations = { "classpath:application-test.properties" })
 @Ignore("Performances tests")
 public class FlowPerformanceIT extends AbstractStorageIT {
 
@@ -73,7 +74,7 @@ public class FlowPerformanceIT extends AbstractStorageIT {
 
     private static final String FILE_REF_OWNER = "owner";
 
-    private static final  String SESSION_OWNER = "SOURCE 1";
+    private static final String SESSION_OWNER = "SOURCE 1";
 
     private static final String SESSION = "SESSION 1";
 
@@ -114,8 +115,11 @@ public class FlowPerformanceIT extends AbstractStorageIT {
             // Insert many refs
             Set<FileReference> toSave = Sets.newHashSet();
             for (Long i = 0L; i < 1_000_000; i++) {
-                FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(), "UUID",
-                        "file_" + i + ".test", i, MediaType.APPLICATION_OCTET_STREAM);
+                FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(),
+                                                                           "UUID",
+                                                                           "file_" + i + ".test",
+                                                                           i,
+                                                                           MediaType.APPLICATION_OCTET_STREAM);
                 FileLocation location = new FileLocation("storage_" + i, "storage://plop/file");
                 FileReference fileRef = new FileReference(Lists.newArrayList(FILE_REF_OWNER), metaInfo, location);
                 toSave.add(fileRef);
@@ -137,8 +141,11 @@ public class FlowPerformanceIT extends AbstractStorageIT {
         for (Long i = 0L; i < 1_000; i++) {
             String checksum = UUID.randomUUID().toString();
             nlChecksums.add(checksum);
-            FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(checksum, "UUID", "file_" + i + ".test", i,
-                    MediaType.APPLICATION_OCTET_STREAM);
+            FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(checksum,
+                                                                       "UUID",
+                                                                       "file_" + i + ".test",
+                                                                       i,
+                                                                       MediaType.APPLICATION_OCTET_STREAM);
             FileLocation location = new FileLocation(NEARLINE_CONF_LABEL, "storage://plop/file");
             FileReference fileRef = new FileReference(Lists.newArrayList(FILE_REF_OWNER), metaInfo, location);
             toSave.add(fileRef);
@@ -161,9 +168,16 @@ public class FlowPerformanceIT extends AbstractStorageIT {
             String newOwner = "owner-" + UUID.randomUUID().toString();
             String sessionOwner = "source-" + i;
             String session = "session-" + i;
-            requests.add(FileReferenceRequestDTO.build(checksum, checksum, "MD5", "application/octet-stream", 10L,
-                                                       newOwner, "storage", "file://storage/location/file1",
-                                                       sessionOwner, session));
+            requests.add(FileReferenceRequestDTO.build(checksum,
+                                                       checksum,
+                                                       "MD5",
+                                                       "application/octet-stream",
+                                                       10L,
+                                                       newOwner,
+                                                       "storage",
+                                                       "file://storage/location/file1",
+                                                       sessionOwner,
+                                                       session));
             items.add(ReferenceFlowItem.build(requests, UUID.randomUUID().toString()));
             referenceFlowHandler.handleBatch(items);
         }
@@ -182,22 +196,57 @@ public class FlowPerformanceIT extends AbstractStorageIT {
             String session = "session-" + i;
             String checksum = UUID.randomUUID().toString();
             Set<FileReferenceRequestDTO> requests = Sets.newHashSet();
-            requests.add(FileReferenceRequestDTO.build("quicklook.1-" + checksum, UUID.randomUUID().toString(), "MD5",
-                                                       "application/octet-stream", 10L, newOwner, refStorage,
-                                                       "file://storage/location/quicklook1", sessionOwner, session));
-            requests.add(FileReferenceRequestDTO.build("quicklook.2-" + checksum, UUID.randomUUID().toString(), "MD5",
-                                                       "application/octet-stream", 10L, newOwner, refStorage,
-                                                       "file://storage/location/quicklook1", sessionOwner, session));
-            requests.add(FileReferenceRequestDTO.build("quicklook.3-" + checksum, UUID.randomUUID().toString(), "MD5",
-                                                       "application/octet-stream", 10L, newOwner, refStorage,
-                                                       "file://storage/location/quicklook1", sessionOwner, session));
-            requests.add(FileReferenceRequestDTO.build("quicklook.4-" + checksum, UUID.randomUUID().toString(), "MD5",
-                                                       "application/octet-stream", 10L, newOwner, refStorage,
-                                                       "file://storage/location/quicklook1", sessionOwner, session));
+            requests.add(FileReferenceRequestDTO.build("quicklook.1-" + checksum,
+                                                       UUID.randomUUID().toString(),
+                                                       "MD5",
+                                                       "application/octet-stream",
+                                                       10L,
+                                                       newOwner,
+                                                       refStorage,
+                                                       "file://storage/location/quicklook1",
+                                                       sessionOwner,
+                                                       session));
+            requests.add(FileReferenceRequestDTO.build("quicklook.2-" + checksum,
+                                                       UUID.randomUUID().toString(),
+                                                       "MD5",
+                                                       "application/octet-stream",
+                                                       10L,
+                                                       newOwner,
+                                                       refStorage,
+                                                       "file://storage/location/quicklook1",
+                                                       sessionOwner,
+                                                       session));
+            requests.add(FileReferenceRequestDTO.build("quicklook.3-" + checksum,
+                                                       UUID.randomUUID().toString(),
+                                                       "MD5",
+                                                       "application/octet-stream",
+                                                       10L,
+                                                       newOwner,
+                                                       refStorage,
+                                                       "file://storage/location/quicklook1",
+                                                       sessionOwner,
+                                                       session));
+            requests.add(FileReferenceRequestDTO.build("quicklook.4-" + checksum,
+                                                       UUID.randomUUID().toString(),
+                                                       "MD5",
+                                                       "application/octet-stream",
+                                                       10L,
+                                                       newOwner,
+                                                       refStorage,
+                                                       "file://storage/location/quicklook1",
+                                                       sessionOwner,
+                                                       session));
             // Create a new bus message File reference request
-            requests.add(FileReferenceRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream", 10L,
-                                                       newOwner, storage, "file://storage/location/file.name",
-                                                       sessionOwner, session));
+            requests.add(FileReferenceRequestDTO.build("file.name",
+                                                       checksum,
+                                                       "MD5",
+                                                       "application/octet-stream",
+                                                       10L,
+                                                       newOwner,
+                                                       storage,
+                                                       "file://storage/location/file.name",
+                                                       sessionOwner,
+                                                       session));
             items.add(ReferenceFlowItem.build(requests, UUID.randomUUID().toString()));
             if (items.size() >= referenceFlowHandler.getBatchSize()) {
                 referenceFlowHandler.handleBatch(items);
@@ -217,8 +266,10 @@ public class FlowPerformanceIT extends AbstractStorageIT {
             loops++;
         } while ((loops < 50) && ((page.getTotalElements()) != 5000));
 
-        Assert.assertEquals("There should be 5000 file ref created", 5000, fileRefRepo
-                .findByLocationStorage(storage, PageRequest.of(0, 1, Direction.ASC, "id")).getTotalElements());
+        Assert.assertEquals("There should be 5000 file ref created",
+                            5000,
+                            fileRefRepo.findByLocationStorage(storage, PageRequest.of(0, 1, Direction.ASC, "id"))
+                                       .getTotalElements());
     }
 
     @Test
@@ -229,11 +280,17 @@ public class FlowPerformanceIT extends AbstractStorageIT {
         for (int i = 0; i < 5000; i++) {
             String checksum = UUID.randomUUID().toString();
             // Create a new bus message File reference request
-            items.add(StorageFlowItem
-                    .build(FileStorageRequestDTO.build("file.name", checksum, "MD5", "application/octet-stream",
-                                                       "owner-test", SESSION_OWNER, SESSION, originUrl,
-                                                       ONLINE_CONF_LABEL, Optional.empty()),
-                           UUID.randomUUID().toString()));
+            items.add(StorageFlowItem.build(FileStorageRequestDTO.build("file.name",
+                                                                        checksum,
+                                                                        "MD5",
+                                                                        "application/octet-stream",
+                                                                        "owner-test",
+                                                                        SESSION_OWNER,
+                                                                        SESSION,
+                                                                        originUrl,
+                                                                        ONLINE_CONF_LABEL,
+                                                                        Optional.empty()),
+                                            UUID.randomUUID().toString()));
 
             // Publish request
             if (items.size() > storeFlowHandler.getBatchSize()) {
@@ -243,25 +300,46 @@ public class FlowPerformanceIT extends AbstractStorageIT {
         }
         storeFlowHandler.handleBatch(items);
 
-        Assert.assertEquals("There should be 5000 file storage request created", 5000, stoReqService
-                .search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id")).getTotalElements());
+        Assert.assertEquals("There should be 5000 file storage request created",
+                            5000,
+                            stoReqService.search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id"))
+                                         .getTotalElements());
 
         PageRequest pageable = PageRequest.of(0, 1, Direction.ASC, "id");
-        Assert.assertEquals("No file ref should be created", 0, fileRefService.search(FileReferenceSpecification
-                .search(null, null, null, Lists.newArrayList(ONLINE_CONF_LABEL), null, now, null, pageable), pageable)
-                .getTotalElements());
+        Assert.assertEquals("No file ref should be created",
+                            0,
+                            fileRefService.search(FileReferenceSpecification.search(null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    Lists.newArrayList(ONLINE_CONF_LABEL),
+                                                                                    null,
+                                                                                    now,
+                                                                                    null,
+                                                                                    pageable), pageable)
+                                          .getTotalElements());
         long start = System.currentTimeMillis();
-        Collection<JobInfo> jobs = stoReqService
-                .scheduleJobs(FileRequestStatus.TO_DO, Lists.newArrayList(ONLINE_CONF_LABEL), Lists.newArrayList());
+        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
+                                                              Lists.newArrayList(ONLINE_CONF_LABEL),
+                                                              Lists.newArrayList());
         Thread.sleep(10_000);
         start = System.currentTimeMillis();
         runAndWaitJob(jobs);
         LOGGER.info("...{} jobs handled in {} ms", jobs.size(), System.currentTimeMillis() - start);
-        Assert.assertEquals("There should be no file storage request created", 0, stoReqService
-                .search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id")).getTotalElements());
-        Assert.assertEquals("5000 file ref should be created", 5000, fileRefService.search(FileReferenceSpecification
-                .search(null, null, null, Lists.newArrayList(ONLINE_CONF_LABEL), null, now, null, pageable), pageable)
-                .getTotalElements());
+        Assert.assertEquals("There should be no file storage request created",
+                            0,
+                            stoReqService.search(ONLINE_CONF_LABEL, PageRequest.of(0, 1, Direction.ASC, "id"))
+                                         .getTotalElements());
+        Assert.assertEquals("5000 file ref should be created",
+                            5000,
+                            fileRefService.search(FileReferenceSpecification.search(null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    Lists.newArrayList(ONLINE_CONF_LABEL),
+                                                                                    null,
+                                                                                    now,
+                                                                                    null,
+                                                                                    pageable), pageable)
+                                          .getTotalElements());
     }
 
     @Test
@@ -272,11 +350,12 @@ public class FlowPerformanceIT extends AbstractStorageIT {
         Long total = page.getTotalElements();
         List<DeletionFlowItem> items = Lists.newArrayList();
         for (FileReference fileRef : page.getContent()) {
-            items.add(DeletionFlowItem
-                    .build(FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
-                                                        fileRef.getLocation().getStorage(), FILE_REF_OWNER,
-                                                        SESSION_OWNER, SESSION, false),
-                           UUID.randomUUID().toString()));
+            items.add(DeletionFlowItem.build(FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+                                                                          fileRef.getLocation().getStorage(),
+                                                                          FILE_REF_OWNER,
+                                                                          SESSION_OWNER,
+                                                                          SESSION,
+                                                                          false), UUID.randomUUID().toString()));
             if (items.size() > deleteHandler.getBatchSize()) {
                 deleteHandler.handleBatch(items);
                 items.clear();
@@ -297,11 +376,12 @@ public class FlowPerformanceIT extends AbstractStorageIT {
         Page<FileReference> page = fileRefService.search(NEARLINE_CONF_LABEL,
                                                          PageRequest.of(0, nbToDelete, Direction.ASC, "id"));
         for (FileReference fileRef : page.getContent()) {
-            items.add(DeletionFlowItem
-                    .build(FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
-                                                        fileRef.getLocation().getStorage(), FILE_REF_OWNER,
-                                                        SESSION_OWNER, SESSION, false),
-                           UUID.randomUUID().toString()));
+            items.add(DeletionFlowItem.build(FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+                                                                          fileRef.getLocation().getStorage(),
+                                                                          FILE_REF_OWNER,
+                                                                          SESSION_OWNER,
+                                                                          SESSION,
+                                                                          false), UUID.randomUUID().toString()));
             if (items.size() > deleteHandler.getBatchSize()) {
                 deleteHandler.handleBatch(items);
                 items.clear();
@@ -326,7 +406,8 @@ public class FlowPerformanceIT extends AbstractStorageIT {
         Assert.assertEquals("Invalid count of cached files", 0, cacheFileRepo.count());
         Assert.assertTrue("There should be checksums to restore from nearline storages", nlChecksums.size() > 0);
         // Create a new bus message File reference request
-        AvailabilityFlowItem item = AvailabilityFlowItem.build(nlChecksums, OffsetDateTime.now().plusDays(1),
+        AvailabilityFlowItem item = AvailabilityFlowItem.build(nlChecksums,
+                                                               OffsetDateTime.now().plusDays(1),
                                                                UUID.randomUUID().toString());
         List<AvailabilityFlowItem> items = new ArrayList<>();
         items.add(item);

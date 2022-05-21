@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.feature.dto.hateoas;
  * Information section for requests pagination endpoints
  *
  * @author Sébastien Binda
- *
  */
 public class RequestsInfo {
 

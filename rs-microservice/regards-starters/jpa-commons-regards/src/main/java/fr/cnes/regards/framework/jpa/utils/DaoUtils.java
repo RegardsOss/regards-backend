@@ -18,23 +18,8 @@
  */
 package fr.cnes.regards.framework.jpa.utils;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.persistence.Entity;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,13 +30,18 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
+import javax.persistence.*;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Class DaoUtils
- *
+ * <p>
  * Tools class for DAO
+ *
  * @author Sébastien Binda
  * @author oroussel
  */
@@ -88,6 +78,7 @@ public final class DaoUtils {
     /**
      * This method check that the classPatch is valid. That the scan packages for instance database and the projects
      * database are not in conflict.
+     *
      * @param pPackageToScan package name to scan for JPA entities and repositories
      */
     public static void checkClassPath(final String pPackageToScan) throws MultiDataBasesException {
@@ -95,7 +86,8 @@ public final class DaoUtils {
 
         final Set<String> packagesToScan = findPackagesForJpa(pPackageToScan);
         final List<Class<?>> instanceClasses = DaoUtils.scanPackagesForJpa(InstanceEntity.class, null, packagesToScan);
-        final List<Class<?>> projectsClasses = DaoUtils.scanPackagesForJpa(Entity.class, InstanceEntity.class,
+        final List<Class<?>> projectsClasses = DaoUtils.scanPackagesForJpa(Entity.class,
+                                                                           InstanceEntity.class,
                                                                            packagesToScan);
         final List<String> instancePackages = new ArrayList<>();
         instanceClasses.forEach(instanceClass -> instancePackages.add(instanceClass.getPackage().getName()));
@@ -104,11 +96,11 @@ public final class DaoUtils {
         for (final String instancePackage : instancePackages) {
             for (final String pack : projectPackages) {
                 if (pack.contains(instancePackage) || instancePackage.contains(pack)) {
-                    LOGGER.error(String
-                            .format("Invalid classpath. Package %s is used for instance DAO Entities and multitenant DAO Entities",
-                                    instancePackage));
+                    LOGGER.error(String.format(
+                        "Invalid classpath. Package %s is used for instance DAO Entities and multitenant DAO Entities",
+                        instancePackage));
                     throw new MultiDataBasesException(
-                            "Invalid classpath for JPA multitenant and JPA instance databases.");
+                        "Invalid classpath for JPA multitenant and JPA instance databases.");
                 }
             }
         }
@@ -122,6 +114,7 @@ public final class DaoUtils {
      * Find all the class annotated with {@link org.springframework.data.repository.Repository}
      * Find all the class who extends {@link CrudRepository}
      * Find all the class who extends {@link JpaRepository}
+     *
      * @param pRootPackage the base package
      * @return the {@link Set} of package
      */
@@ -154,7 +147,7 @@ public final class DaoUtils {
     /**
      * package name has format : fr.cnes.regards.modules.(name)....
      * or fr.cnes.regards.framework.modules.(name)...
-     *
+     * <p>
      * We must only take fr.cnes.regards[.framework].modules.(name)
      */
     public static String getPackageToScan(String pPackageName) {
@@ -168,43 +161,52 @@ public final class DaoUtils {
             String packageEnd = pPackageName.substring(DaoUtils.TEST_PACKAGE.length() + 1);
             return DaoUtils.TEST_PACKAGE + "." + packageEnd.substring(0, packageEnd.indexOf('.'));
         } else {
-            throw new Error(String
-                    .format("Package %s is not valid. REGARDS only handle classes on package with prefixes : %s, %s and %s",
-                            pPackageName, DaoUtils.FRAMEWORK_PACKAGE, DaoUtils.MODULES_PACKAGE, DaoUtils.TEST_PACKAGE)); // NOSONAR
+            throw new Error(String.format(
+                "Package %s is not valid. REGARDS only handle classes on package with prefixes : %s, %s and %s",
+                pPackageName,
+                DaoUtils.FRAMEWORK_PACKAGE,
+                DaoUtils.MODULES_PACKAGE,
+                DaoUtils.TEST_PACKAGE)); // NOSONAR
         }
     }
 
     public static List<Class<?>> scanPackagesForJpa(Class<? extends Annotation> pIncludeAnnotation,
-            Class<? extends Annotation> pExcludeAnnotation, String... pPackages) {
+                                                    Class<? extends Annotation> pExcludeAnnotation,
+                                                    String... pPackages) {
         return Arrays.stream(pPackages)
-                .flatMap(pPackage -> scanPackageForJpa(pPackage, pIncludeAnnotation, pExcludeAnnotation).stream())
-                .collect(Collectors.toList());
+                     .flatMap(pPackage -> scanPackageForJpa(pPackage, pIncludeAnnotation, pExcludeAnnotation).stream())
+                     .collect(Collectors.toList());
     }
 
     /**
      * Method called by JpaAutoConfiguration entity manager factories to find all elligible Jpa classes
      */
     public static List<Class<?>> scanPackagesForJpa(Class<? extends Annotation> pIncludeAnnotation,
-            Class<? extends Annotation> pExcludeAnnotation, Collection<String> pPackages) {
+                                                    Class<? extends Annotation> pExcludeAnnotation,
+                                                    Collection<String> pPackages) {
         return pPackages.stream()
-                .flatMap(pPackage -> scanPackageForJpa(pPackage, pIncludeAnnotation, pExcludeAnnotation).stream())
-                .collect(Collectors.toList());
+                        .flatMap(pPackage -> scanPackageForJpa(pPackage,
+                                                               pIncludeAnnotation,
+                                                               pExcludeAnnotation).stream())
+                        .collect(Collectors.toList());
     }
 
     /**
      * Scan classpath into given package with given filters and return matching classes
      */
-    public static Set<Class<?>> scanPackageForJpa(String pPackageToScan, Class<? extends Annotation> pIncludeAnnotation,
-            Class<? extends Annotation> pExcludeAnnotation) {
+    public static Set<Class<?>> scanPackageForJpa(String pPackageToScan,
+                                                  Class<? extends Annotation> pIncludeAnnotation,
+                                                  Class<? extends Annotation> pExcludeAnnotation) {
         return scanPackageForJpa(pPackageToScan, pIncludeAnnotation, pExcludeAnnotation, null);
     }
 
     private static Set<Class<?>> scanPackageForJpa(String pPackageToScan,
-            Class<? extends Annotation> pIncludeAnnotation, Class<? extends Annotation> pExcludeAnnotation,
-            Set<Class<?>> pClasses) {
+                                                   Class<? extends Annotation> pIncludeAnnotation,
+                                                   Class<? extends Annotation> pExcludeAnnotation,
+                                                   Set<Class<?>> pClasses) {
         final Set<Class<?>> classes = pClasses == null ? new HashSet<>() : pClasses;
         final ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
-                false);
+            false);
         if (pExcludeAnnotation != null) {
             LOGGER.debug("Excluding JPA entities with {} annotation", pExcludeAnnotation.getName());
             scanner.addExcludeFilter(new AnnotationTypeFilter(pExcludeAnnotation));
@@ -226,11 +228,10 @@ public final class DaoUtils {
                     if (field.isAnnotationPresent(OneToMany.class) || field.isAnnotationPresent(ManyToMany.class)) {
                         // Must be a List<...> or Set<...> or Bag<...>, not too musch complicated
                         if (field.getGenericType() instanceof ParameterizedType) {
-                            inRelationClass = (Class<?>) ((ParameterizedType) field.getGenericType())
-                                    .getActualTypeArguments()[0];
+                            inRelationClass = (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
                         }
                     } else if (field.isAnnotationPresent(ManyToOne.class)
-                            || field.isAnnotationPresent(OneToOne.class)) {
+                        || field.isAnnotationPresent(OneToOne.class)) {
                         inRelationClass = field.getType();
                     }
                     // Adding found class if not already present into classes (to avoid infinite recursion)
@@ -242,8 +243,10 @@ public final class DaoUtils {
                 // Manage relations into relations (ie. PluginConfiguration -> PluginParameter)
                 if (!inRelationClasses.isEmpty()) {
                     for (Class<?> inRelationClass : inRelationClasses) {
-                        scanPackageForJpa(getPackageToScan(inRelationClass.getCanonicalName()), pIncludeAnnotation,
-                                          pExcludeAnnotation, classes);
+                        scanPackageForJpa(getPackageToScan(inRelationClass.getCanonicalName()),
+                                          pIncludeAnnotation,
+                                          pExcludeAnnotation,
+                                          classes);
                     }
                 }
                 classes.add(clazz);

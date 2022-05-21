@@ -18,21 +18,19 @@
  */
 package fr.cnes.regards.modules.configuration.service;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.configuration.domain.Theme;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
- *
  * Class IThemeService
- *
+ * <p>
  * Interface for Theme service
  *
  * @author Sébastien Binda
@@ -42,7 +40,6 @@ import fr.cnes.regards.modules.configuration.domain.Theme;
 public interface IThemeService {
 
     /**
-     *
      * Retreive a Theme by is id.
      *
      * @param themeId
@@ -53,7 +50,6 @@ public interface IThemeService {
     Theme retrieveTheme(Long themeId) throws EntityNotFoundException;
 
     /**
-     *
      * Retrieve all themes
      *
      * @param pageable
@@ -63,22 +59,18 @@ public interface IThemeService {
     Page<Theme> retrieveThemes(Pageable pageable);
 
     /**
-     *
      * Save a new theme
      *
-     * @param theme
-     *            {@link Theme} to save
+     * @param theme {@link Theme} to save
      * @return saved {@link Theme}
      * @since 1.0-SNAPSHOT
      */
     Theme saveTheme(Theme theme);
 
     /**
-     *
      * Update a theme
      *
-     * @param theme
-     *            {@link Theme} to update
+     * @param theme {@link Theme} to update
      * @return updated {@link Theme}
      * @throws EntityException
      * @since 1.0-SNAPSHOT
@@ -86,13 +78,10 @@ public interface IThemeService {
     Theme updateTheme(Theme theme) throws EntityException;
 
     /**
-     *
      * Delete a theme
      *
-     * @param themeId
-     *            Theme id to delete
+     * @param themeId Theme id to delete
      * @throws EntityNotFoundException
-     *
      * @since 1.0-SNAPSHOT
      */
     void deleteTheme(Long themeId) throws EntityNotFoundException;
@@ -101,13 +90,13 @@ public interface IThemeService {
      * Retrieve all themes
      *
      * @return all themes
-     *
      * @since 3.0.0
      */
     List<Theme> retrieveAllThemes();
 
     /**
      * Retrieve a theme according to its name
+     *
      * @param name theme of the theme
      * @return optional theme
      * @since 3.0.0

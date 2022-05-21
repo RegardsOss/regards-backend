@@ -26,6 +26,10 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import fr.cnes.regards.modules.acquisition.service.plugins.RegexDiskScanning;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,15 +37,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * Test scanning plugin
  *
  * @author Marc Sordi
- *
  */
 public class DiskScanningTest {
 
@@ -54,7 +54,7 @@ public class DiskScanningTest {
 
     @Test
     public void testDirectoryScanningWithoutGlobber()
-            throws ModuleException, IOException, NotAvailablePluginConfigurationException {
+        throws ModuleException, IOException, NotAvailablePluginConfigurationException {
 
         PluginConfiguration pluginConf = PluginConfiguration.build(GlobDiskScanning.class, null, null);
         // Instantiate plugin
@@ -102,7 +102,8 @@ public class DiskScanningTest {
     public void testDirectoryScanningWithRegex() throws ModuleException, NotAvailablePluginConfigurationException {
 
         // Plugin parameters
-        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(RegexDiskScanning.FIELD_REGEX, ".*_0[12]\\.md"));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(RegexDiskScanning.FIELD_REGEX,
+                                                                           ".*_0[12]\\.md"));
 
         PluginConfiguration pluginConf = PluginConfiguration.build(RegexDiskScanning.class, null, parameters);
         // Instantiate plugin

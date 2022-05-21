@@ -18,24 +18,23 @@
  */
 package fr.cnes.regards.modules.dam.rest.entities;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.dam.rest.DamRestConfiguration;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.urn.UniformResourceName;
-import fr.cnes.regards.modules.dam.rest.DamRestConfiguration;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author lmieulet
  * @author Sylvain Vissiere-Guerinet
  */
 @TestPropertySource(locations = "classpath:test.properties",
-        properties = { "spring.jpa.properties.hibernate.default_schema=collectionitnotx" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=collectionitnotx" })
 @ContextConfiguration(classes = { DamRestConfiguration.class })
 public class CollectionControllerNoTxIT extends AbstractCollectionControllerIT {
 
@@ -54,13 +53,17 @@ public class CollectionControllerNoTxIT extends AbstractCollectionControllerIT {
         toDissociate.add(collection3.getIpId());
         customizer.expectStatusNoContent();
         performDefaultPut(CollectionController.TYPE_MAPPING + CollectionController.COLLECTION_DISSOCIATE_MAPPING,
-                          toDissociate, customizer, "Failed to dissociate collections from one collection using its id",
+                          toDissociate,
+                          customizer,
+                          "Failed to dissociate collections from one collection using its id",
                           collection1.getId());
 
         List<UniformResourceName> toAssociate = new ArrayList<>();
         toAssociate.add(collection4.getIpId());
         performDefaultPut(CollectionController.TYPE_MAPPING + CollectionController.COLLECTION_ASSOCIATE_MAPPING,
-                          toAssociate, customizer, "Failed to associate collections from one collection using its id",
+                          toAssociate,
+                          customizer,
+                          "Failed to associate collections from one collection using its id",
                           collection1.getId());
     }
 }

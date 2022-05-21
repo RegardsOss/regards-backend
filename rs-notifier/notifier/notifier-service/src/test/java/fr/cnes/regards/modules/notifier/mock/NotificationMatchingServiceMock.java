@@ -42,9 +42,16 @@ import org.springframework.stereotype.Service;
 public class NotificationMatchingServiceMock extends NotificationMatchingService {
 
     public NotificationMatchingServiceMock(INotificationRequestRepository notificationRequestRepository,
-            IPublisher publisher, IPluginService pluginService, NotificationConfigurationProperties properties,
-            INotificationClient notificationClient, NotificationMatchingService notificationMatchingService) {
-        super(notificationRequestRepository, publisher, pluginService, properties, notificationClient,
+                                           IPublisher publisher,
+                                           IPluginService pluginService,
+                                           NotificationConfigurationProperties properties,
+                                           INotificationClient notificationClient,
+                                           NotificationMatchingService notificationMatchingService) {
+        super(notificationRequestRepository,
+              publisher,
+              pluginService,
+              properties,
+              notificationClient,
               notificationMatchingService);
     }
 }

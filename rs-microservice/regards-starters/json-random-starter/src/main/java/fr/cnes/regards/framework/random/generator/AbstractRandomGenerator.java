@@ -39,8 +39,9 @@ public abstract class AbstractRandomGenerator<T> implements RandomGenerator<T> {
             if (context.containsKey(jsonPath)) {
                 return context.get(jsonPath);
             } else {
-                throw new IllegalArgumentException(
-                        String.format("Key %s does not exist in current context %s", jsonPath, context));
+                throw new IllegalArgumentException(String.format("Key %s does not exist in current context %s",
+                                                                 jsonPath,
+                                                                 context));
             }
         } else {
             String levelPath = jsonPath.substring(0, firstSeparator);
@@ -49,8 +50,10 @@ public abstract class AbstractRandomGenerator<T> implements RandomGenerator<T> {
             if (Map.class.isAssignableFrom(embedded.getClass())) {
                 return findValue((Map<String, Object>) embedded, remainingPath);
             }
-            throw new IllegalArgumentException(
-                    String.format("JSON path %s does not match a real path in current context %s", jsonPath, context));
+            throw new IllegalArgumentException(String.format(
+                "JSON path %s does not match a real path in current context %s",
+                jsonPath,
+                context));
         }
     }
 }

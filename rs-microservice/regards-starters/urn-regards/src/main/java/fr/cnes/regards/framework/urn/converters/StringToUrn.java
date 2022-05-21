@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.framework.urn.converters;
 
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
-
-import fr.cnes.regards.framework.urn.UniformResourceName;
 
 /**
  * Implement the type conversion logic for a String to a {@link UrnConverter}.<br>
  * This is automatically used by Spring if need be.
+ *
  * @author Xavier-Alexandre Brochard
  */
 @Component

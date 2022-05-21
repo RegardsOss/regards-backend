@@ -25,6 +25,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * Spring boot application : scans all core and contrib modules
+ *
  * @author msordi
  */
 // CHECKSTYLE:OFF

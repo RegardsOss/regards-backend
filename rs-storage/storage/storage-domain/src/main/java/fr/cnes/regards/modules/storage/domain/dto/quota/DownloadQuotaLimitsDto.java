@@ -57,9 +57,8 @@ public class DownloadQuotaLimitsDto {
             return false;
         }
         DownloadQuotaLimitsDto that = (DownloadQuotaLimitsDto) o;
-        return Objects.equals(email, that.email) &&
-            Objects.equals(maxQuota, that.maxQuota) &&
-            Objects.equals(rateLimit, that.rateLimit);
+        return Objects.equals(email, that.email) && Objects.equals(maxQuota, that.maxQuota) && Objects.equals(rateLimit,
+                                                                                                              that.rateLimit);
     }
 
     @Override
@@ -68,10 +67,6 @@ public class DownloadQuotaLimitsDto {
     }
 
     public static DownloadQuotaLimitsDto fromDownloadQuotaLimits(DownloadQuotaLimits limits) {
-        return new DownloadQuotaLimitsDto(
-            limits.getEmail(),
-            limits.getMaxQuota(),
-            limits.getRateLimit()
-        );
+        return new DownloadQuotaLimitsDto(limits.getEmail(), limits.getMaxQuota(), limits.getRateLimit());
     }
 }

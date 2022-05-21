@@ -27,7 +27,6 @@ import javax.validation.constraints.NotNull;
  * to {@link AccessRight}
  *
  * @author Sylvain Vissiere-Guerinet
- *
  */
 public class User {
 
@@ -42,6 +41,7 @@ public class User {
 
     /**
      * Contructor setting the parameter as attribute
+     *
      * @param pEmail
      */
     public User(String pEmail) {
@@ -57,6 +57,7 @@ public class User {
 
     /**
      * Set the email
+     *
      * @param pEmail
      */
     public void setEmail(String pEmail) {

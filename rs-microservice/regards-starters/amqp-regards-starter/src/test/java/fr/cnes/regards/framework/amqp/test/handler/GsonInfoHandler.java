@@ -22,10 +22,9 @@ import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.test.event.GsonInfo;
 
 /**
- *
  * Event using GSON message converter
- * @author Marc SORDI
  *
+ * @author Marc SORDI
  */
 public class GsonInfoHandler extends AbstractReceiver<GsonInfo> {
 

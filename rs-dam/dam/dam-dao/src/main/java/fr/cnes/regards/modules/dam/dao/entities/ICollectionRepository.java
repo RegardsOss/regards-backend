@@ -18,20 +18,18 @@
  */
 package fr.cnes.regards.modules.dam.dao.entities;
 
+import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.modules.dam.domain.entities.Collection;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.stereotype.Repository;
-
-import fr.cnes.regards.framework.urn.UniformResourceName;
-import fr.cnes.regards.modules.dam.domain.entities.Collection;
-
 /**
  * @author lmieulet
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @Repository
 public interface ICollectionRepository extends IAbstractEntityRepository<Collection> {
@@ -60,8 +58,8 @@ public interface ICollectionRepository extends IAbstractEntityRepository<Collect
 
     /**
      * Find a collection by its id
-     * @param pId
-     *            id of entity
+     *
+     * @param pId id of entity
      * @return the collection or null if none were found
      */
     @Override

@@ -44,6 +44,7 @@ import java.util.Optional;
 
 /**
  * Factory to handle CatalogPlugin services streaming response.
+ *
  * @author Sébastien Binda
  */
 public class CatalogPluginResponseFactory {
@@ -60,25 +61,26 @@ public class CatalogPluginResponseFactory {
 
     /**
      * Catalog plugin service response body type allowed
+     *
      * @author Sébastien Binda
      */
     public enum CatalogPluginResponseType {
-        XML,
-        JSON,
-        FILE_IMG_PNG,
-        FILE_IMG_JPG,
-        FILE_DOWNLOAD;
+        XML, JSON, FILE_IMG_PNG, FILE_IMG_JPG, FILE_DOWNLOAD;
     }
 
     /**
      * Create a success response with the given {@link StreamingResponseBody}
-     * @param response {@link HttpServletResponse} spring http response
+     *
+     * @param response        {@link HttpServletResponse} spring http response
      * @param responseContent {@link StreamingResponseBody}  response body
-     * @param fileName {@link String} content body file name
+     * @param fileName        {@link String} content body file name
      * @return {@link ResponseEntity}
      */
     public static ResponseEntity<StreamingResponseBody> createStreamSuccessResponse(HttpServletResponse response,
-            StreamingResponseBody responseContent, String fileName, MediaType mimeType, Optional<Long> size) {
+                                                                                    StreamingResponseBody responseContent,
+                                                                                    String fileName,
+                                                                                    MediaType mimeType,
+                                                                                    Optional<Long> size) {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition(fileName));
         if (size.isPresent()) {
@@ -99,13 +101,15 @@ public class CatalogPluginResponseFactory {
 
     /**
      * Create a success response by serializing the given object responseContent
-     * @param response {@link HttpServletResponse} spring http response
-     * @param type {@link CatalogPluginResponseType} type of response body
+     *
+     * @param response        {@link HttpServletResponse} spring http response
+     * @param type            {@link CatalogPluginResponseType} type of response body
      * @param responseContent {@link Object} to serialize.
      * @return {@link ResponseEntity}
      */
     public static ResponseEntity<StreamingResponseBody> createSuccessResponse(HttpServletResponse response,
-            CatalogPluginResponseType type, Object responseContent) {
+                                                                              CatalogPluginResponseType type,
+                                                                              Object responseContent) {
         switch (type) {
             case XML:
                 return createXmlSuccessResponse(response, responseContent);
@@ -121,13 +125,15 @@ public class CatalogPluginResponseFactory {
 
     /**
      * Create a success response by streaming the given file
+     *
      * @param response {@link HttpServletResponse} spring http response
-     * @param type {@link CatalogPluginResponseType} type of response body
-     * @param file {@link File} file to stream into the response body
+     * @param type     {@link CatalogPluginResponseType} type of response body
+     * @param file     {@link File} file to stream into the response body
      * @return {@link ResponseEntity}
      */
     public static ResponseEntity<StreamingResponseBody> createSuccessResponseFromFile(HttpServletResponse response,
-            CatalogPluginResponseType type, File file) {
+                                                                                      CatalogPluginResponseType type,
+                                                                                      File file) {
         HttpHeaders headers = new HttpHeaders();
         List<String> exposedHeaders = new ArrayList<>();
         exposedHeaders.add(HttpHeaders.CONTENT_DISPOSITION);
@@ -156,14 +162,18 @@ public class CatalogPluginResponseFactory {
 
     /**
      * Create a success response by streaming the given file
+     *
      * @param response {@link HttpServletResponse} spring http response
-     * @param type {@link CatalogPluginResponseType} type of response body
-     * @param is file input stream
+     * @param type     {@link CatalogPluginResponseType} type of response body
+     * @param is       file input stream
      * @param fileName filename
      * @return {@link ResponseEntity}
      */
-    public static ResponseEntity<StreamingResponseBody> createSuccessResponseFromInputStream(
-            HttpServletResponse response, CatalogPluginResponseType type, InputStream is, String fileName, Optional<Long> size) {
+    public static ResponseEntity<StreamingResponseBody> createSuccessResponseFromInputStream(HttpServletResponse response,
+                                                                                             CatalogPluginResponseType type,
+                                                                                             InputStream is,
+                                                                                             String fileName,
+                                                                                             Optional<Long> size) {
         HttpHeaders headers = new HttpHeaders();
         List<String> exposedHeaders = new ArrayList<>();
         exposedHeaders.add(HttpHeaders.CONTENT_DISPOSITION);
@@ -195,12 +205,12 @@ public class CatalogPluginResponseFactory {
     /**
      * Create a  streaming response by serializing into XML format the given object.
      *
-     * @param response {@link HttpServletResponse} spring http response
+     * @param response        {@link HttpServletResponse} spring http response
      * @param responseContent {@link Object} to serialize.
      * @return {@link ResponseEntity}
      */
     public static ResponseEntity<StreamingResponseBody> createXmlSuccessResponse(HttpServletResponse response,
-            Object responseContent) {
+                                                                                 Object responseContent) {
         HttpHeaders headers = new HttpHeaders();
         XmlMapper xmlMapper = new XmlMapper();
         List<String> exposedHeaders = new ArrayList<>();
@@ -220,13 +230,15 @@ public class CatalogPluginResponseFactory {
 
     /**
      * Create a  streaming response by serializing into JSON format the given object.
-     * @param response {@link HttpServletResponse} spring http response
+     *
+     * @param response        {@link HttpServletResponse} spring http response
      * @param responseContent {@link Object} to serialize.
      * @param prettyPrint
      * @return {@link ResponseEntity}
      */
     public static ResponseEntity<StreamingResponseBody> createJsonSuccessResponse(HttpServletResponse response,
-            Object responseContent, boolean prettyPrint) {
+                                                                                  Object responseContent,
+                                                                                  boolean prettyPrint) {
         // FIXME: should use GsonBuilderFactory with spring context configuration
         GsonBuilder builder = GsonCustomizer.gsonBuilder(Optional.empty(), Optional.empty());
         HttpHeaders headers = new HttpHeaders();
@@ -247,6 +259,7 @@ public class CatalogPluginResponseFactory {
 
     /**
      * Create a {@link StreamingResponseBody} containing the given String
+     *
      * @param value {@link String} to stream as response body
      * @return {@link StreamingResponseBody}
      */
@@ -263,6 +276,7 @@ public class CatalogPluginResponseFactory {
 
     /**
      * Create a {@link StreamingResponseBody} containing the given file
+     *
      * @param file {@link File} to stream as response body
      * @return {@link StreamingResponseBody}
      */
@@ -280,6 +294,7 @@ public class CatalogPluginResponseFactory {
 
     /**
      * Create a {@link StreamingResponseBody} by writting the given {@link InputStream}
+     *
      * @param is {@link InputStream} to stream as response body
      * @return {@link StreamingResponseBody}
      */

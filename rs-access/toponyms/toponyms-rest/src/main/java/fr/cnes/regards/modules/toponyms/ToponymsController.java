@@ -32,8 +32,6 @@ import fr.cnes.regards.modules.toponyms.domain.ToponymGeoJson;
 import fr.cnes.regards.modules.toponyms.domain.ToponymLocaleEnum;
 import fr.cnes.regards.modules.toponyms.domain.ToponymsRestConfiguration;
 import fr.cnes.regards.modules.toponyms.service.ToponymsService;
-import java.util.List;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -46,14 +44,10 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * REST Controller for {@link ToponymDTO} entities
@@ -86,7 +80,6 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
      */
     private final static boolean DEFAULT_TOPONYM_VISIBILITY = true;
 
-
     /**
      * Endpoint to retrieve all toponyms with pagination. By default only visible toponyms are retrieved.
      *
@@ -99,9 +92,11 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve all toponyms with pagination", role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedModel<EntityModel<ToponymDTO>>> find(
-            @SortDefault(sort = "label", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<ToponymDTO> assembler) throws EntityNotFoundException {
-        Page<ToponymDTO> toponyms = service.findAllByVisibility(ToponymLocaleEnum.EN.getLocale(), DEFAULT_TOPONYM_VISIBILITY, pageable);
+        @SortDefault(sort = "label", direction = Sort.Direction.ASC) Pageable pageable,
+        PagedResourcesAssembler<ToponymDTO> assembler) throws EntityNotFoundException {
+        Page<ToponymDTO> toponyms = service.findAllByVisibility(ToponymLocaleEnum.EN.getLocale(),
+                                                                DEFAULT_TOPONYM_VISIBILITY,
+                                                                pageable);
         PagedModel<EntityModel<ToponymDTO>> resources = toPagedResources(toponyms, assembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
@@ -115,11 +110,12 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
      * @throws EntityNotFoundException
      */
     @RequestMapping(value = ToponymsRestConfiguration.TOPONYM_ID, method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+        produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve one toponym by his identifier", role = DefaultRole.PUBLIC)
     public ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId,
-                                                       @RequestParam(required = false) Boolean simplified) throws EntityNotFoundException {
+                                                       @RequestParam(required = false) Boolean simplified)
+        throws EntityNotFoundException {
         Optional<ToponymDTO> toponym;
         if (simplified == null) {
             toponym = service.findOne(businessId, false);
@@ -144,21 +140,29 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
      * @throws EntityNotFoundException
      */
     @RequestMapping(value = ToponymsRestConfiguration.SEARCH, method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_VALUE)
+        produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(
-            description = "Endpoint to search for toponyms. Geometries are not retrieved and list content is limited to 100 entities.",
-            role = DefaultRole.PUBLIC)
+        description = "Endpoint to search for toponyms. Geometries are not retrieved and list content is limited to 100 entities.",
+        role = DefaultRole.PUBLIC)
     public ResponseEntity<List<EntityModel<ToponymDTO>>> search(@RequestParam(required = false) String partialLabel,
-                                                                @RequestParam(required = false, defaultValue = "en") String locale) throws EntityNotFoundException {
+                                                                @RequestParam(required = false, defaultValue = "en")
+                                                                String locale) throws EntityNotFoundException {
         if ((partialLabel != null) && !partialLabel.isEmpty()) {
-            List<ToponymDTO> toponymes = service.search(partialLabel, locale, DEFAULT_TOPONYM_VISIBILITY, MAX_SEARCH_RESULTS);
+            List<ToponymDTO> toponymes = service.search(partialLabel,
+                                                        locale,
+                                                        DEFAULT_TOPONYM_VISIBILITY,
+                                                        MAX_SEARCH_RESULTS);
             return new ResponseEntity<>(toResources(toponymes), HttpStatus.OK);
         } else {
-            Page<ToponymDTO> page = service.findAllByVisibility(locale, DEFAULT_TOPONYM_VISIBILITY, PageRequest.of(0, MAX_SEARCH_RESULTS));
+            Page<ToponymDTO> page = service.findAllByVisibility(locale,
+                                                                DEFAULT_TOPONYM_VISIBILITY,
+                                                                PageRequest.of(0, MAX_SEARCH_RESULTS));
             // if entities were not found
-            if((page == null) || (page.getContent().isEmpty())) {
-                throw new EntityNotFoundException(String.format("Entities requested were not found with partial label %s", partialLabel));
+            if ((page == null) || (page.getContent().isEmpty())) {
+                throw new EntityNotFoundException(String.format(
+                    "Entities requested were not found with partial label %s",
+                    partialLabel));
             } else {
                 return new ResponseEntity<>(toResources(page.getContent()), HttpStatus.OK);
             }
@@ -175,8 +179,11 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to add a toponym", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<EntityModel<ToponymDTO>> createNotVisibleToponym(@RequestBody ToponymGeoJson toponymGeoJson) throws ModuleException, JsonProcessingException {
-        ToponymDTO toponymDTO = this.service.generateNotVisibleToponym(toponymGeoJson.getFeature(), toponymGeoJson.getUser(), toponymGeoJson.getProject());
+    public ResponseEntity<EntityModel<ToponymDTO>> createNotVisibleToponym(@RequestBody ToponymGeoJson toponymGeoJson)
+        throws ModuleException, JsonProcessingException {
+        ToponymDTO toponymDTO = this.service.generateNotVisibleToponym(toponymGeoJson.getFeature(),
+                                                                       toponymGeoJson.getUser(),
+                                                                       toponymGeoJson.getProject());
         return new ResponseEntity<>(toResource(toponymDTO), HttpStatus.CREATED);
     }
 
@@ -184,15 +191,16 @@ public class ToponymsController implements IResourceController<ToponymDTO> {
     public EntityModel<ToponymDTO> toResource(ToponymDTO toponymDTO, Object... extras) {
         EntityModel<ToponymDTO> resource = resourceService.toResource(toponymDTO);
         resourceService.addLink(resource,
-                this.getClass(),
-                "get",
-                LinkRels.SELF,
-                MethodParamFactory.build(String.class, toponymDTO.getBusinessId()), MethodParamFactory.build(Boolean.class));
+                                this.getClass(),
+                                "get",
+                                LinkRels.SELF,
+                                MethodParamFactory.build(String.class, toponymDTO.getBusinessId()),
+                                MethodParamFactory.build(Boolean.class));
         resourceService.addLink(resource,
-                this.getClass(),
-                "createNotVisibleToponym",
-                LinkRels.CREATE,
-                MethodParamFactory.build(ToponymGeoJson.class));
+                                this.getClass(),
+                                "createNotVisibleToponym",
+                                LinkRels.CREATE,
+                                MethodParamFactory.build(ToponymGeoJson.class));
         return resource;
     }
 }

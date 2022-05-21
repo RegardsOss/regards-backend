@@ -43,6 +43,7 @@ import java.time.OffsetDateTime;
 
 /**
  * Service to handle {@link FeatureSaveMetadataJob}
+ *
  * @author Iliana Ghazali
  */
 
@@ -74,32 +75,29 @@ public class FeatureSaveMetadataService {
         dumpSettingsService.setLastDumpReqDate(OffsetDateTime.now());
 
         // Create request
-        FeatureSaveMetadataRequest requestToSchedule = FeatureSaveMetadataRequest.build(
-                AbstractRequestEvent.generateRequestId(),
-                "NONE",
-                OffsetDateTime.now(),
-                RequestState.GRANTED,
-                null,
-                FeatureRequestStep.LOCAL_SCHEDULED,
-                PriorityLevel.NORMAL,
-                lastDumpDate,
-                dumpSettingsService.getDumpParameters().getDumpLocation()
-        );
+        FeatureSaveMetadataRequest requestToSchedule = FeatureSaveMetadataRequest.build(AbstractRequestEvent.generateRequestId(),
+                                                                                        "NONE",
+                                                                                        OffsetDateTime.now(),
+                                                                                        RequestState.GRANTED,
+                                                                                        null,
+                                                                                        FeatureRequestStep.LOCAL_SCHEDULED,
+                                                                                        PriorityLevel.NORMAL,
+                                                                                        lastDumpDate,
+                                                                                        dumpSettingsService.getDumpParameters()
+                                                                                                           .getDumpLocation());
 
         metadataRequestRepository.save(requestToSchedule);
 
         // Schedule save metadata job
-        jobInfo = new JobInfo(
-                false,
-                requestToSchedule.getPriority().getPriorityLevel(),
-                Sets.newHashSet(new JobParameter(FeatureSaveMetadataJob.SAVE_METADATA_REQUEST, requestToSchedule)),
-                null,
-                FeatureSaveMetadataJob.class.getName()
-        );
+        jobInfo = new JobInfo(false,
+                              requestToSchedule.getPriority().getPriorityLevel(),
+                              Sets.newHashSet(new JobParameter(FeatureSaveMetadataJob.SAVE_METADATA_REQUEST,
+                                                               requestToSchedule)),
+                              null,
+                              FeatureSaveMetadataJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("[SAVE METADATA SCHEDULER] 1 Job scheduled for 1 FeatureSaveMetaDataRequest(s) in {} ms",
-                     System.currentTimeMillis() - start
-        );
+                     System.currentTimeMillis() - start);
         return jobInfo;
     }
 

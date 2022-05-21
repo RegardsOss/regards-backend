@@ -34,6 +34,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 import java.util.Optional;
 
 /**
@@ -60,8 +61,10 @@ public class AccessGroupService implements IAccessGroupService, InitializingBean
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    public AccessGroupService(IAccessGroupRepository accessGroupRepository, IPublisher publisher,
-            ITenantResolver tenantResolver, IRuntimeTenantResolver runtimeTenantResolver) {
+    public AccessGroupService(IAccessGroupRepository accessGroupRepository,
+                              IPublisher publisher,
+                              ITenantResolver tenantResolver,
+                              IRuntimeTenantResolver runtimeTenantResolver) {
         this.accessGroupRepository = accessGroupRepository;
         this.publisher = publisher;
         this.runtimeTenantResolver = runtimeTenantResolver;
@@ -92,8 +95,8 @@ public class AccessGroupService implements IAccessGroupService, InitializingBean
     @Override
     public AccessGroup createAccessGroup(AccessGroup pToBeCreated) throws EntityAlreadyExistsException {
         if (accessGroupRepository.findOneByName(pToBeCreated.getName()) != null) {
-            throw new EntityAlreadyExistsException(
-                    String.format(ACCESS_GROUP_ALREADY_EXIST_ERROR_MESSAGE, pToBeCreated.getName()));
+            throw new EntityAlreadyExistsException(String.format(ACCESS_GROUP_ALREADY_EXIST_ERROR_MESSAGE,
+                                                                 pToBeCreated.getName()));
         }
         AccessGroup created = accessGroupRepository.save(pToBeCreated);
         if (created.isPublic()) {
@@ -119,11 +122,12 @@ public class AccessGroupService implements IAccessGroupService, InitializingBean
 
     @Override
     public void deleteAccessGroup(String pAccessGroupName)
-            throws EntityOperationForbiddenException, EntityNotFoundException {
+        throws EntityOperationForbiddenException, EntityNotFoundException {
         AccessGroup toDelete = retrieveAccessGroup(pAccessGroupName);
         // Prevent users to delete the public AccessGroup used by Documents
         if (toDelete.isInternal()) {
-            throw new EntityOperationForbiddenException(toDelete.getName(), AccessGroup.class,
+            throw new EntityOperationForbiddenException(toDelete.getName(),
+                                                        AccessGroup.class,
                                                         "Cannot remove the public access group used by Documents");
         }
         accessGroupRepository.deleteById(toDelete.getId());

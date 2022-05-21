@@ -81,7 +81,7 @@ public class V1_3_0__update extends BaseJavaMigration {
      */
     public static Map<String, Object> updateDescriptionModule(Map<String, Object> initialConfiguration) {
         // perform inner update, by reference, on each description type
-        String[] pseudoEntityTypes = {"DATA", "DATASET", "COLLECTION", "DOCUMENT"};
+        String[] pseudoEntityTypes = { "DATA", "DATASET", "COLLECTION", "DOCUMENT" };
         for (String type : pseudoEntityTypes) {
             Map<String, Object> typeConfiguration = (Map<String, Object>) initialConfiguration.get(type);
             typeConfiguration.put("showOtherVersions", false); // behaves as v1.2
@@ -112,6 +112,7 @@ public class V1_3_0__update extends BaseJavaMigration {
 
     /**
      * Migrates modules
+     *
      * @param context flyway context
      */
     public void migrateModules(Context context) throws Exception {
@@ -124,12 +125,10 @@ public class V1_3_0__update extends BaseJavaMigration {
                     String updatedConf = null;
                     switch (type) {
                         case "search-results":
-                            updatedConf = withParsedMap(conf,
-                                    V1_3_0__update::updateSearchResultsConfiguration);
+                            updatedConf = withParsedMap(conf, V1_3_0__update::updateSearchResultsConfiguration);
                             break;
                         case "description":
-                            updatedConf = withParsedMap(conf,
-                                    V1_3_0__update::updateDescriptionModule);
+                            updatedConf = withParsedMap(conf, V1_3_0__update::updateDescriptionModule);
                             break;
                         default:
                             // No update for other module types
@@ -139,7 +138,7 @@ public class V1_3_0__update extends BaseJavaMigration {
                         LOG.info(String.format("Updating module %s (type %s)", id, type));
                         String sqlRequest = "UPDATE t_ui_module SET conf=? WHERE id=?";
                         try (PreparedStatement preparedStatement = context.getConnection()
-                                .prepareStatement(sqlRequest)) {
+                                                                          .prepareStatement(sqlRequest)) {
                             preparedStatement.setString(1, updatedConf);
                             preparedStatement.setInt(2, id);
                             preparedStatement.executeUpdate();
@@ -153,11 +152,13 @@ public class V1_3_0__update extends BaseJavaMigration {
 
     /**
      * Migrates UI settings
+     *
      * @param context flyway context
      */
     public void migrateUISettings(Context context) throws Exception {
         try (Statement select = context.getConnection().createStatement()) {
-            try (ResultSet rows = select.executeQuery("SELECT id, application_id, configuration FROM t_ui_configuration ORDER BY id")) {
+            try (ResultSet rows = select.executeQuery(
+                "SELECT id, application_id, configuration FROM t_ui_configuration ORDER BY id")) {
                 while (rows.next()) {
                     int id = rows.getInt(1);
                     String applicationId = rows.getString(2);
@@ -169,7 +170,7 @@ public class V1_3_0__update extends BaseJavaMigration {
 
                         String sqlRequest = "UPDATE t_ui_configuration SET configuration=? WHERE id=?";
                         try (PreparedStatement preparedStatement = context.getConnection()
-                                .prepareStatement(sqlRequest)) {
+                                                                          .prepareStatement(sqlRequest)) {
                             preparedStatement.setString(1, updatedConf);
                             preparedStatement.setInt(2, id);
                             preparedStatement.executeUpdate();

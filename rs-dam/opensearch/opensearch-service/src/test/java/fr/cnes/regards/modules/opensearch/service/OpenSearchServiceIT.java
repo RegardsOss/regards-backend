@@ -18,22 +18,6 @@
  */
 package fr.cnes.regards.modules.opensearch.service;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -47,10 +31,24 @@ import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseExcep
 import fr.cnes.regards.modules.opensearch.service.parser.ImageOnlyParser;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.schema.UrlType;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author sbinda
- *
  */
 @TestPropertySource(locations = "classpath:test.properties")
 //@TestPropertySource(locations = "classpath:application-local.properties")
@@ -65,8 +63,8 @@ public class OpenSearchServiceIT extends AbstractRegardsTransactionalIT {
     @Test
     @Ignore("Test to fix by adding a mock http server to serve a mock descriptor response")
     public void test() throws Exception {
-        OpenSearchDescription desc = opensearchService
-                .readDescriptor(new URL("https://peps.cnes.fr/resto/api/collections/S1/describe.xml"));
+        OpenSearchDescription desc = opensearchService.readDescriptor(new URL(
+            "https://peps.cnes.fr/resto/api/collections/S1/describe.xml"));
         LOG.info(desc.getDescription());
         UrlType url = opensearchService.getSearchRequestURL(desc, MediaType.APPLICATION_JSON);
         Assert.assertNotNull("JSON Opensearch request should not be null from PEPS descriptor", url);
@@ -102,20 +100,28 @@ public class OpenSearchServiceIT extends AbstractRegardsTransactionalIT {
         // so AndCrit(EmptyCrit, OrCrit(FieldExistsCrits))
         crit = ((AndCriterion) crit).getCriterions().get(0);
         Assert.assertTrue("When parsing a query with " + ImageOnlyParser.IMAGE_ONLY_PARAM
-                + " GET parameter, we should have a criterion that is an OR", crit instanceof OrCriterion);
+                              + " GET parameter, we should have a criterion that is an OR",
+                          crit instanceof OrCriterion);
         OrCriterion orCrit = (OrCriterion) crit;
-        Assert.assertEquals("There should be 4 elements to this or criterion(one for each image type", 4L,
+        Assert.assertEquals("There should be 4 elements to this or criterion(one for each image type",
+                            4L,
                             orCrit.getCriterions().size());
-        List<FieldExistsCriterion> fieldsToLookFor = orCrit.getCriterions().stream().map(c -> (FieldExistsCriterion) c)
-                .collect(Collectors.toList());
-        Assert.assertTrue(fieldsToLookFor.get(0).getName()
-                .equals(StaticProperties.FEATURE_FILES_PATH + "." + DataType.THUMBNAIL));
-        Assert.assertTrue(fieldsToLookFor.get(1).getName()
-                .equals(StaticProperties.FEATURE_FILES_PATH + "." + DataType.QUICKLOOK_HD));
-        Assert.assertTrue(fieldsToLookFor.get(2).getName()
-                .equals(StaticProperties.FEATURE_FILES_PATH + "." + DataType.QUICKLOOK_MD));
-        Assert.assertTrue(fieldsToLookFor.get(3).getName()
-                .equals(StaticProperties.FEATURE_FILES_PATH + "." + DataType.QUICKLOOK_SD));
+        List<FieldExistsCriterion> fieldsToLookFor = orCrit.getCriterions()
+                                                           .stream()
+                                                           .map(c -> (FieldExistsCriterion) c)
+                                                           .collect(Collectors.toList());
+        Assert.assertTrue(fieldsToLookFor.get(0)
+                                         .getName()
+                                         .equals(StaticProperties.FEATURE_FILES_PATH + "." + DataType.THUMBNAIL));
+        Assert.assertTrue(fieldsToLookFor.get(1)
+                                         .getName()
+                                         .equals(StaticProperties.FEATURE_FILES_PATH + "." + DataType.QUICKLOOK_HD));
+        Assert.assertTrue(fieldsToLookFor.get(2)
+                                         .getName()
+                                         .equals(StaticProperties.FEATURE_FILES_PATH + "." + DataType.QUICKLOOK_MD));
+        Assert.assertTrue(fieldsToLookFor.get(3)
+                                         .getName()
+                                         .equals(StaticProperties.FEATURE_FILES_PATH + "." + DataType.QUICKLOOK_SD));
     }
 
 }

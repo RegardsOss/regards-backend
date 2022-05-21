@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.order.dao;
 
 import fr.cnes.regards.modules.order.domain.Order;
@@ -38,6 +38,7 @@ import java.util.Optional;
 
 /**
  * Order repository
+ *
  * @author oroussel
  */
 @Repository
@@ -57,6 +58,7 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
 
     /**
      * Find by label and owner (allows checking unicity before inserting)
+     *
      * @param label
      * @param owner
      * @return
@@ -79,7 +81,7 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
     }
 
     @Query(value = "select o.id as id from Order o order by o.creationDate desc",
-            countQuery = "select count(o.id) from Order o")
+        countQuery = "select count(o.id) from Order o")
     Page<OrderIdOnly> findIdPageByOrderByCreationDateDesc(Pageable pageRequest);
 
     default Page<Order> findAllByOwnerOrderByCreationDateDesc(String owner, Pageable pageRequest) {
@@ -93,14 +95,16 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
     }
 
     @Query(value = "select o.id as id from Order o where o.owner = :owner order by o.creationDate desc",
-            countQuery = "select count(o.id) from Order o where o.owner = :owner")
+        countQuery = "select count(o.id) from Order o where o.owner = :owner")
     Page<OrderIdOnly> findAllIdsByOwnerOrderByCreationDateDesc(@Param("owner") String owner, Pageable pageRequest);
 
-    default Page<Order> findAllByOwnerAndStatusNotInOrderByCreationDateDesc(String owner, OrderStatus[] excludeStatuses,
-            Pageable pageRequest) {
+    default Page<Order> findAllByOwnerAndStatusNotInOrderByCreationDateDesc(String owner,
+                                                                            OrderStatus[] excludeStatuses,
+                                                                            Pageable pageRequest) {
         // pagination and entity graph do not cohexist well so we need to handle it by hand
         // 1. get a page of Ids concerned
-        Page<OrderIdOnly> idPage = findAllIdsByOwnerAndStatusNotInOrderByCreationDateDesc(owner, excludeStatuses,
+        Page<OrderIdOnly> idPage = findAllIdsByOwnerAndStatusNotInOrderByCreationDateDesc(owner,
+                                                                                          excludeStatuses,
                                                                                           pageRequest);
         // 2. query Orders from these ids
         List<Order> pageContent = findAllByIdInOrderByCreationDateDesc(idPage.map(OrderIdOnly::getId).getContent());
@@ -108,10 +112,13 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
         return new PageImpl<>(pageContent, pageRequest, idPage.getTotalElements());
     }
 
-    @Query(value = "select o.id as id from Order o where o.owner = :owner and o.status not in :excludeStatuses order by o.creationDate desc",
-            countQuery = "select count(o.id) from Order o where o.owner = :owner and o.status not in :excludeStatuses")
+    @Query(
+        value = "select o.id as id from Order o where o.owner = :owner and o.status not in :excludeStatuses order by o.creationDate desc",
+        countQuery = "select count(o.id) from Order o where o.owner = :owner and o.status not in :excludeStatuses")
     Page<OrderIdOnly> findAllIdsByOwnerAndStatusNotInOrderByCreationDateDesc(@Param("owner") String owner,
-            @Param("excludeStatuses") OrderStatus[] excludeStatuses, Pageable pageRequest);
+                                                                             @Param("excludeStatuses")
+                                                                             OrderStatus[] excludeStatuses,
+                                                                             Pageable pageRequest);
 
     @EntityGraph(value = "graph.order.simple", type = EntityGraph.EntityGraphType.LOAD)
     List<Order> findAllByIdInOrderByCreationDateDesc(Collection<Long> ids);
@@ -122,11 +129,13 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
 
     @EntityGraph(value = "graph.order.simple", type = EntityGraph.EntityGraphType.LOAD)
     List<Order> findAllByWaitingForUserAndAvailableFilesCountGreaterThanAndStatusIn(boolean waitingForUser,
-            int minAvailableCount, OrderStatus... statuses);
+                                                                                    int minAvailableCount,
+                                                                                    OrderStatus... statuses);
 
     @EntityGraph(value = "graph.order.simple", type = EntityGraph.EntityGraphType.LOAD)
     List<Order> findByAvailableFilesCountGreaterThanAndAvailableUpdateDateLessThanAndStatusNotInOrderByOwner(int count,
-            OffsetDateTime date, OrderStatus... statuses);
+                                                                                                             OffsetDateTime date,
+                                                                                                             OrderStatus... statuses);
 
     @EntityGraph(value = "graph.order.simple", type = EntityGraph.EntityGraphType.LOAD)
     Optional<Order> findOneByExpirationDateLessThanAndStatusIn(OffsetDateTime date, OrderStatus... statuses);
@@ -138,7 +147,8 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
      */
     default List<Order> findAsideOrders(int hoursBeforeConsideringAside) {
         OffsetDateTime date = OffsetDateTime.now().minus(hoursBeforeConsideringAside, ChronoUnit.HOURS);
-        return findByAvailableFilesCountGreaterThanAndAvailableUpdateDateLessThanAndStatusNotInOrderByOwner(0, date,
+        return findByAvailableFilesCountGreaterThanAndAvailableUpdateDateLessThanAndStatusNotInOrderByOwner(0,
+                                                                                                            date,
                                                                                                             OrderStatus.PENDING,
                                                                                                             OrderStatus.DELETED,
                                                                                                             OrderStatus.FAILED,
@@ -149,15 +159,19 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
      * Find one expired order.
      */
     default Optional<Order> findOneExpiredOrder() {
-        return findOneByExpirationDateLessThanAndStatusIn(OffsetDateTime.now(), OrderStatus.PENDING,
-                                                          OrderStatus.RUNNING, OrderStatus.PAUSED);
+        return findOneByExpirationDateLessThanAndStatusIn(OffsetDateTime.now(),
+                                                          OrderStatus.PENDING,
+                                                          OrderStatus.RUNNING,
+                                                          OrderStatus.PAUSED);
     }
 
     /**
      * Find all finished orders not waiting for user with availableCount > 0
      */
     default List<Order> findFinishedOrdersToUpdate() {
-        return findAllByWaitingForUserAndAvailableFilesCountGreaterThanAndStatusIn(false, 0, OrderStatus.EXPIRED,
+        return findAllByWaitingForUserAndAvailableFilesCountGreaterThanAndStatusIn(false,
+                                                                                   0,
+                                                                                   OrderStatus.EXPIRED,
                                                                                    OrderStatus.DONE,
                                                                                    OrderStatus.DONE_WITH_WARNING,
                                                                                    OrderStatus.FAILED);

@@ -18,20 +18,6 @@
  */
 package fr.cnes.regards.modules.project.service;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.encryption.AESEncryptionService;
 import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
@@ -45,11 +31,25 @@ import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 
 /**
  * Class ProjectServiceTest
- *
+ * <p>
  * Project business service tests
+ *
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
  * @author Olivier Rousselot
@@ -135,8 +135,8 @@ public class ProjectConnectionServiceIT extends AbstractRegardsServiceIT {
         projectRepo.deleteAll();
 
         AESEncryptionService aesEncryptionService = new AESEncryptionService();
-        aesEncryptionService
-                .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "1234567812345678"));
+        aesEncryptionService.init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"),
+                                                       "1234567812345678"));
 
         project1 = new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_1);
         project1.setLabel("Project1");
@@ -146,18 +146,31 @@ public class ProjectConnectionServiceIT extends AbstractRegardsServiceIT {
         project2.setLabel("Project2");
         project2 = projectRepo.save(project2);
 
-        projectCtx = new ProjectConnection(project1, MS_TEST_1, COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD,
-                COMMON_PROJECT_DRIVER, PROJECT1_URL);
+        projectCtx = new ProjectConnection(project1,
+                                           MS_TEST_1,
+                                           COMMON_PROJECT_USER_NAME,
+                                           COMMON_PROJECT_USER_PWD,
+                                           COMMON_PROJECT_DRIVER,
+                                           PROJECT1_URL);
         projectCtx = projectConnectionRepo.save(projectCtx);
-        projectConnectionRepo.save(new ProjectConnection(project2, MS_TEST_2, COMMON_PROJECT_USER_NAME,
-                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT2_URL));
-        projectConnectionRepo.save(new ProjectConnection(project2, "ms-test-3", COMMON_PROJECT_USER_NAME,
-                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT2_URL));
+        projectConnectionRepo.save(new ProjectConnection(project2,
+                                                         MS_TEST_2,
+                                                         COMMON_PROJECT_USER_NAME,
+                                                         COMMON_PROJECT_USER_PWD,
+                                                         COMMON_PROJECT_DRIVER,
+                                                         PROJECT2_URL));
+        projectConnectionRepo.save(new ProjectConnection(project2,
+                                                         "ms-test-3",
+                                                         COMMON_PROJECT_USER_NAME,
+                                                         COMMON_PROJECT_USER_PWD,
+                                                         COMMON_PROJECT_DRIVER,
+                                                         PROJECT2_URL));
 
     }
 
     /**
      * Test creation of a new database connection for a given project and a given microservice
+     *
      * @throws ModuleException if error occurs!
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
@@ -168,8 +181,13 @@ public class ProjectConnectionServiceIT extends AbstractRegardsServiceIT {
         Project project1 = projectService.retrieveProject(PROJECT_TEST_1);
 
         // Test database parameter conflict detection : project 1 connection = project 2 connection
-        ProjectConnection connection = new ProjectConnection(600L, project1, "microservice-test",
-                COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT2_URL);
+        ProjectConnection connection = new ProjectConnection(600L,
+                                                             project1,
+                                                             "microservice-test",
+                                                             COMMON_PROJECT_USER_NAME,
+                                                             COMMON_PROJECT_USER_PWD,
+                                                             COMMON_PROJECT_DRIVER,
+                                                             PROJECT2_URL);
         try {
             projectConnectionService.createProjectConnection(connection, true);
             Assert.fail("Conflicting connection should not be created");
@@ -263,8 +281,15 @@ public class ProjectConnectionServiceIT extends AbstractRegardsServiceIT {
 
         // Updating with an non existing project
         connection = new ProjectConnection(0L,
-                new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_3), MS_TEST_1,
-                COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT1_URL);
+                                           new Project(COMMON_PROJECT_DESCRIPTION,
+                                                       COMMON_PROJECT_ICON,
+                                                       true,
+                                                       PROJECT_TEST_3),
+                                           MS_TEST_1,
+                                           COMMON_PROJECT_USER_NAME,
+                                           COMMON_PROJECT_USER_PWD,
+                                           COMMON_PROJECT_DRIVER,
+                                           PROJECT1_URL);
         try {
             connection = projectConnectionService.updateProjectConnection(0L, connection);
             Assert.fail(errorUpdate);
@@ -275,8 +300,16 @@ public class ProjectConnectionServiceIT extends AbstractRegardsServiceIT {
         // Updating a non existing projectConnection
         final long id = 56L;
         connection = new ProjectConnection(id,
-                new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_3), MS_TEST_1,
-                COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT1_URL);
+                                           new Project(0L,
+                                                       COMMON_PROJECT_DESCRIPTION,
+                                                       COMMON_PROJECT_ICON,
+                                                       true,
+                                                       PROJECT_TEST_3),
+                                           MS_TEST_1,
+                                           COMMON_PROJECT_USER_NAME,
+                                           COMMON_PROJECT_USER_PWD,
+                                           COMMON_PROJECT_DRIVER,
+                                           PROJECT1_URL);
         try {
             connection = projectConnectionService.updateProjectConnection(id, connection);
             Assert.fail(errorUpdate);
@@ -295,8 +328,9 @@ public class ProjectConnectionServiceIT extends AbstractRegardsServiceIT {
         final Pageable pageable = PageRequest.of(0, 100);
 
         // Call tested method
-        final Page<ProjectConnection> actual = projectConnectionService
-                .retrieveProjectsConnectionsByProject(PROJECT_TEST_1, pageable);
+        final Page<ProjectConnection> actual = projectConnectionService.retrieveProjectsConnectionsByProject(
+            PROJECT_TEST_1,
+            pageable);
 
         // Check
         Assert.assertEquals(1, actual.getTotalElements());
@@ -304,6 +338,7 @@ public class ProjectConnectionServiceIT extends AbstractRegardsServiceIT {
 
     /**
      * Test to retrieve projects connections of passed id in instance database.
+     *
      * @throws EntityNotFoundException No project connection with passed id
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")

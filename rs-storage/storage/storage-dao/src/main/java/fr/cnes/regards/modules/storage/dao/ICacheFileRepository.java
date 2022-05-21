@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import java.time.OffsetDateTime;
-import java.util.Optional;
-import java.util.Set;
-
+import fr.cnes.regards.modules.storage.domain.database.CacheFile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import fr.cnes.regards.modules.storage.domain.database.CacheFile;
+import java.time.OffsetDateTime;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * JPA Interface to access {@link CacheFile}s entities.
@@ -38,6 +37,7 @@ public interface ICacheFileRepository extends JpaRepository<CacheFile, Long> {
 
     /**
      * Get all {@link CacheFile}s for the given {@link String}s of checksums.
+     *
      * @param checksums {@link String}s
      * @return {@link CacheFile}s
      */
@@ -45,6 +45,7 @@ public interface ICacheFileRepository extends JpaRepository<CacheFile, Long> {
 
     /**
      * Retrieve a {@link CacheFile} by his checksum
+     *
      * @param checksum
      * @return {@link Optional} {@link CacheFile}
      */
@@ -52,6 +53,7 @@ public interface ICacheFileRepository extends JpaRepository<CacheFile, Long> {
 
     /**
      * Retrieve all {@link CacheFile}s with expiration date before the given {@link OffsetDateTime}
+     *
      * @param pEpirationDate {@link OffsetDateTime}
      * @return {@link Set}<{@link CacheFile}
      */
@@ -59,6 +61,7 @@ public interface ICacheFileRepository extends JpaRepository<CacheFile, Long> {
 
     /**
      * Remove a {@link CacheFile} by his checksum.
+     *
      * @param checksum {@link String}
      */
     void removeByChecksum(String checksum);

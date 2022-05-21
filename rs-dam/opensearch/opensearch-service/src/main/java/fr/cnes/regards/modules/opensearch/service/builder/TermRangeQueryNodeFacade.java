@@ -18,16 +18,16 @@
  */
 package fr.cnes.regards.modules.opensearch.service.builder;
 
-import java.time.OffsetDateTime;
-
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import org.apache.lucene.queryparser.flexible.core.util.StringUtils;
 import org.apache.lucene.queryparser.flexible.standard.nodes.TermRangeQueryNode;
 
-import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
-import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import java.time.OffsetDateTime;
 
 /**
  * Facade class wrapping a {@link TermRangeQueryNode} for simplifiying access to usefull parameters.
+ *
  * @author Xavier-Alexandre Brochard
  * @author Marc Sordi
  */

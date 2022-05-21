@@ -18,9 +18,11 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import java.util.Collection;
-import java.util.Set;
-
+import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
+import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,12 +30,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.service.flow.StorageResponseFlowHandler;
-import fr.cnes.regards.modules.storage.client.RequestInfo;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * Test class for {@link StorageResponseFlowHandler}
@@ -42,7 +40,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_aip_update_request" },
-        locations = { "classpath:application-test.properties" })
+    locations = { "classpath:application-test.properties" })
 public class IngestStorageListenerIT extends AbstractIngestRequestIT {
 
     @Autowired
@@ -55,15 +53,23 @@ public class IngestStorageListenerIT extends AbstractIngestRequestIT {
     public void testCopySuccessForUnknownFiles() {
         Set<RequestInfo> requests = Sets.newHashSet();
         Collection<RequestResultInfoDTO> successRequests = Sets.newHashSet();
-        successRequests
-                .add(RequestResultInfoDTO.build("groupId", "checksum", "somewhere", null, Sets.newHashSet("someone"),
-                                                simulatefileReference("checksum", "someone"), null));
+        successRequests.add(RequestResultInfoDTO.build("groupId",
+                                                       "checksum",
+                                                       "somewhere",
+                                                       null,
+                                                       Sets.newHashSet("someone"),
+                                                       simulatefileReference("checksum", "someone"),
+                                                       null));
         requests.add(RequestInfo.build("groupId", successRequests, Sets.newHashSet()));
-        Assert.assertEquals("At initialization no requests should be created", 0, aipUpdateReqService
-                .search(InternalRequestState.CREATED, PageRequest.of(0, 10)).getTotalElements());
+        Assert.assertEquals("At initialization no requests should be created",
+                            0,
+                            aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
+                                               .getTotalElements());
         storageListener.onCopySuccess(requests);
-        Assert.assertEquals("No requests should be created", 0, aipUpdateReqService
-                .search(InternalRequestState.CREATED, PageRequest.of(0, 10)).getTotalElements());
+        Assert.assertEquals("No requests should be created",
+                            0,
+                            aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
+                                               .getTotalElements());
     }
 
     @Test
@@ -73,19 +79,30 @@ public class IngestStorageListenerIT extends AbstractIngestRequestIT {
         initSipAndAip(checksum, providerId);
         Set<RequestInfo> requests = Sets.newHashSet();
         Collection<RequestResultInfoDTO> successRequests = Sets.newHashSet();
-        successRequests.add(RequestResultInfoDTO.build("groupId", checksum, "somewhere", null,
+        successRequests.add(RequestResultInfoDTO.build("groupId",
+                                                       checksum,
+                                                       "somewhere",
+                                                       null,
                                                        Sets.newHashSet(aipEntity.getAipId()),
-                                                       simulatefileReference(checksum, aipEntity.getAipId()), null));
-        successRequests.add(RequestResultInfoDTO.build("groupId", "other-file-checksum", "somewhere", null,
+                                                       simulatefileReference(checksum, aipEntity.getAipId()),
+                                                       null));
+        successRequests.add(RequestResultInfoDTO.build("groupId",
+                                                       "other-file-checksum",
+                                                       "somewhere",
+                                                       null,
                                                        Sets.newHashSet("someone"),
-                                                       simulatefileReference(checksum, "someone"), null));
+                                                       simulatefileReference(checksum, "someone"),
+                                                       null));
         requests.add(RequestInfo.build("groupId", successRequests, Sets.newHashSet()));
-        Assert.assertEquals("At initialization no requests should be created", 0, aipUpdateReqService
-                .search(InternalRequestState.CREATED, PageRequest.of(0, 10)).getTotalElements());
+        Assert.assertEquals("At initialization no requests should be created",
+                            0,
+                            aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
+                                               .getTotalElements());
         storageListener.onCopySuccess(requests);
-        Assert.assertEquals("One request should be created. Two success requests are sent from storage but only one is associated to a known AIP",
-                            1, aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
-                                    .getTotalElements());
+        Assert.assertEquals(
+            "One request should be created. Two success requests are sent from storage but only one is associated to a known AIP",
+            1,
+            aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10)).getTotalElements());
     }
 
 }

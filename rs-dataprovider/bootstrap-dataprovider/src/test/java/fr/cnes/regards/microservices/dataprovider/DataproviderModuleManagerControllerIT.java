@@ -62,8 +62,8 @@ import java.util.List;
  */
 @ActiveProfiles("disableDataProviderTask")
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=dataprovider_module_manager_it",
-        "regards.jobs.completion.update.rate.ms=3600000", "spring.config.import=optional:configserver:",
-        "spring.autoconfigure.exclude=org.springframework.cloud.config.client.ConfigClientAutoConfiguration"})
+    "regards.jobs.completion.update.rate.ms=3600000", "spring.config.import=optional:configserver:",
+    "spring.autoconfigure.exclude=org.springframework.cloud.config.client.ConfigClientAutoConfiguration" })
 
 public class DataproviderModuleManagerControllerIT extends AbstractRegardsIT {
 
@@ -143,7 +143,8 @@ public class DataproviderModuleManagerControllerIT extends AbstractRegardsIT {
         fileInfo.setDataType(DataType.RAWDATA);
         fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoryInfo(Paths.get("path" + i + "/fake"), null)));
 
-        PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskScanning.class, null,
+        PluginConfiguration scanPlugin = PluginConfiguration.build(GlobDiskScanning.class,
+                                                                   null,
                                                                    new HashSet<IPluginParam>());
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin " + i);
@@ -152,21 +153,24 @@ public class DataproviderModuleManagerControllerIT extends AbstractRegardsIT {
         processingChain.addFileInfo(fileInfo);
 
         // Validation
-        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class, null,
+        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class,
+                                                                         null,
                                                                          new HashSet<IPluginParam>());
         validationPlugin.setIsActive(true);
         validationPlugin.setLabel("Validation plugin " + i);
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
-        PluginConfiguration productPlugin = PluginConfiguration.build(DefaultProductPlugin.class, null,
+        PluginConfiguration productPlugin = PluginConfiguration.build(DefaultProductPlugin.class,
+                                                                      null,
                                                                       new HashSet<IPluginParam>());
         productPlugin.setIsActive(true);
         productPlugin.setLabel("Product plugin " + i);
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginConfiguration.build(DefaultSIPGeneration.class, null,
+        PluginConfiguration sipGenPlugin = PluginConfiguration.build(DefaultSIPGeneration.class,
+                                                                     null,
                                                                      new HashSet<IPluginParam>());
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin " + i);

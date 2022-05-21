@@ -46,7 +46,7 @@ import java.util.List;
  *
  * @author Iliana Ghazali
  **/
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_performance_it"})
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_performance_it" })
 @ActiveProfiles({ "testAmqp", "noscheduler" })
 public class ManagerSnapshotPerformanceJobServiceIT extends AbstractManagerServiceUtilsIT {
 
@@ -64,7 +64,9 @@ public class ManagerSnapshotPerformanceJobServiceIT extends AbstractManagerServi
     /**
      * Reference date for tests
      */
-    private static final OffsetDateTime UPDATE_DATE = OffsetDateTime.now(ZoneOffset.UTC).minusDays(30).truncatedTo(ChronoUnit.MICROS);
+    private static final OffsetDateTime UPDATE_DATE = OffsetDateTime.now(ZoneOffset.UTC)
+                                                                    .minusDays(30)
+                                                                    .truncatedTo(ChronoUnit.MICROS);
 
     @Test
     @Purpose("Test the performance while generating sessions and sources from sessionStep")
@@ -80,15 +82,20 @@ public class ManagerSnapshotPerformanceJobServiceIT extends AbstractManagerServi
         long start = System.currentTimeMillis();
         long timeout = 200000L;
         LOGGER.info("Launching performance test to create Sessions and Sources Aggregations from {} SessionSteps from "
-                            + "{} different sources", nbSessionSteps, nbSessionSteps);
+                        + "{} different sources", nbSessionSteps, nbSessionSteps);
         managerSnapshotJobService.scheduleJob();
 
         // wait for job to be in success state
-        waitForJobStates(ManagerSnapshotJob.class.getName(), nbSessionSteps, timeout,
+        waitForJobStates(ManagerSnapshotJob.class.getName(),
+                         nbSessionSteps,
+                         timeout,
                          new JobStatus[] { JobStatus.SUCCEEDED });
         LOGGER.info(
-                "Performance test handled in {}ms to create Sessions and Sources Aggregations from {} SessionSteps from {} different "
-                        + "sources", System.currentTimeMillis() - start, nbSessionSteps, nbSessionSteps);
+            "Performance test handled in {}ms to create Sessions and Sources Aggregations from {} SessionSteps from {} different "
+                + "sources",
+            System.currentTimeMillis() - start,
+            nbSessionSteps,
+            nbSessionSteps);
         checkResult(nbSessionSteps);
 
     }
@@ -108,7 +115,10 @@ public class ManagerSnapshotPerformanceJobServiceIT extends AbstractManagerServi
         for (int i = 0; i < nbSessionSteps; i++) {
             String source = "SOURCE_" + i;
             // ACQUISITION - scan event SOURCE 0-nbSources / SESSION 1
-            SessionStep sessionStep = new SessionStep("scan", source, SESSION_1, StepTypeEnum.ACQUISITION,
+            SessionStep sessionStep = new SessionStep("scan",
+                                                      source,
+                                                      SESSION_1,
+                                                      StepTypeEnum.ACQUISITION,
                                                       new StepState(0, 0, 1));
             sessionStep.setLastUpdateDate(UPDATE_DATE);
             stepEvents.add(new SessionStepEvent(sessionStep));

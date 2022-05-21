@@ -18,26 +18,7 @@
  */
 package fr.cnes.regards.framework.modules.jobs.service;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.RunnableFuture;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.FileSystemUtils;
-
 import com.google.common.collect.BiMap;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.log.CorrelationIdUtils;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -45,10 +26,19 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.FileSystemUtils;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Job specific ThreadPoolExecutor.
  * Update JobInfo status between and after execution of associated job
+ *
  * @author oroussel
  */
 public class JobThreadPoolExecutor extends ThreadPoolExecutor {
@@ -102,9 +92,11 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
 
     private final Executor singleThreadExecutor = Executors.newSingleThreadExecutor();
 
-    public JobThreadPoolExecutor(int poolSize, IJobInfoService jobInfoService,
-            BiMap<JobInfo, RunnableFuture<Void>> jobsMap, IRuntimeTenantResolver runtimeTenantResolver,
-            IPublisher publisher) {
+    public JobThreadPoolExecutor(int poolSize,
+                                 IJobInfoService jobInfoService,
+                                 BiMap<JobInfo, RunnableFuture<Void>> jobsMap,
+                                 IRuntimeTenantResolver runtimeTenantResolver,
+                                 IPublisher publisher) {
         super(poolSize, poolSize, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), THREAD_FACTORY);
         this.jobInfoService = jobInfoService;
         this.jobsMap = jobsMap;

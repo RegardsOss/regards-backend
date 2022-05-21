@@ -18,15 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -35,6 +26,14 @@ import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
+import java.util.Map;
 
 /**
  * This job handles request deletion
@@ -62,7 +61,7 @@ public class RequestDeletionJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
 
         // Retrieve deletion payload
         criteria = getValue(parameters, CRITERIA_JOB_PARAM_NAME);
@@ -87,7 +86,8 @@ public class RequestDeletionJob extends AbstractJob<Void> {
             advanceCompletion();
             nbRequestsDeleted += requestsPage.getNumberOfElements();
         } while (requestsPage.hasNext());
-        logger.debug("Job handled for {} AbstractRequest(s) in {}ms", nbRequestsDeleted,
+        logger.debug("Job handled for {} AbstractRequest(s) in {}ms",
+                     nbRequestsDeleted,
                      System.currentTimeMillis() - start);
     }
 

@@ -18,21 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.aip.scheduler;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -43,13 +29,24 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.OAISDeletionJob;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Service to handle {@link OAISDeletionJob}s
  *
  * @author Léo Mieulet
  * @author Sébastien Binda
- *
  */
 @Service
 @MultitenantTransactional
@@ -68,9 +65,11 @@ public class AIPDeletionRequestScheduler {
      */
     private Integer deletionRequestIterationLimit;
 
-    public AIPDeletionRequestScheduler(JobInfoService jobInfoService, IOAISDeletionRequestRepository oaisDeletionRequestRepository,
-            IAbstractRequestRepository abstractRequestRepository,
-            @Value("${regards.ingest.aips.scan.iteration-limit:100}") Integer deletionRequestIterationLimit) {
+    public AIPDeletionRequestScheduler(JobInfoService jobInfoService,
+                                       IOAISDeletionRequestRepository oaisDeletionRequestRepository,
+                                       IAbstractRequestRepository abstractRequestRepository,
+                                       @Value("${regards.ingest.aips.scan.iteration-limit:100}")
+                                       Integer deletionRequestIterationLimit) {
         this.jobInfoService = jobInfoService;
         this.oaisDeletionRequestRepository = oaisDeletionRequestRepository;
         this.abstractRequestRepository = abstractRequestRepository;
@@ -87,8 +86,10 @@ public class AIPDeletionRequestScheduler {
         if (!waitingRequest.isEmpty()) {
 
             // Make a list of content ids
-            List<Long> requestIds = waitingRequest.getContent().stream().map(OAISDeletionRequest::getId)
-                    .collect(Collectors.toList());
+            List<Long> requestIds = waitingRequest.getContent()
+                                                  .stream()
+                                                  .map(OAISDeletionRequest::getId)
+                                                  .collect(Collectors.toList());
 
             // Change these requests state
             abstractRequestRepository.updateStates(requestIds, InternalRequestState.RUNNING);
@@ -96,11 +97,15 @@ public class AIPDeletionRequestScheduler {
             // Schedule deletion job
             Set<JobParameter> jobParameters = Sets.newHashSet();
             jobParameters.add(new JobParameter(OAISDeletionJob.OAIS_DELETION_REQUEST_IDS, requestIds));
-            jobInfo = new JobInfo(false, IngestJobPriority.OAIS_DELETION_JOB_PRIORITY, jobParameters,
-                    null, OAISDeletionJob.class.getName());
+            jobInfo = new JobInfo(false,
+                                  IngestJobPriority.OAIS_DELETION_JOB_PRIORITY,
+                                  jobParameters,
+                                  null,
+                                  OAISDeletionJob.class.getName());
             jobInfoService.createAsQueued(jobInfo);
             LOGGER.debug("[OAIS DELETION SCHEDULER] 1 Job scheduled for {} OAISDeletionRequest(s) in {} ms",
-                         waitingRequest.getNumberOfElements(), System.currentTimeMillis() - start);
+                         waitingRequest.getNumberOfElements(),
+                         System.currentTimeMillis() - start);
         }
 
         return jobInfo;

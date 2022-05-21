@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Configuration class for Opensearch description.xml builder
+ *
  * @author Sébastien Binda
  */
 @Component

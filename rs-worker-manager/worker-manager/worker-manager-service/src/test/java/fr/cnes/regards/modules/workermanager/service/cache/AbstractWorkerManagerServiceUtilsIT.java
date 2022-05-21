@@ -18,13 +18,18 @@
  */
 package fr.cnes.regards.modules.workermanager.service.cache;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
-import fr.cnes.regards.modules.workermanager.service.flow.AbstractWorkerManagerIT;
+import fr.cnes.regards.framework.modules.tenant.settings.dao.IDynamicTenantSettingRepository;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
+import fr.cnes.regards.modules.workermanager.dao.IWorkerConfigRepository;
+import fr.cnes.regards.modules.workermanager.domain.request.Request;
+import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
+import fr.cnes.regards.modules.workermanager.service.config.ConfigManager;
+import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigCacheService;
 import org.assertj.core.util.Lists;
 import org.junit.After;
 import org.junit.Assert;
@@ -34,21 +39,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
-import fr.cnes.regards.framework.modules.tenant.settings.dao.IDynamicTenantSettingRepository;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
-import fr.cnes.regards.modules.workermanager.dao.IWorkerConfigRepository;
-import fr.cnes.regards.modules.workermanager.domain.request.Request;
-import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
-import fr.cnes.regards.modules.workermanager.service.config.ConfigManager;
-import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigCacheService;
+import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * @author Léo Mieulet
  **/
 @TestPropertySource(properties = { "regards.amqp.enabled=false" },
-        locations = { "classpath:application-test.properties" })
+    locations = { "classpath:application-test.properties" })
 public abstract class AbstractWorkerManagerServiceUtilsIT extends AbstractMultitenantServiceIT {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractWorkerManagerServiceUtilsIT.class);
@@ -153,8 +151,15 @@ public abstract class AbstractWorkerManagerServiceUtilsIT extends AbstractMultit
     // --------------
     //  WORKER MANAGER UTILS
     // --------------
-    protected void createRequests(String requestId, OffsetDateTime creationDate, String contentType, String source,
-            String session, RequestStatus status, byte[] content, String error, int nbRequests) {
+    protected void createRequests(String requestId,
+                                  OffsetDateTime creationDate,
+                                  String contentType,
+                                  String source,
+                                  String session,
+                                  RequestStatus status,
+                                  byte[] content,
+                                  String error,
+                                  int nbRequests) {
         List<Request> requests = Lists.newArrayList();
         for (int i = 0; i < nbRequests; i++) {
             Request request = new Request();

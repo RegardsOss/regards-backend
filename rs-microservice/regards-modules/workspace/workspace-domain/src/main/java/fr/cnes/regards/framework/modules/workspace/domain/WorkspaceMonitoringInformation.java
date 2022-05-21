@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.modules.workspace.domain;
 
 /**
  * POJO containing monitoring information on the workspace
+ *
  * @author Sylvain Vissiere-Guerinet
  */
 public class WorkspaceMonitoringInformation {
@@ -62,8 +63,11 @@ public class WorkspaceMonitoringInformation {
     /**
      * Contructor setting the given attributes from the parameters
      */
-    public WorkspaceMonitoringInformation(String storagePhysicalId, Long totalSpace, Long usedSpace, Long freeSpace,
-            String path) {
+    public WorkspaceMonitoringInformation(String storagePhysicalId,
+                                          Long totalSpace,
+                                          Long usedSpace,
+                                          Long freeSpace,
+                                          String path) {
         this.storagePhysicalId = storagePhysicalId;
         this.totalSpace = totalSpace + BYTES_UNIT;
         this.usedSpace = usedSpace + BYTES_UNIT;

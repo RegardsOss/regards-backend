@@ -73,7 +73,11 @@ public class SessionAgentHandlerService {
             StepProperty step = e.getStepProperty();
             String source = step.getSource();
             StepPropertyInfo stepInfo = e.getStepProperty().getStepPropertyInfo();
-            stepPropertiesToSave.add(new StepPropertyUpdateRequest(step.getStepId(), source, step.getSession(), e.getDate(), e.getType(),
+            stepPropertiesToSave.add(new StepPropertyUpdateRequest(step.getStepId(),
+                                                                   source,
+                                                                   step.getSession(),
+                                                                   e.getDate(),
+                                                                   e.getType(),
                                                                    new StepPropertyUpdateRequestInfo(stepInfo.getStepType(),
                                                                                                      stepInfo.getState(),
                                                                                                      stepInfo.getProperty(),

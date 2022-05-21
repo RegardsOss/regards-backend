@@ -32,7 +32,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerEndpointsConfiguration;
@@ -43,8 +42,9 @@ import org.springframework.transaction.TransactionStatus;
 
 /**
  * Class Oauth2AutoConfiguration
- *
+ * <p>
  * Auto-configuration to activate Oauth2 authentication.
+ *
  * @author Sébastien Binda
  */
 @Configuration
@@ -101,6 +101,7 @@ public class Oauth2AutoConfiguration {
 
     /**
      * Create Authentication manager
+     *
      * @return Oauth2AuthenticationManager
      */
     @Bean
@@ -110,16 +111,24 @@ public class Oauth2AutoConfiguration {
 
     /**
      * Create Authorization server configurer
+     *
      * @return Oauth2AuthorizationServerConfigurer
      */
     @Bean
     public Oauth2AuthorizationServerConfigurer authorizationServer() {
-        return new Oauth2AuthorizationServerConfigurer(resourceId, jwtSecret, clientUser, clientSecret, grantType,
-                authenticationManager(), jwtService, acessTokenValidityInSec);
+        return new Oauth2AuthorizationServerConfigurer(resourceId,
+                                                       jwtSecret,
+                                                       clientUser,
+                                                       clientSecret,
+                                                       grantType,
+                                                       authenticationManager(),
+                                                       jwtService,
+                                                       acessTokenValidityInSec);
     }
 
     /**
      * Mvc specific configuration for Oauth2 endpoints
+     *
      * @return ICustomWebSecurityConfiguration
      */
     @Bean
@@ -131,6 +140,7 @@ public class Oauth2AutoConfiguration {
      * Create transactionManager mandatory by DefaultTokenService but we don't need it because JWT token are not
      * stored.<br/>
      * Set {@link PlatformTransactionManager} as primary to prevent conflict with another manager.
+     *
      * @return PlatformTransactionManager
      */
     @Bean

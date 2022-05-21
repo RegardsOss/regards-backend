@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
-import java.util.Date;
-
+import fr.cnes.regards.modules.emails.service.IEmailService;
+import fr.cnes.regards.modules.notification.domain.Notification;
 import org.springframework.context.annotation.Profile;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.modules.emails.service.IEmailService;
-import fr.cnes.regards.modules.notification.domain.Notification;
+import java.util.Date;
 
 /**
  * Implementation of the {@link ISendingStrategy}.<br>
@@ -47,8 +46,7 @@ public class EmailSendingStrategy implements ISendingStrategy {
     /**
      * Creates new strategy with passed email client
      *
-     * @param emailService
-     *            The email feign client
+     * @param emailService The email feign client
      */
     public EmailSendingStrategy(final IEmailService emailService) {
         this.emailService = emailService;

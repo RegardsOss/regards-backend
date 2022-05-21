@@ -27,8 +27,9 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
 
 /**
  * Class Oauth2EndpointsConfiguration
- *
+ * <p>
  * Custom configuration to allow access to Oauth2 tokens
+ *
  * @author Sébastien Binda
  */
 public class Oauth2EndpointsConfiguration implements ICustomWebSecurityConfiguration {

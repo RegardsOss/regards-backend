@@ -18,25 +18,24 @@
  */
 package fr.cnes.regards.framework.security.annotation;
 
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.core.annotation.AnnotationUtils;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.core.annotation.AnnotationUtils;
-
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-
-import fr.cnes.regards.framework.security.role.DefaultRole;
-
 /**
  * Class ResourceAccessAdapterTest
- *
+ * <p>
  * Test to check json serialization/deserialization for ResourceAccess annotation
+ *
  * @author sbinda
  */
 public class ResourceAccessAdapterTest {
@@ -56,13 +55,15 @@ public class ResourceAccessAdapterTest {
         final Map<String, Object> attributs = new HashMap<>();
         attributs.put(ResourceAccessAdapter.ROLE_LABEL, DefaultRole.ADMIN);
         attributs.put(ResourceAccessAdapter.DESCRIPTION_LABEL, "description");
-        final ResourceAccess resourceAccess = AnnotationUtils.synthesizeAnnotation(attributs, ResourceAccess.class,
+        final ResourceAccess resourceAccess = AnnotationUtils.synthesizeAnnotation(attributs,
+                                                                                   ResourceAccess.class,
                                                                                    null);
 
         try {
             // Serialize test
             adapter.write(writer, resourceAccess);
-            Assert.assertEquals("Invalid transformation to json for annotation REsourceAccess", jsonResourceAccess,
+            Assert.assertEquals("Invalid transformation to json for annotation REsourceAccess",
+                                jsonResourceAccess,
                                 swriter.toString());
         } catch (final IOException e) {
             Assert.fail(e.getMessage());

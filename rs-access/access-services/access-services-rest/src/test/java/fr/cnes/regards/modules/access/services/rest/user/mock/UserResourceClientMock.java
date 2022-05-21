@@ -41,37 +41,36 @@ import java.util.Random;
 public class UserResourceClientMock implements IUserResourceClient, IResourceController<ResourcesAccess> {
 
     public static final String REQUEST_ACCESS_STUB_CONTROLLER_SIMPLE_NAME = "controllerSimpleName";
+
     public static final String REQUEST_ACCESS_STUB_RESOURCE = "resource";
+
     public static final String REQUEST_ACCESS_STUB_MICROSERVICE = "microservice";
+
     public static final String REQUEST_ACCESS_STUB_DESCRIPTION = "description";
+
     public static final long REQUEST_ACCESS_STUB_ID = new Random().nextInt(10_000);
-    public static final ResourcesAccess RESOURCES_ACCESS_STUB = new ResourcesAccess(
-        REQUEST_ACCESS_STUB_ID,
-        REQUEST_ACCESS_STUB_DESCRIPTION,
-        REQUEST_ACCESS_STUB_MICROSERVICE,
-        REQUEST_ACCESS_STUB_RESOURCE,
-        REQUEST_ACCESS_STUB_CONTROLLER_SIMPLE_NAME,
-        RequestMethod.OPTIONS,
-        DefaultRole.REGISTERED_USER
-    );
+
+    public static final ResourcesAccess RESOURCES_ACCESS_STUB = new ResourcesAccess(REQUEST_ACCESS_STUB_ID,
+                                                                                    REQUEST_ACCESS_STUB_DESCRIPTION,
+                                                                                    REQUEST_ACCESS_STUB_MICROSERVICE,
+                                                                                    REQUEST_ACCESS_STUB_RESOURCE,
+                                                                                    REQUEST_ACCESS_STUB_CONTROLLER_SIMPLE_NAME,
+                                                                                    RequestMethod.OPTIONS,
+                                                                                    DefaultRole.REGISTERED_USER);
 
     @Autowired
     private IResourceService resourceService;
 
-
     @Override
-    public ResponseEntity<List<EntityModel<ResourcesAccess>>> retrieveProjectUserResources(String pUserLogin, String pBorrowedRoleName) {
-        return new ResponseEntity<>(
-            toResources(
-                Collections.singleton(RESOURCES_ACCESS_STUB),
-                pUserLogin
-            ),
-            HttpStatus.OK
-        );
+    public ResponseEntity<List<EntityModel<ResourcesAccess>>> retrieveProjectUserResources(String pUserLogin,
+                                                                                           String pBorrowedRoleName) {
+        return new ResponseEntity<>(toResources(Collections.singleton(RESOURCES_ACCESS_STUB), pUserLogin),
+                                    HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<Void> updateProjectUserResources(String pLogin, @Valid List<ResourcesAccess> pUpdatedUserAccessRights) {
+    public ResponseEntity<Void> updateProjectUserResources(String pLogin,
+                                                           @Valid List<ResourcesAccess> pUpdatedUserAccessRights) {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

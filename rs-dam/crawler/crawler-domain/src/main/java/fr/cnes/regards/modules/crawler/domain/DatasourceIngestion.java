@@ -1,23 +1,16 @@
 package fr.cnes.regards.modules.crawler.domain;
 
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
-import org.hibernate.annotations.Type;
-
-import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-
 /**
  * Datasource ingestion entity. Indicates the status of the last and current datsource ingestion.
+ *
  * @author oroussel
  */
 @Entity
@@ -229,7 +222,7 @@ public class DatasourceIngestion {
     @Override
     public String toString() {
         return "DatasourceIngestion [id=" + id + ", lastIngestDate=" + lastIngestDate + ", status=" + status
-                + ", statusDate=" + statusDate + "]";
+            + ", statusDate=" + statusDate + "]";
     }
 
 }

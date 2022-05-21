@@ -40,8 +40,11 @@ public class S3Rule extends ExternalResource {
 
     private Map<String, List<Tuple2<String, InputStream>>> objects;
 
-    public S3Rule(Supplier<String> host, Supplier<String> key, Supplier<String> secret, Supplier<String> region,
-            Supplier<String> bucket) {
+    public S3Rule(Supplier<String> host,
+                  Supplier<String> key,
+                  Supplier<String> secret,
+                  Supplier<String> region,
+                  Supplier<String> bucket) {
         this.host = host;
         this.key = key;
         this.secret = secret;
@@ -52,9 +55,12 @@ public class S3Rule extends ExternalResource {
     protected S3Client makeS3Client() {
         AwsBasicCredentials credentials = AwsBasicCredentials.create(key.get(), secret.get());
 
-        return S3Client.builder().endpointOverride(URI.create(host.get())).region(Region.of(region.get()))
-                .credentialsProvider(StaticCredentialsProvider.create(credentials))
-                .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build()).build();
+        return S3Client.builder()
+                       .endpointOverride(URI.create(host.get()))
+                       .region(Region.of(region.get()))
+                       .credentialsProvider(StaticCredentialsProvider.create(credentials))
+                       .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
+                       .build();
     }
 
     @Override
@@ -78,8 +84,12 @@ public class S3Rule extends ExternalResource {
                         byte[] bytes = IOUtils.toByteArray(content);
                         byte[] md5 = DigestUtils.md5(bytes);
                         String md5b64 = new String(Base64.encodeBase64(md5));
-                        PutObjectRequest request = PutObjectRequest.builder().bucket(bucketName).key(path)
-                                .contentMD5(md5b64).contentLength((long) bytes.length).build();
+                        PutObjectRequest request = PutObjectRequest.builder()
+                                                                   .bucket(bucketName)
+                                                                   .key(path)
+                                                                   .contentMD5(md5b64)
+                                                                   .contentLength((long) bytes.length)
+                                                                   .build();
                         try (InputStream bis = new ByteArrayInputStream(bytes)) {
                             s3Client.putObject(request, RequestBody.fromInputStream(bis, bytes.length));
                         }
@@ -93,12 +103,23 @@ public class S3Rule extends ExternalResource {
 
     @Override
     public void after() {
-        Try.ofCallable(this::makeS3Client).flatMapTry(s3Client -> Try.run(() -> objects.keySet().stream()
-                        .peek(bucket -> s3Client.listObjectsV2Paginator(ListObjectsV2Request.builder().bucket(bucket).build())
-                                .contents().stream().forEach(s3Object -> s3Client.deleteObject(
-                                        DeleteObjectRequest.builder().bucket(bucket).key(s3Object.key()).build())))
-                        .forEach(bucket -> s3Client.deleteBucket(DeleteBucketRequest.builder().bucket(bucket).build()))))
-                .onFailure(e -> LOGGER.error("Failed to clean S3 buckets after rule", e));
+        Try.ofCallable(this::makeS3Client)
+           .flatMapTry(s3Client -> Try.run(() -> objects.keySet()
+                                                        .stream()
+                                                        .peek(bucket -> s3Client.listObjectsV2Paginator(
+                                                                                    ListObjectsV2Request.builder().bucket(bucket).build())
+                                                                                .contents()
+                                                                                .stream()
+                                                                                .forEach(s3Object -> s3Client.deleteObject(
+                                                                                    DeleteObjectRequest.builder()
+                                                                                                       .bucket(bucket)
+                                                                                                       .key(s3Object.key())
+                                                                                                       .build())))
+                                                        .forEach(bucket -> s3Client.deleteBucket(DeleteBucketRequest.builder()
+                                                                                                                    .bucket(
+                                                                                                                        bucket)
+                                                                                                                    .build()))))
+           .onFailure(e -> LOGGER.error("Failed to clean S3 buckets after rule", e));
     }
 }
 

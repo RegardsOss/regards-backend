@@ -18,18 +18,6 @@
  */
 package fr.cnes.regards.modules.access.services.service.ui;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
@@ -38,13 +26,18 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Component;
+
+import java.util.*;
 
 /**
- *
  * Component to import/export module configuration
  *
  * @author Sébastien Binda
- *
  */
 @Component
 public class UIPluginConfigurationManager extends AbstractModuleManager<Void> {
@@ -94,9 +87,9 @@ public class UIPluginConfigurationManager extends AbstractModuleManager<Void> {
                         conf.setPluginDefinition(def.get());
                         pluginConfService.createPluginconfiguration(conf);
                     } else {
-                        importErrors
-                                .add(String.format("Plugin configuration can not be saved as plugin {} does not exists",
-                                                   toImport.getPluginDefName()));
+                        importErrors.add(String.format(
+                            "Plugin configuration can not be saved as plugin {} does not exists",
+                            toImport.getPluginDefName()));
                     }
                 }
             } catch (EntityException e) {

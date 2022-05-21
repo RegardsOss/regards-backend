@@ -18,10 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-
+import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -30,17 +28,17 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * JPA Repository to handle access to {@link FileCopyRequest} entities.
  *
  * @author Sébatien Binda
- *
  */
 public interface IFileCopyRequestRepository
-        extends JpaRepository<FileCopyRequest, Long>, JpaSpecificationExecutor<FileCopyRequest> {
+    extends JpaRepository<FileCopyRequest, Long>, JpaSpecificationExecutor<FileCopyRequest> {
 
     Page<FileCopyRequest> findByStatus(FileRequestStatus status, Pageable page);
 
@@ -62,8 +60,9 @@ public interface IFileCopyRequestRepository
 
     @Modifying
     @Query("update FileCopyRequest fcr set fcr.status = :status, fcr.errorCause = :errorCause where fcr.id = :id")
-    int updateError(@Param("status") FileRequestStatus status, @Param("errorCause") String errorCause,
-            @Param("id") Long id);
+    int updateError(@Param("status") FileRequestStatus status,
+                    @Param("errorCause") String errorCause,
+                    @Param("id") Long id);
 
     void deleteByStorageAndStatus(String storageLocationId, FileRequestStatus status);
 
@@ -74,6 +73,6 @@ public interface IFileCopyRequestRepository
     boolean existsByMetaInfoChecksumAndStatusIn(String checksum, Collection<FileRequestStatus> status);
 
     boolean existsByMetaInfoChecksumInAndStatusIn(Collection<String> cheksums,
-            Collection<FileRequestStatus> runningStatus);
+                                                  Collection<FileRequestStatus> runningStatus);
 
 }

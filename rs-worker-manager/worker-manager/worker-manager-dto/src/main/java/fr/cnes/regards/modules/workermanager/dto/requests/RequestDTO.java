@@ -43,9 +43,14 @@ public class RequestDTO {
 
     private String error;
 
-    public RequestDTO(String requestId, OffsetDateTime creationDate, String contentType, String source,
-            String session, RequestStatus status, String dispatchedWorkerType,
-            String error) {
+    public RequestDTO(String requestId,
+                      OffsetDateTime creationDate,
+                      String contentType,
+                      String source,
+                      String session,
+                      RequestStatus status,
+                      String dispatchedWorkerType,
+                      String error) {
         this.requestId = requestId;
         this.creationDate = creationDate;
         this.contentType = contentType;

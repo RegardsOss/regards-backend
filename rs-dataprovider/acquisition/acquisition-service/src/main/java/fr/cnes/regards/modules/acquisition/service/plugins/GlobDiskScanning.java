@@ -25,6 +25,10 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -34,20 +38,16 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Scan directories and return detected files according to last modification date filter and glob pattern.
  *
  * @author Marc Sordi
- *
  */
 @Plugin(id = "GlobDiskScanning", version = "1.0.0-SNAPSHOT",
-        description = "Scan directories to detect files filtering with a glob pattern",
-        markdown = "GlobDiskScanning.md", author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3",
-        owner = "CSSI", url = "https://github.com/RegardsOss")
+    description = "Scan directories to detect files filtering with a glob pattern", markdown = "GlobDiskScanning.md",
+    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
+    url = "https://github.com/RegardsOss")
 public class GlobDiskScanning implements IScanPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobDiskScanning.class);
@@ -55,7 +55,7 @@ public class GlobDiskScanning implements IScanPlugin {
     public static final String FIELD_GLOB = "glob";
 
     @PluginParameter(name = FIELD_GLOB, label = "Glob pattern", markdown = "glob_pattern.md", defaultValue = "*",
-            optional = true)
+        optional = true)
     private String glob;
 
     @Autowired
@@ -71,8 +71,12 @@ public class GlobDiskScanning implements IScanPlugin {
             String message = String.format("Configured directory %s for scan does not exists or is not accessible.",
                                            dirPath.toString());
             LOGGER.error(message);
-            notifClient.notify(message, "Acquisition chain invalid", NotificationLevel.WARNING, DefaultRole.EXPLOIT,
-                               DefaultRole.ADMIN, DefaultRole.PROJECT_ADMIN);
+            notifClient.notify(message,
+                               "Acquisition chain invalid",
+                               NotificationLevel.WARNING,
+                               DefaultRole.EXPLOIT,
+                               DefaultRole.ADMIN,
+                               DefaultRole.PROJECT_ADMIN);
         }
         return scannedFiles;
     }
@@ -85,8 +89,8 @@ public class GlobDiskScanning implements IScanPlugin {
             for (Path entry : stream) {
                 if (Files.isRegularFile(entry)) {
                     if (scanningDate.isPresent()) {
-                        OffsetDateTime lmd = OffsetDateTime
-                                .ofInstant(Files.getLastModifiedTime(entry).toInstant(), ZoneOffset.UTC);
+                        OffsetDateTime lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(entry).toInstant(),
+                                                                      ZoneOffset.UTC);
                         if (lmd.isAfter(scanningDate.get()) || lmd.isEqual(scanningDate.get())) {
                             scannedFiles.add(entry);
                         }
@@ -99,7 +103,9 @@ public class GlobDiskScanning implements IScanPlugin {
             throw new PluginUtilsRuntimeException("Scanning failure", x);
         }
 
-        LOGGER.info("{} new file(s) scanned inside the directory {} in {} milliseconds", scannedFiles.size(), dirPath,
+        LOGGER.info("{} new file(s) scanned inside the directory {} in {} milliseconds",
+                    scannedFiles.size(),
+                    dirPath,
                     System.currentTimeMillis() - startTime);
         return scannedFiles;
     }

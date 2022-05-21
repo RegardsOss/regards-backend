@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.modules.opensearch.service.parser;
 
-import org.springframework.util.MultiValueMap;
-
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
+import org.springframework.util.MultiValueMap;
 
 /**
  * This {@link IParser} implementation only handles the "lat"/"lon"/"r" part of the OpenSearch request and returns an
  * {@link ICriterion} describing a Geometry intersection.<br>
+ *
  * @author Xavier-Alexandre Brochard
  */
 public class GeometryParser implements IParser {

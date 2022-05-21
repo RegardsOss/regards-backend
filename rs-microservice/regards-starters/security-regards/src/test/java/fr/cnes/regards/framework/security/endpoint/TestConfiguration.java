@@ -18,23 +18,23 @@
  */
 package fr.cnes.regards.framework.security.endpoint;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Class TestConfiguration
- *
+ * <p>
  * Configuration for spring injections
+ *
  * @author Sébastien Binda
  */
 @Configuration

@@ -1,8 +1,7 @@
 package fr.cnes.regards.framework.utils.parser;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import com.google.gson.JsonObject;
+import fr.cnes.regards.framework.utils.parser.rule.IRule;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
@@ -14,9 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.JsonObject;
-
-import fr.cnes.regards.framework.utils.parser.rule.IRule;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ParserTest {
 
@@ -74,8 +72,7 @@ public class ParserTest {
     @Test
     public void matchingInRule() throws QueryNodeException {
         parseRule(RULE_PARSER,
-                  String.format("%s.%s: (%s OR titi)",
-                                DATA, DATA_STRING, DATA_STRING_VALUE, DATA_STRING_VALUE),
+                  String.format("%s.%s: (%s OR titi)", DATA, DATA_STRING, DATA_STRING_VALUE, DATA_STRING_VALUE),
                   example1(),
                   Boolean.TRUE);
     }
@@ -84,8 +81,12 @@ public class ParserTest {
     public void matchingRuleAnd() throws QueryNodeException {
         parseRule(RULE_PARSER,
                   String.format("%s.%s:\"%s\" AND %s.%s:%s",
-                                DATA, DATA_STRING, DATA_STRING_VALUE,
-                                DATA, DATA_BOOLEAN, DATA_BOOLEAN_VALUE),
+                                DATA,
+                                DATA_STRING,
+                                DATA_STRING_VALUE,
+                                DATA,
+                                DATA_BOOLEAN,
+                                DATA_BOOLEAN_VALUE),
                   example1(),
                   Boolean.TRUE);
     }
@@ -94,8 +95,12 @@ public class ParserTest {
     public void matchingRuleOr() throws QueryNodeException {
         parseRule(RULE_PARSER,
                   String.format("%s.%s:\"%s\" OR %s.%s:%s",
-                                DATA, DATA_STRING, DATA_STRING_VALUE,
-                                DATA, DATA_BOOLEAN, DATA_BOOLEAN_VALUE),
+                                DATA,
+                                DATA_STRING,
+                                DATA_STRING_VALUE,
+                                DATA,
+                                DATA_BOOLEAN,
+                                DATA_BOOLEAN_VALUE),
                   example1(),
                   Boolean.TRUE);
     }
@@ -110,10 +115,7 @@ public class ParserTest {
 
     @Test
     public void regexpRulesEqualLong() throws QueryNodeException {
-        parseRule(RULE_PARSER,
-                  String.format("%s.%s:%s", DATA, DATA_LONG, DATA_LONG_VALUE),
-                  example1(),
-                  Boolean.TRUE);
+        parseRule(RULE_PARSER, String.format("%s.%s:%s", DATA, DATA_LONG, DATA_LONG_VALUE), example1(), Boolean.TRUE);
     }
 
     @Test
@@ -134,26 +136,16 @@ public class ParserTest {
 
     @Test
     public void notMatchingRulesString() throws QueryNodeException {
-        parseRule(RULE_PARSER,
-                  String.format("%s.%s:\"%s\"",
-                                DATA, DATA_STRING,
-                                null),
-                  example1(),
-                  Boolean.FALSE);
+        parseRule(RULE_PARSER, String.format("%s.%s:\"%s\"", DATA, DATA_STRING, null), example1(), Boolean.FALSE);
     }
 
     @Test
     public void matchingNotRulesString() throws QueryNodeException {
-        parseRule(RULE_PARSER,
-                  String.format("NOT %s.%s:\"%s\"",
-                                DATA, DATA_STRING,
-                                null),
-                  example1(),
-                  Boolean.TRUE);
+        parseRule(RULE_PARSER, String.format("NOT %s.%s:\"%s\"", DATA, DATA_STRING, null), example1(), Boolean.TRUE);
     }
 
     private void parseRule(RuleParser parser, String ruleExpression, JsonObject target, Boolean match)
-            throws QueryNodeException {
+        throws QueryNodeException {
         // Parse rule(s)
         IRule rule = parser.parse(ruleExpression, "defaultField");
         Assert.assertNotNull("Rule must not be null!", rule);

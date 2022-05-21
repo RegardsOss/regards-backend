@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 
 /**
  * JobParameter specific class to be used with StorageFilesJob, it contains the pair "files" : [ DataFiles ]
+ *
  * @author oroussel
  */
 public class FilesJobParameter extends JobParameter {
@@ -44,6 +45,7 @@ public class FilesJobParameter extends JobParameter {
 
     /**
      * Check if given JobParameter is compatible with FilesJobParameter ie same name
+     *
      * @param param
      * @return {@link Boolean}
      */

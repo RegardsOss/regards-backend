@@ -18,16 +18,13 @@
  */
 package fr.cnes.regards.modules.model.dao;
 
+import fr.cnes.regards.modules.model.domain.attributes.AttributeProperty;
 import org.springframework.data.repository.CrudRepository;
 
-import fr.cnes.regards.modules.model.domain.attributes.AttributeProperty;
-
 /**
- *
  * {@link AttributeProperty} repository
  *
  * @author Marc Sordi
- *
  */
 public interface IAttributePropertyRepository extends CrudRepository<AttributeProperty, Long> {
 

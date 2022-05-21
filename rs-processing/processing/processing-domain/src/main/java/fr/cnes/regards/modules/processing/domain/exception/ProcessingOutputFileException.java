@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.exception;
 
 import fr.cnes.regards.modules.processing.domain.POutputFile;
@@ -35,8 +35,10 @@ public class ProcessingOutputFileException extends ProcessingException {
         this.outFile = outFile;
     }
 
-    public ProcessingOutputFileException(ProcessingExceptionType type, POutputFile outFile, String message,
-            Throwable throwable) {
+    public ProcessingOutputFileException(ProcessingExceptionType type,
+                                         POutputFile outFile,
+                                         String message,
+                                         Throwable throwable) {
         super(type, message, throwable);
         this.outFile = outFile;
     }
@@ -47,7 +49,11 @@ public class ProcessingOutputFileException extends ProcessingException {
 
     @Override
     public final String getMessage() {
-        return String.format("id=%s type=%s exec=%s outFile=%s message=%s", this.exceptionId, this.type,
-                             this.outFile.getExecId(), this.outFile.getId(), this.desc);
+        return String.format("id=%s type=%s exec=%s outFile=%s message=%s",
+                             this.exceptionId,
+                             this.type,
+                             this.outFile.getExecId(),
+                             this.outFile.getId(),
+                             this.desc);
     }
 }

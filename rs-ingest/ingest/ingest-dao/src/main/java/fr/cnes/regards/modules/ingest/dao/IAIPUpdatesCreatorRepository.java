@@ -24,8 +24,10 @@ import org.springframework.stereotype.Repository;
 
 /**
  * {@link AIPUpdatesCreatorRequest} repository
+ *
  * @author Léo Mieulet
  */
 @Repository
 public interface IAIPUpdatesCreatorRepository extends JpaRepository<AIPUpdatesCreatorRequest, Long> {
+
 }

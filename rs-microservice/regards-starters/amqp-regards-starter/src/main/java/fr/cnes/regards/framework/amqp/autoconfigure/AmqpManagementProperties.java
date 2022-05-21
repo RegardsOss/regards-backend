@@ -18,12 +18,12 @@
  */
 package fr.cnes.regards.framework.amqp.autoconfigure;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import fr.cnes.regards.framework.amqp.configuration.VirtualHostMode;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * class regrouping the properties about managment of the broker
+ *
  * @author svissier
  */
 @ConfigurationProperties(prefix = "regards.amqp.management")

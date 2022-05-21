@@ -28,12 +28,12 @@ import java.util.Set;
  * Retrieve (fake) static or (real) dynamic attributes based on open search parameter name.
  *
  * @author Marc Sordi
- *
  */
 public interface IAttributeFinder {
 
     /**
      * Return the {@link AttributeModel} related to the passed name
+     *
      * @param name open search parameter name
      * @return the {@link AttributeModel}
      * @throws OpenSearchUnknownParameter if parameter name cannot be mapped to an attribute
@@ -48,7 +48,6 @@ public interface IAttributeFinder {
     Set<AttributeModel> findByType(PropertyType type) throws OpenSearchUnknownParameter;
 
     /**
-     *
      * @return the list of {@link AttributeModel} registered for the current tenant
      */
     Set<AttributeModel> findAll();
@@ -56,6 +55,7 @@ public interface IAttributeFinder {
     /**
      * Return the smaller distinct path of the given attribute by removing if possible "feature", "properties" and
      * fragment names.
+     *
      * @param attribute {@link AttributeModel} to find smaller path name.
      * @return {@link String} smaller path name
      */

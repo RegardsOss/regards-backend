@@ -1,12 +1,8 @@
 package fr.cnes.regards.modules.model.domain;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+
+import java.lang.annotation.*;
 
 /**
  * Specific annotation to add to plugin

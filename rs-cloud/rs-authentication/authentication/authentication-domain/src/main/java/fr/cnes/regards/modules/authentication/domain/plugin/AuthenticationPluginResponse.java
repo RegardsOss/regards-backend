@@ -14,8 +14,9 @@ import javax.validation.constraints.NotEmpty;
 
 /**
  * Class AuthenticationPluginResponse
- *
+ * <p>
  * Response class for authentication plugins.
+ *
  * @author Sébastien Binda
  * @since 1.0
  */
@@ -38,7 +39,10 @@ public class AuthenticationPluginResponse {
 
     private String serviceProviderName;
 
-    public AuthenticationPluginResponse(boolean accessGranted, String email, String errorMessage, String serviceProviderName) {
+    public AuthenticationPluginResponse(boolean accessGranted,
+                                        String email,
+                                        String errorMessage,
+                                        String serviceProviderName) {
         this.accessGranted = accessGranted;
         this.email = email;
         this.errorMessage = errorMessage;

@@ -21,6 +21,7 @@ import java.util.Set;
 @Primary
 @Component
 public class StorageRestClientMock implements IStorageRestClient {
+
     @Override
     public Response downloadFile(String checksum, Boolean isContentInline) {
         return null;
@@ -47,7 +48,8 @@ public class StorageRestClientMock implements IStorageRestClient {
     }
 
     @Override
-    public ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(String userEmail, @Valid DownloadQuotaLimitsDto quotaLimits) {
+    public ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(String userEmail,
+                                                                    @Valid DownloadQuotaLimitsDto quotaLimits) {
         return null;
     }
 

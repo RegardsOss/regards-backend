@@ -18,11 +18,7 @@
  */
 package fr.cnes.regards.framework.modules.plugins.annotations;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 import java.util.Map;
 
 /**
@@ -41,6 +37,7 @@ import java.util.Map;
  * <li>Map</li>
  * <li>POJO</li>
  * </ul>
+ *
  * @author Christophe Mertz
  */
 @Target({ ElementType.FIELD })
@@ -71,6 +68,7 @@ public @interface PluginParameter {
      * file must be
      * available in the same package as
      * the plugin.
+     *
      * @return an optional further human readable information if the label is not explicit enough!
      */
     String description() default "";
@@ -94,6 +92,7 @@ public @interface PluginParameter {
 
     /**
      * Plugin parameter default value.
+     *
      * @return the default parameter value
      */
     String defaultValue() default "";
@@ -101,18 +100,21 @@ public @interface PluginParameter {
     /**
      * Is the plugin parameter sensitive and should be encrypted into database?<br/>
      * BE AWARE: only plugin parameters of type {@link String} can be sensitive.
+     *
      * @return true if the plugin parameter is sensitive.
      */
     boolean sensitive() default false;
 
     /**
      * Is the Plugin parameter is mandatory ?
+     *
      * @return true if the plugin parameter is mandatory.
      */
     boolean optional() default false;
 
     /**
      * Is the plugin parameter configurable by the users?
+     *
      * @return true if the plugin parameter is not configurable by users
      */
     boolean unconfigurable() default false;

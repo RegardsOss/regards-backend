@@ -21,8 +21,8 @@ package fr.cnes.regards.modules.ingest.domain.request.ingest;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import javax.validation.constraints.NotNull;
 
+import javax.validation.constraints.NotNull;
 
 /**
  * @author Léo Mieulet
@@ -87,7 +87,7 @@ public class IngestPayload {
     }
 
     /**
-     * @param step remote step
+     * @param step              remote step
      * @param remoteStepTimeout timeout in minute
      */
     public void setStep(IngestRequestStep step, long remoteStepTimeout) {

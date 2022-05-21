@@ -18,27 +18,27 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins;
 
-import java.util.Set;
-import java.util.SortedMap;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.utils.model.Attribute;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+
+import java.util.Set;
+import java.util.SortedMap;
 
 /**
  * This plugin is used for generating product SIP on a legacy context (SIPAD-NG SSALTO feature)
  *
  * @author Christophe Mertz
  * @author Marc Sordi
- *
  */
 @PluginInterface(
-        description = "Plugin to generate SIP with product and file metadata using legacy metadata generation toolbox")
+    description = "Plugin to generate SIP with product and file metadata using legacy metadata generation toolbox")
 public interface ISIPGenerationPluginWithMetadataToolbox extends ISipGenerationPlugin {
 
     /**
      * Create metadata for acquisition file
+     *
      * @param acqFiles list of acquisition filoes
      * @return an ordered map of attribute
      * @throws ModuleException

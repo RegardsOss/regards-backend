@@ -1,19 +1,19 @@
 package fr.cnes.regards.framework.utils;
 
+import fr.cnes.regards.framework.encryption.AESEncryptionService;
+import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
+import fr.cnes.regards.framework.encryption.exception.EncryptionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import fr.cnes.regards.framework.encryption.AESEncryptionService;
-import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
-import fr.cnes.regards.framework.encryption.exception.EncryptionException;
-
 /**
  * Main class
+ *
  * @author svissier
  */
 public class EncryptionApp {
@@ -29,7 +29,7 @@ public class EncryptionApp {
     public static final String PARAMETER_IS_MISSING = "{} parameter is missing";
 
     public static void main(String[] args)
-            throws InvalidAlgorithmParameterException, InvalidKeyException, IOException, EncryptionException {
+        throws InvalidAlgorithmParameterException, InvalidKeyException, IOException, EncryptionException {
         String keyLocation = System.getProperty(KEY_LOCATION, null);
         String iv = System.getProperty(IV, null);
         String value = System.getProperty(VALUE, null);

@@ -18,17 +18,6 @@
  */
 package fr.cnes.regards.modules.search.service;
 
-import java.util.Set;
-import java.util.UUID;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -44,13 +33,24 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.service.engine.ISearchEngineDispatcher;
 import fr.cnes.regards.modules.search.service.engine.SearchEngineDispatcher;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.TestPropertySource;
+
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Test the {@link SearchEngineDispatcher}
+ *
  * @author Sébastien Binda
  */
 @TestPropertySource(locations = { "classpath:test.properties" },
-        properties = { "regards.tenant=opensearch", "spring.jpa.properties.hibernate.default_schema=opensearch" })
+    properties = { "regards.tenant=opensearch", "spring.jpa.properties.hibernate.default_schema=opensearch" })
 @MultitenantTransactional
 public class SearchEngineDispatcherIT extends AbstractRegardsTransactionalIT {
 
@@ -66,21 +66,21 @@ public class SearchEngineDispatcherIT extends AbstractRegardsTransactionalIT {
     @Autowired
     protected IEntityLinkBuilder linkBuilder;
 
-    private static final String DATASET1_URN = "URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:"
-            + UUID.randomUUID() + ":V1";
+    private static final String DATASET1_URN =
+        "URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:" + UUID.randomUUID() + ":V1";
 
-    private static final String DATASET2_URN = "URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:"
-            + UUID.randomUUID() + ":V2";
+    private static final String DATASET2_URN =
+        "URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:" + UUID.randomUUID() + ":V2";
 
-    private static final String DATASET3_URN = "URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:"
-            + UUID.randomUUID() + ":V3";
+    private static final String DATASET3_URN =
+        "URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:" + UUID.randomUUID() + ":V3";
 
     @Before
     public void init() throws ModuleException {
 
         // First conf for engine associated to dataset1
-        Set<IPluginParam> pluginParams = IPluginParam
-                .set(IPluginParam.build(SearchEngineTest.DATASET_PARAM, DATASET1_URN));
+        Set<IPluginParam> pluginParams = IPluginParam.set(IPluginParam.build(SearchEngineTest.DATASET_PARAM,
+                                                                             DATASET1_URN));
         PluginConfiguration engineConf = PluginConfiguration.build(SearchEngineTest.class, null, pluginParams);
         engineConf = pluginService.savePluginConfiguration(engineConf);
         SearchEngineConfiguration seConf = new SearchEngineConfiguration();
@@ -90,8 +90,8 @@ public class SearchEngineDispatcherIT extends AbstractRegardsTransactionalIT {
         searchEngineService.createConf(seConf);
 
         // Second conf for engine associated to dataset2
-        Set<IPluginParam> pluginParams2 = IPluginParam
-                .set(IPluginParam.build(SearchEngineTest.DATASET_PARAM, DATASET2_URN));
+        Set<IPluginParam> pluginParams2 = IPluginParam.set(IPluginParam.build(SearchEngineTest.DATASET_PARAM,
+                                                                              DATASET2_URN));
         PluginConfiguration engineConf2 = PluginConfiguration.build(SearchEngineTest.class, null, pluginParams2);
         engineConf2 = pluginService.savePluginConfiguration(engineConf2);
         seConf = new SearchEngineConfiguration();
@@ -123,29 +123,37 @@ public class SearchEngineDispatcherIT extends AbstractRegardsTransactionalIT {
         context.setDatasetUrn(UniformResourceName.fromString(DATASET1_URN));
         context.setEngineType(SearchEngineTest.ENGINE_ID);
         ResponseEntity<Object> response = dispatcher.dispatchRequest(context, linkBuilder);
-        Assert.assertEquals("SearchEngine Plugin conf associated to DATASET1 should be dispatch when context contains dataset1",
-                            DATASET1_URN, response.getBody());
+        Assert.assertEquals(
+            "SearchEngine Plugin conf associated to DATASET1 should be dispatch when context contains dataset1",
+            DATASET1_URN,
+            response.getBody());
 
         // Check that the plugin conf associated to DATASET2 is dispatch when context contains dataset2
         context.setDatasetUrn(UniformResourceName.fromString(DATASET2_URN));
         context.setEngineType(SearchEngineTest.ENGINE_ID);
         response = dispatcher.dispatchRequest(context, linkBuilder);
-        Assert.assertEquals("SearchEngine Plugin conf associated to DATASET2 should be dispatch when context contains dataset2",
-                            DATASET2_URN, response.getBody());
+        Assert.assertEquals(
+            "SearchEngine Plugin conf associated to DATASET2 should be dispatch when context contains dataset2",
+            DATASET2_URN,
+            response.getBody());
 
         // Check that the plugin conf associated to no dataset is dispatch when context contains dataset3
         context.setDatasetUrn(UniformResourceName.fromString(DATASET3_URN));
         context.setEngineType(SearchEngineTest.ENGINE_ID);
         response = dispatcher.dispatchRequest(context, linkBuilder);
-        Assert.assertEquals("SearchEngine Plugin conf associated to no dataset should be dispatch when context contains dataset3",
-                            null, response.getBody());
+        Assert.assertEquals(
+            "SearchEngine Plugin conf associated to no dataset should be dispatch when context contains dataset3",
+            null,
+            response.getBody());
 
         // Check that the plugin conf associated to no dataset is dispatch when context does not contains any dataset
         context.setDatasetUrn(null);
         context.setEngineType(SearchEngineTest.ENGINE_ID);
         response = dispatcher.dispatchRequest(context, linkBuilder);
-        Assert.assertEquals("SearchEngine Plugin conf associated to no dataset should be dispatch when context does not contains any dataset",
-                            null, response.getBody());
+        Assert.assertEquals(
+            "SearchEngine Plugin conf associated to no dataset should be dispatch when context does not contains any dataset",
+            null,
+            response.getBody());
 
         // Check that no search engine is found for an unkown engine type
         context.setDatasetUrn(null);

@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 
 /**
  * If {@link PluginMetaData} cannot be retrieved
+ *
  * @author Marc Sordi
  */
 @SuppressWarnings("serial")

@@ -18,28 +18,16 @@
  */
 package fr.cnes.regards.modules.model.domain.attributes.restriction;
 
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorColumn;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
-
 import com.google.gson.annotations.JsonAdapter;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.modules.model.domain.adapter.RestrictionJsonAdapterFactory;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+
 /**
  * @author msordi
- *
  */
 @Entity
 @Table(name = "t_restriction")

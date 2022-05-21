@@ -13,11 +13,15 @@ import java.io.InputStream;
 public class Query {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Query.class);
+
     static final JsonParser PARSER = new JsonParser();
 
     private final String name;
+
     private final String method;
+
     private final String pathTemplate;
+
     private final JsonObject entity;
 
     private Query(String name, String method, String pathTemplate, JsonObject entity) {
@@ -37,8 +41,7 @@ public class Query {
             String path = firstLine.replaceFirst("^\\S+\\s", "");
             String rest = content.replaceFirst("^.*\n", "");
             return new Query(name, method, path, PARSER.parse(rest).getAsJsonObject());
-        })
-        .onFailure(t -> LOGGER.error(t.getMessage(), t));
+        }).onFailure(t -> LOGGER.error(t.getMessage(), t));
     }
 
     public Request toRequestForIndex(String index) {

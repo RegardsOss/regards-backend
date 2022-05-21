@@ -18,40 +18,20 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
-import javax.persistence.NamedEntityGraphs;
-import javax.persistence.NamedSubgraph;
-import javax.persistence.OrderBy;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasValidParent;
 
+import javax.persistence.*;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
  * Models a user's role.
- *
+ * <p>
  * Role hierarchy is as follow:
  * <ol>
  *     <li>PUBLIC</li>
@@ -68,16 +48,14 @@ import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasValidP
  */
 @Entity
 @Table(name = "t_role", indexes = { @Index(name = "idx_role_name", columnList = "name") },
-        uniqueConstraints = @UniqueConstraint(name = "uk_role_name", columnNames = { "name" }))
+    uniqueConstraints = @UniqueConstraint(name = "uk_role_name", columnNames = { "name" }))
 @SequenceGenerator(name = "roleSequence", initialValue = 1, sequenceName = "seq_role")
 @HasValidParent
 @NamedEntityGraphs(value = {
-        @NamedEntityGraph(name = "graph.role.permissions", attributeNodes = @NamedAttributeNode(value = "permissions")),
-        @NamedEntityGraph(name = "graph.role.parent",
-                attributeNodes = { @NamedAttributeNode(value = "permissions"),
-                        @NamedAttributeNode(value = "parentRole", subgraph = "parentGraph") },
-                subgraphs = { @NamedSubgraph(name = "parentGraph",
-                        attributeNodes = { @NamedAttributeNode(value = "permissions") }) }) })
+    @NamedEntityGraph(name = "graph.role.permissions", attributeNodes = @NamedAttributeNode(value = "permissions")),
+    @NamedEntityGraph(name = "graph.role.parent", attributeNodes = { @NamedAttributeNode(value = "permissions"),
+        @NamedAttributeNode(value = "parentRole", subgraph = "parentGraph") }, subgraphs = {
+        @NamedSubgraph(name = "parentGraph", attributeNodes = { @NamedAttributeNode(value = "permissions") }) }) })
 public class Role implements IIdentifiable<Long> {
 
     /**
@@ -110,11 +88,10 @@ public class Role implements IIdentifiable<Long> {
     @Valid
     @ManyToMany
     @OrderBy("resource")
-    @JoinTable(name = "ta_resource_role",
-            joinColumns = @JoinColumn(name = "role_id", referencedColumnName = "ID",
-                    foreignKey = @ForeignKey(name = "fk_resource_role_role_id")),
-            inverseJoinColumns = @JoinColumn(name = "resource_id", referencedColumnName = "ID",
-                    foreignKey = @ForeignKey(name = "fk_resource_role_resource_id")))
+    @JoinTable(name = "ta_resource_role", joinColumns = @JoinColumn(name = "role_id", referencedColumnName = "ID",
+        foreignKey = @ForeignKey(name = "fk_resource_role_role_id")),
+        inverseJoinColumns = @JoinColumn(name = "resource_id", referencedColumnName = "ID",
+            foreignKey = @ForeignKey(name = "fk_resource_role_resource_id")))
     @GsonIgnore
     private Set<ResourcesAccess> permissions;
 
@@ -138,10 +115,7 @@ public class Role implements IIdentifiable<Long> {
     private boolean isNative;
 
     /**
-     *
      * Constructor
-     *
-    
      */
     public Role() {
         super();
@@ -152,6 +126,7 @@ public class Role implements IIdentifiable<Long> {
 
     /**
      * Contructor setting the parameter as attribute
+     *
      * @param name
      */
     public Role(String name) {
@@ -161,7 +136,8 @@ public class Role implements IIdentifiable<Long> {
 
     /**
      * Constructor
-     * @param pName the name
+     *
+     * @param pName       the name
      * @param pParentRole the parent
      */
     public Role(final String pName, final Role pParentRole) {
@@ -186,8 +162,7 @@ public class Role implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pName
-     *            the name to set
+     * @param pName the name to set
      */
     public void setName(final String pName) {
         name = pName;
@@ -201,8 +176,7 @@ public class Role implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pParentRole
-     *            the parentRole to set
+     * @param pParentRole the parentRole to set
      */
     public void setParentRole(final Role pParentRole) {
         parentRole = pParentRole;
@@ -216,8 +190,7 @@ public class Role implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pPermissions
-     *            the permissions to set
+     * @param pPermissions the permissions to set
      */
     public void setPermissions(final Set<ResourcesAccess> pPermissions) {
         permissions = pPermissions;
@@ -231,8 +204,7 @@ public class Role implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pAuthorizedAddresses
-     *            the authorizedAddresses to set
+     * @param pAuthorizedAddresses the authorizedAddresses to set
      */
     public void setAuthorizedAddresses(final List<String> pAuthorizedAddresses) {
         authorizedAddresses = pAuthorizedAddresses;
@@ -246,8 +218,7 @@ public class Role implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pIsDefault
-     *            the isDefault to set
+     * @param pIsDefault the isDefault to set
      */
     public void setDefault(final boolean pIsDefault) {
         isDefault = pIsDefault;
@@ -261,19 +232,16 @@ public class Role implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pId
-     *            the id to set
+     * @param pId the id to set
      */
     public void setId(final Long pId) {
         id = pId;
     }
 
     /**
-     *
      * Add the given {@link ResourcesAccess} to the permissions of the current {@link Role}
      *
-     * @param pResourcesAccess
-     *            A {@link ResourcesAccess} to add
+     * @param pResourcesAccess A {@link ResourcesAccess} to add
      */
     public void addPermission(final ResourcesAccess pResourcesAccess) {
         if (permissions == null) {
@@ -312,7 +280,7 @@ public class Role implements IIdentifiable<Long> {
     @Override
     public String toString() {
         return "Role [id=" + id + ", name=" + name + ", parentRole=" + parentRole + ", isDefault=" + isDefault
-                + ", isNative=" + isNative + "]";
+            + ", isNative=" + isNative + "]";
     }
 
 }

@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.modules.indexer.domain;
 
-import java.util.Map;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
+
+import java.util.Map;
 
 /**
  * Search key to be used with all search methods of IndexerService.
@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
  * the class of result object if this one is specified (different from type(s) of searched documents)
  * No search index is provided into constructor, it must be injectd afterward (in multi-tenant environment, the one
  * which create SearchIndex doesn't have think of current tenant ie current ES index)
+ *
  * @param <S> search type
  * @param <R> result type
  * @author oroussel
@@ -52,6 +53,7 @@ public class SearchKey<S, R> {
 
     /**
      * Constructor with result class to be searched from search types
+     *
      * @param searchTypeMap map of { type, associated class with empty constructor }
      */
     public SearchKey(Map<String, Class<? extends S>> searchTypeMap) {
@@ -81,8 +83,9 @@ public class SearchKey<S, R> {
 
     /**
      * Constructor with a result class different from search types
+     *
      * @param searchTypeMap map of { type, associated class with empty constructor }
-     * @param resultClass result type
+     * @param resultClass   result type
      */
     public SearchKey(Map<String, Class<? extends S>> searchTypeMap, Class<R> resultClass) {
         this(searchTypeMap);
@@ -108,6 +111,7 @@ public class SearchKey<S, R> {
 
     /**
      * Return associated search type class
+     *
      * @param type type for which result class is asked for (ie the search type)
      * @return associated search type class
      */
@@ -117,6 +121,7 @@ public class SearchKey<S, R> {
 
     /**
      * PLEASE, DON'T USE THIS METHOD
+     *
      * @return nothing useful for you, let people who know what they do play with this
      */
     public Map<String, Class<? extends S>> getSearchTypeMap() {

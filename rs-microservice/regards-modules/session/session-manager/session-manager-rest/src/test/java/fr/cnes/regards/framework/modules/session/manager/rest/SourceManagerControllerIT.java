@@ -27,10 +27,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -38,6 +34,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Test for {@link SourceManagerController}
@@ -129,7 +130,9 @@ public class SourceManagerControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Test the deletion of a source")
     public void deleteSource() {
         performDefaultDelete(SourceManagerController.ROOT_MAPPING + SourceManagerController.DELETE_SOURCE_MAPPING,
-                             customizer().expectStatusOk(), "The order to delete a source was not published", SOURCE_1);
+                             customizer().expectStatusOk(),
+                             "The order to delete a source was not published",
+                             SOURCE_1);
 
         Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(SourceDeleteEvent.class));
     }
@@ -155,7 +158,8 @@ public class SourceManagerControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer customizer0 = customizer();
         customizer0.expectStatusOk();
         customizer0.expectToHaveSize("$", ISourceManagerRepository.MAX_SOURCES_NAMES_RESULTS);
-        performDefaultGet(SourceManagerController.ROOT_MAPPING + SourceManagerController.NAME_MAPPING, customizer0,
+        performDefaultGet(SourceManagerController.ROOT_MAPPING + SourceManagerController.NAME_MAPPING,
+                          customizer0,
                           "All sources were not retrieved with limited parameter");
 
         // retrieve unique session
@@ -164,7 +168,8 @@ public class SourceManagerControllerIT extends AbstractRegardsTransactionalIT {
         customizer1.expectStatusOk();
         customizer1.expectValue("$.[0]", sourceList.get(0).getName());
 
-        performDefaultGet(SourceManagerController.ROOT_MAPPING + SourceManagerController.NAME_MAPPING, customizer1,
+        performDefaultGet(SourceManagerController.ROOT_MAPPING + SourceManagerController.NAME_MAPPING,
+                          customizer1,
                           "The wrong source name was retrieved");
 
         // retrieve session duplicated, only one name should be present
@@ -173,7 +178,8 @@ public class SourceManagerControllerIT extends AbstractRegardsTransactionalIT {
         customizer2.expectStatusOk();
         customizer2.expectValue("$.[0]", sourceList.get(nbSources).getName());
 
-        performDefaultGet(SourceManagerController.ROOT_MAPPING + SourceManagerController.NAME_MAPPING, customizer2,
+        performDefaultGet(SourceManagerController.ROOT_MAPPING + SourceManagerController.NAME_MAPPING,
+                          customizer2,
                           "The wrong source name was retrieved");
     }
 

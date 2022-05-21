@@ -1,16 +1,16 @@
 package fr.cnes.regards.framework.gson.adapters;
 
-import java.io.IOException;
-
-import org.springframework.util.MimeType;
-import org.springframework.util.MimeTypeUtils;
-
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
+
+import java.io.IOException;
 
 /**
  * Gson adapter for {@link MimeType}
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class MimeTypeAdapter extends TypeAdapter<MimeType> {

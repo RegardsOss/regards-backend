@@ -18,6 +18,13 @@
  */
 package scripts.uiconfiguration;
 
+import com.google.common.collect.Lists;
+import com.google.gson.Gson;
+import org.flywaydb.core.api.migration.BaseJavaMigration;
+import org.flywaydb.core.api.migration.Context;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -27,14 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import org.flywaydb.core.api.migration.BaseJavaMigration;
-import org.flywaydb.core.api.migration.Context;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
-import com.google.gson.Gson;
 
 /**
  * Migrates modules configuration from previous REGARDS version into 1.2.0 (for search related changes)
@@ -56,7 +55,7 @@ public class V1_2_0__update_modules_conf extends BaseJavaMigration {
      * @return new configuration as string
      */
     public static String withParsedMap(String configuration,
-            Function<Map<String, Object>, Map<String, Object>> updater) {
+                                       Function<Map<String, Object>, Map<String, Object>> updater) {
         Gson gson = new Gson();
         Map<String, Object> configurationAsMap = gson.fromJson(configuration, Map.class);
         // Update configuration
@@ -109,8 +108,10 @@ public class V1_2_0__update_modules_conf extends BaseJavaMigration {
         rootGroup.put("showTitle", false);
         rootGroup.put("title", groupTitle);
         if (criteria != null) {
-            rootGroup.put("criteria", criteria.stream().map(V1_2_0__update_modules_conf::updateCriterionConfiguration)
-                    .collect(Collectors.toList()));
+            rootGroup.put("criteria",
+                          criteria.stream()
+                                  .map(V1_2_0__update_modules_conf::updateCriterionConfiguration)
+                                  .collect(Collectors.toList()));
         } else {
             rootGroup.put("criteria", Lists.newArrayList());
         }
@@ -170,7 +171,7 @@ public class V1_2_0__update_modules_conf extends BaseJavaMigration {
                         LOG.info(String.format("Updating module %s from type %s to type %s", id, type, newType));
                         String sqlRequest = "UPDATE t_ui_module SET conf=? , type=? WHERE id=?";
                         try (PreparedStatement preparedStatement = context.getConnection()
-                                .prepareStatement(sqlRequest)) {
+                                                                          .prepareStatement(sqlRequest)) {
                             preparedStatement.setString(1, updatedConf);
                             preparedStatement.setString(2, newType);
                             preparedStatement.setInt(3, id);

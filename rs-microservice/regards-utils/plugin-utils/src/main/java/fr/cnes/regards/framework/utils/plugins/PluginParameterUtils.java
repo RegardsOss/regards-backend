@@ -19,46 +19,28 @@
 
 package fr.cnes.regards.framework.utils.plugins;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParamDescriptor;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.BooleanPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.BytePluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.DoublePluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.FloatPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.IntegerPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.LongPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.NestedPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.PluginParamType;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.ShortPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.StringPluginParam;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.*;
 
 /**
  * Post process plugin instances to inject annotated parameters.
+ *
  * @author Christophe Mertz
  * @author Marc Sordi
  */
@@ -82,6 +64,7 @@ public final class PluginParameterUtils {
 
     /**
      * Retrieve List of {@link PluginParamDescriptor} by reflection on class fields
+     *
      * @param pluginClass the target class
      * @return List of {@link PluginParamDescriptor} or null.
      */
@@ -92,15 +75,17 @@ public final class PluginParameterUtils {
     /**
      * Retrieve {@link List} of {@link PluginParamDescriptor} by reflection on class fields with in depth parameter
      * discovery
-     * @param pluginClass the plugin implementation
-     * @param isChildParameters if <code>true</code>, {@link PluginParameter} is not required for in depth parameters
-     * discovery.
+     *
+     * @param pluginClass             the plugin implementation
+     * @param isChildParameters       if <code>true</code>, {@link PluginParameter} is not required for in depth parameters
+     *                                discovery.
      * @param alreadyManagedTypeNames List of already managed type names to detect cyclic references during in depth
-     * parameters discovery.
+     *                                parameters discovery.
      * @return list of {@link PluginParamDescriptor} or null
      */
-    private static List<PluginParamDescriptor> getParameters(Class<?> pluginClass, boolean isChildParameters,
-            List<String> alreadyManagedTypeNames) {
+    private static List<PluginParamDescriptor> getParameters(Class<?> pluginClass,
+                                                             boolean isChildParameters,
+                                                             List<String> alreadyManagedTypeNames) {
         List<PluginParamDescriptor> parameters = new ArrayList<>();
 
         for (final Field field : ReflectionUtils.getAllDeclaredFields(pluginClass)) {
@@ -118,6 +103,7 @@ public final class PluginParameterUtils {
 
     /**
      * Help method allowing us to determine if the field should be taken into account or not.
+     *
      * @param field to examine
      * @return true if the field is neither final or static
      */
@@ -127,14 +113,16 @@ public final class PluginParameterUtils {
 
     /**
      * Create a new {@link PluginParamDescriptor} from a class {@link Field}
-     * @param field {@link Field} to get type from
-     * @param pluginClass the plugin implementation
+     *
+     * @param field                   {@link Field} to get type from
+     * @param pluginClass             the plugin implementation
      * @param alreadyManagedTypeNames List of already managed type names to detect cyclic references during in depth
-     * parameters discovery.
+     *                                parameters discovery.
      * @return {@link PluginParamDescriptor}
      */
-    private static PluginParamDescriptor buildPluginParameter(Field field, Class<?> pluginClass,
-            List<String> alreadyManagedTypeNames) {
+    private static PluginParamDescriptor buildPluginParameter(Field field,
+                                                              Class<?> pluginClass,
+                                                              List<String> alreadyManagedTypeNames) {
         PluginParamDescriptor result;
 
         // Retrieve type of field
@@ -151,8 +139,14 @@ public final class PluginParameterUtils {
         // Create PluginParameter
         if (pluginParameter == null) {
             // Guess values
-            result = PluginParamDescriptor.create(field.getName(), field.getName(), null, paramType, false, false,
-                                                  false, pluginType);
+            result = PluginParamDescriptor.create(field.getName(),
+                                                  field.getName(),
+                                                  null,
+                                                  paramType,
+                                                  false,
+                                                  false,
+                                                  false,
+                                                  pluginType);
         } else {
             // Report values from annotation
             String name = getFieldName(field, pluginParameter);
@@ -160,17 +154,23 @@ public final class PluginParameterUtils {
             // Lets restrict @PluginParameter#sensitive() usage to strings.
             if (pluginParameter.sensitive()) {
                 if (!String.class.isAssignableFrom(field.getType())) {
-                    String msg = String
-                            .format("Sensible parameters must be of type %s. Faulty parameter: %s in plugin: %s",
-                                    String.class.getName(), field.getName(), pluginClass.getName());
+                    String msg = String.format(
+                        "Sensible parameters must be of type %s. Faulty parameter: %s in plugin: %s",
+                        String.class.getName(),
+                        field.getName(),
+                        pluginClass.getName());
                     LOGGER.error(msg);
                     throw new PluginUtilsRuntimeException(msg);
                 }
             }
 
-            result = PluginParamDescriptor.create(name, pluginParameter.label(), pluginParameter.description(),
-                                                  paramType, pluginParameter.optional(),
-                                                  pluginParameter.unconfigurable(), pluginParameter.sensitive(),
+            result = PluginParamDescriptor.create(name,
+                                                  pluginParameter.label(),
+                                                  pluginParameter.description(),
+                                                  paramType,
+                                                  pluginParameter.optional(),
+                                                  pluginParameter.unconfigurable(),
+                                                  pluginParameter.sensitive(),
                                                   pluginType);
 
             // Manage markdown description for administrators
@@ -206,7 +206,9 @@ public final class PluginParameterUtils {
             // Get single parameter type
             Class<?> argType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
             // Propagate discovery
-            PluginParamType subParamType = tryPropagatingDiscovery(field.getType(), argType, alreadyManagedTypeNames,
+            PluginParamType subParamType = tryPropagatingDiscovery(field.getType(),
+                                                                   argType,
+                                                                   alreadyManagedTypeNames,
                                                                    result);
             result.setParameterizedSubTypes(subParamType);
         }
@@ -222,9 +224,13 @@ public final class PluginParameterUtils {
             Class<?> keyType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
             Class<?> valueType = (Class<?>) parameterizedType.getActualTypeArguments()[1];
             // Propagate discovery
-            PluginParamType subParamType0 = tryPropagatingDiscovery(field.getType(), keyType, alreadyManagedTypeNames,
+            PluginParamType subParamType0 = tryPropagatingDiscovery(field.getType(),
+                                                                    keyType,
+                                                                    alreadyManagedTypeNames,
                                                                     result);
-            PluginParamType subParamType1 = tryPropagatingDiscovery(field.getType(), valueType, alreadyManagedTypeNames,
+            PluginParamType subParamType1 = tryPropagatingDiscovery(field.getType(),
+                                                                    valueType,
+                                                                    alreadyManagedTypeNames,
                                                                     result);
             result.setParameterizedSubTypes(subParamType0, subParamType1);
         }
@@ -233,7 +239,8 @@ public final class PluginParameterUtils {
 
     /**
      * Get configuration parameter name.
-     * @param field {@link Field}
+     *
+     * @param field           {@link Field}
      * @param pluginParameter {@link PluginParameter} field annotation
      * @return the parameter's name used as a key for database registration. If not specified, falling back to field
      * name.
@@ -245,14 +252,17 @@ public final class PluginParameterUtils {
     /**
      * Try propagating parameter discovery to parameterized type arguments. May throw a
      * {@link PluginUtilsRuntimeException} if an argument is a {@link Collection} or {@link Map}.
-     * @param rawType raw type
-     * @param argType one argument type
+     *
+     * @param rawType                 raw type
+     * @param argType                 one argument type
      * @param alreadyManagedTypeNames List of already managed type names to detect cyclic references during in depth
-     * parameters discovery
-     * @param result current {@link PluginParamDescriptor}
+     *                                parameters discovery
+     * @param result                  current {@link PluginParamDescriptor}
      */
-    private static PluginParamType tryPropagatingDiscovery(Class<?> rawType, Class<?> argType,
-            List<String> alreadyManagedTypeNames, PluginParamDescriptor result) {
+    private static PluginParamType tryPropagatingDiscovery(Class<?> rawType,
+                                                           Class<?> argType,
+                                                           List<String> alreadyManagedTypeNames,
+                                                           PluginParamDescriptor result) {
 
         PluginParamType paramType;
         Optional<PrimitiveObject> po = findPrimitiveObject(argType);
@@ -279,8 +289,9 @@ public final class PluginParameterUtils {
 
     /**
      * Check if clazz not already managed and add it to the list if not
+     *
      * @param alreadyManagedTypeNames already managed type names
-     * @param clazz class to check
+     * @param clazz                   class to check
      */
     private static void registerTypeName(List<String> alreadyManagedTypeNames, Class<?> clazz) {
         if (alreadyManagedTypeNames.contains(clazz.getName())) {
@@ -294,6 +305,7 @@ public final class PluginParameterUtils {
 
     /**
      * Retrieve the {@link PluginParamType} associated to the given {@link Field}
+     *
      * @param field {@link Field} to get type from
      */
     private static PluginParamType getFieldParameterType(Field field) {
@@ -313,8 +325,8 @@ public final class PluginParameterUtils {
             } else if (Map.class.isAssignableFrom(field.getType())) {
                 return PluginParamType.MAP;
             } else {
-                throw new PluginUtilsRuntimeException(
-                        String.format("Parameter type not supported : %s", field.getGenericType()));
+                throw new PluginUtilsRuntimeException(String.format("Parameter type not supported : %s",
+                                                                    field.getGenericType()));
             }
         }
 
@@ -324,6 +336,7 @@ public final class PluginParameterUtils {
 
     /**
      * Search a clazz in the {@link PrimitiveObject}
+     *
      * @param clazz class to analyze
      * @return an {@link Optional} {@link PrimitiveObject}
      */
@@ -346,6 +359,7 @@ public final class PluginParameterUtils {
 
     /**
      * Search a field like a {@link PluginInterface}
+     *
      * @param clazz class to analyse
      * @return true is the type of the field is a {@link PrimitiveObject}
      */
@@ -364,21 +378,25 @@ public final class PluginParameterUtils {
 
     /**
      * Use configured values to set field values.
-     * @param <T> a {@link Plugin} type
-     * @param plugin the plugin instance
-     * @param conf the {@link PluginConfiguration}
+     *
+     * @param <T>                 a {@link Plugin} type
+     * @param plugin              the plugin instance
+     * @param conf                the {@link PluginConfiguration}
      * @param instantiatedPlugins a {@link Map} of already instantiated {@link Plugin}
-     * @param dynamicParams an optional set of {@link IPluginParam}
+     * @param dynamicParams       an optional set of {@link IPluginParam}
      */
-    public static <T> void postProcess(T plugin, PluginConfiguration conf, Map<String, Object> instantiatedPlugins,
-            IPluginParam... dynamicParams) {
+    public static <T> void postProcess(T plugin,
+                                       PluginConfiguration conf,
+                                       Map<String, Object> instantiatedPlugins,
+                                       IPluginParam... dynamicParams) {
 
         LOGGER.debug("Post processing plugin \"{}\"", plugin.getClass().getSimpleName());
 
         // Test if the plugin configuration is active
         if (!conf.isActive()) {
-            throw new PluginUtilsRuntimeException(
-                    String.format("The plugin configuration <%s-%s> is not active.", conf.getId(), conf.getLabel()));
+            throw new PluginUtilsRuntimeException(String.format("The plugin configuration <%s-%s> is not active.",
+                                                                conf.getId(),
+                                                                conf.getLabel()));
         }
 
         // Look for annotated fields
@@ -394,16 +412,21 @@ public final class PluginParameterUtils {
 
     /**
      * Use configured values to set field value for a {@link PluginParameter}
-     * @param <T> a {@link Plugin} type
-     * @param plugin the {@link Plugin} instance
-     * @param conf the plugin configuration to used
-     * @param field the parameter
-     * @param paramAnnotation the {@link PluginParameter} annotation
+     *
+     * @param <T>                 a {@link Plugin} type
+     * @param plugin              the {@link Plugin} instance
+     * @param conf                the plugin configuration to used
+     * @param field               the parameter
+     * @param paramAnnotation     the {@link PluginParameter} annotation
      * @param instantiatedPlugins a {@link Map} of already instantiated {@link Plugin}
-     * @param dynamicParams an optional set of {@link IPluginParam}
+     * @param dynamicParams       an optional set of {@link IPluginParam}
      */
-    private static <T> void processPluginParameter(T plugin, PluginConfiguration conf, Field field,
-            PluginParameter paramAnnotation, Map<String, Object> instantiatedPlugins, IPluginParam... dynamicParams) {
+    private static <T> void processPluginParameter(T plugin,
+                                                   PluginConfiguration conf,
+                                                   Field field,
+                                                   PluginParameter paramAnnotation,
+                                                   Map<String, Object> instantiatedPlugins,
+                                                   IPluginParam... dynamicParams) {
 
         // Inject value
         ReflectionUtils.makeAccessible(field);
@@ -419,8 +442,12 @@ public final class PluginParameterUtils {
             case DOUBLE:
             case BOOLEAN:
                 LOGGER.debug("primitive parameter : {} --> {}", field.getName(), field.getType());
-                postProcessPrimitiveType(plugin, conf, field, findPrimitiveObject(field.getType()).get(),
-                                         paramAnnotation, dynamicParams);
+                postProcessPrimitiveType(plugin,
+                                         conf,
+                                         field,
+                                         findPrimitiveObject(field.getType()).get(),
+                                         paramAnnotation,
+                                         dynamicParams);
                 break;
             case PLUGIN:
                 LOGGER.debug("interface parameter : {} --> {}", field.getName(), field.getType());
@@ -439,6 +466,7 @@ public final class PluginParameterUtils {
 
     /**
      * Creates a new {@link IPluginParam} from a {@link PluginParamType}
+     *
      * @param paramType
      * @param paramName
      * @param value
@@ -477,11 +505,13 @@ public final class PluginParameterUtils {
                 break;
             case COLLECTION:
                 Type type = new TypeToken<Collection<JsonElement>>() {
+
                 }.getType();
                 param = IPluginParam.build(paramName, (Collection<JsonElement>) gson.fromJson(value, type));
                 break;
             case MAP:
                 Type typeMap = new TypeToken<Map<String, JsonElement>>() {
+
                 }.getType();
                 param = IPluginParam.build(paramName, (Map<String, JsonElement>) gson.fromJson(value, typeMap));
                 break;
@@ -489,9 +519,9 @@ public final class PluginParameterUtils {
                 param = IPluginParam.plugin(paramName, value);
                 break;
             default:
-                throw new PluginUtilsRuntimeException(
-                        String.format("Type parameter <%s> cannot be handled. Complex types are not supported yet.",
-                                      paramType));
+                throw new PluginUtilsRuntimeException(String.format(
+                    "Type parameter <%s> cannot be handled. Complex types are not supported yet.",
+                    paramType));
         }
         param.setDynamic(isDynamic);
         return param;
@@ -500,13 +530,15 @@ public final class PluginParameterUtils {
     /**
      * Find the plugin parameter from the plugin configuration or from dynamic plugin parameters if there are
      * any.
-     * @param parameterName parameter name
-     * @param pluginConf plugin configuration
+     *
+     * @param parameterName           parameter name
+     * @param pluginConf              plugin configuration
      * @param dynamicPluginParameters dynamic plugin parameters
      * @return {@link IPluginParam} or null
      */
-    private static IPluginParam findParameter(String parameterName, PluginConfiguration pluginConf,
-            IPluginParam... dynamicPluginParameters) {
+    private static IPluginParam findParameter(String parameterName,
+                                              PluginConfiguration pluginConf,
+                                              IPluginParam... dynamicPluginParameters) {
         // Default value comes from plugin configuration
         IPluginParam staticParam = pluginConf.getParameter(parameterName);
         // Manage dynamic parameters
@@ -514,21 +546,25 @@ public final class PluginParameterUtils {
         if ((dynamicPluginParameters != null) && (dynamicPluginParameters.length > 0)) {
             // Search dynamic parameter for current parameter name
             Optional<IPluginParam> dynamicParameterOpt = Arrays.stream(dynamicPluginParameters)
-                    .filter(s -> s.getName().equals(parameterName)).findFirst();
+                                                               .filter(s -> s.getName().equals(parameterName))
+                                                               .findFirst();
             // Dynamic parameter found
             if (dynamicParameterOpt.isPresent()) {
                 IPluginParam dynamicParam = dynamicParameterOpt.get();
-                LOGGER.debug("Dynamic parameter found for parameter \"{}\" with value \"{}\"", parameterName,
+                LOGGER.debug("Dynamic parameter found for parameter \"{}\" with value \"{}\"",
+                             parameterName,
                              dynamicParam);
                 if (staticParam != null) {
                     if (!staticParam.isValid(dynamicParam)) {
-                        throw new PluginUtilsRuntimeException(
-                                String.format("Dynamic param %s not consistent with static one %s", dynamicParam,
-                                              staticParam));
+                        throw new PluginUtilsRuntimeException(String.format(
+                            "Dynamic param %s not consistent with static one %s",
+                            dynamicParam,
+                            staticParam));
                     }
                     if (!staticParam.isDynamic()) {
-                        throw new PluginUtilsRuntimeException(
-                                String.format("Param %s is not allowed to be dynamic", dynamicParam, staticParam));
+                        throw new PluginUtilsRuntimeException(String.format("Param %s is not allowed to be dynamic",
+                                                                            dynamicParam,
+                                                                            staticParam));
                     }
                 }
                 return dynamicParam;
@@ -539,36 +575,46 @@ public final class PluginParameterUtils {
 
     /**
      * Use configured values to set field values for a parameter of type OBJECT or PARAMETERIZED_OBJECT
-     * @param <T> a {@link Plugin} type
-     * @param plugin the {@link Plugin} instance
-     * @param conf the plugin configuration to used
-     * @param field the parameter
+     *
+     * @param <T>             a {@link Plugin} type
+     * @param plugin          the {@link Plugin} instance
+     * @param conf            the plugin configuration to used
+     * @param field           the parameter
      * @param paramAnnotation the {@link PluginParameter} annotation
-     * @param paramType param type to consider
-     * @param dynamicParams an optional set of {@link IPluginParam}
+     * @param paramType       param type to consider
+     * @param dynamicParams   an optional set of {@link IPluginParam}
      */
-    private static <T> void postProcessObjectType(T plugin, PluginConfiguration conf, Field field,
-            PluginParameter paramAnnotation, PluginParamType paramType, IPluginParam... dynamicParams) {
+    private static <T> void postProcessObjectType(T plugin,
+                                                  PluginConfiguration conf,
+                                                  Field field,
+                                                  PluginParameter paramAnnotation,
+                                                  PluginParamType paramType,
+                                                  IPluginParam... dynamicParams) {
 
         LOGGER.debug("Injecting object plugin parameter \"{}\"", paramAnnotation.label());
 
         // Retrieve parameter name
         String parameterName = getFieldName(field, paramAnnotation);
 
-        if (field.getType().isInterface()
-                && !(PluginParamType.COLLECTION.equals(paramType) || PluginParamType.MAP.equals(paramType))) {
-            throw new PluginUtilsRuntimeException(String
-                    .format("Invalid plugin parameter of non instanciable interface %s", field.getType().getName()));
+        if (field.getType().isInterface() && !(PluginParamType.COLLECTION.equals(paramType)
+            || PluginParamType.MAP.equals(paramType))) {
+            throw new PluginUtilsRuntimeException(String.format(
+                "Invalid plugin parameter of non instanciable interface %s",
+                field.getType().getName()));
         }
         if (PluginParamType.COLLECTION.equals(paramType) && !Collection.class.isAssignableFrom(field.getType())) {
-            throw new PluginUtilsRuntimeException(String
-                    .format("Invalid plugin parameter: plugin parameter %s is supposed to be of type %s but is not. It is of type : %s",
-                            parameterName, Collection.class.getName(), field.getType().getName()));
+            throw new PluginUtilsRuntimeException(String.format(
+                "Invalid plugin parameter: plugin parameter %s is supposed to be of type %s but is not. It is of type : %s",
+                parameterName,
+                Collection.class.getName(),
+                field.getType().getName()));
         }
         if (PluginParamType.MAP.equals(paramType) && !Map.class.isAssignableFrom(field.getType())) {
-            throw new PluginUtilsRuntimeException(String
-                    .format("Invalid plugin parameter: plugin parameter %s is supposed to be of type %s but is not. It is of type : %s",
-                            parameterName, Map.class.getName(), field.getType().getName()));
+            throw new PluginUtilsRuntimeException(String.format(
+                "Invalid plugin parameter: plugin parameter %s is supposed to be of type %s but is not. It is of type : %s",
+                parameterName,
+                Map.class.getName(),
+                field.getType().getName()));
         }
 
         // Get plugin parameter configuration
@@ -580,7 +626,9 @@ public final class PluginParameterUtils {
                 return;
             } else {
                 throw new IllegalArgumentException(String.format(PARAMETER_NOT_FOUND_IN_PLUGIN_CONFIGURATION,
-                                                                 conf.getPluginId(), conf.getLabel(), parameterName));
+                                                                 conf.getPluginId(),
+                                                                 conf.getLabel(),
+                                                                 parameterName));
             }
         }
 
@@ -596,7 +644,9 @@ public final class PluginParameterUtils {
         // At this point, if the parameter value is not set, there is a problem
         if (!param.hasValue()) {
             throw new IllegalArgumentException(String.format(NO_PLUGIN_PARAMETER_VALUE_AND_IS_REQUIRED,
-                                                             conf.getPluginId(), conf.getLabel(), parameterName));
+                                                             conf.getPluginId(),
+                                                             conf.getLabel(),
+                                                             parameterName));
         }
 
         try {
@@ -606,24 +656,30 @@ public final class PluginParameterUtils {
         } catch (IllegalArgumentException | IllegalAccessException e) {
             // Propagate exception
             throw new PluginUtilsRuntimeException(String.format(EXCEPTION_WHILE_PROCESSING_PARAM_IN_PLUGIN,
-                                                                paramAnnotation.label(), plugin.getClass(), param),
-                    e);
+                                                                paramAnnotation.label(),
+                                                                plugin.getClass(),
+                                                                param), e);
         }
         LOGGER.debug(PLUGIN_PARAMETER_INJECTED, paramAnnotation.label());
     }
 
     /**
      * Use configured values to set field values for a parameter of type {@link PrimitiveObject}
-     * @param <T> a {@link Plugin} type
-     * @param plugin the {@link Plugin} instance
-     * @param conf the {@link PluginConfiguration} to used
-     * @param field the parameter
-     * @param typeWrapper the type wrapper of the parameter
+     *
+     * @param <T>             a {@link Plugin} type
+     * @param plugin          the {@link Plugin} instance
+     * @param conf            the {@link PluginConfiguration} to used
+     * @param field           the parameter
+     * @param typeWrapper     the type wrapper of the parameter
      * @param paramAnnotation the {@link PluginParameter} annotation
-     * @param dynamicParams an optional set of {@link IPluginParam}
+     * @param dynamicParams   an optional set of {@link IPluginParam}
      */
-    private static <T> void postProcessPrimitiveType(T plugin, PluginConfiguration conf, Field field,
-            PrimitiveObject typeWrapper, PluginParameter paramAnnotation, IPluginParam... dynamicParams) {
+    private static <T> void postProcessPrimitiveType(T plugin,
+                                                     PluginConfiguration conf,
+                                                     Field field,
+                                                     PrimitiveObject typeWrapper,
+                                                     PluginParameter paramAnnotation,
+                                                     IPluginParam... dynamicParams) {
 
         LOGGER.debug("Injecting primitive plugin parameter \"{}\"", paramAnnotation.label());
 
@@ -642,7 +698,9 @@ public final class PluginParameterUtils {
                 param = buildByType(typeWrapper.getType(), parameterName);
             } else {
                 throw new IllegalArgumentException(String.format(PARAMETER_NOT_FOUND_IN_PLUGIN_CONFIGURATION,
-                                                                 conf.getPluginId(), conf.getLabel(), parameterName));
+                                                                 conf.getPluginId(),
+                                                                 conf.getLabel(),
+                                                                 parameterName));
             }
         }
 
@@ -665,7 +723,9 @@ public final class PluginParameterUtils {
         // At this point, if the parameter value is not set, there is a problem
         if (!param.hasValue()) {
             throw new IllegalArgumentException(String.format(NO_PLUGIN_PARAMETER_VALUE_AND_IS_REQUIRED,
-                                                             conf.getPluginId(), conf.getLabel(), parameterName));
+                                                             conf.getPluginId(),
+                                                             conf.getLabel(),
+                                                             parameterName));
         }
 
         LOGGER.debug("Primitive parameter value: {}", param);
@@ -679,9 +739,11 @@ public final class PluginParameterUtils {
                     field.set(plugin, spp.getDecryptedValue());
                 } else {
                     // Propagate exception
-                    throw new PluginUtilsRuntimeException(String
-                            .format("Exception while processing param <%s> in plugin class <%s> with param <%s>. Cannot handle sensitive value!",
-                                    paramAnnotation.label(), plugin.getClass(), param));
+                    throw new PluginUtilsRuntimeException(String.format(
+                        "Exception while processing param <%s> in plugin class <%s> with param <%s>. Cannot handle sensitive value!",
+                        paramAnnotation.label(),
+                        plugin.getClass(),
+                        param));
                 }
             } else {
                 field.set(plugin, param.getValue());
@@ -689,23 +751,28 @@ public final class PluginParameterUtils {
         } catch (IllegalArgumentException | IllegalAccessException e) {
             // Propagate exception
             throw new PluginUtilsRuntimeException(String.format(EXCEPTION_WHILE_PROCESSING_PARAM_IN_PLUGIN,
-                                                                paramAnnotation.label(), plugin.getClass(), param),
-                    e);
+                                                                paramAnnotation.label(),
+                                                                plugin.getClass(),
+                                                                param), e);
         }
         LOGGER.debug(PLUGIN_PARAMETER_INJECTED, paramAnnotation.label());
     }
 
     /**
      * Use configured values to set field values for a parameter of type {@link PluginParameter}
-     * @param <T> a {@link Plugin} type
-     * @param plugin the {@link Plugin} instance
-     * @param conf the plugin configuration to used
-     * @param field the parameter
-     * @param paramAnnotation the {@link PluginParameter} annotation
+     *
+     * @param <T>                 a {@link Plugin} type
+     * @param plugin              the {@link Plugin} instance
+     * @param conf                the plugin configuration to used
+     * @param field               the parameter
+     * @param paramAnnotation     the {@link PluginParameter} annotation
      * @param instantiatedPlugins a Map of all already instantiated plugins
      */
-    private static <T> void postProcessInterface(T plugin, PluginConfiguration conf, Field field,
-            PluginParameter paramAnnotation, Map<String, Object> instantiatedPlugins) {
+    private static <T> void postProcessInterface(T plugin,
+                                                 PluginConfiguration conf,
+                                                 Field field,
+                                                 PluginParameter paramAnnotation,
+                                                 Map<String, Object> instantiatedPlugins) {
 
         LOGGER.debug("Injecting nested plugin parameter \"{}\"", paramAnnotation.label());
 
@@ -721,7 +788,9 @@ public final class PluginParameterUtils {
                 return;
             } else {
                 throw new IllegalArgumentException(String.format(PARAMETER_NOT_FOUND_IN_PLUGIN_CONFIGURATION,
-                                                                 conf.getPluginId(), conf.getLabel(), parameterName));
+                                                                 conf.getPluginId(),
+                                                                 conf.getLabel(),
+                                                                 parameterName));
             }
         }
 
@@ -737,14 +806,18 @@ public final class PluginParameterUtils {
         // At this point, if the parameter value is not set, there is a problem
         if (!param.hasValue()) {
             throw new IllegalArgumentException(String.format(NO_PLUGIN_PARAMETER_VALUE_AND_IS_REQUIRED,
-                                                             conf.getPluginId(), conf.getLabel(), parameterName));
+                                                             conf.getPluginId(),
+                                                             conf.getLabel(),
+                                                             parameterName));
         }
 
         if (!NestedPluginParam.class.isInstance(param)) {
             // Propagate exception
-            throw new PluginUtilsRuntimeException(String
-                    .format("Exception while processing param <%s> in plugin class <%s> with param <%s>. Wrong plugin parameter type!",
-                            paramAnnotation.label(), plugin.getClass(), param));
+            throw new PluginUtilsRuntimeException(String.format(
+                "Exception while processing param <%s> in plugin class <%s> with param <%s>. Wrong plugin parameter type!",
+                paramAnnotation.label(),
+                plugin.getClass(),
+                param));
         } else {
 
             NestedPluginParam npp = (NestedPluginParam) param;
@@ -754,8 +827,9 @@ public final class PluginParameterUtils {
             } catch (IllegalArgumentException | IllegalAccessException e) {
                 // Propagate exception
                 throw new PluginUtilsRuntimeException(String.format(EXCEPTION_WHILE_PROCESSING_PARAM_IN_PLUGIN,
-                                                                    paramAnnotation.label(), plugin.getClass(), param),
-                        e);
+                                                                    paramAnnotation.label(),
+                                                                    plugin.getClass(),
+                                                                    param), e);
             }
             LOGGER.debug(PLUGIN_PARAMETER_INJECTED, paramAnnotation.label());
         }
@@ -845,7 +919,8 @@ public final class PluginParameterUtils {
 
         /**
          * Constructor
-         * @param type primitive object type
+         *
+         * @param type      primitive object type
          * @param primitive primitive class
          * @param paramType parameter type
          */

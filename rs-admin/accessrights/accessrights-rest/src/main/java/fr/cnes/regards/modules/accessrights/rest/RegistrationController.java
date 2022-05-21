@@ -38,6 +38,7 @@ import javax.validation.Valid;
 
 /**
  * Endpoints to handle Users registration for a project.
+ *
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
  */
@@ -48,22 +49,29 @@ public class RegistrationController {
     public static final String REQUEST_MAPPING_ROOT = "/accesses";
 
     public static final String EXTERNAL_ACCESS_PATH = "/external";
+
     public static final String ACCEPT_ACCESS_RELATIVE_PATH = "/{access_id}/accept";
+
     public static final String DENY_ACCESS_RELATIVE_PATH = "/{access_id}/deny";
+
     private static final String VERIFY_EMAIL_RELATIVE_PATH = "/verifyEmail/{token}";
+
     public static final String ACTIVE_ACCESS_RELATIVE_PATH = "/{access_id}/active";
+
     public static final String INACTIVE_ACCESS_RELATIVE_PATH = "/{access_id}/inactive";
 
     private final IProjectUserService projectUserService;
+
     private final ProjectUserWorkflowManager projectUserWorkflowManager;
+
     private final IRegistrationService registrationService;
+
     private final IEmailVerificationTokenService emailVerificationTokenService;
 
     public RegistrationController(IProjectUserService projectUserService,
-            ProjectUserWorkflowManager projectUserWorkflowManager,
-            IRegistrationService registrationService,
-            IEmailVerificationTokenService emailVerificationTokenService
-    ) {
+                                  ProjectUserWorkflowManager projectUserWorkflowManager,
+                                  IRegistrationService registrationService,
+                                  IEmailVerificationTokenService emailVerificationTokenService) {
         this.projectUserService = projectUserService;
         this.projectUserWorkflowManager = projectUserWorkflowManager;
         this.registrationService = registrationService;
@@ -79,7 +87,8 @@ public class RegistrationController {
      */
     @PostMapping
     @ResourceAccess(description = "Request for a new projectUser (Public feature).", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> requestAccess(@Valid @RequestBody AccessRequestDto accessRequestDto) throws EntityException {
+    public ResponseEntity<Void> requestAccess(@Valid @RequestBody AccessRequestDto accessRequestDto)
+        throws EntityException {
         registrationService.requestAccess(accessRequestDto, false);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -93,7 +102,8 @@ public class RegistrationController {
      */
     @PostMapping(EXTERNAL_ACCESS_PATH)
     @ResourceAccess(description = "Request for a new projectUser (Public feature).", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<Void> requestExternalAccess(@Valid @RequestBody AccessRequestDto accessRequestDto) throws EntityException {
+    public ResponseEntity<Void> requestExternalAccess(@Valid @RequestBody AccessRequestDto accessRequestDto)
+        throws EntityException {
         registrationService.requestAccess(accessRequestDto, true);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

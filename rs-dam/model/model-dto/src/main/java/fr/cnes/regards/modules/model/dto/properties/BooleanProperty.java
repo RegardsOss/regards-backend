@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.model.dto.properties;
  * Represent a {@link PropertyType#BOOLEAN} model attribute
  *
  * @author Marc Sordi
- *
  */
 public class BooleanProperty extends AbstractProperty<Boolean> {
 

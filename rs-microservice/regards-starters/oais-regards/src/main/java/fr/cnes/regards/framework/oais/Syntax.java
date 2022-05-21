@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import javax.validation.constraints.NotNull;
-
 import org.springframework.util.MimeType;
+
+import javax.validation.constraints.NotNull;
 
 public class Syntax {
 

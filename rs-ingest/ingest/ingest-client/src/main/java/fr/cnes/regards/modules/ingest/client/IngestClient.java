@@ -18,28 +18,26 @@
  */
 package fr.cnes.regards.modules.ingest.client;
 
-import java.util.HashMap;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.validation.Errors;
-import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.Validator;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
+
+import java.util.HashMap;
 
 /**
- *
  * Asynchronous client implementation based on the message broker for requesting the ingest service.<br />
  * As this client use message broker to communicate with the storage service, responses are asynchronous. Nevertheless,
  * you can easily listen for responses by implementing your own {@link IIngestClientListener}.
- * @author Marc SORDI
  *
+ * @author Marc SORDI
  */
 @Component
 @RegardsTransactional
@@ -70,8 +68,8 @@ public class IngestClient implements IIngestClient {
             Errors errors = new MapBindingResult(new HashMap<>(), IngestRequestFlowItem.class.getName());
             validator.validate(item, errors);
             if (errors.hasErrors()) {
-                throw new IngestClientException(
-                        String.format("Invalid request : %s", ErrorTranslator.getErrorsAsString(errors)));
+                throw new IngestClientException(String.format("Invalid request : %s",
+                                                              ErrorTranslator.getErrorsAsString(errors)));
             }
         }
     }

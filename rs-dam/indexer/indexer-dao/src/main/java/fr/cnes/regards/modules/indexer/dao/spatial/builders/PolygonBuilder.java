@@ -64,6 +64,7 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
 
     /**
      * Add a new hole to the polygon
+     *
      * @param hole linear ring defining the hole
      * @return this
      */
@@ -73,7 +74,8 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
 
     /**
      * Add a new hole to the polygon
-     * @param hole linear ring defining the hole
+     *
+     * @param hole   linear ring defining the hole
      * @param coerce if set to true, it will try to close the hole by adding starting point as end point
      * @return this
      */
@@ -103,7 +105,7 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
         List<Coordinate> points = lineString.coordinates;
         if (points.size() < 4) {
             throw new IllegalArgumentException(
-                    "invalid number of points in LinearRing (found [" + points.size() + "] - must be >= 4)");
+                "invalid number of points in LinearRing (found [" + points.size() + "] - must be >= 4)");
         }
 
         if (points.get(0).equals(points.get(points.size() - 1)) == false) {
@@ -119,7 +121,8 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
         HashSet<Coordinate> interior = Sets.newHashSet(hole.coordinates);
         exterior.retainAll(interior);
         if (exterior.size() >= 2) {
-            throw new InvalidShapeException("Invalid polygon, interior cannot share more than one point with the exterior");
+            throw new InvalidShapeException(
+                "Invalid polygon, interior cannot share more than one point with the exterior");
         }
     }
 
@@ -148,7 +151,7 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
         final AtomicBoolean translated = new AtomicBoolean(false);
         int offset = createEdges(0, orientation, shell, null, edges, 0, translated);
         for (int i = 0; i < holes.length; i++) {
-            int length = createEdges(i+1, orientation, shell, holes[i], edges, offset, translated);
+            int length = createEdges(i + 1, orientation, shell, holes[i], edges, offset, translated);
             holeComponents[i] = edges[offset];
             offset += length;
         }
@@ -175,9 +178,9 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
                     // same point
                     continue;
                 }
-                if (linearRing.coordinates.get(i - 1).x == linearRing.coordinates.get(i + 1).x &&
-                        linearRing.coordinates.get(i - 1).y > linearRing.coordinates.get(i).y !=
-                                linearRing.coordinates.get(i + 1).y > linearRing.coordinates.get(i).y) {
+                if (linearRing.coordinates.get(i - 1).x == linearRing.coordinates.get(i + 1).x
+                    && linearRing.coordinates.get(i - 1).y > linearRing.coordinates.get(i).y
+                    != linearRing.coordinates.get(i + 1).y > linearRing.coordinates.get(i).y) {
                     // coplanar
                     continue;
                 }
@@ -194,11 +197,9 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
     }
 
     public Geometry buildS4JGeometry(GeometryFactory factory, boolean fixDateline) {
-        if(fixDateline) {
+        if (fixDateline) {
             Coordinate[][][] polygons = coordinates();
-            return polygons.length == 1
-                    ? polygonS4J(factory, polygons[0])
-                    : multipolygonS4J(factory, polygons);
+            return polygons.length == 1 ? polygonS4J(factory, polygons[0]) : multipolygonS4J(factory, polygons);
         } else {
             return toPolygonS4J(factory);
         }
@@ -216,8 +217,7 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
 
     protected static org.elasticsearch.geometry.LinearRing linearRing(List<Coordinate> coordinates) {
         return new org.elasticsearch.geometry.LinearRing(coordinates.stream().mapToDouble(i -> i.x).toArray(),
-                                                         coordinates.stream().mapToDouble(i -> i.y).toArray()
-        );
+                                                         coordinates.stream().mapToDouble(i -> i.y).toArray());
     }
 
     protected static LinearRing linearRingS4J(GeometryFactory factory, List<Coordinate> coordinates) {
@@ -227,8 +227,8 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
     @Override
     public int numDimensions() {
         if (shell == null) {
-            throw new IllegalStateException("unable to get number of dimensions, " +
-                                                    "Polygon has not yet been initialized");
+            throw new IllegalStateException(
+                "unable to get number of dimensions, " + "Polygon has not yet been initialized");
         }
         return shell.numDimensions();
     }
@@ -237,10 +237,10 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
         LinearRing shell = factory.createLinearRing(polygon[0]);
         LinearRing[] holes;
 
-        if(polygon.length > 1) {
-            holes = new LinearRing[polygon.length-1];
+        if (polygon.length > 1) {
+            holes = new LinearRing[polygon.length - 1];
             for (int i = 0; i < holes.length; i++) {
-                holes[i] = factory.createLinearRing(polygon[i+1]);
+                holes[i] = factory.createLinearRing(polygon[i + 1]);
             }
         } else {
             holes = null;
@@ -253,7 +253,8 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
      * in turn contains an array of linestrings. These line Strings are represented as an array of
      * coordinates. The first linestring will be the shell of the polygon the others define holes
      * within the polygon.
-     * @param factory {@link GeometryFactory} to use
+     *
+     * @param factory  {@link GeometryFactory} to use
      * @param polygons definition of polygons
      * @return a new Multipolygon
      */
@@ -268,16 +269,17 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
     /**
      * This method sets the component id of all edges in a ring to a given id and shifts the
      * coordinates of this component according to the dateline
-     * @param edge An arbitrary edge of the component
-     * @param id id to apply to the component
+     *
+     * @param edge  An arbitrary edge of the component
+     * @param id    id to apply to the component
      * @param edges a list of edges to which all edges of the component will be added (could be <code>null</code>)
      * @return number of edges that belong to this component
      */
     private static int component(final Edge edge, final int id, final ArrayList<Edge> edges, double[] partitionPoint) {
         // find a coordinate that is not part of the dateline
         Edge any = edge;
-        while(any.coordinate.x == +DATELINE || any.coordinate.x == -DATELINE) {
-            if((any = any.next) == edge) {
+        while (any.coordinate.x == +DATELINE || any.coordinate.x == -DATELINE) {
+            if ((any = any.next) == edge) {
                 break;
             }
         }
@@ -338,14 +340,15 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
                 prev = current;
             }
             length++;
-        } while(connectedComponents == 0 && (current = current.next) != edge);
+        } while (connectedComponents == 0 && (current = current.next) != edge);
 
-        return (splitIndex != 1) ? length-splitIndex: length;
+        return (splitIndex != 1) ? length - splitIndex : length;
     }
 
     /**
      * Compute all coordinates of a component
-     * @param component an arbitrary edge of the component
+     *
+     * @param component   an arbitrary edge of the component
      * @param coordinates Array of coordinates to write the result to
      * @return the coordinates parameter
      */
@@ -356,11 +359,12 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
         // First and last coordinates must be equal
         if (coordinates[0].equals(coordinates[coordinates.length - 1]) == false) {
             if (Double.isNaN(partitionPoint[2])) {
-                throw new InvalidShapeException("Self-intersection at or near point ["
-                                                        + partitionPoint[0] + "," + partitionPoint[1] + "]");
+                throw new InvalidShapeException(
+                    "Self-intersection at or near point [" + partitionPoint[0] + "," + partitionPoint[1] + "]");
             } else {
-                throw new InvalidShapeException("Self-intersection at or near point ["
-                                                        + partitionPoint[0] + "," + partitionPoint[1] + "," + partitionPoint[2] + "]");
+                throw new InvalidShapeException(
+                    "Self-intersection at or near point [" + partitionPoint[0] + "," + partitionPoint[1] + ","
+                        + partitionPoint[2] + "]");
             }
         }
         return coordinates;
@@ -373,7 +377,7 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
             result[i] = component.toArray(new Coordinate[component.size()][]);
         }
 
-        if(debugEnabled()) {
+        if (debugEnabled()) {
             for (int i = 0; i < result.length; i++) {
                 LOGGER.debug("Component [{}]:", i);
                 for (int j = 0; j < result[i].length; j++) {
@@ -391,9 +395,9 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
         final Coordinate[][] points = new Coordinate[numHoles][];
 
         for (int i = 0; i < numHoles; i++) {
-            double[]  partitionPoint = new double[3];
-            int length = component(holes[i], -(i+1), null, partitionPoint); // mark as visited by inverting the sign
-            points[i] = coordinates(holes[i], new Coordinate[length+1], partitionPoint);
+            double[] partitionPoint = new double[3];
+            int length = component(holes[i], -(i + 1), null, partitionPoint); // mark as visited by inverting the sign
+            points[i] = coordinates(holes[i], new Coordinate[length + 1], partitionPoint);
         }
 
         return points;
@@ -404,10 +408,10 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
 
         for (int i = 0; i < edges.length; i++) {
             if (edges[i].component >= 0) {
-                double[]  partitionPoint = new double[3];
-                int length = component(edges[i], -(components.size()+numHoles+1), mainEdges, partitionPoint);
+                double[] partitionPoint = new double[3];
+                int length = component(edges[i], -(components.size() + numHoles + 1), mainEdges, partitionPoint);
                 List<Coordinate[]> component = new ArrayList<>();
-                component.add(coordinates(edges[i], new Coordinate[length+1], partitionPoint));
+                component.add(coordinates(edges[i], new Coordinate[length + 1], partitionPoint));
                 components.add(component);
             }
         }
@@ -421,7 +425,11 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
         return buildCoordinates(components);
     }
 
-    private static void assign(Edge[] holes, Coordinate[][] points, int numHoles, Edge[] edges, List<List<Coordinate[]>> components) {
+    private static void assign(Edge[] holes,
+                               Coordinate[][] points,
+                               int numHoles,
+                               Edge[] edges,
+                               List<List<Coordinate[]>> components) {
         // Assign Hole to related components
         // To find the new component the hole belongs to all intersections of the
         // polygon edges with a vertical line are calculated. This vertical line
@@ -458,7 +466,7 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
             final int pos;
             boolean sharedVertex = false;
             if (((pos = Arrays.binarySearch(edges, 0, intersections, current, INTERSECTION_ORDER)) >= 0)
-                    && (sharedVertex = (edges[pos].intersect.compareTo(current.coordinate) == 0)) == false) {
+                && (sharedVertex = (edges[pos].intersect.compareTo(current.coordinate) == 0)) == false) {
                 // The binary search returned an exact match, but we checked again using compareTo()
                 // and it didn't match after all.
 
@@ -483,7 +491,7 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
 
             final int component = -edges[index].component - numHoles - 1;
 
-            if(debugEnabled()) {
+            if (debugEnabled()) {
                 LOGGER.debug("\tposition ({}) of edge {}: {}", index, current, edges[index]);
                 LOGGER.debug("\tComponent: {}", component);
                 LOGGER.debug("\tHole intersections ({}): {}", current.coordinate.x, Arrays.toString(edges));
@@ -510,7 +518,7 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
             if (e2.component > 0) {
                 //TODO: Check if we could save the set null step
                 numHoles--;
-                holes[e2.component-1] = holes[numHoles];
+                holes[e2.component - 1] = holes[numHoles];
                 holes[numHoles] = null;
             }
             // only connect edges if intersections are pairwise
@@ -526,9 +534,9 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
             //    existing edge along the dateline - this is necessary due to a logic change in
             //    ShapeBuilder.intersection that computes dateline edges as valid intersect points
             //    in support of OGC standards
-            if (e1.intersect != Edge.MAX_COORDINATE && e2.intersect != Edge.MAX_COORDINATE
-                    && (e1.next.next.coordinate.equals3D(e2.coordinate) && Math.abs(e1.next.coordinate.x) == DATELINE
-                    && Math.abs(e2.coordinate.x) == DATELINE) == false ) {
+            if (e1.intersect != Edge.MAX_COORDINATE && e2.intersect != Edge.MAX_COORDINATE &&
+                (e1.next.next.coordinate.equals3D(e2.coordinate) && Math.abs(e1.next.coordinate.x) == DATELINE
+                    && Math.abs(e2.coordinate.x) == DATELINE) == false) {
                 connect(e1, e2);
             }
         }
@@ -541,12 +549,12 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
         // Connecting two Edges by inserting the point at
         // dateline intersection and connect these by adding
         // two edges between this points. One per direction
-        if(in.intersect != in.next.coordinate) {
+        if (in.intersect != in.next.coordinate) {
             // NOTE: the order of the object creation is crucial here! Don't change it!
             // first edge has no point on dateline
             Edge e1 = new Edge(in.intersect, in.next);
 
-            if(out.intersect != out.next.coordinate) {
+            if (out.intersect != out.next.coordinate) {
                 // second edge has no point on dateline
                 Edge e2 = new Edge(out.intersect, out.next);
                 in.next = new Edge(in.intersect, e2, in.intersect);
@@ -559,7 +567,7 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
             // first edge intersects with dateline
             Edge e2 = new Edge(out.intersect, in.next, out.intersect);
 
-            if(out.intersect != out.next.coordinate) {
+            if (out.intersect != out.next.coordinate) {
                 // second edge has no point on dateline
                 Edge e1 = new Edge(out.intersect, out.next);
                 in.next = new Edge(in.intersect, e1, in.intersect);
@@ -572,26 +580,47 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
         }
     }
 
-    private static int createEdges(int component, Orientation orientation, LineStringBuilder shell,
-            LineStringBuilder hole, Edge[] edges, int offset, final AtomicBoolean translated) {
+    private static int createEdges(int component,
+                                   Orientation orientation,
+                                   LineStringBuilder shell,
+                                   LineStringBuilder hole,
+                                   Edge[] edges,
+                                   int offset,
+                                   final AtomicBoolean translated) {
         // inner rings (holes) have an opposite direction than the outer rings
         // XOR will invert the orientation for outer ring cases (Truth Table:, T/T = F, T/F = T, F/T = T, F/F = F)
         boolean direction = (component == 0 ^ orientation == Orientation.RIGHT);
         // set the points array accordingly (shell or hole)
         Coordinate[] points = (hole != null) ? hole.coordinates(false) : shell.coordinates(false);
-        ring(component, direction, orientation == Orientation.LEFT, points, 0, edges, offset, points.length-1, translated);
-        return points.length-1;
+        ring(component,
+             direction,
+             orientation == Orientation.LEFT,
+             points,
+             0,
+             edges,
+             offset,
+             points.length - 1,
+             translated);
+        return points.length - 1;
     }
 
     /**
      * Create a connected list of a list of coordinates
+     *
      * @param points array of point
      * @param offset index of the first point
      * @param length number of points
      * @return Array of edges
      */
-    private static Edge[] ring(int component, boolean direction, boolean handedness,
-            Coordinate[] points, int offset, Edge[] edges, int toffset, int length, final AtomicBoolean translated) {
+    private static Edge[] ring(int component,
+                               boolean direction,
+                               boolean handedness,
+                               Coordinate[] points,
+                               int offset,
+                               Edge[] edges,
+                               int toffset,
+                               int length,
+                               final AtomicBoolean translated) {
         double signedArea = 0;
         double minX = Double.POSITIVE_INFINITY;
         double maxX = Double.NEGATIVE_INFINITY;
@@ -618,7 +647,7 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
         //       (translation would result in a collapsed poly)
         //   2.  the shell of the candidate hole has been translated (to preserve the coordinate system)
         boolean incorrectOrientation = component == 0 && handedness != orientation;
-        if ( (incorrectOrientation && (rng > DATELINE && rng != 2*DATELINE)) || (translated.get() && component != 0)) {
+        if ((incorrectOrientation && (rng > DATELINE && rng != 2 * DATELINE)) || (translated.get() && component != 0)) {
             translate(points);
             // flip the translation bit if the shell is being translated
             if (component == 0) {
@@ -634,19 +663,25 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
 
     /**
      * Concatenate a set of points to a polygon
-     * @param component component id of the polygon
-     * @param direction direction of the ring
-     * @param points list of points to concatenate
+     *
+     * @param component   component id of the polygon
+     * @param direction   direction of the ring
+     * @param points      list of points to concatenate
      * @param pointOffset index of the first point
-     * @param edges Array of edges to write the result to
-     * @param edgeOffset index of the first edge in the result
-     * @param length number of points to use
+     * @param edges       Array of edges to write the result to
+     * @param edgeOffset  index of the first edge in the result
+     * @param length      number of points to use
      * @return the edges creates
      */
-    private static Edge[] concat(int component, boolean direction, Coordinate[] points, final int pointOffset, Edge[] edges,
-            final int edgeOffset, int length) {
-        assert edges.length >= length+edgeOffset;
-        assert points.length >= length+pointOffset;
+    private static Edge[] concat(int component,
+                                 boolean direction,
+                                 Coordinate[] points,
+                                 final int pointOffset,
+                                 Edge[] edges,
+                                 final int edgeOffset,
+                                 int length) {
+        assert edges.length >= length + edgeOffset;
+        assert points.length >= length + pointOffset;
         edges[edgeOffset] = new Edge(points[pointOffset], null);
         for (int i = 1; i < length; i++) {
             if (direction) {
@@ -656,7 +691,8 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
                 edges[edgeOffset + i - 1].next = edges[edgeOffset + i] = new Edge(points[pointOffset + i], null);
                 edges[edgeOffset + i - 1].component = component;
             } else {
-                throw new InvalidShapeException("Provided shape has duplicate consecutive coordinates at: " + points[pointOffset + i]);
+                throw new InvalidShapeException(
+                    "Provided shape has duplicate consecutive coordinates at: " + points[pointOffset + i]);
             }
         }
 
@@ -677,7 +713,7 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
     private static void translate(Coordinate[] points) {
         for (Coordinate c : points) {
             if (c.x < 0) {
-                c.x += 2*DATELINE;
+                c.x += 2 * DATELINE;
             }
         }
     }
@@ -696,9 +732,8 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
             return false;
         }
         PolygonBuilder other = (PolygonBuilder) obj;
-        return Objects.equals(shell, other.shell) &&
-                Objects.equals(holes, other.holes) &&
-                Objects.equals(orientation,  other.orientation);
+        return Objects.equals(shell, other.shell) && Objects.equals(holes, other.holes) && Objects.equals(orientation,
+                                                                                                          other.orientation);
     }
 
     public org.elasticsearch.geometry.Geometry buildGeometry() {
@@ -708,12 +743,11 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
     public org.elasticsearch.geometry.Polygon toPolygonGeometry() {
         List<org.elasticsearch.geometry.LinearRing> holes = new ArrayList(this.holes.size());
 
-        for(int i = 0; i < this.holes.size(); ++i) {
-            holes.add(linearRing(((LineStringBuilder)this.holes.get(i)).coordinates));
+        for (int i = 0; i < this.holes.size(); ++i) {
+            holes.add(linearRing(((LineStringBuilder) this.holes.get(i)).coordinates));
         }
 
         return new org.elasticsearch.geometry.Polygon(linearRing(this.shell.coordinates), holes);
     }
-
 
 }

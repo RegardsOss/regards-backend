@@ -1,12 +1,12 @@
 package fr.cnes.regards.modules.crawler.service.consumer;
 
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
-
-import fr.cnes.regards.modules.dam.domain.entities.DataObject;
-import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 
 public class DataObjectGroupAssocUpdater extends AbstractDataObjectBulkSaver implements Consumer<DataObject> {
 
@@ -16,9 +16,13 @@ public class DataObjectGroupAssocUpdater extends AbstractDataObjectBulkSaver imp
 
     private final OffsetDateTime updateDate;
 
-    public DataObjectGroupAssocUpdater(Dataset dataset, OffsetDateTime updateDate, HashSet<DataObject> toSaveObjects,
-            SaveDataObjectsCallable saveDataObjectsCallable, ExecutorService executor, String groupName,
-            Integer maxBulkSize) {
+    public DataObjectGroupAssocUpdater(Dataset dataset,
+                                       OffsetDateTime updateDate,
+                                       HashSet<DataObject> toSaveObjects,
+                                       SaveDataObjectsCallable saveDataObjectsCallable,
+                                       ExecutorService executor,
+                                       String groupName,
+                                       Integer maxBulkSize) {
         super(saveDataObjectsCallable, executor, toSaveObjects, dataset.getId(), maxBulkSize);
         this.datasetIpId = dataset.getIpId().toString();
         this.updateDate = updateDate;

@@ -36,7 +36,7 @@ public class AccessDeactivationTest extends UserAccessUpdateTest {
     public void fail_if_not_authorized() throws Exception {
         ProjectUser givenUser = UserBuilder.aUser().waitingActivation().build();
         Assertions.assertThatExceptionOfType(EntityTransitionForbiddenException.class)
-            .isThrownBy(() -> userWorkflowManager.inactiveAccess(givenUser));
+                  .isThrownBy(() -> userWorkflowManager.inactiveAccess(givenUser));
     }
 
     @Test

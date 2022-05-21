@@ -25,8 +25,8 @@ public class StorageLocationSettingCustomizer implements IDynamicTenantSettingCu
 
     @Override
     public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
-        return isProperValue(dynamicTenantSetting.getDefaultValue())
-                && (dynamicTenantSetting.getValue() == null || isProperValue(dynamicTenantSetting.getValue()));
+        return isProperValue(dynamicTenantSetting.getDefaultValue()) && (dynamicTenantSetting.getValue() == null
+            || isProperValue(dynamicTenantSetting.getValue()));
     }
 
     @Override
@@ -35,7 +35,7 @@ public class StorageLocationSettingCustomizer implements IDynamicTenantSettingCu
     }
 
     private boolean isProperValue(Object value) {
-        return value instanceof String && (StringUtils.isEmpty(value) || isOnlineLocation((String) value)) ;
+        return value instanceof String && (StringUtils.isEmpty(value) || isOnlineLocation((String) value));
     }
 
     private boolean isOnlineLocation(String location) {
@@ -45,8 +45,10 @@ public class StorageLocationSettingCustomizer implements IDynamicTenantSettingCu
         } else {
             List<StorageLocationDTO> storageLocationList = HateoasUtils.unwrapList(responseEntity.getBody());
             return storageLocationList.stream()
-                    .filter(storageLocationDTO -> storageLocationDTO.getConfiguration().getStorageType().equals(StorageType.ONLINE))
-                    .anyMatch(storageLocationDTO -> storageLocationDTO.getName().equals(location));
+                                      .filter(storageLocationDTO -> storageLocationDTO.getConfiguration()
+                                                                                      .getStorageType()
+                                                                                      .equals(StorageType.ONLINE))
+                                      .anyMatch(storageLocationDTO -> storageLocationDTO.getName().equals(location));
         }
     }
 

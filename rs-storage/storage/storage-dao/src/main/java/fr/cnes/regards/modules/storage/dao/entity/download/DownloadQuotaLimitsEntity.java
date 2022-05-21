@@ -24,11 +24,14 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "t_user_download_quota_limits",
-    uniqueConstraints = @UniqueConstraint(name = DownloadQuotaLimitsEntity.UK_DOWNLOAD_QUOTA_LIMITS_EMAIL, columnNames = { "email" }))
-@SequenceGenerator(name = DownloadQuotaLimitsEntity.DOWNLOAD_QUOTA_LIMIT_SEQUENCE, initialValue = 1, sequenceName = "seq_download_quota_limits")
+    uniqueConstraints = @UniqueConstraint(name = DownloadQuotaLimitsEntity.UK_DOWNLOAD_QUOTA_LIMITS_EMAIL,
+        columnNames = { "email" }))
+@SequenceGenerator(name = DownloadQuotaLimitsEntity.DOWNLOAD_QUOTA_LIMIT_SEQUENCE, initialValue = 1,
+    sequenceName = "seq_download_quota_limits")
 public class DownloadQuotaLimitsEntity {
 
     public static final String UK_DOWNLOAD_QUOTA_LIMITS_EMAIL = "uk_download_quota_limits_email";
+
     public static final String DOWNLOAD_QUOTA_LIMIT_SEQUENCE = "downloadQuotaLimitSequence";
 
     @Id
@@ -111,10 +114,9 @@ public class DownloadQuotaLimitsEntity {
             return false;
         }
         DownloadQuotaLimitsEntity that = (DownloadQuotaLimitsEntity) o;
-        return Objects.equals(id, that.id) &&
-            Objects.equals(email, that.email) &&
-            Objects.equals(maxQuota, that.maxQuota) &&
-            Objects.equals(rateLimit, that.rateLimit);
+        return Objects.equals(id, that.id) && Objects.equals(email, that.email) && Objects.equals(maxQuota,
+                                                                                                  that.maxQuota)
+            && Objects.equals(rateLimit, that.rateLimit);
     }
 
     @Override

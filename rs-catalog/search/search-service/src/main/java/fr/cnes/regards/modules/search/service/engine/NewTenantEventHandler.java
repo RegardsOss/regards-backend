@@ -18,16 +18,6 @@
  */
 package fr.cnes.regards.modules.search.service.engine;
 
-import java.time.Instant;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -37,9 +27,19 @@ import fr.cnes.regards.modules.search.service.engine.plugin.legacy.LegacySearchE
 import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
+
+import java.time.Instant;
 
 /**
  * Handler to manage new tenant for microservice initializations.
+ *
  * @author Sébastien Binda
  */
 @Component
@@ -76,14 +76,16 @@ public class NewTenantEventHandler implements ApplicationListener<ApplicationRea
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent pEvent) {
-        LOG.info("search-service module subscribing to new TenantConnectionReady events and initializing already existing ones.");
+        LOG.info(
+            "search-service module subscribing to new TenantConnectionReady events and initializing already existing ones.");
         // If does not exists, initialize the default search engine
         for (String tenant : resolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 try {
-                    lockingTaskExecutors.executeWithLock(initLegacySearchEngine, new LockConfiguration(
-                            SEARCH_ENGINE_LOCK_NAME, Instant.now().plusSeconds(30)));
+                    lockingTaskExecutors.executeWithLock(initLegacySearchEngine,
+                                                         new LockConfiguration(SEARCH_ENGINE_LOCK_NAME,
+                                                                               Instant.now().plusSeconds(30)));
                 } catch (Throwable e) {
                     LOGGER.error(e.getMessage(), e);
                 }
@@ -100,9 +102,9 @@ public class NewTenantEventHandler implements ApplicationListener<ApplicationRea
             String tenant = event.getTenant();
             runtimeTenantResolver.forceTenant(tenant);
             try {
-                lockingTaskExecutors
-                        .executeWithLock(initLegacySearchEngine,
-                                         new LockConfiguration(SEARCH_ENGINE_LOCK_NAME, Instant.now().plusSeconds(30)));
+                lockingTaskExecutors.executeWithLock(initLegacySearchEngine,
+                                                     new LockConfiguration(SEARCH_ENGINE_LOCK_NAME,
+                                                                           Instant.now().plusSeconds(30)));
             } catch (Throwable e) {
                 LOGGER.error(e.getMessage(), e);
             }

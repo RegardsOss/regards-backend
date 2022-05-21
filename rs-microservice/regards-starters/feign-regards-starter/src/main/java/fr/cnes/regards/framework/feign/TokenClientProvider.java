@@ -26,8 +26,9 @@ import fr.cnes.regards.framework.security.utils.HttpConstants;
 
 /**
  * Class TokenClientProvider
- *
+ * <p>
  * Feign client token provider. Add the JWT Token from the security context to the client requests.
+ *
  * @author CS
  */
 public class TokenClientProvider<T> implements Target<T> {

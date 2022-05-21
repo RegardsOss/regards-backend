@@ -18,20 +18,19 @@
  */
 package fr.cnes.regards.modules.search.service;
 
-import java.util.List;
-import java.util.Map;
-
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 
+import java.util.List;
+import java.util.Map;
+
 /**
- *
  * Convert list of URL facets to search facets.
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
 public interface IFacetConverter {
 
     Map<String, FacetType> convert(List<String> propertyNames, Map<String, String> reverseFacetNames)
-            throws OpenSearchUnknownParameter;
+        throws OpenSearchUnknownParameter;
 }

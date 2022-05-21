@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.framework.notification;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * {@link NotificationDTO} builder
  *
  * @author Marc SORDI
- *
  */
 public class NotificationDtoBuilder {
 

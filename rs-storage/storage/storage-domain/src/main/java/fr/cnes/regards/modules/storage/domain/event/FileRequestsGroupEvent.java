@@ -18,14 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.domain.event;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.springframework.util.Assert;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
@@ -36,6 +29,11 @@ import fr.cnes.regards.modules.storage.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
 import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
 import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
+import org.springframework.util.Assert;
+
+import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Bus message response of a request like {@link StorageFlowItem},
@@ -81,13 +79,16 @@ public class FileRequestsGroupEvent implements ISubscribable {
 
     /**
      * Build a message event with the given state
+     *
      * @param groupId
      * @param type
      * @param state
      * @return {@link FileRequestsGroupEvent}
      */
-    public static FileRequestsGroupEvent build(String groupId, FileRequestType type, FlowItemStatus state,
-            Collection<RequestResultInfo> success) {
+    public static FileRequestsGroupEvent build(String groupId,
+                                               FileRequestType type,
+                                               FlowItemStatus state,
+                                               Collection<RequestResultInfo> success) {
         Assert.notNull(groupId, "Request Id is mandatory");
         Assert.notNull(type, "Request type is mandatory");
         Assert.notNull(state, "Request state is mandatory");
@@ -96,10 +97,14 @@ public class FileRequestsGroupEvent implements ISubscribable {
         event.state = state;
         event.type = type;
         event.success.addAll(success.stream()
-                .map(s -> RequestResultInfoDTO.build(s.getGroupId(), s.getRequestChecksum(), s.getRequestStorage(),
-                                                     s.getRequestStorePath(), s.getRequestOwners(), s.getResultFile(),
-                                                     s.getErrorCause()))
-                .collect(Collectors.toSet()));
+                                    .map(s -> RequestResultInfoDTO.build(s.getGroupId(),
+                                                                         s.getRequestChecksum(),
+                                                                         s.getRequestStorage(),
+                                                                         s.getRequestStorePath(),
+                                                                         s.getRequestOwners(),
+                                                                         s.getResultFile(),
+                                                                         s.getErrorCause()))
+                                    .collect(Collectors.toSet()));
         return event;
     }
 
@@ -110,28 +115,39 @@ public class FileRequestsGroupEvent implements ISubscribable {
 
     /**
      * Build an error message event with the given {@link ErrorFile}s
+     *
      * @param groupId
      * @param type
      * @param errors
      * @return {@link FileRequestsGroupEvent}
      */
-    public static FileRequestsGroupEvent buildError(String groupId, FileRequestType type,
-            Collection<RequestResultInfo> success, Collection<RequestResultInfo> errors) {
+    public static FileRequestsGroupEvent buildError(String groupId,
+                                                    FileRequestType type,
+                                                    Collection<RequestResultInfo> success,
+                                                    Collection<RequestResultInfo> errors) {
         Assert.notNull(groupId, "Request Id is mandatory");
         Assert.notNull(type, "Request type is mandatory");
         FileRequestsGroupEvent event = new FileRequestsGroupEvent();
         event.groupId = groupId;
         event.state = FlowItemStatus.ERROR;
         event.errors.addAll(errors.stream()
-                .map(e -> RequestResultInfoDTO.build(e.getGroupId(), e.getRequestChecksum(), e.getRequestStorage(),
-                                                     e.getRequestStorePath(), e.getRequestOwners(), e.getResultFile(),
-                                                     e.getErrorCause()))
-                .collect(Collectors.toSet()));
+                                  .map(e -> RequestResultInfoDTO.build(e.getGroupId(),
+                                                                       e.getRequestChecksum(),
+                                                                       e.getRequestStorage(),
+                                                                       e.getRequestStorePath(),
+                                                                       e.getRequestOwners(),
+                                                                       e.getResultFile(),
+                                                                       e.getErrorCause()))
+                                  .collect(Collectors.toSet()));
         event.success.addAll(success.stream()
-                .map(s -> RequestResultInfoDTO.build(s.getGroupId(), s.getRequestChecksum(), s.getRequestStorage(),
-                                                     s.getRequestStorePath(), s.getRequestOwners(), s.getResultFile(),
-                                                     s.getErrorCause()))
-                .collect(Collectors.toSet()));
+                                    .map(s -> RequestResultInfoDTO.build(s.getGroupId(),
+                                                                         s.getRequestChecksum(),
+                                                                         s.getRequestStorage(),
+                                                                         s.getRequestStorePath(),
+                                                                         s.getRequestOwners(),
+                                                                         s.getResultFile(),
+                                                                         s.getErrorCause()))
+                                    .collect(Collectors.toSet()));
         event.type = type;
         return event;
     }

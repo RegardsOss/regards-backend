@@ -31,8 +31,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface IServiceProviderEntityRepository extends JpaRepository<ServiceProviderEntity, Long>,
-        JpaSpecificationExecutor<ServiceProviderEntity> {
+public interface IServiceProviderEntityRepository
+    extends JpaRepository<ServiceProviderEntity, Long>, JpaSpecificationExecutor<ServiceProviderEntity> {
 
     Optional<ServiceProviderEntity> findOneByName(String name);
 

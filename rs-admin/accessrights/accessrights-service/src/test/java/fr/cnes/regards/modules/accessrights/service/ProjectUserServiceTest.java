@@ -74,48 +74,85 @@ import static org.mockito.Mockito.when;
 public class ProjectUserServiceTest {
 
     private static final Long ID = 0L;
+
     private static final String EMAIL = "user@email.com";
+
     private static final OffsetDateTime LAST_CONNECTION = OffsetDateTime.now().minusDays(2);
+
     private static final OffsetDateTime LAST_UPDATE = OffsetDateTime.now().minusHours(1);
+
     private static final UserStatus STATUS = UserStatus.ACCESS_GRANTED;
+
     private static final Set<MetaData> META_DATA = new HashSet<>();
+
     private static final Role ROLE = new Role(DefaultRole.ADMIN.toString(), null);
+
     private static final String LASTNAME = "lastName";
+
     private static final String FIRSTNAME = "firstName";
+
     private static final String ROLE_NAME = "roleName";
+
     private static final String PASSWORD = "password";
+
     private static final String DEFAULT_ROLE_NAME = DefaultRole.REGISTERED_USER.name();
-    private static final ResourcesAccess PERMISSION_0 = new ResourcesAccess(0L, "desc0", "ms0", "res0", "Controller", RequestMethod.GET, DefaultRole.ADMIN);
-    private static final ResourcesAccess PERMISSION_1 = new ResourcesAccess(1L, "desc1", "ms1", "res1", "Controller", RequestMethod.PUT, DefaultRole.ADMIN);
+
+    private static final ResourcesAccess PERMISSION_0 = new ResourcesAccess(0L,
+                                                                            "desc0",
+                                                                            "ms0",
+                                                                            "res0",
+                                                                            "Controller",
+                                                                            RequestMethod.GET,
+                                                                            DefaultRole.ADMIN);
+
+    private static final ResourcesAccess PERMISSION_1 = new ResourcesAccess(1L,
+                                                                            "desc1",
+                                                                            "ms1",
+                                                                            "res1",
+                                                                            "Controller",
+                                                                            RequestMethod.PUT,
+                                                                            DefaultRole.ADMIN);
+
     private static final List<ResourcesAccess> PERMISSIONS = Arrays.asList(PERMISSION_0, PERMISSION_1);
 
     private ProjectUser projectUser;
+
     private AccessRequestDto accessRequest;
+
     private AccessRequestDto accessRequestFull;
+
     private Account account;
 
     @InjectMocks
     private ProjectUserService projectUserService;
 
-
     @Mock
     private IProjectUserRepository projectUserRepository;
+
     @Mock
     private IRoleService roleService;
+
     @Mock
     private IAuthenticationResolver authenticationResolver;
+
     @Mock
     private ApplicationEventPublisher eventPublisher;
+
     @Mock
     private AccessSettingsService accessSettingsService;
+
     @Mock
     private AccountUtilsService accountUtilsService;
+
     @Mock
     private AccessRightsEmailService accessRightsEmailService;
+
     @Mock
     private ProjectUserGroupService projectUserGroupService;
+
     @Mock
     private QuotaHelperService quotaHelperService;
+
     @Mock
     private IPublisher publisher;
 
@@ -124,41 +161,40 @@ public class ProjectUserServiceTest {
 
         String accessGroup = "group69";
         ReflectionTestUtils.setField(projectUserService, "instanceAdminUserEmail", "admin@regards.com");
-        when(projectUserRepository.save(any(ProjectUser.class))).thenAnswer(invocation -> ((ProjectUser) invocation.getArgument(0)).setId(ID));
+        when(projectUserRepository.save(any(ProjectUser.class))).thenAnswer(invocation -> ((ProjectUser) invocation.getArgument(
+            0)).setId(ID));
         when(accessSettingsService.defaultRole()).thenReturn(DEFAULT_ROLE_NAME);
         when(accessSettingsService.defaultGroups()).thenReturn(Arrays.asList("group1", "group2", "groupDontKnowWhat"));
         when(accessSettingsService.userCreationMailRecipients()).thenReturn(Collections.singleton("admin@regards.fr"));
-        when(roleService.retrieveRole(DEFAULT_ROLE_NAME)).thenReturn(new RoleFactory().doNotAutoCreateParents().createRegisteredUser());
+        when(roleService.retrieveRole(DEFAULT_ROLE_NAME)).thenReturn(new RoleFactory().doNotAutoCreateParents()
+                                                                                      .createRegisteredUser());
         when(projectUserGroupService.getPublicGroups()).thenReturn(Collections.singleton("public"));
         when(quotaHelperService.getDefaultQuota()).thenReturn(42L);
 
-        projectUser = new ProjectUser()
-                .setId(ID)
-                .setEmail(EMAIL)
-                .setFirstName(FIRSTNAME)
-                .setLastName(LASTNAME)
-                .setLastConnection(LAST_CONNECTION)
-                .setLastUpdate(LAST_UPDATE)
-                .setStatus(STATUS)
-                .setMetadata(META_DATA)
-                .setPermissions(PERMISSIONS)
-                .setRole(ROLE);
-        accessRequest = new AccessRequestDto()
-                .setEmail(EMAIL)
-                .setFirstName(FIRSTNAME)
-                .setLastName(LASTNAME)
-                .setPassword("password")
-                .setOriginUrl("url")
-                .setRequestLink("link");
-        accessRequestFull = new AccessRequestDto()
-                .setEmail(EMAIL)
-                .setFirstName(FIRSTNAME)
-                .setLastName(LASTNAME)
-                .setPassword("password")
-                .setOriginUrl("url")
-                .setRequestLink("link")
-                .setRoleName(ROLE_NAME)
-                .setAccessGroups(Collections.singleton(accessGroup));
+        projectUser = new ProjectUser().setId(ID)
+                                       .setEmail(EMAIL)
+                                       .setFirstName(FIRSTNAME)
+                                       .setLastName(LASTNAME)
+                                       .setLastConnection(LAST_CONNECTION)
+                                       .setLastUpdate(LAST_UPDATE)
+                                       .setStatus(STATUS)
+                                       .setMetadata(META_DATA)
+                                       .setPermissions(PERMISSIONS)
+                                       .setRole(ROLE);
+        accessRequest = new AccessRequestDto().setEmail(EMAIL)
+                                              .setFirstName(FIRSTNAME)
+                                              .setLastName(LASTNAME)
+                                              .setPassword("password")
+                                              .setOriginUrl("url")
+                                              .setRequestLink("link");
+        accessRequestFull = new AccessRequestDto().setEmail(EMAIL)
+                                                  .setFirstName(FIRSTNAME)
+                                                  .setLastName(LASTNAME)
+                                                  .setPassword("password")
+                                                  .setOriginUrl("url")
+                                                  .setRequestLink("link")
+                                                  .setRoleName(ROLE_NAME)
+                                                  .setAccessGroups(Collections.singleton(accessGroup));
         account = new Account(EMAIL, FIRSTNAME, LASTNAME, PASSWORD);
     }
 
@@ -168,10 +204,10 @@ public class ProjectUserServiceTest {
 
         // Given
         when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.empty());
-        when(projectUserRepository.save(any(ProjectUser.class))).thenAnswer(args -> args.getArgument(0, ProjectUser.class));
+        when(projectUserRepository.save(any(ProjectUser.class))).thenAnswer(args -> args.getArgument(0,
+                                                                                                     ProjectUser.class));
         when(accountUtilsService.retrieveAccount(EMAIL)).thenReturn(null);
         when(accountUtilsService.createAccount(accessRequest, false, AccountStatus.ACTIVE)).thenReturn(account);
-
 
         // When
         ProjectUser createdProjectUser = projectUserService.createProjectUser(accessRequest);
@@ -193,7 +229,8 @@ public class ProjectUserServiceTest {
         // Given
         when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.empty());
         when(roleService.retrieveRole(ROLE_NAME)).thenReturn(new Role());
-        when(projectUserRepository.save(any(ProjectUser.class))).thenAnswer(args -> args.getArgument(0, ProjectUser.class));
+        when(projectUserRepository.save(any(ProjectUser.class))).thenAnswer(args -> args.getArgument(0,
+                                                                                                     ProjectUser.class));
         when(accountUtilsService.retrieveAccount(EMAIL)).thenReturn(new Account(EMAIL, FIRSTNAME, LASTNAME, null));
 
         // When
@@ -204,7 +241,9 @@ public class ProjectUserServiceTest {
         assertEquals(5, accessGroups.size());
         assertTrue(accessGroups.contains("group69"));
         assertEquals(ProjectUser.REGARDS_ORIGIN, createdProjectUser.getOrigin());
-        verify(accountUtilsService, Mockito.never()).createAccount(any(AccessRequestDto.class), any(boolean.class), any(AccountStatus.class));
+        verify(accountUtilsService, Mockito.never()).createAccount(any(AccessRequestDto.class),
+                                                                   any(boolean.class),
+                                                                   any(AccountStatus.class));
         verify(projectUserRepository).save(any(ProjectUser.class));
         verify(accessRightsEmailService).sendEmail(any());
     }
@@ -238,7 +277,8 @@ public class ProjectUserServiceTest {
         when(projectUserRepository.findAll(any(Specification.class), Mockito.eq(pageable))).thenReturn(expectedPage);
 
         // Retrieve actual value
-        Page<ProjectUser> actual = projectUserService.retrieveUserList(new ProjectUserSearchParameters().setStatus(UserStatus.ACCESS_GRANTED.toString()), pageable);
+        Page<ProjectUser> actual = projectUserService.retrieveUserList(new ProjectUserSearchParameters().setStatus(
+            UserStatus.ACCESS_GRANTED.toString()), pageable);
 
         // Check that the expected and actual role have same values
         Assert.assertEquals(expectedPage, actual);
@@ -275,6 +315,7 @@ public class ProjectUserServiceTest {
 
     /**
      * Check that the system allows to retrieve a specific user without exposing hidden meta data.
+     *
      * @throws EntityNotFoundException When no user with passed id could be found
      */
     @Test
@@ -289,24 +330,23 @@ public class ProjectUserServiceTest {
         projectUser.getMetadata().add(metaData0);
         MetaData metaData1 = new MetaData("readable", "", UserVisibility.READABLE);
         projectUser.getMetadata().add(metaData1);
-        MetaData metaData2 = new MetaData("writeable", "" , UserVisibility.WRITEABLE);
+        MetaData metaData2 = new MetaData("writeable", "", UserVisibility.WRITEABLE);
         projectUser.getMetadata().add(metaData2);
 
         // Define user as expected
         Set<MetaData> visibleMetaData = new HashSet<>();
         visibleMetaData.add(metaData1);
         visibleMetaData.add(metaData2);
-        ProjectUser expected = new ProjectUser()
-                .setId(ID)
-                .setEmail(EMAIL)
-                .setFirstName(FIRSTNAME)
-                .setLastName(LASTNAME)
-                .setLastUpdate(LAST_UPDATE)
-                .setLastConnection(LAST_CONNECTION)
-                .setStatus(STATUS)
-                .setPermissions(PERMISSIONS)
-                .setRole(ROLE)
-                .setMetadata(visibleMetaData);
+        ProjectUser expected = new ProjectUser().setId(ID)
+                                                .setEmail(EMAIL)
+                                                .setFirstName(FIRSTNAME)
+                                                .setLastName(LASTNAME)
+                                                .setLastUpdate(LAST_UPDATE)
+                                                .setLastConnection(LAST_CONNECTION)
+                                                .setStatus(STATUS)
+                                                .setPermissions(PERMISSIONS)
+                                                .setRole(ROLE)
+                                                .setMetadata(visibleMetaData);
 
         // Mock the repository returned value
         when(projectUserRepository.findById(ID)).thenReturn(Optional.of(projectUser));
@@ -323,6 +363,7 @@ public class ProjectUserServiceTest {
 
     /**
      * Check that the system allows to retrieve a specific user by email.
+     *
      * @throws EntityNotFoundException Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     @Test
@@ -346,6 +387,7 @@ public class ProjectUserServiceTest {
 
     /**
      * Check that the system fails when trying to retrieve a user with unknown email.
+     *
      * @throws EntityNotFoundException Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     @Test(expected = EntityNotFoundException.class)
@@ -363,6 +405,7 @@ public class ProjectUserServiceTest {
 
     /**
      * Check that the system allows to retrieve the current logged user.
+     *
      * @throws EntityNotFoundException thrown when no current user could be found
      */
     @Test
@@ -403,7 +446,9 @@ public class ProjectUserServiceTest {
         Pageable pageable = PageRequest.of(0, 100);
 
         // Prepare the list of expected values
-        List<ProjectUser> expected = accessRequests.stream().filter(p -> p.getStatus().equals(UserStatus.WAITING_ACCESS)).collect(Collectors.toList());
+        List<ProjectUser> expected = accessRequests.stream()
+                                                   .filter(p -> p.getStatus().equals(UserStatus.WAITING_ACCESS))
+                                                   .collect(Collectors.toList());
 
         Page<ProjectUser> expectedPage = new PageImpl<>(expected, pageable, 2);
 
@@ -470,6 +515,7 @@ public class ProjectUserServiceTest {
 
     /**
      * Check that the system fails when trying to override a not exisiting user's access rights.
+     *
      * @throws EntityNotFoundException Thrown when no user of passed login could be found
      */
     @Test(expected = EntityNotFoundException.class)
@@ -486,6 +532,7 @@ public class ProjectUserServiceTest {
 
     /**
      * Check that the system allows to override role's access rights for a user.
+     *
      * @throws EntityNotFoundException Thrown when no user of passed login could be found
      */
     @Test
@@ -497,10 +544,20 @@ public class ProjectUserServiceTest {
         when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(projectUser));
 
         // Define updated permissions
-        ResourcesAccess updatedPermission =
-                new ResourcesAccess(0L, "updated desc0", "updated ms0", "updated res0", "Controller", RequestMethod.POST, DefaultRole.ADMIN);
-        ResourcesAccess newPermission =
-                new ResourcesAccess(2L, "desc2", "ms2", "res2", "Controller", RequestMethod.GET, DefaultRole.ADMIN);
+        ResourcesAccess updatedPermission = new ResourcesAccess(0L,
+                                                                "updated desc0",
+                                                                "updated ms0",
+                                                                "updated res0",
+                                                                "Controller",
+                                                                RequestMethod.POST,
+                                                                DefaultRole.ADMIN);
+        ResourcesAccess newPermission = new ResourcesAccess(2L,
+                                                            "desc2",
+                                                            "ms2",
+                                                            "res2",
+                                                            "Controller",
+                                                            RequestMethod.GET,
+                                                            DefaultRole.ADMIN);
         List<ResourcesAccess> input = Arrays.asList(updatedPermission, newPermission);
 
         // Define expected result
@@ -525,12 +582,13 @@ public class ProjectUserServiceTest {
 
     /**
      * Check that the system fail when trying to retrieve a user's permissions using a role not hierarchically inferior.
+     *
      * @throws EntityException various exceptions
      */
     @Test(expected = EntityOperationForbiddenException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_260")
     @Purpose("Check that the system fail when trying to retrieve "
-            + "a user's permissions using a role not hierarchically inferior.")
+        + "a user's permissions using a role not hierarchically inferior.")
     public void retrieveProjectUserAccessRightsBorrowedRoleNotInferior() throws EntityException {
         // Define borrowed role
         String borrowedRoleName = DefaultRole.INSTANCE_ADMIN.toString();
@@ -548,6 +606,7 @@ public class ProjectUserServiceTest {
 
     /**
      * Check that the system allows to retrieve all permissions a of user using a borrowed role.
+     *
      * @throws EntityException various exceptions
      */
     @Test
@@ -590,6 +649,7 @@ public class ProjectUserServiceTest {
 
     /**
      * Check that the system allows to retrieve all permissions a of user.
+     *
      * @throws EntityException various exceptions
      */
     @Test

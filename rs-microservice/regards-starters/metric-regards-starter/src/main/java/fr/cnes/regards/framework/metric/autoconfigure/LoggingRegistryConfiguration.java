@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.framework.metric.autoconfigure;
 
-import java.time.Duration;
-
+import io.micrometer.core.instrument.logging.LoggingRegistryConfig;
 import org.springframework.boot.actuate.autoconfigure.metrics.export.properties.StepRegistryProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import io.micrometer.core.instrument.logging.LoggingRegistryConfig;
+import java.time.Duration;
 
 @ConfigurationProperties(prefix = "management.metrics.export.logging")
 public class LoggingRegistryConfiguration extends StepRegistryProperties implements LoggingRegistryConfig {

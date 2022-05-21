@@ -49,6 +49,7 @@ import static org.mockito.Mockito.when;
 
 /**
  * Unit test for {@link ToponymParser}
+ *
  * @author Iliana Ghazali
  */
 
@@ -73,8 +74,7 @@ public class ToponymParserIT extends AbstractRegardsTransactionalIT {
         ToponymDTO toponym = ToponymDTO.build("test", "test", "test", polygon, "test", "test", false, null);
 
         // Build toponym mock
-        when(toponymClient.get(anyString()))
-                .thenReturn(new ResponseEntity<>(EntityModel.of(toponym), HttpStatus.OK));
+        when(toponymClient.get(anyString())).thenReturn(new ResponseEntity<>(EntityModel.of(toponym), HttpStatus.OK));
 
         // Test parsing function
         String request = URLEncoder.encode("id", "UTF-8");
@@ -98,8 +98,7 @@ public class ToponymParserIT extends AbstractRegardsTransactionalIT {
         ToponymDTO toponym = ToponymDTO.build("test", "test", "test", multiPolygon, "test", "test", false, null);
 
         // Build toponym mock
-        when(toponymClient.get(anyString()))
-                .thenReturn(new ResponseEntity<>(EntityModel.of(toponym), HttpStatus.OK));
+        when(toponymClient.get(anyString())).thenReturn(new ResponseEntity<>(EntityModel.of(toponym), HttpStatus.OK));
 
         // Test parsing function
         String request = URLEncoder.encode("id", "UTF-8");

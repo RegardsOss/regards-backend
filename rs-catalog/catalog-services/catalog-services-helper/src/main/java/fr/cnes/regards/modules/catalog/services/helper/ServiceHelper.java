@@ -42,6 +42,7 @@ import java.util.List;
 
 /**
  * Helper to handle catalog entities searches for all Catalogue service plugins.
+ *
  * @author Sébastien Binda
  */
 @Service
@@ -78,7 +79,7 @@ public class ServiceHelper implements IServiceHelper {
 
     @Override
     public Page<DataObject> getDataObjects(SearchRequest searchRequest, int pageIndex, int nbEntitiesByPage)
-            throws ModuleException {
+        throws ModuleException {
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(EntityType.DATA);
         ICriterion crit = dispatcher.computeComplexCriterion(searchRequest);
         // Check criterion properly translated

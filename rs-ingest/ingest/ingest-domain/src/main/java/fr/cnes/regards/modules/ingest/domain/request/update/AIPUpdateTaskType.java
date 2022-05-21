@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 
 /**
  * Types of AIP task update
+ *
  * @author Léo Mieulet
  */
 public enum AIPUpdateTaskType {
@@ -57,6 +58,7 @@ public enum AIPUpdateTaskType {
 
     /**
      * Get the comparator between two tasks, as some task must be executed before others
+     *
      * @param otherTaskType
      */
     public int getOrder(AIPUpdateTaskType otherTaskType) {

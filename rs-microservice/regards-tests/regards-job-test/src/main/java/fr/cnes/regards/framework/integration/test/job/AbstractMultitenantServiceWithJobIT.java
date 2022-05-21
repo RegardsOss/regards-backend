@@ -24,7 +24,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
 /**
- *  Override {@link AbstractMultitenantServiceIT} to provide Job Utils
+ * Override {@link AbstractMultitenantServiceIT} to provide Job Utils
  *
  * @author Léo Mieulet
  */

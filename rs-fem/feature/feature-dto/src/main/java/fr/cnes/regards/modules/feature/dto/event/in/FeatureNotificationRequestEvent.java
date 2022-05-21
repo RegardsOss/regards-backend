@@ -18,19 +18,14 @@
  */
 package fr.cnes.regards.modules.feature.dto.event.in;
 
-import java.time.OffsetDateTime;
-
-import javax.persistence.Convert;
-import javax.validation.constraints.NotNull;
-
-import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
-import fr.cnes.regards.framework.amqp.event.Event;
-import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
-import fr.cnes.regards.framework.amqp.event.Target;
+import fr.cnes.regards.framework.amqp.event.*;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.dto.urn.converter.FeatureUrnConverter;
+
+import javax.persistence.Convert;
+import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
 
 /**
  * Request for feature notification using event driven mechanism
@@ -63,13 +58,16 @@ public class FeatureNotificationRequestEvent extends AbstractRequestEvent implem
         this.priority = priority;
     }
 
-    public static FeatureNotificationRequestEvent build(String requestOwner, FeatureUniformResourceName urn,
-            PriorityLevel priority) {
+    public static FeatureNotificationRequestEvent build(String requestOwner,
+                                                        FeatureUniformResourceName urn,
+                                                        PriorityLevel priority) {
         return build(requestOwner, urn, OffsetDateTime.now().minusSeconds(1), priority);
     }
 
-    public static FeatureNotificationRequestEvent build(String requestOwner, FeatureUniformResourceName urn,
-            OffsetDateTime requestDate, PriorityLevel priority) {
+    public static FeatureNotificationRequestEvent build(String requestOwner,
+                                                        FeatureUniformResourceName urn,
+                                                        OffsetDateTime requestDate,
+                                                        PriorityLevel priority) {
         FeatureNotificationRequestEvent event = new FeatureNotificationRequestEvent();
         event.setRequestId(generateRequestId());
         event.setRequestOwner(requestOwner);

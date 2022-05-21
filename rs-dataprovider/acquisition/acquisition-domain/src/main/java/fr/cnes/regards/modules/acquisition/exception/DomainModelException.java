@@ -21,22 +21,19 @@ package fr.cnes.regards.modules.acquisition.exception;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
- * 
  * @author Christophe Mertz
- *
  */
 public class DomainModelException extends ModuleException {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 4286494225131649395L;
 
     /**
      * Constructor
-     * 
-     * @param pException
-     *            l'exception a propager
+     *
+     * @param pException l'exception a propager
      */
     public DomainModelException(Throwable pException) {
         super(pException);
@@ -44,11 +41,9 @@ public class DomainModelException extends ModuleException {
 
     /**
      * Constructor
-     * 
-     * @param pMessage
-     *            le message de l'erreur
-     * @param pException
-     *            l'exception à propager
+     *
+     * @param pMessage   le message de l'erreur
+     * @param pException l'exception à propager
      */
     public DomainModelException(String pMessage, Throwable pException) {
         super(pMessage, pException);
@@ -56,9 +51,8 @@ public class DomainModelException extends ModuleException {
 
     /**
      * Constructor
-     * 
-     * @param pMessage
-     *            le message de l'erreur
+     *
+     * @param pMessage le message de l'erreur
      */
     public DomainModelException(String pMessage) {
         super(pMessage);

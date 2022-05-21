@@ -17,7 +17,7 @@ import java.util.List;
  */
 @Component
 public class NotificationEventHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<NotifierEvent> {
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<NotifierEvent> {
 
     @Autowired
     private ISubscriber subscriber;
@@ -44,7 +44,8 @@ public class NotificationEventHandler
         LOGGER.debug("[NOTIFIER RESPONSES HANDLER] Handling {} NotifierEvent...", messages.size());
         long start = System.currentTimeMillis();
         handle(messages);
-        LOGGER.debug("[NOTIFIER RESPONSES HANDLER] {} NotifierEvent handled in {} ms", messages.size(),
+        LOGGER.debug("[NOTIFIER RESPONSES HANDLER] {} NotifierEvent handled in {} ms",
+                     messages.size(),
                      System.currentTimeMillis() - start);
     }
 

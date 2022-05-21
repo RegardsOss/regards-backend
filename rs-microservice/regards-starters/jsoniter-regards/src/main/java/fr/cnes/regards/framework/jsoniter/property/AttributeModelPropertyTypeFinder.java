@@ -10,5 +10,6 @@ public interface AttributeModelPropertyTypeFinder {
 
     Option<PropertyType> getPropertyTypeForAttributeWithName(String name);
 
-    default void refresh(String defaultTenant, List<AttributeModel> atts) {}
+    default void refresh(String defaultTenant, List<AttributeModel> atts) {
+    }
 }

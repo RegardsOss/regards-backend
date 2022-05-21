@@ -21,22 +21,19 @@ package fr.cnes.regards.modules.acquisition.exception;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
- * 
  * @author Christophe Mertz
- *
  */
 public class DomainMetaModelException extends ModuleException {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = -2322749245464329845L;
 
     /**
      * Constructor
-     * 
-     * @param pException
-     *            l'exception a propager
+     *
+     * @param pException l'exception a propager
      */
     public DomainMetaModelException(Throwable pException) {
         super(pException);
@@ -44,11 +41,9 @@ public class DomainMetaModelException extends ModuleException {
 
     /**
      * Constructor
-     * 
-     * @param pMessage
-     *            le message de l'erreur
-     * @param pException
-     *            l'exception à propager
+     *
+     * @param pMessage   le message de l'erreur
+     * @param pException l'exception à propager
      */
     public DomainMetaModelException(String pMessage, Throwable pException) {
         super(pMessage, pException);
@@ -56,9 +51,8 @@ public class DomainMetaModelException extends ModuleException {
 
     /**
      * Constructor
-     * 
-     * @param pMessage
-     *            le message de l'erreur
+     *
+     * @param pMessage le message de l'erreur
      */
     public DomainMetaModelException(String pMessage) {
         super(pMessage);

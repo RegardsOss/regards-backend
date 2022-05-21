@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.entity;
 
 import lombok.*;
@@ -34,7 +34,8 @@ import java.util.UUID;
  *
  * @author gandrieu
  */
-@Data @With
+@Data
+@With
 @AllArgsConstructor
 @RequiredArgsConstructor
 
@@ -43,31 +44,48 @@ public class OutputFileEntity implements Persistable<UUID> {
 
     private @Id UUID id;
 
-    /** The execution this file has been generated for */
+    /**
+     * The execution this file has been generated for
+     */
     private @Column("exec_id") UUID execId;
 
-    /** Where to download from */
+    /**
+     * Where to download from
+     */
     private @Column("url") URL url;
 
-    /** The file name */
+    /**
+     * The file name
+     */
     private @Column("name") String name;
 
-    /** The file checksum */
+    /**
+     * The file checksum
+     */
     private @Column("checksum_value") String checksumValue;
+
     private @Column("checksum_method") String checksumMethod;
 
-    /** The file size */
+    /**
+     * The file size
+     */
     private @Column("size_bytes") Long sizeInBytes;
 
     private @Column("input_correlation_ids") List<String> inputCorrelationIds;
 
-    /** The file creation time (not the entity creation time) */
+    /**
+     * The file creation time (not the entity creation time)
+     */
     private @Column("created") OffsetDateTime created;
 
-    /** Whether the file has been downloaded or not */
+    /**
+     * Whether the file has been downloaded or not
+     */
     private @Column("downloaded") boolean downloaded;
 
-    /** Whether the file has been deleted or not */
+    /**
+     * Whether the file has been deleted or not
+     */
     private @Column("deleted") boolean deleted;
 
     /**
@@ -83,7 +101,8 @@ public class OutputFileEntity implements Persistable<UUID> {
         return this;
     }
 
-    @Override public boolean isNew() {
+    @Override
+    public boolean isNew() {
         return !persisted;
     }
 }

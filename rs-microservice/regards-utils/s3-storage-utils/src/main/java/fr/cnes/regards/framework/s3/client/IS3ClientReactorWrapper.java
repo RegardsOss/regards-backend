@@ -25,8 +25,11 @@ public interface IS3ClientReactorWrapper {
 
     Mono<String> initiateMultipartUpload(String bucket, String path);
 
-    Mono<UploadedPart> uploadMultipartFilePart(String bucket, String path, String uploadId, int partId,
-            byte[] partBytes);
+    Mono<UploadedPart> uploadMultipartFilePart(String bucket,
+                                               String path,
+                                               String uploadId,
+                                               int partId,
+                                               byte[] partBytes);
 
     Mono<String> completeMultipartUpload(String bucket, String path, String uploadId, List<CompletedPart> parts);
 

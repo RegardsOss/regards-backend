@@ -18,15 +18,6 @@
  */
 package fr.cnes.regards.modules.configuration.service;
 
-import java.io.IOException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.stereotype.Service;
-
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
@@ -34,14 +25,21 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.configuration.dao.IUILayoutRepository;
-import fr.cnes.regards.modules.configuration.domain.UILayout;
 import fr.cnes.regards.modules.configuration.domain.LayoutDefaultApplicationIds;
+import fr.cnes.regards.modules.configuration.domain.UILayout;
 import fr.cnes.regards.modules.configuration.service.exception.InitUIException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
 
 /**
- *
  * Class LayoutService
- *
+ * <p>
  * Service to manage Project IHM Layouts configurations
  *
  * @author Sébastien Binda
@@ -104,7 +102,7 @@ public class UILayoutService extends AbstractUiConfigurationService implements I
     @Override
     public UILayout retrieveLayout(final String applicationId) throws EntityNotFoundException {
         return repository.findByApplicationId(applicationId)
-                .orElseThrow(() -> new EntityNotFoundException(applicationId, UILayout.class));
+                         .orElseThrow(() -> new EntityNotFoundException(applicationId, UILayout.class));
     }
 
     @Override

@@ -20,6 +20,5 @@
  * Model events
  *
  * @author Marc Sordi
- *
  */
 package fr.cnes.regards.modules.model.domain.event;

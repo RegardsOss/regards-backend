@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.modules.dam.service.entities.validation;
 
-import org.springframework.validation.Errors;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
+import org.springframework.validation.Errors;
 
 /**
  * @author Marc SORDI

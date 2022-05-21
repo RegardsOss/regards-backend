@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.modules.ingest.dto.sip.validator;
 
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 /**
  * Check that reference (i.e. ref attribute not null) or value (i.e. properties attribute not null) is set.
  *
  * @author Marc Sordi
- *
  */
 public class CheckSIPValidator implements ConstraintValidator<CheckSIP, SIP> {
 

@@ -55,12 +55,12 @@ public class IIndexableJsoniterParserTest {
         DataObject dataobj = (DataObject) parsed;
 
         assertThat(dataobj.getId()).isEqualTo(123456L);
-        assertThat(dataobj.getFeature().getId().toString()).isEqualTo("URN:AIP:DATA:perf:35a8b1aa-7d90-3f34-bc94-646424f8cee3:V1");
+        assertThat(dataobj.getFeature().getId().toString()).isEqualTo(
+            "URN:AIP:DATA:perf:35a8b1aa-7d90-3f34-bc94-646424f8cee3:V1");
         assertThat(dataobj.getFeature().getProperty("FileSize").getValue()).isEqualTo(3688L);
 
         LOGGER.info("parsed: {}", parsed);
     }
-
 
     @Test
     public void parseCollectionTest() throws Exception {
@@ -76,7 +76,8 @@ public class IIndexableJsoniterParserTest {
         Collection coll = (Collection) parsed;
 
         assertThat(coll.getId()).isEqualTo(352L);
-        assertThat(coll.getFeature().getId().toString()).isEqualTo("URN:AIP:COLLECTION:perf:7c310022-609a-4716-b5c7-6c3321f60bc9:V1");
+        assertThat(coll.getFeature().getId().toString()).isEqualTo(
+            "URN:AIP:COLLECTION:perf:7c310022-609a-4716-b5c7-6c3321f60bc9:V1");
 
         LOGGER.info("parsed: {}", parsed);
     }
@@ -95,7 +96,8 @@ public class IIndexableJsoniterParserTest {
         Dataset dataset = (Dataset) parsed;
 
         assertThat(dataset.getId()).isEqualTo(402L);
-        assertThat(dataset.getFeature().getId().toString()).isEqualTo("URN:AIP:DATASET:perf:249a033b-2b61-44a8-b903-9805c2170654:V1");
+        assertThat(dataset.getFeature().getId().toString()).isEqualTo(
+            "URN:AIP:DATASET:perf:249a033b-2b61-44a8-b903-9805c2170654:V1");
 
         LOGGER.info("parsed: {}", parsed);
     }

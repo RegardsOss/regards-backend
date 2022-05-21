@@ -18,23 +18,22 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import java.util.Collection;
-import java.util.Set;
-
+import fr.cnes.regards.modules.storage.domain.database.request.RequestResultInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import fr.cnes.regards.modules.storage.domain.database.request.RequestResultInfo;
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * JPA Repository to handle access to {@link RequestResultInfo} entities.
  *
  * @author Sébatien Binda
- *
  */
 public interface IGroupRequestInfoRepository extends JpaRepository<RequestResultInfo, Long> {
 
     /**
      * Retrieve all {@RequestResultInfo}s matching the given group id.
+     *
      * @param groupId
      * @return {@RequestResultInfo}s
      */
@@ -42,12 +41,14 @@ public interface IGroupRequestInfoRepository extends JpaRepository<RequestResult
 
     /**
      * Delete all {@RequestResultInfo}s by file id.
+     *
      * @param fileId
      */
     void deleteByResultFileId(Long fileId);
 
     /**
      * Delete all {@RequestResultInfo}s by group id.
+     *
      * @param groupId
      */
     void deleteByGroupId(String groupId);
@@ -56,6 +57,7 @@ public interface IGroupRequestInfoRepository extends JpaRepository<RequestResult
 
     /**
      * Retrieve all {@RequestResultInfo}s matching the given group id and error status.
+     *
      * @param groupId
      * @param isError
      * @return {@RequestResultInfo}s

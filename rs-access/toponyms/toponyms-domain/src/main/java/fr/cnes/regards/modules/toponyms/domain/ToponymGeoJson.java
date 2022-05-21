@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.toponyms.domain;
 
 /**
  * POJO used to create {@link Toponym}. Generated in backend-for-frontend ENDPOINT
- * @author Iliana
  *
+ * @author Iliana
  */
 public class ToponymGeoJson {
 

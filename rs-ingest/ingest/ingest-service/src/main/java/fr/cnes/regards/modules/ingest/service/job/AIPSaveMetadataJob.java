@@ -39,6 +39,7 @@ import java.util.Map;
 
 /**
  * This job is used to dump aips.
+ *
  * @author Iliana Ghazali
  * @author Sylvain VISSIERE-GUERINET
  */
@@ -61,7 +62,7 @@ public class AIPSaveMetadataJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         // Retrieve param
         Type type = new TypeToken<AIPSaveMetadataRequest>() {
 
@@ -86,7 +87,8 @@ public class AIPSaveMetadataJob extends AbstractJob<Void> {
             metadataService.writeZips(metadataRequest, getWorkspace());
             metadataService.writeDump(metadataRequest, dumpLocation, getWorkspace());
             logger.info("[AIP SAVE METADATA JOB] Dump successfully done between {} {}",
-                        metadataRequest.getPreviousDumpDate(), metadataRequest.getCreationDate());
+                        metadataRequest.getPreviousDumpDate(),
+                        metadataRequest.getCreationDate());
             metadataService.handleSuccess(metadataRequest);
         } catch (IOException e) {
             String errorMessage = e.getClass().getSimpleName() + " " + e.getMessage();

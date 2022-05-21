@@ -44,11 +44,10 @@ public class FeatureConfigurationManager extends AbstractModuleManagerWithTenant
         for (ModuleConfigurationItem<?> item : configuration.getConfiguration()) {
             if (!DynamicTenantSetting.class.isAssignableFrom(item.getKey())) {
                 String message = String.format(
-                        "Configuration item of type %s has been ignored while import because it cannot be handled by %s. Module %s",
-                        item.getKey(),
-                        this.getClass().getName(),
-                        configuration.getModule().getName()
-                );
+                    "Configuration item of type %s has been ignored while import because it cannot be handled by %s. Module %s",
+                    item.getKey(),
+                    this.getClass().getName(),
+                    configuration.getModule().getName());
                 importErrors.add(message);
                 LOGGER.warn(message);
             }

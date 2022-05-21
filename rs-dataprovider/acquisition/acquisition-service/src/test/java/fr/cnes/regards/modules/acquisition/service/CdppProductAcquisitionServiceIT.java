@@ -66,8 +66,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Marc Sordi
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_cdpp_product",
-        "regards.session.agent.snapshot.process.scheduler.bulk.delay=15000", "regards.amqp.enabled=true" })
-@ActiveProfiles({ "testAmqp", "noscheduler", "disableDataProviderTask", "nomonitoring"})
+    "regards.session.agent.snapshot.process.scheduler.bulk.delay=15000", "regards.amqp.enabled=true" })
+@ActiveProfiles({ "testAmqp", "noscheduler", "disableDataProviderTask", "nomonitoring" })
 public class CdppProductAcquisitionServiceIT extends DataproviderMultitenantServiceIT {
 
     @SuppressWarnings("unused")
@@ -87,7 +87,6 @@ public class CdppProductAcquisitionServiceIT extends DataproviderMultitenantServ
 
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
-
 
     @Before
     public void before() throws ModuleException, IOException {
@@ -163,22 +162,25 @@ public class CdppProductAcquisitionServiceIT extends DataproviderMultitenantServ
         processingChain.addFileInfo(fileInfo);
 
         // Validation
-        PluginConfiguration validationPlugin = PluginConfiguration
-                .build(DefaultFileValidation.class, null, new HashSet<IPluginParam>());
+        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class,
+                                                                         null,
+                                                                         new HashSet<IPluginParam>());
         validationPlugin.setIsActive(true);
         validationPlugin.setLabel("Validation plugin" + Math.random());
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
-        PluginConfiguration productPlugin = PluginConfiguration
-                .build(Arcad3IsoprobeDensiteProductPlugin.class, null, new HashSet<IPluginParam>());
+        PluginConfiguration productPlugin = PluginConfiguration.build(Arcad3IsoprobeDensiteProductPlugin.class,
+                                                                      null,
+                                                                      new HashSet<IPluginParam>());
         productPlugin.setIsActive(true);
         productPlugin.setLabel("Product plugin" + Math.random());
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginConfiguration
-                .build(DefaultSIPGeneration.class, null, new HashSet<IPluginParam>());
+        PluginConfiguration sipGenPlugin = PluginConfiguration.build(DefaultSIPGeneration.class,
+                                                                     null,
+                                                                     new HashSet<IPluginParam>());
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin" + Math.random());
         processingChain.setGenerateSipPluginConf(sipGenPlugin);
@@ -225,8 +227,8 @@ public class CdppProductAcquisitionServiceIT extends DataproviderMultitenantServ
         // ---> 8 steps
         waitStepRegistration(session2, 8);
         // launch the generation of sessionStep from StepPropertyUpdateRequests
-        this.agentService
-                .generateSessionStep(new SnapshotProcess(processingChain.getLabel(), null, null), OffsetDateTime.now());
+        this.agentService.generateSessionStep(new SnapshotProcess(processingChain.getLabel(), null, null),
+                                              OffsetDateTime.now());
         // check result
         assertSessionStep(processingChain.getLabel(), session1, 3L, 0L, null, 1L);
         assertSessionStep(processingChain.getLabel(), session2, 3L, 0L, null, 1L);
@@ -257,8 +259,8 @@ public class CdppProductAcquisitionServiceIT extends DataproviderMultitenantServ
         // ---> 7 steps
         waitStepRegistration(session2, 7);
         // launch the generation of sessionStep from StepPropertyUpdateRequests
-        this.agentService
-                .generateSessionStep(new SnapshotProcess(processingChain.getLabel(), null, null), OffsetDateTime.now());
+        this.agentService.generateSessionStep(new SnapshotProcess(processingChain.getLabel(), null, null),
+                                              OffsetDateTime.now());
         // check result
         assertSessionStep(processingChain.getLabel(), session1, 1L, null, 1L, null);
         assertSessionStep(processingChain.getLabel(), session2, 2L, 0L, null, 1L);
@@ -269,58 +271,74 @@ public class CdppProductAcquisitionServiceIT extends DataproviderMultitenantServ
         try {
             logger.info("Waiting for registration of {} StepPropertyUpdateRequests for session {}", nbSteps, session);
             Awaitility.await()
-                    .atMost(30, TimeUnit.SECONDS)
-                    .with()
-                    .pollInterval(100, TimeUnit.MILLISECONDS)
-                    .until(() -> {
-                        runtimeTenantResolver.forceTenant(getDefaultTenant());
-                        nbStepsCreated.set(this.stepRepo.findBySession(session).size());
-                        return nbStepsCreated.get() == nbSteps;
-                    });
+                      .atMost(30, TimeUnit.SECONDS)
+                      .with()
+                      .pollInterval(100, TimeUnit.MILLISECONDS)
+                      .until(() -> {
+                          runtimeTenantResolver.forceTenant(getDefaultTenant());
+                          nbStepsCreated.set(this.stepRepo.findBySession(session).size());
+                          return nbStepsCreated.get() == nbSteps;
+                      });
         } catch (ConditionTimeoutException e) {
-            Assert.fail(String.format("Unexpected number of step events created for session %s : expected %d steps instead of %d.%n" +
-                                      "Check the workflow through events collected in t_step_property_update_request. %n" +
-                                      "Cause : %s", session, nbSteps, nbStepsCreated.get(),e));
+            Assert.fail(String.format(
+                "Unexpected number of step events created for session %s : expected %d steps instead of %d.%n"
+                    + "Check the workflow through events collected in t_step_property_update_request. %n"
+                    + "Cause : %s",
+                session,
+                nbSteps,
+                nbStepsCreated.get(),
+                e));
         }
     }
 
-    private void assertSessionStep(String sessionOwner, String session, Long acquiredFiles, Long completed,
-            Long incompleted, Long generated) throws InterruptedException {
+    private void assertSessionStep(String sessionOwner,
+                                   String session,
+                                   Long acquiredFiles,
+                                   Long completed,
+                                   Long incompleted,
+                                   Long generated) throws InterruptedException {
         // assert all properties required are present and have the correct count
-        SessionStepProperties sessionSteps = this.sessionStepRepo
-                .findBySourceAndSessionAndStepId(sessionOwner, session, SessionNotifier.GLOBAL_SESSION_STEP).get()
-                .getProperties();
+        SessionStepProperties sessionSteps = this.sessionStepRepo.findBySourceAndSessionAndStepId(sessionOwner,
+                                                                                                  session,
+                                                                                                  SessionNotifier.GLOBAL_SESSION_STEP)
+                                                                 .get()
+                                                                 .getProperties();
         String generatedValue = sessionSteps.get(SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName());
         String completedValue = sessionSteps.get(SessionProductPropertyEnum.PROPERTY_COMPLETED.getName());
         String incompleteValue = sessionSteps.get(SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getName());
         String acqFilesValue = sessionSteps.get(SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED.getName());
 
         Assert.assertTrue(String.format("Wrong property count expected %s but was %s", generated, generatedValue),
-                          (generated == null && generatedValue == null) || (Objects.requireNonNull(generated).toString()
-                                  .equals(generatedValue)));
+                          (generated == null && generatedValue == null) || (Objects.requireNonNull(generated)
+                                                                                   .toString()
+                                                                                   .equals(generatedValue)));
         Assert.assertTrue(String.format("Wrong property count expected %s but was %s", completed, completedValue),
-                          (completed == null && completedValue == null) || (Objects.requireNonNull(completed).toString()
-                                  .equals(completedValue)));
+                          (completed == null && completedValue == null) || (Objects.requireNonNull(completed)
+                                                                                   .toString()
+                                                                                   .equals(completedValue)));
         Assert.assertTrue(String.format("Wrong property count expected %s but was %s", incompleted, incompleteValue),
                           (incompleted == null && incompleteValue == null) || (Objects.requireNonNull(incompleted)
-                                  .toString().equals(incompleteValue)));
+                                                                                      .toString()
+                                                                                      .equals(incompleteValue)));
         Assert.assertTrue(String.format("Wrong property count expected %s but was %s", acquiredFiles, acqFilesValue),
                           (acquiredFiles == null && acqFilesValue == null) || (Objects.requireNonNull(acquiredFiles)
-                                  .toString().equals(acqFilesValue)));
+                                                                                      .toString()
+                                                                                      .equals(acqFilesValue)));
 
     }
 
     public void doAcquire(AcquisitionProcessingChain processingChain, String session, boolean assertResult)
-            throws ModuleException, InterruptedException {
+        throws ModuleException, InterruptedException {
 
         processingService.scanAndRegisterFiles(processingChain, session);
 
         // Check registered files
         if (assertResult) {
             for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
-                Page<AcquisitionFile> inProgressFiles = acqFileRepository
-                        .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS, fileInfo,
-                                                            PageRequest.of(0, 1));
+                Page<AcquisitionFile> inProgressFiles = acqFileRepository.findByStateAndFileInfoOrderByIdAsc(
+                    AcquisitionFileState.IN_PROGRESS,
+                    fileInfo,
+                    PageRequest.of(0, 1));
                 Assert.assertTrue(inProgressFiles.getTotalElements() == 1);
             }
         }
@@ -332,18 +350,22 @@ public class CdppProductAcquisitionServiceIT extends DataproviderMultitenantServ
         // Check registered files
         if (assertResult) {
             for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
-                Page<AcquisitionFile> inProgressFiles = acqFileRepository
-                        .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS, fileInfo,
-                                                            PageRequest.of(0, 1));
+                Page<AcquisitionFile> inProgressFiles = acqFileRepository.findByStateAndFileInfoOrderByIdAsc(
+                    AcquisitionFileState.IN_PROGRESS,
+                    fileInfo,
+                    PageRequest.of(0, 1));
                 Assert.assertTrue(inProgressFiles.getTotalElements() == 0);
 
-                Page<AcquisitionFile> validFiles = acqFileRepository
-                        .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.VALID, fileInfo, PageRequest.of(0, 1));
+                Page<AcquisitionFile> validFiles = acqFileRepository.findByStateAndFileInfoOrderByIdAsc(
+                    AcquisitionFileState.VALID,
+                    fileInfo,
+                    PageRequest.of(0, 1));
                 Assert.assertTrue(validFiles.getTotalElements() == 0);
 
-                Page<AcquisitionFile> acquiredFiles = acqFileRepository
-                        .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.ACQUIRED, fileInfo,
-                                                            PageRequest.of(0, 1));
+                Page<AcquisitionFile> acquiredFiles = acqFileRepository.findByStateAndFileInfoOrderByIdAsc(
+                    AcquisitionFileState.ACQUIRED,
+                    fileInfo,
+                    PageRequest.of(0, 1));
                 Assert.assertTrue(acquiredFiles.getTotalElements() == 1);
             }
         }

@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.dto.aip;
 
 /**
  * Concrete class that stores AIP criteria to do some research against AIP repository
+ *
  * @author sbinda
  * @author Léo Mieulet
  */

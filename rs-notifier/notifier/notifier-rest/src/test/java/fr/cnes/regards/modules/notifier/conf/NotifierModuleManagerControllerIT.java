@@ -18,22 +18,21 @@
  */
 package fr.cnes.regards.modules.notifier.conf;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.microservice.rest.ModuleManagerController;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
 import fr.cnes.regards.modules.notifier.domain.Rule;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.context.TestPropertySource;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Set;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=notifier_it" })
 //        locations = { "classpath:regards_local.properties" })
@@ -53,7 +52,9 @@ public class NotifierModuleManagerControllerIT extends AbstractRegardsTransactio
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
 
         performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
-                                 filePath, requestBuilderCustomizer, "Should be able to import configuration");
+                                 filePath,
+                                 requestBuilderCustomizer,
+                                 "Should be able to import configuration");
 
         // Check
         try {
@@ -66,7 +67,9 @@ public class NotifierModuleManagerControllerIT extends AbstractRegardsTransactio
 
         // Import same configuration resetting existing import configuration without conflict
         performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
-                                 filePath, requestBuilderCustomizer, "Should be able to import configuration");
+                                 filePath,
+                                 requestBuilderCustomizer,
+                                 "Should be able to import configuration");
     }
 
     @Test
@@ -77,7 +80,9 @@ public class NotifierModuleManagerControllerIT extends AbstractRegardsTransactio
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.CONFLICT);
 
         performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
-                                 filePath, requestBuilderCustomizer, "Should be able to import configuration");
+                                 filePath,
+                                 requestBuilderCustomizer,
+                                 "Should be able to import configuration");
     }
 
     @Test
@@ -88,7 +93,9 @@ public class NotifierModuleManagerControllerIT extends AbstractRegardsTransactio
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.CONFLICT);
 
         performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
-                                 filePath, requestBuilderCustomizer, "Should be able to import configuration");
+                                 filePath,
+                                 requestBuilderCustomizer,
+                                 "Should be able to import configuration");
     }
 
     @Test
@@ -99,7 +106,9 @@ public class NotifierModuleManagerControllerIT extends AbstractRegardsTransactio
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
 
         performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
-                                 filePath, requestBuilderCustomizer, "Should be able to import configuration");
+                                 filePath,
+                                 requestBuilderCustomizer,
+                                 "Should be able to import configuration");
 
         // Check
         try {
@@ -120,7 +129,9 @@ public class NotifierModuleManagerControllerIT extends AbstractRegardsTransactio
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
 
         performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
-                                 filePath, requestBuilderCustomizer, "Should be able to import configuration");
+                                 filePath,
+                                 requestBuilderCustomizer,
+                                 "Should be able to import configuration");
 
         // Check
         try {

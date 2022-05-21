@@ -77,9 +77,9 @@ public class VersioningSearchVisitor implements ICriterionVisitor<ICriterion> {
             if (urn.isLast()) {
                 // this is a virtualId
                 // lets find the corresponding entity
-                AbstractEntity entity = esRepo
-                        .getByVirtualId(urn.getEntityType().toString(), critValue,
-                                        AbstractEntity.class);
+                AbstractEntity entity = esRepo.getByVirtualId(urn.getEntityType().toString(),
+                                                              critValue,
+                                                              AbstractEntity.class);
                 if (entity != null) {
                     return ICriterion.or(ICriterion.eq(attName, critValue, criterion.getMatchType()),
                                          ICriterion.eq(attName, entity.getIpId().toString(), criterion.getMatchType()));
@@ -89,12 +89,12 @@ public class VersioningSearchVisitor implements ICriterionVisitor<ICriterion> {
                 }
             } else {
                 // this is a precise urn
-                AbstractEntity entity = esRepo
-                        .get(urn.getEntityType().toString(), critValue, AbstractEntity.class);
+                AbstractEntity entity = esRepo.get(urn.getEntityType().toString(), critValue, AbstractEntity.class);
                 if (entity != null && entity.isLast()) {
-                    return ICriterion
-                            .or(ICriterion.eq(attName, entity.getVirtualId().toString(), criterion.getMatchType()),
-                                ICriterion.eq(attName, critValue, criterion.getMatchType()));
+                    return ICriterion.or(ICriterion.eq(attName,
+                                                       entity.getVirtualId().toString(),
+                                                       criterion.getMatchType()),
+                                         ICriterion.eq(attName, critValue, criterion.getMatchType()));
                 } else {
                     // we are looking for something that does not exists(anymore?) so we don't need to change the criterion
                     return criterion;
@@ -124,8 +124,7 @@ public class VersioningSearchVisitor implements ICriterionVisitor<ICriterion> {
                                      ICriterion.multiMatch(attNames, entity.getIpId().toString()));
             } else {
                 // this is a precise urn
-                AbstractEntity entity = esRepo
-                        .get(urn.getEntityType().toString(), critValue, AbstractEntity.class);
+                AbstractEntity entity = esRepo.get(urn.getEntityType().toString(), critValue, AbstractEntity.class);
                 if (entity.isLast()) {
                     return ICriterion.or(ICriterion.multiMatch(attNames, entity.getVirtualId().toString()),
                                          ICriterion.multiMatch(attNames, critValue));
@@ -146,8 +145,9 @@ public class VersioningSearchVisitor implements ICriterionVisitor<ICriterion> {
             // if the values contains virtualIds, we have to find the entities and add their ipId
             // if the value contains ipIds, we need to find the entities and add their virtualId if any
             // anyway it is a urn so we can recognize if anything is needed thanks to URN pattern
-            Set<String> urnValues = critValues.stream().filter(value -> value.matches(UniformResourceName.URN_PATTERN))
-                    .collect(Collectors.toSet());
+            Set<String> urnValues = critValues.stream()
+                                              .filter(value -> value.matches(UniformResourceName.URN_PATTERN))
+                                              .collect(Collectors.toSet());
             if (urnValues.isEmpty()) {
                 return criterion;
             } else {
@@ -162,8 +162,9 @@ public class VersioningSearchVisitor implements ICriterionVisitor<ICriterion> {
                         critValues.add(entity.getIpId().toString());
                     } else {
                         // this is a precise urn
-                        AbstractEntity entity = esRepo
-                                .get(urn.getEntityType().toString(), urnValue, AbstractEntity.class);
+                        AbstractEntity entity = esRepo.get(urn.getEntityType().toString(),
+                                                           urnValue,
+                                                           AbstractEntity.class);
                         if (entity.isLast()) {
                             urnValues.add(entity.getVirtualId().toString());
                         }

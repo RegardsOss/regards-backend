@@ -18,13 +18,6 @@
  */
 package fr.cnes.regards.modules.backendforfrontend.rest;
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -32,6 +25,12 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServicePlugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * SampleServicePlugin
@@ -39,8 +38,8 @@ import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServic
  * @author Christophe Mertz
  */
 @Plugin(description = "Sample plugin test", id = "aSampleServicePlugin", version = "0.0.1",
-        author = "REGARDS Dream Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+    author = "REGARDS Dream Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
+    url = "https://github.com/RegardsOss")
 @CatalogServicePlugin(applicationModes = { ServiceScope.ONE, ServiceScope.MANY }, entityTypes = { EntityType.DATA })
 public class SampleServicePlugin implements ISampleServicePlugin {
 
@@ -78,7 +77,7 @@ public class SampleServicePlugin implements ISampleServicePlugin {
      * A {@link String} parameter
      */
     @PluginParameter(description = "Response type", name = RESPONSE_TYPE_PARAMETER, defaultValue = RESPONSE_TYPE_JSON,
-            optional = false, label = "Response type")
+        optional = false, label = "Response type")
     private String responseType;
 
     /**
@@ -91,7 +90,7 @@ public class SampleServicePlugin implements ISampleServicePlugin {
 
     @Override
     public ResponseEntity<StreamingResponseBody> apply(ServicePluginParameters pParameters,
-            HttpServletResponse response) {
+                                                       HttpServletResponse response) {
         return null;
     }
 

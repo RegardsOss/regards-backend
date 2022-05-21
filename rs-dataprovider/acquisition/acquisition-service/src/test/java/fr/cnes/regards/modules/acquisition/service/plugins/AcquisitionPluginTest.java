@@ -18,19 +18,17 @@
  */
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
+import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-
 /**
- *
  * Plugin test
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
 public class AcquisitionPluginTest {
 

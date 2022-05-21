@@ -39,6 +39,7 @@ import java.util.Set;
  * Builds a {@link StringMatchCriterion} from a {@link FieldQueryNode} object when the value is a String.<br>
  * Builds a {@link IntMatchCriterion} from a {@link PointQueryNode} object when the value is an Integer.<br>
  * Builds a {@link RangeCriterion} from a {@link PointQueryNode} object when the value is a double.<br>
+ *
  * @author Marc Sordi
  * @author Xavier-Alexandre Brochard
  */
@@ -70,8 +71,8 @@ public class FieldQueryNodeBuilder implements ICriterionQueryBuilder {
                 Set<AttributeModel> atts = MultiSearchHelper.discoverFields(finder, value);
                 return IFeatureCriterion.multiMatch(atts, value);
             } catch (OpenSearchUnknownParameter e) {
-                throw new QueryNodeException(
-                        new MessageImpl(QueryParserMessages.FIELD_TYPE_UNDETERMINATED, e.getMessage()), e);
+                throw new QueryNodeException(new MessageImpl(QueryParserMessages.FIELD_TYPE_UNDETERMINATED,
+                                                             e.getMessage()), e);
             }
         }
 
@@ -83,7 +84,7 @@ public class FieldQueryNodeBuilder implements ICriterionQueryBuilder {
             attributeModel = finder.findByName(fieldAndMatchType.getFirst());
         } catch (OpenSearchUnknownParameter e) {
             throw new QueryNodeException(new MessageImpl(QueryParserMessages.FIELD_TYPE_UNDETERMINATED, e.getMessage()),
-                    e);
+                                         e);
         }
 
         switch (attributeModel.getType()) {

@@ -18,27 +18,25 @@
  */
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.atom.modules.gml.impl;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.jdom2.Element;
-import org.jdom2.Namespace;
-
 import com.rometools.modules.georss.GMLGenerator;
 import com.rometools.modules.georss.GMLModuleImpl;
 import com.rometools.modules.georss.GeoRSSModule;
 import com.rometools.rome.feed.module.Module;
 import com.rometools.rome.io.ModuleGenerator;
-
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.atom.modules.gml.GmlTimeModule;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Module generator to handle TIME & GEO opensearch parameters into ATOM format responses.
  * This ModuleGenerator is executed by rome (see rome.properties)
  *
- * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  * @author Sébastien Binda
+ * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  */
 public class GmlTimeModuleGenerator extends GMLGenerator implements ModuleGenerator {
 

@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.service.handlers;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -52,11 +52,16 @@ public class ExecutionResultEventSender implements IExecutionResultEventSender {
     @Override
     public Mono<PExecutionResultEvent> send(String tenant, PExecutionResultEvent message) {
         return Mono.fromCallable(() -> {
-            runtimeTenantResolver.forceTenant(tenant);
-            publisher.publish(message);
-            return message;
-        }).onErrorResume(mustWrap(), errorWithContextMono(PExecution.class, (exec,
-                t) -> new SendExecutionResultException(exec, "Sending execution result failed: " + message, t)));
+                       runtimeTenantResolver.forceTenant(tenant);
+                       publisher.publish(message);
+                       return message;
+                   })
+                   .onErrorResume(mustWrap(),
+                                  errorWithContextMono(PExecution.class,
+                                                       (exec, t) -> new SendExecutionResultException(exec,
+                                                                                                     "Sending execution result failed: "
+                                                                                                         + message,
+                                                                                                     t)));
     }
 
     public static class SendExecutionResultException extends ProcessingExecutionException {

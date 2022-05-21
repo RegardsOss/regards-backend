@@ -1,20 +1,21 @@
 package fr.cnes.regards.modules.crawler.service.consumer;
 
-import java.util.Set;
-import java.util.concurrent.Callable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Set;
+import java.util.concurrent.Callable;
 
 /**
  * Callable used to parallelize data objects bulk save into Elasticsearch
+ *
  * @author oroussel
  */
 public class SaveDataObjectsCallable implements Callable<Void> {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(SaveDataObjectsCallable.class);
 
     /**
@@ -42,8 +43,10 @@ public class SaveDataObjectsCallable implements Callable<Void> {
      */
     private final long datasetId;
 
-    public SaveDataObjectsCallable(IRuntimeTenantResolver runtimeTenantResolver, IEsRepository esRepos, String tenant,
-            long datasetId) {
+    public SaveDataObjectsCallable(IRuntimeTenantResolver runtimeTenantResolver,
+                                   IEsRepository esRepos,
+                                   String tenant,
+                                   long datasetId) {
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.esRepos = esRepos;
         this.tenant = tenant;
@@ -52,6 +55,7 @@ public class SaveDataObjectsCallable implements Callable<Void> {
 
     /**
      * Setting set of data objects to be saved later
+     *
      * @param set ideally, a copy or clone of set (we don't know when saving will be called)
      */
     public void setSet(Set<DataObject> set) {

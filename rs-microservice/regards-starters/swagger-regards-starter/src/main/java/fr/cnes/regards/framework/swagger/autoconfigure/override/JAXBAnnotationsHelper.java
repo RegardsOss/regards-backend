@@ -12,13 +12,14 @@ import java.lang.annotation.Annotation;
 
 /**
  * The <code>JAXBAnnotationsHelper</code> class defines helper methods for
- *  applying JAXB annotations to property definitions.
- *  
+ * applying JAXB annotations to property definitions.
+ * <p>
  * WARNING : Hack for ModelResolverCustom class.*
- *
+ * <p>
  * TODO : Replace use of Gson by Jackson to be compliant with default swagger lib
  */
 class JAXBAnnotationsHelper {
+
     public static final String JAXB_DEFAULT = "##default";
 
     private JAXBAnnotationsHelper() {
@@ -57,7 +58,7 @@ class JAXBAnnotationsHelper {
     /**
      * Puts definitions for XML wrapper.
      *
-     * @param wrapper   XmlElementWrapper
+     * @param wrapper  XmlElementWrapper
      * @param property property instance to be updated
      */
     private static void applyElement(XmlElementWrapper wrapper, Schema property) {
@@ -65,7 +66,8 @@ class JAXBAnnotationsHelper {
             final XML xml = getXml(property);
             xml.setWrapped(true);
             // No need to set the xml name if the name provided by xmlelementwrapper annotation is ##default or equal to the property name | https://github.com/swagger-api/swagger-core/pull/2050
-            if (!JAXB_DEFAULT.equals(wrapper.name()) && !wrapper.name().isEmpty() && !wrapper.name().equals(property.getName())) {
+            if (!JAXB_DEFAULT.equals(wrapper.name()) && !wrapper.name().isEmpty() && !wrapper.name()
+                                                                                             .equals(property.getName())) {
                 xml.setName(wrapper.name());
             }
         }
@@ -74,7 +76,7 @@ class JAXBAnnotationsHelper {
     /**
      * Puts definitions for XML element.
      *
-     * @param element   XmlElement
+     * @param element  XmlElement
      * @param property property instance to be updated
      */
     private static void applyElement(XmlElement element, Schema property) {
@@ -86,8 +88,8 @@ class JAXBAnnotationsHelper {
     /**
      * Puts definitions for XML attribute.
      *
-     * @param attribute   XmlAttribute
-     * @param property property instance to be updated
+     * @param attribute XmlAttribute
+     * @param property  property instance to be updated
      */
     private static void applyAttribute(XmlAttribute attribute, Schema property) {
         if (attribute != null) {
@@ -148,7 +150,7 @@ class JAXBAnnotationsHelper {
      * node attribute
      */
     private static boolean isAttributeAllowed(Schema property) {
-        for (Class<?> item : new Class<?>[]{ArraySchema.class, MapSchema.class, ObjectSchema.class}) {
+        for (Class<?> item : new Class<?>[] { ArraySchema.class, MapSchema.class, ObjectSchema.class }) {
             if (item.isInstance(property)) {
                 return false;
             }

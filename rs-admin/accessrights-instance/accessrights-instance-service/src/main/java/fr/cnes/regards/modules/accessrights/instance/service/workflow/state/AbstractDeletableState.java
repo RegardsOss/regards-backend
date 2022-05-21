@@ -47,15 +47,23 @@ abstract class AbstractDeletableState implements IAccountTransitions {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDeletableState.class);
 
     protected final IProjectUsersClient projectUsersClient;
+
     protected final IAccountRepository accountRepository;
+
     protected final ITenantService tenantService;
+
     protected final IRuntimeTenantResolver runtimeTenantResolver;
+
     protected final IPasswordResetService passwordResetTokenService;
+
     protected final IAccountUnlockTokenService accountUnlockTokenService;
 
-    protected AbstractDeletableState(IProjectUsersClient projectUsersClient, IAccountRepository accountRepository, ITenantService tenantService,
-            IRuntimeTenantResolver runtimeTenantResolver, IPasswordResetService passwordResetTokenService, IAccountUnlockTokenService accountUnlockTokenService
-    ) {
+    protected AbstractDeletableState(IProjectUsersClient projectUsersClient,
+                                     IAccountRepository accountRepository,
+                                     ITenantService tenantService,
+                                     IRuntimeTenantResolver runtimeTenantResolver,
+                                     IPasswordResetService passwordResetTokenService,
+                                     IAccountUnlockTokenService accountUnlockTokenService) {
         this.projectUsersClient = projectUsersClient;
         this.accountRepository = accountRepository;
         this.tenantService = tenantService;
@@ -74,11 +82,10 @@ abstract class AbstractDeletableState implements IAccountTransitions {
                 doDelete(pAccount);
                 break;
             default:
-                throw new EntityTransitionForbiddenException(
-                        pAccount.getId().toString(),
-                        ProjectUser.class,
-                        pAccount.getStatus().toString(),
-                        Thread.currentThread().getStackTrace()[1].getMethodName());
+                throw new EntityTransitionForbiddenException(pAccount.getId().toString(),
+                                                             ProjectUser.class,
+                                                             pAccount.getStatus().toString(),
+                                                             Thread.currentThread().getStackTrace()[1].getMethodName());
         }
     }
 
@@ -101,7 +108,8 @@ abstract class AbstractDeletableState implements IAccountTransitions {
      */
     private void doDelete(final Account pAccount) throws EntityOperationForbiddenException {
         if (!canDelete(pAccount)) {
-            String message = String.format("Cannot remove account %s because it is linked to at least one project.", pAccount.getEmail());
+            String message = String.format("Cannot remove account %s because it is linked to at least one project.",
+                                           pAccount.getEmail());
             LOGGER.error(message);
             throw new EntityOperationForbiddenException(pAccount.getId().toString(), Account.class, message);
         }
@@ -123,7 +131,8 @@ abstract class AbstractDeletableState implements IAccountTransitions {
             FeignSecurityManager.asSystem();
             account.getProjects().forEach(project -> {
                 runtimeTenantResolver.forceTenant(project.getName());
-                EntityModel<ProjectUser> projectUserBody = projectUsersClient.retrieveProjectUserByEmail(account.getEmail()).getBody();
+                EntityModel<ProjectUser> projectUserBody = projectUsersClient.retrieveProjectUserByEmail(account.getEmail())
+                                                                             .getBody();
                 if (projectUserBody != null) {
                     ProjectUser projectUser = projectUserBody.getContent();
                     if (projectUser != null) {

@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.notifier.dto;
 
 import com.google.gson.JsonElement;
-
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
@@ -27,7 +26,6 @@ import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
  * @author kevin
- *
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class NotificationEvent2 implements ISubscribable {

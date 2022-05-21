@@ -18,20 +18,20 @@
  */
 package fr.cnes.regards.framework.utils.plugins.basic;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * SampleErrorPlugin
+ *
  * @author Christophe Mertz
  */
 @Plugin(description = "Sample plugin test", id = "aSampleErrorPlugin", version = "0.0.1", author = "REGARDS Team",
-        contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
+    contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class SampleErrorPlugin implements ISamplePlugin {
 
     public static final String FIELD_NAME_SUFFIX = "suffix";
@@ -87,8 +87,9 @@ public class SampleErrorPlugin implements ISamplePlugin {
      */
     @PluginInit
     private void aInit() {
-        LOGGER.info("Init method call : " + this.getClass().getName() + "suffixe:" + suffix + "|active:" + isActive
-                + "|coeff:" + coef);
+        LOGGER.info(
+            "Init method call : " + this.getClass().getName() + "suffixe:" + suffix + "|active:" + isActive + "|coeff:"
+                + coef);
         throw new PluginUtilsRuntimeException("error");
     }
 

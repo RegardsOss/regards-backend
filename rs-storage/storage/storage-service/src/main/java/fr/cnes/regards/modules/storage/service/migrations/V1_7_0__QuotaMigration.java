@@ -32,8 +32,11 @@ public class V1_7_0__QuotaMigration extends BaseJavaMigration {
     private static final Logger LOGGER = LoggerFactory.getLogger(V1_7_0__QuotaMigration.class);
 
     private static final int RETRY_DELAY = 30;
+
     private static final String SELECT_USERS = "SELECT email, max_quota FROM t_user_download_quota_limits";
+
     private static final String EMAIL_COLUMN = "email";
+
     private static final String QUOTA_COLUMN = "max_quota";
 
     private final IProjectUsersClient projectUsersClient;
@@ -41,7 +44,6 @@ public class V1_7_0__QuotaMigration extends BaseJavaMigration {
     public V1_7_0__QuotaMigration(IProjectUsersClient projectUsersClient) {
         this.projectUsersClient = projectUsersClient;
     }
-
 
     @Override
     public void migrate(Context context) throws InterruptedException {
@@ -70,8 +72,9 @@ public class V1_7_0__QuotaMigration extends BaseJavaMigration {
 
             try {
                 FeignSecurityManager.asSystem();
-                ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response = projectUsersClient.retrieveProjectUserList(new ProjectUserSearchParameters(),
-                                                                                                                           PageRequest.of(0, 1));
+                ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response = projectUsersClient.retrieveProjectUserList(
+                    new ProjectUserSearchParameters(),
+                    PageRequest.of(0, 1));
                 if (response != null && response.getStatusCode().is2xxSuccessful()) {
                     PagedModel<EntityModel<ProjectUser>> body = response.getBody();
                     if (body != null) {
@@ -132,7 +135,9 @@ public class V1_7_0__QuotaMigration extends BaseJavaMigration {
                 // Add null check for default regards admin account
                 if (projectUser.getId() != null) {
                     projectUser.setMaxQuota(maxQuota);
-                    ResponseEntity<EntityModel<ProjectUser>> updateResponse = projectUsersClient.updateProjectUser(projectUser.getId(), projectUser);
+                    ResponseEntity<EntityModel<ProjectUser>> updateResponse = projectUsersClient.updateProjectUser(
+                        projectUser.getId(),
+                        projectUser);
                     if (updateResponse == null || !updateResponse.getStatusCode().is2xxSuccessful()) {
                         throw new FlywayException(error);
                     }

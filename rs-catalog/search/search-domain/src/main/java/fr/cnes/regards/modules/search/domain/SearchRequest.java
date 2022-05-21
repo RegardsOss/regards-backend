@@ -18,18 +18,18 @@
  */
 package fr.cnes.regards.modules.search.domain;
 
+import org.springframework.util.MultiValueMap;
+
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.springframework.util.MultiValueMap;
-
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Size;
-
 /**
  * POJO Containig information to handle a new search on catalog from complex search system controller
+ *
  * @author Sébastien Binda
  */
 public class SearchRequest {
@@ -59,13 +59,15 @@ public class SearchRequest {
     /**
      * Additional entity ids to return with the search results.
      */
-    @Size(max=SearchRequest.ID_LIMIT, message = "Number of entity ids to include in one request must be between 0 and 1000")
+    @Size(max = SearchRequest.ID_LIMIT,
+        message = "Number of entity ids to include in one request must be between 0 and 1000")
     private final Collection<String> entityIdsToInclude;
 
     /**
      * Entity ids to exclud from search results.
      */
-    @Size(max=SearchRequest.ID_LIMIT, message = "Number of entity ids to exclude in one request must be between 0 and 1000")
+    @Size(max = SearchRequest.ID_LIMIT,
+        message = "Number of entity ids to exclude in one request must be between 0 and 1000")
     private final Collection<String> entityIdsToExclude;
 
     /**
@@ -73,9 +75,12 @@ public class SearchRequest {
      */
     private final OffsetDateTime searchDateLimit;
 
-    public SearchRequest(String engineType, String datasetUrn, MultiValueMap<String, String> searchParameters,
-            Collection<String> entityIdsToInclude, Collection<String> entityIdsToExclude,
-            OffsetDateTime searchDateLimit) {
+    public SearchRequest(String engineType,
+                         String datasetUrn,
+                         MultiValueMap<String, String> searchParameters,
+                         Collection<String> entityIdsToInclude,
+                         Collection<String> entityIdsToExclude,
+                         OffsetDateTime searchDateLimit) {
         super();
         this.engineType = engineType;
         this.datasetUrn = datasetUrn;
@@ -96,8 +101,8 @@ public class SearchRequest {
     public boolean hasSearchParameters() {
         if ((searchParameters != null) && !searchParameters.isEmpty()) {
             for (Entry<String, List<String>> param : searchParameters.entrySet()) {
-                if (!FACET_PARAMETER.equals(param.getKey()) && !SORT_PARAMETER.equals(param.getKey())
-                        && (param.getValue() != null) && !param.getValue().isEmpty()) {
+                if (!FACET_PARAMETER.equals(param.getKey()) && !SORT_PARAMETER.equals(param.getKey()) && (
+                    param.getValue() != null) && !param.getValue().isEmpty()) {
                     for (String value : param.getValue()) {
                         if ((value != null) && !value.isEmpty()) {
                             return true;

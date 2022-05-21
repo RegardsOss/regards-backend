@@ -21,8 +21,6 @@ package fr.cnes.regards.modules.workermanager.service.flow;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
-import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
-import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.events.in.RequestEvent;
@@ -108,7 +106,8 @@ public class RequestHandler implements ApplicationListener<ApplicationReadyEvent
         LOGGER.info("{} dispatched request(s) ,{} delayed request(s) and {} skipped event(s) registered in {} ms",
                     requestInfo.getRequests(RequestStatus.DISPATCHED).size(),
                     requestInfo.getRequests(RequestStatus.NO_WORKER_AVAILABLE).size(),
-                    requestInfo.getSkippedEvents().size(), System.currentTimeMillis() - start);
+                    requestInfo.getSkippedEvents().size(),
+                    System.currentTimeMillis() - start);
     }
 
     @Override

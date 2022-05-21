@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.acquisition.domain.chain;
 
 /**
  * {@link AcquisitionProcessingChain} processing mode
+ *
  * @author Marc Sordi
  */
 public enum AcquisitionProcessingChainMode {

@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.model.dto.properties;
  * Represent a {@link PropertyType#URL} model attribute
  *
  * @author Marc Sordi
- *
  */
 public class UrlProperty extends AbstractProperty<MarkdownURL> {
 

@@ -18,10 +18,8 @@
  */
 package fr.cnes.regards.framework.module.rest;
 
-import javax.validation.ValidationException;
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.framework.module.rest.exception.*;
+import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -37,25 +35,17 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.util.WebUtils;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotEmptyException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
-import fr.cnes.regards.framework.module.rest.exception.InvalidConnectionException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.module.rest.exception.TooManyResultsException;
-import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
+import javax.validation.ValidationException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Global controller advice manages generic system exceptions handling<br/>
- *
+ * <p>
  * Following generic exception can be used to manage business work flow. If no exception fits your need, create your own
  * extending {@link ModuleException} and add a {@link RestControllerAdvice} in your rest layer handling this specific
  * exception. Be careful to set an {@link Order} with the highest precedence.<br/>
- *
+ * <p>
  * <br/>
  * To handle {@link HttpStatus#BAD_REQUEST} (400), you may throw :
  * <ul>
@@ -97,6 +87,7 @@ import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
  * <br/>
  * if no handler is specified for a {@link ModuleException}, an {@link HttpStatus#INTERNAL_SERVER_ERROR} response is
  * sent.
+ *
  * @author CS SI
  * @author Marc Sordi
  * @author Sébastien Binda
@@ -115,8 +106,11 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
      * Customize response body for spring managed exception
      */
     @Override
-    protected ResponseEntity<Object> handleExceptionInternal(Exception ex, Object body, HttpHeaders headers,
-            HttpStatus status, WebRequest request) {
+    protected ResponseEntity<Object> handleExceptionInternal(Exception ex,
+                                                             Object body,
+                                                             HttpHeaders headers,
+                                                             HttpStatus status,
+                                                             WebRequest request) {
 
         // Create REGARDS body
         ServerErrorResponse responseBody = new ServerErrorResponse(ex.getMessage(), ex);
@@ -133,13 +127,14 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
 
     /**
      * Default {@link ModuleException} response fallback
+     *
      * @param moduleException {@link ModuleException}
      * @return response with {@link HttpStatus#INTERNAL_SERVER_ERROR}
      */
     @ExceptionHandler(ModuleException.class)
     public ResponseEntity<ServerErrorResponse> handleModelException(final ModuleException moduleException) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ServerErrorResponse(moduleException.getMessage(), moduleException));
+                             .body(new ServerErrorResponse(moduleException.getMessage(), moduleException));
     }
 
     // ***************************************************************************************************************
@@ -149,26 +144,27 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
     /**
      * Exception handler returning the code 400 when the identifier in url path doesn't match identifier in request
      * body.
+     *
      * @param exception {@link EntityInconsistentIdentifierException}
      * @return {@link ResponseEntity}
      */
     @ExceptionHandler(EntityInconsistentIdentifierException.class)
-    public ResponseEntity<ServerErrorResponse> entityInconsistentIdentifier(
-            final EntityInconsistentIdentifierException exception) {
+    public ResponseEntity<ServerErrorResponse> entityInconsistentIdentifier(final EntityInconsistentIdentifierException exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ServerErrorResponse(exception.getMessage(), exception));
+                             .body(new ServerErrorResponse(exception.getMessage(), exception));
     }
 
     /**
      * Exception returning 400 when a datasource connection is invalid
+     *
      * @param exception {@link InvalidConnectionException}
      * @return {@link ResponseEntity}
      */
     @ExceptionHandler(InvalidConnectionException.class)
     public ResponseEntity<ServerErrorResponse> connectionException(final InvalidConnectionException exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ServerErrorResponse(exception.getMessage() + CAUSE + exception.getCause().getMessage(),
-                                              exception));
+                             .body(new ServerErrorResponse(
+                                 exception.getMessage() + CAUSE + exception.getCause().getMessage(), exception));
     }
 
     // ***************************************************************************************************************
@@ -177,26 +173,26 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
 
     /**
      * Exception handler returning the code 403 when an operation on an entity is forbidden.<br>
+     *
      * @param exception {@link EntityOperationForbiddenException}
      * @return {@link ResponseEntity}
      */
     @ExceptionHandler(EntityOperationForbiddenException.class)
-    public ResponseEntity<ServerErrorResponse> entityOperationForbidden(
-            final EntityOperationForbiddenException exception) {
+    public ResponseEntity<ServerErrorResponse> entityOperationForbidden(final EntityOperationForbiddenException exception) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(new ServerErrorResponse(exception.getMessage(), exception));
+                             .body(new ServerErrorResponse(exception.getMessage(), exception));
     }
 
     /**
      * Exception handler returning the code 403 when a transition on a state-managed entity is forbidden.<br>
+     *
      * @param exception {@link EntityTransitionForbiddenException}
      * @return {@link ResponseEntity}
      */
     @ExceptionHandler(EntityTransitionForbiddenException.class)
-    public ResponseEntity<ServerErrorResponse> entityTransitionForbidden(
-            final EntityTransitionForbiddenException exception) {
+    public ResponseEntity<ServerErrorResponse> entityTransitionForbidden(final EntityTransitionForbiddenException exception) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(new ServerErrorResponse(exception.getMessage(), exception));
+                             .body(new ServerErrorResponse(exception.getMessage(), exception));
     }
 
     // ***************************************************************************************************************
@@ -206,7 +202,7 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ServerErrorResponse> entityNotFound(final EntityNotFoundException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ServerErrorResponse(exception.getMessage(), exception));
+                             .body(new ServerErrorResponse(exception.getMessage(), exception));
     }
 
     // ***************************************************************************************************************
@@ -214,10 +210,9 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
     // ***************************************************************************************************************
 
     @ExceptionHandler(EntityAlreadyExistsException.class)
-    public ResponseEntity<ServerErrorResponse> handleEntityAlreadyExistsException(
-            final EntityAlreadyExistsException exception) {
+    public ResponseEntity<ServerErrorResponse> handleEntityAlreadyExistsException(final EntityAlreadyExistsException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ServerErrorResponse(exception.getMessage(), exception));
+                             .body(new ServerErrorResponse(exception.getMessage(), exception));
     }
 
     /**
@@ -226,7 +221,7 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
     @ExceptionHandler(EntityNotEmptyException.class)
     public ResponseEntity<ServerErrorResponse> entityNotEmpty(final EntityNotEmptyException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ServerErrorResponse(exception.getMessage(), exception));
+                             .body(new ServerErrorResponse(exception.getMessage(), exception));
     }
 
     // ***************************************************************************************************************
@@ -235,6 +230,7 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
 
     /**
      * Exception handler returning the code 413 when a search is cancelled due to too many results.
+     *
      * @param pException {@link TooManyResultsException}
      * @return {@link ResponseEntity}
      */
@@ -253,25 +249,27 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
 
     /**
      * Exception handler returning the code 422 when an entity in request violates its validation constraints.
+     *
      * @param exception {@link EntityInvalidException}
      * @return {@link ResponseEntity}
      */
     @ExceptionHandler(EntityInvalidException.class)
     public ResponseEntity<ServerErrorResponse> manualValidation(final EntityInvalidException exception) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(new ServerErrorResponse(exception.getMessages(), exception));
+                             .body(new ServerErrorResponse(exception.getMessages(), exception));
     }
 
     /**
      * Exception handler returning the code 422 when an entity in request violates its validation constraints.<br>
      * Thrown by Hibernate.
+     *
      * @param exception {@link ValidationException}
      * @return {@link ResponseEntity}
      */
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<ServerErrorResponse> hibernateValidation(final ValidationException exception) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(new ServerErrorResponse(exception.getMessage(), exception));
+                             .body(new ServerErrorResponse(exception.getMessage(), exception));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
@@ -285,7 +283,9 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
      */
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-            HttpHeaders headers, HttpStatus status, WebRequest request) {
+                                                                  HttpHeaders headers,
+                                                                  HttpStatus status,
+                                                                  WebRequest request) {
 
         List<String> messages = new ArrayList<>();
         // Only return default messages at the moment

@@ -63,9 +63,14 @@ public class FeatureEntityDto {
 
     private Set<FeatureDisseminationInfoDto> disseminationsInfo = new HashSet<>();
 
-    public static FeatureEntityDto build(String source, String session, Feature feature,
-            FeatureUniformResourceName previousVersionUrn, String model, String providerId, Integer version,
-            OffsetDateTime lastUpdate) {
+    public static FeatureEntityDto build(String source,
+                                         String session,
+                                         Feature feature,
+                                         FeatureUniformResourceName previousVersionUrn,
+                                         String model,
+                                         String providerId,
+                                         Integer version,
+                                         OffsetDateTime lastUpdate) {
         FeatureEntityDto featureEntity = new FeatureEntityDto();
         featureEntity.setSource(source);
         featureEntity.setSession(session);

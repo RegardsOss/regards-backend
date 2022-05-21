@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.config;
 
 import fr.cnes.regards.modules.processing.rest.PBatchReactiveController;
@@ -33,11 +33,8 @@ import org.springframework.web.reactive.config.EnableWebFlux;
 @Configuration
 @ConditionalOnProperty(name = "spring.main.web-application-type", havingValue = "reactive")
 @EnableWebFlux
-@ComponentScan(basePackageClasses = {
-    PBatchReactiveController.class,
-    PProcessReactiveController.class,
-    PMonitoringReactiveController.class
-})
+@ComponentScan(basePackageClasses = { PBatchReactiveController.class, PProcessReactiveController.class,
+    PMonitoringReactiveController.class })
 public class ProcessingRestConfiguration {
 
 }

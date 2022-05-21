@@ -18,17 +18,6 @@
  */
 package fr.cnes.regards.modules.access.services.rest.ui;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -36,11 +25,15 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.access.services.domain.ui.LinkUIPluginsDatasets;
 import fr.cnes.regards.modules.access.services.service.link.ILinkUIPluginsDatasetsService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 /**
- *
  * Class LinkUIPluginsDatasetsController
- *
+ * <p>
  * Rest controller to link a dataset to one or many UIPluginConfiguration
  *
  * @author Sébastien Binda
@@ -63,10 +56,10 @@ public class LinkUIPluginsDatasetsController {
 
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "endpoint allowing to retrieve which plugins are to be applied to a given dataset",
-            role = DefaultRole.PROJECT_ADMIN)
+        role = DefaultRole.PROJECT_ADMIN)
     @ResponseBody
     public ResponseEntity<EntityModel<LinkUIPluginsDatasets>> retrieveLink(
-            @PathVariable("datasetId") final String datasetId) throws EntityNotFoundException {
+        @PathVariable("datasetId") final String datasetId) throws EntityNotFoundException {
         final LinkUIPluginsDatasets link = linkService.retrieveLink(datasetId);
         EntityModel<LinkUIPluginsDatasets> resource = resourceService.toResource(link);
         return new ResponseEntity<>(resource, HttpStatus.OK);
@@ -74,11 +67,11 @@ public class LinkUIPluginsDatasetsController {
 
     @RequestMapping(method = RequestMethod.PUT)
     @ResourceAccess(description = "endpoint allowing to modify which plugins are to be applied to a given dataset",
-            role = DefaultRole.PROJECT_ADMIN)
+        role = DefaultRole.PROJECT_ADMIN)
     @ResponseBody
     public ResponseEntity<EntityModel<LinkUIPluginsDatasets>> updateLink(
-            @PathVariable("datasetId") final String datasetId, @RequestBody final LinkUIPluginsDatasets updatedLink)
-            throws EntityException {
+        @PathVariable("datasetId") final String datasetId, @RequestBody final LinkUIPluginsDatasets updatedLink)
+        throws EntityException {
         final LinkUIPluginsDatasets link = linkService.updateLink(datasetId, updatedLink);
         EntityModel<LinkUIPluginsDatasets> resource = resourceService.toResource(link);
         return new ResponseEntity<>(resource, HttpStatus.OK);

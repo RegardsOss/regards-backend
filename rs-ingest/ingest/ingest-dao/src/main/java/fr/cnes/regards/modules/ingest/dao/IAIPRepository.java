@@ -18,11 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -31,19 +29,21 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * JPA Repository to access {@link AIPEntity}
- * @author Sébastien Binda
  *
+ * @author Sébastien Binda
  */
 public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
 
     /**
      * Retrieve all {@link AIPEntity}s associated to the given {@link SIPEntity}
+     *
      * @param sipId SIP identifier
      * @return {@link AIPEntity}s
      */
@@ -51,6 +51,7 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
 
     /**
      * Retrieve an {@link AIPEntity} by its {@link AIPEntity#getAipId()}
+     *
      * @param aipId SIP identifier
      * @return optional {@link AIPEntity}
      */
@@ -58,6 +59,7 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
 
     /**
      * Retrieve a page of {@link AIPEntity} matching the provided specification
+     *
      * @param aipEntitySpecification
      * @param pageable
      * @return a page of {@link AIPEntity}
@@ -70,6 +72,7 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
 
     /**
      * Retrieve a list of aips thanks to their aipId
+     *
      * @param aipIds
      */
     Set<AIPEntity> findByAipIdIn(Collection<String> aipIds);
@@ -86,8 +89,7 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
     /**
      * For dump purposes
      */
-    Page<AIPEntity> findByLastUpdateBetween(OffsetDateTime lastDumpDate, OffsetDateTime now,
-            Pageable pageable);
+    Page<AIPEntity> findByLastUpdateBetween(OffsetDateTime lastDumpDate, OffsetDateTime now, Pageable pageable);
 
     Page<AIPEntity> findByLastUpdateLessThan(OffsetDateTime now, Pageable pageable);
 }

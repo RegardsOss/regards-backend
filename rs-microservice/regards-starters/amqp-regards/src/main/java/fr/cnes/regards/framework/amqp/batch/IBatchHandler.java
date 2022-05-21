@@ -31,8 +31,8 @@ import java.util.Optional;
 
 /**
  * @param <M> Type of messages you are handling
- *
- * Interface identifying classes that can handle message from the broker
+ *            <p>
+ *            Interface identifying classes that can handle message from the broker
  * @author svissier
  */
 public interface IBatchHandler<M> extends IHandler<M> {
@@ -63,9 +63,10 @@ public interface IBatchHandler<M> extends IHandler<M> {
      * This method is called for each message that cannot be converted
      * by the selected JSON converter before message gets routed to DLQ.<br/>
      * So system may manage business behavior programmatically.
-     *
+     * <p>
      * If not, return <code>false</code> so the default behavior will be applied (e.g. project or instance notification).
-     * @param message the message
+     *
+     * @param message      the message
      * @param errorMessage the message conversion error
      * @return <code>true</code> or <code>false</code> to respectively enable or disable the sending of default notifications.
      */
@@ -91,6 +92,7 @@ public interface IBatchHandler<M> extends IHandler<M> {
      * This method is called once for each tenant with messages in the current batch.<br/>
      * Indeed, a batch is composed of the n first messages in the queue without consideration of the tenant.
      * So the batch listener dispatches them by tenant under the hood to make a contextual call per tenant.
+     *
      * @param messages messages to manage
      */
     default void handleBatchWithRaw(List<M> messages, List<Message> rawMessages) {
@@ -124,7 +126,9 @@ public interface IBatchHandler<M> extends IHandler<M> {
     /**
      * @return dlq routing queue value.
      */
-    default Optional<String> getDLQRoutingKey() { return Optional.empty(); }
+    default Optional<String> getDLQRoutingKey() {
+        return Optional.empty();
+    }
 
     @Override
     default void handle(TenantWrapper<M> wrapper) {

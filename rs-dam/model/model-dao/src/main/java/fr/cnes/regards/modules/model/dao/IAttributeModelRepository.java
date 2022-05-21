@@ -18,31 +18,24 @@
  */
 package fr.cnes.regards.modules.model.dao;
 
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.support.JpaRepositoryImplementation;
+import org.springframework.stereotype.Repository;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.support.JpaRepositoryImplementation;
-import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Repository;
-
-import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.model.dto.properties.PropertyType;
-
 /**
- *
  * {@link AttributeModel} repository
  *
  * @author Marc Sordi
- *
  */
 @Repository
-public interface IAttributeModelRepository
-        extends JpaRepositoryImplementation<AttributeModel, Long> {
+public interface IAttributeModelRepository extends JpaRepositoryImplementation<AttributeModel, Long> {
 
     List<AttributeModel> findAll();
 
@@ -63,6 +56,7 @@ public interface IAttributeModelRepository
 
     /**
      * Find attributes by name
+     *
      * @param fragmentName
      * @return attributes
      */

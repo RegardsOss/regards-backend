@@ -58,7 +58,7 @@ import java.util.concurrent.ExecutionException;
  * @author Iliana Ghazali
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_savemetadata_job_it",
-        "regards.amqp.enabled=true" })
+    "regards.amqp.enabled=true" })
 @ActiveProfiles(value = { "testAmqp", "noFemHandler", "noscheduler" })
 public class FeatureSaveMetadataJobIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -113,7 +113,7 @@ public class FeatureSaveMetadataJobIT extends AbstractFeatureMultitenantServiceI
 
         // Check folder target/workspace/<microservice>/ exists and contains 1 dump
         Assert.assertTrue("The dump location does not exist", Files.exists(this.dumpLocation));
-        LOGGER.info("this.dumpLocation.toFile().listFiles().length={}",this.dumpLocation.toFile().listFiles().length);
+        LOGGER.info("this.dumpLocation.toFile().listFiles().length={}", this.dumpLocation.toFile().listFiles().length);
         Assert.assertTrue("The dump location does not contains one zip",
                           this.dumpLocation.toFile().listFiles().length == 1);
     }
@@ -141,9 +141,9 @@ public class FeatureSaveMetadataJobIT extends AbstractFeatureMultitenantServiceI
 
         // Check job info in ERROR
         Pageable pageToRequest = PageRequest.of(0, 100);
-        Page<JobInfo> errorJobInfo = jobInfoRepository
-                .findByClassNameAndStatusStatusIn(FeatureSaveMetadataJob.class.getName(), JobStatus.values(),
-                                                  pageToRequest);
+        Page<JobInfo> errorJobInfo = jobInfoRepository.findByClassNameAndStatusStatusIn(FeatureSaveMetadataJob.class.getName(),
+                                                                                        JobStatus.values(),
+                                                                                        pageToRequest);
         Assert.assertEquals(1L, errorJobInfo.getTotalElements());
         Assert.assertEquals(JobStatus.FAILED, errorJobInfo.getContent().get(0).getStatus().getStatus());
 

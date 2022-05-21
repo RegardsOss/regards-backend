@@ -22,6 +22,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * GSON properties
+ *
  * @author Marc Sordi
  */
 @ConfigurationProperties(prefix = "regards.gson")

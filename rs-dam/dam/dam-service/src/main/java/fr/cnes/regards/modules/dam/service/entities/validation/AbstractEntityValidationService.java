@@ -18,15 +18,6 @@
  */
 package fr.cnes.regards.modules.dam.service.entities.validation;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.StringJoiner;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
-import org.springframework.validation.Errors;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
@@ -35,13 +26,20 @@ import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.service.validation.AbstractValidationService;
 import fr.cnes.regards.modules.model.service.validation.IModelFinder;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
+import org.springframework.validation.Errors;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.StringJoiner;
 
 /**
  * @author Marc SORDI
- *
  */
 public abstract class AbstractEntityValidationService<F extends EntityFeature, U extends AbstractEntity<F>>
-        extends AbstractValidationService<F> implements IEntityValidationService<U> {
+    extends AbstractValidationService<F> implements IEntityValidationService<U> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractEntityValidationService.class);
 

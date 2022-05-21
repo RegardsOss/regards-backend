@@ -67,11 +67,10 @@ import java.util.UUID;
 
 /**
  * @author sbinda
- *
  */
 @TestPropertySource(properties = { "spring.jpa.show-sql=true",
-        "spring.jpa.properties.hibernate.default_schema=ingest_store_flow_request_it" },
-        locations = { "classpath:application-test.properties" })
+    "spring.jpa.properties.hibernate.default_schema=ingest_store_flow_request_it" },
+    locations = { "classpath:application-test.properties" })
 @ActiveProfiles({ "noscheduler" })
 public class StorageResponseFlowRequestIT extends IngestMultitenantServiceIT {
 
@@ -106,8 +105,14 @@ public class StorageResponseFlowRequestIT extends IngestMultitenantServiceIT {
         String storePath = null;
         MimeType mimeType = MediaType.APPLICATION_JSON;
         SIP sip = SIP.build(EntityType.DATA, providerId);
-        SIPEntity sipEntity = SIPEntity.build(getDefaultTenant(), IngestMetadata
-                                                      .build(sessionOwner, session, "ingestChain", Sets.newHashSet(), StorageMetadata.build(storage)), sip, 1,
+        SIPEntity sipEntity = SIPEntity.build(getDefaultTenant(),
+                                              IngestMetadata.build(sessionOwner,
+                                                                   session,
+                                                                   "ingestChain",
+                                                                   Sets.newHashSet(),
+                                                                   StorageMetadata.build(storage)),
+                                              sip,
+                                              1,
                                               SIPState.INGESTED);
         sipEntity.setChecksum(UUID.randomUUID().toString());
         sipEntity.setLastUpdate(OffsetDateTime.now());
@@ -128,15 +133,32 @@ public class StorageResponseFlowRequestIT extends IngestMultitenantServiceIT {
         // Generated associated storage response
         String groupId = UUID.randomUUID().toString();
         Collection<RequestResultInfoDTO> results = Sets.newHashSet();
-        results.add(RequestResultInfoDTO.build(groupId, fileToStoreChecksum, storage, storePath, owners,
-                                               FileReferenceDTO.build(OffsetDateTime.now(), FileReferenceMetaInfoDTO
-                                                                              .build(fileToStoreChecksum, "MD5", fileName, 10L, null, null,
-                                                                                     MediaType.APPLICATION_JSON, null),
+        results.add(RequestResultInfoDTO.build(groupId,
+                                               fileToStoreChecksum,
+                                               storage,
+                                               storePath,
+                                               owners,
+                                               FileReferenceDTO.build(OffsetDateTime.now(),
+                                                                      FileReferenceMetaInfoDTO.build(fileToStoreChecksum,
+                                                                                                     "MD5",
+                                                                                                     fileName,
+                                                                                                     10L,
+                                                                                                     null,
+                                                                                                     null,
+                                                                                                     MediaType.APPLICATION_JSON,
+                                                                                                     null),
                                                                       FileLocationDTO.build(storage, storedUrl),
-                                                                      owners), null));
-        IngestRequest request = IngestRequest.build(null, IngestMetadata
-                                                            .build(sessionOwner, session, "ingestChain", Sets.newHashSet(), StorageMetadata.build(storage)),
-                                                    InternalRequestState.RUNNING, IngestRequestStep.LOCAL_INIT, sip);
+                                                                      owners),
+                                               null));
+        IngestRequest request = IngestRequest.build(null,
+                                                    IngestMetadata.build(sessionOwner,
+                                                                         session,
+                                                                         "ingestChain",
+                                                                         Sets.newHashSet(),
+                                                                         StorageMetadata.build(storage)),
+                                                    InternalRequestState.RUNNING,
+                                                    IngestRequestStep.LOCAL_INIT,
+                                                    sip);
         request.setStep(IngestRequestStep.REMOTE_STORAGE_REQUESTED, 1000);
         // Create associated IngestRequest
         request.setRemoteStepGroupIds(Lists.newArrayList(groupId));
@@ -154,12 +176,14 @@ public class StorageResponseFlowRequestIT extends IngestMultitenantServiceIT {
         System.out.printf("Duration : %d ms", System.currentTimeMillis() - start);
         // Check results
         // delete ingest requests if notification are active
-        if(initDefaultNotificationSettings()) {
+        if (initDefaultNotificationSettings()) {
             mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
         }
-        Assert.assertEquals(0, requestService.findRequestDtos(
-                SearchRequestsParameters.build().withSessionOwner("sessionOwner")
-                        .withRequestType(RequestTypeEnum.INGEST), PageRequest.of(0, 10)).getTotalElements());
+        Assert.assertEquals(0,
+                            requestService.findRequestDtos(SearchRequestsParameters.build()
+                                                                                   .withSessionOwner("sessionOwner")
+                                                                                   .withRequestType(RequestTypeEnum.INGEST),
+                                                           PageRequest.of(0, 10)).getTotalElements());
         aipRepo.findAll().forEach(a -> {
             Assert.assertEquals(AIPState.STORED, a.getState());
         });
@@ -173,12 +197,14 @@ public class StorageResponseFlowRequestIT extends IngestMultitenantServiceIT {
         System.out.printf("Duration : %d ms\n", System.currentTimeMillis() - start);
         // Check results
         // delete ingest requests if notification are active
-        if(initDefaultNotificationSettings()) {
+        if (initDefaultNotificationSettings()) {
             mockNotificationSuccess(RequestTypeConstant.INGEST_VALUE);
         }
-        Assert.assertEquals(0, requestService.findRequestDtos(
-                SearchRequestsParameters.build().withSessionOwner("sessionOwner")
-                        .withRequestType(RequestTypeEnum.INGEST), PageRequest.of(0, 10)).getTotalElements());
+        Assert.assertEquals(0,
+                            requestService.findRequestDtos(SearchRequestsParameters.build()
+                                                                                   .withSessionOwner("sessionOwner")
+                                                                                   .withRequestType(RequestTypeEnum.INGEST),
+                                                           PageRequest.of(0, 10)).getTotalElements());
         aipRepo.findAll().forEach(a -> {
             Assert.assertEquals(AIPState.STORED, a.getState());
         });

@@ -18,23 +18,14 @@
  */
 package fr.cnes.regards.modules.indexer.dao.spatial;
 
-import java.util.stream.Collectors;
-
-import fr.cnes.regards.framework.geojson.geometry.AbstractGeometry;
-import fr.cnes.regards.framework.geojson.geometry.GeometryCollection;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.geojson.geometry.IGeometryVisitor;
-import fr.cnes.regards.framework.geojson.geometry.LineString;
-import fr.cnes.regards.framework.geojson.geometry.MultiLineString;
-import fr.cnes.regards.framework.geojson.geometry.MultiPoint;
-import fr.cnes.regards.framework.geojson.geometry.MultiPolygon;
-import fr.cnes.regards.framework.geojson.geometry.Point;
-import fr.cnes.regards.framework.geojson.geometry.Polygon;
-import fr.cnes.regards.framework.geojson.geometry.Unlocated;
+import fr.cnes.regards.framework.geojson.geometry.*;
 import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
+
+import java.util.stream.Collectors;
 
 /**
  * IGeometryVisitor permitting to transform a Geometry from one Crs to another
+ *
  * @author oroussel
  */
 public class GeometryTransformerVisitor implements IGeometryVisitor<IGeometry> {
@@ -51,8 +42,10 @@ public class GeometryTransformerVisitor implements IGeometryVisitor<IGeometry> {
     @Override
     public GeometryCollection visitGeometryCollection(GeometryCollection geometry) {
         GeometryCollection geomColl = new GeometryCollection();
-        geomColl.setGeometries(geomColl.getGeometries().stream().map(g -> (AbstractGeometry<?>) g.accept(this))
-                .collect(Collectors.toList()));
+        geomColl.setGeometries(geomColl.getGeometries()
+                                       .stream()
+                                       .map(g -> (AbstractGeometry<?>) g.accept(this))
+                                       .collect(Collectors.toList()));
         return geomColl;
     }
 

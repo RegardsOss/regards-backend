@@ -24,7 +24,6 @@ import fr.cnes.regards.modules.storage.domain.database.request.FileStorageReques
  * POJO to centralize information about {@link FileStorageRequest} execution results.
  *
  * @author Sébastien Binda
- *
  */
 public class FileStorageRequestResultDTO {
 

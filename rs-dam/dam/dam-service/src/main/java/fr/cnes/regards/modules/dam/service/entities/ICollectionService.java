@@ -22,7 +22,9 @@ import fr.cnes.regards.modules.dam.domain.entities.Collection;
 
 /**
  * Qualified interface for Collection entity service
+ *
  * @author oroussel
  */
 public interface ICollectionService extends IEntityService<Collection> {
+
 }

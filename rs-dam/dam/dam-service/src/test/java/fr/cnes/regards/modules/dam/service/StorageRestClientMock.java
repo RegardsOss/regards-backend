@@ -24,6 +24,7 @@ import java.util.Set;
 @Primary
 @Component
 public class StorageRestClientMock implements IStorageRestClient {
+
     @Override
     public Response downloadFile(String checksum, Boolean isContentInline) {
         return null;
@@ -35,18 +36,18 @@ public class StorageRestClientMock implements IStorageRestClient {
         pluginMetaData.setInterfaceNames(Sets.newHashSet(IOnlineStorageLocation.class.getName()));
         PluginConfiguration pluginConfiguration = new PluginConfiguration();
         pluginConfiguration.setMetaData(pluginMetaData);
-        StorageLocationDTO storageLocationDTO = new StorageLocationDTO(
-                "Local",
-                0L,
-                0L,
-                0L,
-                0L,
-                true,
-                true,
-                true,
-                new StorageLocationConfiguration("name", pluginConfiguration, 0L),
-                true
-        );
+        StorageLocationDTO storageLocationDTO = new StorageLocationDTO("Local",
+                                                                       0L,
+                                                                       0L,
+                                                                       0L,
+                                                                       0L,
+                                                                       true,
+                                                                       true,
+                                                                       true,
+                                                                       new StorageLocationConfiguration("name",
+                                                                                                        pluginConfiguration,
+                                                                                                        0L),
+                                                                       true);
         List<EntityModel<StorageLocationDTO>> list = new ArrayList<>();
         list.add(EntityModel.of(storageLocationDTO));
         return ResponseEntity.ok(list);
@@ -68,7 +69,8 @@ public class StorageRestClientMock implements IStorageRestClient {
     }
 
     @Override
-    public ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(String userEmail, @Valid DownloadQuotaLimitsDto quotaLimits) {
+    public ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(String userEmail,
+                                                                    @Valid DownloadQuotaLimitsDto quotaLimits) {
         return null;
     }
 

@@ -38,35 +38,47 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
-@TestPropertySource(locations = { "classpath:test.properties" }, properties = { "regards.tenant=complex_search",
-        "spring.jpa.properties.hibernate.default_schema=complex_search" })
+@TestPropertySource(locations = { "classpath:test.properties" },
+    properties = { "regards.tenant=complex_search", "spring.jpa.properties.hibernate.default_schema=complex_search" })
 @MultitenantTransactional
 public class ComplexSeachControllerIT extends AbstractEngineIT {
 
-    private SearchRequest createSearchRequest(String engineType, String datasetUrn, OffsetDateTime date,
-            List<String> excludeIds) {
-        return new SearchRequest(engineType, datasetUrn, new LinkedMultiValueMap<>(), Lists.newArrayList(), excludeIds,
-                date);
-    }
-
-    private SearchRequest createSearchRequestIncludes(String engineType, String datasetUrn, OffsetDateTime date,
-            List<String> includeIds) {
-        return new SearchRequest(engineType, datasetUrn, null, includeIds, Lists.newArrayList(),
+    private SearchRequest createSearchRequest(String engineType,
+                                              String datasetUrn,
+                                              OffsetDateTime date,
+                                              List<String> excludeIds) {
+        return new SearchRequest(engineType,
+                                 datasetUrn,
+                                 new LinkedMultiValueMap<>(),
+                                 Lists.newArrayList(),
+                                 excludeIds,
                                  date);
     }
 
-    private SearchRequest createSearchRequest(String engineType, String datasetUrn, String paramKey,
-            String paramValue) {
+    private SearchRequest createSearchRequestIncludes(String engineType,
+                                                      String datasetUrn,
+                                                      OffsetDateTime date,
+                                                      List<String> includeIds) {
+        return new SearchRequest(engineType, datasetUrn, null, includeIds, Lists.newArrayList(), date);
+    }
+
+    private SearchRequest createSearchRequest(String engineType,
+                                              String datasetUrn,
+                                              String paramKey,
+                                              String paramValue) {
         return createSearchRequest(engineType, datasetUrn, paramKey, paramValue, OffsetDateTime.now(), null);
     }
 
-    private SearchRequest createSearchRequest(String engineType, String datasetUrn, String paramKey, String paramValue,
-            OffsetDateTime date, List<String> excludeIds) {
+    private SearchRequest createSearchRequest(String engineType,
+                                              String datasetUrn,
+                                              String paramKey,
+                                              String paramValue,
+                                              OffsetDateTime date,
+                                              List<String> excludeIds) {
         MultiValueMap<String, String> searchParameters = new LinkedMultiValueMap<>();
         searchParameters.add(paramKey, paramValue);
         return new SearchRequest(engineType, datasetUrn, searchParameters, excludeIds, Lists.newArrayList(), date);
     }
-
 
     @Test
     public void searchWithManyIds() {
@@ -81,14 +93,14 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
         request.setRequests(requests);
 
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expectValue("$.metadata.totalElements",2);
+        customizer.expectValue("$.metadata.totalElements", 2);
         performDefaultPost(ComplexSearchController.TYPE_MAPPING, request, customizer, "Search all error");
     }
 
     @Test
     public void searchWithTooManyIds() {
         List<String> ids = Lists.newArrayList();
-        for (int i=0; i<2_000;i++) {
+        for (int i = 0; i < 2_000; i++) {
             ids.add(UUID.randomUUID().toString());
         }
         SearchRequest r = createSearchRequestIncludes(LegacySearchEngine.PLUGIN_ID, null, OffsetDateTime.now(), ids);
@@ -111,22 +123,29 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
 
     @Test
     public void searchAtttributes() {
-        SearchRequest request = createSearchRequest(LegacySearchEngine.PLUGIN_ID, astroObjects.get(SOLAR_SYSTEM)
-                .getIpId().toString(), "q", String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT)));
+        SearchRequest request = createSearchRequest(LegacySearchEngine.PLUGIN_ID,
+                                                    astroObjects.get(SOLAR_SYSTEM).getIpId().toString(),
+                                                    "q",
+                                                    String.format("%s:%s",
+                                                                  PLANET_TYPE,
+                                                                  protect(PLANET_TYPE_GAS_GIANT)));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         // Should be 8 attributes associated to model planet result of the dataobject search
         customizer.expectToHaveSize("$", 8);
         performDefaultPost(ComplexSearchController.TYPE_MAPPING + ComplexSearchController.SEARCH_DATAOBJECTS_ATTRIBUTES,
-                           request, customizer, "Search all error");
+                           request,
+                           customizer,
+                           "Search all error");
     }
 
     @Test
     public void searchWithSingleEngine() {
         ComplexSearchRequest request = new ComplexSearchRequest(Lists.newArrayList(DataType.values()));
         request.getRequests()
-                .add(createSearchRequest(LegacySearchEngine.PLUGIN_ID,
-                                         astroObjects.get(SOLAR_SYSTEM).getIpId().toString(), "q",
-                                         String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT))));
+               .add(createSearchRequest(LegacySearchEngine.PLUGIN_ID,
+                                        astroObjects.get(SOLAR_SYSTEM).getIpId().toString(),
+                                        "q",
+                                        String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT))));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         // Should be 2 for the legacy request on planet type
         customizer.expectValue("$.metadata.totalElements", 2);
@@ -137,10 +156,11 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
     public void searchWithSingleEngineAndUnknownDataset() {
         ComplexSearchRequest request = new ComplexSearchRequest(Lists.newArrayList(DataType.values()));
         request.getRequests()
-                .add(createSearchRequest(LegacySearchEngine.PLUGIN_ID,
-                                         "URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:" + UUID.randomUUID()
-                                                 + ":V2",
-                                         "q", String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT))));
+               .add(createSearchRequest(LegacySearchEngine.PLUGIN_ID,
+                                        "URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:" + UUID.randomUUID()
+                                            + ":V2",
+                                        "q",
+                                        String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT))));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         // No entity matching the given dataset
         customizer.expectValue("$.metadata.totalElements", 0);
@@ -151,10 +171,12 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
     public void searchWithSingleEngineAndOldDate() {
         ComplexSearchRequest request = new ComplexSearchRequest(Lists.newArrayList(DataType.values()));
         request.getRequests()
-                .add(createSearchRequest(LegacySearchEngine.PLUGIN_ID,
-                                         astroObjects.get(SOLAR_SYSTEM).getIpId().toString(), "q",
-                                         String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT)),
-                                         OffsetDateTime.now().minusDays(20), null));
+               .add(createSearchRequest(LegacySearchEngine.PLUGIN_ID,
+                                        astroObjects.get(SOLAR_SYSTEM).getIpId().toString(),
+                                        "q",
+                                        String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT)),
+                                        OffsetDateTime.now().minusDays(20),
+                                        null));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         customizer.expectValue("$.metadata.totalElements", 0);
         performDefaultPost(ComplexSearchController.TYPE_MAPPING, request, customizer, "Search all error");
@@ -164,9 +186,10 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
     public void searchWithMultipleEngines() {
         ComplexSearchRequest request = new ComplexSearchRequest(Lists.newArrayList(DataType.values()));
         request.getRequests()
-                .add(createSearchRequest(LegacySearchEngine.PLUGIN_ID,
-                                         astroObjects.get(SOLAR_SYSTEM).getIpId().toString(), "q",
-                                         String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT))));
+               .add(createSearchRequest(LegacySearchEngine.PLUGIN_ID,
+                                        astroObjects.get(SOLAR_SYSTEM).getIpId().toString(),
+                                        "q",
+                                        String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT))));
         request.getRequests().add(createSearchRequest(OpenSearchEngine.ENGINE_ID, null, PLANET, MERCURY));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         // Should be 2 for the legacy request on planet type
@@ -179,13 +202,17 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
     public void searchWithMultipleEnginesAndExcludeIds() {
         ComplexSearchRequest request = new ComplexSearchRequest(Lists.newArrayList(DataType.values()));
         request.getRequests()
-                .add(createSearchRequest(LegacySearchEngine.PLUGIN_ID, null, "q",
-                                         String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT)),
-                                         OffsetDateTime.now(),
-                                         Lists.newArrayList(astroObjects.get(JUPITER).getIpId().toString())));
+               .add(createSearchRequest(LegacySearchEngine.PLUGIN_ID,
+                                        null,
+                                        "q",
+                                        String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT)),
+                                        OffsetDateTime.now(),
+                                        Lists.newArrayList(astroObjects.get(JUPITER).getIpId().toString())));
         request.getRequests()
-                .add(createSearchRequest(OpenSearchEngine.ENGINE_ID,
-                                         astroObjects.get(SOLAR_SYSTEM).getIpId().toString(), PLANET, MERCURY));
+               .add(createSearchRequest(OpenSearchEngine.ENGINE_ID,
+                                        astroObjects.get(SOLAR_SYSTEM).getIpId().toString(),
+                                        PLANET,
+                                        MERCURY));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         // Should be 1 for the legacy request (2) on planet type (-1) on exluded ipId of jupiter.
         // Should be 1 for the open search request on planet name
@@ -197,8 +224,10 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
     public void searchWithSingleEngineAndExcludeIds() {
         ComplexSearchRequest request = new ComplexSearchRequest(Lists.newArrayList(DataType.values()));
         request.getRequests()
-                .add(createSearchRequest(LegacySearchEngine.PLUGIN_ID, null, OffsetDateTime.now(),
-                                         Lists.newArrayList(astroObjects.get(JUPITER).getIpId().toString())));
+               .add(createSearchRequest(LegacySearchEngine.PLUGIN_ID,
+                                        null,
+                                        OffsetDateTime.now(),
+                                        Lists.newArrayList(astroObjects.get(JUPITER).getIpId().toString())));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         // Should be 14 for the legacy all request (-1) for excluded id of jupiter
         customizer.expectValue("$.metadata.totalElements", 13);
@@ -212,7 +241,9 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
         customizer.expectValue("$.documentsCount", 14);
         customizer.expectValue("$.filesCount", 1);
         customizer.expectValue("$.filesSize", 10);
-        performDefaultPost(ComplexSearchController.TYPE_MAPPING + ComplexSearchController.SUMMARY_MAPPING, request,
-                           customizer, "Search all error");
+        performDefaultPost(ComplexSearchController.TYPE_MAPPING + ComplexSearchController.SUMMARY_MAPPING,
+                           request,
+                           customizer,
+                           "Search all error");
     }
 }

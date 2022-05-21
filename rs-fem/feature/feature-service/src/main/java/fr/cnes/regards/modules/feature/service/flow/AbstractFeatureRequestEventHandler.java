@@ -49,7 +49,6 @@ public abstract class AbstractFeatureRequestEventHandler<M> implements IBatchHan
         return getFeatureService().denyMessage(message, errorMessage);
     }
 
-
     @Override
     public Errors validate(M message) {
         Errors errors = new BeanPropertyBindingResult(message, message.getClass().getName());

@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.framework.authentication.internal;
 
-import java.util.Set;
-
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
@@ -27,13 +27,13 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
+import java.util.Set;
 
 /**
  * Class CustomTokenEnhancer
- *
+ * <p>
  * Add custom properties "CLAIMS" into each generated tokens
+ *
  * @author Sébastien Binda
  */
 public class CustomTokenEnhancer implements TokenEnhancer {
@@ -58,9 +58,12 @@ public class CustomTokenEnhancer implements TokenEnhancer {
         final UserDetails user = (UserDetails) pAuthentication.getUserAuthentication().getPrincipal();
         final Set<String> scopes = pAuthentication.getOAuth2Request().getScope();
         if ((jwtService != null) && (user != null) && (scopes != null) && !scopes.isEmpty()) {
-            ((DefaultOAuth2AccessToken) pAccessToken).setAdditionalInformation(jwtService
-                    .generateClaims(scopes.stream().findFirst().get(), user.getRole(), user.getLogin(),
-                                    user.getEmail()));
+            ((DefaultOAuth2AccessToken) pAccessToken).setAdditionalInformation(jwtService.generateClaims(scopes.stream()
+                                                                                                               .findFirst()
+                                                                                                               .get(),
+                                                                                                         user.getRole(),
+                                                                                                         user.getLogin(),
+                                                                                                         user.getEmail()));
         } else {
             LOG.error("[OAUTH2 AUTHENTICATION] Error adding claims to JWT token.");
         }

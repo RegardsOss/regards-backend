@@ -42,7 +42,8 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
     @Schema(description = "Session that emitted the request", example = "Today_Mission1")
     private String session;
 
-    @Schema(description = "Name of the Worker type matching the Request Content Type", example = "WorkerAcceptingContentType1")
+    @Schema(description = "Name of the Worker type matching the Request Content Type",
+        example = "WorkerAcceptingContentType1")
     private String dispatchedWorkerType;
 
     @Valid
@@ -66,10 +67,7 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
     }
 
     public static SearchRequestParameters build() {
-        return new SearchRequestParameters()
-                .withContentTypesExcluded()
-                .withStatusesExcluded()
-                .withIdsExcluded();
+        return new SearchRequestParameters().withContentTypesExcluded().withStatusesExcluded().withIdsExcluded();
     }
 
     public SearchRequestParameters withSource(String source) {
@@ -118,9 +116,11 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
         return this;
     }
 
-    public ValuesRestriction<Long> getIds() { return this.ids; }
+    public ValuesRestriction<Long> getIds() {
+        return this.ids;
+    }
 
-    public SearchRequestParameters withIdsIncluded(Long ...ids) {
+    public SearchRequestParameters withIdsIncluded(Long... ids) {
         this.ids = new ValuesRestriction<Long>().withInclude(Arrays.asList(ids));
         return this;
     }
@@ -130,7 +130,7 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
         return this;
     }
 
-    public SearchRequestParameters withIdsExcluded(Long ...ids) {
+    public SearchRequestParameters withIdsExcluded(Long... ids) {
         this.ids = new ValuesRestriction<Long>().withExclude(Arrays.asList(ids));
         return this;
     }
@@ -140,9 +140,11 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
         return this;
     }
 
-    public ValuesRestriction<RequestStatus> getStatuses() { return this.statuses; }
+    public ValuesRestriction<RequestStatus> getStatuses() {
+        return this.statuses;
+    }
 
-    public SearchRequestParameters withStatusesIncluded(RequestStatus ...status) {
+    public SearchRequestParameters withStatusesIncluded(RequestStatus... status) {
         this.statuses = new ValuesRestriction<RequestStatus>().withInclude(Arrays.asList(status));
         return this;
     }
@@ -152,7 +154,7 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
         return this;
     }
 
-    public SearchRequestParameters withStatusesExcluded(RequestStatus ...status) {
+    public SearchRequestParameters withStatusesExcluded(RequestStatus... status) {
         this.statuses = new ValuesRestriction<RequestStatus>().withExclude(Arrays.asList(status));
         return this;
     }
@@ -162,7 +164,7 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
         return this;
     }
 
-    public SearchRequestParameters withContentTypesIncluded(String ...contentTypes) {
+    public SearchRequestParameters withContentTypesIncluded(String... contentTypes) {
         this.contentTypes = new ValuesRestriction<String>().withInclude(Arrays.asList(contentTypes));
         return this;
     }
@@ -172,7 +174,7 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
         return this;
     }
 
-    public SearchRequestParameters withContentTypesExcluded(String ...contentTypes) {
+    public SearchRequestParameters withContentTypesExcluded(String... contentTypes) {
         this.contentTypes = new ValuesRestriction<String>().withExclude(Arrays.asList(contentTypes));
         return this;
     }

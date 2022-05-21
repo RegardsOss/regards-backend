@@ -63,9 +63,12 @@ public class NotificationConfigurationServiceIT extends AbstractNotificationMult
         Set<PluginConfiguration> configurations = new HashSet<>();
         String seek = "target";
         String seek_val = "val";
-        PluginConfiguration rule1 = PluginConfiguration.build(DefaultRuleMatcher.PLUGIN_ID, "RULE1", IPluginParam
-                .set(IPluginParam.build(DefaultRuleMatcher.ATTRIBUTE_TO_SEEK_FIELD_NAME, seek),
-                     IPluginParam.build(DefaultRuleMatcher.ATTRIBUTE_VALUE_TO_SEEK_FIELD_NAME, seek_val)));
+        PluginConfiguration rule1 = PluginConfiguration.build(DefaultRuleMatcher.PLUGIN_ID,
+                                                              "RULE1",
+                                                              IPluginParam.set(IPluginParam.build(DefaultRuleMatcher.ATTRIBUTE_TO_SEEK_FIELD_NAME,
+                                                                                                  seek),
+                                                                               IPluginParam.build(DefaultRuleMatcher.ATTRIBUTE_VALUE_TO_SEEK_FIELD_NAME,
+                                                                                                  seek_val)));
         configurations.add(rule1);
         confService.importConfiguration(configurations, null);
 
@@ -76,10 +79,14 @@ public class NotificationConfigurationServiceIT extends AbstractNotificationMult
         // Update
         seek = "targetUpdate";
         seek_val = "update";
-        PluginConfiguration updateRule1 = PluginConfiguration
-                .build(DefaultRuleMatcher.PLUGIN_ID, "RULE1 update", IPluginParam
-                        .set(IPluginParam.build(DefaultRuleMatcher.ATTRIBUTE_TO_SEEK_FIELD_NAME, seek),
-                             IPluginParam.build(DefaultRuleMatcher.ATTRIBUTE_VALUE_TO_SEEK_FIELD_NAME, seek_val)));
+        PluginConfiguration updateRule1 = PluginConfiguration.build(DefaultRuleMatcher.PLUGIN_ID,
+                                                                    "RULE1 update",
+                                                                    IPluginParam.set(IPluginParam.build(
+                                                                                         DefaultRuleMatcher.ATTRIBUTE_TO_SEEK_FIELD_NAME,
+                                                                                         seek),
+                                                                                     IPluginParam.build(
+                                                                                         DefaultRuleMatcher.ATTRIBUTE_VALUE_TO_SEEK_FIELD_NAME,
+                                                                                         seek_val)));
         updateRule1.setBusinessId(rule1.getBusinessId());
         configurations.clear();
         configurations.add(updateRule1);
@@ -95,26 +102,28 @@ public class NotificationConfigurationServiceIT extends AbstractNotificationMult
         Set<PluginConfiguration> configurations = new HashSet<>();
         Set<RuleRecipientsAssociation> associations = new HashSet<>();
 
-        PluginConfiguration rule1 = PluginConfiguration
-                .build(DefaultRuleMatcher.PLUGIN_ID, "RULE1",
-                       IPluginParam
-                               .set(IPluginParam.build(DefaultRuleMatcher.ATTRIBUTE_TO_SEEK_FIELD_NAME, "target"),
-                                    IPluginParam.build(DefaultRuleMatcher.ATTRIBUTE_VALUE_TO_SEEK_FIELD_NAME, "val")));
+        PluginConfiguration rule1 = PluginConfiguration.build(DefaultRuleMatcher.PLUGIN_ID,
+                                                              "RULE1",
+                                                              IPluginParam.set(IPluginParam.build(DefaultRuleMatcher.ATTRIBUTE_TO_SEEK_FIELD_NAME,
+                                                                                                  "target"),
+                                                                               IPluginParam.build(DefaultRuleMatcher.ATTRIBUTE_VALUE_TO_SEEK_FIELD_NAME,
+                                                                                                  "val")));
         configurations.add(rule1);
 
-        PluginConfiguration recipient1 = PluginConfiguration
-                .build(RecipientSender3.PLUGIN_ID, "RECIPIENT1",
-                       IPluginParam.set());
+        PluginConfiguration recipient1 = PluginConfiguration.build(RecipientSender3.PLUGIN_ID,
+                                                                   "RECIPIENT1",
+                                                                   IPluginParam.set());
         configurations.add(recipient1);
 
-        PluginConfiguration recipient2 = PluginConfiguration
-                .build(RecipientSender3.PLUGIN_ID, "RECIPIENT2",
-                       IPluginParam.set());
+        PluginConfiguration recipient2 = PluginConfiguration.build(RecipientSender3.PLUGIN_ID,
+                                                                   "RECIPIENT2",
+                                                                   IPluginParam.set());
         configurations.add(recipient2);
 
         // Association
-        associations.add(RuleRecipientsAssociation
-                .build(rule1.getBusinessId(), Sets.newHashSet(recipient1.getBusinessId(), recipient2.getBusinessId())));
+        associations.add(RuleRecipientsAssociation.build(rule1.getBusinessId(),
+                                                         Sets.newHashSet(recipient1.getBusinessId(),
+                                                                         recipient2.getBusinessId())));
 
         confService.importConfiguration(configurations, associations);
     }
@@ -134,11 +143,12 @@ public class NotificationConfigurationServiceIT extends AbstractNotificationMult
         Set<PluginConfiguration> configurations = new HashSet<>();
         Set<RuleRecipientsAssociation> associations = new HashSet<>();
 
-        PluginConfiguration rule1 = PluginConfiguration
-                .build(DefaultRuleMatcher.PLUGIN_ID, "RULE1",
-                       IPluginParam
-                               .set(IPluginParam.build(DefaultRuleMatcher.ATTRIBUTE_TO_SEEK_FIELD_NAME, "target"),
-                                    IPluginParam.build(DefaultRuleMatcher.ATTRIBUTE_VALUE_TO_SEEK_FIELD_NAME, "val")));
+        PluginConfiguration rule1 = PluginConfiguration.build(DefaultRuleMatcher.PLUGIN_ID,
+                                                              "RULE1",
+                                                              IPluginParam.set(IPluginParam.build(DefaultRuleMatcher.ATTRIBUTE_TO_SEEK_FIELD_NAME,
+                                                                                                  "target"),
+                                                                               IPluginParam.build(DefaultRuleMatcher.ATTRIBUTE_VALUE_TO_SEEK_FIELD_NAME,
+                                                                                                  "val")));
         configurations.add(rule1);
 
         // Association

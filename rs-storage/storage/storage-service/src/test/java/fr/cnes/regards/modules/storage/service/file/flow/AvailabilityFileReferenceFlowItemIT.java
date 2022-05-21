@@ -60,15 +60,15 @@ import java.util.concurrent.ExecutionException;
  * Test class
  *
  * @author Sébastien Binda
- *
  */
 @ActiveProfiles({ "noscheduler" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_availability_tests" }, locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_availability_tests" },
+    locations = { "classpath:application-test.properties" })
 public class AvailabilityFileReferenceFlowItemIT extends AbstractStorageIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AvailabilityFileReferenceFlowItemIT.class);
 
-    private static final  String SESSION_OWNER_1 = "SOURCE 1";
+    private static final String SESSION_OWNER_1 = "SOURCE 1";
 
     private static final String SESSION_1 = "SESSION 1";
 
@@ -112,21 +112,45 @@ public class AvailabilityFileReferenceFlowItemIT extends AbstractStorageIT {
         FileReference file4 = this.generateRandomStoredOnlineFileReference("file.online.1.test", Optional.empty());
         FileReference file5 = this.generateRandomStoredOnlineFileReference("file.online.2.test", Optional.empty());
         // Simulate reference of 2 files offline
-        FileReference file6 = this.referenceRandomFile("owner", "file", "file.offline.1.test", "somewhere",
-                                                       SESSION_OWNER_1, SESSION_1).get();
-        FileReference file7 = this.referenceRandomFile("owner", "file", "file.offline.2.test", "somewhere-else",
-                                                       SESSION_OWNER_1, SESSION_1).get();
+        FileReference file6 = this.referenceRandomFile("owner",
+                                                       "file",
+                                                       "file.offline.1.test",
+                                                       "somewhere",
+                                                       SESSION_OWNER_1,
+                                                       SESSION_1).get();
+        FileReference file7 = this.referenceRandomFile("owner",
+                                                       "file",
+                                                       "file.offline.2.test",
+                                                       "somewhere-else",
+                                                       SESSION_OWNER_1,
+                                                       SESSION_1).get();
         // Simulate storage of a file in two locations near line and online
         String checksum = UUID.randomUUID().toString();
-        this.generateStoredFileReference(checksum, "owner", "file.online.nealine.test", ONLINE_CONF_LABEL,
-                                         Optional.empty(), Optional.empty(), SESSION_OWNER_1, SESSION_1);
-        this.generateStoredFileReference(checksum, "owner", "file.online.nealine.test", NEARLINE_CONF_LABEL,
-                                         Optional.empty(), Optional.empty(), SESSION_OWNER_1, SESSION_1);
+        this.generateStoredFileReference(checksum,
+                                         "owner",
+                                         "file.online.nealine.test",
+                                         ONLINE_CONF_LABEL,
+                                         Optional.empty(),
+                                         Optional.empty(),
+                                         SESSION_OWNER_1,
+                                         SESSION_1);
+        this.generateStoredFileReference(checksum,
+                                         "owner",
+                                         "file.online.nealine.test",
+                                         NEARLINE_CONF_LABEL,
+                                         Optional.empty(),
+                                         Optional.empty(),
+                                         SESSION_OWNER_1,
+                                         SESSION_1);
 
-        Set<String> checksums = Sets.newHashSet(file1.getMetaInfo().getChecksum(), file2.getMetaInfo().getChecksum(),
-                                                file3.getMetaInfo().getChecksum(), file4.getMetaInfo().getChecksum(),
-                                                file5.getMetaInfo().getChecksum(), file6.getMetaInfo().getChecksum(),
-                                                file7.getMetaInfo().getChecksum(), checksum);
+        Set<String> checksums = Sets.newHashSet(file1.getMetaInfo().getChecksum(),
+                                                file2.getMetaInfo().getChecksum(),
+                                                file3.getMetaInfo().getChecksum(),
+                                                file4.getMetaInfo().getChecksum(),
+                                                file5.getMetaInfo().getChecksum(),
+                                                file6.getMetaInfo().getChecksum(),
+                                                file7.getMetaInfo().getChecksum(),
+                                                checksum);
         Mockito.clearInvocations(publisher);
         String groupId = UUID.randomUUID().toString();
         AvailabilityFlowItem request = AvailabilityFlowItem.build(checksums, OffsetDateTime.now().plusDays(1), groupId);
@@ -138,7 +162,8 @@ public class AvailabilityFileReferenceFlowItemIT extends AbstractStorageIT {
         // There should be 5 cache request for the 3 files only in near line and 2 files offline.
         // The file stored in two locations online and near line does not need to be restored
         // as its available online.
-        Assert.assertEquals("There should be 5 cache requests created", 5,
+        Assert.assertEquals("There should be 5 cache requests created",
+                            5,
                             fileCacheReqRepo.findByGroupIdAndStatus(groupId, FileRequestStatus.TO_DO).size());
         Assert.assertTrue("A cache request should be done for near line file 1",
                           fileCacheRequestService.search(file1.getMetaInfo().getChecksum()).isPresent());
@@ -188,10 +213,14 @@ public class AvailabilityFileReferenceFlowItemIT extends AbstractStorageIT {
         // Simulate file storage on a near line location
         FileReference file1 = this.generateRandomStoredNearlineFileReference("file.nearline.1.test", Optional.empty());
         // Simulate file in cache
-        cacheService.addFile(file1.getMetaInfo().getChecksum(), 123L, "file.nearline.1.test",
-                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE), DataType.RAWDATA.name(),
+        cacheService.addFile(file1.getMetaInfo().getChecksum(),
+                             123L,
+                             "file.nearline.1.test",
+                             MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM_VALUE),
+                             DataType.RAWDATA.name(),
                              new URL("file", null, "target/cache/test/file.nearline.1.test"),
-                             OffsetDateTime.now().plusDays(1), UUID.randomUUID().toString());
+                             OffsetDateTime.now().plusDays(1),
+                             UUID.randomUUID().toString());
         // Simulate availability request on this file
         Mockito.clearInvocations(publisher);
         AvailabilityFlowItem request = AvailabilityFlowItem.build(Sets.newHashSet(file1.getMetaInfo().getChecksum()),
@@ -208,7 +237,8 @@ public class AvailabilityFileReferenceFlowItemIT extends AbstractStorageIT {
 
         FileReferenceEvent event = this.getFileReferenceEvent(argumentCaptor.getAllValues());
         Assert.assertEquals("File should be available", FileReferenceEventType.AVAILABLE, event.getType());
-        Assert.assertEquals("File available is not the requested one", file1.getMetaInfo().getChecksum(),
+        Assert.assertEquals("File available is not the requested one",
+                            file1.getMetaInfo().getChecksum(),
                             event.getChecksum());
         Assert.assertFalse("No cache request should be created as file is in cache",
                            fileCacheRequestService.search(file1.getMetaInfo().getChecksum()).isPresent());
@@ -226,8 +256,10 @@ public class AvailabilityFileReferenceFlowItemIT extends AbstractStorageIT {
         FileReference file4 = this.generateRandomStoredNearlineFileReference("file4.test", Optional.empty());
         Mockito.clearInvocations(publisher);
 
-        Set<String> checksums = Sets.newHashSet(file1.getMetaInfo().getChecksum(), file2.getMetaInfo().getChecksum(),
-                                                file3.getMetaInfo().getChecksum(), file4.getMetaInfo().getChecksum());
+        Set<String> checksums = Sets.newHashSet(file1.getMetaInfo().getChecksum(),
+                                                file2.getMetaInfo().getChecksum(),
+                                                file3.getMetaInfo().getChecksum(),
+                                                file4.getMetaInfo().getChecksum());
 
         String groupId = UUID.randomUUID().toString();
         AvailabilityFlowItem request = AvailabilityFlowItem.build(checksums, OffsetDateTime.now().plusDays(1), groupId);
@@ -236,19 +268,24 @@ public class AvailabilityFileReferenceFlowItemIT extends AbstractStorageIT {
         handler.handleBatch(items);
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
 
-        Assert.assertEquals("There should be 4 cache requests created", 4,
+        Assert.assertEquals("There should be 4 cache requests created",
+                            4,
                             fileCacheReqRepo.findByGroupIdAndStatus(groupId, FileRequestStatus.TO_DO).size());
 
         Collection<JobInfo> jobs = fileCacheRequestService.scheduleJobs(FileRequestStatus.TO_DO);
         runAndWaitJob(jobs);
 
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
-        Assert.assertEquals("There should be 0 cache requests in TO_DO", 0,
+        Assert.assertEquals("There should be 0 cache requests in TO_DO",
+                            0,
                             fileCacheReqRepo.findByGroupIdAndStatus(groupId, FileRequestStatus.TO_DO).size());
-        Assert.assertEquals("There should be 3 cache requests in ERROR", 3,
+        Assert.assertEquals("There should be 3 cache requests in ERROR",
+                            3,
                             fileCacheReqRepo.findByGroupIdAndStatus(groupId, FileRequestStatus.ERROR).size());
-        Assert.assertEquals("There should be 1 file cache requests", 1, cacheFileRepo
-                .findAllByChecksumIn(Sets.newHashSet(file4.getMetaInfo().getChecksum())).size());
+        Assert.assertEquals("There should be 1 file cache requests",
+                            1,
+                            cacheFileRepo.findAllByChecksumIn(Sets.newHashSet(file4.getMetaInfo().getChecksum()))
+                                         .size());
 
         // there should be 3 notification error for availability of offline files
         // There should be 1 notification for available file
@@ -270,9 +307,11 @@ public class AvailabilityFileReferenceFlowItemIT extends AbstractStorageIT {
         retryHandler.handle(TenantWrapper.build(RetryFlowItem.buildAvailabilityRetry(groupId), getDefaultTenant()));
 
         runtimeTenantResolver.forceTenant(this.getDefaultTenant());
-        Assert.assertEquals("There should be 3 cache requests in TODO", 3,
+        Assert.assertEquals("There should be 3 cache requests in TODO",
+                            3,
                             fileCacheReqRepo.findByGroupIdAndStatus(groupId, FileRequestStatus.TO_DO).size());
-        Assert.assertEquals("There should be 0 cache requests in ERROR", 0,
+        Assert.assertEquals("There should be 0 cache requests in ERROR",
+                            0,
                             fileCacheReqRepo.findByGroupIdAndStatus(groupId, FileRequestStatus.ERROR).size());
     }
 

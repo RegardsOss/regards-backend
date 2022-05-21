@@ -1,8 +1,7 @@
 package fr.cnes.regards.modules.notification.domain;
 
-import org.springframework.context.ApplicationEvent;
-
 import fr.cnes.regards.framework.notification.NotificationLevel;
+import org.springframework.context.ApplicationEvent;
 
 /**
  * Application event aiming to allow the sending process to be triggered when we receive a notification which is "urgent", {@link NotificationLevel#ERROR} or {@link NotificationLevel#FATAL}
@@ -19,6 +18,7 @@ public class NotificationToSendEvent extends ApplicationEvent {
 
     /**
      * Constructor setting the parameter as attribute
+     *
      * @param notification
      */
     public NotificationToSendEvent(Notification notification) {

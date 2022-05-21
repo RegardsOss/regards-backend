@@ -22,11 +22,9 @@ import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 
 /**
- *
  * {@link ISipState} utils
  *
  * @author Marc Sordi
- *
  */
 public final class SipStateManager {
 

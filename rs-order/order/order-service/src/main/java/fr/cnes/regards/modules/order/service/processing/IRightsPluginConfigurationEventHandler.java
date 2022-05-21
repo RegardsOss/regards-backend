@@ -28,8 +28,8 @@ import org.springframework.context.ApplicationListener;
  * have changed.
  *
  * @author Guillaume Andrieu
- *
  */
 public interface IRightsPluginConfigurationEventHandler
-        extends ApplicationListener<ApplicationReadyEvent>, IHandler<RightsPluginConfigurationEvent> {
+    extends ApplicationListener<ApplicationReadyEvent>, IHandler<RightsPluginConfigurationEvent> {
+
 }

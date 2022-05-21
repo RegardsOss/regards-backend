@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.modules.dam.rest.entities.dto;
 
-import java.util.Set;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.urn.UniformResourceName;
+
+import java.util.Set;
 
 /**
  * DTO for POST request to get DataObject attributes associated to given Datasets.
+ *
  * @author sbinda
  */
 public class DatasetDataAttributesRequestBody {

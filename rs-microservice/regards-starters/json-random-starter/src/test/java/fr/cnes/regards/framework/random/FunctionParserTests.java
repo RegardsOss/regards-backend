@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.framework.random;
 
+import fr.cnes.regards.framework.random.function.FunctionDescriptorParser;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import fr.cnes.regards.framework.random.function.FunctionDescriptorParser;
 
 public class FunctionParserTests {
 

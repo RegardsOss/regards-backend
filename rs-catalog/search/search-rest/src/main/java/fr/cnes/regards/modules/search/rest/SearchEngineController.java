@@ -18,34 +18,6 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
-import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.IanaLinkRelations;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkRelation;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -65,6 +37,28 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.service.SearchException;
 import fr.cnes.regards.modules.search.service.engine.ISearchEngineDispatcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.LinkRelation;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This controller manages search engines on top of system search stack<br/>
@@ -161,11 +155,15 @@ public class SearchEngineController implements IEntityLinkBuilder {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_ALL_MAPPING)
     @ResourceAccess(description = "Search engines dispatcher for global search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchAll(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
-            Pageable pageable) throws ModuleException {
+                                       @RequestHeader HttpHeaders headers,
+                                       @RequestParam MultiValueMap<String, String> queryParams,
+                                       Pageable pageable) throws ModuleException {
         LOGGER.debug("Search on all entities delegated to engine \"{}\"", engineType);
-        return dispatcher
-                .dispatchRequest(SearchContext.build(SearchType.ALL, engineType, headers, queryParams, pageable), this);
+        return dispatcher.dispatchRequest(SearchContext.build(SearchType.ALL,
+                                                              engineType,
+                                                              headers,
+                                                              queryParams,
+                                                              pageable), this);
     }
 
     /**
@@ -174,12 +172,16 @@ public class SearchEngineController implements IEntityLinkBuilder {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_ALL_MAPPING_EXTRA)
     @ResourceAccess(description = "Extra mapping for global search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchAllExtra(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @PathVariable(SearchEngineMappings.EXTRA) String extra, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
+                                            @PathVariable(SearchEngineMappings.EXTRA) String extra,
+                                            @RequestHeader HttpHeaders headers,
+                                            @RequestParam MultiValueMap<String, String> queryParams,
+                                            Pageable pageable) throws ModuleException {
         LOGGER.debug("Extra mapping \"{}\" handling delegated to engine \"{}\"", extra, engineType);
-        return dispatcher
-                .dispatchRequest(SearchContext.build(SearchType.ALL, engineType, headers, queryParams, pageable)
-                                         .withExtra(extra), this);
+        return dispatcher.dispatchRequest(SearchContext.build(SearchType.ALL,
+                                                              engineType,
+                                                              headers,
+                                                              queryParams,
+                                                              pageable).withExtra(extra), this);
     }
 
     /**
@@ -188,11 +190,11 @@ public class SearchEngineController implements IEntityLinkBuilder {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_ENTITY_MAPPING)
     @ResourceAccess(description = "Generic endpoint for retrieving an entity", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> getEntity(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @Valid @PathVariable(SearchEngineMappings.URN) String urn, @RequestHeader HttpHeaders headers)
-            throws ModuleException {
+                                       @Valid @PathVariable(SearchEngineMappings.URN) String urn,
+                                       @RequestHeader HttpHeaders headers) throws ModuleException {
         LOGGER.debug("Get entity \"{}\" delegated to engine \"{}\"", urn, engineType);
         return dispatcher.dispatchRequest(SearchContext.build(SearchType.ALL, engineType, headers, null, null)
-                                                  .withUrn(UniformResourceName.fromString(urn)), this);
+                                                       .withUrn(UniformResourceName.fromString(urn)), this);
     }
 
     // Collection mappings
@@ -203,8 +205,9 @@ public class SearchEngineController implements IEntityLinkBuilder {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING)
     @ResourceAccess(description = "Search engines dispatcher for collection search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchAllCollections(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
-            Pageable pageable) throws ModuleException {
+                                                  @RequestHeader HttpHeaders headers,
+                                                  @RequestParam MultiValueMap<String, String> queryParams,
+                                                  Pageable pageable) throws ModuleException {
         LOGGER.debug("Search on all collections delegated to engine \"{}\"", engineType);
         return dispatcher.dispatchRequest(SearchContext.build(SearchType.COLLECTIONS,
                                                               engineType,
@@ -219,15 +222,19 @@ public class SearchEngineController implements IEntityLinkBuilder {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING_EXTRA)
     @ResourceAccess(description = "Extra mapping for collection search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchAllCollectionsExtra(
-            @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @PathVariable(SearchEngineMappings.EXTRA) String extra, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
+        @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
+        @PathVariable(SearchEngineMappings.EXTRA) String extra,
+        @RequestHeader HttpHeaders headers,
+        @RequestParam MultiValueMap<String, String> queryParams,
+        Pageable pageable) throws ModuleException {
         LOGGER.debug("Search all collections extra mapping \"{}\" handling delegated to engine \"{}\"",
                      extra,
                      engineType);
-        return dispatcher
-                .dispatchRequest(SearchContext.build(SearchType.COLLECTIONS, engineType, headers, queryParams, pageable)
-                                         .withExtra(extra), this);
+        return dispatcher.dispatchRequest(SearchContext.build(SearchType.COLLECTIONS,
+                                                              engineType,
+                                                              headers,
+                                                              queryParams,
+                                                              pageable).withExtra(extra), this);
     }
 
     /**
@@ -236,16 +243,21 @@ public class SearchEngineController implements IEntityLinkBuilder {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_COLLECTIONS_PROPERTY_VALUES)
     @ResourceAccess(description = "Get collection property values", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchCollectionPropertyValues(
-            @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @PathVariable(SearchEngineMappings.PROPERTY_NAME) String propertyName, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams,
-            @RequestParam(SearchEngineMappings.MAX_COUNT) int maxCount) throws ModuleException {
+        @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
+        @PathVariable(SearchEngineMappings.PROPERTY_NAME) String propertyName,
+        @RequestHeader HttpHeaders headers,
+        @RequestParam MultiValueMap<String, String> queryParams,
+        @RequestParam(SearchEngineMappings.MAX_COUNT) int maxCount) throws ModuleException {
         LOGGER.debug("Search collection property values for \"{}\" delegated to engine \"{}\"",
                      propertyName,
                      engineType);
-        return dispatcher
-                .dispatchRequest(SearchContext.build(SearchType.COLLECTIONS, engineType, headers, queryParams, null)
-                                         .withPropertyName(propertyName).withMaxCount(maxCount), this);
+        return dispatcher.dispatchRequest(SearchContext.build(SearchType.COLLECTIONS,
+                                                              engineType,
+                                                              headers,
+                                                              queryParams,
+                                                              null)
+                                                       .withPropertyName(propertyName)
+                                                       .withMaxCount(maxCount), this);
     }
 
     /**
@@ -254,11 +266,11 @@ public class SearchEngineController implements IEntityLinkBuilder {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_COLLECTION_MAPPING)
     @ResourceAccess(description = "Allows to retrieve a collection", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> getCollection(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @Valid @PathVariable(SearchEngineMappings.URN) String urn, @RequestHeader HttpHeaders headers)
-            throws ModuleException {
+                                           @Valid @PathVariable(SearchEngineMappings.URN) String urn,
+                                           @RequestHeader HttpHeaders headers) throws ModuleException {
         LOGGER.debug("Get collection \"{}\" delegated to engine \"{}\"", urn, engineType);
         return dispatcher.dispatchRequest(SearchContext.build(SearchType.COLLECTIONS, engineType, headers, null, null)
-                                                  .withUrn(UniformResourceName.fromString(urn)), this);
+                                                       .withUrn(UniformResourceName.fromString(urn)), this);
     }
 
     // Dataset mappings
@@ -269,12 +281,15 @@ public class SearchEngineController implements IEntityLinkBuilder {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATASETS_MAPPING)
     @ResourceAccess(description = "Search engines dispatcher for dataset search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchAllDatasets(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
-            Pageable pageable) throws ModuleException {
+                                               @RequestHeader HttpHeaders headers,
+                                               @RequestParam MultiValueMap<String, String> queryParams,
+                                               Pageable pageable) throws ModuleException {
         LOGGER.debug("Search on all datasets delegated to engine \"{}\"", engineType);
-        return dispatcher
-                .dispatchRequest(SearchContext.build(SearchType.DATASETS, engineType, headers, queryParams, pageable),
-                                 this);
+        return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATASETS,
+                                                              engineType,
+                                                              headers,
+                                                              queryParams,
+                                                              pageable), this);
     }
 
     /**
@@ -283,12 +298,16 @@ public class SearchEngineController implements IEntityLinkBuilder {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATASETS_MAPPING_EXTRA)
     @ResourceAccess(description = "Extra mapping for dataset search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchAllDatasetsExtra(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @PathVariable(SearchEngineMappings.EXTRA) String extra, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
+                                                    @PathVariable(SearchEngineMappings.EXTRA) String extra,
+                                                    @RequestHeader HttpHeaders headers,
+                                                    @RequestParam MultiValueMap<String, String> queryParams,
+                                                    Pageable pageable) throws ModuleException {
         LOGGER.debug("Search all datasets extra mapping \"{}\" handling delegated to engine \"{}\"", extra, engineType);
-        return dispatcher
-                .dispatchRequest(SearchContext.build(SearchType.DATASETS, engineType, headers, queryParams, pageable)
-                                         .withExtra(extra), this);
+        return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATASETS,
+                                                              engineType,
+                                                              headers,
+                                                              queryParams,
+                                                              pageable).withExtra(extra), this);
     }
 
     /**
@@ -297,14 +316,19 @@ public class SearchEngineController implements IEntityLinkBuilder {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATASETS_PROPERTY_VALUES)
     @ResourceAccess(description = "Get dataset property values", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchDatasetPropertyValues(
-            @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @PathVariable(SearchEngineMappings.PROPERTY_NAME) String propertyName, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams,
-            @RequestParam(SearchEngineMappings.MAX_COUNT) int maxCount) throws ModuleException {
+        @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
+        @PathVariable(SearchEngineMappings.PROPERTY_NAME) String propertyName,
+        @RequestHeader HttpHeaders headers,
+        @RequestParam MultiValueMap<String, String> queryParams,
+        @RequestParam(SearchEngineMappings.MAX_COUNT) int maxCount) throws ModuleException {
         LOGGER.debug("Search dataset property values for \"{}\" delegated to engine \"{}\"", propertyName, engineType);
-        return dispatcher
-                .dispatchRequest(SearchContext.build(SearchType.DATASETS, engineType, headers, queryParams, null)
-                                         .withPropertyName(propertyName).withMaxCount(maxCount), this);
+        return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATASETS,
+                                                              engineType,
+                                                              headers,
+                                                              queryParams,
+                                                              null)
+                                                       .withPropertyName(propertyName)
+                                                       .withMaxCount(maxCount), this);
     }
 
     /**
@@ -313,11 +337,11 @@ public class SearchEngineController implements IEntityLinkBuilder {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_DATASET_MAPPING)
     @ResourceAccess(description = "Allows to retrieve a dataset", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> getDataset(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @Valid @PathVariable(SearchEngineMappings.URN) String urn, @RequestHeader HttpHeaders headers)
-            throws ModuleException {
+                                        @Valid @PathVariable(SearchEngineMappings.URN) String urn,
+                                        @RequestHeader HttpHeaders headers) throws ModuleException {
         LOGGER.debug("Get dataset \"{}\" delegated to engine \"{}\"", urn, engineType);
         return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATASETS, engineType, headers, null, null)
-                                                  .withUrn(UniformResourceName.fromString(urn)), this);
+                                                       .withUrn(UniformResourceName.fromString(urn)), this);
     }
 
     // Dataobject mappings
@@ -328,8 +352,9 @@ public class SearchEngineController implements IEntityLinkBuilder {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING)
     @ResourceAccess(description = "Search engines dispatcher for dataobject search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchAllDataobjects(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
-            Pageable pageable) throws ModuleException {
+                                                  @RequestHeader HttpHeaders headers,
+                                                  @RequestParam MultiValueMap<String, String> queryParams,
+                                                  Pageable pageable) throws ModuleException {
         LOGGER.debug("Search on all dataobjects delegated to engine \"{}\"", engineType);
         return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS,
                                                               engineType,
@@ -344,15 +369,19 @@ public class SearchEngineController implements IEntityLinkBuilder {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING_EXTRA)
     @ResourceAccess(description = "Extra mapping for dataobject search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchAllDataobjectsExtra(
-            @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @PathVariable(SearchEngineMappings.EXTRA) String extra, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
+        @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
+        @PathVariable(SearchEngineMappings.EXTRA) String extra,
+        @RequestHeader HttpHeaders headers,
+        @RequestParam MultiValueMap<String, String> queryParams,
+        Pageable pageable) throws ModuleException {
         LOGGER.debug("Search all dataobjects extra mapping \"{}\" handling delegated to engine \"{}\"",
                      extra,
                      engineType);
-        return dispatcher
-                .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, pageable)
-                                         .withExtra(extra), this);
+        return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS,
+                                                              engineType,
+                                                              headers,
+                                                              queryParams,
+                                                              pageable).withExtra(extra), this);
     }
 
     /**
@@ -361,40 +390,55 @@ public class SearchEngineController implements IEntityLinkBuilder {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATAOBJECTS_PROPERTY_VALUES)
     @ResourceAccess(description = "Get dataobject property values", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchDataobjectPropertyValues(
-            @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @PathVariable(SearchEngineMappings.PROPERTY_NAME) String propertyName, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams,
-            @RequestParam(SearchEngineMappings.MAX_COUNT) int maxCount) throws ModuleException {
+        @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
+        @PathVariable(SearchEngineMappings.PROPERTY_NAME) String propertyName,
+        @RequestHeader HttpHeaders headers,
+        @RequestParam MultiValueMap<String, String> queryParams,
+        @RequestParam(SearchEngineMappings.MAX_COUNT) int maxCount) throws ModuleException {
         LOGGER.debug("Search dataobject property values for \"{}\" delegated to engine \"{}\"",
                      propertyName,
                      engineType);
-        return dispatcher
-                .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, null)
-                                         .withPropertyName(propertyName).withMaxCount(maxCount), this);
+        return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS,
+                                                              engineType,
+                                                              headers,
+                                                              queryParams,
+                                                              null)
+                                                       .withPropertyName(propertyName)
+                                                       .withMaxCount(maxCount), this);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATAOBJECTS_PROPERTIES_BOUNDS)
     @ResourceAccess(description = "Get dataobject property values", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchDataobjectPropertiesBounds(
-            @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType, @RequestHeader HttpHeaders headers,
-            @RequestParam(name = SearchEngineMappings.PROPERTY_NAMES) List<String> propertyNames,
-            @RequestParam MultiValueMap<String, String> queryParams) throws SearchException, ModuleException {
+        @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
+        @RequestHeader HttpHeaders headers,
+        @RequestParam(name = SearchEngineMappings.PROPERTY_NAMES) List<String> propertyNames,
+        @RequestParam MultiValueMap<String, String> queryParams) throws SearchException, ModuleException {
         LOGGER.debug("Search dataobject properties bounds valuesdelegated to engine \"{}\"", engineType);
-        return dispatcher
-                .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, null)
-                                         .withPropertyNames(propertyNames).withBoundCalculation(), this);
+        return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS,
+                                                              engineType,
+                                                              headers,
+                                                              queryParams,
+                                                              null)
+                                                       .withPropertyNames(propertyNames)
+                                                       .withBoundCalculation(), this);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATAOBJECTS_ATTRIBUTES)
     @ResourceAccess(description = "Get common model attributes associated to data objects results of the given request",
-            role = DefaultRole.PUBLIC)
+        role = DefaultRole.PUBLIC)
     public ResponseEntity<Set<EntityModel<AttributeModel>>> searchDataobjectsAttributes(
-            @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams) throws SearchException, ModuleException {
+        @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
+        @RequestHeader HttpHeaders headers,
+        @RequestParam MultiValueMap<String, String> queryParams) throws SearchException, ModuleException {
         LOGGER.debug("Get dataobject model common attributes delegated to engine \"{}\"", engineType);
-        ResponseEntity<List<String>> result = dispatcher
-                .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, null)
-                                         .withPropertyName(AttributeHelper.MODEL_ATTRIBUTE).withMaxCount(100), this);
+        ResponseEntity<List<String>> result = dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS,
+                                                                                             engineType,
+                                                                                             headers,
+                                                                                             queryParams,
+                                                                                             null)
+                                                                                      .withPropertyName(AttributeHelper.MODEL_ATTRIBUTE)
+                                                                                      .withMaxCount(100), this);
         Set<AttributeModel> attrs = attributeHelper.getAllCommonAttributes(result.getBody());
         return ResponseEntity.ok(attrs.stream().map(a -> resourceService.toResource(a)).collect(Collectors.toSet()));
     }
@@ -405,53 +449,61 @@ public class SearchEngineController implements IEntityLinkBuilder {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.GET_DATAOBJECT_MAPPING)
     @ResourceAccess(description = "Allows to retrieve a dataobject", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> getDataobject(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @Valid @PathVariable(SearchEngineMappings.URN) String urn, @RequestHeader HttpHeaders headers)
-            throws ModuleException {
+                                           @Valid @PathVariable(SearchEngineMappings.URN) String urn,
+                                           @RequestHeader HttpHeaders headers) throws ModuleException {
         LOGGER.debug("Get dataobject \"{}\" delegated to engine \"{}\"", urn, engineType);
         return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, null, null)
-                                                  .withUrn(UniformResourceName.fromString(urn)), this);
+                                                       .withUrn(UniformResourceName.fromString(urn)), this);
     }
 
     /**
      * Search dataobjects on a single dataset<br/>
-     *
+     * <p>
      * This method uses a {@link String} to handle dataset URN because HATEOAS link builder cannot manage complex type
      * conversion at the moment. It does not consider custom {@link Converter}.
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING)
     @ResourceAccess(description = "Search engines dispatcher for single dataset search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchSingleDataset(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @PathVariable(SearchEngineMappings.DATASET_URN) String datasetUrn, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
+                                                 @PathVariable(SearchEngineMappings.DATASET_URN) String datasetUrn,
+                                                 @RequestHeader HttpHeaders headers,
+                                                 @RequestParam MultiValueMap<String, String> queryParams,
+                                                 Pageable pageable) throws ModuleException {
         LOGGER.debug("Search dataobjects on dataset \"{}\" delegated to engine \"{}\"",
                      datasetUrn.toString(),
                      engineType);
         UniformResourceName urn = UniformResourceName.fromString(datasetUrn);
-        return dispatcher
-                .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, pageable)
-                                         .withDatasetUrn(urn), this);
+        return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS,
+                                                              engineType,
+                                                              headers,
+                                                              queryParams,
+                                                              pageable).withDatasetUrn(urn), this);
     }
 
     /**
      * Extra mapping related to search on a single dataset request<br/>
-     *
+     * <p>
      * This method uses a {@link String} to handle dataset URN because HATEOAS link builder cannot manage complex type
      * conversion at the moment. It does not consider custom {@link Converter}.
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA)
     @ResourceAccess(description = "Extra mapping for single dataset search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchSingleDatasetExtra(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @PathVariable(SearchEngineMappings.DATASET_URN) String datasetUrn,
-            @PathVariable(SearchEngineMappings.EXTRA) String extra, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
+                                                      @PathVariable(SearchEngineMappings.DATASET_URN) String datasetUrn,
+                                                      @PathVariable(SearchEngineMappings.EXTRA) String extra,
+                                                      @RequestHeader HttpHeaders headers,
+                                                      @RequestParam MultiValueMap<String, String> queryParams,
+                                                      Pageable pageable) throws ModuleException {
         LOGGER.debug("Search dataobjects on dataset \"{}\" extra mapping \"{}\" handling delegated to engine \"{}\"",
                      datasetUrn,
                      extra,
                      engineType);
         UniformResourceName urn = UniformResourceName.fromString(datasetUrn);
-        return dispatcher
-                .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, pageable)
-                                         .withDatasetUrn(urn).withExtra(extra), this);
+        return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS,
+                                                              engineType,
+                                                              headers,
+                                                              queryParams,
+                                                              pageable).withDatasetUrn(urn).withExtra(extra), this);
     }
 
     /**
@@ -460,20 +512,25 @@ public class SearchEngineController implements IEntityLinkBuilder {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_PROPERTY_VALUES)
     @ResourceAccess(description = "Get dataobject property values within a dataset ", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchDataobjectPropertyValuesOnDataset(
-            @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @PathVariable(SearchEngineMappings.DATASET_URN) String datasetUrn,
-            @PathVariable(SearchEngineMappings.PROPERTY_NAME) String propertyName, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams,
-            @RequestParam(SearchEngineMappings.MAX_COUNT) int maxCount) throws ModuleException {
+        @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
+        @PathVariable(SearchEngineMappings.DATASET_URN) String datasetUrn,
+        @PathVariable(SearchEngineMappings.PROPERTY_NAME) String propertyName,
+        @RequestHeader HttpHeaders headers,
+        @RequestParam MultiValueMap<String, String> queryParams,
+        @RequestParam(SearchEngineMappings.MAX_COUNT) int maxCount) throws ModuleException {
         LOGGER.debug("Search dataobject property values for \"{}\" on dataset \"{}\" delegated to engine \"{}\"",
                      propertyName,
                      datasetUrn,
                      engineType);
         UniformResourceName urn = UniformResourceName.fromString(datasetUrn);
-        return dispatcher
-                .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, null)
-                                         .withDatasetUrn(urn).withPropertyName(propertyName).withMaxCount(maxCount),
-                                 this);
+        return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS,
+                                                              engineType,
+                                                              headers,
+                                                              queryParams,
+                                                              null)
+                                                       .withDatasetUrn(urn)
+                                                       .withPropertyName(propertyName)
+                                                       .withMaxCount(maxCount), this);
     }
 
     /**
@@ -481,10 +538,12 @@ public class SearchEngineController implements IEntityLinkBuilder {
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATAOBJECTS_DATASETS_MAPPING)
     @ResourceAccess(description = "Search engines dispatcher for dataset search with dataobject criterions",
-            role = DefaultRole.PUBLIC)
+        role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchDataobjectsReturnDatasets(
-            @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
+        @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
+        @RequestHeader HttpHeaders headers,
+        @RequestParam MultiValueMap<String, String> queryParams,
+        Pageable pageable) throws ModuleException {
         LOGGER.debug("Search datasets with dataobject criterions delegated to engine \"{}\"", engineType);
         return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS_RETURN_DATASETS,
                                                               engineType,
@@ -496,6 +555,7 @@ public class SearchEngineController implements IEntityLinkBuilder {
     /**
      * Build all pagination links from the ginve page results.
      * Can generate previous, current and next page links.
+     *
      * @param resourceService
      * @param page
      * @param context
@@ -532,13 +592,16 @@ public class SearchEngineController implements IEntityLinkBuilder {
     }
 
     /**
-     *
      * Return a contextual link
+     *
      * @return {@link Link}, may be null.
      */
     @Override
-    public Link buildPaginationLink(IResourceService resourceService, SearchContext context, int pageSize,
-            int pageNumber, LinkRelation rel) {
+    public Link buildPaginationLink(IResourceService resourceService,
+                                    SearchContext context,
+                                    int pageSize,
+                                    int pageNumber,
+                                    LinkRelation rel) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.putAll(context.getQueryParams());
         SearchContext newContext = SearchContext.build(context.getSearchType(),
@@ -553,6 +616,7 @@ public class SearchEngineController implements IEntityLinkBuilder {
 
     /**
      * Return a contextual link
+     *
      * @return {@link Link}, may be null.
      */
     @Override
@@ -563,11 +627,12 @@ public class SearchEngineController implements IEntityLinkBuilder {
                                                        rel,
                                                        MethodParamFactory.build(String.class, context.getEngineType()),
                                                        MethodParamFactory.build(String.class,
-                                                                                context.getDatasetUrn().get()
-                                                                                        .toString()),
+                                                                                context.getDatasetUrn()
+                                                                                       .get()
+                                                                                       .toString()),
                                                        MethodParamFactory.build(HttpHeaders.class),
-                                                       MethodParamFactory
-                                                               .build(MultiValueMap.class, context.getQueryParams()),
+                                                       MethodParamFactory.build(MultiValueMap.class,
+                                                                                context.getQueryParams()),
                                                        MethodParamFactory.build(Pageable.class));
         } else {
             return resourceService.buildLinkWithParams(SearchEngineController.class,
@@ -575,31 +640,35 @@ public class SearchEngineController implements IEntityLinkBuilder {
                                                        rel,
                                                        MethodParamFactory.build(String.class, context.getEngineType()),
                                                        MethodParamFactory.build(HttpHeaders.class),
-                                                       MethodParamFactory
-                                                               .build(MultiValueMap.class, context.getQueryParams()),
+                                                       MethodParamFactory.build(MultiValueMap.class,
+                                                                                context.getQueryParams()),
                                                        MethodParamFactory.build(Pageable.class));
         }
     }
 
     /**
      * Return a contextual link
+     *
      * @return {@link Link}, may be null.
      */
     @Override
-    public Link buildExtraLink(IResourceService resourceService, SearchContext context, LinkRelation rel,
-            String extra) {
+    public Link buildExtraLink(IResourceService resourceService,
+                               SearchContext context,
+                               LinkRelation rel,
+                               String extra) {
         if (context.getDatasetUrn().isPresent()) {
             return resourceService.buildLinkWithParams(SearchEngineController.class,
                                                        getMethod(context) + EXTRA_METHOD_SUFFIX,
                                                        rel,
                                                        MethodParamFactory.build(String.class, context.getEngineType()),
                                                        MethodParamFactory.build(String.class,
-                                                                                context.getDatasetUrn().get()
-                                                                                        .toString()),
+                                                                                context.getDatasetUrn()
+                                                                                       .get()
+                                                                                       .toString()),
                                                        MethodParamFactory.build(String.class, extra),
                                                        MethodParamFactory.build(HttpHeaders.class),
-                                                       MethodParamFactory
-                                                               .build(MultiValueMap.class, context.getQueryParams()),
+                                                       MethodParamFactory.build(MultiValueMap.class,
+                                                                                context.getQueryParams()),
                                                        MethodParamFactory.build(Pageable.class));
         } else {
             return resourceService.buildLinkWithParams(SearchEngineController.class,
@@ -608,8 +677,8 @@ public class SearchEngineController implements IEntityLinkBuilder {
                                                        MethodParamFactory.build(String.class, context.getEngineType()),
                                                        MethodParamFactory.build(String.class, extra),
                                                        MethodParamFactory.build(HttpHeaders.class),
-                                                       MethodParamFactory
-                                                               .build(MultiValueMap.class, context.getQueryParams()),
+                                                       MethodParamFactory.build(MultiValueMap.class,
+                                                                                context.getQueryParams()),
                                                        MethodParamFactory.build(Pageable.class));
         }
     }
@@ -630,8 +699,10 @@ public class SearchEngineController implements IEntityLinkBuilder {
      * Build contextual entity links according to search context and entity type
      */
     @Override
-    public List<Link> buildEntityLinks(IResourceService resourceService, SearchContext context, EntityType entityType,
-            UniformResourceName id) {
+    public List<Link> buildEntityLinks(IResourceService resourceService,
+                                       SearchContext context,
+                                       EntityType entityType,
+                                       UniformResourceName id) {
         List<Link> links = new ArrayList<>();
 
         String idString = id.toString();

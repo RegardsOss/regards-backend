@@ -18,16 +18,16 @@
  */
 package fr.cnes.regards.modules.ingest.dto.aip;
 
-import java.util.Optional;
-
 import fr.cnes.regards.framework.oais.builder.IPBuilder;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.EntityType;
 
+import java.util.Optional;
+
 /**
  * AIP Builder. Used to create AIP.
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  * @deprecated {@link AIP} fluent API instead
  */
 @Deprecated
@@ -35,13 +35,16 @@ public class AIPBuilder extends IPBuilder<AIP> {
 
     /**
      * Init AIP builder
-     * @param aipId required archival information package identifier
-     * @param sipId optional submission information package identifier (may be null!)
+     *
+     * @param aipId      required archival information package identifier
+     * @param sipId      optional submission information package identifier (may be null!)
      * @param providerId required provider id
      * @param entityType entity type
      */
-    public AIPBuilder(OaisUniformResourceName aipId, Optional<OaisUniformResourceName> sipId, String providerId,
-            EntityType entityType) {
+    public AIPBuilder(OaisUniformResourceName aipId,
+                      Optional<OaisUniformResourceName> sipId,
+                      String providerId,
+                      EntityType entityType) {
         super(AIP.class, entityType);
         ip.setId(aipId);
         ip.setSipId(sipId.orElse(null));
@@ -50,6 +53,7 @@ public class AIPBuilder extends IPBuilder<AIP> {
 
     /**
      * Constructor used to initialize the builder from an AIP
+     *
      * @param toBeUpdated
      */
     public AIPBuilder(AIP toBeUpdated) {

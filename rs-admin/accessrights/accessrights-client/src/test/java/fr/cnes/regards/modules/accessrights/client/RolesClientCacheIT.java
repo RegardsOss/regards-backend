@@ -18,7 +18,10 @@ package fr.cnes.regards.modules.accessrights.client;
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.modules.accessrights.client.cache.AccessRightsClientCacheAutoConfiguration;
 import fr.cnes.regards.modules.accessrights.client.cache.CacheableRolesClient;
+import fr.cnes.regards.modules.accessrights.client.cache.IRolesHierarchyKeyGenerator;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,13 +29,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.modules.accessrights.client.cache.AccessRightsClientCacheAutoConfiguration;
-import fr.cnes.regards.modules.accessrights.client.cache.IRolesHierarchyKeyGenerator;
-
 /**
  * @author Sébastien Binda
- *
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { TestConfiguration.class, AccessRightsClientCacheAutoConfiguration.class })

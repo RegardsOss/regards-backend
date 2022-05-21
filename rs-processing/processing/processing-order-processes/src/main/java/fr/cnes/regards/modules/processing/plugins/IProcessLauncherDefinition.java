@@ -14,10 +14,11 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.plugins;
 
 import fr.cnes.regards.modules.processing.domain.engine.IExecutable;
+
 /**
  * This interface defines engine/executable for {@link IProcessDefinition}.
  *

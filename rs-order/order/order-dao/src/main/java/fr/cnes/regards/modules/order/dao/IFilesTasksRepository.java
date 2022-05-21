@@ -44,6 +44,7 @@ public interface IFilesTasksRepository extends JpaRepository<FilesTask, Long> {
     /**
      * Count filesTasks (or jobs because 1 filesTask = 1 job) with a false ended attribute value (associated jobInfo
      * not finished OR at least one remaining file to download) and a "finished" status
+     *
      * @param user user specific tasks and jobs
      */
     default long countWaitingForUserFilesTasks(String user) {

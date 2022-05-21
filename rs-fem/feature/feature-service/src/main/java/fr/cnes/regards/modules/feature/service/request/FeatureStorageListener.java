@@ -18,16 +18,6 @@
  */
 package fr.cnes.regards.modules.feature.service.request;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.modules.feature.domain.request.FeatureCopyRequest;
 import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
@@ -37,9 +27,17 @@ import fr.cnes.regards.modules.feature.service.IFeatureCopyService;
 import fr.cnes.regards.modules.storage.client.IStorageRequestListener;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
- *
  * This class offers callbacks from storage events
  *
  * @author kevin
@@ -69,14 +67,19 @@ public class FeatureStorageListener implements IStorageRequestListener {
         List<FeatureCopyRequest> copies = new ArrayList<>();
         for (RequestInfo info : requests) {
             for (RequestResultInfoDTO result : info.getSuccessRequests()) {
-                copies.addAll(result.getRequestOwners().stream()
-                        .filter(owner -> FeatureUniformResourceName.isValidUrn(owner))
-                        .map(owner -> FeatureCopyRequest
-                                .build(UUID.randomUUID().toString(), owner, OffsetDateTime.now(),
-                                       FeatureRequestStep.LOCAL_DELAYED, PriorityLevel.NORMAL,
-                                       FeatureUniformResourceName.fromString(owner), result.getRequestStorePath(),
-                                       RequestState.GRANTED, result.getRequestChecksum()))
-                        .collect(Collectors.toSet()));
+                copies.addAll(result.getRequestOwners()
+                                    .stream()
+                                    .filter(owner -> FeatureUniformResourceName.isValidUrn(owner))
+                                    .map(owner -> FeatureCopyRequest.build(UUID.randomUUID().toString(),
+                                                                           owner,
+                                                                           OffsetDateTime.now(),
+                                                                           FeatureRequestStep.LOCAL_DELAYED,
+                                                                           PriorityLevel.NORMAL,
+                                                                           FeatureUniformResourceName.fromString(owner),
+                                                                           result.getRequestStorePath(),
+                                                                           RequestState.GRANTED,
+                                                                           result.getRequestChecksum()))
+                                    .collect(Collectors.toSet()));
             }
         }
         this.featureCopyService.registerRequests(copies);
@@ -100,41 +103,45 @@ public class FeatureStorageListener implements IStorageRequestListener {
 
     @Override
     public void onDeletionSuccess(Set<RequestInfo> requests) {
-        this.featureRequestService
-                .handleDeletionSuccess(requests.stream().map(RequestInfo::getGroupId).collect(Collectors.toSet()));
+        this.featureRequestService.handleDeletionSuccess(requests.stream()
+                                                                 .map(RequestInfo::getGroupId)
+                                                                 .collect(Collectors.toSet()));
 
     }
 
     @Override
     public void onDeletionError(Set<RequestInfo> requests) {
-        this.featureRequestService.handleStorageError(requests.stream().flatMap(r -> r.getErrorRequests().stream())
-                .collect(Collectors.toSet()));
+        this.featureRequestService.handleStorageError(requests.stream()
+                                                              .flatMap(r -> r.getErrorRequests().stream())
+                                                              .collect(Collectors.toSet()));
     }
 
     @Override
     public void onReferenceSuccess(Set<RequestInfo> requests) {
-        this.featureRequestService
-                .handleStorageSuccess(requests.stream().flatMap(r -> r.getSuccessRequests().stream())
-                                              .collect(Collectors.toSet()));
+        this.featureRequestService.handleStorageSuccess(requests.stream()
+                                                                .flatMap(r -> r.getSuccessRequests().stream())
+                                                                .collect(Collectors.toSet()));
     }
 
     @Override
     public void onReferenceError(Set<RequestInfo> requests) {
-        this.featureRequestService.handleStorageError(requests.stream().flatMap(r -> r.getErrorRequests().stream())
-                .collect(Collectors.toSet()));
+        this.featureRequestService.handleStorageError(requests.stream()
+                                                              .flatMap(r -> r.getErrorRequests().stream())
+                                                              .collect(Collectors.toSet()));
     }
 
     @Override
     public void onStoreSuccess(Set<RequestInfo> requests) {
-        this.featureRequestService
-                .handleStorageSuccess(requests.stream().flatMap(r -> r.getSuccessRequests().stream())
-                                              .collect(Collectors.toSet()));
+        this.featureRequestService.handleStorageSuccess(requests.stream()
+                                                                .flatMap(r -> r.getSuccessRequests().stream())
+                                                                .collect(Collectors.toSet()));
     }
 
     @Override
     public void onStoreError(Set<RequestInfo> requests) {
-        this.featureRequestService.handleStorageError(requests.stream().flatMap(r -> r.getErrorRequests().stream())
-                .collect(Collectors.toSet()));
+        this.featureRequestService.handleStorageError(requests.stream()
+                                                              .flatMap(r -> r.getErrorRequests().stream())
+                                                              .collect(Collectors.toSet()));
     }
 
 }

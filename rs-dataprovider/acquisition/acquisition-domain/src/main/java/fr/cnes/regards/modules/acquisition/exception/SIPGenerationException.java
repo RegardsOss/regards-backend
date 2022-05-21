@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
  * SIPGenerationException thrown by ProductService while sending SIP to ingest
+ *
  * @author Sébastien Binda
  */
 @SuppressWarnings("serial")

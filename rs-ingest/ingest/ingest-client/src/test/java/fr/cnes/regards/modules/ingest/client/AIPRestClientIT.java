@@ -18,8 +18,16 @@
  */
 package fr.cnes.regards.modules.ingest.client;
 
-import java.io.IOException;
-
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.feign.FeignClientBuilder;
+import fr.cnes.regards.framework.feign.TokenClientProvider;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,23 +39,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.gson.Gson;
-
-import fr.cnes.regards.framework.feign.FeignClientBuilder;
-import fr.cnes.regards.framework.feign.TokenClientProvider;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import java.io.IOException;
 
 /**
  * {@link IAIPRestClient} test class
  *
  * @author Sébastien Binda
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_rest_client" })
 public class AIPRestClientIT extends AbstractRegardsWebIT {
@@ -69,18 +66,20 @@ public class AIPRestClientIT extends AbstractRegardsWebIT {
     @Before
     public void init() throws IOException, ModuleException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        client = FeignClientBuilder.build(
-                                          new TokenClientProvider<>(IAIPRestClient.class,
-                                                  "http://" + serverAddress + ":" + getPort(), feignSecurityManager),
-                                          gson);
+        client = FeignClientBuilder.build(new TokenClientProvider<>(IAIPRestClient.class,
+                                                                    "http://" + serverAddress + ":" + getPort(),
+                                                                    feignSecurityManager), gson);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         FeignSecurityManager.asSystem();
     }
 
     @Test
     public void searchAips() {
-        ResponseEntity<PagedModel<EntityModel<AIPEntity>>> response = client
-                .searchAIPs(SearchAIPsParameters.build().withState(AIPState.STORED), 0, 100);
+        ResponseEntity<PagedModel<EntityModel<AIPEntity>>> response = client.searchAIPs(SearchAIPsParameters.build()
+                                                                                                            .withState(
+                                                                                                                AIPState.STORED),
+                                                                                        0,
+                                                                                        100);
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 }

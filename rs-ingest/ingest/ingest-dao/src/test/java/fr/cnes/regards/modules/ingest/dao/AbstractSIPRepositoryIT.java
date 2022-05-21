@@ -63,8 +63,8 @@ public abstract class AbstractSIPRepositoryIT extends AbstractDaoIT {
         sip1 = new SIPEntity();
 
         sip1.setSip(SIP.build(EntityType.DATA, "SIP_001"));
-        sip1.setSipId(OaisUniformResourceName
-                .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
+        sip1.setSipId(OaisUniformResourceName.fromString(
+            "URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip1.setProviderId("SIP_001");
         sip1.setCreationDate(OffsetDateTime.now());
         sip1.setLastUpdate(OffsetDateTime.now());
@@ -79,8 +79,8 @@ public abstract class AbstractSIPRepositoryIT extends AbstractDaoIT {
 
         SIPEntity sip2 = new SIPEntity();
         sip2.setSip(SIP.build(EntityType.DATA, "SIP_002"));
-        sip2.setSipId(OaisUniformResourceName
-                .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
+        sip2.setSipId(OaisUniformResourceName.fromString(
+            "URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip2.setProviderId("SIP_002");
         sip2.setCreationDate(OffsetDateTime.now().minusHours(6));
         sip2.setLastUpdate(OffsetDateTime.now().minusHours(6));
@@ -95,8 +95,8 @@ public abstract class AbstractSIPRepositoryIT extends AbstractDaoIT {
 
         SIPEntity sip3 = new SIPEntity();
         sip3.setSip(SIP.build(EntityType.DATA, "SIP_003"));
-        sip3.setSipId(OaisUniformResourceName
-                .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
+        sip3.setSipId(OaisUniformResourceName.fromString(
+            "URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip3.setProviderId("SIP_003");
         sip3.setCreationDate(OffsetDateTime.now().minusHours(6));
         sip3.setLastUpdate(OffsetDateTime.now().minusHours(6));
@@ -112,8 +112,8 @@ public abstract class AbstractSIPRepositoryIT extends AbstractDaoIT {
         SIPEntity sip4 = new SIPEntity();
 
         sip4.setSip(SIP.build(EntityType.DATA, "SIP_001").withDescriptiveInformation("version", "2"));
-        sip4.setSipId(OaisUniformResourceName
-                .fromString("URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
+        sip4.setSipId(OaisUniformResourceName.fromString(
+            "URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
         sip4.setProviderId("SIP_003");
         sip4.setCreationDate(OffsetDateTime.now().minusHours(6));
         sip4.setLastUpdate(OffsetDateTime.now().minusHours(6));

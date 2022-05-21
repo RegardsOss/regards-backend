@@ -33,7 +33,10 @@ import fr.cnes.regards.framework.amqp.test.handler.GsonInfoHandler;
 import fr.cnes.regards.framework.amqp.test.handler.GsonInfoNoWrapperHandler;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
@@ -48,6 +51,7 @@ import java.util.Optional;
 
 /**
  * Common subscriber tests for {@link VirtualHostMode#SINGLE} and {@link VirtualHostMode#MULTI} modes
+ *
  * @author Marc Sordi
  */
 public abstract class AbstractSubscriberIT {
@@ -253,10 +257,10 @@ public abstract class AbstractSubscriberIT {
 
         Thread.sleep(5_000);
 
-        LOGGER.info("SEB !!!!! {}/{}",receiver.getCount(),receiver2.getCount());
+        LOGGER.info("SEB !!!!! {}/{}", receiver.getCount(), receiver2.getCount());
 
-        Assert.assertEquals("Check 1 invalid",1, receiver.getCount().intValue());
-        Assert.assertEquals("Check 2 invalid",1, receiver2.getCount().intValue());
+        Assert.assertEquals("Check 1 invalid", 1, receiver.getCount().intValue());
+        Assert.assertEquals("Check 2 invalid", 1, receiver2.getCount().intValue());
     }
 
     @Test
@@ -315,7 +319,9 @@ public abstract class AbstractSubscriberIT {
             OnePerMicroserviceInfo wrongEvent = new OnePerMicroserviceInfo();
             wrongEvent.setMessage(wrongEvent.getMessage() + Math.random());
             TenantWrapper<OnePerMicroserviceInfo> messageSended = TenantWrapper.build(wrongEvent, "PROJECT");
-            rabbitTemplate.convertAndSend(exchangeName, RegardsAmqpAdmin.DEFAULT_ROUTING_KEY, messageSended,
+            rabbitTemplate.convertAndSend(exchangeName,
+                                          RegardsAmqpAdmin.DEFAULT_ROUTING_KEY,
+                                          messageSended,
                                           pMessage -> {
                                               MessageProperties messageProperties = pMessage.getMessageProperties();
                                               messageProperties.setPriority(0);
@@ -338,7 +344,8 @@ public abstract class AbstractSubscriberIT {
                 Object content = ((TenantWrapper<?>) fromDlq).getContent();
                 if (!(content instanceof OnePerMicroserviceInfo)) {
                     Assert.fail(String.format("Message from DLQ is not %s but %s",
-                                              OnePerMicroserviceInfo.class.getName(), content.getClass().getName()));
+                                              OnePerMicroserviceInfo.class.getName(),
+                                              content.getClass().getName()));
                 }
             } else {
                 Assert.fail("Message from DLQ is not a TenantWrapper. You might have been compromised by other tests.");

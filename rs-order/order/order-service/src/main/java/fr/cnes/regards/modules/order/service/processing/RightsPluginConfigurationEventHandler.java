@@ -41,7 +41,6 @@ import java.util.List;
  * would not be usable anymore on the dataset.
  *
  * @author Guillaume Andrieu
- *
  */
 @Component
 public class RightsPluginConfigurationEventHandler implements IRightsPluginConfigurationEventHandler {
@@ -55,8 +54,9 @@ public class RightsPluginConfigurationEventHandler implements IRightsPluginConfi
     private final IBasketDatasetSelectionRepository dsSelRepo;
 
     @Autowired
-    public RightsPluginConfigurationEventHandler(IRuntimeTenantResolver runtimeTenantResolver, ISubscriber subscriber,
-            IBasketDatasetSelectionRepository dsSelRepo) {
+    public RightsPluginConfigurationEventHandler(IRuntimeTenantResolver runtimeTenantResolver,
+                                                 ISubscriber subscriber,
+                                                 IBasketDatasetSelectionRepository dsSelRepo) {
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.subscriber = subscriber;
         this.dsSelRepo = dsSelRepo;
@@ -98,7 +98,8 @@ public class RightsPluginConfigurationEventHandler implements IRightsPluginConfi
             if (allowedDatasets.contains(dsSel.getDatasetIpid())) {
                 return Option.none();
             } else {
-                LOGGER.info("BasketDatasetSelection {} not applicable to process {} anymore", dsSel.getId(),
+                LOGGER.info("BasketDatasetSelection {} not applicable to process {} anymore",
+                            dsSel.getId(),
                             processBusinessId);
                 dsSel.setProcessDatasetDescription(null);
                 return Option.of(dsSel);
@@ -116,7 +117,8 @@ public class RightsPluginConfigurationEventHandler implements IRightsPluginConfi
         List<BasketDatasetSelection> dsSels = dsSelRepo.findByProcessBusinessId(processBusinessId);
         if (!dsSels.isEmpty()) {
             dsSels.forEach(dsSel -> {
-                LOGGER.info("BasketDatasetSelection {} not applicable to process {} anymore", dsSel.getId(),
+                LOGGER.info("BasketDatasetSelection {} not applicable to process {} anymore",
+                            dsSel.getId(),
                             processBusinessId);
                 dsSel.setProcessDatasetDescription(null);
             });

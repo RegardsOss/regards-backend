@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.forecast;
 
 import fr.cnes.regards.modules.processing.domain.forecast.IResultSizeForecast;
@@ -32,7 +32,8 @@ public class MultiplierResultSizeForecast implements IResultSizeForecast {
 
     double multiplier;
 
-    @Override public long expectedResultSizeInBytes(long inputSizeInBytes) {
+    @Override
+    public long expectedResultSizeInBytes(long inputSizeInBytes) {
         return (long) (multiplier * inputSizeInBytes);
     }
 

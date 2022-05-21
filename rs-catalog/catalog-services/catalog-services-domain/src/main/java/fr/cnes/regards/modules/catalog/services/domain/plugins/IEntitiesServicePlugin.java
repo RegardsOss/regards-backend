@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.catalog.services.domain.plugins;
  * Interface to define a Catalog service plugin. This plugins applies on multiple entities.
  *
  * @author Sébastien Binda
- *
  */
 public interface IEntitiesServicePlugin extends IService {
 

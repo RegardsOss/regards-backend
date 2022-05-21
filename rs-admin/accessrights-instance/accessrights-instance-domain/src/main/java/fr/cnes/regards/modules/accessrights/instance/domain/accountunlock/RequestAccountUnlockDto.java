@@ -57,8 +57,7 @@ public class RequestAccountUnlockDto {
     }
 
     /**
-     * @param pOriginUrl
-     *            the originUrl to set
+     * @param pOriginUrl the originUrl to set
      */
     public void setOriginUrl(final String pOriginUrl) {
         originUrl = pOriginUrl;
@@ -72,8 +71,7 @@ public class RequestAccountUnlockDto {
     }
 
     /**
-     * @param pRequestLink
-     *            the requestLink to set
+     * @param pRequestLink the requestLink to set
      */
     public void setRequestLink(final String pRequestLink) {
         requestLink = pRequestLink;

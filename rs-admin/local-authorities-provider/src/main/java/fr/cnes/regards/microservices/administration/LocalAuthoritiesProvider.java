@@ -18,18 +18,7 @@
  */
 package fr.cnes.regards.microservices.administration;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.RequestMethod;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -42,11 +31,21 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Class AuhtoritiesProvider
- *
+ * <p>
  * Authorities provider for internal administration microservice access
+ *
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
  */
@@ -72,8 +71,9 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
      */
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    public LocalAuthoritiesProvider(IRoleService roleService, IResourcesService resourcesService,
-            IRuntimeTenantResolver runtimeTenantResolver) {
+    public LocalAuthoritiesProvider(IRoleService roleService,
+                                    IResourcesService resourcesService,
+                                    IRuntimeTenantResolver runtimeTenantResolver) {
         this.roleService = roleService;
         this.resourcesService = resourcesService;
         this.runtimeTenantResolver = runtimeTenantResolver;
@@ -81,7 +81,7 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
 
     @Override
     public void registerEndpoints(String microserviceName, String tenant, List<ResourceMapping> localEndpoints)
-            throws SecurityException {
+        throws SecurityException {
 
         // Specified the working tenant
         runtimeTenantResolver.forceTenant(tenant);
@@ -95,12 +95,14 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
     }
 
     private ResourceMapping buildResourceMapping(ResourcesAccess resourcesAccess, Collection<Role> roles) {
-        ResourceMapping mapping = new ResourceMapping(
-                ResourceAccessAdapter.createResourceAccess(resourcesAccess.getDescription(), null),
-                resourcesAccess.getResource(), resourcesAccess.getControllerSimpleName(),
-                RequestMethod.valueOf(resourcesAccess.getVerb().toString()));
-        mapping.setAutorizedRoles(roles.stream().map(role -> new RoleAuthority(role.getName()))
-                .collect(Collectors.toList()));
+        ResourceMapping mapping = new ResourceMapping(ResourceAccessAdapter.createResourceAccess(resourcesAccess.getDescription(),
+                                                                                                 null),
+                                                      resourcesAccess.getResource(),
+                                                      resourcesAccess.getControllerSimpleName(),
+                                                      RequestMethod.valueOf(resourcesAccess.getVerb().toString()));
+        mapping.setAutorizedRoles(roles.stream()
+                                       .map(role -> new RoleAuthority(role.getName()))
+                                       .collect(Collectors.toList()));
         return mapping;
     }
 
@@ -110,8 +112,10 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
         runtimeTenantResolver.forceTenant(tenant);
         LOGGER.debug("Retrieving role authorities for tenant {}", tenant);
 
-        return roleService.retrieveRoles().stream().map(role -> new RoleAuthority(role.getName()))
-                .collect(Collectors.toList());
+        return roleService.retrieveRoles()
+                          .stream()
+                          .map(role -> new RoleAuthority(role.getName()))
+                          .collect(Collectors.toList());
     }
 
     @Override
@@ -120,10 +124,11 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
 
         try {
             Role role = roleService.retrieveRole(roleName);
-            return role.getPermissions().stream()
-                    .filter(resource -> resource.getMicroservice().equals(microserviceName))
-                    .map(resource -> buildResourceMapping(resource, Collections.singleton(role)))
-                    .collect(Collectors.toSet());
+            return role.getPermissions()
+                       .stream()
+                       .filter(resource -> resource.getMicroservice().equals(microserviceName))
+                       .map(resource -> buildResourceMapping(resource, Collections.singleton(role)))
+                       .collect(Collectors.toSet());
         } catch (EntityNotFoundException e) {
             LOGGER.warn("Role {} seems to have been deleted. We are skipping the resource update", roleName);
             LOGGER.trace("Role not found", e);

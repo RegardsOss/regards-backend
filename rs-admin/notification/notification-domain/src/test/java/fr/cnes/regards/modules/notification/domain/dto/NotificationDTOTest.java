@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.modules.notification.domain.dto;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import fr.cnes.regards.framework.notification.NotificationDTO;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.cnes.regards.framework.notification.NotificationDTO;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Validate getter/setters on {@link NotificationDTO}.

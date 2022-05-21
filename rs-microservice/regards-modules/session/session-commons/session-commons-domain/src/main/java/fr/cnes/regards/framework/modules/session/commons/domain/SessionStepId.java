@@ -28,7 +28,6 @@ import java.util.Objects;
  **/
 public class SessionStepId implements Serializable {
 
-
     /**
      * Step identifier
      */
@@ -50,7 +49,7 @@ public class SessionStepId implements Serializable {
         this.session = session;
     }
 
-    public SessionStepId(){
+    public SessionStepId() {
     }
 
     @Override

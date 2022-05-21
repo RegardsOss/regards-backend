@@ -1,12 +1,11 @@
 package fr.cnes.regards.framework.utils.parser.rule;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.framework.utils.parser.IRuleVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.utils.parser.IRuleVisitor;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AndRule implements IRule {
 

@@ -45,6 +45,7 @@ import java.util.concurrent.TimeUnit;
  * Common client configuration between sys and user.<br/>
  * This class allows to customize Feign behavior.<br>
  * This class has to be annotated with <code>@Configuration</code>.
+ *
  * @author Sébastien Binda
  */
 @Configuration
@@ -52,6 +53,7 @@ public class FeignClientConfiguration {
 
     /**
      * Basic log
+     *
      * @return loggin level
      */
     @Bean
@@ -61,6 +63,7 @@ public class FeignClientConfiguration {
 
     /**
      * Specific error analyzer for feign client error responses.
+     *
      * @return ClientErrorDecoder
      */
     @Bean
@@ -70,6 +73,7 @@ public class FeignClientConfiguration {
 
     /**
      * Every REGARDS clients should use a Gson decoder/encoder.
+     *
      * @return Decoder
      */
     @Bean
@@ -82,6 +86,7 @@ public class FeignClientConfiguration {
 
     /**
      * Every REGARDS clients should use a Gson decoder/encoder.
+     *
      * @return Encoder
      */
     @Bean
@@ -94,6 +99,7 @@ public class FeignClientConfiguration {
 
     /**
      * Enable Spring MVC contract concept
+     *
      * @return {@link Contract}
      */
     @Bean
@@ -103,27 +109,27 @@ public class FeignClientConfiguration {
 
     /**
      * Allow 404 response to be process not like errors.
+     *
      * @return Feign Builder
      */
     @Bean
     public Feign.Builder builder() {
         // configure feign with custom rate limiter
         RateLimiter rateLimitConfig = RateLimiter.of("customRateLimiter",
-                                             RateLimiterConfig.custom()
-                                                           .limitRefreshPeriod(Duration.ofMillis(1L))
-                                                           .limitForPeriod(50)
-                                                           .timeoutDuration(Duration.ofSeconds(60L))
-                                                           .build());
+                                                     RateLimiterConfig.custom()
+                                                                      .limitRefreshPeriod(Duration.ofMillis(1L))
+                                                                      .limitForPeriod(50)
+                                                                      .timeoutDuration(Duration.ofSeconds(60L))
+                                                                      .build());
         // configure feign with semaphore-based bulkhead
-        Bulkhead bulkhead = Bulkhead.of("customBulkhead",
-                              BulkheadConfig.custom()
-                                    .build());
+        Bulkhead bulkhead = Bulkhead.of("customBulkhead", BulkheadConfig.custom().build());
         FeignDecorators feignDecorators = FeignDecorators.builder()
                                                          .withRateLimiter(rateLimitConfig)
-                                                         .withBulkhead(bulkhead).build();
+                                                         .withBulkhead(bulkhead)
+                                                         .build();
 
         // return custom feign builder and allow 404 responses to be processed without errors
-        Resilience4jFeign.Builder builder =  Resilience4jFeign.builder(feignDecorators);
+        Resilience4jFeign.Builder builder = Resilience4jFeign.builder(feignDecorators);
         builder.decode404();
         builder.options(new Request.Options(5000, TimeUnit.MILLISECONDS, 60000, TimeUnit.MILLISECONDS, false));
         return builder;

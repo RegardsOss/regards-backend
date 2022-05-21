@@ -83,7 +83,9 @@ public class ConfigManager extends AbstractModuleManagerWithTenantSettings<Void>
     }
 
     public Set<WorkerConfigDto> getWorkerConfigs(Collection<ModuleConfigurationItem<?>> items) {
-        return items.stream().filter(i -> WorkerConfigDto.class.isAssignableFrom(i.getKey()))
-                .map(i -> (WorkerConfigDto) i.getTypedValue()).collect(Collectors.toSet());
+        return items.stream()
+                    .filter(i -> WorkerConfigDto.class.isAssignableFrom(i.getKey()))
+                    .map(i -> (WorkerConfigDto) i.getTypedValue())
+                    .collect(Collectors.toSet());
     }
 }

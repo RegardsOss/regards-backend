@@ -18,13 +18,9 @@
  */
 package fr.cnes.regards.modules.storage.service.cache.job;
 
-import java.io.IOException;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * JOB to run verification of cache files coherence.
@@ -34,7 +30,6 @@ import fr.cnes.regards.modules.storage.service.cache.CacheService;
  * </ul>
  *
  * @author Sébastien Binda
- *
  */
 public class CacheVerificationJob extends AbstractJob<Void> {
 
@@ -43,6 +38,6 @@ public class CacheVerificationJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-            cacheService.checkDiskDBCoherence();
+        cacheService.checkDiskDBCoherence();
     }
 }

@@ -18,15 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.dump;
 
-import javax.persistence.*;
-import java.time.OffsetDateTime;
-
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import java.time.OffsetDateTime;
+
 /**
  * Request to save aip metadata
+ *
  * @author Iliana Ghazali
  */
 @Entity

@@ -18,13 +18,11 @@
  */
 package fr.cnes.regards.modules.accessrights.dao;
 
-import org.junit.Ignore;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorIT;
+import org.junit.Ignore;
 
 /**
  * @author sbinda
- *
  */
 // @TestPropertySource(properties = { "regards.jpa.multitenant.migrationTool=FLYWAYDB" })
 @Ignore

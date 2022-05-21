@@ -18,12 +18,6 @@
  */
 package fr.cnes.regards.microservices.administration;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.EventListener;
-
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -31,11 +25,16 @@ import fr.cnes.regards.framework.amqp.event.tenant.TenantCreatedEvent;
 import fr.cnes.regards.framework.amqp.event.tenant.TenantDeletedEvent;
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionDiscarded;
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.EventListener;
 
 /**
  * Manage tenant event
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
 public class RemoteTenantEventHandler implements ApplicationListener<ApplicationReadyEvent> {
 

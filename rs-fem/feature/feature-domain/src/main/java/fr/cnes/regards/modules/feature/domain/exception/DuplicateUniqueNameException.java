@@ -19,6 +19,7 @@
 
 
 package fr.cnes.regards.modules.feature.domain.exception;
+
 /**
  * @author Sylvain VISSIERE-GUERINET
  */

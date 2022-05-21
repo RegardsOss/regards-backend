@@ -24,7 +24,6 @@ import org.springframework.web.client.HttpServerErrorException;
 
 import javax.validation.Valid;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;

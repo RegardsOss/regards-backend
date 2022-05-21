@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import fr.cnes.regards.modules.ingest.domain.sip.LastSIPEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import fr.cnes.regards.modules.ingest.domain.sip.LastSIPEntity;
 
 @Repository
 public interface ILastSIPRepository extends JpaRepository<LastSIPEntity, Long> {

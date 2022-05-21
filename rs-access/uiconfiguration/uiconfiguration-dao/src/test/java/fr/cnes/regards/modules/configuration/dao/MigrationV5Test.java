@@ -2,7 +2,6 @@ package fr.cnes.regards.modules.configuration.dao;
 
 import com.google.gson.Gson;
 import org.junit.Ignore;
-import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,7 +10,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -123,7 +121,7 @@ public class MigrationV5Test {
             // A - relocate allow searching field
             configuration.put("allowSearching", configuration.remove("allowTagSearch"));
             // Add missing fields in each type configuration
-            String[] allTypes = {"DATA", "DATASET", "COLLECTION", "DOCUMENT"};
+            String[] allTypes = { "DATA", "DATASET", "COLLECTION", "DOCUMENT" };
             for (String t : allTypes) {
                 Map<String, Object> typeConfiguration = (Map<String, Object>) configuration.get(t);
                 typeConfiguration.put("hideEmptyAttributes", false);
@@ -143,9 +141,12 @@ public class MigrationV5Test {
         return built.replaceAll("\\.0", "");
     }
 
-    public static void writeConfFile(String outputFolder, String conf, int fileIndex, boolean backup) throws IOException {
+    public static void writeConfFile(String outputFolder, String conf, int fileIndex, boolean backup)
+        throws IOException {
         // A - Build file name: .../module_{index}{_backup?}.json
-        String outputFile = outputFolder + (outputFolder.endsWith("/") ? "" : "/") + "module_" + fileIndex + (backup ? "_backup" : "") + ".json";
+        String outputFile =
+            outputFolder + (outputFolder.endsWith("/") ? "" : "/") + "module_" + fileIndex + (backup ? "_backup" : "")
+                + ".json";
         Files.write(Paths.get(outputFile), conf.getBytes());
     }
 
@@ -158,7 +159,6 @@ public class MigrationV5Test {
         return extractValue((Map<String, Object>) nextSource, path);
     }
 
-
     public static String toSQLStringValue(Map<String, Object> source, String field) {
         String s = (String) extractValue(source, new ArrayList<>(Arrays.asList(field.split("\\."))));
         return s == null ? "NULL" : "'" + s + "'";
@@ -170,9 +170,9 @@ public class MigrationV5Test {
     }
 
     public static void writeToSQL(String outputFolder, List<Map<String, Object>> modules) throws IOException {
-        String sqlInsertionScript = "DELETE FROM accessproject.t_ui_module;\n" +
-                "INSERT INTO accessproject.t_ui_module(id,type,description,container,active,applicationid,home,customiconurl,icontype,title,conf)\n"
-                + "VALUES\n";
+        String sqlInsertionScript = "DELETE FROM accessproject.t_ui_module;\n"
+            + "INSERT INTO accessproject.t_ui_module(id,type,description,container,active,applicationid,home,customiconurl,icontype,title,conf)\n"
+            + "VALUES\n";
         List<String> insertedModules = new ArrayList<>(modules.size());
         for (Map<String, Object> module : modules) {
             Map<String, Object> moduleContent = (Map<String, Object>) module.get("content");
@@ -196,8 +196,10 @@ public class MigrationV5Test {
         Files.write(Paths.get(outputSQLFile), sqlInsertionScript.getBytes());
     }
 
-
-    public static void v04toV1Configuration(String modulesDumpPath, String outputFolder, boolean backup, boolean newConf) throws IOException {
+    public static void v04toV1Configuration(String modulesDumpPath,
+                                            String outputFolder,
+                                            boolean backup,
+                                            boolean newConf) throws IOException {
         // 1 - Extract modules list from dump
         Gson gson = new Gson();
         String fileAsString = new String(Files.readAllBytes(Paths.get(modulesDumpPath)));
@@ -248,7 +250,8 @@ public class MigrationV5Test {
     @Ignore
     public void generateConfigurationsFiles() throws Exception {
         // Note: fake test, just example for migrator (here from folder with all migrated elements)
-        List<Path> inputDumpFiles = Files.list(Paths.get("/home/rmechali/Bureau/tempo/input")).collect(Collectors.toList());
+        List<Path> inputDumpFiles = Files.list(Paths.get("/home/rmechali/Bureau/tempo/input"))
+                                         .collect(Collectors.toList());
         for (Path p : inputDumpFiles) {
             // A - Create folder for that project
             String fileName = p.getFileName().toString();
@@ -264,7 +267,10 @@ public class MigrationV5Test {
             // Parameter #2: Path to the folder that will hold backup, updated files and insertion script
             // Parameter #3: Should write on HDD backup configuration files?
             // Parameter #4: Should write on HDD new configuration files?
-            v04toV1Configuration("/home/rmechali/Bureau/tempo/input/" + p.getFileName(), outputFolder.getAbsolutePath(), true, true);
+            v04toV1Configuration("/home/rmechali/Bureau/tempo/input/" + p.getFileName(),
+                                 outputFolder.getAbsolutePath(),
+                                 true,
+                                 true);
 
         }
     }

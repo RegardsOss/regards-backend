@@ -18,8 +18,12 @@
  */
 package fr.cnes.regards.modules.crawler.rest;
 
-import java.time.OffsetDateTime;
-
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.crawler.service.IEntityIndexerService;
+import fr.cnes.regards.modules.crawler.service.job.CatalogResetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,12 +31,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.crawler.service.IEntityIndexerService;
-import fr.cnes.regards.modules.crawler.service.job.CatalogResetService;
+import java.time.OffsetDateTime;
 
 @RestController
 @RequestMapping(IndexController.TYPE_MAPPING)
@@ -58,18 +57,20 @@ public class IndexController {
 
     /**
      * Delete a DatasourceIngestion.
+     *
      * @return void
      * @throws ModuleException
      */
     @ResourceAccess(description = "Delete and recreate curent index.", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(method = RequestMethod.DELETE)
-    public ResponseEntity<Void> recreateIndex()  {
+    public ResponseEntity<Void> recreateIndex() {
         catalogResetService.scheduleCatalogReset();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**
      * Delete a DatasourceIngestion.
+     *
      * @return void
      * @throws ModuleException
      */
@@ -83,6 +84,7 @@ public class IndexController {
 
     /**
      * Delete a DatasourceIngestion.
+     *
      * @return void
      * @throws ModuleException
      */

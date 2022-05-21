@@ -24,9 +24,8 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.configuration.domain.UILayout;
 
 /**
- *
  * Class ILayoutService
- *
+ * <p>
  * Service to manage layout configuration entities.
  *
  * @author Sébastien Binda
@@ -36,7 +35,6 @@ import fr.cnes.regards.modules.configuration.domain.UILayout;
 public interface IUILayoutService {
 
     /**
-     *
      * Retrieve an application layout configuration by is applicationId
      *
      * @param applicationId
@@ -47,7 +45,6 @@ public interface IUILayoutService {
     UILayout retrieveLayout(String applicationId) throws EntityNotFoundException;
 
     /**
-     *
      * Save a new layout configuration
      *
      * @param UILayout
@@ -58,7 +55,6 @@ public interface IUILayoutService {
     UILayout saveLayout(UILayout UILayout) throws EntityException;
 
     /**
-     *
      * Save a new layout configuration
      *
      * @param UILayout

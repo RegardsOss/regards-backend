@@ -18,28 +18,27 @@
  */
 package fr.cnes.regards.framework.authentication.internal.filter;
 
-import java.io.IOException;
-import java.util.Collection;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import fr.cnes.regards.framework.security.filter.IpFilter;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import fr.cnes.regards.framework.security.filter.IpFilter;
-import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Collection;
 
 /**
  * Class RoleSysFilter
- *
+ * <p>
  * Specific gateway Filter to deny access to all Systems Roles. Systems roles must be used between microservices only.
+ *
  * @author Sébastien Binda
  */
 public class RoleSysFilter extends OncePerRequestFilter {
@@ -51,13 +50,13 @@ public class RoleSysFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+        throws ServletException, IOException {
 
         // Get authorized ip associated to given role
         JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
-        @SuppressWarnings("unchecked") Collection<RoleAuthority> roles = (Collection<RoleAuthority>) authentication
-                .getAuthorities();
+        @SuppressWarnings("unchecked")
+        Collection<RoleAuthority> roles = (Collection<RoleAuthority>) authentication.getAuthorities();
 
         boolean isSysRole = false;
         for (RoleAuthority role : roles) {

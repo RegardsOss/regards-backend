@@ -18,22 +18,22 @@
  */
 package fr.cnes.regards.microserices.administration.stubs;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.project.domain.Project;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.PagedModel.PageMetadata;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.project.domain.Project;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class ProjectClientStub
- *
+ * <p>
  * Stub to get a test implementation for IProjectsClient
+ *
  * @author Sébastien Binda
  */
 public class ProjectClientStub implements IProjectsClient {
@@ -52,8 +52,9 @@ public class ProjectClientStub implements IProjectsClient {
     public ResponseEntity<PagedModel<EntityModel<Project>>> retrieveProjectList(final int pPage, final int pSize) {
         List<EntityModel<Project>> resources = new ArrayList<>();
         resources.add(EntityModel.of(PROJECT));
-        PagedModel<EntityModel<Project>> page = PagedModel.of(resources, new PageMetadata(pSize, pPage, 1),
-                new ArrayList<>());
+        PagedModel<EntityModel<Project>> page = PagedModel.of(resources,
+                                                              new PageMetadata(pSize, pPage, 1),
+                                                              new ArrayList<>());
         return new ResponseEntity<>(page, HttpStatus.OK);
     }
 

@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain;
 
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionStringParameterValue;
@@ -28,28 +28,35 @@ import java.util.UUID;
 
 /**
  * This class defines a batch of executions for a process.
- *
+ * <p>
  * A batch is a logical group of executions, all belonging to the same "group",
  * whatever that means in context of the client. Once a batch is created though,
  * there is no limit on how many executions can be created within this batch.
  * A batch may perfectly have only one execution.
- *
+ * <p>
  * A batch is given the parameter values to use for the process' parameters.
- *
+ * <p>
  * A batch is immutable.
  *
  * @author gandrieu
  */
-@Value @With
+@Value
+@With
 public class PBatch {
 
-    /** The batch correlation ID, provided by the client and given back on each execution result. */
+    /**
+     * The batch correlation ID, provided by the client and given back on each execution result.
+     */
     String correlationId;
 
-    /** The batch ID. */
+    /**
+     * The batch ID.
+     */
     UUID id;
 
-    /** The process ID. */
+    /**
+     * The process ID.
+     */
     UUID processBusinessId;
 
     String tenant;
@@ -62,11 +69,15 @@ public class PBatch {
 
     Map<String, FileSetStatistics> filesetsByDataset;
 
-    /** This information leaks from the database but needs to be kept in the domain.
+    /**
+     * This information leaks from the database but needs to be kept in the domain.
      * It allows the database layer to know if it must CREATE or UPDATE the database
-     * for this instance. */
+     * for this instance.
+     */
     transient boolean persisted;
 
-    public PBatch asNew() { return this.withId(UUID.randomUUID()).withPersisted(false); }
+    public PBatch asNew() {
+        return this.withId(UUID.randomUUID()).withPersisted(false);
+    }
 
 }

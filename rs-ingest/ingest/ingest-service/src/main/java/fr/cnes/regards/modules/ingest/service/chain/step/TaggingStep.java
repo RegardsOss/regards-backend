@@ -18,12 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.step;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
@@ -31,6 +25,11 @@ import fr.cnes.regards.modules.ingest.domain.plugin.IAipTagging;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Tagging step is used to tag {@link AIP}(s) calling {@link IAipTagging#tag(List)}.
@@ -68,6 +67,7 @@ public class TaggingStep extends AbstractIngestStep<List<AIP>, Void> {
             error = e.get().getMessage();
         }
         handleRequestError(String.format("Tagging fails for AIP of SIP \"%s\". Cause : %s",
-                                         job.getCurrentEntity().getProviderId(), error));
+                                         job.getCurrentEntity().getProviderId(),
+                                         error));
     }
 }

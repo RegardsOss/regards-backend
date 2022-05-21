@@ -57,7 +57,8 @@ public class SnapshotJobEventHandler implements ApplicationListener<ApplicationR
         long start = System.currentTimeMillis();
         // sort job
         snapshotJobEventService.updateSnapshotProcess(messages);
-        LOGGER.trace("[AGENT SNAPSHOT JOB EVENT HANDLER] {} JobEvents handled in {} ms", messages.size(),
+        LOGGER.trace("[AGENT SNAPSHOT JOB EVENT HANDLER] {} JobEvents handled in {} ms",
+                     messages.size(),
                      System.currentTimeMillis() - start);
     }
 }

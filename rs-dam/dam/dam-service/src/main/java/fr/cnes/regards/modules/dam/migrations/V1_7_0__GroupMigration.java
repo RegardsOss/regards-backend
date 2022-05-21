@@ -32,9 +32,13 @@ public class V1_7_0__GroupMigration extends BaseJavaMigration {
     private static final Logger LOGGER = LoggerFactory.getLogger(V1_7_0__GroupMigration.class);
 
     private static final int RETRY_DELAY = 30;
+
     private static final String SELECT_USERS = "SELECT name, users FROM t_access_group t JOIN ta_access_group_users ta ON t.id = ta.access_group_id";
+
     private static final String SELECT_PUBLIC_GROUPS = "SELECT name FROM t_access_group WHERE public = TRUE";
+
     private static final String GROUP_NAME_COLUMN = "name";
+
     private static final String USER_COLUMN = "users";
 
     private final IProjectUsersClient projectUsersClient;
@@ -42,7 +46,6 @@ public class V1_7_0__GroupMigration extends BaseJavaMigration {
     public V1_7_0__GroupMigration(IProjectUsersClient projectUsersClient) {
         this.projectUsersClient = projectUsersClient;
     }
-
 
     @Override
     public void migrate(Context context) throws InterruptedException {
@@ -100,8 +103,9 @@ public class V1_7_0__GroupMigration extends BaseJavaMigration {
 
             try {
                 FeignSecurityManager.asSystem();
-                ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response = projectUsersClient.retrieveProjectUserList(new ProjectUserSearchParameters(),
-                                                                                                                           PageRequest.of(0, 1));
+                ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response = projectUsersClient.retrieveProjectUserList(
+                    new ProjectUserSearchParameters(),
+                    PageRequest.of(0, 1));
                 if (response != null && response.getStatusCode().is2xxSuccessful()) {
                     PagedModel<EntityModel<ProjectUser>> body = response.getBody();
                     if (body != null) {
@@ -170,9 +174,9 @@ public class V1_7_0__GroupMigration extends BaseJavaMigration {
     private Set<String> fetchUsers() {
         try {
             FeignSecurityManager.asSystem();
-            return HateoasUtils.retrieveAllPages(
-                                       100,
-                                       pageable -> projectUsersClient.retrieveProjectUserList(new ProjectUserSearchParameters(), pageable))
+            return HateoasUtils.retrieveAllPages(100,
+                                                 pageable -> projectUsersClient.retrieveProjectUserList(new ProjectUserSearchParameters(),
+                                                                                                        pageable))
                                .stream()
                                .map(ProjectUser::getEmail)
                                .collect(Collectors.toSet());

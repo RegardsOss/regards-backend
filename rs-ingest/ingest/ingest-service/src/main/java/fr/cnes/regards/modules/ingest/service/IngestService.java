@@ -18,35 +18,12 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
-import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.StringJoiner;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-import org.springframework.validation.Errors;
-import org.springframework.validation.MapBindingResult;
-import org.springframework.validation.Validator;
-
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -68,12 +45,28 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
+import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+import org.springframework.validation.Errors;
+import org.springframework.validation.MapBindingResult;
+import org.springframework.validation.Validator;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.util.*;
 
 /**
  * Ingest management service
  *
  * @author Marc Sordi
- *
+ * <p>
  * TODO : retry ingestion
  * TODO : retry deletion?
  */
@@ -120,27 +113,35 @@ public class IngestService implements IIngestService {
 
     /**
      * Validate, save and publish a new request
+     *
      * @param item request to manage
      */
     private IngestRequest registerIngestRequest(IngestRequestFlowItem item) {
-        return registerIngestRequest(item.getRequestId(), item.getSip(),
+        return registerIngestRequest(item.getRequestId(),
+                                     item.getSip(),
                                      metadataMapper.dtoToMetadata(item.getMetadata()),
                                      RequestInfoDto.build(item.getMetadata().getSessionOwner(),
                                                           item.getMetadata().getSession()),
-                                     new HashSet<>(), item.getSip().getId());
+                                     new HashSet<>(),
+                                     item.getSip().getId());
     }
 
     /**
      * Validate, save and publish a new request
+     *
      * @param requestId
-     * @param sip sip to manage
-     * @param ingestMetadata related ingest metadata
-     * @param info synchronous feedback
+     * @param sip             sip to manage
+     * @param ingestMetadata  related ingest metadata
+     * @param info            synchronous feedback
      * @param grantedRequests collection of granted requests to populate
      * @return
      */
-    private IngestRequest registerIngestRequest(String requestId, SIP sip, IngestMetadata ingestMetadata,
-            RequestInfoDto info, Collection<IngestRequest> grantedRequests, String sipId) {
+    private IngestRequest registerIngestRequest(String requestId,
+                                                SIP sip,
+                                                IngestMetadata ingestMetadata,
+                                                RequestInfoDto info,
+                                                Collection<IngestRequest> grantedRequests,
+                                                String sipId) {
         // Validate SIP
         Errors errors = new MapBindingResult(new HashMap<>(), SIP.class.getName());
         validator.validate(sip, errors);
@@ -148,13 +149,17 @@ public class IngestService implements IIngestService {
         if (errors.hasErrors()) {
             Set<String> errs = ErrorTranslator.getErrors(errors);
             // Publish DENIED request (do not persist it in DB) / Warning : request id cannot be known
-            ingestRequestService
-                    .handleRequestDenied(IngestRequest.build(requestId, ingestMetadata, InternalRequestState.ERROR,
-                                                             IngestRequestStep.LOCAL_DENIED, sip, errs));
+            ingestRequestService.handleRequestDenied(IngestRequest.build(requestId,
+                                                                         ingestMetadata,
+                                                                         InternalRequestState.ERROR,
+                                                                         IngestRequestStep.LOCAL_DENIED,
+                                                                         sip,
+                                                                         errs));
             StringJoiner joiner = new StringJoiner(", ");
             errs.forEach(joiner::add);
             LOGGER.debug("Ingest request ({}) rejected for following reason(s) : {}",
-                         requestId == null ? "per REST" : requestId, joiner.toString());
+                         requestId == null ? "per REST" : requestId,
+                         joiner.toString());
             // Trace denied request
             info.addDeniedRequest(sipId, joiner.toString());
 
@@ -165,8 +170,11 @@ public class IngestService implements IIngestService {
         checkSipStorageLocations(sip, ingestMetadata, errors);
 
         // Save granted ingest request, versioning mode is being handled later
-        IngestRequest request = IngestRequest.build(requestId, ingestMetadata, InternalRequestState.CREATED,
-                                                    IngestRequestStep.LOCAL_SCHEDULED, sip);
+        IngestRequest request = IngestRequest.build(requestId,
+                                                    ingestMetadata,
+                                                    InternalRequestState.CREATED,
+                                                    IngestRequestStep.LOCAL_SCHEDULED,
+                                                    sip);
         ingestRequestService.handleRequestGranted(request);
         // Trace granted request
         info.addGrantedRequest(sip.getId(), request.getRequestId());
@@ -200,9 +208,9 @@ public class IngestService implements IIngestService {
 
         // Check submission limit / If there are more features than configurated bulk max size, reject request!
         if (sips.getFeatures().size() > confProperties.getMaxBulkSize()) {
-            throw new EntityInvalidException(
-                    String.format("Invalid request due to ingest configuration max bulk size set to %s.",
-                                  confProperties.getMaxBulkSize()));
+            throw new EntityInvalidException(String.format(
+                "Invalid request due to ingest configuration max bulk size set to %s.",
+                confProperties.getMaxBulkSize()));
         }
 
         // Validate and transform ingest metadata
@@ -223,7 +231,7 @@ public class IngestService implements IIngestService {
         }
 
         // Monitoring
-        sessionNotifier.incrementRequestCount(source, session,grantedRequests.size());
+        sessionNotifier.incrementRequestCount(source, session, grantedRequests.size());
 
         ingestRequestService.scheduleIngestProcessingJobByChain(ingestMetadata.getIngestChain(), grantedRequests);
 
@@ -265,6 +273,7 @@ public class IngestService implements IIngestService {
 
     /**
      * Validate given SIP dataobjects to ensure storage location is configured for each needed {@link DataType} to store
+     *
      * @param sip
      * @param ingestMetadata
      * @param errors
@@ -272,7 +281,7 @@ public class IngestService implements IIngestService {
     private void checkSipStorageLocations(SIP sip, IngestMetadata ingestMetadata, Errors errors) {
         Assert.notNull(errors, "Errors should not be null");
         if (((sip != null) & (sip.getProperties() != null)) && (sip.getProperties().getContentInformations() != null)
-                && (ingestMetadata != null)) {
+            && (ingestMetadata != null)) {
             Set<DataType> handleTypes = Sets.newHashSet();
             ingestMetadata.getStorages().stream().map(StorageMetadata::getTargetTypes).forEach(t -> {
                 if (t.isEmpty()) {
@@ -287,20 +296,23 @@ public class IngestService implements IIngestService {
                 OAISDataObject dobj = ci.getDataObject();
                 DataType regardsDataType = dobj.getRegardsDataType();
                 // If file needed to be stored check that the data type is well configured
-                if (dobj.getLocations().stream().anyMatch(l -> l.getStorage() == null)
-                        && !handleTypes.contains(regardsDataType)) {
-                    errors.reject("NOT_HANDLED_STORAGE_DATA_TYPE", String
-                            .format("Data type %s to store is not associated to a configured storage location",
-                                    regardsDataType.toString()));
+                if (dobj.getLocations().stream().anyMatch(l -> l.getStorage() == null) && !handleTypes.contains(
+                    regardsDataType)) {
+                    errors.reject("NOT_HANDLED_STORAGE_DATA_TYPE",
+                                  String.format(
+                                      "Data type %s to store is not associated to a configured storage location",
+                                      regardsDataType.toString()));
                 }
                 // add check on quicklook or thumbnail to assert that if they are to be referenced, height and width have been set
-                if ((regardsDataType == DataType.QUICKLOOK_HD) || (regardsDataType == DataType.QUICKLOOK_MD)
-                        || (regardsDataType == DataType.QUICKLOOK_SD) || (regardsDataType == DataType.THUMBNAIL)) {
+                if ((regardsDataType == DataType.QUICKLOOK_HD) || (regardsDataType == DataType.QUICKLOOK_MD) || (
+                    regardsDataType == DataType.QUICKLOOK_SD) || (regardsDataType == DataType.THUMBNAIL)) {
                     for (OAISDataObjectLocation location : dobj.getLocations()) {
                         if (!Strings.isNullOrEmpty(location.getStorage()) && ((height == null) || (width == null))) {
-                            errors.reject("REFERENCED_IMAGE_WITHOUT_DIMENSION", String
-                                    .format("Both height and width must be set for images(%s in SIP: %s) that are being referenced!",
-                                            dobj.getFilename(), sip.getId()));
+                            errors.reject("REFERENCED_IMAGE_WITHOUT_DIMENSION",
+                                          String.format(
+                                              "Both height and width must be set for images(%s in SIP: %s) that are being referenced!",
+                                              dobj.getFilename(),
+                                              sip.getId()));
                         }
                     }
                 }

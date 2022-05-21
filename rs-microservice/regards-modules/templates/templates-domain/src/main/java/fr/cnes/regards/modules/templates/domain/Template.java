@@ -18,23 +18,16 @@
  */
 package fr.cnes.regards.modules.templates.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotBlank;
-
+import fr.cnes.regards.framework.jpa.IIdentifiable;
 import org.hibernate.annotations.Type;
 
-import fr.cnes.regards.framework.jpa.IIdentifiable;
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 
 /**
  * Domain class representing a template.<br>
  * A template defines a content using named keys with a $ ($toto for example)
+ *
  * @author Xavier-Alexandre Brochard
  * @author oroussel
  */
@@ -73,7 +66,7 @@ public class Template implements IIdentifiable<Long> {
     }
 
     /**
-     * @param name the name
+     * @param name    the name
      * @param content the content
      */
     public Template(String name, String content) {

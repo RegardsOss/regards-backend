@@ -18,16 +18,16 @@
  */
 package fr.cnes.regards.modules.maintenancetest.rest;
 
+import fr.cnes.regards.framework.microservice.maintenance.MaintenanceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.microservice.maintenance.MaintenanceException;
-
 /**
  * RestController test implementation.
+ *
  * @author Christophe Mertz
  */
 @RestController

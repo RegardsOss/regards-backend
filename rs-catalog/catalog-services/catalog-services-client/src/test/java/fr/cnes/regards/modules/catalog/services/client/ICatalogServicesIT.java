@@ -18,9 +18,18 @@
  */
 package fr.cnes.regards.modules.catalog.services.client;
 
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.feign.FeignClientBuilder;
+import fr.cnes.regards.framework.feign.TokenClientProvider;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
+import fr.cnes.regards.framework.security.utils.HttpConstants;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,27 +45,16 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.gson.Gson;
-
-import fr.cnes.regards.framework.feign.FeignClientBuilder;
-import fr.cnes.regards.framework.feign.TokenClientProvider;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
-import fr.cnes.regards.framework.security.utils.HttpConstants;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Integration Test for {@link ICatalogServicesClient}
  *
  * <p>
- * @DirtiesContext is mandatory, we have issue with context cleaning because of MockMvc
  *
  * @author Xavier-Alexandre Brochard
+ * @DirtiesContext is mandatory, we have issue with context cleaning because of MockMvc
  */
 @TestPropertySource("classpath:test.properties")
 @DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
@@ -90,10 +88,9 @@ public class ICatalogServicesIT extends AbstractRegardsWebIT {
     @Before
     public void init() {
         jwtService.injectMockToken(getDefaultTenant(), getDefaultRole());
-        client = FeignClientBuilder.build(
-                                          new TokenClientProvider<>(ICatalogServicesClient.class,
-                                                  "http://" + serverAddress + ":" + getPort(), feignSecurityManager),
-                                          gson);
+        client = FeignClientBuilder.build(new TokenClientProvider<>(ICatalogServicesClient.class,
+                                                                    "http://" + serverAddress + ":" + getPort(),
+                                                                    feignSecurityManager), gson);
         FeignSecurityManager.asSystem();
         repos.deleteAll();
     }

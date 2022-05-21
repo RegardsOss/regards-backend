@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.amqp.test.transactional;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.test.event.PollableInfo;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,18 +30,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.test.event.PollableInfo;
-
 /**
  * @author Marc Sordi
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = TransactionalTestConfiguration.class)
 @TestPropertySource(
-        properties = { "regards.amqp.management.mode=MULTI", "regards.tenants=PROJECT, PROJECT1",
-                "regards.tenant=PROJECT", "regards.amqp.internal.transaction=true" },
-        locations = "classpath:amqp.properties")
+    properties = { "regards.amqp.management.mode=MULTI", "regards.tenants=PROJECT, PROJECT1", "regards.tenant=PROJECT",
+        "regards.amqp.internal.transaction=true" }, locations = "classpath:amqp.properties")
 public class TransactionalTestIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionalTestIT.class);

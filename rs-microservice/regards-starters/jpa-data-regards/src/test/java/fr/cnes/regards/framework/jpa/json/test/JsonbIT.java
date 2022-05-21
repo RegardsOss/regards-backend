@@ -36,6 +36,7 @@ import java.util.Optional;
 
 /**
  * WARNING : this test needs default "public" schema on the target database
+ *
  * @author Sylvain Vissiere-Guerinet
  */
 @RunWith(SpringRunner.class)

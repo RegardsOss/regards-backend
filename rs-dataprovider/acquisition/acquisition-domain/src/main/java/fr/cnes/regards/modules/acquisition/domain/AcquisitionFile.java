@@ -18,32 +18,16 @@
  */
 package fr.cnes.regards.modules.acquisition.domain;
 
-import java.nio.file.Path;
-import java.time.OffsetDateTime;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.annotations.Type;
-
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.converters.PathAttributeConverter;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
+import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.nio.file.Path;
+import java.time.OffsetDateTime;
 
 /**
  * This class represents an acquisition file.<br>
@@ -51,14 +35,12 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
  *
  * @author Christophe Mertz
  * @author Marc Sordi
- *
  */
 @Entity
-@Table(name = "t_acquisition_file",
-        indexes = { @Index(name = "idx_acq_file_state", columnList = "state"),
-                @Index(name = "idx_acq_file_state_file_info", columnList = "state, acq_file_info_id"),
-                @Index(name = "idx_acq_file_info", columnList = "acq_file_info_id"),
-                @Index(name = "idx_acq_file_product_id", columnList = "product_id") })
+@Table(name = "t_acquisition_file", indexes = { @Index(name = "idx_acq_file_state", columnList = "state"),
+    @Index(name = "idx_acq_file_state_file_info", columnList = "state, acq_file_info_id"),
+    @Index(name = "idx_acq_file_info", columnList = "acq_file_info_id"),
+    @Index(name = "idx_acq_file_product_id", columnList = "product_id") })
 public class AcquisitionFile {
 
     @Id

@@ -95,9 +95,9 @@ public class RoleResourceController implements IResourceController<ResourcesAcce
         throws ModuleException {
         Role role = roleService.retrieveRole(roleName);
         Set<ResourcesAccess> resources = roleService.retrieveRoleResourcesAccesses(role.getId())
-            .stream()
-            .filter(r -> r.getMicroservice().equals(microserviceName))
-            .collect(Collectors.toSet());
+                                                    .stream()
+                                                    .filter(r -> r.getMicroservice().equals(microserviceName))
+                                                    .collect(Collectors.toSet());
         return new ResponseEntity<>(toResources(resources, roleName), HttpStatus.OK);
     }
 

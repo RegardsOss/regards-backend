@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.entity.converter;
 
 import com.google.gson.Gson;
@@ -27,15 +27,18 @@ import io.vavr.collection.List;
  */
 public class DaoCustomConverters {
 
-    private DaoCustomConverters() {}
+    private DaoCustomConverters() {
+    }
 
     public static java.util.List<Object> getCustomConverters(Gson gson) {
-        return List
-                .<Object> of(new ParamValuesToJsonbConverter(gson), new JsonbToParamValuesConverter(gson),
-                             new FileStatsByDatasetToJsonbConverter(gson), new JsonbToFileStatsByDatasetConverter(gson),
-                             new FileParametersToJsonbConverter(gson), new JsonbToFileParametersConverter(gson),
-                             new StepsToJsonbConverter(gson), new JsonbToStepsConverter(gson))
-                .toJavaList();
+        return List.<Object>of(new ParamValuesToJsonbConverter(gson),
+                               new JsonbToParamValuesConverter(gson),
+                               new FileStatsByDatasetToJsonbConverter(gson),
+                               new JsonbToFileStatsByDatasetConverter(gson),
+                               new FileParametersToJsonbConverter(gson),
+                               new JsonbToFileParametersConverter(gson),
+                               new StepsToJsonbConverter(gson),
+                               new JsonbToStepsConverter(gson)).toJavaList();
     }
 
 }

@@ -18,22 +18,19 @@
  */
 package fr.cnes.regards.modules.model.dao;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.model.domain.Model;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.model.domain.Model;
+import java.util.List;
 
 /**
- *
  * {@link Model} repository
  *
  * @author Marc Sordi
- *
  */
 @Repository
 public interface IModelRepository extends CrudRepository<Model, Long> {

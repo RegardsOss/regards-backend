@@ -3,11 +3,10 @@ package fr.cnes.regards.modules.dam.domain.entities.metadata;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * Dataset metadata. This object is only used by Elasticsearch<br/>
- *
+ * <p>
  * Register all access rights for data object level :
  * <ul>
  * <li>Map keys represent groups with full access on metadata (i.e. AccessLevel set to FULL_ACCESS)</li>
@@ -22,8 +21,8 @@ public class DatasetMetadata {
 
     /**
      * Information about a group access to a specific dataset for data objects.
-     * @author Sébastien Binda
      *
+     * @author Sébastien Binda
      */
     public static class DataObjectGroup {
 
@@ -53,8 +52,11 @@ public class DatasetMetadata {
          */
         private final Long dataObjectAccessFilterPluginId;
 
-        public DataObjectGroup(String groupName, Boolean datasetAccess, Boolean dataObjectAccess,
-                Long metaDataObjectAccessFilterPlugin, Long dataObjectAccessFilterPlugin) {
+        public DataObjectGroup(String groupName,
+                               Boolean datasetAccess,
+                               Boolean dataObjectAccess,
+                               Long metaDataObjectAccessFilterPlugin,
+                               Long dataObjectAccessFilterPlugin) {
             super();
             this.groupName = groupName;
             this.dataObjectAccess = dataObjectAccess;
@@ -95,10 +97,17 @@ public class DatasetMetadata {
         return dataObjectsGroups.keySet();
     }
 
-    public void addDataObjectGroup(String groupName, Boolean datasetAccess, Boolean dataObjectAccess,
-            Long metaDataObjectAccessFilterPlugin, Long dataObjectAccessFilterPlugin) {
-        this.dataObjectsGroups.put(groupName, new DataObjectGroup(groupName, datasetAccess, dataObjectAccess,
-                metaDataObjectAccessFilterPlugin, dataObjectAccessFilterPlugin));
+    public void addDataObjectGroup(String groupName,
+                                   Boolean datasetAccess,
+                                   Boolean dataObjectAccess,
+                                   Long metaDataObjectAccessFilterPlugin,
+                                   Long dataObjectAccessFilterPlugin) {
+        this.dataObjectsGroups.put(groupName,
+                                   new DataObjectGroup(groupName,
+                                                       datasetAccess,
+                                                       dataObjectAccess,
+                                                       metaDataObjectAccessFilterPlugin,
+                                                       dataObjectAccessFilterPlugin));
     }
 
     public Map<String, DataObjectGroup> getDataObjectsGroupsMap() {

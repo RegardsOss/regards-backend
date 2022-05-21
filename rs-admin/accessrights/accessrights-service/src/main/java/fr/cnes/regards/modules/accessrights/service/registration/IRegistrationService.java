@@ -34,16 +34,13 @@ public interface IRegistrationService { //NOSONAR
     /**
      * Creates a new account if needed and creates a new project user.
      *
-     * @param dto
-     *            The DTO containing all information to create the new account and {@link ProjectUser}
-     * @param isExternalAccess
-     *            does the user access to creates associated to an external account ?
+     * @param dto              The DTO containing all information to create the new account and {@link ProjectUser}
+     * @param isExternalAccess does the user access to creates associated to an external account ?
      * @return {@link ProjectUser} created
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityAlreadyExistsException} Thrown when an account with same <code>email</code> already
-     *             exists<br>
-     *             {@link EntityTransitionForbiddenException} Thrown when the account is not in status PENDING<br>
+     * @throws EntityException <br>
+     *                         {@link EntityAlreadyExistsException} Thrown when an account with same <code>email</code> already
+     *                         exists<br>
+     *                         {@link EntityTransitionForbiddenException} Thrown when the account is not in status PENDING<br>
      */
     ProjectUser requestAccess(final AccessRequestDto dto, boolean isExternalAccess) throws EntityException;
 

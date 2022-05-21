@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.indexer.domain.criterion;
 
 /**
  * A match criterion specifies how a value have to be matched
+ *
  * @param <T> type of value
  * @author oroussel
  */

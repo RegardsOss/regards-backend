@@ -31,7 +31,7 @@ import java.util.Set;
 public class FeatureDisseminationInfos {
 
     private final Map<FeatureUpdateDisseminationInfoType, Set<FeatureUpdateDisseminationRequest>> requestsByDisseminationType = new EnumMap<>(
-            FeatureUpdateDisseminationInfoType.class);
+        FeatureUpdateDisseminationInfoType.class);
 
     public Set<FeatureUpdateDisseminationRequest> get(FeatureUpdateDisseminationInfoType type) {
         return requestsByDisseminationType.getOrDefault(type, new HashSet<>());
@@ -39,7 +39,9 @@ public class FeatureDisseminationInfos {
 
     public void addRequest(FeatureUpdateDisseminationRequest request) {
         Set<FeatureUpdateDisseminationRequest> statusRequests = requestsByDisseminationType.compute(request.getUpdateType(),
-                                                                                                    (status, requests) -> requests == null ?
+                                                                                                    (status, requests) ->
+                                                                                                        requests
+                                                                                                            == null ?
                                                                                                             Sets.newHashSet() :
                                                                                                             requests);
 

@@ -18,20 +18,18 @@
  */
 package fr.cnes.regards.framework.gson.adapters.actuator;
 
-import java.lang.reflect.Type;
-
-import org.springframework.boot.actuate.health.Health;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import org.springframework.boot.actuate.health.Health;
+
+import java.lang.reflect.Type;
 
 /**
  * Spring Boot actuator deserializer for health endpoint
  *
  * @author Marc SORDI
- *
  */
 public class HealthAdapter implements JsonSerializer<Health> {
 

@@ -18,17 +18,15 @@
  */
 package fr.cnes.regards.modules.model.domain.attributes.restriction.validator;
 
+import fr.cnes.regards.modules.model.domain.attributes.restriction.DoubleRangeRestriction;
+
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-import fr.cnes.regards.modules.model.domain.attributes.restriction.DoubleRangeRestriction;
-
 /**
- *
  * Validate range
  *
  * @author Marc Sordi
- *
  */
 public class CheckFloatRangeValidator implements ConstraintValidator<CheckFloatRange, DoubleRangeRestriction> {
 

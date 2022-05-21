@@ -56,8 +56,9 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
 
     Page<Product> findByProcessingChainOrderByIdAsc(AcquisitionProcessingChain processingChain, Pageable pageable);
 
-    default Page<Product> findByProcessingChainAndSession(AcquisitionProcessingChain processingChain, String session,
-            Pageable pageable) {
+    default Page<Product> findByProcessingChainAndSession(AcquisitionProcessingChain processingChain,
+                                                          String session,
+                                                          Pageable pageable) {
         // get Id page
         Page<Long> productIdPage = findIdByProcessingChainAndSession(processingChain, session, pageable);
         // get complete products
@@ -67,33 +68,39 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
     }
 
     @Query("SELECT p.id FROM Product p WHERE p.processingChain = :chain AND p.session = :session")
-    Page<Long> findIdByProcessingChainAndSession(@Param("chain") AcquisitionProcessingChain processingChain, @Param("session") String session, Pageable pageable);
+    Page<Long> findIdByProcessingChainAndSession(@Param("chain") AcquisitionProcessingChain processingChain,
+                                                 @Param("session") String session,
+                                                 Pageable pageable);
 
     /**
      * Find all products according to specified filters
      *
      * @param ingestChain ingest chain
-     * @param session session name
-     * @param sipStates {@link ISipState}s
-     * @param pageable page limit
+     * @param session     session name
+     * @param sipStates   {@link ISipState}s
+     * @param pageable    page limit
      * @return a page of products with the above properties
      */
-    Page<Product> findByProcessingChainIngestChainAndSessionAndSipStateIn(String ingestChain, String session,
-            Collection<ISipState> sipStates, Pageable pageable);
+    Page<Product> findByProcessingChainIngestChainAndSessionAndSipStateIn(String ingestChain,
+                                                                          String session,
+                                                                          Collection<ISipState> sipStates,
+                                                                          Pageable pageable);
 
     /**
      * Find all products according to specified filters (no session)
      *
      * @param ingestChain ingest chain
-     * @param sipStates {@link ISipState}s
-     * @param pageable page limit
+     * @param sipStates   {@link ISipState}s
+     * @param pageable    page limit
      * @return a page of products with the above properties
      */
     Page<Product> findByProcessingChainIngestChainAndSipStateInOrderByIdAsc(String ingestChain,
-            Collection<ISipState> sipStates, Pageable pageable);
+                                                                            Collection<ISipState> sipStates,
+                                                                            Pageable pageable);
 
     /**
      * Find {@link Product} by state in transaction with pessimistic read lock
+     *
      * @param sipState {@link ISipState}
      * @param pageable
      * @return a set of products with the above properties
@@ -103,26 +110,33 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
 
     /**
      * Find {@link Product} by state in transaction with pessimistic read lock
+     *
      * @param processingChain {@link AcquisitionProcessingChain}
-     * @param sipState {@link ISipState}
+     * @param sipState        {@link ISipState}
      * @param pageable
      * @return a set of products with the above properties
      */
     @Lock(LockModeType.PESSIMISTIC_READ)
     Page<Product> findWithLockByProcessingChainAndSipStateOrderByIdAsc(AcquisitionProcessingChain processingChain,
-            ProductSIPState sipState, Pageable pageable);
+                                                                       ProductSIPState sipState,
+                                                                       Pageable pageable);
 
     Page<Product> findByProcessingChainAndSipStateOrderByIdAsc(AcquisitionProcessingChain processingChain,
-            ProductSIPState sipState, Pageable pageable);
+                                                               ProductSIPState sipState,
+                                                               Pageable pageable);
 
     Page<Product> findByProcessingChainAndSipStateInOrderByIdAsc(AcquisitionProcessingChain processingChain,
-            List<ProductSIPState> sipState, Pageable pageable);
+                                                                 List<ProductSIPState> sipState,
+                                                                 Pageable pageable);
 
     Page<Product> findByProcessingChainAndSessionAndSipStateInOrderByIdAsc(AcquisitionProcessingChain processingChain,
-            String session, List<ProductSIPState> sipState, Pageable pageable);
+                                                                           String session,
+                                                                           List<ProductSIPState> sipState,
+                                                                           Pageable pageable);
 
     /**
      * Find {@link Product} by state
+     *
      * @param sipState {@link ISipState}
      * @param pageable
      * @return a set of products with the above properties
@@ -131,10 +145,12 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
 
     @Lock(LockModeType.PESSIMISTIC_READ)
     Page<Product> findByProcessingChainAndStateOrderByIdAsc(AcquisitionProcessingChain processingChain,
-            ProductState state, Pageable pageable);
+                                                            ProductState state,
+                                                            Pageable pageable);
 
     /**
      * Count number of products associated to the given {@link AcquisitionProcessingChain} and in the given state
+     *
      * @param processingChain {@link AcquisitionProcessingChain}
      * @param productStates
      * @return number of matching {@link Product}
@@ -143,32 +159,37 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
 
     /**
      * Count number of products of the given {@link AcquisitionProcessingChain} accord to above filters
-     * @param processingChain {@link AcquisitionProcessingChain}
+     *
+     * @param processingChain  {@link AcquisitionProcessingChain}
      * @param productSipStates {@link ISipState}s
      * @return number of matching {@link Product}
      */
     long countByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain,
-            List<ISipState> productSipStates);
+                                             List<ISipState> productSipStates);
 
     /**
      * Count number of generation job that is actually running
+     *
      * @param processingChain {@link AcquisitionProcessingChain}
      * @param productSipState {@link ISipState}s as string
      * @return long
      */
-    @Query(value = "select count(distinct p.sip_gen_job_info_id) from  {h-schema}t_acquisition_product p where p.processing_chain_id=?1 and p.sip_state=?2",
-            nativeQuery = true)
+    @Query(
+        value = "select count(distinct p.sip_gen_job_info_id) from  {h-schema}t_acquisition_product p where p.processing_chain_id=?1 and p.sip_state=?2",
+        nativeQuery = true)
     long countDistinctLastSIPGenerationJobInfoByProcessingChainAndSipState(AcquisitionProcessingChain processingChain,
-            String productSipState);
+                                                                           String productSipState);
 
     boolean existsByProcessingChainAndSipState(AcquisitionProcessingChain processingChain, ISipState productSipState);
 
-    @Query(value = "select distinct p.lastSIPGenerationJobInfo from  Product p where p.processingChain=?1 and p.sipState=?2")
-    Set<JobInfo> findDistinctLastSIPGenerationJobInfoByProcessingChainAndSipStateIn(
-            AcquisitionProcessingChain processingChain, ISipState productSipState);
+    @Query(
+        value = "select distinct p.lastSIPGenerationJobInfo from  Product p where p.processingChain=?1 and p.sipState=?2")
+    Set<JobInfo> findDistinctLastSIPGenerationJobInfoByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain,
+                                                                                    ISipState productSipState);
 
     /**
      * Count number of {@link Product} associated to the given {@link AcquisitionProcessingChain}
+     *
      * @param chain {@link AcquisitionProcessingChain}
      * @return number of {@link Product}
      */
@@ -193,8 +214,8 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
         // now that we have the ids, lets load the products and keep the same sort
         List<Product> loadedProducts = findAllByIdIn(productIds, pageable.getSort());
         return new PageImpl<>(loadedProducts,
-                PageRequest.of(products.getNumber(), products.getSize(), products.getSort()),
-                products.getTotalElements());
+                              PageRequest.of(products.getNumber(), products.getSize(), products.getSort()),
+                              products.getTotalElements());
     }
 
     @EntityGraph(value = "graph.product.complete", type = EntityGraph.EntityGraphType.LOAD)

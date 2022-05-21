@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.storage.service.file;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.storage.service.DownloadTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -25,15 +28,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-
 /**
  * Scheduler to periodicly delete expired download tokens.
  *
  * @author Sébastien Binda
- *
  */
 @Component
 @Profile("!noscheduler")
@@ -54,7 +52,7 @@ public class PurgeDownloadTokenScheduler {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Scheduled(fixedDelayString = "${regards.storage.purge.schedule.delay:" + DEFAULT_DELAY + "}",
-            initialDelayString = "${regards.storage.purge.schedule.delay:" + DEFAULT_INITIAL_DELAY + "}")
+        initialDelayString = "${regards.storage.purge.schedule.delay:" + DEFAULT_INITIAL_DELAY + "}")
     public void handleFileStorageRequests() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);

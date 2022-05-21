@@ -18,24 +18,22 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import java.util.Optional;
-
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import java.util.Optional;
 
 /**
  * JPA Repository to handle access to {@link FileReference} entities.
  *
  * @author Sébatien Binda
- *
  */
 public interface IFileReferenceWithOwnersRepository
-        extends JpaRepository<FileReference, Long>, JpaSpecificationExecutor<FileReference> {
+    extends JpaRepository<FileReference, Long>, JpaSpecificationExecutor<FileReference> {
 
     @EntityGraph(value = "graph.filereference.owners", type = EntityGraph.EntityGraphType.LOAD)
     Page<FileReference> findAllByLocationStorage(String storage, Pageable page);

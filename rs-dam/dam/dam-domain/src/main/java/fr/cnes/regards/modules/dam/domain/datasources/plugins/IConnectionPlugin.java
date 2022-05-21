@@ -19,13 +19,13 @@
 
 package fr.cnes.regards.modules.dam.domain.datasources.plugins;
 
-import javax.sql.DataSource;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+
+import javax.sql.DataSource;
 
 /**
  * Class IConnectionPlugin
- *
+ * <p>
  * Allows to manage a connection to a {@link DataSource}
  *
  * @author Christophe Mertz
@@ -33,6 +33,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
  */
 @PluginInterface(description = "Plugin to manage a connection to a datasource")
 public interface IConnectionPlugin {
+
     /**
      * Test the connection
      *

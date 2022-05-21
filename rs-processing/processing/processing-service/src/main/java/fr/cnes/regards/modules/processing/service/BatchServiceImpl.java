@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.service;
 
 import fr.cnes.regards.modules.processing.domain.PBatch;
@@ -48,7 +48,7 @@ import java.util.UUID;
 public class BatchServiceImpl implements IBatchService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BatchServiceImpl.class);
-    
+
     private final IPProcessRepository processRepo;
 
     private final IPBatchRepository batchRepo;
@@ -56,11 +56,10 @@ public class BatchServiceImpl implements IBatchService {
     private final long batchRipeForDeleteAgeMs;
 
     @Autowired
-    public BatchServiceImpl(
-            IPProcessRepository processRepo,
-            IPBatchRepository batchRepo,
-            @Value("${regards.processing.cleanup.batch.age.ms:604800000}") long batchRipeForDeleteAgeMs
-    ) {
+    public BatchServiceImpl(IPProcessRepository processRepo,
+                            IPBatchRepository batchRepo,
+                            @Value("${regards.processing.cleanup.batch.age.ms:604800000}")
+                            long batchRipeForDeleteAgeMs) {
         this.processRepo = processRepo;
         this.batchRepo = batchRepo;
         this.batchRipeForDeleteAgeMs = batchRipeForDeleteAgeMs;
@@ -69,16 +68,16 @@ public class BatchServiceImpl implements IBatchService {
     @Override
     public Mono<PBatch> checkAndCreateBatch(PUserAuth auth, PBatchRequest data) {
         return processRepo.findByTenantAndProcessBusinessID(auth.getTenant(), data.getProcessBusinessId())
-                .flatMap(p -> createBatch(p, data).flatMap(b -> checkBatch(p, b)))
-                .flatMap(batchRepo::save);
+                          .flatMap(p -> createBatch(p, data).flatMap(b -> checkBatch(p, b)))
+                          .flatMap(batchRepo::save);
     }
 
     @Scheduled(fixedDelayString = "${regards.processing.cleanup.batch.rate.ms:3600000}")
     public void deleteOldBatches() {
         batchRepo.deleteAllFinishedForMoreThan(batchRipeForDeleteAgeMs)
-                .subscribeOn(Schedulers.immediate())
-                .doOnError(t -> LOGGER.error("Failed to delete old batches", t))
-                .subscribe();
+                 .subscribeOn(Schedulers.immediate())
+                 .doOnError(t -> LOGGER.error("Failed to delete old batches", t))
+                 .subscribe();
     }
 
     private Mono<Seq<Violation>> check(PProcess process, PBatch batch) {
@@ -86,17 +85,15 @@ public class BatchServiceImpl implements IBatchService {
     }
 
     private Mono<PBatch> createBatch(PProcess process, PBatchRequest data) {
-        return Mono.just(new PBatch(
-            data.getCorrelationId(),
-            UUID.randomUUID(),
-            process.getProcessId(),
-            data.getTenant(),
-            data.getUser(),
-            data.getUserRole(),
-            paramValues(data),
-            data.getFilesetsByDataset(),
-            false)
-        );
+        return Mono.just(new PBatch(data.getCorrelationId(),
+                                    UUID.randomUUID(),
+                                    process.getProcessId(),
+                                    data.getTenant(),
+                                    data.getUser(),
+                                    data.getUserRole(),
+                                    paramValues(data),
+                                    data.getFilesetsByDataset(),
+                                    false));
     }
 
     private Seq<ExecutionStringParameterValue> paramValues(PBatchRequest data) {

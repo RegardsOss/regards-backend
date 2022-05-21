@@ -31,7 +31,9 @@ public enum DeletionRequestStep {
 
     STORAGE_DELETION_ERROR,
 
-    /** For notification */
+    /**
+     * For notification
+     */
 
     LOCAL_TO_BE_NOTIFIED,
 

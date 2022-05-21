@@ -27,20 +27,20 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.util.Set;
 
 /**
- *
  * Tenant client
  *
  * @author Marc Sordi
- *
  */
 @RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.tenant-client")
 public interface ITenantClient {
 
     String ROOT_PATH = "/tenants";
 
-    @GetMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Set<String>> getAllTenants();
 
-    @GetMapping(path = ROOT_PATH + "/{pMicroserviceName}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE )
+    @GetMapping(path = ROOT_PATH + "/{pMicroserviceName}", consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<Set<String>> getAllActiveTenants(@PathVariable("pMicroserviceName") String pMicroserviceName);
 }

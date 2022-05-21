@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.rest;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -35,6 +35,7 @@ import java.util.UUID;
 
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.PROCESS_PATH;
 import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.Param.PROCESS_BUSINESS_ID_PARAM;
+
 /**
  * This class defines REST endpoints to deal with processes in servlet application.
  *

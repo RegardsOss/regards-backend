@@ -18,20 +18,20 @@
  */
 package fr.cnes.regards.framework.modules.plugins.service;
 
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-
 /**
  * IT test class for IPluginService
+ *
  * @author Sébastien Binda
  */
 @MultitenantTransactional
@@ -48,16 +48,16 @@ public class PluginServiceIT extends AbstractMultitenantServiceIT {
         pluginService.savePluginConfiguration(new PluginConfiguration(label1,
                                                                       Lists.newArrayList(),
                                                                       0,
-                                                                      UniqueConfActivePluginImpl.class
-                                                                              .getAnnotation(Plugin.class).id()));
+                                                                      UniqueConfActivePluginImpl.class.getAnnotation(
+                                                                          Plugin.class).id()));
 
         Assert.assertTrue(pluginService.getPluginConfigurationByLabel(label1).isActive());
 
         pluginService.savePluginConfiguration(new PluginConfiguration(label2,
                                                                       Lists.newArrayList(),
                                                                       0,
-                                                                      UniqueConfActivePluginImpl.class
-                                                                              .getAnnotation(Plugin.class).id()));
+                                                                      UniqueConfActivePluginImpl.class.getAnnotation(
+                                                                          Plugin.class).id()));
 
         PluginConfiguration conf1 = pluginService.getPluginConfigurationByLabel(label1);
         Assert.assertTrue(pluginService.getPluginConfigurationByLabel(label2).isActive());
@@ -78,7 +78,7 @@ public class PluginServiceIT extends AbstractMultitenantServiceIT {
                                                                       Lists.newArrayList(),
                                                                       0,
                                                                       TestPlugin.class.getAnnotation(Plugin.class)
-                                                                              .id()));
+                                                                                      .id()));
 
         Assert.assertTrue(pluginService.getPluginConfigurationByLabel(label1).isActive());
 
@@ -86,7 +86,7 @@ public class PluginServiceIT extends AbstractMultitenantServiceIT {
                                                                       Lists.newArrayList(),
                                                                       0,
                                                                       TestPlugin.class.getAnnotation(Plugin.class)
-                                                                              .id()));
+                                                                                      .id()));
 
         PluginConfiguration conf1 = pluginService.getPluginConfigurationByLabel(label1);
         Assert.assertTrue(pluginService.getPluginConfigurationByLabel(label2).isActive());

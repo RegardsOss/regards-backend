@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.module.rest.exception;
 
 /**
  * Exception indicating an invalid datasource connection
+ *
  * @author Marc Sordi
  */
 @SuppressWarnings("serial")

@@ -18,6 +18,11 @@
  */
 package fr.cnes.regards.framework.feign.security;
 
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,14 +30,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.util.Pair;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-
 /**
  * Manage security information for system call. At the moment, this holder manages the system JWT.
+ *
  * @author Marc Sordi
  */
 public class FeignSecurityManager {
@@ -41,7 +41,7 @@ public class FeignSecurityManager {
 
     /**
      * Thread safe flag holder to activate system call<br/>
-     *
+     * <p>
      * If {@link Boolean#TRUE}, a system (i.e. internal) call will be done (with a system token)<br/>
      * Else the user token will be used either it is an usurpation or not (within security context holder).
      */
@@ -49,7 +49,7 @@ public class FeignSecurityManager {
 
     /**
      * Thread safe flag holder to activate usurpated call<br/>
-     *
+     * <p>
      * If {@link Boolean#TRUE}, a system (i.e. internal) call will be done in behalf of a user<br/>
      * Else the user token within security context holder will be used.
      */
@@ -57,7 +57,7 @@ public class FeignSecurityManager {
 
     /**
      * Thread safe flag holder to activate instance tenant call<br/>
-     *
+     * <p>
      * For call with instance tenant in token generated with same user
      */
     private static final ThreadLocal<Boolean> instanceFlagHolder = ThreadLocal.withInitial(() -> Boolean.FALSE);
@@ -88,6 +88,7 @@ public class FeignSecurityManager {
     /**
      * If system flag is enabled, this method return a system (i.e. internal) token else propagate the
      * {@link SecurityContextHolder} user token.
+     *
      * @return a JWT according to thread context
      */
     public String getToken() {
@@ -103,13 +104,15 @@ public class FeignSecurityManager {
     }
 
     private String getUsurpedToken() {
-        return jwtService.generateToken(runtimeTenantResolver.getTenant(), usurpedUserHolder.get().getFirst(),
-                                        usurpedUserHolder.get().getFirst(), usurpedUserHolder.get().getSecond());
+        return jwtService.generateToken(runtimeTenantResolver.getTenant(),
+                                        usurpedUserHolder.get().getFirst(),
+                                        usurpedUserHolder.get().getFirst(),
+                                        usurpedUserHolder.get().getSecond());
     }
 
     private String getUserToken() {
         final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
-                .getAuthentication();
+                                                                                          .getAuthentication();
         if (authentication != null) {
             return authentication.getJwt();
         } else {
@@ -121,13 +124,15 @@ public class FeignSecurityManager {
 
     private String getInstanceToken() {
         final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
-                .getAuthentication();
-        return jwtService.generateToken("instance", authentication.getUser().getLogin(),
+                                                                                          .getAuthentication();
+        return jwtService.generateToken("instance",
+                                        authentication.getUser().getLogin(),
                                         DefaultRole.INSTANCE_ADMIN.toString());
     }
 
     /**
      * Generate a new system JWT for each call
+     *
      * @return a new system token for each call of each thread with its own tenant
      */
     private String getSystemToken() {
@@ -138,7 +143,9 @@ public class FeignSecurityManager {
             tenant = "_NOTENANT_";
         }
         String role = RoleAuthority.getSysRole(appName);
-        LOGGER.debug("Generating internal system JWT for application {}, tenant {} and role {} ", appName, tenant,
+        LOGGER.debug("Generating internal system JWT for application {}, tenant {} and role {} ",
+                     appName,
+                     tenant,
                      role);
         return jwtService.generateToken(tenant, appName, appName, role);
     }

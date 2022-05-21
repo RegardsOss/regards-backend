@@ -18,11 +18,6 @@
  */
 package fr.cnes.regards.modules.catalog.services.service;
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
@@ -32,16 +27,21 @@ import fr.cnes.regards.modules.catalog.services.domain.plugins.IEntitiesServiceP
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory;
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
 import fr.cnes.regards.modules.catalog.services.plugins.AbstractCatalogServicePlugin;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
+import javax.servlet.http.HttpServletResponse;
 
 @Plugin(description = "Example many plugin.", id = "OneManyTestPlugin", version = "1.0.0", author = "REGARDS Team",
-        contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
+    contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
 @CatalogServicePlugin(applicationModes = { ServiceScope.ONE, ServiceScope.MANY }, entityTypes = { EntityType.DATA })
 public class ExampleOneManyPlugin extends AbstractCatalogServicePlugin implements IEntitiesServicePlugin {
 
     @Override
     public ResponseEntity<StreamingResponseBody> apply(ServicePluginParameters pParameters,
-            HttpServletResponse response) {
-        return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
+                                                       HttpServletResponse response) {
+        return CatalogPluginResponseFactory.createSuccessResponse(response,
+                                                                  CatalogPluginResponseType.JSON,
                                                                   "Response example !");
     }
 

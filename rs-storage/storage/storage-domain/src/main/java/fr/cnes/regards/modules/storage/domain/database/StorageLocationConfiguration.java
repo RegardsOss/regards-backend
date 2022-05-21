@@ -18,27 +18,15 @@
  */
 package fr.cnes.regards.modules.storage.domain.database;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
+
+import javax.persistence.*;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 /**
  * Storage location configuration.
@@ -47,10 +35,10 @@ import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
  */
 @Entity
 @Table(name = "t_storage_location_conf",
-        uniqueConstraints = { @UniqueConstraint(name = "uk_storage_loc_name", columnNames = { "name" }),
-                @UniqueConstraint(name = "uk_storage_loc_conf_type_priority",
-                        columnNames = { StorageLocationConfiguration.STORAGE_TYPE_COLUMN_NAME,
-                                StorageLocationConfiguration.PRIORITY_COLUMN_NAME }) })
+    uniqueConstraints = { @UniqueConstraint(name = "uk_storage_loc_name", columnNames = { "name" }),
+        @UniqueConstraint(name = "uk_storage_loc_conf_type_priority",
+            columnNames = { StorageLocationConfiguration.STORAGE_TYPE_COLUMN_NAME,
+                StorageLocationConfiguration.PRIORITY_COLUMN_NAME }) })
 public class StorageLocationConfiguration implements Comparable<StorageLocationConfiguration> {
 
     public static final String STORAGE_TYPE_COLUMN_NAME = "storage_type";
@@ -61,7 +49,7 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
 
     @Id
     @SequenceGenerator(name = "storageLocationConfSequence", initialValue = 1,
-            sequenceName = "seq_storage_location_conf")
+        sequenceName = "seq_storage_location_conf")
     @GeneratedValue(generator = "storageLocationConfSequence", strategy = GenerationType.SEQUENCE)
     @ConfigIgnore
     private Long id;
@@ -72,7 +60,7 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
 
     @OneToOne(optional = true)
     @JoinColumn(nullable = true, name = "plugin_conf_id",
-            foreignKey = @ForeignKey(name = "fk_prioritized_storage_plugin_conf"))
+        foreignKey = @ForeignKey(name = "fk_prioritized_storage_plugin_conf"))
     private PluginConfiguration pluginConfiguration;
 
     @Enumerated(EnumType.STRING)
@@ -160,8 +148,9 @@ public class StorageLocationConfiguration implements Comparable<StorageLocationC
 
         StorageLocationConfiguration that = (StorageLocationConfiguration) o;
 
-        return pluginConfiguration != null ? pluginConfiguration.equals(that.pluginConfiguration)
-                : that.pluginConfiguration == null;
+        return pluginConfiguration != null ?
+            pluginConfiguration.equals(that.pluginConfiguration) :
+            that.pluginConfiguration == null;
     }
 
     @Override

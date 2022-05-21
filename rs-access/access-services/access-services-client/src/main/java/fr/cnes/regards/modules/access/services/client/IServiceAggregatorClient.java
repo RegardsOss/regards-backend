@@ -41,12 +41,13 @@ public interface IServiceAggregatorClient {
     /**
      * Returns all services applied to all datasets plus those of the given dataset
      *
-     * @param datasetIpId       the id of the Dataset
+     * @param datasetIpId      the id of the Dataset
      * @param applicationModes the set of {@link ServiceScope}
      * @return the list of services configured for the given dataset and the given scope
      */
-    @GetMapping(value = "/services/aggregated", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/services/aggregated", consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<EntityModel<PluginServiceDto>>> retrieveServices(
-            @RequestParam(value = "datasetIpIds", required = false) final List<String> datasetIpId,
-            @RequestParam(value = "applicationModes", required = false) final List<ServiceScope> applicationModes);
+        @RequestParam(value = "datasetIpIds", required = false) final List<String> datasetIpId,
+        @RequestParam(value = "applicationModes", required = false) final List<ServiceScope> applicationModes);
 }

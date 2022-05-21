@@ -26,7 +26,7 @@ import java.nio.file.Path;
 
 /**
  * Initialize a new {@link Generator} with its generator resolver.
- *
+ * <p>
  * Look at spring.factories
  */
 @Service

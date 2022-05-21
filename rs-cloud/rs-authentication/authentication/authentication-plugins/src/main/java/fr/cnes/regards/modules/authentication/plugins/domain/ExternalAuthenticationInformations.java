@@ -20,8 +20,9 @@ package fr.cnes.regards.modules.authentication.plugins.domain;
 
 /**
  * Class ExternalAuthenticationInformations
- *
+ * <p>
  * POJO for needed informations to authenticate from an external service provider.
+ *
  * @author Sébastien Binda
  */
 public class ExternalAuthenticationInformations {
@@ -50,8 +51,10 @@ public class ExternalAuthenticationInformations {
         super();
     }
 
-    public ExternalAuthenticationInformations(final String userName, final String project, final byte[] ticket,
-            final String pProviderKey) {
+    public ExternalAuthenticationInformations(final String userName,
+                                              final String project,
+                                              final byte[] ticket,
+                                              final String pProviderKey) {
         super();
         this.userName = userName;
         this.project = project;

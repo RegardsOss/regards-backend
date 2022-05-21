@@ -45,6 +45,7 @@ import java.util.Set;
 
 /**
  * Unit testing of {@link PluginUtils}.
+ *
  * @author Christophe Mertz
  */
 @RunWith(SpringRunner.class)
@@ -70,12 +71,13 @@ public class CycleDetectionIT {
         pojoParam.addIntValues(3);
         pojoParam.addIntValues(4);
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
-                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_COEF, 12345),
-                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_POJO,
-                                        PluginParameterTransformer.toJson(pojoParam)),
-                     IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_SUFFIX, "chris_test_1"));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE,
+                                                                           PluginUtilsTest.TRUE),
+                                                        IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_COEF, 12345),
+                                                        IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_POJO,
+                                                                           PluginParameterTransformer.toJson(pojoParam)),
+                                                        IPluginParam.build(SamplePluginWithPojo.FIELD_NAME_SUFFIX,
+                                                                           "chris_test_1"));
 
         PluginConfiguration conf = PluginConfiguration.build(SamplePluginWithPojo.class, "", parameters);
         SamplePluginWithPojo samplePlugin = PluginUtils.getPlugin(conf, new HashMap<>());
@@ -88,8 +90,7 @@ public class CycleDetectionIT {
         Assert.assertEquals(samplePlugin.getPojo().getValue(), pojoParam.getValue());
         Assert.assertEquals(samplePlugin.getPojo().getValues().size(), values.size());
         Assert.assertEquals(OffsetDateTime.parse(samplePlugin.getPojo().getDate(),
-                                                 DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                            ofdt);
+                                                 DateTimeFormatter.ISO_OFFSET_DATE_TIME), ofdt);
     }
 
     @Test(expected = PluginUtilsRuntimeException.class)
@@ -114,12 +115,14 @@ public class CycleDetectionIT {
         pojoParent.addChild(pojoChild);
         pojoChild.addPojo(pojoParam);
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(SamplePluginWithPojoWithSet.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE),
-                     IPluginParam.build(SamplePluginWithPojoWithSet.FIELD_NAME_COEF, 12345),
-                     IPluginParam.build(SamplePluginWithPojoWithSet.FIELD_NAME_POJO,
-                                        PluginParameterTransformer.toJson(pojoParent)),
-                     IPluginParam.build(SamplePluginWithPojoWithSet.FIELD_NAME_SUFFIX, "suffix"));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SamplePluginWithPojoWithSet.FIELD_NAME_ACTIVE,
+                                                                           PluginUtilsTest.TRUE),
+                                                        IPluginParam.build(SamplePluginWithPojoWithSet.FIELD_NAME_COEF,
+                                                                           12345),
+                                                        IPluginParam.build(SamplePluginWithPojoWithSet.FIELD_NAME_POJO,
+                                                                           PluginParameterTransformer.toJson(pojoParent)),
+                                                        IPluginParam.build(SamplePluginWithPojoWithSet.FIELD_NAME_SUFFIX,
+                                                                           "suffix"));
 
         // instantiate plugin
 

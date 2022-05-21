@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.entity.mapping;
 
 import fr.cnes.regards.modules.processing.domain.PBatch;
@@ -38,10 +38,21 @@ public interface DomainEntityMapper<D, E> {
 
     D toDomain(E entity);
 
-    interface Batch extends DomainEntityMapper<PBatch, BatchEntity> {}
-    interface Execution extends DomainEntityMapper<PExecution, ExecutionEntity> {}
-    interface OutputFile extends DomainEntityMapper<POutputFile, OutputFileEntity> {}
-    interface Step extends DomainEntityMapper<PStep, StepEntity> {}
+    interface Batch extends DomainEntityMapper<PBatch, BatchEntity> {
+
+    }
+
+    interface Execution extends DomainEntityMapper<PExecution, ExecutionEntity> {
+
+    }
+
+    interface OutputFile extends DomainEntityMapper<POutputFile, OutputFileEntity> {
+
+    }
+
+    interface Step extends DomainEntityMapper<PStep, StepEntity> {
+
+    }
 
 }
 

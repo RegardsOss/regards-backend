@@ -70,20 +70,11 @@ public class BasketDto {
         BasketDto dto = new BasketDto();
         dto.setId(basket.getId());
         dto.setOwner(basket.getOwner());
-        dto.setDatasetSelections(
-            basket.getDatasetSelections().stream()
-                .map(BasketDatasetSelectionDto::makeBasketDatasetSelectionDto)
-                .collect(
-                    TreeSet::new,
-                    Set::add,
-                    Set::addAll
-                    )
-        );
-        dto.setQuota(
-            dto.getDatasetSelections().stream()
-                .mapToLong(BasketDatasetSelectionDto::getQuota)
-                .sum()
-        );
+        dto.setDatasetSelections(basket.getDatasetSelections()
+                                       .stream()
+                                       .map(BasketDatasetSelectionDto::makeBasketDatasetSelectionDto)
+                                       .collect(TreeSet::new, Set::add, Set::addAll));
+        dto.setQuota(dto.getDatasetSelections().stream().mapToLong(BasketDatasetSelectionDto::getQuota).sum());
         return dto;
     }
 }

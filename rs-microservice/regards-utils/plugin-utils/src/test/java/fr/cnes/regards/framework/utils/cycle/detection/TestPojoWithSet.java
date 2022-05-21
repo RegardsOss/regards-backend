@@ -23,6 +23,7 @@ import java.util.Set;
 
 /**
  * Test class to test complex class plugin parameter type.
+ *
  * @author sbinda
  */
 public class TestPojoWithSet {

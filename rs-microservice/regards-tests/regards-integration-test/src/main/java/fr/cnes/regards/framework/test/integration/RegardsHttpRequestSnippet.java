@@ -1,16 +1,17 @@
 package fr.cnes.regards.framework.test.integration;
 
-import java.util.Map;
-
 import org.springframework.restdocs.generate.RestDocumentationGenerator;
 import org.springframework.restdocs.http.HttpRequestSnippet;
 import org.springframework.restdocs.operation.Operation;
 import org.springframework.util.Assert;
 
+import java.util.Map;
+
 /**
  * REGARDS customization of {@link HttpRequestSnippet}.
  * http-request.snippet contains 1 field (urlTemplate) that isn't into default one, this snippet permits to extract
  * urlTemplate value from operation (Operation ~= HttpRequest) and inject it into model.
+ *
  * @author Sylvain VISSIERE-GUERINET
  * @author Marc Sordi
  */
@@ -30,9 +31,10 @@ public class RegardsHttpRequestSnippet extends HttpRequestSnippet {
 
     private void extractUrlTemplate(Map<String, Object> model, Operation operation) {
         String urlTemplate = (String) operation.getAttributes()
-                .get(RestDocumentationGenerator.ATTRIBUTE_NAME_URL_TEMPLATE);
-        Assert.notNull(urlTemplate, "urlTemplate not found. If you are using MockMvc did "
-                + "you use RestDocumentationRequestBuilders to build the request?");
+                                               .get(RestDocumentationGenerator.ATTRIBUTE_NAME_URL_TEMPLATE);
+        Assert.notNull(urlTemplate,
+                       "urlTemplate not found. If you are using MockMvc did "
+                           + "you use RestDocumentationRequestBuilders to build the request?");
         model.put(URL_TEMPLATE, urlTemplate);
     }
 

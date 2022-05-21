@@ -28,13 +28,13 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIPReference;
  * First <b>optional</b> step of the SIP processing chain
  *
  * @author Marc Sordi
- *
  */
 @PluginInterface(description = "SIP preprocessing plugin contract")
 public interface ISipPreprocessing {
 
     /**
      * Allows to make some action before SIP processing starts.
+     *
      * @param sip {@link SIP} to be processed
      * @throws {@link ProcessingStepException} for a unrecoverable error
      */
@@ -42,6 +42,7 @@ public interface ISipPreprocessing {
 
     /**
      * Read a referenced {@link SIP} (only available for referenced SIP!)
+     *
      * @param ref {@link SIPReference}
      * @return a completely filled {@link SIP}
      * @throws {@link InvalidSIPReferenceException} for a unrecoverable error during SIP reading

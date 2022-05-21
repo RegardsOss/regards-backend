@@ -18,34 +18,23 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.annotations.Type;
-import javax.validation.constraints.NotBlank;
-import org.springframework.web.bind.annotation.RequestMethod;
-
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import org.hibernate.annotations.Type;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 /**
- *
  * Class ResourcesAccess
- *
+ * <p>
  * JPA Entity to manage resource accesses. ResourcesAccess POJO define the access and authorizations to a microservice
  * endpoint resource.
  *
  * @author Sébastien Binda
  * @author Christophe Mertz
-
  */
 @Entity
 @Table(name = "t_resources_access")
@@ -111,6 +100,7 @@ public class ResourcesAccess implements IIdentifiable<Long> {
 
     /**
      * Constructor
+     *
      * @param pResourcesAccessId the resources access id
      */
     public ResourcesAccess(final Long pResourcesAccessId) {
@@ -121,17 +111,22 @@ public class ResourcesAccess implements IIdentifiable<Long> {
 
     /**
      * Constructor
-     * @param pResourcesAccessId the resources access id
-     * @param pDescription the description
-     * @param pMicroservice the microservice name
-     * @param pResource the resource
+     *
+     * @param pResourcesAccessId    the resources access id
+     * @param pDescription          the description
+     * @param pMicroservice         the microservice name
+     * @param pResource             the resource
      * @param pControllerSimpleName the controller name
-     * @param pVerb the verb
-     * @param pDefaultRole the default role
+     * @param pVerb                 the verb
+     * @param pDefaultRole          the default role
      */
-    public ResourcesAccess(final Long pResourcesAccessId, final String pDescription, final String pMicroservice,
-            final String pResource, final String pControllerSimpleName, final RequestMethod pVerb,
-            final DefaultRole pDefaultRole) {
+    public ResourcesAccess(final Long pResourcesAccessId,
+                           final String pDescription,
+                           final String pMicroservice,
+                           final String pResource,
+                           final String pControllerSimpleName,
+                           final RequestMethod pVerb,
+                           final DefaultRole pDefaultRole) {
         super();
         id = pResourcesAccessId;
         description = pDescription;
@@ -144,15 +139,20 @@ public class ResourcesAccess implements IIdentifiable<Long> {
 
     /**
      * Constructor
-     * @param pDescription the description
-     * @param pMicroservice the microservice name
-     * @param pResource the resource
+     *
+     * @param pDescription          the description
+     * @param pMicroservice         the microservice name
+     * @param pResource             the resource
      * @param pControllerSimpleName the controller name
-     * @param pVerb the verb
-     * @param pDefaultRole the default role
+     * @param pVerb                 the verb
+     * @param pDefaultRole          the default role
      */
-    public ResourcesAccess(final String pDescription, final String pMicroservice, final String pResource,
-            final String pControllerSimpleName, final RequestMethod pVerb, final DefaultRole pDefaultRole) {
+    public ResourcesAccess(final String pDescription,
+                           final String pMicroservice,
+                           final String pResource,
+                           final String pControllerSimpleName,
+                           final RequestMethod pVerb,
+                           final DefaultRole pDefaultRole) {
         this(null, pDescription, pMicroservice, pResource, pControllerSimpleName, pVerb, pDefaultRole);
     }
 
@@ -258,7 +258,7 @@ public class ResourcesAccess implements IIdentifiable<Long> {
     @Override
     public String toString() {
         return "ResourcesAccess{" + "id=" + id + ", description='" + description + '\'' + ", microservice='"
-                + microservice + '\'' + ", controllerSimpleName='" + controllerSimpleName + '\'' + ", resource='"
-                + resource + '\'' + ", verb=" + verb + ", defaultRole=" + defaultRole + '}';
+            + microservice + '\'' + ", controllerSimpleName='" + controllerSimpleName + '\'' + ", resource='" + resource
+            + '\'' + ", verb=" + verb + ", defaultRole=" + defaultRole + '}';
     }
 }

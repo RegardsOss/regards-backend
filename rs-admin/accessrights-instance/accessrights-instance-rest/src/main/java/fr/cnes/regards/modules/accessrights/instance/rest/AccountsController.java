@@ -58,6 +58,7 @@ import java.util.List;
 /**
  * Endpoints to manage REGARDS Accounts. Accounts are transverse to all projects and so are persisted in an instance
  * database
+ *
  * @author Sébastien Binda
  * @author Christophe Mertz
  */
@@ -68,16 +69,19 @@ public class AccountsController implements IResourceController<Account> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AccountsController.class);
 
     private static final String EMAIL = "/{account_email}";
+
     private static final String PROJECT = "/{project}";
 
     /**
      * Root mapping for requests of this rest controller
      */
     public static final String TYPE_MAPPING = "/accounts";
+
     /**
      * Controller path using account id as path variable
      */
     public static final String ACCOUNT_ID_PATH = "/{account_id}";
+
     /**
      * Controller path using account email as path variable
      */
@@ -86,15 +90,25 @@ public class AccountsController implements IResourceController<Account> {
     public static final String PASSWORD_RULES_PATH = "/password"; // NOSONAR: not a password
 
     public static final String RESET_PASSWORD_PATH = EMAIL + "/resetPassword"; // NOSONAR: not a password
+
     public static final String CHANGE_PASSWORD_PATH = EMAIL + "/changePassword";
+
     public static final String VALIDATE_PATH = EMAIL + "/validate";
+
     public static final String ACCEPT_ACCOUNT_PATH = EMAIL + "/accept";
+
     public static final String REFUSE_ACCOUNT_PATH = EMAIL + "/refuse";
+
     public static final String UNLOCK_ACCOUNT_PATH = EMAIL + "/unlockAccount";
+
     public static final String ACTIVE_ACCOUNT_PATH = EMAIL + "/active";
+
     public static final String INACTIVE_ACCOUNT_PATH = EMAIL + "/inactive";
+
     public static final String LINK_ACCOUNT_PATH = EMAIL + "/link" + PROJECT;
+
     public static final String UNLINK_ACCOUNT_PATH = EMAIL + "/unlink" + PROJECT;
+
     public static final String UPDATE_ORIGIN_PATH = EMAIL + "/origin/{origin}";
 
     public static final String ORIGINS_PATH = "/origins";
@@ -103,14 +117,20 @@ public class AccountsController implements IResourceController<Account> {
     private String rootAdminUserLogin;
 
     private final IAccountService accountService;
+
     private final IResourceService resourceService;
+
     private final IAccountTransitions accountWorkflowManager;
+
     private final IPasswordResetService passwordResetService;
+
     private final ApplicationEventPublisher eventPublisher;
 
-    public AccountsController(IAccountService accountService, IResourceService resourceService, IAccountTransitions accountWorkflowManager,
-            IPasswordResetService passwordResetService, ApplicationEventPublisher eventPublisher
-    ) {
+    public AccountsController(IAccountService accountService,
+                              IResourceService resourceService,
+                              IAccountTransitions accountWorkflowManager,
+                              IPasswordResetService passwordResetService,
+                              ApplicationEventPublisher eventPublisher) {
         this.accountService = accountService;
         this.resourceService = resourceService;
         this.accountWorkflowManager = accountWorkflowManager;
@@ -129,10 +149,9 @@ public class AccountsController implements IResourceController<Account> {
     @GetMapping
     @ResourceAccess(description = "retrieve the list of account in the instance", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<PagedModel<EntityModel<Account>>> retrieveAccountList(
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<Account> assembler,
-            AccountSearchParameters parameters
-    ) {
+        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        PagedResourcesAssembler<Account> assembler,
+        AccountSearchParameters parameters) {
         return ResponseEntity.ok(toPagedResources(accountService.retrieveAccountList(parameters, pageable), assembler));
     }
 
@@ -144,10 +163,13 @@ public class AccountsController implements IResourceController<Account> {
      */
     @PostMapping
     @ResourceAccess(description = "create an new account", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<EntityModel<Account>> createAccount(@Valid @RequestBody AccountNPassword accountNPassword) throws EntityException {
+    public ResponseEntity<EntityModel<Account>> createAccount(@Valid @RequestBody AccountNPassword accountNPassword)
+        throws EntityException {
         Account account = accountNPassword.getAccount();
         account.setPassword(accountNPassword.getPassword());
-        return ResponseEntity.status(HttpStatus.CREATED).body(EntityModel.of(accountService.createAccount(account, accountNPassword.getProject())));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                             .body(EntityModel.of(accountService.createAccount(account,
+                                                                               accountNPassword.getProject())));
     }
 
     /**
@@ -158,7 +180,8 @@ public class AccountsController implements IResourceController<Account> {
      */
     @GetMapping(ACCOUNT_ID_PATH)
     @ResourceAccess(description = "retrieve the account account_id", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<EntityModel<Account>> retrieveAccount(@PathVariable("account_id") Long accountId) throws EntityNotFoundException {
+    public ResponseEntity<EntityModel<Account>> retrieveAccount(@PathVariable("account_id") Long accountId)
+        throws EntityNotFoundException {
         return ResponseEntity.ok(toResource(accountService.retrieveAccount(accountId)));
     }
 
@@ -170,7 +193,8 @@ public class AccountsController implements IResourceController<Account> {
      */
     @GetMapping(ACCOUNT_PATH)
     @ResourceAccess(description = "retrieve the account with his unique email", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<EntityModel<Account>> retrieveAccounByEmail(@PathVariable("account_email") String accountEmail) throws EntityNotFoundException {
+    public ResponseEntity<EntityModel<Account>> retrieveAccounByEmail(
+        @PathVariable("account_email") String accountEmail) throws EntityNotFoundException {
         return ResponseEntity.ok(toResource(accountService.retrieveAccountByEmail(accountEmail)));
 
     }
@@ -183,8 +207,11 @@ public class AccountsController implements IResourceController<Account> {
      * @return the {@link Account} updated
      */
     @PutMapping(ACCOUNT_ID_PATH)
-    @ResourceAccess(description = "update the account account_id according to the body specified", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<EntityModel<Account>> updateAccount(@PathVariable("account_id") Long accountId, @Valid @RequestBody Account updatedAccount) throws EntityException {
+    @ResourceAccess(description = "update the account account_id according to the body specified",
+        role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<EntityModel<Account>> updateAccount(@PathVariable("account_id") Long accountId,
+                                                              @Valid @RequestBody Account updatedAccount)
+        throws EntityException {
         if (updatedAccount.getPassword() != null) {
             accountService.checkPassword(updatedAccount);
         }
@@ -208,10 +235,11 @@ public class AccountsController implements IResourceController<Account> {
 
     /**
      * Send to the user an email containing a link with limited validity to unlock its account.
+     *
      * @param accountEmail The {@link Account}'s <code>email</code>
-     * @param dto The DTO containing<br>
-     * - The url of the app from where was issued the query<br>
-     * - The url to redirect the user to the password reset interface
+     * @param dto          The DTO containing<br>
+     *                     - The url of the app from where was issued the query<br>
+     *                     - The url to redirect the user to the password reset interface
      * @return void
      * @throws EntityException <br>
      *                         {@link EntityNotFoundException} when no account with passed email could be found<br>
@@ -219,7 +247,9 @@ public class AccountsController implements IResourceController<Account> {
      */
     @PostMapping(UNLOCK_ACCOUNT_PATH)
     @ResourceAccess(description = "send a code of type type to the email specified", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> requestUnlockAccount(@PathVariable("account_email") String accountEmail, @Valid @RequestBody RequestAccountUnlockDto dto) throws EntityException {
+    public ResponseEntity<Void> requestUnlockAccount(@PathVariable("account_email") String accountEmail,
+                                                     @Valid @RequestBody RequestAccountUnlockDto dto)
+        throws EntityException {
         Account account = accountService.retrieveAccountByEmail(accountEmail);
         accountWorkflowManager.requestUnlockAccount(account, dto.getOriginUrl(), dto.getRequestLink());
         return ResponseEntity.noContent().build();
@@ -227,8 +257,9 @@ public class AccountsController implements IResourceController<Account> {
 
     /**
      * Unlock an {@link Account}.
+     *
      * @param accountEmail The {@link Account}'s <code>email</code>
-     * @param tokenDto The token
+     * @param tokenDto     The token
      * @return a no content HTTP response
      * @throws EntityException <br>
      *                         {@link EntityNotFoundException} when no account with passed email could be found or the token could
@@ -238,8 +269,9 @@ public class AccountsController implements IResourceController<Account> {
      */
     @PutMapping(UNLOCK_ACCOUNT_PATH)
     @ResourceAccess(description = "unlock the account of provided email", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> performUnlockAccount(@PathVariable("account_email") String accountEmail, @Valid @RequestBody PerformUnlockAccountDto tokenDto)
-            throws EntityException {
+    public ResponseEntity<Void> performUnlockAccount(@PathVariable("account_email") String accountEmail,
+                                                     @Valid @RequestBody PerformUnlockAccountDto tokenDto)
+        throws EntityException {
         Account account = accountService.retrieveAccountByEmail(accountEmail);
         accountWorkflowManager.performUnlockAccount(account, tokenDto.getToken());
         return ResponseEntity.noContent().build();
@@ -256,8 +288,9 @@ public class AccountsController implements IResourceController<Account> {
      */
     @PostMapping(RESET_PASSWORD_PATH)
     @ResourceAccess(description = "send a code of type type to the email specified", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> requestResetPassword(@PathVariable("account_email") String accountEmail, @Valid @RequestBody RequestResetPasswordDto dto)
-            throws EntityNotFoundException {
+    public ResponseEntity<Void> requestResetPassword(@PathVariable("account_email") String accountEmail,
+                                                     @Valid @RequestBody RequestResetPasswordDto dto)
+        throws EntityNotFoundException {
         Account account = accountService.retrieveAccountByEmail(accountEmail);
         eventPublisher.publishEvent(new OnPasswordResetEvent(account, dto.getOriginUrl(), dto.getRequestLink()));
         return ResponseEntity.noContent().build();
@@ -275,8 +308,9 @@ public class AccountsController implements IResourceController<Account> {
      */
     @PutMapping(CHANGE_PASSWORD_PATH)
     @ResourceAccess(description = "Change the passsword of account account_email", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> performChangePassword(@PathVariable("account_email") String accountEmail, @Valid @RequestBody PerformChangePasswordDto changePasswordDto)
-            throws EntityException {
+    public ResponseEntity<Void> performChangePassword(@PathVariable("account_email") String accountEmail,
+                                                      @Valid @RequestBody PerformChangePasswordDto changePasswordDto)
+        throws EntityException {
         Account toReset = accountService.retrieveAccountByEmail(accountEmail);
         if (!accountService.validatePassword(accountEmail, changePasswordDto.getOldPassword(), false)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -285,7 +319,8 @@ public class AccountsController implements IResourceController<Account> {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         LOGGER.info("Changing password for user {}", accountEmail);
-        accountService.changePassword(toReset.getId(), EncryptionUtils.encryptPassword(changePasswordDto.getNewPassword()));
+        accountService.changePassword(toReset.getId(),
+                                      EncryptionUtils.encryptPassword(changePasswordDto.getNewPassword()));
         return ResponseEntity.noContent().build();
     }
 
@@ -300,9 +335,11 @@ public class AccountsController implements IResourceController<Account> {
      *                         {@link EntityNotFoundException} when no account could be found<br>
      */
     @PutMapping(RESET_PASSWORD_PATH)
-    @ResourceAccess(description = "Change the passsword of account account_email if provided token is valid", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> performResetPassword(@PathVariable("account_email") String accountEmail, @Valid @RequestBody final PerformResetPasswordDto pDto)
-            throws EntityException {
+    @ResourceAccess(description = "Change the passsword of account account_email if provided token is valid",
+        role = DefaultRole.PUBLIC)
+    public ResponseEntity<Void> performResetPassword(@PathVariable("account_email") String accountEmail,
+                                                     @Valid @RequestBody final PerformResetPasswordDto pDto)
+        throws EntityException {
         Account toReset = accountService.retrieveAccountByEmail(accountEmail);
         toReset.setPassword(pDto.getNewPassword());
         accountService.checkPassword(toReset);
@@ -320,13 +357,15 @@ public class AccountsController implements IResourceController<Account> {
      */
     @GetMapping(VALIDATE_PATH)
     @ResourceAccess(description = "Validate the account password", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Boolean> validatePassword(@PathVariable("account_email") String email, @RequestParam String password) throws EntityException {
+    public ResponseEntity<Boolean> validatePassword(@PathVariable("account_email") String email,
+                                                    @RequestParam String password) throws EntityException {
         boolean validPassword = accountService.validatePassword(email, password, true);
         return new ResponseEntity<>(validPassword, HttpStatus.OK);
     }
 
     /**
      * Endpoint allowing to provide a password and know if it is valid or not.
+     *
      * @param password password to check
      * @return the password validity
      */
@@ -356,7 +395,8 @@ public class AccountsController implements IResourceController<Account> {
      */
     @PutMapping(INACTIVE_ACCOUNT_PATH)
     @ResourceAccess(description = "Deactivates an active account", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> inactiveAccount(@PathVariable("account_email") String accountEmail) throws EntityException {
+    public ResponseEntity<Void> inactiveAccount(@PathVariable("account_email") String accountEmail)
+        throws EntityException {
         Account account = accountService.retrieveAccountByEmail(accountEmail);
         accountWorkflowManager.inactiveAccount(account);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -372,8 +412,10 @@ public class AccountsController implements IResourceController<Account> {
      *                         {@link EntityTransitionForbiddenException} if account is not in INACTIVE status<br>
      */
     @PutMapping(ACTIVE_ACCOUNT_PATH)
-    @ResourceAccess(description = "Activates an account which has been previously deactivated", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> activeAccount(@PathVariable("account_email") String accountEmail) throws EntityException {
+    @ResourceAccess(description = "Activates an account which has been previously deactivated",
+        role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<Void> activeAccount(@PathVariable("account_email") String accountEmail)
+        throws EntityException {
         Account account = accountService.retrieveAccountByEmail(accountEmail);
         accountWorkflowManager.activeAccount(account);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -390,7 +432,8 @@ public class AccountsController implements IResourceController<Account> {
      */
     @PutMapping(ACCEPT_ACCOUNT_PATH)
     @ResourceAccess(description = "Accepts the access request", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> acceptAccount(@PathVariable("account_email") String accountEmail) throws EntityException {
+    public ResponseEntity<Void> acceptAccount(@PathVariable("account_email") String accountEmail)
+        throws EntityException {
         Account account = accountService.retrieveAccountByEmail(accountEmail);
         accountWorkflowManager.acceptAccount(account);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -404,7 +447,8 @@ public class AccountsController implements IResourceController<Account> {
      */
     @PutMapping(REFUSE_ACCOUNT_PATH)
     @ResourceAccess(description = "Refuses the access request", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> refuseAccount(@PathVariable("account_email") String accountEmail) throws EntityException {
+    public ResponseEntity<Void> refuseAccount(@PathVariable("account_email") String accountEmail)
+        throws EntityException {
         Account account = accountService.retrieveAccountByEmail(accountEmail);
         accountWorkflowManager.refuseAccount(account);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -418,21 +462,25 @@ public class AccountsController implements IResourceController<Account> {
 
     @PutMapping(LINK_ACCOUNT_PATH)
     @ResourceAccess(description = "Link a project to an account", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> link(@PathVariable("account_email") String accountEmail, @PathVariable("project") String project) throws EntityException {
+    public ResponseEntity<Void> link(@PathVariable("account_email") String accountEmail,
+                                     @PathVariable("project") String project) throws EntityException {
         accountService.link(accountEmail, project);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping(UNLINK_ACCOUNT_PATH)
     @ResourceAccess(description = "Link a project to an account", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> unlink(@PathVariable("account_email") String accountEmail, @PathVariable("project") String project) throws EntityException {
+    public ResponseEntity<Void> unlink(@PathVariable("account_email") String accountEmail,
+                                       @PathVariable("project") String project) throws EntityException {
         accountService.unlink(accountEmail, project);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping(UPDATE_ORIGIN_PATH)
-    @ResourceAccess(description = "Update the origin of an account identified by email", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> updateOrigin(@PathVariable("account_email") String accountEmail, @PathVariable("origin") String origin) throws EntityException {
+    @ResourceAccess(description = "Update the origin of an account identified by email",
+        role = DefaultRole.INSTANCE_ADMIN)
+    public ResponseEntity<Void> updateOrigin(@PathVariable("account_email") String accountEmail,
+                                             @PathVariable("origin") String origin) throws EntityException {
         accountService.updateOrigin(accountEmail, origin);
         return ResponseEntity.ok().build();
     }
@@ -449,19 +497,40 @@ public class AccountsController implements IResourceController<Account> {
             MethodParam<String> mailParam = MethodParamFactory.build(String.class, element.getEmail());
 
             resourceService.addLink(resource, this.getClass(), "retrieveAccount", LinkRels.SELF, idParam);
-            resourceService.addLink(resource, this.getClass(), "updateAccount", LinkRels.UPDATE, idParam, MethodParamFactory.build(Account.class));
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "updateAccount",
+                                    LinkRels.UPDATE,
+                                    idParam,
+                                    MethodParamFactory.build(Account.class));
 
             if (AccountStatus.PENDING.equals(element.getStatus())) {
-                resourceService.addLink(resource, this.getClass(), "acceptAccount", LinkRelation.of("accept"), mailParam);
-                resourceService.addLink(resource, this.getClass(), "refuseAccount", LinkRelation.of("refuse"), mailParam);
+                resourceService.addLink(resource,
+                                        this.getClass(),
+                                        "acceptAccount",
+                                        LinkRelation.of("accept"),
+                                        mailParam);
+                resourceService.addLink(resource,
+                                        this.getClass(),
+                                        "refuseAccount",
+                                        LinkRelation.of("refuse"),
+                                        mailParam);
             } else if (!element.getEmail().equals(rootAdminUserLogin) && accountWorkflowManager.canDelete(element)) {
                 resourceService.addLink(resource, this.getClass(), "removeAccount", LinkRels.DELETE, idParam);
             }
             if (AccountStatus.ACTIVE.equals(element.getStatus())) {
-                resourceService.addLink(resource, this.getClass(), "inactiveAccount", LinkRelation.of("inactive"), mailParam);
+                resourceService.addLink(resource,
+                                        this.getClass(),
+                                        "inactiveAccount",
+                                        LinkRelation.of("inactive"),
+                                        mailParam);
             }
             if (AccountStatus.INACTIVE.equals(element.getStatus())) {
-                resourceService.addLink(resource, this.getClass(), "activeAccount", LinkRelation.of("active"), mailParam);
+                resourceService.addLink(resource,
+                                        this.getClass(),
+                                        "activeAccount",
+                                        LinkRelation.of("active"),
+                                        mailParam);
             }
         }
         return resource;

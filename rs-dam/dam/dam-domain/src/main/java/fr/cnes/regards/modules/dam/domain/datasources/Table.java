@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.dam.domain.datasources;
  * This class describes a table of a SQL database.
  *
  * @author Christophe Mertz
- * 
  */
 public final class Table {
 
@@ -47,8 +46,7 @@ public final class Table {
     private String pKey;
 
     /**
-     * @param pName
-     *            the name of the table
+     * @param pName the name of the table
      */
     public Table(String pName) {
         super();
@@ -56,10 +54,8 @@ public final class Table {
     }
 
     /**
-     * @param pName
-     *            the name of the table
-     * @param pSchema
-     *            the schema name stored in the database
+     * @param pName   the name of the table
+     * @param pSchema the schema name stored in the database
      */
     public Table(String pName, String pSchema) {
         super();
@@ -68,12 +64,9 @@ public final class Table {
     }
 
     /**
-     * @param pName
-     *            the name of the table
-     * @param pCatalog
-     *            the catalog name stored in the database
-     * @param pSchema
-     *            the schema stored stored in the database
+     * @param pName    the name of the table
+     * @param pCatalog the catalog name stored in the database
+     * @param pSchema  the schema stored stored in the database
      */
     public Table(String pName, String pCatalog, String pSchema) {
         super();
@@ -130,7 +123,7 @@ public final class Table {
     @Override
     public String toString() {
         return "[TABLE :" + name + "]" + " : " + toString("schema", schema) + " : " + toString("catalog", catalog)
-                + " : " + (pKey != null ? "pKey=" + pKey : "");
+            + " : " + (pKey != null ? "pKey=" + pKey : "");
     }
 
 }

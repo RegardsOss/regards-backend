@@ -18,21 +18,19 @@
  */
 package fr.cnes.regards.modules.accessrights.client.cache;
 
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.security.event.RoleEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.security.event.RoleEvent;
-
 /**
  * Listen to {@link RoleEvent}s to clear {@link RolesHierarchyKeyGenerator} cache if needed.
  *
  * @author Sébastien Binda
- *
  */
 public class RoleEventHandler implements ApplicationListener<ApplicationReadyEvent> {
 

@@ -18,10 +18,18 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
-import java.time.OffsetDateTime;
-import java.util.*;
-
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
+import fr.cnes.regards.modules.storage.dao.IRequestGroupRepository;
+import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.RequestGroup;
+import fr.cnes.regards.modules.storage.domain.database.request.RequestResultInfo;
+import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
+import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
+import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
 import org.apache.commons.compress.utils.Sets;
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,17 +41,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.storage.dao.IGroupRequestInfoRepository;
-import fr.cnes.regards.modules.storage.dao.IRequestGroupRepository;
-import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.RequestGroup;
-import fr.cnes.regards.modules.storage.domain.database.request.RequestResultInfo;
-import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
-import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
-import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Test class for service {@link RequestsGroupService}
@@ -51,13 +53,13 @@ import fr.cnes.regards.modules.storage.service.AbstractStorageIT;
  * @author Sébastien Binda
  */
 @ActiveProfiles({ "noscheduler" })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_groups_tests"},
-        locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_groups_tests" },
+    locations = { "classpath:application-test.properties" })
 public class RequestsGroupServiceIT extends AbstractStorageIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestsGroupServiceIT.class);
 
-    private static final  String SESSION_OWNER_1 = "SOURCE 1";
+    private static final String SESSION_OWNER_1 = "SOURCE 1";
 
     private static final String SESSION_1 = "SESSION 1";
 
@@ -88,35 +90,78 @@ public class RequestsGroupServiceIT extends AbstractStorageIT {
 
             // Simulate a running request
             if (i < 1000) {
-                FileStorageRequest request = storageReqService
-                        .createNewFileStorageRequest(Sets.newHashSet("someone"),
-                                                     new FileReferenceMetaInfo(UUID.randomUUID().toString(), "MD5",
-                                                                               "plop", 10L,
-                                                                               MediaType.APPLICATION_ATOM_XML), groupId,
-                                                     ONLINE_CONF_LABEL, null, groupId, Optional.empty(),
-                                                     Optional.empty(), SESSION_OWNER_1, SESSION_1);
+                FileStorageRequest request = storageReqService.createNewFileStorageRequest(Sets.newHashSet("someone"),
+                                                                                           new FileReferenceMetaInfo(
+                                                                                               UUID.randomUUID()
+                                                                                                   .toString(),
+                                                                                               "MD5",
+                                                                                               "plop",
+                                                                                               10L,
+                                                                                               MediaType.APPLICATION_ATOM_XML),
+                                                                                           groupId,
+                                                                                           ONLINE_CONF_LABEL,
+                                                                                           null,
+                                                                                           groupId,
+                                                                                           Optional.empty(),
+                                                                                           Optional.empty(),
+                                                                                           SESSION_OWNER_1,
+                                                                                           SESSION_1);
             }
-            FileStorageRequest request = storageReqService
-                        .createNewFileStorageRequest(Sets.newHashSet("someone"),
-                                                     new FileReferenceMetaInfo(UUID.randomUUID().toString(), "MD5",
-                                                                               "plop", 10L,
-                                                                               MediaType.APPLICATION_ATOM_XML), groupId,
-                                                     ONLINE_CONF_LABEL, null, groupId, Optional.of("toto la belle erreur"),
-                                                     Optional.of(FileRequestStatus.ERROR), SESSION_OWNER_1, SESSION_1);
+            FileStorageRequest request = storageReqService.createNewFileStorageRequest(Sets.newHashSet("someone"),
+                                                                                       new FileReferenceMetaInfo(UUID.randomUUID()
+                                                                                                                     .toString(),
+                                                                                                                 "MD5",
+                                                                                                                 "plop",
+                                                                                                                 10L,
+                                                                                                                 MediaType.APPLICATION_ATOM_XML),
+                                                                                       groupId,
+                                                                                       ONLINE_CONF_LABEL,
+                                                                                       null,
+                                                                                       groupId,
+                                                                                       Optional.of(
+                                                                                           "toto la belle erreur"),
+                                                                                       Optional.of(FileRequestStatus.ERROR),
+                                                                                       SESSION_OWNER_1,
+                                                                                       SESSION_1);
             // Grant a group requests
             reqGrpService.granted(groupId, FileRequestType.STORAGE, 5, OffsetDateTime.now().plusDays(120));
 
-            reqGrpService.requestSuccess(groupId, FileRequestType.STORAGE, UUID.randomUUID().toString(),
-                                         ONLINE_CONF_LABEL, null, Sets.newHashSet("someone"), null);
-            reqGrpService.requestSuccess(groupId, FileRequestType.STORAGE, UUID.randomUUID().toString(),
-                                         ONLINE_CONF_LABEL, null, Sets.newHashSet("someone"), null);
-            reqGrpService.requestSuccess(groupId, FileRequestType.STORAGE, UUID.randomUUID().toString(),
-                                         ONLINE_CONF_LABEL, null, Sets.newHashSet("someone"), null);
-            reqGrpService.requestSuccess(groupId, FileRequestType.STORAGE, UUID.randomUUID().toString(),
-                                         ONLINE_CONF_LABEL, null, Sets.newHashSet("someone"), null);
+            reqGrpService.requestSuccess(groupId,
+                                         FileRequestType.STORAGE,
+                                         UUID.randomUUID().toString(),
+                                         ONLINE_CONF_LABEL,
+                                         null,
+                                         Sets.newHashSet("someone"),
+                                         null);
+            reqGrpService.requestSuccess(groupId,
+                                         FileRequestType.STORAGE,
+                                         UUID.randomUUID().toString(),
+                                         ONLINE_CONF_LABEL,
+                                         null,
+                                         Sets.newHashSet("someone"),
+                                         null);
+            reqGrpService.requestSuccess(groupId,
+                                         FileRequestType.STORAGE,
+                                         UUID.randomUUID().toString(),
+                                         ONLINE_CONF_LABEL,
+                                         null,
+                                         Sets.newHashSet("someone"),
+                                         null);
+            reqGrpService.requestSuccess(groupId,
+                                         FileRequestType.STORAGE,
+                                         UUID.randomUUID().toString(),
+                                         ONLINE_CONF_LABEL,
+                                         null,
+                                         Sets.newHashSet("someone"),
+                                         null);
             if (i >= 10) {
-                reqGrpService.requestSuccess(groupId, FileRequestType.STORAGE, UUID.randomUUID().toString(),
-                                             ONLINE_CONF_LABEL, null, Sets.newHashSet("someone"), null);
+                reqGrpService.requestSuccess(groupId,
+                                             FileRequestType.STORAGE,
+                                             UUID.randomUUID().toString(),
+                                             ONLINE_CONF_LABEL,
+                                             null,
+                                             Sets.newHashSet("someone"),
+                                             null);
             }
         }
         long start = System.currentTimeMillis();
@@ -131,11 +176,21 @@ public class RequestsGroupServiceIT extends AbstractStorageIT {
             // Grant a group requests
             reqGrpService.granted(groupId, type, 2, OffsetDateTime.now().plusSeconds(120));
             // Simulate a request ends success
-            reqGrpService.requestSuccess(groupId, type, UUID.randomUUID().toString(), ONLINE_CONF_LABEL, null,
-                                         Sets.newHashSet("someone"), null);
+            reqGrpService.requestSuccess(groupId,
+                                         type,
+                                         UUID.randomUUID().toString(),
+                                         ONLINE_CONF_LABEL,
+                                         null,
+                                         Sets.newHashSet("someone"),
+                                         null);
             // Simulate a requests ends error
-            reqGrpService.requestError(groupId, type, UUID.randomUUID().toString(), ONLINE_CONF_LABEL, null,
-                                       Sets.newHashSet("someone"), null);
+            reqGrpService.requestError(groupId,
+                                       type,
+                                       UUID.randomUUID().toString(),
+                                       ONLINE_CONF_LABEL,
+                                       null,
+                                       Sets.newHashSet("someone"),
+                                       null);
             // Group should be created
             Assert.assertTrue("Error during group request creation", reqGrpRepository.findById(groupId).isPresent());
             Assert.assertEquals("There be requests infos for expired group", 2, reqInfoRepo.count());
@@ -161,18 +216,28 @@ public class RequestsGroupServiceIT extends AbstractStorageIT {
         List<StorageFlowItem> items = new ArrayList<>();
 
         // 1. Run a storage request
-        items.add(StorageFlowItem.build(FileStorageRequestDTO.build("filename", checksum, "UUID",
-                                                                    MediaType.APPLICATION_JSON.toString(), "owner",
-                                                                    SESSION_OWNER_1, SESSION_1,
-                                                                    "file://somewhere/file.test", destStorage,
+        items.add(StorageFlowItem.build(FileStorageRequestDTO.build("filename",
+                                                                    checksum,
+                                                                    "UUID",
+                                                                    MediaType.APPLICATION_JSON.toString(),
+                                                                    "owner",
+                                                                    SESSION_OWNER_1,
+                                                                    SESSION_1,
+                                                                    "file://somewhere/file.test",
+                                                                    destStorage,
                                                                     Optional.empty()), groupId));
         storageReqService.store(items);
 
         // 2. Simulate response info added for this group
-        reqInfoRepo.save(new RequestResultInfo(groupId, FileRequestType.STORAGE, checksum, destStorage, null,
-                Sets.newHashSet("owner")));
+        reqInfoRepo.save(new RequestResultInfo(groupId,
+                                               FileRequestType.STORAGE,
+                                               checksum,
+                                               destStorage,
+                                               null,
+                                               Sets.newHashSet("owner")));
 
-        Assert.assertEquals("Requests should be pending", FileRequestStatus.TO_DO,
+        Assert.assertEquals("Requests should be pending",
+                            FileRequestStatus.TO_DO,
                             storageReqService.search(destStorage, checksum).stream().findFirst().get().getStatus());
 
         Optional<RequestGroup> oReqGroup = reqGrpRepository.findById(groupId);
@@ -188,7 +253,8 @@ public class RequestsGroupServiceIT extends AbstractStorageIT {
         reqGrpService.checkRequestsGroupsDone();
         oReqGroup = reqGrpRepository.findById(groupId);
         Assert.assertFalse("Request group should be deleted cause the group is expired", oReqGroup.isPresent());
-        Assert.assertEquals("Requests should be error", FileRequestStatus.ERROR,
+        Assert.assertEquals("Requests should be error",
+                            FileRequestStatus.ERROR,
                             storageReqService.search(destStorage, checksum).stream().findFirst().get().getStatus());
         Assert.assertEquals("There not be requests infos for expired group", 0, reqInfoRepo.count());
     }
@@ -199,19 +265,29 @@ public class RequestsGroupServiceIT extends AbstractStorageIT {
         String destStorage = ONLINE_CONF_LABEL;
         String checksum = UUID.randomUUID().toString();
         storageReqService.createNewFileStorageRequest(Sets.newHashSet("owner"),
-                                                      new FileReferenceMetaInfo(checksum, "UUID", "file.test", 0L,
+                                                      new FileReferenceMetaInfo(checksum,
+                                                                                "UUID",
+                                                                                "file.test",
+                                                                                0L,
                                                                                 MediaType.APPLICATION_JSON),
-                                                      "file://somewhere/file.test", destStorage, Optional.empty(),
-                                                      groupId, Optional.empty(), Optional.of(FileRequestStatus.PENDING),
-                                                      SESSION_OWNER_1, SESSION_1);
-        Assert.assertEquals("Requests should be pending", FileRequestStatus.PENDING,
+                                                      "file://somewhere/file.test",
+                                                      destStorage,
+                                                      Optional.empty(),
+                                                      groupId,
+                                                      Optional.empty(),
+                                                      Optional.of(FileRequestStatus.PENDING),
+                                                      SESSION_OWNER_1,
+                                                      SESSION_1);
+        Assert.assertEquals("Requests should be pending",
+                            FileRequestStatus.PENDING,
                             storageReqService.search(destStorage, checksum).stream().findFirst().get().getStatus());
         reqGrpService.granted(groupId, FileRequestType.STORAGE, 1, OffsetDateTime.now().plusSeconds(120));
         Assert.assertTrue("Error during group request creation", reqGrpRepository.findById(groupId).isPresent());
         reqGrpService.checkRequestsGroupsDone();
         Assert.assertTrue("Request group should still exists as it is not expired",
                           reqGrpRepository.findById(groupId).isPresent());
-        Assert.assertEquals("Requests should still be pending as group is not expired", FileRequestStatus.PENDING,
+        Assert.assertEquals("Requests should still be pending as group is not expired",
+                            FileRequestStatus.PENDING,
                             storageReqService.search(destStorage, checksum).stream().findFirst().get().getStatus());
     }
 

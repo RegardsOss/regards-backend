@@ -22,7 +22,6 @@ package fr.cnes.regards.framework.modules.plugins.domain.parameter;
  * Supported plugin parameter
  *
  * @author Marc SORDI
- *
  */
 public class BooleanPluginParam extends AbstractPluginParam<Boolean> {
 

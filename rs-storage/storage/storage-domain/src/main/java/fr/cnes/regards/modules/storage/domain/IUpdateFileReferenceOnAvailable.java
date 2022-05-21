@@ -24,14 +24,16 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 
 /**
  * Interface to implements as a spring bean to add customizable update action on a restored file.
+ *
  * @author Sébastien Binda
  */
 public interface IUpdateFileReferenceOnAvailable {
 
     /**
      * Update the {@link FileReference} restored.
+     *
      * @param availableFileReference {@link FileReference} file reference restored
-     * @param onlineFileLocation {@link FileLocation} where the file available
+     * @param onlineFileLocation     {@link FileLocation} where the file available
      * @return {@link FileReference} updated file reference
      * @throws ModuleException
      */

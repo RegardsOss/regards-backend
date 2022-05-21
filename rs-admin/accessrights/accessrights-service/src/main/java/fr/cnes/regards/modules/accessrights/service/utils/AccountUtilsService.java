@@ -30,15 +30,18 @@ public class AccountUtilsService {
     private static final Logger LOG = LoggerFactory.getLogger(AccountUtilsService.class);
 
     private final IAccountsClient accountsClient;
+
     private final IRuntimeTenantResolver runtimeTenantResolver;
+
     private final Gson gson;
 
-    public AccountUtilsService(IAccountsClient accountsClient, IRuntimeTenantResolver runtimeTenantResolver, Gson gson) {
+    public AccountUtilsService(IAccountsClient accountsClient,
+                               IRuntimeTenantResolver runtimeTenantResolver,
+                               Gson gson) {
         this.accountsClient = accountsClient;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.gson = gson;
     }
-
 
     public Account retrieveAccount(String email) throws EntityInvalidException {
         Account account = null;
@@ -61,7 +64,8 @@ public class AccountUtilsService {
         return account;
     }
 
-    public Account createAccount(AccessRequestDto accessRequestDto, boolean isExternalAccess, AccountStatus status) throws EntityException {
+    public Account createAccount(AccessRequestDto accessRequestDto, boolean isExternalAccess, AccountStatus status)
+        throws EntityException {
 
         String email = accessRequestDto.getEmail();
         Account createdAccount = null;
@@ -84,7 +88,8 @@ public class AccountUtilsService {
                 isValid &= StringUtils.isNotBlank(password);
             }
             if (!isValid) {
-                LOG.error("Account does not exist for user {} and there is not enough information to create a new one.", email);
+                LOG.error("Account does not exist for user {} and there is not enough information to create a new one.",
+                          email);
                 throw new EntityNotFoundException(email, Account.class);
             }
 

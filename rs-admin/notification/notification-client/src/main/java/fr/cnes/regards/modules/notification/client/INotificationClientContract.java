@@ -18,9 +18,9 @@ public interface INotificationClientContract {
      * Notify a set of roles with a text plain message
      *
      * @param message message to notify
-     * @param title message title
-     * @param level {@link NotificationLevel}
-     * @param roles list of roles to notify
+     * @param title   message title
+     * @param level   {@link NotificationLevel}
+     * @param roles   list of roles to notify
      */
     default void notify(String message, String title, NotificationLevel level, DefaultRole... roles) {
         notify(message, title, level, MimeTypeUtils.TEXT_PLAIN, roles);
@@ -29,11 +29,11 @@ public interface INotificationClientContract {
     /**
      * Notify a set of roles
      *
-     * @param message message to notify
-     * @param title message title
-     * @param level {@link NotificationLevel}
+     * @param message  message to notify
+     * @param title    message title
+     * @param level    {@link NotificationLevel}
      * @param mimeType MIME type ({@link MediaType} can be used!)
-     * @param roles list of roles to notify
+     * @param roles    list of roles to notify
      */
     void notify(String message, String title, NotificationLevel level, MimeType mimeType, DefaultRole... roles);
 
@@ -41,9 +41,9 @@ public interface INotificationClientContract {
      * Notify a set of users with a text plain message
      *
      * @param message message to notify
-     * @param title message title
-     * @param level {@link NotificationLevel}
-     * @param users list of users to notify
+     * @param title   message title
+     * @param level   {@link NotificationLevel}
+     * @param users   list of users to notify
      */
     default void notify(String message, String title, NotificationLevel level, String... users) {
         notify(message, title, level, MimeTypeUtils.TEXT_PLAIN, users);
@@ -52,11 +52,11 @@ public interface INotificationClientContract {
     /**
      * Notify a set of users
      *
-     * @param message message to notify
-     * @param title message title
-     * @param level {@link NotificationLevel}
+     * @param message  message to notify
+     * @param title    message title
+     * @param level    {@link NotificationLevel}
      * @param mimeType MIME type ({@link MediaType} can be used!)
-     * @param users list of users to notify
+     * @param users    list of users to notify
      */
     void notify(String message, String title, NotificationLevel level, MimeType mimeType, String... users);
 
@@ -64,10 +64,10 @@ public interface INotificationClientContract {
      * Notify a user and a set of roles with a text plain message
      *
      * @param message message to notify
-     * @param title message title
-     * @param level {@link NotificationLevel}
-     * @param user user to notify
-     * @param roles list of roles to notify
+     * @param title   message title
+     * @param level   {@link NotificationLevel}
+     * @param user    user to notify
+     * @param roles   list of roles to notify
      */
     default void notify(String message, String title, NotificationLevel level, String user, DefaultRole... roles) {
         notify(message, title, level, MimeTypeUtils.TEXT_PLAIN, user, roles);
@@ -76,13 +76,17 @@ public interface INotificationClientContract {
     /**
      * Notify a user and a set of roles
      *
-     * @param message message to notify
-     * @param title message title
-     * @param level {@link NotificationLevel}
+     * @param message  message to notify
+     * @param title    message title
+     * @param level    {@link NotificationLevel}
      * @param mimeType MIME type ({@link MediaType} can be used!)
-     * @param user user to notify
-     * @param roles list of roles to notify
+     * @param user     user to notify
+     * @param roles    list of roles to notify
      */
-    void notify(String message, String title, NotificationLevel level, MimeType mimeType, String user,
-            DefaultRole... roles);
+    void notify(String message,
+                String title,
+                NotificationLevel level,
+                MimeType mimeType,
+                String user,
+                DefaultRole... roles);
 }

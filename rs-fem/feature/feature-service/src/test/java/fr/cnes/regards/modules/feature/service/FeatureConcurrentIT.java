@@ -1,9 +1,13 @@
 package fr.cnes.regards.modules.feature.service;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
+import fr.cnes.regards.modules.feature.dto.PriorityLevel;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
+import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.Test;
@@ -15,19 +19,13 @@ import org.springframework.data.domain.Sort.Order;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.feature.domain.FeatureEntity;
-import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
-import fr.cnes.regards.modules.feature.dto.PriorityLevel;
-import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
-import fr.cnes.regards.modules.model.dto.properties.IProperty;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=feature_cct", "regards.amqp.enabled=true" },
-        locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
-                "classpath:metrics.properties" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=feature_cct", "regards.amqp.enabled=true" },
+    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 public class FeatureConcurrentIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -41,8 +39,12 @@ public class FeatureConcurrentIT extends AbstractFeatureMultitenantServiceIT {
 
         // Register creation requests
         String owner = "sessionOwner";
-        FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata
-                .build(owner, "session", PriorityLevel.NORMAL, Lists.emptyList(), true, false);
+        FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata.build(owner,
+                                                                                       "session",
+                                                                                       PriorityLevel.NORMAL,
+                                                                                       Lists.emptyList(),
+                                                                                       true,
+                                                                                       false);
         String modelName = mockModelClient(GeodeProperties.getGeodeModel());
 
         Thread.sleep(5_000);
@@ -91,7 +93,8 @@ public class FeatureConcurrentIT extends AbstractFeatureMultitenantServiceIT {
         long start = System.currentTimeMillis();
         LOGGER.info(">>>>>>>>>>>>>>>>> Registering {} requests", events.size());
         featureService.registerRequests(events);
-        LOGGER.info(">>>>>>>>>>>>>>>>> {} requests registered in {} ms", events.size(),
+        LOGGER.info(">>>>>>>>>>>>>>>>> {} requests registered in {} ms",
+                    events.size(),
                     System.currentTimeMillis() - start);
     }
 

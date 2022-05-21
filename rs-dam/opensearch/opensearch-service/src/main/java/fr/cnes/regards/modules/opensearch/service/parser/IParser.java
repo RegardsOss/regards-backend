@@ -18,21 +18,21 @@
  */
 package fr.cnes.regards.modules.opensearch.service.parser;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.util.List;
-
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.util.List;
 
 /**
  * Parses a map of parameters into a {@link ICriterion}.
+ *
  * @author Xavier-Alexandre Brochard
  */
 public interface IParser {
@@ -49,6 +49,7 @@ public interface IParser {
      * lon => -123.45
      * r => 10
      * }
+     *
      * @param parameters the map of parameters
      * @return the {@link ICriterion}
      * @throws OpenSearchParseException when an error occurs during parsing
@@ -61,6 +62,7 @@ public interface IParser {
      * q="date:[* TO 2012-01-01]"<br>
      * or<br>
      * lat=43.25&lon=-123.45&r=10
+     *
      * @param parameters the string containing the parameters
      * @return the {@link ICriterion}
      */

@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.module.rest.exception;
 
 /**
  * Exception indicating a conflict occurred with an existing entity
+ *
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet
  */

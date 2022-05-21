@@ -19,19 +19,20 @@
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.atom.modules.regards;
 
 import com.google.gson.Gson;
-
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 
 /**
  * Provides access to Regards information.
- * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
+ *
  * @author Sébastien Binda
+ * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  */
 public interface RegardsResponse {
 
     /**
      * Getter for {@link Gson} to serialize attributes values.
+     *
      * @return {@link Gson}
      */
     Gson getGsonBuilder();
@@ -40,6 +41,7 @@ public interface RegardsResponse {
 
     /**
      * Getter Regards entity to format.
+     *
      * @return {@link AbstractEntity}
      */
     EntityFeature getEntity();

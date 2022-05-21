@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 
 /**
  * User role job parameter, it contains the pair "userRole" : user role
+ *
  * @author oroussel
  */
 public class UserRoleJobParameter extends JobParameter {
@@ -44,6 +45,7 @@ public class UserRoleJobParameter extends JobParameter {
 
     /**
      * Check if given JobParameter is compatible with UserRoleJobParameter ie same name
+     *
      * @param param
      * @return {@link Boolean}
      */

@@ -34,21 +34,19 @@ import java.util.Optional;
 
 /**
  * Search engine plugin contract<br/>
- *
+ * <p>
  * To call business search layer, please use IBusinessSearchService.<br/>
  * To build custom criterion for a given AttributeModel, use IFeatureCriterion<br/>
  * To find an AttributeModel from a parameter name, use IAttributeFinder.
- *
- * @author Marc Sordi
  *
  * @param <R> search result type
  * @param <E> extra result type
  * @param <T> single entity type
  * @param <V> property values
- *
+ * @author Marc Sordi
  */
 @PluginInterface(
-        description = "Plugin to define a search engine. A Searh engine define the format of queries and format of response from a search request.")
+    description = "Plugin to define a search engine. A Searh engine define the format of queries and format of response from a search request.")
 public interface ISearchEngine<R, E, T, V extends Collection<?>> {
 
     /**
@@ -65,13 +63,15 @@ public interface ISearchEngine<R, E, T, V extends Collection<?>> {
      * method on {@link SearchContext#getDatasetUrn()} and add it to the search criterions.</li>
      * </ol>
      */
-    ResponseEntity<R> search(SearchContext context, ISearchEngine<?, ?, ?, ?> requestParser,
-            IEntityLinkBuilder linkBuilder) throws ModuleException;
+    ResponseEntity<R> search(SearchContext context,
+                             ISearchEngine<?, ?, ?, ?> requestParser,
+                             IEntityLinkBuilder linkBuilder) throws ModuleException;
 
     /**
      * Parse query parameters and transform to {@link ICriterion} (available for all search method)<br/>
      * Use {@link ICriterion} as criterion builder.<br/>
      * <b>This method implementation is required for subsetting feature.</b>
+     *
      * @param context containing all query parameters
      * @return {@link ICriterion}
      */
@@ -90,7 +90,7 @@ public interface ISearchEngine<R, E, T, V extends Collection<?>> {
      */
     default ResponseEntity<E> extra(SearchContext context, IEntityLinkBuilder linkBuilder) throws ModuleException {
         throw new UnsupportedOperationException(
-                "Additional path handling not implemented for engine " + context.getEngineType());
+            "Additional path handling not implemented for engine " + context.getEngineType());
     }
 
     /**
@@ -137,7 +137,7 @@ public interface ISearchEngine<R, E, T, V extends Collection<?>> {
      */
     default ResponseEntity<V> getPropertyValues(SearchContext context) throws ModuleException {
         throw new UnsupportedOperationException(
-                "Retrieving property values not implemented for engine " + context.getEngineType());
+            "Retrieving property values not implemented for engine " + context.getEngineType());
     }
 
     /**
@@ -154,7 +154,7 @@ public interface ISearchEngine<R, E, T, V extends Collection<?>> {
      */
     default ResponseEntity<DocFilesSummary> getSummary(SearchContext context) throws ModuleException {
         throw new UnsupportedOperationException(
-                "Computing file summary not implemented for engine " + context.getEngineType());
+            "Computing file summary not implemented for engine " + context.getEngineType());
     }
 
     /**
@@ -167,11 +167,12 @@ public interface ISearchEngine<R, E, T, V extends Collection<?>> {
      * <li>{@link SearchContext} may contain a dataset URN so you have to consider it using {@link Optional#isPresent()}
      * method on {@link SearchContext#getDatasetUrn()} and add it to the search criterions.</li>
      * </ol>
+     *
      * @throws ModuleException
      */
     default ResponseEntity<List<EntityModel<? extends PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
-            throws ModuleException {
+        throws ModuleException {
         throw new UnsupportedOperationException(
-                "Bound calculation not implemented for engine " + context.getEngineType());
+            "Bound calculation not implemented for engine " + context.getEngineType());
     }
 }

@@ -74,9 +74,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- *
  * @author Sébastien Binda
- *
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = PerfServiceConfiguration.class)
@@ -120,7 +118,7 @@ public class OrderPerformanceIT extends AbstractMultitenantServiceIT {
         Project project = new Project();
         project.setHost("regardsHost");
         Mockito.when(projectsClient.retrieveProject(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(EntityModel.of(project), HttpStatus.OK));
+               .thenReturn(new ResponseEntity<>(EntityModel.of(project), HttpStatus.OK));
 
         Mockito.when(searchClient.searchDataObjects(Mockito.any())).thenAnswer(invocation -> {
             ComplexSearchRequest r = invocation.getArgument(0);
@@ -132,8 +130,11 @@ public class OrderPerformanceIT extends AbstractMultitenantServiceIT {
                     int nbDataPerPage = 0;
                     do {
                         String id = "data_" + page + "_" + nbDataPerPage;
-                        EntityFeature feature = new DataObjectFeature(UniformResourceName
-                                .build(id, EntityType.DATA, getDefaultTenant(), UUID.randomUUID(), 1), id, id);
+                        EntityFeature feature = new DataObjectFeature(UniformResourceName.build(id,
+                                                                                                EntityType.DATA,
+                                                                                                getDefaultTenant(),
+                                                                                                UUID.randomUUID(),
+                                                                                                1), id, id);
                         Multimap<DataType, DataFile> fileMultimap = ArrayListMultimap.create();
                         DataFile dataFile = new DataFile();
                         dataFile.setOnline(false);
@@ -152,15 +153,19 @@ public class OrderPerformanceIT extends AbstractMultitenantServiceIT {
                         nbDataPerPage++;
                     } while (nbDataPerPage < r.getSize());
                     LOGGER.info("Getting page " + page + " done !");
-                    return ResponseEntity.ok(new FacettedPagedModel<>(Sets.newHashSet(), list,
-                            new PagedModel.PageMetadata(list.size(), 0, list.size())));
+                    return ResponseEntity.ok(new FacettedPagedModel<>(Sets.newHashSet(),
+                                                                      list,
+                                                                      new PagedModel.PageMetadata(list.size(),
+                                                                                                  0,
+                                                                                                  list.size())));
                 } catch (URISyntaxException e) {
                     throw new RsRuntimeException(e);
                 }
             }
             LOGGER.info("Getting page " + page + " done !");
-            return ResponseEntity.ok(new FacettedPagedModel<>(Sets.newHashSet(), Collections.emptyList(),
-                    new PagedModel.PageMetadata(0, 0, 0)));
+            return ResponseEntity.ok(new FacettedPagedModel<>(Sets.newHashSet(),
+                                                              Collections.emptyList(),
+                                                              new PagedModel.PageMetadata(0, 0, 0)));
         });
     }
 
@@ -191,15 +196,21 @@ public class OrderPerformanceIT extends AbstractMultitenantServiceIT {
         // To generate orderId
         order = orderRepo.save(order);
 
-        orderCreationService.completeOrderCreation(basket, order.getId(), DefaultRole.REGISTERED_USER.toString(), 240, getDefaultTenant());
+        orderCreationService.completeOrderCreation(basket,
+                                                   order.getId(),
+                                                   DefaultRole.REGISTERED_USER.toString(),
+                                                   240,
+                                                   getDefaultTenant());
 
         // working code here
         long usedMemoryAfter = runtime.totalMemory() - runtime.freeMemory();
         System.out.println("Memory increased: " + ((usedMemoryAfter - usedMemoryBefore) / 1024) + "Ko");
     }
 
-    private BasketDatedItemsSelection createDatasetItemSelection(long filesSize, long filesCount, int objectsCount,
-            String query) {
+    private BasketDatedItemsSelection createDatasetItemSelection(long filesSize,
+                                                                 long filesCount,
+                                                                 int objectsCount,
+                                                                 String query) {
 
         BasketDatedItemsSelection item = new BasketDatedItemsSelection();
         item.setFileTypeSize(DataType.RAWDATA.name(), filesSize);

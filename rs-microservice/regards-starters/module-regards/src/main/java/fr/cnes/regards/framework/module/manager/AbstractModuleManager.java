@@ -57,16 +57,19 @@ public abstract class AbstractModuleManager<S> implements IModuleManager<S>, Ini
      * and returns all elements matching provided type
      *
      * @param configuration a {@link ModuleConfiguration}
-     * @param requiredType the class you look for
+     * @param requiredType  the class you look for
      * @return a set containing only element matching type T
      */
     public <T> Set<T> getConfigurationSettingsByClass(ModuleConfiguration configuration, Class<T> requiredType) {
-        return configuration.getConfiguration().stream().filter(i -> requiredType.isAssignableFrom(i.getKey()))
-                .map(i -> requiredType.cast(i.getTypedValue())).collect(Collectors.toSet());
+        return configuration.getConfiguration()
+                            .stream()
+                            .filter(i -> requiredType.isAssignableFrom(i.getKey()))
+                            .map(i -> requiredType.cast(i.getTypedValue()))
+                            .collect(Collectors.toSet());
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception{
+    public void afterPropertiesSet() throws Exception {
         info = loadInformation();
         validate(info);
     }
@@ -123,7 +126,8 @@ public abstract class AbstractModuleManager<S> implements IModuleManager<S>, Ini
         for (String importError : importErrors) {
             logger.warn(importError);
         }
-        return new ModuleImportReport(info, importErrors,
+        return new ModuleImportReport(info,
+                                      importErrors,
                                       importErrors.size() == configuration.getConfiguration().size());
     }
 

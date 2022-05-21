@@ -20,12 +20,10 @@ package fr.cnes.regards.framework.amqp.event;
 
 /**
  * Available JSON converters
- * 
- * @author Marc SORDI
  *
+ * @author Marc SORDI
  */
 public enum JsonMessageConverter {
 
-    JACKSON,
-    GSON;
+    JACKSON, GSON;
 }

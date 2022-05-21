@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.config.reactive;
 
 import com.google.gson.Gson;
@@ -24,8 +24,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
+
 /**
  * This class is the HttpMessageCodecs config for reactive application.
+ *
  * @author gandrieu
  */
 @Configuration
@@ -35,7 +37,8 @@ public class ProcessingServerJsonConfiguration implements WebFluxConfigurer {
     @Autowired
     private Gson gson;
 
-    @Override public void configureHttpMessageCodecs(ServerCodecConfigurer configurer) {
+    @Override
+    public void configureHttpMessageCodecs(ServerCodecConfigurer configurer) {
         configurer.customCodecs().register(new GsonInefficientHttpMessageCodec.Co(gson));
         configurer.customCodecs().register(new GsonInefficientHttpMessageCodec.Dec(gson));
     }

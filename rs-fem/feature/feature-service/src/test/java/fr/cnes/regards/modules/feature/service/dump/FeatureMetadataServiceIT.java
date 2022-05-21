@@ -20,27 +20,6 @@
 
 package fr.cnes.regards.modules.feature.service.dump;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
-import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.amqp.event.AbstractRequestEvent;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.modules.dump.domain.DumpParameters;
@@ -54,14 +33,35 @@ import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.service.AbstractFeatureMultitenantServiceIT;
+import org.apache.commons.io.FileUtils;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Test for {@link FeatureMetadataService}
+ *
  * @author Iliana Ghazali
  */
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_metadata_service_it",
-        "regards.amqp.enabled=true", "regards.feature.dump.zip-limit = 3" })
+    "regards.amqp.enabled=true", "regards.feature.dump.zip-limit = 3" })
 @ActiveProfiles(value = { "noFemHandler", "noscheduler" })
 public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -87,8 +87,9 @@ public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceI
         // init conf
         this.tmpZipLocation = Paths.get("target/tmpZipLocation");
 
-        dumpSettingsService.setDumpParameters(new DumpParameters().setActiveModule(true).setDumpLocation("target/dump")
-                                                      .setCronTrigger("0 * * * * *"));
+        dumpSettingsService.setDumpParameters(new DumpParameters().setActiveModule(true)
+                                                                  .setDumpLocation("target/dump")
+                                                                  .setCronTrigger("0 * * * * *"));
     }
 
     @Test
@@ -148,8 +149,9 @@ public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceI
         FeatureSaveMetadataRequest metadataRequest = createSaveMetadataRequest();
         try {
             metadataService.writeZips(metadataRequest, this.tmpZipLocation);
-            metadataService
-                    .writeDump(metadataRequest, Paths.get(metadataRequest.getDumpLocation()), this.tmpZipLocation);
+            metadataService.writeDump(metadataRequest,
+                                      Paths.get(metadataRequest.getDumpLocation()),
+                                      this.tmpZipLocation);
         } catch (NothingToDoException | IOException e) {
             LOGGER.error("Error occurred while dumping features", e);
         }
@@ -167,6 +169,7 @@ public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceI
 
     /**
      * Create a request to save feature metadata
+     *
      * @return FeatureSaveMetadataRequest
      */
     private FeatureSaveMetadataRequest createSaveMetadataRequest() {
@@ -184,6 +187,7 @@ public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceI
 
     /**
      * Update feature last dates by decreasing the number of days
+     *
      * @param nbFeatureToDump number of features to update
      */
     private void updateFeatureLastUpdateDate(int nbFeatureToDump) {
@@ -200,6 +204,7 @@ public class FeatureMetadataServiceIT extends AbstractFeatureMultitenantServiceI
 
     /**
      * List all filenames contained in a zip
+     *
      * @param parentZip zip to scan
      * @return list of filenames
      */

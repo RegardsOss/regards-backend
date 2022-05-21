@@ -9,7 +9,8 @@ public final class QuotaKey {
 
     private String userEmail;
 
-    private QuotaKey() {}
+    private QuotaKey() {
+    }
 
     private QuotaKey(String tenant, String userEmail) {
         this.tenant = tenant;
@@ -33,8 +34,7 @@ public final class QuotaKey {
             return false;
         }
         QuotaKey quotaKey = (QuotaKey) o;
-        return Objects.equals(tenant, quotaKey.tenant) &&
-            Objects.equals(userEmail, quotaKey.userEmail);
+        return Objects.equals(tenant, quotaKey.tenant) && Objects.equals(userEmail, quotaKey.userEmail);
     }
 
     @Override
@@ -43,9 +43,7 @@ public final class QuotaKey {
     }
 
     public static QuotaKey make(@NotNull String tenant, @NotNull String userEmail) {
-        return new QuotaKey(
-            Objects.requireNonNull(tenant, "tenant must not be null"),
-            Objects.requireNonNull(userEmail, "userEmail must not be null")
-        );
+        return new QuotaKey(Objects.requireNonNull(tenant, "tenant must not be null"),
+                            Objects.requireNonNull(userEmail, "userEmail must not be null"));
     }
 }

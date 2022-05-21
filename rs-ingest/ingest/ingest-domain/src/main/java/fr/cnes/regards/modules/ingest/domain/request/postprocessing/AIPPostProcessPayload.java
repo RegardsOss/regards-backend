@@ -20,10 +20,9 @@
 
 package fr.cnes.regards.modules.ingest.domain.request.postprocessing;
 
-import javax.validation.constraints.NotNull;
-
 /**
  * Payload for {@link AIPPostProcessRequest}
+ *
  * @author Iliana Ghazali
  */
 
@@ -40,6 +39,5 @@ public class AIPPostProcessPayload {
     public String getPostProcessingPluginBusinnessId() {
         return this.postProcessingPluginBusinnessId;
     }
-
 
 }

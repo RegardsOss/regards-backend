@@ -18,12 +18,12 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.test;
 
-import org.springframework.test.context.transaction.BeforeTransaction;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import org.springframework.test.context.transaction.BeforeTransaction;
 
 /**
  * Manage security for transactional test
+ *
  * @author Marc Sordi
  */
 @MultitenantTransactional

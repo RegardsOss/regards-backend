@@ -18,24 +18,16 @@
  */
 package fr.cnes.regards.modules.notifier.domain;
 
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
-
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+
 /**
  * Entity to represent an error on a {@link Recipient} for in a {@link JobInfo}
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
 @Entity
 @Table(name = "t_recipient_error")
@@ -54,7 +46,7 @@ public class RecipientError {
     @ManyToOne
     @NotNull(message = "Ntofication is required")
     @JoinColumn(name = "notification_action_id", nullable = false,
-            foreignKey = @ForeignKey(name = "fk_notification_action_id"))
+        foreignKey = @ForeignKey(name = "fk_notification_action_id"))
     private NotificationRequest notification;
 
     @ManyToOne
@@ -90,8 +82,9 @@ public class RecipientError {
         this.notification = notification;
     }
 
-    public static RecipientError build(PluginConfiguration recipient, JobInfo jobInfo,
-            NotificationRequest notification) {
+    public static RecipientError build(PluginConfiguration recipient,
+                                       JobInfo jobInfo,
+                                       NotificationRequest notification) {
         RecipientError error = new RecipientError();
         error.setJob(jobInfo);
         error.setRecipient(recipient);

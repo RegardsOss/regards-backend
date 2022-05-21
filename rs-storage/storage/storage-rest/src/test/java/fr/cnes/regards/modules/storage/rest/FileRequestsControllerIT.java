@@ -18,9 +18,13 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
-import java.util.Optional;
-import java.util.UUID;
-
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
+import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,23 +37,17 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
-import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Test class for {@link FileRequestsController}
  *
  * @author Sébastien Binda
- *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_rest_it"})
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_rest_it" })
 @ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
 public class FileRequestsControllerIT extends AbstractRegardsTransactionalIT {
 
@@ -68,20 +66,36 @@ public class FileRequestsControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void search() {
         String storage = "somewhere";
-        FileReferenceMetaInfo meta = new FileReferenceMetaInfo(UUID.randomUUID().toString(), "MD5", "file.txt", 10L,
-                MediaType.APPLICATION_JSON_UTF8);
-        FileStorageRequest req = new FileStorageRequest("regards", meta, "file://somewhere/file.txt", "somewhere",
-                Optional.empty(), UUID.randomUUID().toString(), "source1", "session1");
+        FileReferenceMetaInfo meta = new FileReferenceMetaInfo(UUID.randomUUID().toString(),
+                                                               "MD5",
+                                                               "file.txt",
+                                                               10L,
+                                                               MediaType.APPLICATION_JSON_UTF8);
+        FileStorageRequest req = new FileStorageRequest("regards",
+                                                        meta,
+                                                        "file://somewhere/file.txt",
+                                                        "somewhere",
+                                                        Optional.empty(),
+                                                        UUID.randomUUID().toString(),
+                                                        "source1",
+                                                        "session1");
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk().expectIsEmpty("$.content");
         performDefaultGet(FileRequestsController.REQUESTS_PATH + FileRequestsController.STORAGE_PATH
-                + FileRequestsController.TYPE_PATH, requestBuilderCustomizer, "Expect ok status.", storage,
+                              + FileRequestsController.TYPE_PATH,
+                          requestBuilderCustomizer,
+                          "Expect ok status.",
+                          storage,
                           FileRequestType.STORAGE.toString());
         tenantResolver.forceTenant(getDefaultTenant());
         storageReqRepo.save(req);
-        requestBuilderCustomizer = customizer().expectStatusOk().expectValue("$.content[0].content.type",
-                                                                             FileRequestType.STORAGE.toString());
+        requestBuilderCustomizer = customizer().expectStatusOk()
+                                               .expectValue("$.content[0].content.type",
+                                                            FileRequestType.STORAGE.toString());
         performDefaultGet(FileRequestsController.REQUESTS_PATH + FileRequestsController.STORAGE_PATH
-                + FileRequestsController.TYPE_PATH, requestBuilderCustomizer, "Expect ok status.", storage,
+                              + FileRequestsController.TYPE_PATH,
+                          requestBuilderCustomizer,
+                          "Expect ok status.",
+                          storage,
                           FileRequestType.STORAGE.toString());
     }
 

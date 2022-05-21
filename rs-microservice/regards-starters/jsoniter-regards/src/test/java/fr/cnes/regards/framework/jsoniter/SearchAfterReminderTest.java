@@ -2,10 +2,6 @@ package fr.cnes.regards.framework.jsoniter;
 
 import com.google.gson.Gson;
 import com.jsoniter.JsonIterator;
-import fr.cnes.regards.modules.dam.domain.entities.Collection;
-import fr.cnes.regards.modules.dam.domain.entities.DataObject;
-import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.reminder.SearchAfterReminder;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import io.vavr.control.Option;
@@ -20,8 +16,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class SearchAfterReminderTest {
 

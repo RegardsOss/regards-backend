@@ -18,15 +18,14 @@
  */
 package fr.cnes.regards.modules.dam.service.entities.exception;
 
-import java.util.Collection;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+
+import java.util.Collection;
 
 /**
  * Data file invalid content type exception
  *
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("serial")
 public class InvalidContentTypeException extends ModuleException {

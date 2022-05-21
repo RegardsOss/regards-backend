@@ -18,7 +18,15 @@
  */
 package fr.cnes.regards.framework.utils.file;
 
-import java.awt.Dimension;
+import com.google.common.collect.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.ImageInputStream;
+import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -29,18 +37,9 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.ImageInputStream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Sets;
-
 /**
  * Utils to handle files.
+ *
  * @author Sébastien Binda
  */
 public final class CommonFileUtils {
@@ -55,7 +54,8 @@ public final class CommonFileUtils {
      * If a file exists in the directory with the originFileName as name, so this method return a file name as :<br/>
      * [originFileName without extension]_[i].[originFileName extension] where i is an integer if filename has an extension.<br/>
      * [originFileName without extension]_[i] where i is an integer if filename has no extension.
-     * @param directory {@link Path} Directory to scan for existing files.
+     *
+     * @param directory      {@link Path} Directory to scan for existing files.
      * @param originFileName {@link String} Original file name wanted.
      * @return {@link String} First available file name.
      * @throws IOException Error reading the {@link Path} directory
@@ -74,7 +74,9 @@ public final class CommonFileUtils {
             int index = availableFileName.lastIndexOf('.');
             if (index > 0) {
                 // with lastIndexOf we are sure to get the extension
-                availableFileName = String.format("%s_%d.%s", availableFileName.substring(0, index), cpt,
+                availableFileName = String.format("%s_%d.%s",
+                                                  availableFileName.substring(0, index),
+                                                  cpt,
                                                   availableFileName.substring(index + 1));
             } else {
                 // handle case when file has no extension to avoid infinite loop
@@ -101,6 +103,7 @@ public final class CommonFileUtils {
 
     /**
      * Gets image dimensions for given file
+     *
      * @param imgFile image file
      * @return dimensions of image
      * @throws IOException if the file is not a known image

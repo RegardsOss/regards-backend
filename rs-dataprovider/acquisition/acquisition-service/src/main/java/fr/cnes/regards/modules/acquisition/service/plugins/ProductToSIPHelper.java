@@ -18,9 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
@@ -29,12 +26,13 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+
 /**
- *
  * Help to fill the {@link SIP} required field according to the related {@link Product}
  *
  * @author Marc Sordi
- *
  */
 public final class ProductToSIPHelper {
 
@@ -54,11 +52,14 @@ public final class ProductToSIPHelper {
                 checksum = ChecksumUtils.computeHexChecksum(af.getFilePath(),
                                                             AcquisitionProcessingChain.CHECKSUM_ALGORITHM);
             } catch (NoSuchAlgorithmException | IOException e) {
-                throw new ModuleException(String.format("Error calculating file checksum. Cause %s", e.getMessage()), e);
+                throw new ModuleException(String.format("Error calculating file checksum. Cause %s", e.getMessage()),
+                                          e);
             }
             sipBuilder.getContentInformationBuilder()
-                    .setDataObject(af.getFileInfo().getDataType(), af.getFilePath().toAbsolutePath(),
-                                   AcquisitionProcessingChain.CHECKSUM_ALGORITHM, checksum);
+                      .setDataObject(af.getFileInfo().getDataType(),
+                                     af.getFilePath().toAbsolutePath(),
+                                     AcquisitionProcessingChain.CHECKSUM_ALGORITHM,
+                                     checksum);
             sipBuilder.getContentInformationBuilder().setSyntax(af.getFileInfo().getMimeType());
             sipBuilder.addContentInformation();
         }

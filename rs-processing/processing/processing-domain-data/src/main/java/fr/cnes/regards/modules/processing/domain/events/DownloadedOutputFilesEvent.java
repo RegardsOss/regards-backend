@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.events;
 
 import fr.cnes.regards.framework.amqp.event.Event;
@@ -34,7 +34,8 @@ import java.net.URL;
  * @author gandrieu
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
-@Value @With
+@Value
+@With
 public class DownloadedOutputFilesEvent implements ISubscribable {
 
     List<URL> outputFileUrls;

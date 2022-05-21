@@ -23,6 +23,7 @@ import org.springframework.context.ApplicationEvent;
 /**
  * Message event used to transmit message from CrawlerService to IngesterService while ingesting data in order to make
  * ingester updating DatasourceIngestion (these messages are enqueued into stacktrace attribute)
+ *
  * @author oroussel
  */
 public class DataSourceMessageEvent extends ApplicationEvent {

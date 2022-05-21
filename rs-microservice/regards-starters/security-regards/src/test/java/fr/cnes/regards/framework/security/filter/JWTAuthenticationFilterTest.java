@@ -18,12 +18,14 @@
  */
 package fr.cnes.regards.framework.security.filter;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.security.utils.HttpConstants;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,19 +41,16 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.web.servlet.DispatcherServlet;
 
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.HttpConstants;
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * Class IPFilterTest
- *
+ * <p>
  * IP Filter tests
+ *
  * @author sbinda
  */
 public class JWTAuthenticationFilterTest {
@@ -82,7 +81,7 @@ public class JWTAuthenticationFilterTest {
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
 
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
-                Mockito.mock(IRuntimeTenantResolver.class));
+                                                                           Mockito.mock(IRuntimeTenantResolver.class));
 
         try {
             filter.doFilter(mockedRequest, mockedResponse, new MockFilterChain());
@@ -106,8 +105,10 @@ public class JWTAuthenticationFilterTest {
     @Test
     public void jwtFilterPublicAccess() throws JwtException {
         // the public filter should generate this token:
-        JWTAuthentication token = jwtService.parseToken(new JWTAuthentication(
-                jwtService.generateToken("project-test", "public", "public@regards.com", DefaultRole.PUBLIC.name())));
+        JWTAuthentication token = jwtService.parseToken(new JWTAuthentication(jwtService.generateToken("project-test",
+                                                                                                       "public",
+                                                                                                       "public@regards.com",
+                                                                                                       DefaultRole.PUBLIC.name())));
 
         final MockHttpServletRequest mockedRequest = new MockHttpServletRequest();
         mockedRequest.addParameter(HttpConstants.SCOPE, "project-test");
@@ -118,7 +119,7 @@ public class JWTAuthenticationFilterTest {
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
         Mockito.when(mockedManager.authenticate(token)).thenReturn(token);
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
-                Mockito.mock(IRuntimeTenantResolver.class));
+                                                                           Mockito.mock(IRuntimeTenantResolver.class));
 
         DispatcherServlet servlet = Mockito.mock(DispatcherServlet.class);
         MockFilterChain mockedFilterChain = new MockFilterChain(servlet, publicFilter, filter);
@@ -161,7 +162,7 @@ public class JWTAuthenticationFilterTest {
         // As generateToken seems to have some random added into computation, we cannot specify what is expected
         Mockito.when(mockedManager.authenticate(ArgumentMatchers.any())).thenReturn(token);
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
-                Mockito.mock(IRuntimeTenantResolver.class));
+                                                                           Mockito.mock(IRuntimeTenantResolver.class));
 
         DispatcherServlet servlet = Mockito.mock(DispatcherServlet.class);
         MockFilterChain mockedFilterChain = new MockFilterChain(servlet, publicFilter, filter);
@@ -189,8 +190,10 @@ public class JWTAuthenticationFilterTest {
     @Test
     public void jwtFilterAccessDeniedTest() {
 
-        final JWTAuthentication token = new JWTAuthentication(
-                jwtService.generateToken("PROJECT", "test", "test@test.test", "USER"));
+        final JWTAuthentication token = new JWTAuthentication(jwtService.generateToken("PROJECT",
+                                                                                       "test",
+                                                                                       "test@test.test",
+                                                                                       "USER"));
 
         final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();
@@ -198,7 +201,7 @@ public class JWTAuthenticationFilterTest {
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
 
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
-                Mockito.mock(IRuntimeTenantResolver.class));
+                                                                           Mockito.mock(IRuntimeTenantResolver.class));
 
         // Header whithout Bearer: prefix.
         Mockito.when(mockedRequest.getHeader(HttpConstants.AUTHORIZATION)).thenReturn(token.getJwt());
@@ -225,8 +228,10 @@ public class JWTAuthenticationFilterTest {
     @Test
     public void jwtFilterAccessGrantedTest() throws JwtException {
 
-        JWTAuthentication token = new JWTAuthentication(
-                jwtService.generateToken("PROJECT", "test", "test@test.test", "USER"));
+        JWTAuthentication token = new JWTAuthentication(jwtService.generateToken("PROJECT",
+                                                                                 "test",
+                                                                                 "test@test.test",
+                                                                                 "USER"));
         token = jwtService.parseToken(token);
 
         final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);
@@ -235,10 +240,10 @@ public class JWTAuthenticationFilterTest {
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
         Mockito.when(mockedManager.authenticate(token)).thenReturn(token);
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
-                Mockito.mock(IRuntimeTenantResolver.class));
+                                                                           Mockito.mock(IRuntimeTenantResolver.class));
 
         Mockito.when(mockedRequest.getHeader(HttpConstants.AUTHORIZATION))
-                .thenReturn(String.format("%s %s", HttpConstants.BEARER, token.getJwt()));
+               .thenReturn(String.format("%s %s", HttpConstants.BEARER, token.getJwt()));
 
         try {
             filter.doFilter(mockedRequest, mockedResponse, new MockFilterChain());

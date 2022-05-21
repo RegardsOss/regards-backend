@@ -46,8 +46,9 @@ import java.util.Set;
 
 /**
  * Class LdapAuthenticationPluginTest
- *
+ * <p>
  * Test authentication through LDAP server
+ *
  * @author Sébastien Binda
  */
 public class LdapAuthenticationPluginTest {
@@ -73,11 +74,14 @@ public class LdapAuthenticationPluginTest {
         /*
          * Set all parameters
          */
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(LdapAuthenticationPlugin.PARAM_LDAP_HOST, "test"),
-                     IPluginParam.build(LdapAuthenticationPlugin.PARAM_LDAP_PORT, "8080"),
-                     IPluginParam.build(LdapAuthenticationPlugin.PARAM_LDAP_CN, "ou=people,ou=commun"),
-                     IPluginParam.build(LdapAuthenticationPlugin.PARAM_LDAP_USER_EMAIL_ATTTRIBUTE, "email"));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(LdapAuthenticationPlugin.PARAM_LDAP_HOST,
+                                                                           "test"),
+                                                        IPluginParam.build(LdapAuthenticationPlugin.PARAM_LDAP_PORT,
+                                                                           "8080"),
+                                                        IPluginParam.build(LdapAuthenticationPlugin.PARAM_LDAP_CN,
+                                                                           "ou=people,ou=commun"),
+                                                        IPluginParam.build(LdapAuthenticationPlugin.PARAM_LDAP_USER_EMAIL_ATTTRIBUTE,
+                                                                           "email"));
         try {
             PluginConfiguration conf = PluginConfiguration.build(LdapAuthenticationPlugin.class, "", parameters);
             // instantiate plugin
@@ -111,6 +115,7 @@ public class LdapAuthenticationPluginTest {
 
     /**
      * Test error authentication throught LDAP plugin
+     *
      * @throws LdapException test error.
      * @throws IOException   test error.
      */
@@ -131,6 +136,7 @@ public class LdapAuthenticationPluginTest {
 
     /**
      * Test error authentication throught LDAP plugin
+     *
      * @throws LdapException test error.
      * @throws IOException   test error.
      */
@@ -170,6 +176,7 @@ public class LdapAuthenticationPluginTest {
 
     /**
      * Test error authentication throught LDAP plugin
+     *
      * @throws LdapException test error.
      * @throws IOException   test error.
      */
@@ -191,6 +198,7 @@ public class LdapAuthenticationPluginTest {
 
     /**
      * Test error authentication throught LDAP plugin
+     *
      * @throws LdapException test error.
      * @throws IOException   test error.
      */
@@ -212,6 +220,7 @@ public class LdapAuthenticationPluginTest {
 
     /**
      * Create LDAP connection mock for test
+     *
      * @param pValidEmail does the LDAP mock connection return a valid email or not
      * @return LdapConnection
      */
@@ -237,9 +246,10 @@ public class LdapAuthenticationPluginTest {
             final EntryCursorStub entry = new EntryCursorStub();
             entry.setEntries(entries);
 
-            Mockito.when(mockedConnection.search(Mockito.anyString(), Mockito.anyString(),
-                                                 Mockito.any(SearchScope.class), Mockito.anyString()))
-                    .thenReturn(entry);
+            Mockito.when(mockedConnection.search(Mockito.anyString(),
+                                                 Mockito.anyString(),
+                                                 Mockito.any(SearchScope.class),
+                                                 Mockito.anyString())).thenReturn(entry);
         } catch (LdapException | IOException e) {
             Assert.fail(e.getMessage());
         }

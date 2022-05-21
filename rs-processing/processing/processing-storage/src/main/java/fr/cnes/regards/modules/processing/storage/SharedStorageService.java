@@ -25,26 +25,8 @@ import fr.cnes.regards.modules.processing.domain.engine.IOutputToInputMapper;
 import fr.cnes.regards.modules.processing.domain.exception.ProcessingExecutionException;
 import fr.cnes.regards.modules.processing.domain.exception.ProcessingOutputFileException;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
-import static fr.cnes.regards.modules.processing.exceptions.ProcessingException.mustWrap;
-import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.DELETE_OUTPUTFILE_ERROR;
-import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.STORE_OUTPUTFILE_ERROR;
-import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.errorWithContextMono;
-import static fr.cnes.regards.modules.processing.utils.TimeUtils.fromEpochMillisUTC;
-import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.file.FileVisitResult;
-import static java.nio.file.Files.copy;
-import static java.nio.file.Files.createDirectories;
-import static java.nio.file.Files.walkFileTree;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.time.OffsetDateTime;
-import java.util.UUID;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +37,24 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+import static fr.cnes.regards.modules.processing.exceptions.ProcessingException.mustWrap;
+import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.DELETE_OUTPUTFILE_ERROR;
+import static fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType.STORE_OUTPUTFILE_ERROR;
+import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.errorWithContextMono;
+import static fr.cnes.regards.modules.processing.utils.TimeUtils.fromEpochMillisUTC;
+import static fr.cnes.regards.modules.processing.utils.TimeUtils.nowUtc;
+import static java.nio.file.Files.*;
 
 /**
  * This class is the implementation for {@link ISharedStorageService}.
@@ -89,12 +89,16 @@ public class SharedStorageService implements ISharedStorageService {
 
                         @Override
                         public FileVisitResult visitFile(Path path, BasicFileAttributes basicFileAttributes)
-                                throws IOException {
-                            Mono<POutputFile> outputFile = storeOutputFile(ctx.getExec().getId(), path,
-                                                                           workdir.outputFolder().relativize(path)
-                                                                                   .normalize().toString(),
-                                                                           List.empty()).map(
-                                    out -> ioMapper.mapInputCorrelationIds(ctx, out));
+                            throws IOException {
+                            Mono<POutputFile> outputFile = storeOutputFile(ctx.getExec().getId(),
+                                                                           path,
+                                                                           workdir.outputFolder()
+                                                                                  .relativize(path)
+                                                                                  .normalize()
+                                                                                  .toString(),
+                                                                           List.empty()).map(out -> ioMapper.mapInputCorrelationIds(
+                                ctx,
+                                out));
                             sink.next(outputFile);
                             return FileVisitResult.CONTINUE;
                         }
@@ -116,26 +120,44 @@ public class SharedStorageService implements ISharedStorageService {
     }
 
     @Override
-    public Mono<POutputFile> storeOutputFile(UUID execId, Path outputFileOldPath, String outputFilename,
-            List<String> inputFileCorrelationIds) {
+    public Mono<POutputFile> storeOutputFile(UUID execId,
+                                             Path outputFileOldPath,
+                                             String outputFilename,
+                                             List<String> inputFileCorrelationIds) {
         return Mono.fromCallable(() -> {
-                    long size = outputFileOldPath.toFile().length();
-                    Path storedFilePath = storeFile(outputFileOldPath, execId);
-                    return createOutputFile(execId, storedFilePath, outputFilename, inputFileCorrelationIds, size);
-                }).onErrorResume(mustWrap(), errorWithContextMono(PExecution.class,
-                                                                  (exec, t) -> new StoreOutputfileException(exec, String.format(
-                                                                          "Failed to store %s in %s", outputFileOldPath,
-                                                                          getStorageExecPath(execId)), t)))
-                .subscribeOn(fileCopyScheduler);
+                       long size = outputFileOldPath.toFile().length();
+                       Path storedFilePath = storeFile(outputFileOldPath, execId);
+                       return createOutputFile(execId, storedFilePath, outputFilename, inputFileCorrelationIds, size);
+                   })
+                   .onErrorResume(mustWrap(),
+                                  errorWithContextMono(PExecution.class,
+                                                       (exec, t) -> new StoreOutputfileException(exec,
+                                                                                                 String.format(
+                                                                                                     "Failed to store %s in %s",
+                                                                                                     outputFileOldPath,
+                                                                                                     getStorageExecPath(
+                                                                                                         execId)),
+                                                                                                 t)))
+                   .subscribeOn(fileCopyScheduler);
     }
 
     @Override
-    public POutputFile createOutputFile(UUID execId, Path storedFilePath, String outputFilename,
-            List<String> inputFileCorrelationIds, long size) throws MalformedURLException {
-        return new POutputFile(UUID.randomUUID(), execId, outputFilename,
+    public POutputFile createOutputFile(UUID execId,
+                                        Path storedFilePath,
+                                        String outputFilename,
+                                        List<String> inputFileCorrelationIds,
+                                        long size) throws MalformedURLException {
+        return new POutputFile(UUID.randomUUID(),
+                               execId,
+                               outputFilename,
                                new POutputFile.Digest("SHA-256", storedFilePath.getFileName().toString()),
-                               storedFilePath.toUri().toURL(), size, inputFileCorrelationIds,
-                               creationTime(storedFilePath), false, false, false);
+                               storedFilePath.toUri().toURL(),
+                               size,
+                               inputFileCorrelationIds,
+                               creationTime(storedFilePath),
+                               false,
+                               false,
+                               false);
     }
 
     @Override

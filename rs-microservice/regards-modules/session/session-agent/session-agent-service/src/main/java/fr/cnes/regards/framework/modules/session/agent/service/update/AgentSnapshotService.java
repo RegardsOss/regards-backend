@@ -31,12 +31,6 @@ import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepState;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionStepEvent;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +40,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Service to create or update {@link SessionStep} with new {@link StepPropertyUpdateRequest}.
@@ -91,16 +92,23 @@ public class AgentSnapshotService {
         List<StepPropertyUpdateRequest> stepPropertyRequestsProcessed = new ArrayList<>();
         // iterate on all pages of stepPropertyUpdateRequest to create SessionSteps
         do {
-            pageToRequest = updateOnePageStepRequests(sessionStepsBySession, stepPropertyRequestsProcessed,
-                                                      snapshotProcess, freezeDate, pageToRequest);
+            pageToRequest = updateOnePageStepRequests(sessionStepsBySession,
+                                                      stepPropertyRequestsProcessed,
+                                                      snapshotProcess,
+                                                      freezeDate,
+                                                      pageToRequest);
             interrupted = Thread.currentThread().isInterrupted();
         } while (pageToRequest != null && !interrupted);
 
         // SAVE SESSION STEPS ONLY IF PROCESS WAS NOT INTERRUPTED
         int sessionUpdatedSize = 0;
         if (!interrupted) {
-            List<SessionStep> sessionStepsUpdated = sessionStepsBySession.entrySet().stream()
-                    .flatMap(session -> session.getValue().values().stream()).collect(Collectors.toList());
+            List<SessionStep> sessionStepsUpdated = sessionStepsBySession.entrySet()
+                                                                         .stream()
+                                                                         .flatMap(session -> session.getValue()
+                                                                                                    .values()
+                                                                                                    .stream())
+                                                                         .collect(Collectors.toList());
             if (!sessionStepsUpdated.isEmpty()) {
                 sessionUpdatedSize = sessionStepsUpdated.size();
                 // save session steps
@@ -111,8 +119,9 @@ public class AgentSnapshotService {
                 snapshotProcess.setLastUpdateDate(lastSnapshotDate);
                 this.snapshotProcessRepo.save(snapshotProcess);
                 // publish session steps events
-                this.publisher
-                        .publish(sessionStepsUpdated.stream().map(SessionStepEvent::new).collect(Collectors.toList()));
+                this.publisher.publish(sessionStepsUpdated.stream()
+                                                          .map(SessionStepEvent::new)
+                                                          .collect(Collectors.toList()));
             }
         } else {
             LOGGER.debug("{} thread has been interrupted", this.getClass().getName());
@@ -132,18 +141,25 @@ public class AgentSnapshotService {
      * @return nextPageable if present
      */
     private Pageable updateOnePageStepRequests(Map<String, Map<String, SessionStep>> sessionStepsBySession,
-            List<StepPropertyUpdateRequest> stepPropertyProcessed, SnapshotProcess snapshotProcess,
-            OffsetDateTime freezeDate, Pageable pageToRequest) {
+                                               List<StepPropertyUpdateRequest> stepPropertyProcessed,
+                                               SnapshotProcess snapshotProcess,
+                                               OffsetDateTime freezeDate,
+                                               Pageable pageToRequest) {
         String source = snapshotProcess.getSource();
         OffsetDateTime lastUpdated = snapshotProcess.getLastUpdateDate();
 
         // get step property requests to process
         Page<StepPropertyUpdateRequest> stepPropertyPage;
         if (lastUpdated != null) {
-            stepPropertyPage = this.stepPropertyRepo
-                    .findBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(source, lastUpdated, freezeDate, pageToRequest);
+            stepPropertyPage = this.stepPropertyRepo.findBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(
+                source,
+                lastUpdated,
+                freezeDate,
+                pageToRequest);
         } else {
-            stepPropertyPage = this.stepPropertyRepo.findBySourceAndRegistrationDateBefore(source, freezeDate, pageToRequest);
+            stepPropertyPage = this.stepPropertyRepo.findBySourceAndRegistrationDateBefore(source,
+                                                                                           freezeDate,
+                                                                                           pageToRequest);
         }
 
         // loop on every stepPropertyUpdateRequest to create or update SessionSteps
@@ -160,9 +176,12 @@ public class AgentSnapshotService {
             if (sessionStep == null) {
                 // if present in the database, initialize sessionStep else create sessionStep
                 sessionStep = this.sessionStepRepo.findBySourceAndSessionAndStepId(source, session, stepId)
-                        .orElse(new SessionStep(stepId, stepPropertyUpdateRequest.getSource(), session,
-                                                stepPropertyUpdateRequest.getStepPropertyInfo().getStepType(),
-                                                new StepState()));
+                                                  .orElse(new SessionStep(stepId,
+                                                                          stepPropertyUpdateRequest.getSource(),
+                                                                          session,
+                                                                          stepPropertyUpdateRequest.getStepPropertyInfo()
+                                                                                                   .getStepType(),
+                                                                          new StepState()));
             }
 
             // UPDATE SESSION STEP WITH STEP EVENT INFO
@@ -209,17 +228,23 @@ public class AgentSnapshotService {
         if (previousValue == null) {
             previousValue = "0";
         }
-        if (type.equals(StepPropertyEventTypeEnum.INC) && (NumberUtils.isCreatable(previousValue) && NumberUtils
-                .isCreatable(value))) {
+        if (type.equals(StepPropertyEventTypeEnum.INC) && (NumberUtils.isCreatable(previousValue)
+            && NumberUtils.isCreatable(value))) {
             // increment parameters (in/out, state, property)
-            calculateDifferences(sessionStep, stepPropertyUpdateRequestInfo, property,
-                                 NumberUtils.toLong(previousValue), NumberUtils.toLong(value));
+            calculateDifferences(sessionStep,
+                                 stepPropertyUpdateRequestInfo,
+                                 property,
+                                 NumberUtils.toLong(previousValue),
+                                 NumberUtils.toLong(value));
 
-        } else if (type.equals(StepPropertyEventTypeEnum.DEC) && (NumberUtils.isCreatable(previousValue) && NumberUtils
-                .isCreatable(value))) {
+        } else if (type.equals(StepPropertyEventTypeEnum.DEC) && (NumberUtils.isCreatable(previousValue)
+            && NumberUtils.isCreatable(value))) {
             // decrement parameters (in/out, state, property)
-            calculateDifferences(sessionStep, stepPropertyUpdateRequestInfo, property,
-                                 NumberUtils.toLong(previousValue), -NumberUtils.toLong(value));
+            calculateDifferences(sessionStep,
+                                 stepPropertyUpdateRequestInfo,
+                                 property,
+                                 NumberUtils.toLong(previousValue),
+                                 -NumberUtils.toLong(value));
 
         } else if (type.equals(StepPropertyEventTypeEnum.VALUE) && NumberUtils.isCreatable(value)) {
             // reset all values to 0 if value is a number
@@ -231,7 +256,7 @@ public class AgentSnapshotService {
 
         // UPDATE lastUpdateDate of SessionStep with the most recent date of stepPropertyUpdateRequest
         if (sessionStep.getLastUpdateDate() == null || sessionStep.getLastUpdateDate()
-                .isBefore(stepPropertyUpdateRequest.getCreationDate())) {
+                                                                  .isBefore(stepPropertyUpdateRequest.getCreationDate())) {
             sessionStep.setLastUpdateDate(stepPropertyUpdateRequest.getCreationDate());
         }
     }
@@ -246,8 +271,10 @@ public class AgentSnapshotService {
      * @param valueNum                      new value to update the corresponding property
      */
     private void calculateDifferences(SessionStep sessionStep,
-            StepPropertyUpdateRequestInfo stepPropertyUpdateRequestInfo, String property, long previousValue,
-            long valueNum) {
+                                      StepPropertyUpdateRequestInfo stepPropertyUpdateRequestInfo,
+                                      String property,
+                                      long previousValue,
+                                      long valueNum) {
         // set in/out
         if (stepPropertyUpdateRequestInfo.isInputRelated()) {
             sessionStep.setInputRelated(sessionStep.getInputRelated() + valueNum);

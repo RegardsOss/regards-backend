@@ -5,39 +5,57 @@ import io.vavr.control.Option;
 
 public abstract class ComposableClientException extends Exception {
 
-    private ComposableClientException() { super(); }
-    private ComposableClientException(Throwable cause) { super(cause); }
+    private ComposableClientException() {
+        super();
+    }
+
+    private ComposableClientException(Throwable cause) {
+        super(cause);
+    }
 
     public static final ComposableClientException EMPTY = new Empty();
 
     public static class Empty extends ComposableClientException {
-        Empty() { super(); }
+
+        Empty() {
+            super();
+        }
+
         @Override
-        public Seq<Throwable> causes() { return io.vavr.collection.List.of(); }
+        public Seq<Throwable> causes() {
+            return io.vavr.collection.List.of();
+        }
     }
 
     public static class Single extends ComposableClientException {
-        Single(Throwable cause) { super(cause == null ? new Exception() : cause); }
+
+        Single(Throwable cause) {
+            super(cause == null ? new Exception() : cause);
+        }
+
         @Override
         public Seq<Throwable> causes() {
             Throwable cause = getCause();
-            return (cause instanceof ComposableClientException)
-                ? ((ComposableClientException)cause).causes()
-                : io.vavr.collection.List.of(cause);
+            return (cause instanceof ComposableClientException) ?
+                ((ComposableClientException) cause).causes() :
+                io.vavr.collection.List.of(cause);
         }
     }
 
     public static class Multiple extends ComposableClientException {
+
         private final Seq<Throwable> causes;
+
         Multiple(Seq<Throwable> causes) {
             super();
             this.causes = Option.of(causes).getOrElse(io.vavr.collection.List.empty());
         }
+
         @Override
         public Seq<Throwable> causes() {
-            return causes.flatMap(cause -> (cause instanceof ComposableClientException)
-                ? ((ComposableClientException)cause).causes()
-                : io.vavr.collection.List.of(cause));
+            return causes.flatMap(cause -> (cause instanceof ComposableClientException) ?
+                ((ComposableClientException) cause).causes() :
+                io.vavr.collection.List.of(cause));
         }
     }
 
@@ -50,5 +68,7 @@ public abstract class ComposableClientException extends Exception {
         return new Multiple(this.causes().appendAll(other.causes()));
     }
 
-    public static ComposableClientException make(Throwable cause) { return new Single(cause); }
+    public static ComposableClientException make(Throwable cause) {
+        return new Single(cause);
+    }
 }

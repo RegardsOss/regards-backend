@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.sequencegen;
 
+import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.sequencegen.SequenceGeneratorIT.SequenceGeneratorTestConfiguration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -27,8 +28,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.sequencegen.SequenceGeneratorIT.SequenceGeneratorTestConfiguration;
 
 /**
  * @author Marc Sordi

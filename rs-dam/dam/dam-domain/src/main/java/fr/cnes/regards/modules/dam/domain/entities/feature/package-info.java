@@ -18,6 +18,7 @@
  */
 /**
  * Public entity features
+ *
  * @author Marc Sordi
  */
 package fr.cnes.regards.modules.dam.domain.entities.feature;

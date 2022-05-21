@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.ingest.dto.request;
  * Session selection mode
  *
  * @author Marc SORDI
- *
  */
 public enum SearchSelectionMode {
 

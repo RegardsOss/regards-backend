@@ -83,8 +83,8 @@ import org.springframework.test.context.transaction.BeforeTransaction;
  * @author Marc Sordi
  */
 @SuppressWarnings("javadoc")
-@ContextConfiguration(classes = { AbstractMultitenantServiceIT.ScanningConfiguration.class,
-        AmqpTestConfiguration.class })
+@ContextConfiguration(
+    classes = { AbstractMultitenantServiceIT.ScanningConfiguration.class, AmqpTestConfiguration.class })
 public abstract class AbstractMultitenantServiceIT extends AbstractDaoIT {
 
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -97,7 +97,7 @@ public abstract class AbstractMultitenantServiceIT extends AbstractDaoIT {
 
     @Rule
     public JUnitLogRule rule = new JUnitLogRule();
-    
+
     @After
     public void afterMultitenantServiceTest() {
         subscriber.purgeAllQueues(getDefaultTenant());
@@ -119,7 +119,7 @@ public abstract class AbstractMultitenantServiceIT extends AbstractDaoIT {
      * <b>Warning : subscribers may manipulate tenant so call this method before all others.</b>
      */
     protected void simulateApplicationReadyEvent() {
-        String tenant = runtimeTenantResolver.getTenant ();
+        String tenant = runtimeTenantResolver.getTenant();
         springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class), null, null));
         if (tenant != null) {
             runtimeTenantResolver.forceTenant(tenant);
@@ -131,7 +131,7 @@ public abstract class AbstractMultitenantServiceIT extends AbstractDaoIT {
      * <b>Warning : subscribers may manipulate tenant so call this method before all others.</b>
      */
     protected void simulateApplicationStartedEvent() {
-        String tenant = runtimeTenantResolver.getTenant ();
+        String tenant = runtimeTenantResolver.getTenant();
         springPublisher.publishEvent(new ApplicationStartedEvent(Mockito.mock(SpringApplication.class), null, null));
         if (tenant != null) {
             runtimeTenantResolver.forceTenant(tenant);

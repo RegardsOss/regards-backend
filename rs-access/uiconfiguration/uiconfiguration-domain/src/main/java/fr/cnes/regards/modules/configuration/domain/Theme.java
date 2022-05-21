@@ -18,32 +18,22 @@
  */
 package fr.cnes.regards.modules.configuration.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
-
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import org.hibernate.annotations.Type;
 
-import fr.cnes.regards.framework.module.manager.ConfigIgnore;
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 /**
- *
  * Class Theme
- *
+ * <p>
  * Entity to describe an IHM Theme configuration.
  *
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
 @Entity
-@Table(name = "t_ui_theme",
-                uniqueConstraints = @UniqueConstraint(name = "uk_ui_theme_name", columnNames = {"name"}))
+@Table(name = "t_ui_theme", uniqueConstraints = @UniqueConstraint(name = "uk_ui_theme_name", columnNames = { "name" }))
 public class Theme {
 
     /**
@@ -59,7 +49,7 @@ public class Theme {
      * Theme name. Use to instantiate the right module
      */
     @NotNull
-    @Column(name="name",nullable = false, length = 16)
+    @Column(name = "name", nullable = false, length = 16)
     private String name;
 
     /**
@@ -133,10 +123,9 @@ public class Theme {
             if (other.id != null) {
                 return false;
             }
-        } else
-            if (!id.equals(other.id)) {
-                return false;
-            }
+        } else if (!id.equals(other.id)) {
+            return false;
+        }
         return true;
     }
 

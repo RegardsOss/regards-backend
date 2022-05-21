@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.acquisition.service;
  * Acquisition properties
  *
  * @author Marc SORDI
- *
  */
 public final class AcquisitionProperties {
 

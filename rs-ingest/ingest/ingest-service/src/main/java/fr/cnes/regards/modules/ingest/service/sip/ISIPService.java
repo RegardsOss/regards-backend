@@ -18,13 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.sip;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Optional;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipIdAndVersion;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
@@ -32,9 +25,16 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
 import fr.cnes.regards.modules.ingest.service.request.IngestRequestService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Optional;
 
 /**
  * Service to handle access to {@link SIPEntity} entities.
+ *
  * @author Sébastien Binda
  * @author Léo Mieulet
  */
@@ -57,6 +57,7 @@ public interface ISIPService {
 
     /**
      * Delete the SIPEntity using its {@link SIPEntity#getSipId()}.
+     *
      * @param sipId
      * @param deleteIrrevocably
      */
@@ -74,6 +75,7 @@ public interface ISIPService {
 
     /**
      * Update the last update date of the {@link SIPEntity} and save it in DAO,
+     *
      * @param sip {@link SIPEntity} to update
      * @return {@link SIPEntity} updated
      */
@@ -96,7 +98,7 @@ public interface ISIPService {
 
     /**
      * Retrieve partial SIP avoiding mutating SIP state that may be mutated on other thread.<br/>
-     *
+     * <p>
      * With very fast processing and when 2 versions of a SIP are handled simultaneously :
      * <ol>
      *  <li>SIP V1 & AIP V1 send a STORAGE request to STORAGE after {@link IngestRequestService#handleIngestJobSucceed(fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest, SIPEntity, java.util.List)}</li>

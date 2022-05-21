@@ -44,10 +44,8 @@ import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@TestPropertySource(
-    properties = {
-        "spring.jpa.properties.hibernate.default_schema=chronos_keycloak_authentication_service_provider_tests",
-    })
+@TestPropertySource(properties = {
+    "spring.jpa.properties.hibernate.default_schema=chronos_keycloak_authentication_service_provider_tests", })
 public class ChronosKeycloakOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
 
     @Autowired
@@ -71,27 +69,29 @@ public class ChronosKeycloakOpenIdConnectPluginIT extends AbstractRegardsService
     @Ignore("Uncomment when testing manually.")
     public void chronos_keycloak_auth() throws EncryptionException, NotAvailablePluginConfigurationException {
         // Set all parameters
-        Set<IPluginParam> parameters = IPluginParam
-            .set(
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_ID, "regards"),
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET, encryptionService.encrypt("")),
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_REDIRECT_URI, "http://plop.com"),
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT, "https://chronos-valid-dev.cloud-espace.si.c-s.fr:8443/auth/realms/chronos/protocol/openid-connect/token"),
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT, "https://chronos-valid-dev.cloud-espace.si.c-s.fr:8443/auth/realms/chronos/protocol/openid-connect/userinfo"),
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_EMAIL_MAPPING, "sub"),
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_FIRSTNAME_MAPPING, "given_name"),
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_LASTNAME_MAPPING, "family_name"),
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT, (String) null)
-            );
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_ID,
+                                                                           "regards"),
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET,
+                                                                           encryptionService.encrypt("")),
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_REDIRECT_URI,
+                                                                           "http://plop.com"),
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT,
+                                                                           "https://chronos-valid-dev.cloud-espace.si.c-s.fr:8443/auth/realms/chronos/protocol/openid-connect/token"),
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT,
+                                                                           "https://chronos-valid-dev.cloud-espace.si.c-s.fr:8443/auth/realms/chronos/protocol/openid-connect/userinfo"),
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_EMAIL_MAPPING,
+                                                                           "sub"),
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_FIRSTNAME_MAPPING,
+                                                                           "given_name"),
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_LASTNAME_MAPPING,
+                                                                           "family_name"),
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT,
+                                                                           (String) null));
         PluginConfiguration conf = PluginConfiguration.build(OpenIdConnectPlugin.class, "", parameters);
         OpenIdConnectPlugin plugin = PluginUtils.getPlugin(conf, new HashMap<>());
 
-        Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> result =
-            plugin.authenticate(
-                new OpenIdAuthenticationParams(
-                    "281e2396-455f-4158-9a27-4c5348f19e4d.0d070daa-c132-4b76-b099-74c09ab5ea34.fd522e1f-281d-41c9-b0ad-911ea074365a"
-                )
-            );
+        Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> result = plugin.authenticate(new OpenIdAuthenticationParams(
+            "281e2396-455f-4158-9a27-4c5348f19e4d.0d070daa-c132-4b76-b099-74c09ab5ea34.fd522e1f-281d-41c9-b0ad-911ea074365a"));
 
         assertThat(result.isSuccess()).isTrue();
         Map<String, String> authenticationInfo = result.get().getAuthenticationInfo();

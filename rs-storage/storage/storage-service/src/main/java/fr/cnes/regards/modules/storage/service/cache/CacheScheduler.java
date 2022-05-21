@@ -18,16 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.cache;
 
-import java.util.Set;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -37,12 +28,18 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.storage.service.StorageJobsPriority;
 import fr.cnes.regards.modules.storage.service.cache.job.CacheVerificationJob;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import java.util.Set;
 
 /**
  * Enable cache clean action scheduler.
  *
  * @author Sébastien Binda
- *
  */
 @Component
 @Profile("!noscheduler")
@@ -73,7 +70,7 @@ public class CacheScheduler {
      * Default : scheduled to be run every hour.
      */
     @Scheduled(initialDelayString = "${regards.cache.cleanup.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-            fixedDelayString = "${regards.cache.cleanup.delay:" + DEFAULT_DELAY + "}")
+        fixedDelayString = "${regards.cache.cleanup.delay:" + DEFAULT_DELAY + "}")
     public void cleanCache() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
@@ -90,10 +87,16 @@ public class CacheScheduler {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             Set<JobParameter> parameters = Sets.newHashSet();
-            if (jobService.retrieveJobsCount(CacheVerificationJob.class.getName(), JobStatus.PENDING, JobStatus.RUNNING,
-                                             JobStatus.QUEUED, JobStatus.TO_BE_RUN) == 0) {
-                jobService.createAsQueued(new JobInfo(false, StorageJobsPriority.CACHE_VERIFICATION, parameters,
-                                                      CacheScheduler.class.getName(), CacheVerificationJob.class.getName()));
+            if (jobService.retrieveJobsCount(CacheVerificationJob.class.getName(),
+                                             JobStatus.PENDING,
+                                             JobStatus.RUNNING,
+                                             JobStatus.QUEUED,
+                                             JobStatus.TO_BE_RUN) == 0) {
+                jobService.createAsQueued(new JobInfo(false,
+                                                      StorageJobsPriority.CACHE_VERIFICATION,
+                                                      parameters,
+                                                      CacheScheduler.class.getName(),
+                                                      CacheVerificationJob.class.getName()));
             }
             runtimeTenantResolver.clearTenant();
         }

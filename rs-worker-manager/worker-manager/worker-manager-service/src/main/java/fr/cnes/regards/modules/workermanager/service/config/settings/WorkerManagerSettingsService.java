@@ -90,7 +90,7 @@ public class WorkerManagerSettingsService extends AbstractSettingService {
     }
 
     private void initialize(String tenant)
-            throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
+        throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
         runtimeTenantResolver.forceTenant(tenant);
         LOGGER.info("Initializing dynamic tenant settings for tenant {}", tenant);
         try {

@@ -54,38 +54,39 @@ public class ServiceProviderPublicController implements IResourceController<Serv
     @ResourceAccess(description = "Retrieves the list of service providers.", role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedModel<EntityModel<ServiceProviderPublicDto>>> getServiceProvidersPublic(
         @PageableDefault(sort = "name", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<ServiceProviderPublicDto> assembler
-    ) throws ModuleException {
+        PagedResourcesAssembler<ServiceProviderPublicDto> assembler) throws ModuleException {
         return serviceProviderCrud.findAll(pageable)
-            .map(page -> page.map(ServiceProviderPublicDto::new))
-            .map(page -> new ResponseEntity<>(toPagedResources(page, assembler), HttpStatus.OK))
-            .getOrElseThrow((Function<Throwable, ModuleException>) ModuleException::new);
+                                  .map(page -> page.map(ServiceProviderPublicDto::new))
+                                  .map(page -> new ResponseEntity<>(toPagedResources(page, assembler), HttpStatus.OK))
+                                  .getOrElseThrow((Function<Throwable, ModuleException>) ModuleException::new);
     }
 
     @ResponseBody
     @GetMapping(value = PATH_SERVICE_PROVIDER_PUBLIC_BY_NAME)
     @ResourceAccess(description = "Retrieve the service provider.", role = DefaultRole.PUBLIC)
-    public ResponseEntity<EntityModel<ServiceProviderPublicDto>> getServiceProvider(@PathVariable("name") String name)
-    {
+    public ResponseEntity<EntityModel<ServiceProviderPublicDto>> getServiceProvider(@PathVariable("name") String name) {
         //noinspection unchecked
         return serviceProviderCrud.findByName(name)
-            .map(ServiceProviderPublicDto::new)
-            .map(sp -> new ResponseEntity<>(toResource(sp), HttpStatus.OK))
-            .mapFailure(
-                Case($(instanceOf(NoSuchElementException.class)), ex -> new EntityNotFoundException(name, ServiceProvider.class)),
-                Case($(), (Function<Throwable, ModuleException>) ModuleException::new)
-            )
-            .get();
+                                  .map(ServiceProviderPublicDto::new)
+                                  .map(sp -> new ResponseEntity<>(toResource(sp), HttpStatus.OK))
+                                  .mapFailure(Case($(instanceOf(NoSuchElementException.class)),
+                                                   ex -> new EntityNotFoundException(name, ServiceProvider.class)),
+                                              Case($(), (Function<Throwable, ModuleException>) ModuleException::new))
+                                  .get();
     }
 
     @Override
-    public EntityModel<ServiceProviderPublicDto> toResource(final ServiceProviderPublicDto element, final Object... extras) {
+    public EntityModel<ServiceProviderPublicDto> toResource(final ServiceProviderPublicDto element,
+                                                            final Object... extras) {
         EntityModel<ServiceProviderPublicDto> resource = resourceService.toResource(element);
         if ((element != null)) {
             resource = resourceService.toResource(element);
-            resourceService.addLink(resource, this.getClass(), "getServiceProvidersPublic", LinkRels.LIST,
-                MethodParamFactory.build(Pageable.class),
-                MethodParamFactory.build(PagedResourcesAssembler.class));
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "getServiceProvidersPublic",
+                                    LinkRels.LIST,
+                                    MethodParamFactory.build(Pageable.class),
+                                    MethodParamFactory.build(PagedResourcesAssembler.class));
         }
         return resource;
     }

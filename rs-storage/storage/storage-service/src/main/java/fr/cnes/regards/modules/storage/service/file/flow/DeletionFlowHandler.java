@@ -42,7 +42,7 @@ import java.util.List;
  */
 @Component
 public class DeletionFlowHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<DeletionFlowItem> {
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<DeletionFlowItem> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeletionFlowHandler.class);
 
@@ -65,7 +65,8 @@ public class DeletionFlowHandler
         LOGGER.debug("[DELETION FLOW HANDLER] Bulk saving {} DeleteFileRefFlowItem...", messages.size());
         long start = System.currentTimeMillis();
         fileDelReqService.handle(messages);
-        LOGGER.debug("[DELETION FLOW HANDLER] {} DeleteFileRefFlowItem handled in {} ms", messages.size(),
+        LOGGER.debug("[DELETION FLOW HANDLER] {} DeleteFileRefFlowItem handled in {} ms",
+                     messages.size(),
                      System.currentTimeMillis() - start);
     }
 

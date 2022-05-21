@@ -14,7 +14,6 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.storage.domain.StorageSetting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.annotation.Scope;
@@ -77,7 +76,7 @@ public class StorageSettingService extends AbstractSettingService {
     }
 
     private void initialize(String tenant)
-            throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
+        throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
         runtimeTenantResolver.forceTenant(tenant);
         LOGGER.info("Initializing dynamic tenant settings for tenant {}", tenant);
         try {

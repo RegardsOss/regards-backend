@@ -18,8 +18,7 @@
  */
 package fr.cnes.regards.framework.microservice.rest;
 
-import java.io.IOException;
-
+import fr.cnes.regards.framework.microservice.manager.IApplicationManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +29,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.microservice.manager.IApplicationManager;
+import java.io.IOException;
 
 /**
  * @author svissier

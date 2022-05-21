@@ -18,18 +18,16 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service.workflow.listener;
 
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.service.workflow.events.OnRefuseAccountEvent;
 import fr.cnes.regards.modules.accessrights.instance.service.workflow.listeners.SendAccountRefusedEmailListener;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 /**
- *
  * @author Xavier-Alexandre Brochard
  */
 public class SendAccountRefusedEmailListenerTest {

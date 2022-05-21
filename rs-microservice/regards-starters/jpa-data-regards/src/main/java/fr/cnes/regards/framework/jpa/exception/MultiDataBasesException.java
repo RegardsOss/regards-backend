@@ -20,22 +20,25 @@ package fr.cnes.regards.framework.jpa.exception;
 
 /**
  * Class MultiDataBasesException
- *
+ * <p>
  * Exception raised when there is an error in the multitenancy databases access
+ *
  * @author CS
  */
 public class MultiDataBasesException extends Exception {
 
     /**
      * serialVersionUID field.
+     *
      * @author CS
      */
     private static final long serialVersionUID = 7382111289929689769L;
 
     /**
      * Constructor
+     *
      * @param pMessage message
-     * @param pCause cause
+     * @param pCause   cause
      */
     public MultiDataBasesException(final String pMessage, final Throwable pCause) {
         super(pMessage, pCause);
@@ -43,6 +46,7 @@ public class MultiDataBasesException extends Exception {
 
     /**
      * Constructor
+     *
      * @param pMessage message
      */
     public MultiDataBasesException(final String pMessage) {
@@ -51,6 +55,7 @@ public class MultiDataBasesException extends Exception {
 
     /**
      * Constructor
+     *
      * @param pCause cause
      */
     public MultiDataBasesException(final Throwable pCause) {

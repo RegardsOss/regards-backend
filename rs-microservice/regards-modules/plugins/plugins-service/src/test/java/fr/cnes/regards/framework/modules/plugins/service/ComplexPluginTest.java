@@ -18,18 +18,6 @@
  */
 package fr.cnes.regards.framework.modules.plugins.service;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.encryption.BlowfishEncryptionService;
 import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
@@ -42,9 +30,21 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterTransformer;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Tests for plugin instanciation with complex parameter types
+ *
  * @author sbinda
  */
 public class ComplexPluginTest {
@@ -69,8 +69,8 @@ public class ComplexPluginTest {
         // create a mock repository
         pluginConfRepositoryMocked = Mockito.mock(IPluginConfigurationRepository.class);
         BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
-        blowfishEncryptionService
-                .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "12345678"));
+        blowfishEncryptionService.init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"),
+                                                            "12345678"));
         pluginServiceMocked = new PluginService(pluginConfRepositoryMocked,
                                                 publisherMocked,
                                                 runtimeTenantResolver,
@@ -94,9 +94,9 @@ public class ComplexPluginTest {
         List<PluginConfiguration> pluginConfs = new ArrayList<>();
         PluginConfiguration aPluginConfiguration = new PluginConfiguration("a configuration from PluginServiceUtility",
                                                                            IPluginParam.set(IPluginParam.build(
-                                                                                   TestPlugin.FIELD_NAME_POJO_PARAM,
-                                                                                   PluginParameterTransformer
-                                                                                           .toJson(pojo)).dynamic()),
+                                                                                                            TestPlugin.FIELD_NAME_POJO_PARAM,
+                                                                                                            PluginParameterTransformer.toJson(pojo))
+                                                                                                        .dynamic()),
                                                                            0,
                                                                            pluginMetaData.getPluginId());
 
@@ -106,11 +106,11 @@ public class ComplexPluginTest {
         pluginConfs.add(aPluginConfiguration);
 
         Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc("complexPlugin"))
-                .thenReturn(pluginConfs);
+               .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
-                .thenReturn(aPluginConfiguration);
+               .thenReturn(aPluginConfiguration);
         Mockito.when(pluginConfRepositoryMocked.existsByBusinessId(aPluginConfiguration.getBusinessId()))
-                .thenReturn(true);
+               .thenReturn(true);
 
         ITestPlugin plugin = pluginServiceMocked.getPlugin(aPluginConfiguration.getBusinessId());
 

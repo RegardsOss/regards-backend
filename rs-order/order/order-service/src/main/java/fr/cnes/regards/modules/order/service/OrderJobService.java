@@ -48,6 +48,7 @@ import java.util.UUID;
 
 /**
  * Order jobs specific behavior, like priority computation or job enqueue user business rules management
+ *
  * @author oroussel
  */
 @Service
@@ -72,8 +73,11 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
 
     private IRuntimeTenantResolver tenantResolver;
 
-    public OrderJobService(IJobInfoRepository jobInfoRepository, IFilesTasksRepository filesTasksRepository,
-                           ISubscriber subscriber, IOrderJobService orderJobService, IRuntimeTenantResolver tenantResolver) {
+    public OrderJobService(IJobInfoRepository jobInfoRepository,
+                           IFilesTasksRepository filesTasksRepository,
+                           ISubscriber subscriber,
+                           IOrderJobService orderJobService,
+                           IRuntimeTenantResolver tenantResolver) {
         this.jobInfoRepository = jobInfoRepository;
         this.filesTasksRepository = filesTasksRepository;
         this.subscriber = subscriber;
@@ -128,7 +132,9 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
         // defined one
         if (currentJobsCount + finishedJobsWithFilesToBeDownloadedCount < maxJobsPerUser) {
             int count = maxJobsPerUser - currentJobsCount - finishedJobsWithFilesToBeDownloadedCount;
-            List<JobInfo> jobInfos = jobInfoRepository.findTopUserPendingJobs(user, StorageFilesJob.class.getName(), count);
+            List<JobInfo> jobInfos = jobInfoRepository.findTopUserPendingJobs(user,
+                                                                              StorageFilesJob.class.getName(),
+                                                                              count);
             if (!jobInfos.isEmpty()) {
                 for (JobInfo jobInfo : jobInfos) {
                     jobInfo.updateStatus(JobStatus.QUEUED);

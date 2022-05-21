@@ -18,20 +18,20 @@
  */
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.atom.modules.gml.impl;
 
-import java.io.Serializable;
-import java.time.OffsetDateTime;
-
 import com.google.gson.Gson;
 import com.rometools.modules.georss.GeoRSSModule;
 import com.rometools.rome.feed.CopyFrom;
-
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.atom.modules.gml.GmlTimeModule;
+
+import java.io.Serializable;
+import java.time.OffsetDateTime;
 
 /**
  * Module to handle TIME & GEO opensearch parameters into ATOM format responses.
  * com.rometools.rome module implementation to handle specifics GML Time&Geo attributes.
- * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
+ *
  * @author Sébastien Binda
+ * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  */
 public class GmlTimeModuleImpl extends GeoRSSModule implements GmlTimeModule, Serializable {
 

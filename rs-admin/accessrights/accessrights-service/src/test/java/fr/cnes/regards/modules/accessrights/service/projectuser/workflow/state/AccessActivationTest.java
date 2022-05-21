@@ -33,7 +33,7 @@ public class AccessActivationTest extends UserAccessUpdateTest {
     public void fail_is_not_inactive() throws Exception {
         ProjectUser givenUser = UserBuilder.aUser().authorized().build();
         Assertions.assertThatExceptionOfType(EntityTransitionForbiddenException.class)
-            .isThrownBy(() -> userWorkflowManager.activeAccess(givenUser));
+                  .isThrownBy(() -> userWorkflowManager.activeAccess(givenUser));
     }
 
     @Test

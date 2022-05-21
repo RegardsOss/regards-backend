@@ -18,16 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.util.Map;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -42,11 +32,20 @@ import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.AIPUpdateRequestService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * This job creates {@link AbstractAIPUpdateTask} task to update. It scans AIP and create for each modification a task. <br>
- *
- *     This job cannot be interrupted as it is a creator for other jobs. It basically does nothing.
+ * <p>
+ * This job cannot be interrupted as it is a creator for other jobs. It basically does nothing.
  *
  * @author Léo Mieulet
  */
@@ -78,7 +77,7 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         // Retrieve update request id
         Long requestId = getValue(parameters, REQUEST_ID);
         // Retrieve the request
@@ -116,7 +115,8 @@ public class AIPUpdatesCreatorJob extends AbstractJob<Void> {
         // Delete the request
         requestService.deleteRequest(request);
 
-        logger.debug("[AIP UPDATE JOB] {} AIPUpdateRequest(s) scheduled in {}ms", nbScheduled,
+        logger.debug("[AIP UPDATE JOB] {} AIPUpdateRequest(s) scheduled in {}ms",
+                     nbScheduled,
                      System.currentTimeMillis() - start);
     }
 

@@ -47,11 +47,9 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- *
  * Test storage event handling
  *
  * @author Marc SORDI
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_store_flow_handler_it",
     "regards.amqp.enabled=true", "regards.scheduler.pool.size=4", "eureka.client.enabled=false" })

@@ -18,42 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.domain;
 
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
-import javax.persistence.NamedSubgraph;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
-
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
@@ -63,27 +27,36 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 import fr.cnes.regards.modules.acquisition.domain.converters.SipStateConverter;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- *
  * @author Christophe Mertz
- *
  */
 @Entity
 @Table(name = "t_acquisition_product",
-        indexes = { @Index(name = "idx_acq_processing_chain", columnList = "processing_chain_id"),
-                @Index(name = "idx_acq_product_name", columnList = "product_name"),
-                @Index(name = "idx_acq_product_sip_state", columnList = "sip_state"),
-                @Index(name = "idx_acq_product_state", columnList = "product_state") },
-        uniqueConstraints = { @UniqueConstraint(name = "uk_acq_product_ipId", columnNames = "ip_id"),
-                @UniqueConstraint(name = "uk_acq_product_name", columnNames = "product_name") })
+    indexes = { @Index(name = "idx_acq_processing_chain", columnList = "processing_chain_id"),
+        @Index(name = "idx_acq_product_name", columnList = "product_name"),
+        @Index(name = "idx_acq_product_sip_state", columnList = "sip_state"),
+        @Index(name = "idx_acq_product_state", columnList = "product_state") },
+    uniqueConstraints = { @UniqueConstraint(name = "uk_acq_product_ipId", columnNames = "ip_id"),
+        @UniqueConstraint(name = "uk_acq_product_name", columnNames = "product_name") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-@NamedEntityGraph(name = "graph.product.complete",
-        attributeNodes = { @NamedAttributeNode(value = "fileList"),
-                @NamedAttributeNode(value = "lastSIPGenerationJobInfo", subgraph = "graph.product.jobs"),
-                @NamedAttributeNode(value = "lastPostProductionJobInfo", subgraph = "graph.product.jobs") },
-        subgraphs = { @NamedSubgraph(name = "graph.product.jobs",
-                attributeNodes = { @NamedAttributeNode(value = "parameters") }) })
+@NamedEntityGraph(name = "graph.product.complete", attributeNodes = { @NamedAttributeNode(value = "fileList"),
+    @NamedAttributeNode(value = "lastSIPGenerationJobInfo", subgraph = "graph.product.jobs"),
+    @NamedAttributeNode(value = "lastPostProductionJobInfo", subgraph = "graph.product.jobs") }, subgraphs = {
+    @NamedSubgraph(name = "graph.product.jobs", attributeNodes = { @NamedAttributeNode(value = "parameters") }) })
 public class Product {
 
     private static final String MISSING_SESSION_ERROR = "Session is required";
@@ -143,7 +116,7 @@ public class Product {
     @NotNull
     @ManyToOne
     @JoinColumn(name = "processing_chain_id", foreignKey = @ForeignKey(name = "fk_processing_chain_id"),
-            updatable = false)
+        updatable = false)
     private AcquisitionProcessingChain processingChain;
 
     @Column(columnDefinition = "jsonb", name = "json_sip")
@@ -225,11 +198,13 @@ public class Product {
 
     /**
      * Filter acquisition files to only retrieve active ones (useful for SIP generation)
+     *
      * @return active {@link AcquisitionFile} (i.e. in {@link AcquisitionFileState#ACQUIRED} state)
      */
     public Set<AcquisitionFile> getActiveAcquisitionFiles() {
-        return fileList.stream().filter(af -> AcquisitionFileState.ACQUIRED.equals(af.getState()))
-                .collect(Collectors.toSet());
+        return fileList.stream()
+                       .filter(af -> AcquisitionFileState.ACQUIRED.equals(af.getState()))
+                       .collect(Collectors.toSet());
     }
 
     public void removeAcquisitionFile(AcquisitionFile acqFile) {

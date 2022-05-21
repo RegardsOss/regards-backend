@@ -24,6 +24,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
  * JPA repository to access {@link ScanDirectoryInfo}
+ *
  * @author Iliana Ghazali
  */
 

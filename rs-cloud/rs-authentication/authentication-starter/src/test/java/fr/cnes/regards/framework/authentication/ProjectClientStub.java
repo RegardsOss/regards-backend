@@ -43,7 +43,8 @@ public class ProjectClientStub implements IProjectsClient {
     @Override
     public ResponseEntity<PagedModel<EntityModel<Project>>> retrieveProjectList(final int pPage, final int pSize) {
         final PagedModel<EntityModel<Project>> page = PagedModel.of(HateoasUtils.wrapList(projects),
-                new PageMetadata(pSize, pPage, 1), new ArrayList<>());
+                                                                    new PageMetadata(pSize, pPage, 1),
+                                                                    new ArrayList<>());
         return new ResponseEntity<>(page, HttpStatus.OK);
     }
 
@@ -73,7 +74,7 @@ public class ProjectClientStub implements IProjectsClient {
 
     @Override
     public ResponseEntity<EntityModel<Project>> updateProject(final String pProjectName,
-            final Project pProjectToUpdate) {
+                                                              final Project pProjectToUpdate) {
         Project result = null;
         for (final Project project : projects) {
             if (project.getName().equals(pProjectName)) {

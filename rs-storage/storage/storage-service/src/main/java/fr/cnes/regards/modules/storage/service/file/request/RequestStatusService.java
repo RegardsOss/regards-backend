@@ -57,13 +57,13 @@ import java.util.UUID;
  * A {@link FileCacheRequest} can always be performed. Thoses requests are never delayed.
  *
  * @author Sébastien Binda
- *
  */
 @Service
 @MultitenantTransactional
 public class RequestStatusService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RequestStatusService.class);
+
     public static final String TEMPLATE_REQUEST_HAS_BEEN_MANUALLY_CANCELED_N_TIMES = "Request has been manually canceled. %s";
 
     @Autowired
@@ -87,7 +87,7 @@ public class RequestStatusService {
     /**
      * Compute {@link FileRequestStatus} for new {@link FileStorageRequest}
      *
-     * @param request request to compute status for
+     * @param request  request to compute status for
      * @param oDefault default status or empty
      * @return {@link FileRequestStatus}
      */
@@ -96,15 +96,15 @@ public class RequestStatusService {
         String storage = request.getStorage();
         String checksum = request.getMetaInfo().getChecksum();
         // Delayed storage request if a deletion requests already exists
-        if (deletionReqRepo
-                .existsByStorageAndFileReferenceMetaInfoChecksumAndStatusIn(storage, checksum,
-                                                                            FileRequestStatus.RUNNING_STATUS)) {
+        if (deletionReqRepo.existsByStorageAndFileReferenceMetaInfoChecksumAndStatusIn(storage,
+                                                                                       checksum,
+                                                                                       FileRequestStatus.RUNNING_STATUS)) {
             status = FileRequestStatus.DELAYED;
         }
         // Delay storage request if an other storage request is already running for the same file to store
-        else if (storageReqRepo
-                .existsByStorageAndMetaInfoChecksumAndStatusIn(storage, checksum,
-                                                               FileRequestStatus.RUNNING_STATUS)) {
+        else if (storageReqRepo.existsByStorageAndMetaInfoChecksumAndStatusIn(storage,
+                                                                              checksum,
+                                                                              FileRequestStatus.RUNNING_STATUS)) {
             status = FileRequestStatus.DELAYED;
         }
         return status;
@@ -123,7 +123,7 @@ public class RequestStatusService {
     /**
      * Compute {@link FileRequestStatus} for new {@link FileDeletionRequest}
      *
-     * @param request request to compute status for
+     * @param request  request to compute status for
      * @param oDefault default status or empty
      * @return {@link FileRequestStatus}
      */
@@ -132,9 +132,10 @@ public class RequestStatusService {
         String storage = request.getStorage();
         String checksum = request.getFileReference().getMetaInfo().getChecksum();
         // Delayed deletion request if a storage or copy request already exists
-        if (storageReqRepo.existsByStorageAndMetaInfoChecksumAndStatusIn(storage, checksum,
+        if (storageReqRepo.existsByStorageAndMetaInfoChecksumAndStatusIn(storage,
+                                                                         checksum,
                                                                          FileRequestStatus.RUNNING_STATUS)
-                || copyReqRepo.existsByMetaInfoChecksumAndStatusIn(checksum, FileRequestStatus.RUNNING_STATUS)) {
+            || copyReqRepo.existsByMetaInfoChecksumAndStatusIn(checksum, FileRequestStatus.RUNNING_STATUS)) {
             status = FileRequestStatus.DELAYED;
         }
         return status;
@@ -143,7 +144,7 @@ public class RequestStatusService {
     /**
      * Compute {@link FileRequestStatus} for new {@link FileCopyRequest}
      *
-     * @param request request to compute status for
+     * @param request  request to compute status for
      * @param oDefault default status or empty
      * @return {@link FileRequestStatus}
      */
@@ -226,9 +227,9 @@ public class RequestStatusService {
             if (r.getJobId() != null) {
                 jobService.stopJob(UUID.fromString(r.getJobId()));
             }
-            storageReqRepo.updateError(
-                                       FileRequestStatus.ERROR, String.format(TEMPLATE_REQUEST_HAS_BEEN_MANUALLY_CANCELED_N_TIMES,
-                                                                              OffsetDateTime.now()),
+            storageReqRepo.updateError(FileRequestStatus.ERROR,
+                                       String.format(TEMPLATE_REQUEST_HAS_BEEN_MANUALLY_CANCELED_N_TIMES,
+                                                     OffsetDateTime.now()),
                                        r.getId());
         }
         reqGrpService.deleteRequestGroups(FileRequestType.STORAGE);
@@ -242,9 +243,9 @@ public class RequestStatusService {
             if (r.getJobId() != null) {
                 jobService.stopJob(UUID.fromString(r.getJobId()));
             }
-            deletionReqRepo.updateError(
-                                        FileRequestStatus.ERROR, String.format(TEMPLATE_REQUEST_HAS_BEEN_MANUALLY_CANCELED_N_TIMES,
-                                                                               OffsetDateTime.now()),
+            deletionReqRepo.updateError(FileRequestStatus.ERROR,
+                                        String.format(TEMPLATE_REQUEST_HAS_BEEN_MANUALLY_CANCELED_N_TIMES,
+                                                      OffsetDateTime.now()),
                                         r.getId());
         }
         reqGrpService.deleteRequestGroups(FileRequestType.DELETION);
@@ -254,8 +255,9 @@ public class RequestStatusService {
     public void stopCopyRequests() {
         Page<FileCopyRequest> pendings = copyReqRepo.findByStatus(FileRequestStatus.PENDING, PageRequest.of(0, 10_000));
         for (FileCopyRequest r : pendings) {
-            copyReqRepo.updateError(FileRequestStatus.ERROR, String.format(TEMPLATE_REQUEST_HAS_BEEN_MANUALLY_CANCELED_N_TIMES,
-                                                                           OffsetDateTime.now()),
+            copyReqRepo.updateError(FileRequestStatus.ERROR,
+                                    String.format(TEMPLATE_REQUEST_HAS_BEEN_MANUALLY_CANCELED_N_TIMES,
+                                                  OffsetDateTime.now()),
                                     r.getId());
         }
         reqGrpService.deleteRequestGroups(FileRequestType.COPY);
@@ -269,9 +271,9 @@ public class RequestStatusService {
             if (r.getJobId() != null) {
                 jobService.stopJob(UUID.fromString(r.getJobId()));
             }
-            cacheReqRepo.updateError(
-                                     FileRequestStatus.ERROR, String.format(TEMPLATE_REQUEST_HAS_BEEN_MANUALLY_CANCELED_N_TIMES,
-                                                                            OffsetDateTime.now()),
+            cacheReqRepo.updateError(FileRequestStatus.ERROR,
+                                     String.format(TEMPLATE_REQUEST_HAS_BEEN_MANUALLY_CANCELED_N_TIMES,
+                                                   OffsetDateTime.now()),
                                      r.getId());
         }
         reqGrpService.deleteRequestGroups(FileRequestType.AVAILABILITY);

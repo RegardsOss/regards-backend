@@ -25,6 +25,7 @@ import java.time.LocalDate;
 
 /**
  * This {@link AttributeConverter} allows to convert a LocalDate to persist with JPA.
+ *
  * @author Christophe Mertz
  */
 @Converter(autoApply = true)

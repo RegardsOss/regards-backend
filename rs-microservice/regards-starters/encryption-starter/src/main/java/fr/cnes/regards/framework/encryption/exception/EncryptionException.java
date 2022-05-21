@@ -4,6 +4,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
  * Wrapper for exceptions that could occur during encryption/decryption process
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 @SuppressWarnings("serial")

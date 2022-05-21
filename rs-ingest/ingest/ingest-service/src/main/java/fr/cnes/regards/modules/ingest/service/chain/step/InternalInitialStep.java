@@ -18,12 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.step;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
@@ -36,12 +30,16 @@ import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.util.Optional;
 
 /**
  * Initialize {@link SIPEntity} from specified {@link IngestRequest}
  *
  * @author Marc SORDI
- *
  */
 public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEntity> {
 
@@ -70,16 +68,14 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
             checksum = sipService.calculateChecksum(sip);
         } catch (NoSuchAlgorithmException | IOException e) {
             throw throwProcessingStepException(String.format("Cannot compute checksum for SIP identified by %s",
-                                                             sip.getId()),
-                                               e);
+                                                             sip.getId()), e);
         }
 
         // Is SIP already ingested?
         if (sipService.isAlreadyIngested(checksum)) {
             throw throwProcessingStepException(String.format(
-                                                             "The SIP \"%s\" already exists and there is no difference "
-                                                                     + "between this one and the stored one.",
-                                                             sip.getId()));
+                "The SIP \"%s\" already exists and there is no difference " + "between this one and the stored one.",
+                sip.getId()));
         }
 
         // Manage version
@@ -91,18 +87,20 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
                 // In this case, lets break generation, only if it is not the first one, with proper message
                 if (version != 1) {
                     ingestRequestService.ignore(request);
-                    throw new ProcessingStepException(
-                            String.format("Sip %s is not generated because this is not the first version "
-                                    + "and versioning mode ask to ignore this one.", sip.getId()));
+                    throw new ProcessingStepException(String.format(
+                        "Sip %s is not generated because this is not the first version "
+                            + "and versioning mode ask to ignore this one.",
+                        sip.getId()));
                 }
                 break;
             case MANUAL:
                 // In this case, lets break generation, only if it is not the first one, with proper message
                 if (version != 1) {
                     ingestRequestService.waitVersioningMode(request);
-                    throw new ProcessingStepException(
-                            String.format("Sip %s is not generated because this is not the first version "
-                                    + "and versioning mode ask for manual decision.", sip.getId()));
+                    throw new ProcessingStepException(String.format(
+                        "Sip %s is not generated because this is not the first version "
+                            + "and versioning mode ask for manual decision.",
+                        sip.getId()));
                 }
                 break;
             case INC_VERSION:
@@ -110,26 +108,31 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
                 // in these cases, there is nothing to do right now
                 break;
             default:
-                throw throwProcessingStepException(String
-                        .format("This versioning mode is not recognized by the system: %s", versioningMode));
+                throw throwProcessingStepException(String.format(
+                    "This versioning mode is not recognized by the system: %s",
+                    versioningMode));
         }
 
-        SIPEntity entity = SIPEntity.build(runtimeTenantResolver.getTenant(), request.getMetadata(), sip, version,
+        SIPEntity entity = SIPEntity.build(runtimeTenantResolver.getTenant(),
+                                           request.getMetadata(),
+                                           sip,
+                                           version,
                                            SIPState.INGESTED);
         entity.setChecksum(checksum);
         return entity;
     }
 
     @Override
-    protected void doAfterError(IngestRequest request, Optional<Exception> e)  {
-        if ((request.getState() != InternalRequestState.WAITING_VERSIONING_MODE)
-                && (request.getState() != InternalRequestState.IGNORED)) {
+    protected void doAfterError(IngestRequest request, Optional<Exception> e) {
+        if ((request.getState() != InternalRequestState.WAITING_VERSIONING_MODE) && (request.getState()
+            != InternalRequestState.IGNORED)) {
             String error = "unknown cause";
             if (e.isPresent()) {
                 error = e.get().getMessage();
             }
             handleRequestError(String.format("Internal SIP creation from external SIP \"%s\" fails. Cause : %s",
-                                             request.getSip().getId(), error));
+                                             request.getSip().getId(),
+                                             error));
         }
     }
 

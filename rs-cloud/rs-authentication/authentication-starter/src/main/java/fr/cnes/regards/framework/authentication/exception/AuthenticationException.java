@@ -18,12 +18,12 @@
  */
 package fr.cnes.regards.framework.authentication.exception;
 
-import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
-
 import fr.cnes.regards.framework.authentication.internal.AuthenticationStatus;
+import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 
 /**
  * Class AuthenticationException
+ *
  * @author Sébastien Binda
  */
 @SuppressWarnings("serial")

@@ -80,7 +80,7 @@ import java.util.concurrent.TimeUnit;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { CrawlerConfiguration.class })
-@ActiveProfiles({"noscheduler","test"}) // Disable scheduling, this will activate IngesterService during all tests
+@ActiveProfiles({ "noscheduler", "test" }) // Disable scheduling, this will activate IngesterService during all tests
 @TestPropertySource(locations = { "classpath:test.properties" })
 @DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
 public abstract class AbstractIndexerServiceDataSourceIT {
@@ -253,39 +253,46 @@ public abstract class AbstractIndexerServiceDataSourceIT {
         fragRepo.deleteAll();
     }
 
-    protected void waitComputation(final UniformResourceName entityId, final String propertyName, long timeout, TimeUnit unit,String tenant) {
-        Awaitility.await().atMost(timeout, unit)
-                .until(() -> {
-                    runtimeTenantResolver.forceTenant(tenant);
-                    Dataset entity = searchService.get(entityId);
-                    return entity != null
-                        && entity.getProperties() != null
-                        && !entity.getProperties().isEmpty()
-                        && entity.getProperties().stream().filter(p -> p.getName().equals(propertyName)).findAny().isPresent();
-                });
+    protected void waitComputation(final UniformResourceName entityId,
+                                   final String propertyName,
+                                   long timeout,
+                                   TimeUnit unit,
+                                   String tenant) {
+        Awaitility.await().atMost(timeout, unit).until(() -> {
+            runtimeTenantResolver.forceTenant(tenant);
+            Dataset entity = searchService.get(entityId);
+            return entity != null && entity.getProperties() != null && !entity.getProperties().isEmpty()
+                && entity.getProperties().stream().filter(p -> p.getName().equals(propertyName)).findAny().isPresent();
+        });
     }
 
     private PluginConfiguration getPostgresDataSource() {
-        Set<IPluginParam> param = IPluginParam
-                .set(IPluginParam.build(TestDataSourcePlugin.MODEL, PluginParameterTransformer.toJson(dataModel)),
-                        IPluginParam.build(DataSourcePluginConstants.MODEL_NAME_PARAM, dataModel.getName()));
+        Set<IPluginParam> param = IPluginParam.set(IPluginParam.build(TestDataSourcePlugin.MODEL,
+                                                                      PluginParameterTransformer.toJson(dataModel)),
+                                                   IPluginParam.build(DataSourcePluginConstants.MODEL_NAME_PARAM,
+                                                                      dataModel.getName()));
         return PluginConfiguration.build(TestDataSourcePlugin.class, null, param);
     }
 
     /**
      * Import model definition file from resources directory
+     *
      * @param pFilename filename
      * @throws ModuleException if error occurs
      */
     private void importModel(final String pFilename) throws ModuleException {
         try {
-            InputStream input = Files
-                    .newInputStream(Paths.get("src", "test", "resources", "validation", "models", pFilename));
+            InputStream input = Files.newInputStream(Paths.get("src",
+                                                               "test",
+                                                               "resources",
+                                                               "validation",
+                                                               "models",
+                                                               pFilename));
             modelService.importModel(input);
 
             List<AttributeModel> attributes = attributeModelService.getAttributes(null, null, null);
             gsonAttributeFactory.refresh(tenant, attributes);
-            jsoniterAttributeFactoryHandler.refresh(tenant,attributes);
+            jsoniterAttributeFactoryHandler.refresh(tenant, attributes);
         } catch (final IOException e) {
             String errorMessage = "Cannot import " + pFilename;
             throw new AssertionError(errorMessage);

@@ -20,16 +20,16 @@
 
 package fr.cnes.regards.modules.ingest.service.notification;
 
-import java.util.Set;
-
+import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
+import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
-import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
+import java.util.Set;
 
 /**
  * Centralize log for aip notification life cycle events
+ *
  * @author Iliana Ghazali
  */
 
@@ -59,7 +59,8 @@ public class AIPNotificationLogger {
 
     private static final String HANDLED_FROM_NOTIFIER_FORMAT = "Handled {} {} {}";
 
-    private AIPNotificationLogger() {}
+    private AIPNotificationLogger() {
+    }
 
     public static void notificationDenied(Long requestId, String providerId, Set<String> errors) {
         LOGGER.error(String.format(NOTIFICATION_DENIED_FORMAT, requestId, providerId, errors));
@@ -78,22 +79,30 @@ public class AIPNotificationLogger {
     }
 
     public static void notificationEventSuccess(int sizeEvents) {
-        LOGGER.debug(RECEIVED_FROM_NOTIFIER_FORMAT, sizeEvents, NotifierEvent.class.getSimpleName(),
+        LOGGER.debug(RECEIVED_FROM_NOTIFIER_FORMAT,
+                     sizeEvents,
+                     NotifierEvent.class.getSimpleName(),
                      NotificationState.SUCCESS);
     }
 
     public static void notificationEventSuccessHandled(int sizeEvents) {
-        LOGGER.debug(HANDLED_FROM_NOTIFIER_FORMAT, sizeEvents, NotificationState.SUCCESS,
+        LOGGER.debug(HANDLED_FROM_NOTIFIER_FORMAT,
+                     sizeEvents,
+                     NotificationState.SUCCESS,
                      NotifierEvent.class.getSimpleName());
     }
 
     public static void notificationEventError(int sizeEvents) {
-        LOGGER.debug(RECEIVED_FROM_NOTIFIER_FORMAT, sizeEvents, NotifierEvent.class.getSimpleName(),
+        LOGGER.debug(RECEIVED_FROM_NOTIFIER_FORMAT,
+                     sizeEvents,
+                     NotifierEvent.class.getSimpleName(),
                      NotificationState.ERROR);
     }
 
     public static void notificationEventErrorHandled(int sizeEvents) {
-        LOGGER.debug(HANDLED_FROM_NOTIFIER_FORMAT, sizeEvents, NotificationState.ERROR,
+        LOGGER.debug(HANDLED_FROM_NOTIFIER_FORMAT,
+                     sizeEvents,
+                     NotificationState.ERROR,
                      NotifierEvent.class.getSimpleName());
     }
 }

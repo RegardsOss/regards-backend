@@ -18,13 +18,13 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import org.springframework.validation.Errors;
-
 import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
+import org.springframework.validation.Errors;
 
 /**
  * Validate a feature according to validation annotation plus dynamic model validation.
+ *
  * @author Marc SORDI
  */
 public interface IFeatureValidationService {

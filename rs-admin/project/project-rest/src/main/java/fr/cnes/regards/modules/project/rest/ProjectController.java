@@ -18,26 +18,6 @@
  */
 package fr.cnes.regards.modules.project.rest;
 
-import javax.validation.Valid;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -51,11 +31,27 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.client.ILicenseClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.service.IProjectService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 /**
  * Class ProjectsController
- *
+ * <p>
  * Controller for REST Access to Project entities
+ *
  * @author Sébastien Binda
  */
 @RestController
@@ -87,6 +83,7 @@ public class ProjectController implements IResourceController<Project> {
 
     /**
      * Retrieve projects list
+     *
      * @param pageable
      * @param assembler
      * @return List of projects
@@ -94,14 +91,15 @@ public class ProjectController implements IResourceController<Project> {
     @RequestMapping(method = RequestMethod.GET, produces = "application/json")
     @ResourceAccess(description = "retrieve the list of project of instance", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<PagedModel<EntityModel<Project>>> retrieveProjectList(
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<Project> assembler) {
+        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        PagedResourcesAssembler<Project> assembler) {
         Page<Project> projects = projectService.retrieveProjectList(pageable);
         return ResponseEntity.ok(toPagedResources(projects, assembler));
     }
 
     /**
      * Retrieve projects list
+     *
      * @param pageable
      * @param assembler
      * @return List of projects
@@ -109,14 +107,15 @@ public class ProjectController implements IResourceController<Project> {
     @RequestMapping(value = "/public", method = RequestMethod.GET, produces = "application/json")
     @ResourceAccess(description = "retrieve the list of project of instance", role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedModel<EntityModel<Project>>> retrievePublicProjectList(
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<Project> assembler) {
+        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        PagedResourcesAssembler<Project> assembler) {
         Page<Project> projects = projectService.retrievePublicProjectList(pageable);
         return ResponseEntity.ok(toPagedResources(projects, assembler));
     }
 
     /**
      * Create a new project
+     *
      * @param newProject new Project to create
      * @return Created project
      * @throws ModuleException If Project already exists for the given name
@@ -124,13 +123,14 @@ public class ProjectController implements IResourceController<Project> {
     @RequestMapping(method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     @ResourceAccess(description = "create a new project", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<EntityModel<Project>> createProject(@Valid @RequestBody Project newProject)
-            throws ModuleException {
+        throws ModuleException {
         Project project = projectService.createProject(newProject);
         return new ResponseEntity<>(toResource(project), HttpStatus.CREATED);
     }
 
     /**
      * Retrieve a project by name
+     *
      * @param projectName Project name
      * @return Project
      * @throws ModuleException {@link EntityNotFoundException} project does not exists
@@ -138,14 +138,14 @@ public class ProjectController implements IResourceController<Project> {
     @RequestMapping(method = RequestMethod.GET, value = "/{project_name}", produces = "application/json")
     @ResourceAccess(description = "retrieve the project project_name", role = DefaultRole.PUBLIC)
     public ResponseEntity<EntityModel<Project>> retrieveProject(@PathVariable("project_name") String projectName)
-            throws ModuleException {
+        throws ModuleException {
         return ResponseEntity.ok(toResource(projectService.retrieveProject(projectName)));
     }
 
     @RequestMapping(method = RequestMethod.PUT, value = "/{project_name}/license/reset")
     @ResourceAccess(
-            description = "Allow instance admin to invalidate the license of a project for all the users of the project",
-            role = DefaultRole.INSTANCE_ADMIN)
+        description = "Allow instance admin to invalidate the license of a project for all the users of the project",
+        role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> resetLicense(@PathVariable("project_name") String projectName) {
         try {
             runtimeTenantResolver.forceTenant(projectName);
@@ -160,7 +160,8 @@ public class ProjectController implements IResourceController<Project> {
 
     /**
      * Update given project.
-     * @param projectName project name
+     *
+     * @param projectName     project name
      * @param projectToUpdate project to update
      * @return Updated Project
      * @throws ModuleException {@link EntityNotFoundException} project does not exists
@@ -168,13 +169,15 @@ public class ProjectController implements IResourceController<Project> {
     @RequestMapping(method = RequestMethod.PUT, value = "/{project_name}")
     @ResourceAccess(description = "update the project project_name", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<EntityModel<Project>> updateProject(@PathVariable("project_name") String projectName,
-            @Valid @RequestBody Project projectToUpdate) throws ModuleException {
+                                                              @Valid @RequestBody Project projectToUpdate)
+        throws ModuleException {
         Project project = projectService.updateProject(projectName, projectToUpdate);
         return ResponseEntity.ok(toResource(project));
     }
 
     /**
      * Delete given project
+     *
      * @param projectName Project name to delete
      * @return Void
      * @throws ModuleException {@link EntityNotFoundException} project does not exists
@@ -191,16 +194,28 @@ public class ProjectController implements IResourceController<Project> {
         EntityModel<Project> resource = null;
         if (project != null && project.getName() != null) {
             resource = resourceService.toResource(project);
-            resourceService.addLink(resource, this.getClass(), "retrieveProject", LinkRels.SELF,
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "retrieveProject",
+                                    LinkRels.SELF,
                                     MethodParamFactory.build(String.class, project.getName()));
             if (!project.isDeleted()) {
-                resourceService.addLink(resource, this.getClass(), "deleteProject", LinkRels.DELETE,
+                resourceService.addLink(resource,
+                                        this.getClass(),
+                                        "deleteProject",
+                                        LinkRels.DELETE,
                                         MethodParamFactory.build(String.class, project.getName()));
-                resourceService.addLink(resource, this.getClass(), "updateProject", LinkRels.UPDATE,
+                resourceService.addLink(resource,
+                                        this.getClass(),
+                                        "updateProject",
+                                        LinkRels.UPDATE,
                                         MethodParamFactory.build(String.class, project.getName()),
                                         MethodParamFactory.build(Project.class, project));
             }
-            resourceService.addLink(resource, this.getClass(), "createProject", LinkRels.CREATE,
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "createProject",
+                                    LinkRels.CREATE,
                                     MethodParamFactory.build(Project.class, project));
         } else {
             LOG.warn(String.format("Invalid %s entity. Cannot create hateoas resources", this.getClass().getName()));

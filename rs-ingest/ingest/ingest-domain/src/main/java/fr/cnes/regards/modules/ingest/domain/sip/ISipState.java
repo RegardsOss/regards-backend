@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.ingest.domain.sip;
  * Interface representing a SIP state (for state extension)
  *
  * @author Marc Sordi
- *
  */
 public interface ISipState {
 

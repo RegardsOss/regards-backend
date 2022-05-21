@@ -18,11 +18,21 @@
  */
 package fr.cnes.regards.modules.opensearch.service;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
+import com.google.common.collect.Lists;
+import feign.FeignException;
+import feign.Target;
+import feign.Target.HardCodedTarget;
+import feign.httpclient.ApacheHttpClient;
+import fr.cnes.regards.framework.feign.FeignClientBuilder;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
+import fr.cnes.regards.modules.opensearch.service.parser.*;
+import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
+import fr.cnes.regards.modules.search.schema.UrlType;
+import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
+import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
 import org.apache.http.client.HttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,28 +45,10 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
-import com.google.common.collect.Lists;
-
-import feign.FeignException;
-import feign.Target;
-import feign.Target.HardCodedTarget;
-import feign.httpclient.ApacheHttpClient;
-import fr.cnes.regards.framework.feign.FeignClientBuilder;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
-import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
-import fr.cnes.regards.modules.opensearch.service.parser.CircleParser;
-import fr.cnes.regards.modules.opensearch.service.parser.FieldExistsParser;
-import fr.cnes.regards.modules.opensearch.service.parser.GeometryParser;
-import fr.cnes.regards.modules.opensearch.service.parser.IParser;
-import fr.cnes.regards.modules.opensearch.service.parser.ImageOnlyParser;
-import fr.cnes.regards.modules.opensearch.service.parser.QueryParser;
-import fr.cnes.regards.modules.opensearch.service.parser.ToponymParser;
-import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
-import fr.cnes.regards.modules.search.schema.UrlType;
-import fr.cnes.regards.modules.search.schema.parameters.OpenSearchParameter;
-import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Parses generic OpenSearch requests like
@@ -64,6 +56,7 @@ import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
  * <p>
  * It is coded so that you can add as many parsers as you want, each handling a specific part of the request.
  * You just need to implement a new {@link IParser}, and register it in the <code>aggregate</code> method.
+ *
  * @author Xavier-Alexandre Brochard
  */
 @Service
@@ -82,10 +75,13 @@ public class OpenSearchService implements IOpenSearchService {
     private IToponymsClient toponymClient;
 
     public OpenSearchService(IAttributeFinder finder) {
-        OpenSearchService.parsersHolder = ThreadLocal
-                .withInitial(() -> Lists.newArrayList(new QueryParser(finder), new GeometryParser(), new CircleParser(),
-                                                      new FieldExistsParser(), new ImageOnlyParser(),
-                                                      new ToponymParser(toponymClient)));
+        OpenSearchService.parsersHolder = ThreadLocal.withInitial(() -> Lists.newArrayList(new QueryParser(finder),
+                                                                                           new GeometryParser(),
+                                                                                           new CircleParser(),
+                                                                                           new FieldExistsParser(),
+                                                                                           new ImageOnlyParser(),
+                                                                                           new ToponymParser(
+                                                                                               toponymClient)));
     }
 
     @Override
@@ -106,20 +102,22 @@ public class OpenSearchService implements IOpenSearchService {
     @Override
     public OpenSearchDescription readDescriptor(URL url) throws ModuleException {
         Target<IOpensearchDescriptorClient> target = new HardCodedTarget<>(IOpensearchDescriptorClient.class,
-                url.toString());
+                                                                           url.toString());
         try {
-            ResponseEntity<OpenSearchDescription> descriptor = FeignClientBuilder
-                    .buildXml(target, new ApacheHttpClient(httpClient)).getDescriptor();
+            ResponseEntity<OpenSearchDescription> descriptor = FeignClientBuilder.buildXml(target,
+                                                                                           new ApacheHttpClient(
+                                                                                               httpClient))
+                                                                                 .getDescriptor();
             if (descriptor.getStatusCode() == HttpStatus.OK) {
                 if (!descriptor.getBody().getUrl().isEmpty()) {
                     return removeDuplicatedParameters(descriptor.getBody());
                 } else {
-                    throw new ModuleException(
-                            String.format("No valid opensearch descriptor found at %s.", url.toString()));
+                    throw new ModuleException(String.format("No valid opensearch descriptor found at %s.",
+                                                            url.toString()));
                 }
             } else {
-                throw new ModuleException(
-                        String.format("Error retrieving opensearch descriptor at %s.", url.toString()));
+                throw new ModuleException(String.format("Error retrieving opensearch descriptor at %s.",
+                                                        url.toString()));
             }
         } catch (HttpClientErrorException | HttpServerErrorException | FeignException e) {
             throw new ModuleException(e.getMessage(), e);
@@ -145,8 +143,11 @@ public class OpenSearchService implements IOpenSearchService {
 
     @Override
     public UrlType getSearchRequestURL(OpenSearchDescription descriptor, MediaType type) throws ModuleException {
-        return descriptor.getUrl().stream().filter(template -> type.toString().equals(template.getType())).findFirst()
-                .orElseThrow(() -> new ModuleException("No Template url matching"));
+        return descriptor.getUrl()
+                         .stream()
+                         .filter(template -> type.toString().equals(template.getType()))
+                         .findFirst()
+                         .orElseThrow(() -> new ModuleException("No Template url matching"));
     }
 
 }

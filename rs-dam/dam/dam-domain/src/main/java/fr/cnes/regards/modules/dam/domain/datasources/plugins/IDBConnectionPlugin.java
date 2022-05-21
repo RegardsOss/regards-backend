@@ -19,19 +19,18 @@
 
 package fr.cnes.regards.modules.dam.domain.datasources.plugins;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Map;
-
-import javax.sql.DataSource;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.dam.domain.datasources.Column;
 import fr.cnes.regards.modules.dam.domain.datasources.Table;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Map;
+
 /**
  * Allows to manage a connection pool to a {@link DataSource}.
- * 
+ *
  * @author Christophe Mertz
  */
 @PluginInterface(description = "Plugin to manage a connection pool to a datasource")
@@ -39,6 +38,7 @@ public interface IDBConnectionPlugin extends IConnectionPlugin {
 
     /**
      * Retrieve a {@link Connection} to a database
+     *
      * @return the {@link Connection}
      * @throws SQLException the {@link Connection} is not available
      */
@@ -46,7 +46,8 @@ public interface IDBConnectionPlugin extends IConnectionPlugin {
 
     /**
      * Requests the database to get the tables of a data source.
-     * @param schemaPattern schema pattern or null
+     *
+     * @param schemaPattern    schema pattern or null
      * @param tableNamePattern table name pattern or null
      * @return a {@link Map} of the database's table
      */
@@ -54,6 +55,7 @@ public interface IDBConnectionPlugin extends IConnectionPlugin {
 
     /**
      * Requests the database to get the columns of a specific table.
+     *
      * @param tableName the database's table name
      * @return a {@link Map} of the columns
      */

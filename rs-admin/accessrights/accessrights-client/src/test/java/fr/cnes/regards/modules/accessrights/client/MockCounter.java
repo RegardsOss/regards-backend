@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.accessrights.client;
 
 /**
  * @author sbinda
- *
  */
 public class MockCounter {
 

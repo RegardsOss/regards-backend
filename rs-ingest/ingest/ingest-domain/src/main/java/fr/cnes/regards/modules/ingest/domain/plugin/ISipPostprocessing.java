@@ -18,21 +18,17 @@
  */
 package fr.cnes.regards.modules.ingest.domain.plugin;
 
-import java.util.Collection;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.PostProcessResult;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+
+import java.util.Collection;
 
 /**
  * Fifth <b>optional</b> step of the SIP processing chain
  *
  * @author Marc Sordi
- *
  */
 @FunctionalInterface
 @PluginInterface(description = "SIP postprocessing plugin contract")
@@ -40,6 +36,7 @@ public interface ISipPostprocessing {
 
     /**
      * Allows to make some action after SIP processing.
+     *
      * @param aipEntities
      */
     PostProcessResult postprocess(Collection<AIPEntity> aipEntities) throws ModuleException;

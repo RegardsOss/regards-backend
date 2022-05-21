@@ -18,25 +18,18 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
+import fr.cnes.regards.framework.oais.*;
+import fr.cnes.regards.framework.urn.DataType;
+import org.springframework.util.Assert;
+import org.springframework.util.MimeType;
+
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import org.springframework.util.Assert;
-import org.springframework.util.MimeType;
-
-import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.InformationPackageProperties;
-import fr.cnes.regards.framework.oais.OAISDataObject;
-import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
-import fr.cnes.regards.framework.oais.RepresentationInformation;
-import fr.cnes.regards.framework.oais.Semantic;
-import fr.cnes.regards.framework.oais.Syntax;
-import fr.cnes.regards.framework.urn.DataType;
-
 /**
  * Content Information Builder.<br/>
- *
+ * <p>
  * A {@link ContentInformation} is composed of two objects :
  * <ul>
  * <li>An {@link OAISDataObject} containing physical file information</li>
@@ -63,8 +56,8 @@ import fr.cnes.regards.framework.urn.DataType;
  * <li>{@link #addSoftwareEnvironmentProperty(String, Object)}</li>
  * </ul>
  * <br/>
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  * @deprecated Use {@link InformationPackageProperties} fluent API
  */
 @Deprecated
@@ -79,15 +72,20 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
 
     /**
      * Set <b>required</b> data object properties<br/>
-     * @param dataType {@link DataType}
-     * @param filename filename
+     *
+     * @param dataType  {@link DataType}
+     * @param filename  filename
      * @param algorithm checksum algorithm
-     * @param checksum the checksum
-     * @param fileSize <b>optional</b> file size
+     * @param checksum  the checksum
+     * @param fileSize  <b>optional</b> file size
      * @param locations references to the physical file. Use {@link OAISDataObjectLocation} build methods to create location!
      */
-    public void setDataObject(DataType dataType, String filename, String algorithm, String checksum, Long fileSize,
-            OAISDataObjectLocation... locations) {
+    public void setDataObject(DataType dataType,
+                              String filename,
+                              String algorithm,
+                              String checksum,
+                              Long fileSize,
+                              OAISDataObjectLocation... locations) {
         Assert.notNull(dataType, "Data type is required");
         Assert.hasText(filename, "Filename is required");
         Assert.hasText(algorithm, "Checksum algorithm is required");
@@ -106,25 +104,31 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
 
     /**
      * Set <b>required</b> data object properties
-     * @param dataType {@link DataType}
-     * @param filePath reference to the physical file
-     * @param filename filename
+     *
+     * @param dataType  {@link DataType}
+     * @param filePath  reference to the physical file
+     * @param filename  filename
      * @param algorithm checksum algorithm
-     * @param checksum the checksum
-     * @param fileSize file size
+     * @param checksum  the checksum
+     * @param fileSize  file size
      */
-    public void setDataObject(DataType dataType, Path filePath, String filename, String algorithm, String checksum,
-            Long fileSize) {
+    public void setDataObject(DataType dataType,
+                              Path filePath,
+                              String filename,
+                              String algorithm,
+                              String checksum,
+                              Long fileSize) {
         setDataObject(dataType, filename, algorithm, checksum, fileSize, OAISDataObjectLocation.build(filePath));
     }
 
     /**
      * Alias for {@link ContentInformationBuilder#setDataObject(DataType, Path, String, String, String, Long)} (no
      * file size)
-     * @param dataType {@link DataType}
-     * @param filePath reference to the physical file
+     *
+     * @param dataType  {@link DataType}
+     * @param filePath  reference to the physical file
      * @param algorithm checksum algorithm
-     * @param checksum the checksum
+     * @param checksum  the checksum
      */
     public void setDataObject(DataType dataType, Path filePath, String algorithm, String checksum) {
         setDataObject(dataType, filePath, filePath.getFileName().toString(), algorithm, checksum, null);
@@ -133,6 +137,7 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
     /**
      * Alias for {@link ContentInformationBuilder#setDataObject(DataType, Path, String, String, String, Long)} (no file
      * size and MD5 default checksum algorithm)
+     *
      * @param dataType {@link DataType}
      * @param filePath reference to the physical file
      * @param checksum the checksum
@@ -143,9 +148,10 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
 
     /**
      * Set syntax representation
-     * @param mimeName MIME name
+     *
+     * @param mimeName        MIME name
      * @param mimeDescription MIME description
-     * @param mimeType MIME type
+     * @param mimeType        MIME type
      */
     public void setSyntax(String mimeName, String mimeDescription, MimeType mimeType) {
         Assert.notNull(mimeType, "Mime type cannot be null");
@@ -163,6 +169,7 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
 
     /**
      * Set syntax representation
+     *
      * @param mimeType MIME type
      */
     public void setSyntax(MimeType mimeType) {
@@ -171,13 +178,16 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
 
     /**
      * Set syntax and <b>optional</b> semantic representations
-     * @param mimeName MIME name
-     * @param mimeDescription MIME description
-     * @param mimeType MIME type
+     *
+     * @param mimeName            MIME name
+     * @param mimeDescription     MIME description
+     * @param mimeType            MIME type
      * @param semanticDescription semantic description
      */
-    public void setSyntaxAndSemantic(String mimeName, String mimeDescription, MimeType mimeType,
-            String semanticDescription) {
+    public void setSyntaxAndSemantic(String mimeName,
+                                     String mimeDescription,
+                                     MimeType mimeType,
+                                     String semanticDescription) {
         setSyntax(mimeName, mimeDescription, mimeType);
 
         Assert.hasLength(semanticDescription, "Semantic description cannot be null. Use alternative method otherwise.");
@@ -189,7 +199,8 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
 
     /**
      * Set syntax and <b>optional</b> semantic representations
-     * @param mimeType MIME type
+     *
+     * @param mimeType            MIME type
      * @param semanticDescription semantic description
      */
     public void setSyntaxAndSemantic(MimeType mimeType, String semanticDescription) {

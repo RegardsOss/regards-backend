@@ -19,24 +19,37 @@
 
 package fr.cnes.regards.modules.ingest.service;
 
+import com.google.common.collect.Lists;
+
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-import com.google.common.collect.Lists;
-
 /**
  * Utils to publish random SIPs
+ *
  * @author Iliana Ghazali
  */
 public class TestData {
 
-    public static final List<String> STORAGES = Lists
-            .newArrayList("AWS", "Azure", "IBM", "Oracle", "Google", "Pentagon", "NASA");
+    public static final List<String> STORAGES = Lists.newArrayList("AWS",
+                                                                   "Azure",
+                                                                   "IBM",
+                                                                   "Oracle",
+                                                                   "Google",
+                                                                   "Pentagon",
+                                                                   "NASA");
 
-    public static final List<String> SESSION_OWNERS = Lists
-            .newArrayList("CNES", "NASA", "ESA", "JAXA", "Roscosmos", "ISRO", "CNSA", "ASI", "CSA");
+    public static final List<String> SESSION_OWNERS = Lists.newArrayList("CNES",
+                                                                         "NASA",
+                                                                         "ESA",
+                                                                         "JAXA",
+                                                                         "Roscosmos",
+                                                                         "ISRO",
+                                                                         "CNSA",
+                                                                         "ASI",
+                                                                         "CSA");
 
     public static List<String> getRandomCategories() {
         List randomCategories = Lists.newArrayList();

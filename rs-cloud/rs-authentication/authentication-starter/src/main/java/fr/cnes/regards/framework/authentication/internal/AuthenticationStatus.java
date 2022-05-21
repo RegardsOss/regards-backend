@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.authentication.internal;
 
 /**
  * Enumeration for authentication plugins status.
+ *
  * @author Sébastien Binda
  * @author Christophe Mertz
  */

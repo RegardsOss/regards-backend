@@ -18,26 +18,25 @@
  */
 package fr.cnes.regards.modules.dam.plugin.dataaccess.accessright;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.plugins.IDataObjectAccessFilterPlugin;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Plugin to allow access to dataobjects with an opensearch request.
+ *
  * @author Sébastien Binda
  */
 @Plugin(id = "CustomDataObjectsAccessPlugin", version = "4.0.0-SNAPSHOT",
-        description = "Allow access to dataObjects matching the given opensearch lucene formated query.",
-        markdown = "CustomDataObjectsAccessPlugin.md",
-        author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+    description = "Allow access to dataObjects matching the given opensearch lucene formated query.",
+    markdown = "CustomDataObjectsAccessPlugin.md", author = "REGARDS Team", contact = "regards@c-s.fr",
+    license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class CustomDataObjectsAccessPlugin implements IDataObjectAccessFilterPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomDataObjectsAccessPlugin.class);

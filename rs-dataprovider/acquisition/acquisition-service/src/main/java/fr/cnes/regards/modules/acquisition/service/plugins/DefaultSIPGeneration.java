@@ -18,9 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
@@ -31,14 +28,17 @@ import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPBuilder;
 
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+
 /**
  * Default SIP generation
  *
  * @author Marc Sordi
  */
 @Plugin(id = "DefaultSIPGeneration", version = "1.0.0-SNAPSHOT", description = "Generate SIP using product information",
-        author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+    author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
+    url = "https://github.com/RegardsOss")
 public class DefaultSIPGeneration implements ISipGenerationPlugin {
 
     @Override
@@ -55,13 +55,15 @@ public class DefaultSIPGeneration implements ISipGenerationPlugin {
                                                             AcquisitionProcessingChain.CHECKSUM_ALGORITHM);
             } catch (NoSuchAlgorithmException | IOException e) {
                 throw new ModuleException(String.format("Error calculating file checksum. Cause %s", e.getMessage()),
-                        e);
+                                          e);
             }
-            sipBuilder.getContentInformationBuilder().setDataObject(af.getFileInfo().getDataType(),
-                                                                    af.getFilePath().toAbsolutePath(),
-                                                                    af.getFilePath().getFileName().toString(),
-                                                                    AcquisitionProcessingChain.CHECKSUM_ALGORITHM,
-                                                                    checksum, af.getFilePath().toFile().length());
+            sipBuilder.getContentInformationBuilder()
+                      .setDataObject(af.getFileInfo().getDataType(),
+                                     af.getFilePath().toAbsolutePath(),
+                                     af.getFilePath().getFileName().toString(),
+                                     AcquisitionProcessingChain.CHECKSUM_ALGORITHM,
+                                     checksum,
+                                     af.getFilePath().toFile().length());
             sipBuilder.getContentInformationBuilder().setSyntax(af.getFileInfo().getMimeType());
             sipBuilder.addContentInformation();
         }

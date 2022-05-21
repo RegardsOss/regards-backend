@@ -67,6 +67,7 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * Configuration class to define the default PostgresSQL Data base
+ *
  * @author Sébastien Binda
  */
 @Configuration
@@ -96,10 +97,12 @@ public class DataSourcesAutoConfiguration {
     @Value("${spring.application.name}")
     private String microserviceName;
 
-    @Value("${spring.jpa.hibernate.naming.implicit-strategy:org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl}")
+    @Value(
+        "${spring.jpa.hibernate.naming.implicit-strategy:org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl}")
     private String implicitNamingStrategyName;
 
-    @Value("${spring.jpa.hibernate.naming.physical-strategy:org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl}")
+    @Value(
+        "${spring.jpa.hibernate.naming.physical-strategy:org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl}")
     private String physicalNamingStrategyName;
 
     /**
@@ -125,6 +128,7 @@ public class DataSourcesAutoConfiguration {
 
     /**
      * Create a default TenantConnection resolver if none defined.
+     *
      * @return ITenantConnectionResolver
      */
     @Bean
@@ -143,12 +147,14 @@ public class DataSourcesAutoConfiguration {
 
     /**
      * List of data sources for each configured tenant.
+     *
      * @return Map { Tenant, DataSource }
      * @throws JpaMultitenantException if connections cannot be retrieved on startup
      */
     @Bean(name = { DATA_SOURCE_BEAN_NAME })
     public Map<String, DataSource> getDataSources(ITenantConnectionResolver tenantConnectionResolver,
-            LockingTaskExecutors lockingTaskExecutors) throws JpaMultitenantException, EncryptionException {
+                                                  LockingTaskExecutors lockingTaskExecutors)
+        throws JpaMultitenantException, EncryptionException {
         ConcurrentMap<String, DataSource> datasources = new ConcurrentHashMap<>();
         // Retrieve microservice tenant connections from multitenant resolver
         List<TenantConnection> connections = tenantConnectionResolver.getTenantConnections(microserviceName);
@@ -167,6 +173,7 @@ public class DataSourcesAutoConfiguration {
 
     /**
      * Initialize programmatic schema update helper
+     *
      * @return {@link IDatasourceSchemaHelper}
      * @throws JpaException if error occurs!
      */
@@ -174,8 +181,9 @@ public class DataSourcesAutoConfiguration {
     public IDatasourceSchemaHelper datasourceSchemaHelper() throws JpaException {
         Map<String, Object> hibernateProperties = getHibernateProperties();
         if (MigrationTool.HBM2DDL.equals(daoProperties.getMigrationTool())) {
-            Hbm2ddlDatasourceSchemaHelper helper = new Hbm2ddlDatasourceSchemaHelper(hibernateProperties, Entity.class,
-                    InstanceEntity.class);
+            Hbm2ddlDatasourceSchemaHelper helper = new Hbm2ddlDatasourceSchemaHelper(hibernateProperties,
+                                                                                     Entity.class,
+                                                                                     InstanceEntity.class);
             // Set output file, may be null.
             helper.setOutputFile(daoProperties.getOutputFile());
             return helper;
@@ -186,23 +194,35 @@ public class DataSourcesAutoConfiguration {
 
     /**
      * Init JPA event handler manager
-     * @param instanceSubscriber to subscribe to tenant connection events
+     *
+     * @param instanceSubscriber  to subscribe to tenant connection events
      * @param multitenantResolver to resolve tenant
      * @return JPA event handler
      */
     @Bean
     public MultitenantJpaEventHandler multitenantJpaEventHandler(IInstanceSubscriber instanceSubscriber,
-            ITenantConnectionResolver multitenantResolver,
-            @Qualifier(DATASOURCE_SCHEMA_HELPER_BEAN_NAME) IDatasourceSchemaHelper datasourceSchemaHelper,
-            @Qualifier(DataSourcesAutoConfiguration.DATA_SOURCE_BEAN_NAME) Map<String, DataSource> dataSources,
-            LockingTaskExecutors lockingTaskExecutors) {
-        return new MultitenantJpaEventHandler(microserviceName, dataSources, lockingTaskExecutors, daoProperties,
-                datasourceSchemaHelper, instanceSubscriber, multitenantResolver, localPublisher(), encryptionService,
-                jpaProperties);
+                                                                 ITenantConnectionResolver multitenantResolver,
+                                                                 @Qualifier(DATASOURCE_SCHEMA_HELPER_BEAN_NAME)
+                                                                 IDatasourceSchemaHelper datasourceSchemaHelper,
+                                                                 @Qualifier(
+                                                                     DataSourcesAutoConfiguration.DATA_SOURCE_BEAN_NAME)
+                                                                 Map<String, DataSource> dataSources,
+                                                                 LockingTaskExecutors lockingTaskExecutors) {
+        return new MultitenantJpaEventHandler(microserviceName,
+                                              dataSources,
+                                              lockingTaskExecutors,
+                                              daoProperties,
+                                              datasourceSchemaHelper,
+                                              instanceSubscriber,
+                                              multitenantResolver,
+                                              localPublisher(),
+                                              encryptionService,
+                                              jpaProperties);
     }
 
     /**
      * Spring managed events for informing all microservice modules
+     *
      * @return {@link MultitenantJpaEventPublisher}
      */
     @Bean
@@ -213,9 +233,11 @@ public class DataSourcesAutoConfiguration {
     /**
      * Create the datasources from the TenantConfiguration list given
      */
-    private void initDataSources(Map<String, DataSource> existingDataSources, List<TenantConnection> connections,
-            boolean needRegistration, ITenantConnectionResolver tenantConnectionResolver,
-            LockingTaskExecutors lockingTaskExecutors) {
+    private void initDataSources(Map<String, DataSource> existingDataSources,
+                                 List<TenantConnection> connections,
+                                 boolean needRegistration,
+                                 ITenantConnectionResolver tenantConnectionResolver,
+                                 LockingTaskExecutors lockingTaskExecutors) {
 
         for (TenantConnection tenantConnection : connections) {
             // Prevent duplicates
@@ -226,7 +248,9 @@ public class DataSourcesAutoConfiguration {
                     String schemaIdentifier = jpaProperties.getProperties().get(Environment.DEFAULT_SCHEMA);
                     // Init data source
                     TenantDataSourceHelper.verifyBatchParameter(jpaProperties, tenantConnection);
-                    DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection, schemaIdentifier);
+                    DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties,
+                                                                                  tenantConnection,
+                                                                                  schemaIdentifier);
                     // Update database schema
                     datasourceSchemaHelper().migrate(dataSource, tenant);
                     // Register connection
@@ -237,7 +261,8 @@ public class DataSourcesAutoConfiguration {
                     existingDataSources.put(tenant, dataSource);
                     // Register a lock executor
                     lockingTaskExecutors.registerLockingTaskExecutor(tenant, dataSource);
-                } catch (PropertyVetoException | JpaMultitenantException | JpaException | SQLException | IOException e) {
+                } catch (PropertyVetoException | JpaMultitenantException | JpaException | SQLException |
+                         IOException e) {
                     // Do not block all tenants if for an inconsistent data source
                     LOGGER.error("Cannot create datasource for tenant {}", tenant);
                     LOGGER.error(e.getMessage(), e);
@@ -250,13 +275,13 @@ public class DataSourcesAutoConfiguration {
 
     /**
      * Default data source for persistence unit projects.
-     *
+     * <p>
      * ConditionalOnMissingBean : In case of jpa-instance-regards-starter activated. There can't be two datasources.
      */
     @Bean
     @ConditionalOnMissingBean(DataSource.class)
     public DataSource projectsDataSource(
-            @Qualifier(DataSourcesAutoConfiguration.DATA_SOURCE_BEAN_NAME) Map<String, DataSource> dataSources) {
+        @Qualifier(DataSourcesAutoConfiguration.DATA_SOURCE_BEAN_NAME) Map<String, DataSource> dataSources) {
         DataSource datasource = null;
         if ((dataSources != null) && !dataSources.isEmpty()) {
             datasource = dataSources.values().iterator().next();
@@ -268,6 +293,7 @@ public class DataSourcesAutoConfiguration {
 
     /**
      * Compute database properties
+     *
      * @return database properties
      * @throws JpaException if error occurs!
      */
@@ -278,8 +304,8 @@ public class DataSourcesAutoConfiguration {
         // spring.jpa.properties.hibernate.default_schema
         // Before retrieving hibernate properties, set ddl auto to avoid the need of a datasource
         hb8Properties.setDdlAuto("none");
-        Map<String, Object> dbProperties = new HashMap<>(
-                hb8Properties.determineHibernateProperties(jpaProperties.getProperties(), new HibernateSettings()));
+        Map<String, Object> dbProperties = new HashMap<>(hb8Properties.determineHibernateProperties(jpaProperties.getProperties(),
+                                                                                                    new HibernateSettings()));
         // Remove hbm2ddl as schema update is done programmatically
         dbProperties.remove(Environment.HBM2DDL_AUTO);
 
@@ -294,11 +320,11 @@ public class DataSourcesAutoConfiguration {
         dbProperties.put(Environment.USE_NEW_ID_GENERATOR_MAPPINGS, true);
 
         try {
-            PhysicalNamingStrategy hibernatePhysicalNamingStrategy = (PhysicalNamingStrategy) Class
-                    .forName(physicalNamingStrategyName).newInstance();
+            PhysicalNamingStrategy hibernatePhysicalNamingStrategy = (PhysicalNamingStrategy) Class.forName(
+                physicalNamingStrategyName).newInstance();
             dbProperties.put(Environment.PHYSICAL_NAMING_STRATEGY, hibernatePhysicalNamingStrategy);
-            final ImplicitNamingStrategy hibernateImplicitNamingStrategy = (ImplicitNamingStrategy) Class
-                    .forName(implicitNamingStrategyName).newInstance();
+            final ImplicitNamingStrategy hibernateImplicitNamingStrategy = (ImplicitNamingStrategy) Class.forName(
+                implicitNamingStrategyName).newInstance();
             dbProperties.put(Environment.IMPLICIT_NAMING_STRATEGY, hibernateImplicitNamingStrategy);
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             LOGGER.error("Error occurs with naming strategy", e);

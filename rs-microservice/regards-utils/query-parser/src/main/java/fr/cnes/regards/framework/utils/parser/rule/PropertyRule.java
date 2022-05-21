@@ -1,9 +1,8 @@
 package fr.cnes.regards.framework.utils.parser.rule;
 
+import fr.cnes.regards.framework.utils.parser.IRuleVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import fr.cnes.regards.framework.utils.parser.IRuleVisitor;
 
 public class PropertyRule implements IRule {
 

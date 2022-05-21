@@ -1,12 +1,13 @@
 package fr.cnes.regards.framework.modules.jobs.domain;
 
-import java.util.Map;
-
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 
+import java.util.Map;
+
 /**
  * A class that wait
+ *
  * @author oroussel
  */
 public class WaiterJob extends AbstractJob<Void> {
@@ -24,7 +25,7 @@ public class WaiterJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         for (JobParameter param : parameters.values()) {
             switch (param.getName()) {
                 case WAIT_PERIOD:

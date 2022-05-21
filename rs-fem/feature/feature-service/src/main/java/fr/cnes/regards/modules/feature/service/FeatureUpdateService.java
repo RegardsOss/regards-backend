@@ -32,7 +32,10 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.feature.dao.*;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.ILightFeatureEntity;
-import fr.cnes.regards.modules.feature.domain.request.*;
+import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
+import fr.cnes.regards.modules.feature.domain.request.FeatureUpdateRequest;
+import fr.cnes.regards.modules.feature.domain.request.IAbstractFeatureRequest;
+import fr.cnes.regards.modules.feature.domain.request.ILightFeatureUpdateRequest;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
 import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestEvent;
@@ -74,7 +77,7 @@ import java.util.stream.Collectors;
 @Service
 @MultitenantTransactional
 public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRequest>
-        implements IFeatureUpdateService {
+    implements IFeatureUpdateService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureUpdateService.class);
 
@@ -129,16 +132,23 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         RequestInfo<FeatureUniformResourceName> requestInfo = new RequestInfo<>();
         Set<String> existingRequestIds = this.featureUpdateRequestRepo.findRequestId();
 
-        Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(
-                events.stream().map(event -> event.getFeature().getUrn()).collect(Collectors.toSet()));
+        Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(events.stream()
+                                                                                                          .map(event -> event.getFeature()
+                                                                                                                             .getUrn())
+                                                                                                          .collect(
+                                                                                                              Collectors.toSet()));
 
-        events.forEach(item -> prepareFeatureUpdateRequest(item, sessionInfoByUrn.get(item.getFeature().getUrn()),
-                                                           grantedRequests, requestInfo, existingRequestIds));
+        events.forEach(item -> prepareFeatureUpdateRequest(item,
+                                                           sessionInfoByUrn.get(item.getFeature().getUrn()),
+                                                           grantedRequests,
+                                                           requestInfo,
+                                                           existingRequestIds));
 
         // Batch save
         updateRepo.saveAll(grantedRequests);
 
-        LOGGER.trace("------------->>> {} update requests registered in {} ms", grantedRequests.size(),
+        LOGGER.trace("------------->>> {} update requests registered in {} ms",
+                     grantedRequests.size(),
                      System.currentTimeMillis() - registrationStart);
 
         return requestInfo;
@@ -149,7 +159,9 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         // Build events to reuse event registration code
         List<FeatureUpdateRequestEvent> toTreat = new ArrayList<>();
         for (Feature feature : toHandle.getFeatures()) {
-            toTreat.add(FeatureUpdateRequestEvent.build(toHandle.getRequestOwner(), toHandle.getMetadata(), feature,
+            toTreat.add(FeatureUpdateRequestEvent.build(toHandle.getRequestOwner(),
+                                                        toHandle.getMetadata(),
+                                                        feature,
                                                         OffsetDateTime.now().minusSeconds(1)));
         }
         return registerRequests(toTreat);
@@ -158,9 +170,11 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
     /**
      * Validate, save and publish a new request
      */
-    private void prepareFeatureUpdateRequest(FeatureUpdateRequestEvent item, ILightFeatureEntity sessionInfo,
-            List<FeatureUpdateRequest> grantedRequests, RequestInfo<FeatureUniformResourceName> requestInfo,
-            Set<String> existingRequestIds) {
+    private void prepareFeatureUpdateRequest(FeatureUpdateRequestEvent item,
+                                             ILightFeatureEntity sessionInfo,
+                                             List<FeatureUpdateRequest> grantedRequests,
+                                             RequestInfo<FeatureUniformResourceName> requestInfo,
+                                             Set<String> existingRequestIds) {
 
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), Feature.class.getName());
@@ -168,7 +182,8 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         validateRequest(item, errors);
 
         if (existingRequestIds.contains(item.getRequestId()) || grantedRequests.stream()
-                .anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {
+                                                                               .anyMatch(request -> request.getRequestId()
+                                                                                                           .equals(item.getRequestId()))) {
             errors.rejectValue("requestId", "request.requestId.exists.error.message", "Request id already exists");
         }
 
@@ -180,15 +195,22 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
 
         if (errors.hasErrors()) {
             // Monitoring log
-            FeatureLogger.updateDenied(item.getRequestOwner(), item.getRequestId(), featureId, urn,
+            FeatureLogger.updateDenied(item.getRequestOwner(),
+                                       item.getRequestId(),
+                                       featureId,
+                                       urn,
                                        ErrorTranslator.getErrors(errors));
             // Publish DENIED request
-            publisher.publish(
-                    FeatureRequestEvent.build(FeatureRequestType.PATCH, item.getRequestId(), item.getRequestOwner(),
-                                              featureId, urn, RequestState.DENIED, ErrorTranslator.getErrors(errors)));
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.PATCH,
+                                                        item.getRequestId(),
+                                                        item.getRequestOwner(),
+                                                        featureId,
+                                                        urn,
+                                                        RequestState.DENIED,
+                                                        ErrorTranslator.getErrors(errors)));
             if (item.getFeature() == null) {
                 requestInfo.getMessages()
-                        .add(String.format("Request %s without feature has been rejected", item.getRequestId()));
+                           .add(String.format("Request %s without feature has been rejected", item.getRequestId()));
             } else {
                 requestInfo.addDeniedRequest(item.getFeature().getUrn(), ErrorTranslator.getErrors(errors));
             }
@@ -198,20 +220,29 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
 
         } else {
             // Manage granted request
-            FeatureUpdateRequest request = FeatureUpdateRequest.build(item.getRequestId(), item.getRequestOwner(),
-                                                                      item.getRequestDate(), RequestState.GRANTED, null,
+            FeatureUpdateRequest request = FeatureUpdateRequest.build(item.getRequestId(),
+                                                                      item.getRequestOwner(),
+                                                                      item.getRequestDate(),
+                                                                      RequestState.GRANTED,
+                                                                      null,
                                                                       item.getFeature(),
                                                                       item.getMetadata().getPriority(),
                                                                       item.getMetadata().getStorages(),
                                                                       FeatureRequestStep.LOCAL_DELAYED);
 
             // Monitoring log
-            FeatureLogger.updateGranted(request.getRequestOwner(), request.getRequestId(), request.getProviderId(),
+            FeatureLogger.updateGranted(request.getRequestOwner(),
+                                        request.getRequestId(),
+                                        request.getProviderId(),
                                         request.getUrn());
             // Publish GRANTED request
-            publisher.publish(
-                    FeatureRequestEvent.build(FeatureRequestType.PATCH, item.getRequestId(), item.getRequestOwner(),
-                                              featureId, null, RequestState.GRANTED, null));
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.PATCH,
+                                                        item.getRequestId(),
+                                                        item.getRequestOwner(),
+                                                        featureId,
+                                                        null,
+                                                        RequestState.GRANTED,
+                                                        null));
             // Add to granted request collection
             metrics.count(request.getProviderId(), request.getUrn(), FeatureUpdateState.UPDATE_REQUEST_GRANTED);
             grantedRequests.add(request);
@@ -225,9 +256,10 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
     public int scheduleRequests() {
         long scheduleStart = System.currentTimeMillis();
         List<ILightFeatureUpdateRequest> requestsToSchedule = this.featureUpdateRequestRepo.findRequestsToSchedule(
-                FeatureRequestStep.LOCAL_DELAYED, OffsetDateTime.now(),
-                PageRequest.of(0, this.properties.getMaxBulkSize()),
-                OffsetDateTime.now().minusSeconds(this.properties.getDelayBeforeProcessing())).getContent();
+            FeatureRequestStep.LOCAL_DELAYED,
+            OffsetDateTime.now(),
+            PageRequest.of(0, this.properties.getMaxBulkSize()),
+            OffsetDateTime.now().minusSeconds(this.properties.getDelayBeforeProcessing())).getContent();
 
         if (!requestsToSchedule.isEmpty()) {
 
@@ -235,8 +267,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
             if (!requestsToSchedule.isEmpty()) {
 
                 Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(
-                        requestsToSchedule.stream().map(ILightFeatureUpdateRequest::getUrn)
-                                .collect(Collectors.toSet()));
+                    requestsToSchedule.stream().map(ILightFeatureUpdateRequest::getUrn).collect(Collectors.toSet()));
 
                 // Compute request ids
                 Set<Long> requestIds = new HashSet<>();
@@ -256,11 +287,15 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                 jobParameters.add(new JobParameter(FeatureUpdateJob.IDS_PARAMETER, requestIds));
 
                 // the job priority will be set according the priority of the first request to schedule
-                JobInfo jobInfo = new JobInfo(false, requestsToSchedule.get(0).getPriority().getPriorityLevel(),
-                                              jobParameters, authResolver.getUser(), FeatureUpdateJob.class.getName());
+                JobInfo jobInfo = new JobInfo(false,
+                                              requestsToSchedule.get(0).getPriority().getPriorityLevel(),
+                                              jobParameters,
+                                              authResolver.getUser(),
+                                              FeatureUpdateJob.class.getName());
                 jobInfoService.createAsQueued(jobInfo);
 
-                LOGGER.trace("------------->>> {} update requests scheduled in {} ms", requestsToSchedule.size(),
+                LOGGER.trace("------------->>> {} update requests scheduled in {} ms",
+                             requestsToSchedule.size(),
                              System.currentTimeMillis() - scheduleStart);
                 return requestIds.size();
             }
@@ -284,15 +319,21 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         deletionSteps.add(FeatureRequestStep.LOCAL_SCHEDULED);
         Set<FeatureUniformResourceName> deletionUrnScheduled = this.featureDeletionRepo.findByStepIn(deletionSteps,
                                                                                                      OffsetDateTime.now())
-                .stream().map(FeatureDeletionRequest::getUrn).collect(Collectors.toSet());
+                                                                                       .stream()
+                                                                                       .map(FeatureDeletionRequest::getUrn)
+                                                                                       .collect(Collectors.toSet());
         Set<ILightFeatureUpdateRequest> errors = requestsToSchedule.stream()
-                .filter(request -> deletionUrnScheduled.contains(request.getUrn())).collect(Collectors.toSet());
+                                                                   .filter(request -> deletionUrnScheduled.contains(
+                                                                       request.getUrn()))
+                                                                   .collect(Collectors.toSet());
         Set<Long> errorIds = errors.stream().map(IAbstractFeatureRequest::getId).collect(Collectors.toSet());
         if (!errorIds.isEmpty()) {
             errors.forEach(r -> LOGGER.error(
-                    "Update request {} on {} not scheduled cause a deletion request is processing on the same feature",
-                    r.getId(), r.getUrn()));
-            this.featureUpdateRequestRepo.updateStateAndStep(RequestState.ERROR, FeatureRequestStep.LOCAL_ERROR,
+                "Update request {} on {} not scheduled cause a deletion request is processing on the same feature",
+                r.getId(),
+                r.getUrn()));
+            this.featureUpdateRequestRepo.updateStateAndStep(RequestState.ERROR,
+                                                             FeatureRequestStep.LOCAL_ERROR,
                                                              errorIds);
         }
         toSchedule.removeAll(errors);
@@ -308,9 +349,15 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         Set<FeatureUpdateRequest> storagePendingRequests = new HashSet<>();
         List<FeatureUpdateRequest> errorRequests = new ArrayList<>();
 
-        Map<FeatureUniformResourceName, FeatureEntity> featureByUrn = this.featureRepo.findCompleteByUrnIn(
-                        requests.stream().map(FeatureUpdateRequest::getUrn).collect(Collectors.toList())).stream()
-                .collect(Collectors.toMap(FeatureEntity::getUrn, Function.identity()));
+        Map<FeatureUniformResourceName, FeatureEntity> featureByUrn = this.featureRepo.findCompleteByUrnIn(requests.stream()
+                                                                                                                   .map(
+                                                                                                                       FeatureUpdateRequest::getUrn)
+                                                                                                                   .collect(
+                                                                                                                       Collectors.toList()))
+                                                                                      .stream()
+                                                                                      .collect(Collectors.toMap(
+                                                                                          FeatureEntity::getUrn,
+                                                                                          Function.identity()));
         // Update feature
         for (FeatureUpdateRequest request : requests) {
 
@@ -323,12 +370,15 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
             if (entity == null) {
                 request.setState(RequestState.ERROR);
                 request.setStep(FeatureRequestStep.LOCAL_ERROR);
-                request.addError(
-                        String.format("No feature referenced in database with following URN : %s", request.getUrn()));
+                request.addError(String.format("No feature referenced in database with following URN : %s",
+                                               request.getUrn()));
                 errorRequests.add(request);
                 // Monitoring log
-                FeatureLogger.updateError(request.getRequestOwner(), request.getRequestId(), request.getProviderId(),
-                                          request.getUrn(), request.getErrors());
+                FeatureLogger.updateError(request.getRequestOwner(),
+                                          request.getRequestId(),
+                                          request.getProviderId(),
+                                          request.getUrn(),
+                                          request.getErrors());
                 metrics.count(request.getProviderId(), request.getUrn(), FeatureUpdateState.UPDATE_REQUEST_ERROR);
             } else {
                 entity.setLastUpdate(OffsetDateTime.now());
@@ -336,12 +386,14 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                     entity.getFeature().getHistory().setUpdatedBy(request.getRequestOwner());
                 } else {
                     entity.getFeature()
-                            .setHistory(FeatureHistory.build(request.getRequestOwner(), request.getRequestOwner()));
+                          .setHistory(FeatureHistory.build(request.getRequestOwner(), request.getRequestOwner()));
                 }
 
                 // Merge properties handling null property values to unset properties
-                IProperty.mergeProperties(entity.getFeature().getProperties(), patch.getProperties(),
-                                          patch.getUrn().toString(), request.getRequestOwner());
+                IProperty.mergeProperties(entity.getFeature().getProperties(),
+                                          patch.getProperties(),
+                                          patch.getUrn().toString(),
+                                          request.getRequestOwner());
 
                 // Geometry cannot be unset but can be mutated
                 if (!GeoJsonType.UNLOCATED.equals(patch.getGeometry().getType())) {
@@ -349,7 +401,9 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                 }
 
                 // Monitoring log
-                FeatureLogger.updateSuccess(request.getRequestOwner(), request.getRequestId(), request.getProviderId(),
+                FeatureLogger.updateSuccess(request.getRequestOwner(),
+                                            request.getRequestId(),
+                                            request.getProviderId(),
                                             request.getFeature().getUrn());
 
                 // Update source/session for request notification
@@ -361,9 +415,12 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                     featureFilesService.handleFeatureUpdateFiles(request, entity);
                     if (request.getStep() != FeatureRequestStep.REMOTE_STORAGE_REQUESTED) {
                         // Publish request success
-                        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.PATCH, request.getRequestId(),
-                                                                    request.getRequestOwner(), entity.getProviderId(),
-                                                                    entity.getUrn(), RequestState.SUCCESS));
+                        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.PATCH,
+                                                                    request.getRequestId(),
+                                                                    request.getRequestOwner(),
+                                                                    entity.getProviderId(),
+                                                                    entity.getUrn(),
+                                                                    RequestState.SUCCESS));
 
                         // add entity to request (toNotify)
                         request.setToNotify(entity.getFeature());
@@ -393,8 +450,10 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         doOnError(errorRequests);
         doOnSuccess(successfulRequest);
 
-        LOGGER.trace("------------->>> {} update requests processed with {} entities updated in {} ms", requests.size(),
-                     entities.size(), System.currentTimeMillis() - processStart);
+        LOGGER.trace("------------->>> {} update requests processed with {} entities updated in {} ms",
+                     requests.size(),
+                     entities.size(),
+                     System.currentTimeMillis() - processStart);
 
         return entities;
     }
@@ -416,20 +475,23 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
 
     @Override
     public List<FeatureEntity> updateFilesLocations(Map<FeatureEntity, List<RequestResultInfoDTO>> updateInfo) {
-        return updateInfo.entrySet().stream()
-                .map(entry -> featureFilesService.updateFeatureLocations(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
+        return updateInfo.entrySet()
+                         .stream()
+                         .map(entry -> featureFilesService.updateFeatureLocations(entry.getKey(), entry.getValue()))
+                         .collect(Collectors.toList());
     }
 
     @Override
     public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
         if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null) && (
-                selection.getFilters().getState() != RequestState.ERROR))) {
+            selection.getFilters().getState() != RequestState.ERROR))) {
             return RequestsInfo.build(0L);
         } else {
             selection.getFilters().withState(RequestState.ERROR);
-            return RequestsInfo.build(updateRepo.count(
-                    FeatureUpdateRequestSpecification.searchAllByFilters(selection, PageRequest.of(0, 1))));
+            return RequestsInfo.build(updateRepo.count(FeatureUpdateRequestSpecification.searchAllByFilters(selection,
+                                                                                                            PageRequest.of(
+                                                                                                                0,
+                                                                                                                1))));
         }
     }
 
@@ -443,7 +505,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         if (!requests.isEmpty()) {
             for (FeatureUpdateRequest request : requests) {
                 String errorCause = Optional.ofNullable(errorByGroupId.get(request.getGroupId()))
-                        .orElse("unknown error.");
+                                            .orElse("unknown error.");
                 addRemoteStorageError(request, errorCause);
             }
             doOnError(requests);
@@ -464,10 +526,15 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
 
     @Override
     protected void sessionInfoUpdateForRetry(Collection<FeatureUpdateRequest> requests) {
-        Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(
-                requests.stream().map(request -> request.getFeature().getUrn()).collect(Collectors.toSet()));
+        Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(requests.stream()
+                                                                                                            .map(request -> request.getFeature()
+                                                                                                                                   .getUrn())
+                                                                                                            .collect(
+                                                                                                                Collectors.toSet()));
         Map<FeatureUniformResourceName, FeatureRequestStep> errorStepByUrn = requests.stream()
-                .collect(Collectors.toMap(FeatureUpdateRequest::getUrn, FeatureUpdateRequest::getLastExecErrorStep));
+                                                                                     .collect(Collectors.toMap(
+                                                                                         FeatureUpdateRequest::getUrn,
+                                                                                         FeatureUpdateRequest::getLastExecErrorStep));
         sessionInfoByUrn.forEach((urn, entity) -> {
             featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.IN_ERROR_UPDATE_REQUESTS);
             if (FeatureRequestStep.REMOTE_NOTIFICATION_ERROR.equals(errorStepByUrn.get(urn))) {
@@ -478,8 +545,11 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
 
     @Override
     protected void sessionInfoUpdateForDelete(Collection<FeatureUpdateRequest> requests) {
-        Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(
-                requests.stream().map(request -> request.getFeature().getUrn()).collect(Collectors.toSet()));
+        Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(requests.stream()
+                                                                                                            .map(request -> request.getFeature()
+                                                                                                                                   .getUrn())
+                                                                                                            .collect(
+                                                                                                                Collectors.toSet()));
         sessionInfoByUrn.forEach((urn, entity) -> {
             featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.IN_ERROR_UPDATE_REQUESTS);
             featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.UPDATE_REQUESTS);
@@ -488,8 +558,11 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
 
     @Override
     public void doOnSuccess(Collection<FeatureUpdateRequest> requests) {
-        Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(
-                requests.stream().map(request -> request.getFeature().getUrn()).collect(Collectors.toSet()));
+        Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(requests.stream()
+                                                                                                            .map(request -> request.getFeature()
+                                                                                                                                   .getUrn())
+                                                                                                            .collect(
+                                                                                                                Collectors.toSet()));
         sessionInfoByUrn.forEach((urn, entity) -> {
             featureSessionNotifier.incrementCount(entity, FeatureSessionProperty.UPDATED_PRODUCTS);
         });
@@ -506,8 +579,11 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
 
     @Override
     public void doOnTerminated(Collection<FeatureUpdateRequest> requests) {
-        Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(
-                requests.stream().map(request -> request.getFeature().getUrn()).collect(Collectors.toSet()));
+        Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(requests.stream()
+                                                                                                            .map(request -> request.getFeature()
+                                                                                                                                   .getUrn())
+                                                                                                            .collect(
+                                                                                                                Collectors.toSet()));
         sessionInfoByUrn.forEach((urn, entity) -> {
             featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.RUNNING_UPDATE_REQUESTS);
         });
@@ -516,18 +592,27 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
     @Override
     public void doOnError(Collection<FeatureUpdateRequest> requests) {
         if (requests != null && !requests.isEmpty()) {
-            Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(
-                    requests.stream().map(request -> request.getFeature().getUrn()).collect(Collectors.toSet()));
+            Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(requests.stream()
+                                                                                                                .map(
+                                                                                                                    request -> request.getFeature()
+                                                                                                                                      .getUrn())
+                                                                                                                .collect(
+                                                                                                                    Collectors.toSet()));
             sessionInfoByUrn.forEach((urn, entity) -> {
                 featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.RUNNING_UPDATE_REQUESTS);
                 featureSessionNotifier.incrementCount(entity, FeatureSessionProperty.IN_ERROR_UPDATE_REQUESTS);
             });
             // Publish request failure
             List<FeatureRequestEvent> errorsEvents = requests.stream()
-                    .map(request -> FeatureRequestEvent.build(FeatureRequestType.PATCH, request.getRequestId(),
-                                                              request.getRequestOwner(), request.getProviderId(),
-                                                              request.getUrn(), request.getState(),
-                                                              request.getErrors())).collect(Collectors.toList());
+                                                             .map(request -> FeatureRequestEvent.build(
+                                                                 FeatureRequestType.PATCH,
+                                                                 request.getRequestId(),
+                                                                 request.getRequestOwner(),
+                                                                 request.getProviderId(),
+                                                                 request.getUrn(),
+                                                                 request.getState(),
+                                                                 request.getErrors()))
+                                                             .collect(Collectors.toList());
             publisher.publish(errorsEvents);
         }
     }

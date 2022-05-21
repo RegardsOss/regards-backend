@@ -106,10 +106,9 @@ public abstract class AbstractSearchClientIT<T> extends AbstractRegardsWebIT {
 
     @Before
     public void setUp() throws ModuleException {
-        client = FeignClientBuilder.build(
-                                          new TokenClientProvider<>(getClazz(),
-                                                  "http://" + serverAddress + ":" + getPort(), feignSecurityManager),
-                                          gson);
+        client = FeignClientBuilder.build(new TokenClientProvider<>(getClazz(),
+                                                                    "http://" + serverAddress + ":" + getPort(),
+                                                                    feignSecurityManager), gson);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         engineRepo.deleteAll();
@@ -170,19 +169,20 @@ public abstract class AbstractSearchClientIT<T> extends AbstractRegardsWebIT {
         engineConfiguration.setContact("regards@c-s.fr");
         engineConfiguration.setImage("http://plop/image.png");
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(OpenSearchEngine.TIME_EXTENSION_PARAMETER,
-                                        PluginParameterTransformer.toJson(geoTime)),
-                     IPluginParam.build(OpenSearchEngine.REGARDS_EXTENSION_PARAMETER,
-                                        PluginParameterTransformer.toJson(regardsExt)),
-                     IPluginParam.build(OpenSearchEngine.MEDIA_EXTENSION_PARAMETER,
-                                        PluginParameterTransformer.toJson(mediaExt)),
-                     IPluginParam.build(OpenSearchEngine.EARTH_OBSERVATION_EXTENSION_PARAMETER,
-                                        PluginParameterTransformer.toJson(eoExt)),
-                     IPluginParam.build(OpenSearchEngine.PARAMETERS_CONFIGURATION,
-                                        PluginParameterTransformer.toJson(paramConfigurations)),
-                     IPluginParam.build(OpenSearchEngine.ENGINE_PARAMETERS,
-                                        PluginParameterTransformer.toJson(engineConfiguration)));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(OpenSearchEngine.TIME_EXTENSION_PARAMETER,
+                                                                           PluginParameterTransformer.toJson(geoTime)),
+                                                        IPluginParam.build(OpenSearchEngine.REGARDS_EXTENSION_PARAMETER,
+                                                                           PluginParameterTransformer.toJson(regardsExt)),
+                                                        IPluginParam.build(OpenSearchEngine.MEDIA_EXTENSION_PARAMETER,
+                                                                           PluginParameterTransformer.toJson(mediaExt)),
+                                                        IPluginParam.build(OpenSearchEngine.EARTH_OBSERVATION_EXTENSION_PARAMETER,
+                                                                           PluginParameterTransformer.toJson(eoExt)),
+                                                        IPluginParam.build(OpenSearchEngine.PARAMETERS_CONFIGURATION,
+                                                                           PluginParameterTransformer.toJson(
+                                                                               paramConfigurations)),
+                                                        IPluginParam.build(OpenSearchEngine.ENGINE_PARAMETERS,
+                                                                           PluginParameterTransformer.toJson(
+                                                                               engineConfiguration)));
         PluginConfiguration opensearchConf = PluginConfiguration.build(OpenSearchEngine.class, null, parameters);
         PluginConfiguration openSearchPluginConf = pluginService.savePluginConfiguration(opensearchConf);
         SearchEngineConfiguration seConfOS = new SearchEngineConfiguration();

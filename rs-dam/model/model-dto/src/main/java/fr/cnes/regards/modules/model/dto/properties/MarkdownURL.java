@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.modules.model.dto.properties;
 
+import com.google.common.base.Strings;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.base.Strings;
-
 /**
  * @author sbinda
- *
  */
 public class MarkdownURL {
 

@@ -22,6 +22,7 @@ import java.util.Map;
 
 /**
  * Simple search key where search and result type are the same
+ *
  * @param <T> search and result type
  * @author oroussel
  */

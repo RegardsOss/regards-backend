@@ -96,7 +96,8 @@ public class OrderConfiguration {
             return null;
         };
         return (IStorageRestClient) Proxy.newProxyInstance(IStorageRestClient.class.getClassLoader(),
-                                                           new Class<?>[] { IStorageRestClient.class }, handler);
+                                                           new Class<?>[] { IStorageRestClient.class },
+                                                           handler);
     }
 
     private class IStorageRestClientProxy {
@@ -105,9 +106,16 @@ public class OrderConfiguration {
 
         @SuppressWarnings("unused")
         public Response downloadFile(String checksum, Boolean isContentInline) {
-            return Response.builder().status(200).headers(headers)
-                    .request(Request.create(feign.Request.HttpMethod.GET, "", Maps.newHashMap(), null, new RequestTemplate()))
-                    .body(getClass().getResourceAsStream("/files/" + checksum), 1000).build();
+            return Response.builder()
+                           .status(200)
+                           .headers(headers)
+                           .request(Request.create(feign.Request.HttpMethod.GET,
+                                                   "",
+                                                   Maps.newHashMap(),
+                                                   null,
+                                                   new RequestTemplate()))
+                           .body(getClass().getResourceAsStream("/files/" + checksum), 1000)
+                           .build();
         }
     }
 

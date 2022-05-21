@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.order.domain.exception;
 
 /**
@@ -23,6 +23,5 @@ package fr.cnes.regards.modules.order.domain.exception;
  * @author Raphaël Mechali
  */
 public enum OrderLabelErrorEnum {
-    TOO_MANY_CHARACTERS_IN_LABEL,
-    LABEL_NOT_UNIQUE_FOR_OWNER,
+    TOO_MANY_CHARACTERS_IN_LABEL, LABEL_NOT_UNIQUE_FOR_OWNER,
 }

@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import java.util.Set;
-import java.util.UUID;
-
-import org.junit.Test;
-
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.logger.FeatureLogger;
+import org.junit.Test;
+
+import java.util.Set;
+import java.util.UUID;
 
 public class FeatureLoggerTests {
 
@@ -37,8 +36,10 @@ public class FeatureLoggerTests {
 
     private static final String PROVIDER_ID = "provider";
 
-    private static final FeatureUniformResourceName URN = FeatureUniformResourceName
-            .pseudoRandomUrn(FeatureIdentifier.FEATURE, EntityType.DATA, "tenant", 1);
+    private static final FeatureUniformResourceName URN = FeatureUniformResourceName.pseudoRandomUrn(FeatureIdentifier.FEATURE,
+                                                                                                     EntityType.DATA,
+                                                                                                     "tenant",
+                                                                                                     1);
 
     private static final Set<String> REQUEST_ERRORS = Sets.newHashSet("error1", "error2");
 

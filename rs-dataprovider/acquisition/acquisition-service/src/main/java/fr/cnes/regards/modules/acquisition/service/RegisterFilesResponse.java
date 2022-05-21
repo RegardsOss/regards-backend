@@ -24,7 +24,6 @@ import java.time.OffsetDateTime;
  * Object containing acquisition files registration information
  *
  * @author Sébastien Binda
- *
  */
 public class RegisterFilesResponse {
 
@@ -44,13 +43,13 @@ public class RegisterFilesResponse {
     }
 
     /**
-     *
      * @param numberOfRegisteredFiles Number of files registered by the registration process
-     * @param lastUpdateDate Last update date of the newest registered file
+     * @param lastUpdateDate          Last update date of the newest registered file
      * @return {@link RegisterFilesResponse}
      */
-    public static RegisterFilesResponse build(long numberOfRegisteredFiles, OffsetDateTime lastUpdateDate,
-            boolean hasNext) {
+    public static RegisterFilesResponse build(long numberOfRegisteredFiles,
+                                              OffsetDateTime lastUpdateDate,
+                                              boolean hasNext) {
         RegisterFilesResponse response = new RegisterFilesResponse();
         response.numberOfRegisteredFiles = numberOfRegisteredFiles;
         response.lastUpdateDate = lastUpdateDate;

@@ -42,13 +42,12 @@ import java.util.Optional;
  * <li>File validation</li>
  * <li>Product creation</li>
  * </ul>
- *
+ * <p>
  * And at the end, for all {@link ProductState#COMPLETED} or {@link ProductState#FINISHED} products of the current
  * processing chain, {@link SIPGenerationJob} are scheduled.
  *
  * @author Christophe Mertz
  * @author Marc Sordi
- *
  */
 public class ProductAcquisitionJob extends AbstractJob<Void> {
 
@@ -84,7 +83,7 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         Long acqProcessingChainId = getValue(parameters, CHAIN_PARAMETER_ID);
         session = getValue(parameters, CHAIN_PARAMETER_SESSION);
         onlyErrors = getValue(parameters, CHAIN_PARAMETER_ONLY_ERRORS);

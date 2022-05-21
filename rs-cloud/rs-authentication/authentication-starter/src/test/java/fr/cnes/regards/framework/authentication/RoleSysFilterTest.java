@@ -18,37 +18,37 @@
  */
 package fr.cnes.regards.framework.authentication;
 
-import java.io.IOException;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import fr.cnes.regards.framework.authentication.internal.filter.RoleSysFilter;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * Class RoleSysFilterTest
- *
+ * <p>
  * Test filter to deny access to all SYS role users.
+ *
  * @author Sébastien Binda
  */
 public class RoleSysFilterTest {
 
     /**
      * Check access to gateway is not denied by the ROLE Filter for all non SYS roles users
-     *
+     * <p>
      * * @throws ServletException
      * test error
+     *
      * @throws IOException test error
      */
     @Purpose("Check access to gateway is not denied by the ROLE Filter for all non SYS roles users")
@@ -74,6 +74,7 @@ public class RoleSysFilterTest {
 
     /**
      * Check error during oauth2 authentication process using default authentication plugin
+     *
      * @throws ServletException test error
      * @throws IOException      test error
      */

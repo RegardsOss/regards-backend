@@ -18,37 +18,24 @@
  */
 package fr.cnes.regards.modules.model.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
+import fr.cnes.regards.framework.urn.EntityType;
+import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
-import org.hibernate.annotations.Type;
-
-import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.framework.module.manager.ConfigIgnore;
-import fr.cnes.regards.framework.urn.EntityType;
-
 /**
- *
  * Define a model
  *
  * @author msordi
- *
  */
 @Entity
 @Table(name = "t_model", indexes = { @Index(name = "idx_model_name", columnList = "name") },
-        uniqueConstraints = @UniqueConstraint(name = "uk_model_name", columnNames = { "name" }))
+    uniqueConstraints = @UniqueConstraint(name = "uk_model_name", columnNames = { "name" }))
 @SequenceGenerator(name = "modelSequence", initialValue = 1, sequenceName = "seq_model")
 public class Model implements IIdentifiable<Long>, IXmlisable<fr.cnes.regards.modules.model.domain.schema.Model> {
 
@@ -81,7 +68,7 @@ public class Model implements IIdentifiable<Long>, IXmlisable<fr.cnes.regards.mo
     @NotNull
     @Pattern(regexp = NAME_REGEXP, message = "Model name must conform to regular expression \"" + NAME_REGEXP + "\".")
     @Size(min = NAME_MIN_SIZE, max = NAME_MAX_SIZE,
-            message = "Attribute name must be between " + NAME_MIN_SIZE + " and " + NAME_MAX_SIZE + " length.")
+        message = "Attribute name must be between " + NAME_MIN_SIZE + " and " + NAME_MAX_SIZE + " length.")
     @Column(nullable = false, updatable = false, length = NAME_MAX_SIZE)
     private String name;
 

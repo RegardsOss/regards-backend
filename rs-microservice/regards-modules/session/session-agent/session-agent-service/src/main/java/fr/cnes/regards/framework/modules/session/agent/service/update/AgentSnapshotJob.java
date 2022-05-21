@@ -25,9 +25,10 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.time.OffsetDateTime;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Job to create {@link fr.cnes.regards.framework.modules.session.commons.domain.SessionStep}s
@@ -60,10 +61,14 @@ public class AgentSnapshotJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
-        this.snapshotProcess = getValue(parameters, SNAPSHOT_PROCESS, new TypeToken<SnapshotProcess>() {}.getType());
+        throws JobParameterMissingException, JobParameterInvalidException {
+        this.snapshotProcess = getValue(parameters, SNAPSHOT_PROCESS, new TypeToken<SnapshotProcess>() {
 
-        this.freezeDate = getValue(parameters, FREEZE_DATE, new TypeToken<OffsetDateTime>() {}.getType());
+        }.getType());
+
+        this.freezeDate = getValue(parameters, FREEZE_DATE, new TypeToken<OffsetDateTime>() {
+
+        }.getType());
     }
 
     @Override
@@ -72,7 +77,10 @@ public class AgentSnapshotJob extends AbstractJob<Void> {
         logger.debug("[{}] AgentSnapshot job starts for source {}", jobInfoId, source);
         long start = System.currentTimeMillis();
         int nbSessionStep = agentSnapshotService.generateSessionStep(snapshotProcess, freezeDate);
-        logger.debug("[{}] AgentSnapshot job ends in {} ms. {} session step created for source {}", jobInfoId,
-                     System.currentTimeMillis() - start, nbSessionStep, source);
+        logger.debug("[{}] AgentSnapshot job ends in {} ms. {} session step created for source {}",
+                     jobInfoId,
+                     System.currentTimeMillis() - start,
+                     nbSessionStep,
+                     source);
     }
 }

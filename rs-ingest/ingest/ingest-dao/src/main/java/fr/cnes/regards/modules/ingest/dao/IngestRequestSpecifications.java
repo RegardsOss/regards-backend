@@ -18,31 +18,29 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import static fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications.DISCRIMINANT_ATTRIBUTE;
-import static fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications.STATE_ATTRIBUTE;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications.DISCRIMINANT_ATTRIBUTE;
+import static fr.cnes.regards.modules.ingest.dao.AbstractRequestSpecifications.STATE_ATTRIBUTE;
 
 /**
  * JPA {@link Specification} to define {@link Predicate}s for criteria search for {@link IngestRequest} from repository.
+ *
  * @author Léo Mieulet
  */
 public final class IngestRequestSpecifications {
@@ -55,9 +53,10 @@ public final class IngestRequestSpecifications {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             Path<Object> attributeRequeted = root.get("remoteStepGroupIds");
-            predicates.add(SpecificationUtils
-                    .buildPredicateIsJsonbArrayContainingElements(attributeRequeted,
-                                                                  Lists.newArrayList(remoteStepGroupId), cb));
+            predicates.add(SpecificationUtils.buildPredicateIsJsonbArrayContainingElements(attributeRequeted,
+                                                                                           Lists.newArrayList(
+                                                                                               remoteStepGroupId),
+                                                                                           cb));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
@@ -67,13 +66,14 @@ public final class IngestRequestSpecifications {
             Set<Predicate> predicates = Sets.newHashSet();
             Path<Object> attributeRequeted = root.get("remoteStepGroupIds");
             predicates.add(SpecificationUtils.buildPredicateIsJsonbArrayContainingElements(attributeRequeted,
-                                                                                           remoteStepGroupIds, cb));
+                                                                                           remoteStepGroupIds,
+                                                                                           cb));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
 
     public static Specification<IngestRequest> searchAllByFilters(ChooseVersioningRequestParameters filters,
-            Pageable page) {
+                                                                  Pageable page) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
 
@@ -109,7 +109,7 @@ public final class IngestRequestSpecifications {
                 Set<Predicate> providerIdsPredicates = Sets.newHashSet();
                 for (String providerId : filters.getProviderIds()) {
                     if (providerId.startsWith(SpecificationUtils.LIKE_CHAR)
-                            || providerId.endsWith(SpecificationUtils.LIKE_CHAR)) {
+                        || providerId.endsWith(SpecificationUtils.LIKE_CHAR)) {
                         providerIdsPredicates.add(cb.like(root.get("providerId"), providerId));
                     } else {
                         providerIdsPredicates.add(cb.equal(root.get("providerId"), providerId));

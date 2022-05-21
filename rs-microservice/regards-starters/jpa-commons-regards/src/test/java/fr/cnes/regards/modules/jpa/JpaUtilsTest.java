@@ -18,27 +18,26 @@
  */
 package fr.cnes.regards.modules.jpa;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.sql.SQLException;
-
-import javax.sql.DataSource;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.sql.DataSource;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.sql.SQLException;
 
 /**
  * Class JpaUtilsTest
- *
+ * <p>
  * Test JPA common utils
+ *
  * @author CS
  */
 public class JpaUtilsTest {
@@ -53,7 +52,8 @@ public class JpaUtilsTest {
      * same classpath
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
-    @Purpose("Check for classpath validity when there is instance database entities and multitenant database entities in the same classpath with a Repository class")
+    @Purpose(
+        "Check for classpath validity when there is instance database entities and multitenant database entities in the same classpath with a Repository class")
     @Test
     public void test() {
 

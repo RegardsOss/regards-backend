@@ -22,6 +22,7 @@ import java.util.Arrays;
 
 /**
  * Geometric circle criterion
+ *
  * @author oroussel
  */
 public class CircleCriterion implements ICriterion {

@@ -41,7 +41,10 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -104,16 +107,26 @@ public class RequestsGroupService {
      * @param storePath
      * @param fileRef
      */
-    public void requestSuccess(String groupId, FileRequestType type, String checksum, String storage, String storePath,
-            Collection<String> owners, FileReference fileRef) {
+    public void requestSuccess(String groupId,
+                               FileRequestType type,
+                               String checksum,
+                               String storage,
+                               String storePath,
+                               Collection<String> owners,
+                               FileReference fileRef) {
         requestDone(groupId, type, checksum, storage, storePath, owners, fileRef, false, null);
     }
 
     /**
      * Handle new request error for the given groupId.<br>
      */
-    public void requestError(String groupId, FileRequestType type, String checksum, String storage, String storePath,
-            Collection<String> owners, String errorCause) {
+    public void requestError(String groupId,
+                             FileRequestType type,
+                             String checksum,
+                             String storage,
+                             String storePath,
+                             Collection<String> owners,
+                             String errorCause) {
         requestDone(groupId, type, checksum, storage, storePath, owners, null, true, errorCause);
     }
 
@@ -125,10 +138,12 @@ public class RequestsGroupService {
      * @param denyCause
      */
     public void denied(String groupId, FileRequestType type, String denyCause) {
-        LOGGER.error("[{} GROUP DENIED {}] - Group request denied. Cause : {}", type.toString().toUpperCase(), groupId,
+        LOGGER.error("[{} GROUP DENIED {}] - Group request denied. Cause : {}",
+                     type.toString().toUpperCase(),
+                     groupId,
                      denyCause);
         publisher.publish(FileRequestsGroupEvent.build(groupId, type, FlowItemStatus.DENIED, Sets.newHashSet())
-                                  .withMessage(denyCause));
+                                                .withMessage(denyCause));
     }
 
     /**
@@ -137,10 +152,13 @@ public class RequestsGroupService {
      * @param groupId
      * @param type
      * @param nbRequestInGroup
-     * @param silent True to avoid sending bus message about group granted. Used internally in storage microservice.
+     * @param silent           True to avoid sending bus message about group granted. Used internally in storage microservice.
      */
-    public void granted(String groupId, FileRequestType type, int nbRequestInGroup, boolean silent,
-            OffsetDateTime expirationDate) {
+    public void granted(String groupId,
+                        FileRequestType type,
+                        int nbRequestInGroup,
+                        boolean silent,
+                        OffsetDateTime expirationDate) {
 
         long start = System.currentTimeMillis();
         // Create new group request
@@ -153,7 +171,10 @@ public class RequestsGroupService {
             publisher.publish(FileRequestsGroupEvent.build(groupId, type, FlowItemStatus.GRANTED, Sets.newHashSet()));
         }
         LOGGER.trace("[{} GROUP GRANTED {}] - Group request granted with {} requests. ({}ms)",
-                     type.toString().toUpperCase(), groupId, nbRequestInGroup, System.currentTimeMillis() - start);
+                     type.toString().toUpperCase(),
+                     groupId,
+                     nbRequestInGroup,
+                     System.currentTimeMillis() - start);
     }
 
     /**
@@ -178,8 +199,10 @@ public class RequestsGroupService {
         for (String groupId : groupIds) {
             if (!existingGrpIds.contains(groupId)) {
                 toSave.add(RequestGroup.build(groupId, type, expirationDate));
-                publisher.publish(
-                        FileRequestsGroupEvent.build(groupId, type, FlowItemStatus.GRANTED, Sets.newHashSet()));
+                publisher.publish(FileRequestsGroupEvent.build(groupId,
+                                                               type,
+                                                               FlowItemStatus.GRANTED,
+                                                               Sets.newHashSet()));
             } else {
                 LOGGER.error("Group request identifier already exists");
             }
@@ -188,39 +211,46 @@ public class RequestsGroupService {
     }
 
     /**
-    * Check for all current request groups if all requests are terminated. If so send a SUCCESS or ERROR event on the bus message.
-    */
+     * Check for all current request groups if all requests are terminated. If so send a SUCCESS or ERROR event on the bus message.
+     */
     public void checkRequestsGroupsDone() {
         LOGGER.debug("[REQUEST GROUPS] Start checking request groups expired ... ");
         long start = System.currentTimeMillis();
         // Handle expired groups
         Page<RequestGroup> expiredGroups = reqGroupRepository.findByExpirationDateLessThanEqual(OffsetDateTime.now(),
-                                                                                                PageRequest.of(0, maxRequestPerTransaction));
+                                                                                                PageRequest.of(0,
+                                                                                                               maxRequestPerTransaction));
         expiredGroups.forEach(this::groupExpired);
         long expiredGroupsCount = expiredGroups.getTotalElements();
         int expiredGroupsHandledCount = expiredGroups.getNumberOfElements();
         if (expiredGroupsCount > 0) {
             reqGroupRepository.deleteInBatch(expiredGroups);
-            groupReqInfoRepository.deleteByGroupIdIn(expiredGroups.stream().map(RequestGroup::getId).collect(Collectors.toSet()));
-            LOGGER.info("[REQUEST GROUPS] {}/{} expired groups done in {}ms ", expiredGroupsHandledCount, expiredGroupsCount,
+            groupReqInfoRepository.deleteByGroupIdIn(expiredGroups.stream()
+                                                                  .map(RequestGroup::getId)
+                                                                  .collect(Collectors.toSet()));
+            LOGGER.info("[REQUEST GROUPS] {}/{} expired groups done in {}ms ",
+                        expiredGroupsHandledCount,
+                        expiredGroupsCount,
                         System.currentTimeMillis() - start);
         }
         start = System.currentTimeMillis();
         LOGGER.debug("[REQUEST GROUPS] Start checking request groups done ... ");
         // Handle done groups
         List<RequestGroup> groupsDone = reqGroupRepository.findGroupDones(maxRequestPerTransaction);
-        List<String> groupsDoneIds = groupsDone.stream().map(RequestGroup::getId).collect(
-                Collectors.toList());
+        List<String> groupsDoneIds = groupsDone.stream().map(RequestGroup::getId).collect(Collectors.toList());
         Set<RequestResultInfo> requestsInfo = groupReqInfoRepository.findByGroupIdIn(groupsDoneIds);
         if (!groupsDone.isEmpty()) {
             for (RequestGroup group : groupsDone) {
-                groupDone(group, requestsInfo.stream().filter(i -> i.getGroupId().equals(group.getId())).collect(Collectors.toSet()));
+                groupDone(group,
+                          requestsInfo.stream()
+                                      .filter(i -> i.getGroupId().equals(group.getId()))
+                                      .collect(Collectors.toSet()));
             }
             groupReqInfoRepository.deleteByGroupIdIn(groupsDoneIds);
             reqGroupRepository.deleteAll(groupsDone);
-            LOGGER.info(
-                    "[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}.",
-                    System.currentTimeMillis() - start, groupsDone.size());
+            LOGGER.info("[REQUEST GROUPS] Checking request groups done in {}ms. Terminated groups {}.",
+                        System.currentTimeMillis() - start,
+                        groupsDone.size());
         } else {
             LOGGER.debug("[REQUEST GROUPS] Checking request groups done in {}ms. No groups done.",
                          System.currentTimeMillis() - start);
@@ -229,8 +259,9 @@ public class RequestsGroupService {
 
     private void groupExpired(RequestGroup reqGrp) {
         LOGGER.warn(
-                "[REQUEST GROUP {} EXPIRED] . Group {} is expired, it will be deleted and all associated requests will be set in ERROR status",
-                reqGrp.getType(), reqGrp.getId());
+            "[REQUEST GROUP {} EXPIRED] . Group {} is expired, it will be deleted and all associated requests will be set in ERROR status",
+            reqGrp.getType(),
+            reqGrp.getId());
         String errorCause = "Associated group request expired.";
         // If a request group is pending from more than 2 days, delete the group and set all requests in pending to error.
         switch (reqGrp.getType()) {
@@ -255,8 +286,11 @@ public class RequestsGroupService {
             case STORAGE:
                 storageReqRepository.findByGroupIds(reqGrp.getId()).forEach(req -> {
                     storageReqRepository.updateError(FileRequestStatus.ERROR, errorCause, req.getId());
-                    eventPublisher.storeError(req.getMetaInfo().getChecksum(), req.getOwners(), req.getStorage(),
-                                              errorCause, reqGrp.getId());
+                    eventPublisher.storeError(req.getMetaInfo().getChecksum(),
+                                              req.getOwners(),
+                                              req.getStorage(),
+                                              errorCause,
+                                              reqGrp.getId());
                 });
                 break;
             case REFERENCE:
@@ -274,8 +308,9 @@ public class RequestsGroupService {
     /**
      * Handle a group request done. All requests of the given group has terminated (success or error).
      */
-    private void groupDone(RequestGroup reqGrp, Set<RequestResultInfo> resultInfos,
-            Optional<FlowItemStatus> forcedStatus) {
+    private void groupDone(RequestGroup reqGrp,
+                           Set<RequestResultInfo> resultInfos,
+                           Optional<FlowItemStatus> forcedStatus) {
         Set<RequestResultInfo> errors = Sets.newHashSet();
         Set<RequestResultInfo> successes = Sets.newHashSet();
         for (RequestResultInfo info : resultInfos) {
@@ -287,17 +322,27 @@ public class RequestsGroupService {
         }
         // 1. Publish events
         if (errors.isEmpty()) {
-            LOGGER.trace("[{} GROUP {} {}] - {} requests success.", reqGrp.getType().toString().toUpperCase(),
-                         forcedStatus.orElse(FlowItemStatus.SUCCESS).toString(), reqGrp.getId(), successes.size());
-            publisher.publish(FileRequestsGroupEvent.build(reqGrp.getId(), reqGrp.getType(),
-                                                           forcedStatus.orElse(FlowItemStatus.SUCCESS), successes));
+            LOGGER.trace("[{} GROUP {} {}] - {} requests success.",
+                         reqGrp.getType().toString().toUpperCase(),
+                         forcedStatus.orElse(FlowItemStatus.SUCCESS).toString(),
+                         reqGrp.getId(),
+                         successes.size());
+            publisher.publish(FileRequestsGroupEvent.build(reqGrp.getId(),
+                                                           reqGrp.getType(),
+                                                           forcedStatus.orElse(FlowItemStatus.SUCCESS),
+                                                           successes));
             if (successes.isEmpty()) {
                 LOGGER.debug("[{} GROUP {} {}] No success requests associated to terminated group",
-                             forcedStatus.orElse(FlowItemStatus.SUCCESS).toString(), reqGrp.getType(), reqGrp.getId());
+                             forcedStatus.orElse(FlowItemStatus.SUCCESS).toString(),
+                             reqGrp.getType(),
+                             reqGrp.getId());
             }
         } else {
-            LOGGER.error("[{} GROUP ERROR {}] - {} success / {} errors.", reqGrp.getType().toString().toUpperCase(),
-                         reqGrp.getId(), successes.size(), errors.size());
+            LOGGER.error("[{} GROUP ERROR {}] - {} success / {} errors.",
+                         reqGrp.getType().toString().toUpperCase(),
+                         reqGrp.getId(),
+                         successes.size(),
+                         errors.size());
             publisher.publish(FileRequestsGroupEvent.buildError(reqGrp.getId(), reqGrp.getType(), successes, errors));
         }
     }
@@ -319,8 +364,15 @@ public class RequestsGroupService {
      * @param error
      * @param errorCause
      */
-    private void requestDone(String groupId, FileRequestType type, String checksum, String storage, String storePath,
-            Collection<String> owners, FileReference fileRef, boolean error, String errorCause) {
+    private void requestDone(String groupId,
+                             FileRequestType type,
+                             String checksum,
+                             String storage,
+                             String storePath,
+                             Collection<String> owners,
+                             FileReference fileRef,
+                             boolean error,
+                             String errorCause) {
         RequestResultInfo gInfo = new RequestResultInfo(groupId, type, checksum, storage, storePath, owners);
         gInfo.setResultFile(fileRef);
         gInfo.setError(error);
@@ -331,16 +383,18 @@ public class RequestsGroupService {
     public void deleteRequestGroups(FileRequestType type) {
         Pageable page = PageRequest.of(0, 500, Direction.ASC, "id");
         Page<RequestGroup> groups = reqGroupRepository.findByType(type, page);
-        Set<RequestResultInfo> infos = groupReqInfoRepository
-                .findByGroupIdIn(groups.stream().map(g -> g.getId()).collect(Collectors.toSet()));
+        Set<RequestResultInfo> infos = groupReqInfoRepository.findByGroupIdIn(groups.stream()
+                                                                                    .map(g -> g.getId())
+                                                                                    .collect(Collectors.toSet()));
         if (!groups.isEmpty()) {
             for (RequestGroup group : groups) {
                 groupDone(group,
                           infos.stream().filter(i -> i.getGroupId().equals(group.getId())).collect(Collectors.toSet()),
                           Optional.of(FlowItemStatus.ERROR));
             }
-            groupReqInfoRepository
-                    .deleteByGroupIdIn(groups.stream().map(RequestGroup::getId).collect(Collectors.toSet()));
+            groupReqInfoRepository.deleteByGroupIdIn(groups.stream()
+                                                           .map(RequestGroup::getId)
+                                                           .collect(Collectors.toSet()));
             reqGroupRepository.deleteAll(groups);
         }
     }

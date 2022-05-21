@@ -22,6 +22,7 @@ import org.springframework.context.ApplicationEvent;
 
 /**
  * Spring application event to inform other modules than this module is ready to be used.
+ *
  * @author Sébastien Binda
  */
 @SuppressWarnings("serial")

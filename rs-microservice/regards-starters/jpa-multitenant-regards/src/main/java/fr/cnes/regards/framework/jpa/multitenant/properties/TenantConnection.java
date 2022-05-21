@@ -22,6 +22,7 @@ import javax.validation.constraints.NotNull;
 
 /**
  * POJO for microservice project configuration
+ *
  * @author Sébastien Binda
  */
 public class TenantConnection {
@@ -73,14 +74,18 @@ public class TenantConnection {
 
     /**
      * Constructor
-     * @param tenant tenant name
-     * @param url tenant datasource url
-     * @param userName tenant datasource username
-     * @param password tenant datasource password
+     *
+     * @param tenant          tenant name
+     * @param url             tenant datasource url
+     * @param userName        tenant datasource username
+     * @param password        tenant datasource password
      * @param driverClassName tenant datasource driver class name
      */
-    public TenantConnection(final String tenant, final String url, final String userName, final String password,
-            final String driverClassName) {
+    public TenantConnection(final String tenant,
+                            final String url,
+                            final String userName,
+                            final String password,
+                            final String driverClassName) {
         super();
         this.tenant = tenant;
         this.url = url;

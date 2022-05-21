@@ -22,5 +22,6 @@ package fr.cnes.regards.modules.order.domain.log;
  * @author Théo Lasserre
  */
 public class LogUtils {
+
     public static final String ORDER_ID_LOG_KEY = "ORDER_ID=";
 }

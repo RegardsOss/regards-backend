@@ -5,14 +5,12 @@ import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantS
 import fr.cnes.regards.modules.order.domain.settings.OrderSettings;
 import org.springframework.stereotype.Component;
 
-
 @Component
 public class AppSubOrderDurationSettingCustomizer implements IDynamicTenantSettingCustomizer {
 
     @Override
     public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
-        return isProperValue(dynamicTenantSetting.getDefaultValue())
-                && isProperValue(dynamicTenantSetting.getValue());
+        return isProperValue(dynamicTenantSetting.getDefaultValue()) && isProperValue(dynamicTenantSetting.getValue());
     }
 
     @Override

@@ -18,26 +18,24 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import java.util.List;
-import java.util.Set;
-
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SearchSelectionMode;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Specification class to filter DAO searches on {@link AIPEntity} entities
+ *
  * @author Léo Mieulet
  */
 public final class AIPEntitySpecification {
@@ -60,13 +58,13 @@ public final class AIPEntitySpecification {
             }
             if ((filters.getStorages() != null) && !filters.getStorages().isEmpty()) {
                 Path<Object> attributeRequeted = root.get("storages");
-                predicates.add(SpecificationUtils
-                        .buildPredicateIsJsonbArrayContainingOneOfElement(attributeRequeted,
-                                                                          Lists.newArrayList(filters.getStorages()),
-                                                                          cb));
+                predicates.add(SpecificationUtils.buildPredicateIsJsonbArrayContainingOneOfElement(attributeRequeted,
+                                                                                                   Lists.newArrayList(
+                                                                                                       filters.getStorages()),
+                                                                                                   cb));
             }
 
-            if(filters.getLast() != null) {
+            if (filters.getLast() != null) {
                 predicates.add(cb.equal(root.get("last"), filters.getLast()));
             }
 
@@ -85,9 +83,14 @@ public final class AIPEntitySpecification {
                     predicates.add(cb.and(sipIdsPredicates.toArray(new Predicate[sipIdsPredicates.size()])));
                 }
             }
-            predicates.addAll(OAISEntitySpecification
-                    .buildCommonPredicate(root, cb, filters.getTags(), filters.getSessionOwner(), filters.getSession(),
-                                          filters.getIpType(), filters.getProviderIds(), filters.getCategories()));
+            predicates.addAll(OAISEntitySpecification.buildCommonPredicate(root,
+                                                                           cb,
+                                                                           filters.getTags(),
+                                                                           filters.getSessionOwner(),
+                                                                           filters.getSession(),
+                                                                           filters.getIpType(),
+                                                                           filters.getProviderIds(),
+                                                                           filters.getCategories()));
 
             // Add order
             Sort.Direction defaultDirection = Sort.Direction.ASC;

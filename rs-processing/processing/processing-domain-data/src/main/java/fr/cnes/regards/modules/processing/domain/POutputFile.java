@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain;
 
 import io.vavr.collection.List;
@@ -27,53 +27,78 @@ import java.util.UUID;
 
 /**
  * This class defines an execution output file.
- *
+ * <p>
  * An output file is immutable.
  *
  * @author gandrieu
  */
-@Value @With
+@Value
+@With
 public class POutputFile {
 
     @Value
     public static class Digest {
+
         String method;
+
         String value;
     }
 
-    /** The output file id */
+    /**
+     * The output file id
+     */
     UUID id;
 
-    /** The execution this file has been generated for */
+    /**
+     * The execution this file has been generated for
+     */
     UUID execId;
 
-    /** The file name, or relative path, to the execution workdir */
+    /**
+     * The file name, or relative path, to the execution workdir
+     */
     String name;
 
-    /** The file checksum */
+    /**
+     * The file checksum
+     */
     Digest checksum;
 
-    /** Where to download from */
+    /**
+     * Where to download from
+     */
     URL url;
 
-    /** The file size */
+    /**
+     * The file size
+     */
     Long size;
 
-    /** The list of input correlation IDs this output file is related to. */
+    /**
+     * The list of input correlation IDs this output file is related to.
+     */
     List<String> inputCorrelationIds;
 
-    /** Date at which the file was created */
+    /**
+     * Date at which the file was created
+     */
     transient OffsetDateTime created;
 
-    /** Whether the file has been downloaded or not */
+    /**
+     * Whether the file has been downloaded or not
+     */
     transient boolean downloaded;
 
-    /** Whether the file has been deleted or not */
+    /**
+     * Whether the file has been deleted or not
+     */
     transient boolean deleted;
 
-    /** This information leaks from the database but needs to be kept in the domain.
+    /**
+     * This information leaks from the database but needs to be kept in the domain.
      * It allows the database layer to know if it must CREATE or UPDATE the database
-     * for this instance. */
+     * for this instance.
+     */
     transient boolean persisted;
 
     public static POutputFile markDownloaded(POutputFile pOutputFile) {

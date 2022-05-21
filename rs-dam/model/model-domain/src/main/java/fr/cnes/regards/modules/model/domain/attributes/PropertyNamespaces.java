@@ -19,13 +19,11 @@
 package fr.cnes.regards.modules.model.domain.attributes;
 
 /**
- *
  * Namespace helper
  *
  * @author Marc Sordi
- *
+ * <p>
  * FIXME duplicated from StaticProperties!!!!!
- *
  */
 public final class PropertyNamespaces {
 

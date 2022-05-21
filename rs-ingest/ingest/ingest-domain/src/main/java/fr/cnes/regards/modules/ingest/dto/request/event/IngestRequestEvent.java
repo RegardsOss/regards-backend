@@ -18,20 +18,18 @@
  */
 package fr.cnes.regards.modules.ingest.dto.request.event;
 
-import java.util.Set;
-
-import org.springframework.lang.Nullable;
-
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.ingest.dto.request.RequestState;
+import org.springframework.lang.Nullable;
+
+import java.util.Set;
 
 /**
  * Ingest request event
  *
  * @author Marc SORDI
- *
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
 public class IngestRequestEvent implements ISubscribable {
@@ -95,13 +93,18 @@ public class IngestRequestEvent implements ISubscribable {
         this.requestId = requestId;
     }
 
-    public static IngestRequestEvent build(String requestId, String providerId, @Nullable String sipId,
-            RequestState state) {
+    public static IngestRequestEvent build(String requestId,
+                                           String providerId,
+                                           @Nullable String sipId,
+                                           RequestState state) {
         return build(requestId, providerId, sipId, state, null);
     }
 
-    public static IngestRequestEvent build(String requestId, String providerId, @Nullable String sipId,
-            RequestState state, Set<String> errors) {
+    public static IngestRequestEvent build(String requestId,
+                                           String providerId,
+                                           @Nullable String sipId,
+                                           RequestState state,
+                                           Set<String> errors) {
         IngestRequestEvent event = new IngestRequestEvent();
         event.setRequestId(requestId);
         event.setProviderId(providerId);

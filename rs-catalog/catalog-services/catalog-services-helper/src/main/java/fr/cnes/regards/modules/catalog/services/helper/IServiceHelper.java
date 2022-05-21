@@ -18,24 +18,25 @@
  */
 package fr.cnes.regards.modules.catalog.services.helper;
 
-import java.util.List;
-
-import org.springframework.data.domain.Page;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.search.domain.SearchRequest;
+import org.springframework.data.domain.Page;
+
+import java.util.List;
 
 /**
  * Service Helper interface
+ *
  * @author Sébastien Binda
  */
 public interface IServiceHelper {
 
     /**
      * Search for all {@link DataObject}s with given internal identifiers (ipId)
-     * @param entityIds internal identifiers of entity to retrieve.
-     * @param pageIndex index of the page to retrieve.
+     *
+     * @param entityIds        internal identifiers of entity to retrieve.
+     * @param pageIndex        index of the page to retrieve.
      * @param nbEntitiesByPage number of entities by page.
      * @return {@link Page}<{@link DataObject}>
      */
@@ -43,13 +44,14 @@ public interface IServiceHelper {
 
     /**
      * Search for all {@link DataObject}s corresponding to the given open search query
-     * @param searchRequest {@link SearchRequest}
-     * @param pageIndex index of the page to retrieve.
+     *
+     * @param searchRequest    {@link SearchRequest}
+     * @param pageIndex        index of the page to retrieve.
      * @param nbEntitiesByPage number of entities by page.
-     * @throws {@link ModuleException} Invalid request
      * @return {@link Page}<{@link DataObject}>
+     * @throws {@link ModuleException} Invalid request
      */
     Page<DataObject> getDataObjects(SearchRequest searchRequest, int pageIndex, int nbEntitiesByPage)
-            throws ModuleException;
+        throws ModuleException;
 
 }

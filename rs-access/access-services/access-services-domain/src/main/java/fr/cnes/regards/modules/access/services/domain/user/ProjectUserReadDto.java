@@ -29,14 +29,23 @@ import java.util.ArrayList;
 public class ProjectUserReadDto extends ProjectUserBaseDto {
 
     private Long id;
+
     private OffsetDateTime lastConnection;
+
     private OffsetDateTime lastUpdate;
+
     private OffsetDateTime created;
+
     private UserStatus status;
+
     private Role role;
+
     private boolean licenseAccepted;
+
     private String origin;
+
     private Long currentQuota;
+
     private Long currentRate;
 
     public ProjectUserReadDto(ProjectUser projectUser, Long rateLimit, Long currentRate) {

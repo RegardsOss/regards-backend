@@ -18,10 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.service.job;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
@@ -29,12 +25,14 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Cleaning thread
  *
  * @author Marc Sordi
- *
  */
 public class StopChainThread extends Thread {
 
@@ -90,15 +88,13 @@ public class StopChainThread extends Thread {
             }
 
             if (isStoppedAndCleaned) {
-                notificationClient
-                        .notify(String.format("Acquisition processing chain \"%s\" was properly stopped and cleaned.",
-                                              processingChain.getLabel()),
-                                NOTIFICATION_TITLE, NotificationLevel.INFO, DefaultRole.ADMIN);
+                notificationClient.notify(String.format(
+                    "Acquisition processing chain \"%s\" was properly stopped and cleaned.",
+                    processingChain.getLabel()), NOTIFICATION_TITLE, NotificationLevel.INFO, DefaultRole.ADMIN);
             } else {
-                notificationClient.notify(String
-                        .format("Acquisition processing chain \"%s\" is not yet stopped and cleaned. You have to retry stopping the chain before restarting properly!",
-                                processingChain.getLabel()), NOTIFICATION_TITLE, NotificationLevel.ERROR,
-                                          DefaultRole.ADMIN);
+                notificationClient.notify(String.format(
+                    "Acquisition processing chain \"%s\" is not yet stopped and cleaned. You have to retry stopping the chain before restarting properly!",
+                    processingChain.getLabel()), NOTIFICATION_TITLE, NotificationLevel.ERROR, DefaultRole.ADMIN);
             }
             // Unlock chain in any case because this thread will stop so someone else can do things to this chain.
             processingService.unlockChain(processingChainId);
@@ -110,9 +106,10 @@ public class StopChainThread extends Thread {
             } else {
                 processingNameOrId = String.valueOf(processingChainId);
             }
-            String message = String
-                    .format("Acquisition processing chain \"%s\" is not yet stopped and cleaned. An exception was thrown during stop process (%s).You have to retry stopping the chain before restarting properly!",
-                            processingNameOrId, ex.getMessage());
+            String message = String.format(
+                "Acquisition processing chain \"%s\" is not yet stopped and cleaned. An exception was thrown during stop process (%s).You have to retry stopping the chain before restarting properly!",
+                processingNameOrId,
+                ex.getMessage());
             notificationClient.notify(message, NOTIFICATION_TITLE, NotificationLevel.ERROR, DefaultRole.ADMIN);
         }
     }

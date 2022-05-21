@@ -28,15 +28,21 @@ import java.util.Set;
 abstract class ProjectUserBaseDto {
 
     protected String email;
+
     protected String firstName;
+
     protected String lastName;
+
     @GsonIgnore
     protected List<ResourcesAccess> permissions;
-    protected List<MetaData> metadata;
-    protected Set<String> accessGroups;
-    protected Long maxQuota;
-    protected Long rateLimit;
 
+    protected List<MetaData> metadata;
+
+    protected Set<String> accessGroups;
+
+    protected Long maxQuota;
+
+    protected Long rateLimit;
 
     public String getEmail() {
         return email;

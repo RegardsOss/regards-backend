@@ -20,8 +20,9 @@ package fr.cnes.regards.modules.ingest.dto.request;
 
 import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
-import javax.validation.constraints.NotNull;
 import org.springframework.util.Assert;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * Session deletion request

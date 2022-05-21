@@ -18,21 +18,21 @@
  */
 package fr.cnes.regards.framework.gson.stream;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import com.google.gson.stream.JsonWriter;
 import fr.cnes.regards.framework.gson.exception.GsonUtilException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 
 /**
  * GSON writer
+ *
  * @author Marc Sordi
  */
 public final class GsonWriter {
@@ -47,10 +47,11 @@ public final class GsonWriter {
 
     /**
      * Write object to output stream
-     * @param <T> object type
+     *
+     * @param <T>           object type
      * @param pOutputStream output stream
-     * @param pObject object to write
-     * @param pClass object type
+     * @param pObject       object to write
+     * @param pClass        object type
      * @throws GsonUtilException if error occurs!
      */
     public static <T> void write(OutputStream pOutputStream, T pObject, Class<T> pClass) throws GsonUtilException {

@@ -14,11 +14,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.constraints;
 
 import lombok.Value;
-
 
 /**
  * This class defines an exception as a violation in the context of constraint checking.
@@ -30,7 +29,8 @@ public class ExceptionViolation extends Exception implements Violation {
 
     Throwable cause;
 
-    @Override public String getMessage() {
+    @Override
+    public String getMessage() {
         return cause.getClass().getSimpleName() + " " + cause.getMessage();
     }
 }

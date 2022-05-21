@@ -39,7 +39,8 @@ import java.util.Set;
  *
  * @author Iliana Ghazali
  **/
-public class SessionAgentEventHandler implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<StepPropertyUpdateRequestEvent> {
+public class SessionAgentEventHandler
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<StepPropertyUpdateRequestEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SessionAgentEventHandler.class);
 
@@ -71,7 +72,9 @@ public class SessionAgentEventHandler implements ApplicationListener<Application
         LOGGER.trace("[STEP EVENT HANDLER] Handling {} StepEvents...", messages.size());
         long start = System.currentTimeMillis();
         createMissingSnapshotProcessesTask(sessionAgentHandlerService.createStepRequests(messages), true);
-        LOGGER.trace("[STEP EVENT HANDLER] {} StepEvents handled in {} ms", messages.size(), System.currentTimeMillis() - start);
+        LOGGER.trace("[STEP EVENT HANDLER] {} StepEvents handled in {} ms",
+                     messages.size(),
+                     System.currentTimeMillis() - start);
     }
 
     /**
@@ -84,7 +87,8 @@ public class SessionAgentEventHandler implements ApplicationListener<Application
         try {
             lockingTaskExecutors.executeWithLock(new CreateSnapshotProcessTask(sessionAgentHandlerService, sources),
                                                  new LockConfiguration(SNAPSHOT_CREATE_LOCK,
-                                                                       Instant.now().plusSeconds(MAX_TASK_WAIT_DURING_SCHEDULE)));
+                                                                       Instant.now()
+                                                                              .plusSeconds(MAX_TASK_WAIT_DURING_SCHEDULE)));
         } catch (Throwable e) {
             if (retryError) {
                 createMissingSnapshotProcessesTask(sources, false);

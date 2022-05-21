@@ -74,11 +74,16 @@ public class FeatureService implements IFeatureService {
         // Workaround to avoid in-memory pagination with specification
         // 1. use simple entities with specification + pagination to get 1 page
         // 2. fetch full entities for objects in this page
-        Page<FeatureSimpleEntity> simpleEntities = featureSimpleEntityRepository.findAll(FeatureEntitySpecification.searchAllByFilters(selection, page), page);
-        List<FeatureEntity> entities = featureWithDisseminationRepo.findByUrnIn(simpleEntities.stream().map(FeatureSimpleEntity::getUrn).collect(Collectors.toSet()));
+        Page<FeatureSimpleEntity> simpleEntities = featureSimpleEntityRepository.findAll(FeatureEntitySpecification.searchAllByFilters(
+            selection,
+            page), page);
+        List<FeatureEntity> entities = featureWithDisseminationRepo.findByUrnIn(simpleEntities.stream()
+                                                                                              .map(FeatureSimpleEntity::getUrn)
+                                                                                              .collect(Collectors.toSet()));
         List<FeatureEntityDto> elements = entities.stream()
-                .map(entity -> initDataObjectFeature(entity, selection.getFilters().isFull()))
-                .collect(Collectors.toList());
+                                                  .map(entity -> initDataObjectFeature(entity,
+                                                                                       selection.getFilters().isFull()))
+                                                  .collect(Collectors.toList());
         return new PageImpl<>(elements, page, simpleEntities.getTotalElements());
     }
 
@@ -97,11 +102,13 @@ public class FeatureService implements IFeatureService {
         dto.setUrn(entity.getUrn());
         dto.setId(entity.getId());
         dto.setDisseminationPending(entity.isDisseminationPending());
-        dto.setDisseminationsInfo(entity.getDisseminationsInfo().stream()
-                                          .map(featureDisseminationInfo -> new FeatureDisseminationInfoDto(
-                                                  featureDisseminationInfo.getLabel(),
-                                                  featureDisseminationInfo.getRequestDate(),
-                                                  featureDisseminationInfo.getAckDate())).collect(Collectors.toSet()));
+        dto.setDisseminationsInfo(entity.getDisseminationsInfo()
+                                        .stream()
+                                        .map(featureDisseminationInfo -> new FeatureDisseminationInfoDto(
+                                            featureDisseminationInfo.getLabel(),
+                                            featureDisseminationInfo.getRequestDate(),
+                                            featureDisseminationInfo.getAckDate()))
+                                        .collect(Collectors.toSet()));
         if (addFeatureContent) {
             dto.setFeature(entity.getFeature());
         }
@@ -115,8 +122,11 @@ public class FeatureService implements IFeatureService {
         jobParameters.add(new JobParameter(PublishFeatureNotificationJob.SELECTION_PARAMETER, selection));
         jobParameters.add(new JobParameter(PublishFeatureNotificationJob.OWNER_PARAMETER, authResolver.getUser()));
         // the job priority will be set according the priority of the first request to schedule
-        JobInfo jobInfo = new JobInfo(false, PriorityLevel.HIGH.getPriorityLevel(), jobParameters,
-                authResolver.getUser(), PublishFeatureNotificationJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false,
+                                      PriorityLevel.HIGH.getPriorityLevel(),
+                                      jobParameters,
+                                      authResolver.getUser(),
+                                      PublishFeatureNotificationJob.class.getName());
         return jobInfoService.createAsQueued(jobInfo);
     }
 
@@ -127,8 +137,11 @@ public class FeatureService implements IFeatureService {
         jobParameters.add(new JobParameter(ScheduleFeatureDeletionJobsJob.SELECTION_PARAMETER, selection));
         jobParameters.add(new JobParameter(ScheduleFeatureDeletionJobsJob.OWNER_PARAMETER, authResolver.getUser()));
         // the job priority will be set according the priority of the first request to schedule
-        JobInfo jobInfo = new JobInfo(false, PriorityLevel.HIGH.getPriorityLevel(), jobParameters,
-                authResolver.getUser(), ScheduleFeatureDeletionJobsJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false,
+                                      PriorityLevel.HIGH.getPriorityLevel(),
+                                      jobParameters,
+                                      authResolver.getUser(),
+                                      ScheduleFeatureDeletionJobsJob.class.getName());
         return jobInfoService.createAsQueued(jobInfo);
     }
 

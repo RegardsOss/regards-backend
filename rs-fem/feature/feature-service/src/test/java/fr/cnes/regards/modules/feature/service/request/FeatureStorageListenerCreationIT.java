@@ -18,25 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.service.request;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.UUID;
-
-import org.assertj.core.util.Lists;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.util.MimeType;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -46,12 +28,7 @@ import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationMetadataEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
-import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.FeatureFile;
-import fr.cnes.regards.modules.feature.dto.FeatureFileAttributes;
-import fr.cnes.regards.modules.feature.dto.FeatureFileLocation;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.PriorityLevel;
+import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
@@ -60,15 +37,30 @@ import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.dto.FileReferenceDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import org.assertj.core.util.Lists;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
+
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author kevin
  * @author Sébastien Binda
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_listener_creation",
-        "regards.amqp.enabled=true", "spring.task.scheduling.pool.size=2", "regards.feature.metrics.enabled=true" },
-        locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
-                "classpath:metrics.properties" })
+    "regards.amqp.enabled=true", "spring.task.scheduling.pool.size=2", "regards.feature.metrics.enabled=true" },
+    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
 @ActiveProfiles({ "testAmqp" })
 public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -118,8 +110,14 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
         RequestInfo info = RequestInfo.build();
         initData(info);
         FileReference ref = null;
-        info.getErrorRequests().add(RequestResultInfoDTO.build(info.getGroupId(), "", "", "", Lists.newArrayList(), ref,
-                                                               "Simulated error"));
+        info.getErrorRequests()
+            .add(RequestResultInfoDTO.build(info.getGroupId(),
+                                            "",
+                                            "",
+                                            "",
+                                            Lists.newArrayList(),
+                                            ref,
+                                            "Simulated error"));
 
         this.listener.onStoreError(Sets.newHashSet(info));
 
@@ -158,8 +156,14 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
 
         initData(info);
         FileReference ref = null;
-        info.getErrorRequests().add(RequestResultInfoDTO.build(info.getGroupId(), "", "", "", Lists.newArrayList(), ref,
-                                                               "Simulated error"));
+        info.getErrorRequests()
+            .add(RequestResultInfoDTO.build(info.getGroupId(),
+                                            "",
+                                            "",
+                                            "",
+                                            Lists.newArrayList(),
+                                            ref,
+                                            "Simulated error"));
 
         this.listener.onReferenceError(Sets.newHashSet(info));
 
@@ -178,10 +182,17 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
         RequestInfo info = RequestInfo.build();
 
         initData(info);
-        RequestResultInfoDTO resultInfo = RequestResultInfoDTO
-                .build(null, "checksum", null, "dtc",
-                       Sets.newHashSet(featureRepo.findAll().get(0).getFeature().getUrn().toString()),
-                       new FileReferenceDTO(), null);
+        RequestResultInfoDTO resultInfo = RequestResultInfoDTO.build(null,
+                                                                     "checksum",
+                                                                     null,
+                                                                     "dtc",
+                                                                     Sets.newHashSet(featureRepo.findAll()
+                                                                                                .get(0)
+                                                                                                .getFeature()
+                                                                                                .getUrn()
+                                                                                                .toString()),
+                                                                     new FileReferenceDTO(),
+                                                                     null);
 
         info.getSuccessRequests().add(resultInfo);
         listener.onCopySuccess(Sets.newHashSet(info));
@@ -192,8 +203,14 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
 
         // we expect have dtc in FileLocation
         assertEquals(3, featureRepo.findAll().get(0).getFeature().getFiles().get(0).getLocations().size());
-        assertTrue(featureRepo.findAll().get(0).getFeature().getFiles().get(0).getLocations().stream()
-                .anyMatch(loc -> loc.getUrl().equals("dtc")));
+        assertTrue(featureRepo.findAll()
+                              .get(0)
+                              .getFeature()
+                              .getFiles()
+                              .get(0)
+                              .getLocations()
+                              .stream()
+                              .anyMatch(loc -> loc.getUrl().equals("dtc")));
 
     }
 
@@ -203,10 +220,17 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
         RequestInfo info = RequestInfo.build();
 
         initData(info);
-        RequestResultInfoDTO resultInfo = RequestResultInfoDTO
-                .build(null, "fail", null, "dtc",
-                       Sets.newHashSet(featureRepo.findAll().get(0).getFeature().getUrn().toString()),
-                       new FileReferenceDTO(), null);
+        RequestResultInfoDTO resultInfo = RequestResultInfoDTO.build(null,
+                                                                     "fail",
+                                                                     null,
+                                                                     "dtc",
+                                                                     Sets.newHashSet(featureRepo.findAll()
+                                                                                                .get(0)
+                                                                                                .getFeature()
+                                                                                                .getUrn()
+                                                                                                .toString()),
+                                                                     new FileReferenceDTO(),
+                                                                     null);
 
         info.getSuccessRequests().add(resultInfo);
         this.listener.onCopySuccess(Sets.newHashSet(info));
@@ -223,10 +247,18 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
         RequestInfo info = RequestInfo.build();
 
         initData(info);
-        RequestResultInfoDTO resultInfo = RequestResultInfoDTO
-                .build(null, "checksum", null, "dtc", Sets.newHashSet(FeatureUniformResourceName
-                        .build(FeatureIdentifier.FEATURE, EntityType.DATA, "fail", UUID.randomUUID(), 1).toString()),
-                       new FileReferenceDTO(), null);
+        RequestResultInfoDTO resultInfo = RequestResultInfoDTO.build(null,
+                                                                     "checksum",
+                                                                     null,
+                                                                     "dtc",
+                                                                     Sets.newHashSet(FeatureUniformResourceName.build(
+                                                                         FeatureIdentifier.FEATURE,
+                                                                         EntityType.DATA,
+                                                                         "fail",
+                                                                         UUID.randomUUID(),
+                                                                         1).toString()),
+                                                                     new FileReferenceDTO(),
+                                                                     null);
 
         info.getSuccessRequests().add(resultInfo);
         this.listener.onCopySuccess(Sets.newHashSet(info));
@@ -239,28 +271,52 @@ public class FeatureStorageListenerCreationIT extends AbstractFeatureMultitenant
 
     private void initData(RequestInfo info) {
         String model = "model";
-        FeatureCreationRequest fcr = FeatureCreationRequest
-                .build("id1", "owner", OffsetDateTime.now(), RequestState.GRANTED, new HashSet<String>(),
-                       Feature.build("id1", "test",
-                                     FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA, "lol",
-                                                                      UUID.randomUUID(), 1),
-                                     IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model),
-                       FeatureCreationMetadataEntity.build("owner", "session", Lists.emptyList(), true),
-                       FeatureRequestStep.LOCAL_SCHEDULED, PriorityLevel.NORMAL);
+        FeatureCreationRequest fcr = FeatureCreationRequest.build("id1",
+                                                                  "owner",
+                                                                  OffsetDateTime.now(),
+                                                                  RequestState.GRANTED,
+                                                                  new HashSet<String>(),
+                                                                  Feature.build("id1",
+                                                                                "test",
+                                                                                FeatureUniformResourceName.build(
+                                                                                    FeatureIdentifier.FEATURE,
+                                                                                    EntityType.DATA,
+                                                                                    "lol",
+                                                                                    UUID.randomUUID(),
+                                                                                    1),
+                                                                                IGeometry.point(IGeometry.position(10.0,
+                                                                                                                   20.0)),
+                                                                                EntityType.DATA,
+                                                                                model),
+                                                                  FeatureCreationMetadataEntity.build("owner",
+                                                                                                      "session",
+                                                                                                      Lists.emptyList(),
+                                                                                                      true),
+                                                                  FeatureRequestStep.LOCAL_SCHEDULED,
+                                                                  PriorityLevel.NORMAL);
         fcr.setGroupId(info.getGroupId());
 
-        FeatureEntity feature = FeatureEntity
-                .build("owner", "session", Feature
-                        .build("id2", "test",
-                               FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA, "peps",
-                                                                UUID.randomUUID(), 1),
-                               IGeometry.point(IGeometry.position(10.0, 20.0)), EntityType.DATA, model)
-                        .withHistory("test"),
-                       null, model);
+        FeatureEntity feature = FeatureEntity.build("owner",
+                                                    "session",
+                                                    Feature.build("id2",
+                                                                  "test",
+                                                                  FeatureUniformResourceName.build(FeatureIdentifier.FEATURE,
+                                                                                                   EntityType.DATA,
+                                                                                                   "peps",
+                                                                                                   UUID.randomUUID(),
+                                                                                                   1),
+                                                                  IGeometry.point(IGeometry.position(10.0, 20.0)),
+                                                                  EntityType.DATA,
+                                                                  model).withHistory("test"),
+                                                    null,
+                                                    model);
         List<FeatureFile> filles = new ArrayList<>();
-        filles.add(FeatureFile.build(
-                                     FeatureFileAttributes.build(DataType.DESCRIPTION, new MimeType("mime"), "toto",
-                                                                 1024l, "MD5", "checksum"),
+        filles.add(FeatureFile.build(FeatureFileAttributes.build(DataType.DESCRIPTION,
+                                                                 new MimeType("mime"),
+                                                                 "toto",
+                                                                 1024l,
+                                                                 "MD5",
+                                                                 "checksum"),
                                      FeatureFileLocation.build("www.google.com", "GPFS"),
                                      FeatureFileLocation.build("www.perdu.com", "GPFS")));
         feature.getFeature().setFiles(filles);

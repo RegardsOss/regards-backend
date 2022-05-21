@@ -14,15 +14,15 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.order;
 
 /**
  * Tells how many outputs there are by execution.
- *
+ * <p>
  * Any process used by rs-order must provide this piece of information
  * as part of the OrderProcessInfo.
- *
+ * <p>
  * This allows to know in advance how many OrderDataFile to create so that
  * the order metalink can be generated as soon as the order is accepted.
  *

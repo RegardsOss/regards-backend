@@ -40,7 +40,6 @@ import java.util.concurrent.ConcurrentMap;
  * JSON message converters manager
  *
  * @author Marc SORDI
- *
  */
 public class JsonMessageConverters implements MessageConverter {
 
@@ -85,9 +84,10 @@ public class JsonMessageConverters implements MessageConverter {
 
         // Check if tenant already set and match!
         if ((tenant != null) && (runtimeTenant != null) && !runtimeTenant.equals(tenant)) {
-            String errorMessage = String
-                    .format("Inconsistent tenant resolution : current runtime tenant [%s] does not match with the tenant inside the message [%s]",
-                            runtimeTenant, tenant);
+            String errorMessage = String.format(
+                "Inconsistent tenant resolution : current runtime tenant [%s] does not match with the tenant inside the message [%s]",
+                runtimeTenant,
+                tenant);
             LOGGER.warn(errorMessage);
             String bodyAsString = new String(message.getBody(), StandardCharsets.UTF_8);
             LOGGER.warn("Message type {}. Message content : {}", type, bodyAsString);
@@ -125,9 +125,9 @@ public class JsonMessageConverters implements MessageConverter {
     }
 
     private MessageConverter selectConverter(Object object, MessageProperties messageProperties)
-            throws MessageConversionException {
+        throws MessageConversionException {
         if (ISubscribable.class.isAssignableFrom(object.getClass())
-                || IPollable.class.isAssignableFrom(object.getClass())) {
+            || IPollable.class.isAssignableFrom(object.getClass())) {
             JsonMessageConverter jmc = EventUtils.getMessageConverter(object.getClass());
             MessageConverter converter = selectConverter(jmc);
             // Inject converter selector

@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
-import java.util.List;
-import java.util.Set;
-
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.projects.validation.HasValidParent;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Helper class for creating Roles implemented as a fluent API.
@@ -190,8 +190,7 @@ public class RoleFactory {
     }
 
     /**
-     * @param pAuthorizedAddresses
-     *            the authorizedAddresses to set
+     * @param pAuthorizedAddresses the authorizedAddresses to set
      * @return this for chaining
      */
     public RoleFactory withAuthorizedAddresses(final List<String> pAuthorizedAddresses) {
@@ -200,8 +199,7 @@ public class RoleFactory {
     }
 
     /**
-     * @param pIsDefault
-     *            the isDefault to set
+     * @param pIsDefault the isDefault to set
      * @return this for chaining
      */
     public RoleFactory withDefault(final boolean pIsDefault) {
@@ -210,8 +208,7 @@ public class RoleFactory {
     }
 
     /**
-     * @param pId
-     *            the id to set
+     * @param pId the id to set
      * @return this for chaining
      */
     public RoleFactory withId(final Long pId) {
@@ -220,8 +217,7 @@ public class RoleFactory {
     }
 
     /**
-     * @param pName
-     *            the name to set
+     * @param pName the name to set
      * @return this for chaining
      */
     public RoleFactory withName(final String pName) {
@@ -230,8 +226,7 @@ public class RoleFactory {
     }
 
     /**
-     * @param pIsNative
-     *            the isNative to set
+     * @param pIsNative the isNative to set
      * @return this for chaining
      */
     public RoleFactory withNative(final boolean pIsNative) {
@@ -240,8 +235,7 @@ public class RoleFactory {
     }
 
     /**
-     * @param pParentRole
-     *            the parent role to set
+     * @param pParentRole the parent role to set
      * @return this for chaining
      */
     public RoleFactory withParentRole(final Role pParentRole) {
@@ -250,8 +244,7 @@ public class RoleFactory {
     }
 
     /**
-     * @param pPermissions
-     *            the permissions to set
+     * @param pPermissions the permissions to set
      * @return this for chaining
      */
     public RoleFactory withPermissions(final Set<ResourcesAccess> pPermissions) {

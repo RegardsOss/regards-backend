@@ -88,15 +88,16 @@ public class FileDownloadController {
     @RequestMapping(path = DOWNLOAD_PATH, method = RequestMethod.GET, produces = MediaType.ALL_VALUE)
     @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Resource> downloadFile(@PathVariable("checksum") String checksum,
-            @RequestParam(name = "isContentInline", required = false) Boolean isContentInline) {
+                                                 @RequestParam(name = "isContentInline", required = false)
+                                                 Boolean isContentInline) {
         return downloadWithQuota(checksum, isContentInline).recover(EntityOperationForbiddenException.class, t -> {
             LOGGER.error(String.format("File %s is not downloadable for now. Try again later.", checksum));
             LOGGER.debug(t.getMessage(), t);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         }).recover(EntityNotFoundException.class, t -> {
             LOGGER.warn(String.format(
-                    "Unable to download file with checksum=%s. Cause file does not exists on any known storage location",
-                    checksum));
+                "Unable to download file with checksum=%s. Cause file does not exists on any known storage location",
+                checksum));
             LOGGER.debug(t.getMessage(), t);
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }).recover(ModuleException.class, t -> {
@@ -112,38 +113,47 @@ public class FileDownloadController {
      * @return {@link Resource}
      */
     @RequestMapping(path = FileDownloadService.DOWNLOAD_TOKEN_PATH, method = RequestMethod.GET,
-            produces = MediaType.ALL_VALUE)
+        produces = MediaType.ALL_VALUE)
     @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource> downloadFileWithToken(@PathVariable("checksum") String checksum,
-            @RequestParam(name = FileDownloadService.TOKEN_PARAM) String token, boolean isContentInline) {
+                                                          @RequestParam(name = FileDownloadService.TOKEN_PARAM)
+                                                          String token,
+                                                          boolean isContentInline) {
         if (!downloadTokenService.checkToken(checksum, token)) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         // Do not check for quota, because this endpoint needs to be used internally (storage -> storage) during copy process
         // with no specific users (public access).
-        return Try.of(() -> downloadService.downloadFile(checksum)).mapTry(Callable::call)
-                .flatMap(dlFile -> downloadFile(dlFile, isContentInline)).recover(ModuleException.class, t -> {
-                    LOGGER.error(t.getMessage());
-                    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                }).get();
+        return Try.of(() -> downloadService.downloadFile(checksum))
+                  .mapTry(Callable::call)
+                  .flatMap(dlFile -> downloadFile(dlFile, isContentInline))
+                  .recover(ModuleException.class, t -> {
+                      LOGGER.error(t.getMessage());
+                      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                  })
+                  .get();
     }
 
     @VisibleForTesting
     protected Try<ResponseEntity<Resource>> downloadWithQuota(String checksum, Boolean isContentInline) {
         return Try.of(() -> downloadService.downloadFile(checksum)).mapTry(Callable::call).flatMap(dlFile -> {
             if (dlFile instanceof FileDownloadService.QuotaLimitedDownloadableFile) {
-                return downloadQuotaService.withQuota(authResolver.getUser(), (quotaHandler) -> Try
-                        .success((FileDownloadService.QuotaLimitedDownloadableFile) dlFile)
-                        .map(impureId(quotaHandler::start)) // map instead of peek to wrap potential errors
-                        .map(d -> DownloadableFileWrapper.wrap(d, quotaHandler)).flatMap(d -> downloadFile(d,
-                                                                                   isContentInline))) // idempotent close of stream (and quotaHandler) if anything failed, just in case
-                        .onFailure(ignored -> Try.run(dlFile::close))
-                        .recover(DownloadLimitExceededException.class, t -> {
-                            quotaExceededReporter.report(t, dlFile, authResolver.getUser(), tenantResolver.getTenant());
-                            return new ResponseEntity<>(
-                                    new InputStreamResource(new ByteArrayInputStream(t.getMessage().getBytes())),
-                                    HttpStatus.TOO_MANY_REQUESTS);
-                        });
+                return downloadQuotaService.withQuota(authResolver.getUser(),
+                                                      (quotaHandler) -> Try.success((FileDownloadService.QuotaLimitedDownloadableFile) dlFile)
+                                                                           .map(impureId(quotaHandler::start)) // map instead of peek to wrap potential errors
+                                                                           .map(d -> DownloadableFileWrapper.wrap(d,
+                                                                                                                  quotaHandler))
+                                                                           .flatMap(d -> downloadFile(d,
+                                                                                                      isContentInline))) // idempotent close of stream (and quotaHandler) if anything failed, just in case
+                                           .onFailure(ignored -> Try.run(dlFile::close))
+                                           .recover(DownloadLimitExceededException.class, t -> {
+                                               quotaExceededReporter.report(t,
+                                                                            dlFile,
+                                                                            authResolver.getUser(),
+                                                                            tenantResolver.getTenant());
+                                               return new ResponseEntity<>(new InputStreamResource(new ByteArrayInputStream(
+                                                   t.getMessage().getBytes())), HttpStatus.TOO_MANY_REQUESTS);
+                                           });
             }
             // no quota handling, just download
             return downloadFile(dlFile, isContentInline);
@@ -165,20 +175,26 @@ public class FileDownloadController {
             // By default, return the attachment header, forcing browser to download the file
             if (isContentInline == null || !isContentInline) {
                 headers.add(HttpHeaders.CONTENT_DISPOSITION,
-                            ContentDisposition.builder("attachment").filename(downloadFile.getFileName()).build()
-                                    .toString());
+                            ContentDisposition.builder("attachment")
+                                              .filename(downloadFile.getFileName())
+                                              .build()
+                                              .toString());
             } else {
                 // Override media type to get exact one
                 mediaType = MediaType.asMediaType(downloadFile.getMimeType());
                 headers.add(HttpHeaders.CONTENT_DISPOSITION,
-                            ContentDisposition.builder("inline").filename(downloadFile.getFileName()).build()
-                                    .toString());
+                            ContentDisposition.builder("inline")
+                                              .filename(downloadFile.getFileName())
+                                              .build()
+                                              .toString());
                 // Allows iframe to display inside REGARDS interface
                 headers.add("X-Frame-Options", "SAMEORIGIN");
             }
-            return ResponseEntity.ok().headers(headers).contentType(mediaType)
-                    .contentLength(downloadFile.getRealFileSize().intValue())
-                    .body(new InputStreamResource(downloadFile.getFileInputStream()));
+            return ResponseEntity.ok()
+                                 .headers(headers)
+                                 .contentType(mediaType)
+                                 .contentLength(downloadFile.getRealFileSize().intValue())
+                                 .body(new InputStreamResource(downloadFile.getFileInputStream()));
         });
     }
 

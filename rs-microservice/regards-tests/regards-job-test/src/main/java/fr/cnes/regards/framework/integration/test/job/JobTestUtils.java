@@ -85,7 +85,9 @@ public class JobTestUtils {
                 logger.info("Synchronous job ends");
             }
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            logger.error("Job took too much time to complete - it should not last more than {}s - {}", maxJobDuration, e);
+            logger.error("Job took too much time to complete - it should not last more than {}s - {}",
+                         maxJobDuration,
+                         e);
             Assert.fail(e.getMessage());
         } finally {
             runtimeTenantResolver.forceTenant(tenant);
@@ -98,7 +100,7 @@ public class JobTestUtils {
                 runtimeTenantResolver.forceTenant(tenant);
                 JobInfo jobInfoUpd = jobInfoService.retrieveJob(jobInfo.getId());
                 return jobInfoUpd.getStatus().getStatus() == JobStatus.SUCCEEDED
-                        || jobInfoUpd.getStatus().getStatus() == JobStatus.FAILED;
+                    || jobInfoUpd.getStatus().getStatus() == JobStatus.FAILED;
             });
             jobsInfoUpdated.add(jobInfoService.retrieveJob(jobInfo.getId()));
         }
@@ -113,9 +115,15 @@ public class JobTestUtils {
     public Page<JobInfo> retrieveLightJobInfos(Class aClass, Pageable page, JobStatus... statuses) {
         if (statuses.length == 0) {
             // Use all statuses if none provided
-            return jobInfoService.retrieveJobs(aClass.getName(), page, JobStatus.QUEUED, JobStatus.RUNNING,
-                                               JobStatus.FAILED, JobStatus.TO_BE_RUN, JobStatus.PENDING,
-                                               JobStatus.SUCCEEDED, JobStatus.ABORTED);
+            return jobInfoService.retrieveJobs(aClass.getName(),
+                                               page,
+                                               JobStatus.QUEUED,
+                                               JobStatus.RUNNING,
+                                               JobStatus.FAILED,
+                                               JobStatus.TO_BE_RUN,
+                                               JobStatus.PENDING,
+                                               JobStatus.SUCCEEDED,
+                                               JobStatus.ABORTED);
         }
         return jobInfoService.retrieveJobs(aClass.getName(), page);
     }
@@ -128,7 +136,8 @@ public class JobTestUtils {
             Page<JobInfo> jobInfos = retrieveLightJobInfos(aClass, page, statuses);
 
             // Fetch the full JobInfo entity, as it miss parameters
-            jobsInfoWithParams.addAll(jobInfos.stream().map(jobInfo -> jobInfoService.retrieveJob(jobInfo.getId()))
+            jobsInfoWithParams.addAll(jobInfos.stream()
+                                              .map(jobInfo -> jobInfoService.retrieveJob(jobInfo.getId()))
                                               .collect(Collectors.toList()));
             hasNext = jobInfos.getNumber() < (jobInfos.getTotalPages() - 1);
             page = page.next();

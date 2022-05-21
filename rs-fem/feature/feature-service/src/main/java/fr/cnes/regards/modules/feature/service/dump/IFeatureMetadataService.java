@@ -19,12 +19,6 @@
 
 package fr.cnes.regards.modules.feature.service.dump;
 
-import java.io.IOException;
-import java.nio.file.Path;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.feature.domain.exception.DuplicateUniqueNameException;
 import fr.cnes.regards.modules.feature.domain.exception.NothingToDoException;
@@ -32,51 +26,67 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest
 import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsInfo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * Service to dump features, which consists in creating zip of zip from feature formatted as aips
+ *
  * @author Iliana Ghazali
  */
 
 public interface IFeatureMetadataService {
 
-    /** Write temporary zips in the job workspace. These zips are composed of feature (in aip format) written in json files
+    /**
+     * Write temporary zips in the job workspace. These zips are composed of feature (in aip format) written in json files
+     *
      * @param metadataRequest request that contains the information about the dump
-     * @param tmpZipLocation temporary location used to write zips
+     * @param tmpZipLocation  temporary location used to write zips
      * @throws NothingToDoException exception occurs if there is no aip to dump
      */
     void writeZips(FeatureSaveMetadataRequest metadataRequest, Path tmpZipLocation)
-            throws NothingToDoException, IOException;
+        throws NothingToDoException, IOException;
 
     /**
      * Util to write zips
+     *
      * @return next pageable if exist null otherwise
      * @throws RsRuntimeException when there is an issue while trying to dump this page(for example, duplicate names or IOException)
      */
     Pageable dumpOnePage(FeatureSaveMetadataRequest metadataRequest, Pageable pageToRequest, Path tmpZipLocation)
-            throws IOException, DuplicateUniqueNameException, NothingToDoException;
+        throws IOException, DuplicateUniqueNameException, NothingToDoException;
 
-    /** Dump feature contents (in aip format) by zipping all zips previously generated from feature contents
+    /**
+     * Dump feature contents (in aip format) by zipping all zips previously generated from feature contents
+     *
      * @param metadataRequest request that contains the information about the dump
-     * @param dumpLocation location to write a zip made up of zips
-     * @param tmpZipLocation temporary location to retrieve zips (in the job workspace)
+     * @param dumpLocation    location to write a zip made up of zips
+     * @param tmpZipLocation  temporary location to retrieve zips (in the job workspace)
      */
     void writeDump(FeatureSaveMetadataRequest metadataRequest, Path dumpLocation, Path tmpZipLocation)
-            throws IOException;
+        throws IOException;
 
-    /** Handle request in error and notify client
+    /**
+     * Handle request in error and notify client
+     *
      * @param metadataRequest request that contains the information about the dump
-     * @param errorMessage message indicating the reason the dump was not performed
+     * @param errorMessage    message indicating the reason the dump was not performed
      */
     void handleError(FeatureSaveMetadataRequest metadataRequest, String errorMessage);
 
-    /** Handle request in success
+    /**
+     * Handle request in success
+     *
      * @param metadataRequest request that contains the information about the dump
      */
     void handleSuccess(FeatureSaveMetadataRequest metadataRequest);
 
     /**
      * Find all {@link FeatureSaveMetadataRequest}s
+     *
      * @param selection {@link FeatureRequestsSelectionDTO}
      * @param page
      * @return {@link FeatureSaveMetadataRequest}s
@@ -93,6 +103,7 @@ public interface IFeatureMetadataService {
 
     /**
      * Find requests information
+     *
      * @param selection {@link FeatureRequestsSelectionDTO}
      * @return {@link RequestsInfo}
      */

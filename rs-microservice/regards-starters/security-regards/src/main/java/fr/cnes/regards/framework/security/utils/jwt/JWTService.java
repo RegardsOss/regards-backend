@@ -38,6 +38,7 @@ import java.util.Map;
 
 /**
  * Utility service based on JJWT library to generate or part a JWT based on a secret.
+ *
  * @author Marc Sordi
  * @author Christophe Mertz
  */
@@ -93,20 +94,22 @@ public class JWTService {
 
     /**
      * Inject a generated token in the {@link SecurityContextHolder}
+     *
      * @param tenant tenant
-     * @param role Role name
-     * @param user User name
-     * @param email User email
+     * @param role   Role name
+     * @param user   User name
+     * @param email  User email
      * @throws JwtException Error during token generation
      */
     public void injectToken(final String tenant, final String role, final String user, final String email)
-            throws JwtException {
+        throws JwtException {
         final String token = generateToken(tenant, user, email, role);
         injectToken(token);
     }
 
     /**
      * Inject a generated token in the {@link SecurityContextHolder}
+     *
      * @param pToken the token to inject into the {@link SecurityContextHolder}
      * @throws JwtException Error during token parsing
      * @since 1.2-SNAPSHOT
@@ -118,8 +121,9 @@ public class JWTService {
 
     /**
      * Mock to simulate a token in the {@link SecurityContextHolder}.
+     *
      * @param pTenant tenant
-     * @param pRole Role name
+     * @param pRole   Role name
      */
     public void injectMockToken(final String pTenant, final String pRole) {
         final JWTAuthentication jwt = new JWTAuthentication("mockJWT"); // Unparseable token
@@ -131,6 +135,7 @@ public class JWTService {
 
     /**
      * Parse JWT to retrieve full user information
+     *
      * @param pAuthentication containing just JWT
      * @return Full user information
      * @throws JwtException Invalid JWT signature
@@ -139,8 +144,9 @@ public class JWTService {
 
         Jws<Claims> claims;
         try {
-             claims = Jwts.parser().setSigningKey(Encoders.BASE64.encode(secret.getBytes()))
-                .parseClaimsJws(pAuthentication.getJwt());
+            claims = Jwts.parser()
+                         .setSigningKey(Encoders.BASE64.encode(secret.getBytes()))
+                         .parseClaimsJws(pAuthentication.getJwt());
             // OK, trusted JWT parsed and validated
         } catch (MalformedJwtException m) {
             LOG.error("Failed to parse claims");
@@ -183,14 +189,14 @@ public class JWTService {
     }
 
     /**
-     *
      * FIXME : JWT generate must manage RSA keys
-     *
+     * <p>
      * Generate a JWT handling the tenant name, the user name and its related role
+     *
      * @param tenant tenant
-     * @param user user name
-     * @param email user email
-     * @param role user role
+     * @param user   user name
+     * @param email  user email
+     * @param role   user role
      * @return a Json Web Token
      */
     public String generateToken(String tenant, String user, String email, String role) {
@@ -198,46 +204,62 @@ public class JWTService {
     }
 
     /**
-     *
      * FIXME : JWT generate must manage RSA keys
-     *
+     * <p>
      * Generate a JWT handling the tenant name, the user name, its related role and additional parameters (user specific)
-     * @param tenant tenant
-     * @param user user name
-     * @param email user email
-     * @param role user role
+     *
+     * @param tenant           tenant
+     * @param user             user name
+     * @param email            user email
+     * @param role             user role
      * @param additionalParams additional parameters (user specific)
      * @return a Json Web Token
      */
-    public String generateToken(String tenant, String user, String email, String role, Map<String, Object> additionalParams) {
-        return generateToken(tenant, user, email, role, getExpirationDate(OffsetDateTime.now()), additionalParams, secret, false);
+    public String generateToken(String tenant,
+                                String user,
+                                String email,
+                                String role,
+                                Map<String, Object> additionalParams) {
+        return generateToken(tenant,
+                             user,
+                             email,
+                             role,
+                             getExpirationDate(OffsetDateTime.now()),
+                             additionalParams,
+                             secret,
+                             false);
     }
 
     /**
-     *
      * FIXME : JWT generate must manage RSA keys
-     *
+     * <p>
      * Generate a JWT handling the tenant name, the user name, its related role and additional parameters (user specific)
-     * @param tenant tenant
-     * @param user user name
-     * @param email user email
-     * @param role user role
-     * @param expirationDate specific expiration date
+     *
+     * @param tenant           tenant
+     * @param user             user name
+     * @param email            user email
+     * @param role             user role
+     * @param expirationDate   specific expiration date
      * @param additionalParams additional parameters (user specific)
      * @return a Json Web Token
      */
-    public String generateToken(String tenant, String user, String email, String role, OffsetDateTime expirationDate, Map<String, Object> additionalParams) {
+    public String generateToken(String tenant,
+                                String user,
+                                String email,
+                                String role,
+                                OffsetDateTime expirationDate,
+                                Map<String, Object> additionalParams) {
         return generateToken(tenant, user, email, role, expirationDate, additionalParams, secret, false);
     }
 
     /**
-     *
      * FIXME : JWT generate must manage RSA keys
-     *
+     * <p>
      * Generate a JWT handling the tenant name, the user name and its related role
-     * @param tenant tenant
+     *
+     * @param tenant           tenant
      * @param userLoginAndMail user name & mail
-     * @param role user role
+     * @param role             user role
      * @return a Json Web Token
      */
     public String generateToken(String tenant, String userLoginAndMail, String role) {
@@ -246,39 +268,53 @@ public class JWTService {
 
     /**
      * Generate a token providing almost all informations
-     * @param tenant tenant
-     * @param user user who aked for token
-     * @param email user email
-     * @param role user role
-     * @param expirationDate specific expiration date
+     *
+     * @param tenant           tenant
+     * @param user             user who aked for token
+     * @param email            user email
+     * @param role             user role
+     * @param expirationDate   specific expiration date
      * @param additionalParams additional parameters (user specific)
-     * @param secret sec ret phrase (user specific)
-     * @param shorter if true, use a 256 bits algo instead of 512
+     * @param secret           sec ret phrase (user specific)
+     * @param shorter          if true, use a 256 bits algo instead of 512
      * @return a Json Web Token
      */
-    public String generateToken(String tenant, String user, String email, String role, OffsetDateTime expirationDate,
-            Map<String, Object> additionalParams, String secret, boolean shorter) {
+    public String generateToken(String tenant,
+                                String user,
+                                String email,
+                                String role,
+                                OffsetDateTime expirationDate,
+                                Map<String, Object> additionalParams,
+                                String secret,
+                                boolean shorter) {
         // THIS METHOD IS NOT USED BY OAUTH2 AUTHENTICATION
         // I.E. NOT USED TO GENERATE TOKENS FOR AUTHENTICATION ON REGARDS PRIVATE USER BASE
-        return Jwts.builder().setIssuer("regards")
-                .setClaims(generateClaims(tenant, role, user, email, additionalParams)).setSubject(user)
-                .signWith(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)), shorter ? SHORT_ALGO : ALGO)
-                .setExpiration(Date.from(expirationDate.toInstant())).compact();
+        return Jwts.builder()
+                   .setIssuer("regards")
+                   .setClaims(generateClaims(tenant, role, user, email, additionalParams))
+                   .setSubject(user)
+                   .signWith(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)), shorter ? SHORT_ALGO : ALGO)
+                   .setExpiration(Date.from(expirationDate.toInstant()))
+                   .compact();
     }
 
     /**
      * Decode token and returns claims
-     * @param token token to decode
+     *
+     * @param token  token to decode
      * @param secret secret used to generate it
      * @return parsed {@link Claims}
      */
     public Claims parseToken(String token, String secret) throws InvalidJwtException {
-        return Jwts.parser().setSigningKey(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)))
-                .parseClaimsJws(token).getBody();
+        return Jwts.parser()
+                   .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)))
+                   .parseClaimsJws(token)
+                   .getBody();
     }
 
     /**
      * retrieve the current token in place in the security context
+     *
      * @return parsed token which is in the security context
      * @throws JwtException if JWT cannot be parsed
      */
@@ -289,28 +325,35 @@ public class JWTService {
 
     /**
      * Method to generate REGARDS JWT Tokens CLAIMS
+     *
      * @param tenant tenant
-     * @param role user role
-     * @param login user name
-     * @param email user email
+     * @param role   user role
+     * @param login  user name
+     * @param email  user email
      * @return claim map
      */
-    public Map<String, Object> generateClaims(final String tenant, final String role, final String login,
-            final String email) {
+    public Map<String, Object> generateClaims(final String tenant,
+                                              final String role,
+                                              final String login,
+                                              final String email) {
         return generateClaims(tenant, role, login, email, null);
     }
 
     /**
      * Method to generate REGARDS JWT Tokens CLAIMS
-     * @param tenant tenant
-     * @param role user role
-     * @param login user name
-     * @param email user email
+     *
+     * @param tenant           tenant
+     * @param role             user role
+     * @param login            user name
+     * @param email            user email
      * @param additionalParams optional additional parameters (can be null)
      * @return claim map
      */
-    public Map<String, Object> generateClaims(final String tenant, final String role, final String login, String email,
-            Map<String, Object> additionalParams) {
+    public Map<String, Object> generateClaims(final String tenant,
+                                              final String role,
+                                              final String login,
+                                              String email,
+                                              Map<String, Object> additionalParams) {
         final Map<String, Object> claims = new HashMap<>();
         claims.put(CLAIM_TENANT, tenant);
         claims.put(CLAIM_ROLE, role);

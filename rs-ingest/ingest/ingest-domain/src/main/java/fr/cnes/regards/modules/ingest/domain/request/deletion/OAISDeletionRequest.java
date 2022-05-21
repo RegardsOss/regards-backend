@@ -25,23 +25,19 @@ import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
-import java.time.OffsetDateTime;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+
+import javax.persistence.*;
+import java.time.OffsetDateTime;
 
 /**
  * Request to handle deletion of an OAIS product (sip/aips)
  *
  * @author Léo Mieulet
  * @author Sébastien Binda
- *
  */
 @Entity(name = RequestTypeConstant.OAIS_DELETION_VALUE)
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
@@ -61,8 +57,9 @@ public class OAISDeletionRequest extends AbstractRequest {
     @JoinColumn(name = "aip_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_update_request_aip"))
     private AIPEntity aip;
 
-    public static OAISDeletionRequest build(AIPEntity aipToDelete, SessionDeletionMode deletionMode,
-            boolean deleteFiles) {
+    public static OAISDeletionRequest build(AIPEntity aipToDelete,
+                                            SessionDeletionMode deletionMode,
+                                            boolean deleteFiles) {
         OAISDeletionRequest odr = new OAISDeletionRequest();
         odr.aip = aipToDelete;
         odr.config = OAISDeletionPayload.build(deletionMode, deleteFiles);

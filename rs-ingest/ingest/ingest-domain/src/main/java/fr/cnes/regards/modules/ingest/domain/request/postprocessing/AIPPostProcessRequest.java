@@ -20,27 +20,27 @@
 
 package fr.cnes.regards.modules.ingest.domain.request.postprocessing;
 
-import javax.persistence.*;
-import java.time.OffsetDateTime;
-
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
-
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
+
+import javax.persistence.*;
+import java.time.OffsetDateTime;
 
 /**
  * Request to postprocess aips
+ *
  * @author Iliana Ghazali
  */
 @Entity(name = RequestTypeConstant.AIP_POST_PROCESS_VALUE)
-@TypeDefs({@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)})
+@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class AIPPostProcessRequest extends AbstractRequest {
 
     /**
@@ -54,11 +54,11 @@ public class AIPPostProcessRequest extends AbstractRequest {
      * AIP to process
      */
     @ManyToOne
-    @JoinColumn(name = "aip_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_postprocessing_request_aip"))
+    @JoinColumn(name = "aip_id", referencedColumnName = "id",
+        foreignKey = @ForeignKey(name = "fk_postprocessing_request_aip"))
     private AIPEntity aip;
 
-
-    public static AIPPostProcessRequest build(AIPEntity aipToProcess,String postProcessingPluginBusinessId) {
+    public static AIPPostProcessRequest build(AIPEntity aipToProcess, String postProcessingPluginBusinessId) {
         AIPPostProcessRequest appr = new AIPPostProcessRequest();
         appr.aip = aipToProcess;
         appr.config = AIPPostProcessPayload.build(postProcessingPluginBusinessId);
@@ -78,8 +78,5 @@ public class AIPPostProcessRequest extends AbstractRequest {
     public AIPEntity getAip() {
         return aip;
     }
-
-
-
 
 }

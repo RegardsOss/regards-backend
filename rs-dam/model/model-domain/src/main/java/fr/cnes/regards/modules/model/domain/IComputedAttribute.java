@@ -24,12 +24,13 @@ import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 /**
  * Plugins of type IComputedAttribute are plugins allowing to calculate the value of an {@link AttributeModel} thanks to
  * a {@link ModelAttrAssoc} We are using the design pattern "Visitor" with {@link IComputedAttributeVisitor}.
+ *
  * @param <P> Type of entity on which the attribute will be added
  * @param <R> type of the attribute value
  * @author Sylvain Vissiere-Guerinet
  */
 @PluginInterface(
-        description = "Plugins of type IComputedAttribute are plugins allowing to calculate the value of an AttributeModel thanks to a ModelAttrAssoc")
+    description = "Plugins of type IComputedAttribute are plugins allowing to calculate the value of an AttributeModel thanks to a ModelAttrAssoc")
 public interface IComputedAttribute<P, R> {
 
     /**
@@ -49,12 +50,14 @@ public interface IComputedAttribute<P, R> {
 
     /**
      * Method responsible for computation of the value.
+     *
      * @param pTarget object on which the attribute should be added.
      */
     void compute(P pTarget);
 
     /**
      * Allows to build the resulting attribute from the computation
+     *
      * @param pVisitor
      * @param <U>
      * @return computed attribute

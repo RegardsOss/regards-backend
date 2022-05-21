@@ -49,6 +49,7 @@ import java.util.stream.Stream;
 
 /**
  * {@link IRoleService} implementation
+ *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
@@ -69,11 +70,11 @@ public class RoleService implements IRoleService, InitializingBean {
      */
     private static final String NATIVE_ROLE_NOT_REMOVABLE = "Modifications on native roles are forbidden";
 
-    public static final String ROLE_GAINED_ACCESS = LogConstants.SECURITY_MARKER
-            + "Role {} has been granted access to these resources: {}";
+    public static final String ROLE_GAINED_ACCESS =
+        LogConstants.SECURITY_MARKER + "Role {} has been granted access to these resources: {}";
 
-    public static final String ROLE_LOST_ACCESS = LogConstants.SECURITY_MARKER
-            + "Role {} does not have access to the these resources anymore: {}";
+    public static final String ROLE_LOST_ACCESS =
+        LogConstants.SECURITY_MARKER + "Role {} does not have access to the these resources anymore: {}";
 
     /**
      * CRUD repository managing {@link Role}s. Autowired by Spring.
@@ -105,9 +106,12 @@ public class RoleService implements IRoleService, InitializingBean {
      */
     private final IAuthenticationResolver authResolver;
 
-    public RoleService(IRoleRepository roleRepository, IProjectUserRepository projectUserRepository,
-            ITenantResolver tenantResolver, IRuntimeTenantResolver runtimeTenantResolver, IPublisher publisher,
-            IAuthenticationResolver authResolver) {
+    public RoleService(IRoleRepository roleRepository,
+                       IProjectUserRepository projectUserRepository,
+                       ITenantResolver tenantResolver,
+                       IRuntimeTenantResolver runtimeTenantResolver,
+                       IPublisher publisher,
+                       IAuthenticationResolver authResolver) {
         super();
         this.roleRepository = roleRepository;
         this.projectUserRepository = projectUserRepository;
@@ -157,8 +161,9 @@ public class RoleService implements IRoleService, InitializingBean {
 
     /**
      * Create or load a default role
+     *
      * @param defaultRole default role to create
-     * @param parentRole parent role to attach
+     * @param parentRole  parent role to attach
      * @return created role
      */
     private Role createOrLoadDefaultRole(Role defaultRole, Role parentRole) {
@@ -227,7 +232,7 @@ public class RoleService implements IRoleService, InitializingBean {
             // Retrieve parent native role of the given parent role.
             if (!parentRole.getParentRole().isNative()) {
                 throw new EntityException(
-                        "There is no native parent associated to the given parent role " + parentRole.getName());
+                    "There is no native parent associated to the given parent role " + parentRole.getName());
             }
 
             newCreatedRole = new Role(role.getName(), parentRole.getParentRole());
@@ -244,7 +249,7 @@ public class RoleService implements IRoleService, InitializingBean {
     @Override
     public Role retrieveRole(String roleName) throws EntityNotFoundException {
         return roleRepository.findOneByName(roleName)
-                .orElseThrow(() -> new EntityNotFoundException(roleName, Role.class));
+                             .orElseThrow(() -> new EntityNotFoundException(roleName, Role.class));
     }
 
     /**
@@ -265,10 +270,11 @@ public class RoleService implements IRoleService, InitializingBean {
             throw new EntityInconsistentIdentifierException(roleName, updatedRole.getName(), Role.class);
         }
         Role beforeUpdate = roleRepository.findByName(roleName)
-                .orElseThrow(() -> new EntityNotFoundException(roleName, Role.class));
-        if (beforeUpdate.isNative()
-                && (((beforeUpdate.getParentRole() == null) && (updatedRole.getParentRole() != null))
-                        || (!Objects.equal(beforeUpdate.getParentRole(), updatedRole.getParentRole())))) {
+                                          .orElseThrow(() -> new EntityNotFoundException(roleName, Role.class));
+        if (beforeUpdate.isNative() && (
+            ((beforeUpdate.getParentRole() == null) && (updatedRole.getParentRole() != null)) || (!Objects.equal(
+                beforeUpdate.getParentRole(),
+                updatedRole.getParentRole())))) {
             throw new EntityOperationForbiddenException(roleName, Role.class, "Native role parent cannot be changed");
         }
         Role updated = updatedRole;
@@ -357,6 +363,7 @@ public class RoleService implements IRoleService, InitializingBean {
 
     /**
      * Check authenticated user can manage target role resource accesses.
+     *
      * @param role target role to manage
      * @throws EntityOperationForbiddenException if operation forbidden
      */
@@ -371,7 +378,7 @@ public class RoleService implements IRoleService, InitializingBean {
 
         // System role always granted
         if (RoleAuthority.isSysRole(securityRole) || RoleAuthority.isInstanceAdminRole(securityRole)
-                || RoleAuthority.isProjectAdminRole(securityRole)) {
+            || RoleAuthority.isProjectAdminRole(securityRole)) {
             LOGGER.debug("Priviledged call granted");
             return;
         }
@@ -387,7 +394,8 @@ public class RoleService implements IRoleService, InitializingBean {
         // Check if target role is hierarchically inferior so current user can alter it
         if (currentRole.isPresent() && isHierarchicallyInferior(refRole, currentRole.get())) {
 
-            LOGGER.debug("User with role {} can add resource accesses to role {}", currentRole.get().getName(),
+            LOGGER.debug("User with role {} can add resource accesses to role {}",
+                         currentRole.get().getName(),
                          role.getName());
 
         } else if (currentRole.isPresent()) {
@@ -403,6 +411,7 @@ public class RoleService implements IRoleService, InitializingBean {
 
     /**
      * Check authenticated user can add specified resources.
+     *
      * @param newOnes resources to add only if they are a subset of use ones.
      */
     private void canAddResourceAccesses(ResourcesAccess... newOnes) throws EntityOperationForbiddenException {
@@ -415,7 +424,7 @@ public class RoleService implements IRoleService, InitializingBean {
 
         // System role always granted
         if (RoleAuthority.isSysRole(securityRole) || RoleAuthority.isInstanceAdminRole(securityRole)
-                || RoleAuthority.isProjectAdminRole(securityRole)) {
+            || RoleAuthority.isProjectAdminRole(securityRole)) {
             LOGGER.debug("Priviledged call granted");
             return;
         }
@@ -441,7 +450,8 @@ public class RoleService implements IRoleService, InitializingBean {
 
     /**
      * Add a set of accesses to a role and its descendants(according to PM003)
-     * @param role role on which the modification has been made
+     *
+     * @param role    role on which the modification has been made
      * @param newOnes accesses to add
      * @throws EntityOperationForbiddenException if error occurs!
      */
@@ -462,7 +472,8 @@ public class RoleService implements IRoleService, InitializingBean {
 
     /**
      * Add accesses on all inheriting roles
-     * @param role role to manage
+     *
+     * @param role              role to manage
      * @param resourcesAccesses accesses to add
      */
     private void addAndPropagate(Role role, ResourcesAccess... resourcesAccesses) {
@@ -484,12 +495,13 @@ public class RoleService implements IRoleService, InitializingBean {
 
     /**
      * Add accesses on current role only and change parent if required to maintain consistency
-     * @param role role to manage
+     *
+     * @param role              role to manage
      * @param resourcesAccesses accesses to add
      * @throws EntityOperationForbiddenException if parent cannot be found
      */
     private void addAndManageParent(Role role, ResourcesAccess... resourcesAccesses)
-            throws EntityOperationForbiddenException {
+        throws EntityOperationForbiddenException {
         // Add accesses
         boolean changed = role.getPermissions().addAll(Sets.newHashSet(resourcesAccesses));
         // Save changes
@@ -506,6 +518,7 @@ public class RoleService implements IRoleService, InitializingBean {
 
     /**
      * Inform security starter an (or many) access(es) changed
+     *
      * @param resourcesAccesses resource accesses that have changed
      */
     private void publishResourceAccessEvent(String roleName, ResourcesAccess... resourcesAccesses) {
@@ -534,7 +547,7 @@ public class RoleService implements IRoleService, InitializingBean {
 
     @Override
     public Page<ProjectUser> retrieveRoleProjectUserList(Long roleId, Pageable pageable)
-            throws EntityNotFoundException {
+        throws EntityNotFoundException {
         Optional<Role> roleOpt = roleRepository.findById(roleId);
         if (!roleOpt.isPresent()) {
             throw new EntityNotFoundException(roleId.toString(), Role.class);
@@ -548,7 +561,7 @@ public class RoleService implements IRoleService, InitializingBean {
 
     @Override
     public Page<ProjectUser> retrieveRoleProjectUserList(String roleName, Pageable pageable)
-            throws EntityNotFoundException {
+        throws EntityNotFoundException {
         Optional<Role> role = roleRepository.findOneByName(roleName);
         if (!role.isPresent()) {
             throw new EntityNotFoundException(roleName, Role.class);
@@ -572,10 +585,13 @@ public class RoleService implements IRoleService, InitializingBean {
                 providedRole = retrieveRole(roleName);
                 currentRole = retrieveRole(securityRole);
                 return securityRole.equals(DefaultRole.PROJECT_ADMIN.toString()) || isHierarchicallyInferior(
-                        providedRole, currentRole);
+                    providedRole,
+                    currentRole);
             } catch (EntityNotFoundException e) {
                 LOGGER.error("Failed to compare the current role {} with {}, as one of them does not exist",
-                             securityRole, roleName, e);
+                             securityRole,
+                             roleName,
+                             e);
                 throw e;
             }
         }
@@ -603,7 +619,8 @@ public class RoleService implements IRoleService, InitializingBean {
 
     /**
      * Determines if first role is inferior to second role.
-     * @param first role that should be inferior to second
+     *
+     * @param first  role that should be inferior to second
      * @param second role that should not be inferior to first
      * @return FALSE if: <br/>
      * <ul>
@@ -658,7 +675,7 @@ public class RoleService implements IRoleService, InitializingBean {
     public Role getRolePublic() {
         RoleFactory factory = new RoleFactory();
         return roleRepository.findOneByName(DefaultRole.PUBLIC.toString())
-                .orElseGet(() -> roleRepository.save(factory.createPublic()));
+                             .orElseGet(() -> roleRepository.save(factory.createPublic()));
     }
 
     @Override
@@ -695,11 +712,12 @@ public class RoleService implements IRoleService, InitializingBean {
     }
 
     private void removeResourcesAccesses(Role role, ResourcesAccess[] resourcesAccesses)
-            throws EntityOperationForbiddenException {
+        throws EntityOperationForbiddenException {
         // If PROJECT_ADMIN, nothing to do / removal forbidden
         if (role.getName().equals(DefaultRole.PROJECT_ADMIN.toString())) {
-            throw new EntityOperationForbiddenException(role.getName(), Role.class,
-                    "Removing resource accesses from role PROJECT_ADMIN is forbidden!");
+            throw new EntityOperationForbiddenException(role.getName(),
+                                                        Role.class,
+                                                        "Removing resource accesses from role PROJECT_ADMIN is forbidden!");
         }
 
         // Apply changes and publish changes inside removeAndPropagate or RemoveAndManageParent so we are sure that
@@ -718,7 +736,8 @@ public class RoleService implements IRoleService, InitializingBean {
 
     /**
      * Remove accesses on all inherited roles
-     * @param role role to manage
+     *
+     * @param role              role to manage
      * @param resourcesAccesses accesses to remove
      */
     private void removeAndPropagate(Role role, ResourcesAccess... resourcesAccesses) {
@@ -755,12 +774,13 @@ public class RoleService implements IRoleService, InitializingBean {
 
     /**
      * Remove accesses on current role only and change parent if required to maintain consistency
-     * @param role role to manage
+     *
+     * @param role              role to manage
      * @param resourcesAccesses accesses to remove
      * @throws EntityOperationForbiddenException if parent cannot be found
      */
     private void removeAndManageParent(Role role, ResourcesAccess... resourcesAccesses)
-            throws EntityOperationForbiddenException {
+        throws EntityOperationForbiddenException {
         // Remove accesses
         boolean changed = role.getPermissions().removeAll(Sets.newHashSet(resourcesAccesses));
         // Save changes
@@ -779,6 +799,7 @@ public class RoleService implements IRoleService, InitializingBean {
     /**
      * Found a consistent parent for the current role starting with {@link DefaultRole#ADMIN}, highest available
      * inherited parent.
+     *
      * @param role role to consider
      * @throws EntityOperationForbiddenException if no parent role matches
      */
@@ -792,7 +813,8 @@ public class RoleService implements IRoleService, InitializingBean {
 
     /**
      * Found a consistent parent for the current role
-     * @param role role to consider
+     *
+     * @param role       role to consider
      * @param parentRole parent role candidate
      * @throws EntityOperationForbiddenException if no parent role matches
      */
@@ -805,9 +827,9 @@ public class RoleService implements IRoleService, InitializingBean {
         // throw exception
         // a role must have a parent and cannot have less accesses than public
         if (parentRole == null) {
-            String message = String
-                    .format("Role %s cannot have less accesses than public role. Accesses removal cancelled.",
-                            role.getName());
+            String message = String.format(
+                "Role %s cannot have less accesses than public role. Accesses removal cancelled.",
+                role.getName());
             LOGGER.error(message);
             throw new EntityOperationForbiddenException(message);
         }
@@ -847,7 +869,7 @@ public class RoleService implements IRoleService, InitializingBean {
         // To simplify client interraction we returned the actual role of the user even if this role is not borowable.
         // The regards frontend use this role to calculate user ihm rights based on his role.
         if (!roleNamesAllowedToBorrow.contains(originalRole.getName()) && ((originalRole.getParentRole() == null)
-                || !roleNamesAllowedToBorrow.contains(originalRole.getParentRole().getName()))) {
+            || !roleNamesAllowedToBorrow.contains(originalRole.getParentRole().getName()))) {
             return Sets.newHashSet(originalRole);
         }
         // get ascendants of the original Role
@@ -914,6 +936,7 @@ public class RoleService implements IRoleService, InitializingBean {
 
     /**
      * Inform security starter of a role change
+     *
      * @param role role
      */
     private void publishRoleEvent(Role role) {

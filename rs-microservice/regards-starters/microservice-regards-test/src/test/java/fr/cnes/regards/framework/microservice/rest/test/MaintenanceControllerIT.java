@@ -18,6 +18,12 @@
  */
 package fr.cnes.regards.framework.microservice.rest.test;
 
+import fr.cnes.regards.framework.microservice.maintenance.MaintenanceFilter;
+import fr.cnes.regards.framework.microservice.rest.MaintenanceController;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.maintenancetest.rest.TestController;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -27,13 +33,6 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
-import fr.cnes.regards.framework.microservice.maintenance.MaintenanceFilter;
-import fr.cnes.regards.framework.microservice.rest.MaintenanceController;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.maintenancetest.rest.TestController;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -60,14 +59,20 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
 
     @Test
     public void setMaintenanceTest() {
-        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL, null,
-                          customizer().expectStatusOk(), ERROR_MSG, TENANT);
+        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL,
+                          null,
+                          customizer().expectStatusOk(),
+                          ERROR_MSG,
+                          TENANT);
     }
 
     @Test
     public void unSetMaintenanceTest() {
         performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_DESACTIVATE_URL,
-                          null, customizer().expectStatusOk(), ERROR_MSG, TENANT);
+                          null,
+                          customizer().expectStatusOk(),
+                          ERROR_MSG,
+                          TENANT);
     }
 
     @Test
@@ -77,14 +82,18 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
     public void controllerUnavailableTest() {
         // Service unavailable : maintenance mode is set for the tenant
         performDefaultGet(TestController.MAINTENANCE_TEST_503_URL,
-                          customizer().expect(MockMvcResultMatchers.status().isServiceUnavailable()), ERROR_MSG);
+                          customizer().expect(MockMvcResultMatchers.status().isServiceUnavailable()),
+                          ERROR_MSG);
 
         // control that the service is in maintenance for the tenant
         String jsonTenantContent = JSON_PATH_CONTENT + "." + getDefaultTenant();
-        performDefaultGet(MaintenanceController.MAINTENANCE_URL, customizer().expectStatusOk()
-                .expect(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty())
-                .expect(MockMvcResultMatchers.jsonPath(jsonTenantContent + ".active", Matchers.hasToString("true")))
-                .expect(MockMvcResultMatchers.jsonPath(jsonTenantContent + ".lastUpdate", Matchers.notNullValue())),
+        performDefaultGet(MaintenanceController.MAINTENANCE_URL,
+                          customizer().expectStatusOk()
+                                      .expect(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty())
+                                      .expect(MockMvcResultMatchers.jsonPath(jsonTenantContent + ".active",
+                                                                             Matchers.hasToString("true")))
+                                      .expect(MockMvcResultMatchers.jsonPath(jsonTenantContent + ".lastUpdate",
+                                                                             Matchers.notNullValue())),
                           ERROR_MSG);
 
         resetMaintenanceMode();
@@ -95,15 +104,21 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
     @Purpose("When a microservice is in maintenance state, only the GET request are performed")
     public void controllerGetRequestWhenUnavailableTest() {
         // Set the maintenance mode is for the tenant
-        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL, null,
-                          customizer().expectStatusOk(), ERROR_MSG, getDefaultTenant());
+        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL,
+                          null,
+                          customizer().expectStatusOk(),
+                          ERROR_MSG,
+                          getDefaultTenant());
 
         // control that the service is in maintenance for the default tenant
         String jsonTenantContent = JSON_PATH_CONTENT + "." + getDefaultTenant();
-        performDefaultGet(MaintenanceController.MAINTENANCE_URL, customizer().expectStatusOk()
-                .expect(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty())
-                .expect(MockMvcResultMatchers.jsonPath(jsonTenantContent + ".active", Matchers.hasToString("true")))
-                .expect(MockMvcResultMatchers.jsonPath(jsonTenantContent + ".lastUpdate", Matchers.notNullValue())),
+        performDefaultGet(MaintenanceController.MAINTENANCE_URL,
+                          customizer().expectStatusOk()
+                                      .expect(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty())
+                                      .expect(MockMvcResultMatchers.jsonPath(jsonTenantContent + ".active",
+                                                                             Matchers.hasToString("true")))
+                                      .expect(MockMvcResultMatchers.jsonPath(jsonTenantContent + ".lastUpdate",
+                                                                             Matchers.notNullValue())),
                           ERROR_MSG);
 
         // the GET request should be OK
@@ -111,10 +126,11 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
 
         // try a POST request : the service is unavailable
         // we skip documentation because status code 515 is not standard and Spring does not handle it.
-        performDefaultPost(TestController.MAINTENANCE_TEST_URL, null,
-                           customizer()
-                                   .expect(MockMvcResultMatchers.status().is(MaintenanceFilter.MAINTENANCE_HTTP_STATUS))
-                                   .skipDocumentation(),
+        performDefaultPost(TestController.MAINTENANCE_TEST_URL,
+                           null,
+                           customizer().expect(MockMvcResultMatchers.status()
+                                                                    .is(MaintenanceFilter.MAINTENANCE_HTTP_STATUS))
+                                       .skipDocumentation(),
                            ERROR_MSG);
 
         resetMaintenanceMode();
@@ -123,30 +139,45 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
     @Test
     public void desactivateMaintenanceTest() {
         // Set the maintenance mode is for the tenant
-        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL, null,
-                          customizer().expectStatusOk(), ERROR_MSG, getDefaultTenant());
+        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL,
+                          null,
+                          customizer().expectStatusOk(),
+                          ERROR_MSG,
+                          getDefaultTenant());
 
         // control that the service is in maintenance for the default tenant
         String jsonTenantContent = JSON_PATH_CONTENT + "." + getDefaultTenant();
-        performDefaultGet(MaintenanceController.MAINTENANCE_URL, customizer().expectStatusOk()
-                .expect(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty())
-                .expect(MockMvcResultMatchers.jsonPath(jsonTenantContent + ".active", Matchers.hasToString("true")))
-                .expect(MockMvcResultMatchers.jsonPath(jsonTenantContent + ".lastUpdate", Matchers.notNullValue())),
+        performDefaultGet(MaintenanceController.MAINTENANCE_URL,
+                          customizer().expectStatusOk()
+                                      .expect(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty())
+                                      .expect(MockMvcResultMatchers.jsonPath(jsonTenantContent + ".active",
+                                                                             Matchers.hasToString("true")))
+                                      .expect(MockMvcResultMatchers.jsonPath(jsonTenantContent + ".lastUpdate",
+                                                                             Matchers.notNullValue())),
                           ERROR_MSG);
 
         // desactivate the maintenance mode
         performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_DESACTIVATE_URL,
-                          null, customizer().expectStatusOk(), ERROR_MSG, getDefaultTenant());
+                          null,
+                          customizer().expectStatusOk(),
+                          ERROR_MSG,
+                          getDefaultTenant());
 
         // control that the service is not in maintenance for the default tenant
-        performDefaultGet(MaintenanceController.MAINTENANCE_URL, customizer().expectStatusOk()
-                .expect(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty())
-                .expect(MockMvcResultMatchers.jsonPath(jsonTenantContent + ".active", Matchers.hasToString("false")))
-                .expect(MockMvcResultMatchers.jsonPath(jsonTenantContent + ".lastUpdate", Matchers.notNullValue())),
+        performDefaultGet(MaintenanceController.MAINTENANCE_URL,
+                          customizer().expectStatusOk()
+                                      .expect(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty())
+                                      .expect(MockMvcResultMatchers.jsonPath(jsonTenantContent + ".active",
+                                                                             Matchers.hasToString("false")))
+                                      .expect(MockMvcResultMatchers.jsonPath(jsonTenantContent + ".lastUpdate",
+                                                                             Matchers.notNullValue())),
                           ERROR_MSG);
 
         // try a POST request : the service is now OK
-        performDefaultPost(TestController.MAINTENANCE_TEST_URL, null, customizer().expectStatusCreated(), ERROR_MSG,
+        performDefaultPost(TestController.MAINTENANCE_TEST_URL,
+                           null,
+                           customizer().expectStatusCreated(),
+                           ERROR_MSG,
                            getDefaultTenant());
     }
 
@@ -154,21 +185,30 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
     public void controlMaintenanceWithTwoTenant() {
         // Set the maintenance mode is for the default tenant
         String jsonTenantContent = JSON_PATH_CONTENT + "." + getDefaultTenant();
-        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL, null,
-                          customizer().expectStatusOk(), ERROR_MSG, getDefaultTenant());
+        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL,
+                          null,
+                          customizer().expectStatusOk(),
+                          ERROR_MSG,
+                          getDefaultTenant());
 
         // control that the service is in maintenance for the default tenant
-        performDefaultGet(MaintenanceController.MAINTENANCE_URL, customizer().expectStatusOk()
-                .expect(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty())
-                .expect(MockMvcResultMatchers.jsonPath(jsonTenantContent + ".active", Matchers.hasToString("true")))
-                .expect(MockMvcResultMatchers.jsonPath(jsonTenantContent + ".lastUpdate", Matchers.notNullValue())),
+        performDefaultGet(MaintenanceController.MAINTENANCE_URL,
+                          customizer().expectStatusOk()
+                                      .expect(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty())
+                                      .expect(MockMvcResultMatchers.jsonPath(jsonTenantContent + ".active",
+                                                                             Matchers.hasToString("true")))
+                                      .expect(MockMvcResultMatchers.jsonPath(jsonTenantContent + ".lastUpdate",
+                                                                             Matchers.notNullValue())),
                           ERROR_MSG);
 
         // control that the service is not in maintenance for the other tenant
         String token = jwtService.generateToken(TENANT, getDefaultUserEmail(), getDefaultUserEmail(), DEFAULT_ROLE);
-        performPost(TestController.MAINTENANCE_TEST_URL, token, null,
-                    customizer().expectStatusCreated().addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-                            .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE),
+        performPost(TestController.MAINTENANCE_TEST_URL,
+                    token,
+                    null,
+                    customizer().expectStatusCreated()
+                                .addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                                .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE),
                     ERROR_MSG);
 
         resetMaintenanceMode();
@@ -176,7 +216,10 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
 
     private void resetMaintenanceMode() {
         performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_DESACTIVATE_URL,
-                          null, customizer().expectStatusOk(), ERROR_MSG, getDefaultTenant());
+                          null,
+                          customizer().expectStatusOk(),
+                          ERROR_MSG,
+                          getDefaultTenant());
     }
 
 }

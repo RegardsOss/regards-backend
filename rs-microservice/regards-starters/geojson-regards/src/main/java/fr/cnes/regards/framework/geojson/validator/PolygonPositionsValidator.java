@@ -18,15 +18,16 @@
  */
 package fr.cnes.regards.framework.geojson.validator;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-
 import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
 import fr.cnes.regards.framework.geojson.coordinates.Positions;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
 
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+
 /**
  * Validate {@link Polygon} coordinate structure
+ *
  * @author Marc Sordi
  */
 public class PolygonPositionsValidator implements ConstraintValidator<PolygonPositionsConstraints, PolygonPositions> {

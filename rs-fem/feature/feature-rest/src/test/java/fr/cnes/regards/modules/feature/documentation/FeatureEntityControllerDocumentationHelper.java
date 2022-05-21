@@ -18,29 +18,25 @@
  */
 package fr.cnes.regards.modules.feature.documentation;
 
+import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.test.integration.ConstrainedFields;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
+import fr.cnes.regards.modules.feature.dto.SearchSelectionMode;
+import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPagedModel;
+import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.restdocs.request.ParameterDescriptor;
+import org.springframework.restdocs.request.RequestDocumentation;
+import org.springframework.restdocs.snippet.Attributes;
+
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.restdocs.payload.FieldDescriptor;
-import org.springframework.restdocs.request.ParameterDescriptor;
-import org.springframework.restdocs.request.RequestDocumentation;
-import org.springframework.restdocs.snippet.Attributes;
-
-import com.google.common.collect.Lists;
-
-import fr.cnes.regards.framework.test.integration.ConstrainedFields;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
-import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
-import fr.cnes.regards.modules.feature.dto.SearchSelectionMode;
-import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPagedModel;
-
 /**
- *
  * @author Sébastien Binda
- *
  */
 public class FeatureEntityControllerDocumentationHelper {
 
@@ -51,18 +47,20 @@ public class FeatureEntityControllerDocumentationHelper {
         fd.add(fields.withPath("filters.session", "Session of the feature").type("String").optional());
         fd.add(fields.withPath("filters.providerId", "ProviderId of the feature").type("String").optional());
         fd.add(fields.withPath("filters.from", "Search for features with lastupdate date greather than this parameter")
-                .type("Date ISO-8601").optional());
+                     .type("Date ISO-8601")
+                     .optional());
         fd.add(fields.withPath("filters.to", "Search for features with lastupdate date lower than this parameter")
-                .type("Date ISO-8601").optional());
+                     .type("Date ISO-8601")
+                     .optional());
         fd.add(fields.withPath("filters.model", "Model of the features to search for").type("String").optional());
-        fd.add(fields
-                .withPath("featureIds",
-                          "Array of feature ids to search for or to exclude form search. Depends on featureIdsSelectionMode.")
-                .type("String[]").optional());
-        fd.add(fields.withPath("featureIdsSelectionMode", "featureIdsSelectionMode",
+        fd.add(fields.withPath("featureIds",
+                               "Array of feature ids to search for or to exclude form search. Depends on featureIdsSelectionMode.")
+                     .type("String[]")
+                     .optional());
+        fd.add(fields.withPath("featureIdsSelectionMode",
+                               "featureIdsSelectionMode",
                                "featureIds selection mode. Default value = " + SearchSelectionMode.INCLUDE,
-                               Arrays.toString(SearchSelectionMode.values()))
-                .type("String").optional());
+                               Arrays.toString(SearchSelectionMode.values())).type("String").optional());
         return fd;
     }
 
@@ -141,11 +139,12 @@ public class FeatureEntityControllerDocumentationHelper {
         fd.add(fields.withPath(prefix.orElse("") + "providerId", "Feature provider identifier").type("String"));
         fd.add(fields.withPath(prefix.orElse("") + "source", "Source of the feature").type("Boolean"));
         fd.add(fields.withPath(prefix.orElse("") + "session", "Acquisition session name of the feature")
-                .type("String"));
+                     .type("String"));
         fd.add(fields.withPath(prefix.orElse("") + "version", "Feature version").type("Integer"));
-        fd.add(fields.withPath(prefix.orElse("") + "lastUpdate", "lastUpdate", "Last update date of the feature",
-                               OffsetDateTime.now().toString())
-                .type("Date ISO-8601"));
+        fd.add(fields.withPath(prefix.orElse("") + "lastUpdate",
+                               "lastUpdate",
+                               "Last update date of the feature",
+                               OffsetDateTime.now().toString()).type("Date ISO-8601"));
         fd.add(fields.withPath(prefix.orElse("") + "feature", "Feature content geojson format").type("Geojson"));
         return fd;
 

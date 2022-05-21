@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyS
  * Enumeration for all product status in sessions.
  *
  * @author Sébastien Binda
- *
  */
 public enum SessionProductPropertyEnum {
 
@@ -74,10 +73,9 @@ public enum SessionProductPropertyEnum {
     PROPERTY_INGESTION_FAILED("ingestionFailed", StepPropertyStateEnum.ERROR, false, false),
 
     /**
-     *  Name of the property indicating the sip has been successfully ingested
+     * Name of the property indicating the sip has been successfully ingested
      */
     PROPERTY_INGESTED("ingested", StepPropertyStateEnum.INFO, false, false);
-
 
     private String name;
 

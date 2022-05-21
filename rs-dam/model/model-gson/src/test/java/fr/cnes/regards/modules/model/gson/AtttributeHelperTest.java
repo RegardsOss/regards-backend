@@ -18,18 +18,15 @@
  */
 package fr.cnes.regards.modules.model.gson;
 
-import java.util.List;
-
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import java.util.List;
 
 /**
- *
  * @author Sébastien Binda
- *
  */
 public class AtttributeHelperTest {
 

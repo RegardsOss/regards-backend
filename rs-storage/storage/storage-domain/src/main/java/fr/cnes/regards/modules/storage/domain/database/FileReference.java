@@ -35,13 +35,11 @@ import java.util.Set;
  */
 @Entity
 @JsonFilter("owners")
-@Table(name = "t_file_reference",
-        indexes = { @Index(name = "idx_file_reference_checksum", columnList = "checksum"),
-                @Index(name = "idx_file_reference_storage", columnList = "storage"),
-                @Index(name = "idx_file_reference_storage_checksum", columnList = "checksum, storage"),
-                @Index(name = "idx_file_reference_type", columnList = "type") },
-        uniqueConstraints = { @UniqueConstraint(name = "uk_t_file_reference_checksum_storage",
-                columnNames = { "checksum", "storage" }) })
+@Table(name = "t_file_reference", indexes = { @Index(name = "idx_file_reference_checksum", columnList = "checksum"),
+    @Index(name = "idx_file_reference_storage", columnList = "storage"),
+    @Index(name = "idx_file_reference_storage_checksum", columnList = "checksum, storage"),
+    @Index(name = "idx_file_reference_type", columnList = "type") }, uniqueConstraints = {
+    @UniqueConstraint(name = "uk_t_file_reference_checksum_storage", columnNames = { "checksum", "storage" }) })
 @NamedEntityGraph(name = "graph.filereference.owners", attributeNodes = { @NamedAttributeNode(value = "owners") })
 public class FileReference {
 
@@ -77,7 +75,7 @@ public class FileReference {
     @Embedded
     private FileLocation location;
 
-    @Column(name="referenced")
+    @Column(name = "referenced")
     private boolean referenced = false;
 
     public FileReference() {
@@ -173,6 +171,7 @@ public class FileReference {
 
     /**
      * if the file is referenced (not stored physically), set to true
+     *
      * @param referenced if the file is referenced
      */
     public void setReferenced(boolean referenced) {

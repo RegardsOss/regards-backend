@@ -33,6 +33,7 @@ import java.util.UUID;
  * JobInfo service interface.
  * A Job is instanciate from a JobInfo (that can be viewed as a job description and job state) so sometimes we can speak
  * of jobs instead of jobs infos
+ *
  * @author oroussel
  * @author Léo Mieulet
  */
@@ -75,12 +76,14 @@ public interface IJobInfoService {
 
     /**
      * Lock job info, cannot be candidate for cleaning
+     *
      * @return the update job info
      */
     JobInfo lock(JobInfo jobInfo);
 
     /**
      * Unlock job info, make it candidate for cleaning
+     *
      * @return the update job info
      */
     JobInfo unlock(JobInfo jobInfo);
@@ -102,12 +105,14 @@ public interface IJobInfoService {
 
     /**
      * Retrieve specified JObInfo
+     *
      * @param id JobInfo id
      */
     JobInfo retrieveJob(UUID id);
 
     /**
      * Ask for a job to be stopped (asynchronous method)
+     *
      * @param id job id
      */
     void stopJob(UUID id);
@@ -135,8 +140,9 @@ public interface IJobInfoService {
 
     /**
      * Return the number of job, for the current tenant, having provided statuses
+     *
      * @param className the class name of the job
-     * @param statuses jobInfo statuses
+     * @param statuses  jobInfo statuses
      */
     Long retrieveJobsCount(String className, JobStatus... statuses);
 
@@ -154,6 +160,9 @@ public interface IJobInfoService {
      */
     void cleanDeadJobs();
 
-    Long countByClassAndParameterValueAndStatus(String className, String parameterName, String parameterValue, JobStatus... jobStatuses);
+    Long countByClassAndParameterValueAndStatus(String className,
+                                                String parameterName,
+                                                String parameterValue,
+                                                JobStatus... jobStatuses);
 
 }

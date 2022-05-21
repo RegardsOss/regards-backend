@@ -53,7 +53,6 @@ import org.springframework.test.context.TestPropertySource;
  * Test project endpoint client
  *
  * @author Marc Sordi
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
@@ -95,56 +94,46 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     @Before
     public void init() {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        client = FeignClientBuilder.build(
-                                          new TokenClientProvider<>(IProjectUsersClient.class,
-                                                  "http://" + serverAddress + ":" + getPort(), feignSecurityManager),
-                                          gson);
+        client = FeignClientBuilder.build(new TokenClientProvider<>(IProjectUsersClient.class,
+                                                                    "http://" + serverAddress + ":" + getPort(),
+                                                                    feignSecurityManager), gson);
         FeignSecurityManager.asSystem();
     }
 
     /**
-     *
      * Check that the accounts Feign Client can retrieve all accounts.
-     *
-
      */
     @Ignore
     @Test
     public void retrieveProjectUserListFromFeignClient() {
-        final ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response = client.retrieveProjectUserList(null, PageRequest.of(0, 10));
+        final ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response = client.retrieveProjectUserList(null,
+                                                                                                             PageRequest.of(
+                                                                                                                 0,
+                                                                                                                 10));
         Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
     }
 
     /**
-     *
      * Check that the accounts Feign Client can retrieve all accounts.
-     *
-
      */
     @Test
     public void retrieveAccessRequestListFromFeignClient() {
-        final ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response = client.retrieveAccessRequestList(PageRequest.of(0, 10));
+        final ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response = client.retrieveAccessRequestList(
+            PageRequest.of(0, 10));
         Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
     }
 
     /**
-     *
      * Check that the accounts Feign Client can retrieve all accounts.
-     *
-
      */
     @Test
     public void retrieveProjectUserByEmailFromFeignClient() {
-        final ResponseEntity<EntityModel<ProjectUser>> response = client
-                .retrieveProjectUserByEmail("unkown@regards.de");
+        final ResponseEntity<EntityModel<ProjectUser>> response = client.retrieveProjectUserByEmail("unkown@regards.de");
         Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
     }
 
     /**
-     *
      * Check that the accounts Feign Client can retrieve all accounts.
-     *
-
      */
     @Ignore
     @Test
@@ -154,10 +143,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     }
 
     /**
-     *
      * Check that the accounts Feign Client can retrieve all accounts.
-     *
-
      */
     @Test
     public void removeProjectUserFromFeignClient() {
@@ -166,19 +152,26 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     }
 
     /**
-     *
      * Check that the accounts Feign Client can retrieve all accounts.
+     *
      * @throws EntityException
      * @throws EntityInvalidException
      * @throws EntityAlreadyExistsException
-     *
-
      */
     @Test
     @Ignore
     public void isAdminProjectUserFromFeignClient() throws EntityException {
-        final AccessRequestDto accessRequest = new AccessRequestDto("test@c-s.fr", "pFirstName", "pLastName",
-                DefaultRole.ADMIN.toString(), null, "pPassword", "pOriginUrl", "pRequestLink", "origin", null, 0L);
+        final AccessRequestDto accessRequest = new AccessRequestDto("test@c-s.fr",
+                                                                    "pFirstName",
+                                                                    "pLastName",
+                                                                    DefaultRole.ADMIN.toString(),
+                                                                    null,
+                                                                    "pPassword",
+                                                                    "pOriginUrl",
+                                                                    "pRequestLink",
+                                                                    "origin",
+                                                                    null,
+                                                                    0L);
 
         projectUserService.createProjectUser(accessRequest);
         final ResponseEntity<Boolean> response = client.isAdmin("test@c-s.fr");

@@ -1,14 +1,13 @@
 package fr.cnes.regards.modules.feature.dto.gson;
 
-import java.util.Iterator;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Iterator;
+import java.util.Map;
 
 public class FeatureProperties {
 
@@ -16,7 +15,8 @@ public class FeatureProperties {
 
     public static final String PROPERTIES_FIELD_NAME = "properties";
 
-    private FeatureProperties() {}
+    private FeatureProperties() {
+    }
 
     public static void beforeRead(JsonObject wrapper) {
         JsonElement attEl = wrapper.get(PROPERTIES_FIELD_NAME);
@@ -31,6 +31,7 @@ public class FeatureProperties {
 
     /**
      * Restore {@link JsonArray} from flattened {@link JsonObject} elements (reverse merge)
+     *
      * @param jsonObject {@link JsonObject} to transform
      * @return {@link JsonArray}
      */
@@ -59,6 +60,7 @@ public class FeatureProperties {
 
     /**
      * Merge {@link JsonArray} flattening elements in a single {@link JsonObject}
+     *
      * @param jsonArray {@link JsonArray} to flatten
      * @return {@link JsonObject}
      */

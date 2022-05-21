@@ -25,13 +25,11 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- *
  * Class RoleAuthorizedAdressesConverter
- *
+ * <p>
  * Convert from List<String> to String for database access
  *
  * @author Sébastien Binda
-
  */
 @Converter
 public class RoleAuthorizedAdressesConverter implements AttributeConverter<List<String>, String> {

@@ -30,7 +30,6 @@ import java.util.List;
  * Ensure a RS-ADMIN instance is available before storing or collecting multitenant information.
  *
  * @author Marc Sordi
- *
  */
 public abstract class AbstractProjectDiscoveryClientChecker implements InitializingBean {
 

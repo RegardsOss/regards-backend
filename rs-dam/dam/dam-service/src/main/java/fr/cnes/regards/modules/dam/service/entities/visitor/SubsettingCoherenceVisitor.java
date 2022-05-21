@@ -18,41 +18,23 @@
  */
 package fr.cnes.regards.modules.dam.service.entities.visitor;
 
-import java.util.Iterator;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
-import fr.cnes.regards.modules.indexer.domain.criterion.AbstractMultiCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.AbstractPropertyCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.BooleanMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.BoundaryBoxCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.CircleCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.DateMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.DateRangeCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.EmptyCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.FieldExistsCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterionVisitor;
-import fr.cnes.regards.modules.indexer.domain.criterion.IntMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.LongMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.NotCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.PolygonCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchAnyCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMultiMatchCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.*;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Iterator;
 
 /**
  * Visitor to check if a {@link ICriterion} can be accepted as a subsetting filter in {@link Dataset}. <b>The aim is not
  * to execute the filter but to check if the filter is coherent.</b> For example, the visit of
  * NotCriterion(subCriterion) leads to the visit of subcriterion (because the NotCriterion is coherent)
+ *
  * @author Sylvain Vissiere-Guerinet
  */
 public class SubsettingCoherenceVisitor implements ICriterionVisitor<Boolean> {
@@ -93,8 +75,8 @@ public class SubsettingCoherenceVisitor implements ICriterionVisitor<Boolean> {
     @Override
     public Boolean visitStringMatchCriterion(StringMatchCriterion criterion) {
         AttributeModel attribute = extractAttribute(criterion);
-        return attribute != null && (attribute.getType().equals(PropertyType.STRING)
-                || attribute.getType().equals(PropertyType.STRING_ARRAY));
+        return attribute != null && (attribute.getType().equals(PropertyType.STRING) || attribute.getType()
+                                                                                                 .equals(PropertyType.STRING_ARRAY));
     }
 
     @Override
@@ -105,8 +87,8 @@ public class SubsettingCoherenceVisitor implements ICriterionVisitor<Boolean> {
     @Override
     public Boolean visitStringMatchAnyCriterion(StringMatchAnyCriterion criterion) {
         AttributeModel attribute = extractAttribute(criterion);
-        return attribute != null && (attribute.getType().equals(PropertyType.STRING)
-                || attribute.getType().equals(PropertyType.STRING_ARRAY));
+        return attribute != null && (attribute.getType().equals(PropertyType.STRING) || attribute.getType()
+                                                                                                 .equals(PropertyType.STRING_ARRAY));
     }
 
     @Override
@@ -158,6 +140,7 @@ public class SubsettingCoherenceVisitor implements ICriterionVisitor<Boolean> {
     /**
      * extract the {@link AttributeModel} from the criterion if it is possible and check if it is a attribute from the
      * right model
+     *
      * @param criterion {@link AbstractPropertyCriterion} from which extract the attribute
      * @return extracted {@link AttributeModel} or null
      */

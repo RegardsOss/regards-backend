@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.utils.gson;
 
 import com.google.auto.service.AutoService;
@@ -42,9 +42,10 @@ public class ProcessesByDatasetsDTOTypeAdapter implements TypedGsonTypeAdapter<P
     @Override
     public JsonDeserializer<ProcessesByDatasetsDTO> deserializer() {
         return (json, typeOfT, context) -> {
-            Map<String, List<ProcessLabelDTO>> map = context
-                    .deserialize(json, new TypeToken<Map<String, List<ProcessLabelDTO>>>() {
-                    }.getType());
+            Map<String, List<ProcessLabelDTO>> map = context.deserialize(json,
+                                                                         new TypeToken<Map<String, List<ProcessLabelDTO>>>() {
+
+                                                                         }.getType());
             return new ProcessesByDatasetsDTO(map);
         };
     }

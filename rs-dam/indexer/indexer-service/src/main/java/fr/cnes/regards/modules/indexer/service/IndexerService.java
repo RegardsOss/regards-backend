@@ -18,19 +18,19 @@
  */
 package fr.cnes.regards.modules.indexer.service;
 
-import java.util.Arrays;
-import java.util.Collection;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.indexer.dao.BulkSaveResult;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * To be removed, obviously this service is no more used by microservices, only by tests
+ *
  * @deprecated
  */
 @Deprecated
@@ -45,8 +45,9 @@ public class IndexerService implements IIndexerService {
         if (!repository.indexExists(pIndex)) {
             boolean created = repository.createIndex(pIndex);
             if (created) {
-                String[] types = Arrays.stream(EntityType.values()).map(EntityType::toString)
-                        .toArray(length -> new String[length]);
+                String[] types = Arrays.stream(EntityType.values())
+                                       .map(EntityType::toString)
+                                       .toArray(length -> new String[length]);
             }
             return created;
         }

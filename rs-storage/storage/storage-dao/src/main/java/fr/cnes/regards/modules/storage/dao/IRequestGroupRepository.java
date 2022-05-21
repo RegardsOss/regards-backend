@@ -18,25 +18,21 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
+import fr.cnes.regards.modules.storage.domain.database.request.RequestGroup;
+import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-
-import fr.cnes.regards.modules.storage.domain.database.request.RequestGroup;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.OffsetDateTime;
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * JPA Repository to handle access to {@link RequestGroup} entities.
  *
  * @author Sébatien Binda
- *
  */
 
 public interface IRequestGroupRepository extends JpaRepository<RequestGroup, String> {
@@ -52,20 +48,16 @@ public interface IRequestGroupRepository extends JpaRepository<RequestGroup, Str
      * @param limit Maximum number of terminated groups to return
      * @return List of terminated {@link RequestGroup}s
      */
-    @Query(value = "SELECT * from t_request_group groups "
-            + " WHERE NOT EXISTS (SELECT * "
-            + "        FROM (select g.id as groupId, a.file_storage_request_id as requestId FROM"
-            + "              t_request_group g LEFT OUTER JOIN ta_storage_request_group_ids a ON g.id = a.group_id) AS result "
-            + "        LEFT OUTER JOIN t_file_storage_request r ON result.requestId = r.id "
-            + "        LEFT OUTER JOIN t_file_deletion_request d ON result.groupId = d.group_id "
-            + "        LEFT OUTER JOIN t_file_cache_request cache ON result.groupId = cache.group_id "
-            + "        LEFT OUTER JOIN t_file_copy_request copy ON result.groupId = copy.group_id "
-            + "        WHERE (r.status != 'ERROR' OR"
-            + "               d.status != 'ERROR' OR "
-            + "               copy.status != 'ERROR' OR "
-            + "               cache.status != 'ERROR') "
-            + "               AND groups.id = groupId)"
-            + " LIMIT :limit", nativeQuery = true)
+    @Query(value = "SELECT * from t_request_group groups " + " WHERE NOT EXISTS (SELECT * "
+        + "        FROM (select g.id as groupId, a.file_storage_request_id as requestId FROM"
+        + "              t_request_group g LEFT OUTER JOIN ta_storage_request_group_ids a ON g.id = a.group_id) AS result "
+        + "        LEFT OUTER JOIN t_file_storage_request r ON result.requestId = r.id "
+        + "        LEFT OUTER JOIN t_file_deletion_request d ON result.groupId = d.group_id "
+        + "        LEFT OUTER JOIN t_file_cache_request cache ON result.groupId = cache.group_id "
+        + "        LEFT OUTER JOIN t_file_copy_request copy ON result.groupId = copy.group_id "
+        + "        WHERE (r.status != 'ERROR' OR" + "               d.status != 'ERROR' OR "
+        + "               copy.status != 'ERROR' OR " + "               cache.status != 'ERROR') "
+        + "               AND groups.id = groupId)" + " LIMIT :limit", nativeQuery = true)
     List<RequestGroup> findGroupDones(@Param("limit") Integer limit);
 
     Page<RequestGroup> findByExpirationDateLessThanEqual(OffsetDateTime expirationDate, Pageable page);

@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.engine;
 
 import fr.cnes.regards.modules.processing.domain.PInputFile;
@@ -31,7 +31,7 @@ import static org.apache.commons.io.FilenameUtils.removeExtension;
 /**
  * This interface defines how to find the input files corresponding to a
  * given output file.
- *
+ * <p>
  * {@link POutputFile} instances may refer to the correlation ID of one or more {@link PInputFile}
  * that are thus supposed to have contributed to generate the output. (There is no
  * generic way to link output back to inputs, so the list of input correlation IDs may be empty.)
@@ -42,6 +42,7 @@ public interface IOutputToInputMapper {
 
     /**
      * Given an output, provide all the inputs that were related to it.
+     *
      * @param ctx the execution context
      * @param out the output file
      * @return the inputs related to the output
@@ -54,21 +55,25 @@ public interface IOutputToInputMapper {
         return out.withInputCorrelationIds(cids);
     }
 
-    /** Provides an input/output mapper that never maps to anything.
-     * Some processes may not need to map outputs to inputs. */
+    /**
+     * Provides an input/output mapper that never maps to anything.
+     * Some processes may not need to map outputs to inputs.
+     */
     static IOutputToInputMapper noMapping() {
         return (ctx, out) -> List.empty();
     }
 
-
-    /** Provides an input/output mapper that always maps to everything.
-     * Some processes take all inputs and generate outputs from all of them. */
+    /**
+     * Provides an input/output mapper that always maps to everything.
+     * Some processes take all inputs and generate outputs from all of them.
+     */
     static IOutputToInputMapper allMappings() {
         return (ctx, out) -> List.ofAll(ctx.getExec().getInputFiles());
     }
 
-
-    /** Provides an input/output mapper which looks at the file names without extension. */
+    /**
+     * Provides an input/output mapper which looks at the file names without extension.
+     */
     static IOutputToInputMapper sameNameWithoutExt() {
         return (ctx, out) -> {
             String outputClean = removeExtension(out.getName());
@@ -79,7 +84,9 @@ public interface IOutputToInputMapper {
         };
     }
 
-    /** Provides an input/output mapper which looks at the parent folder. */
+    /**
+     * Provides an input/output mapper which looks at the parent folder.
+     */
     static IOutputToInputMapper sameParent() {
         return (ctx, out) -> {
             String outputParent = parentName(out.getName());
@@ -93,6 +100,5 @@ public interface IOutputToInputMapper {
     static String parentName(String name) {
         return Try.of(() -> Paths.get(name).getParent().getFileName().toString()).getOrElse(name);
     }
-
 
 }

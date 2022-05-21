@@ -98,6 +98,7 @@ public interface IOrderService {
 
     /**
      * Find all orders thanks to filters
+     *
      * @param filters
      * @param pageRequest
      * @return
@@ -120,9 +121,9 @@ public interface IOrderService {
     /**
      * Create an order
      *
-     * @param basket basket from which order is created
-     * @param label  label, generated when null
-     * @param url    frontend URL
+     * @param basket           basket from which order is created
+     * @param label            label, generated when null
+     * @param url              frontend URL
      * @param subOrderDuration validity period in hours
      * @return completely loaded order
      */
@@ -193,7 +194,8 @@ public interface IOrderService {
      * @param to
      * @throws IOException
      */
-    void writeAllOrdersInCsv(BufferedWriter writer, OrderStatus status, OffsetDateTime from, OffsetDateTime to) throws IOException;
+    void writeAllOrdersInCsv(BufferedWriter writer, OrderStatus status, OffsetDateTime from, OffsetDateTime to)
+        throws IOException;
 
     boolean isActionAvailable(long orderId, OrderService.Action action);
 

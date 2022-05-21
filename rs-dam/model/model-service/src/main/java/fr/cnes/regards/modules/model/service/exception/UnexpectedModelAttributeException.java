@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  * Occurs if model attribute not bound to given model
  *
  * @author Marc Sordi
- *
  */
 public class UnexpectedModelAttributeException extends ModuleException {
 

@@ -19,13 +19,7 @@
 
 package fr.cnes.regards.modules.acquisition.service.job;
 
-import java.util.Map;
-import java.util.Set;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -42,13 +36,16 @@ import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.acquisition.service.session.SessionNotifier;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This job manages SIP generation for a given product
  *
  * @author Christophe Mertz
  * @author Marc Sordi
- *
  */
 public class SIPGenerationJob extends AbstractJob<Void> {
 
@@ -80,7 +77,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
 
         Long acqProcessingChainId = getValue(parameters, CHAIN_PARAMETER_ID);
         try {
@@ -132,7 +129,8 @@ public class SIPGenerationJob extends AbstractJob<Void> {
                     generatedCount++;
                 } catch (Exception e) {
                     if (!Thread.currentThread().isInterrupted()) {
-                        String message = String.format("Error while generating product \"%s\"", product.getProductName());
+                        String message = String.format("Error while generating product \"%s\"",
+                                                       product.getProductName());
                         logger.error(message, e);
                         sessionNotifier.notifyChangeProductState(product, ProductSIPState.GENERATION_ERROR, true);
                         product.setSipState(ProductSIPState.GENERATION_ERROR);
@@ -149,12 +147,15 @@ public class SIPGenerationJob extends AbstractJob<Void> {
         success.clear();
         errors.clear();
 
-        logger.info("[{}] : {} SIP(s) generated in {} milliseconds {}", processingChain.getLabel(), generatedCount,
-                    System.currentTimeMillis() - startTime, debugInterruption);
+        logger.info("[{}] : {} SIP(s) generated in {} milliseconds {}",
+                    processingChain.getLabel(),
+                    generatedCount,
+                    System.currentTimeMillis() - startTime,
+                    debugInterruption);
         products.clear();
 
         if (!interruptedSessions.isEmpty()) {
-            interruptedSessions.forEach(s -> this.sessionNotifier.notifyEndingChain(processingChain.getLabel(),s));
+            interruptedSessions.forEach(s -> this.sessionNotifier.notifyEndingChain(processingChain.getLabel(), s));
         }
     }
 

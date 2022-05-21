@@ -39,8 +39,8 @@ import java.util.stream.Collectors;
  * com.rometools.rome module generator to handle specifics regards model attributes.
  * This ModuleGenerator is executed by rome (see rome.properties)
  *
- * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  * @author Sébastien Binda
+ * @see <a href="https://rometools.github.io/rome/RssAndAtOMUtilitiEsROMEV0.5AndAboveTutorialsAndArticles/RssAndAtOMUtilitiEsROMEPluginsMechanism.html">rometools.github.io</a>
  */
 public class RegardsModuleGenerator implements ModuleGenerator {
 
@@ -98,8 +98,11 @@ public class RegardsModuleGenerator implements ModuleGenerator {
         addStandardElement(element, SIPID, entity.getProviderId(), regardsModule.getGsonBuilder());
         addStandardElement(element, TAGS, entity.getTags(), regardsModule.getGsonBuilder());
         addStandardElement(element, TYPE, entity.getType(), regardsModule.getGsonBuilder());
-        regardsModule.getEntity().getProperties().stream().forEach(property -> element
-                .addContent(generateAttributeElement(property, regardsModule.getGsonBuilder())));
+        regardsModule.getEntity()
+                     .getProperties()
+                     .stream()
+                     .forEach(property -> element.addContent(generateAttributeElement(property,
+                                                                                      regardsModule.getGsonBuilder())));
 
     }
 
@@ -107,8 +110,10 @@ public class RegardsModuleGenerator implements ModuleGenerator {
         Element elt;
         if (attribute instanceof ObjectProperty) {
             elt = new Element(attribute.getName(), REGARDS_NS);
-            elt.addContent(((ObjectProperty) attribute).getValue().stream()
-                    .map(a -> this.generateAttributeElement(a, gson)).collect(Collectors.toList()));
+            elt.addContent(((ObjectProperty) attribute).getValue()
+                                                       .stream()
+                                                       .map(a -> this.generateAttributeElement(a, gson))
+                                                       .collect(Collectors.toList()));
         } else {
             elt = generateElement(attribute.getName(), attribute.getValue(), gson);
         }

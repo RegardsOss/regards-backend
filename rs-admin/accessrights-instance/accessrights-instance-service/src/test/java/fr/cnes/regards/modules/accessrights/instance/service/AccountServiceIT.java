@@ -63,7 +63,8 @@ import java.util.Set;
  * @author Christophe Mertz
  */
 @ContextConfiguration(classes = { AccountServiceIT.Config.class })
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=accountservice", "regards.microservice.type=instance" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=accountservice",
+    "regards.microservice.type=instance" })
 public class AccountServiceIT extends AbstractRegardsServiceIT {
 
     @Configuration
@@ -148,7 +149,8 @@ public class AccountServiceIT extends AbstractRegardsServiceIT {
     @Test
     @Requirement("REGARDS_DSL_SYS_SEC_410")
     @Requirement("REGARDS_DSL_SYS_SEC_310")
-    @Purpose("Check that the system can invalidate an account on the basis of its account validity duration or password validity duration")
+    @Purpose(
+        "Check that the system can invalidate an account on the basis of its account validity duration or password validity duration")
     public void testCheckAccountValidity() {
 
         Account accountValid = new Account("valid@c-s.fr", "Antoine", "Griezmann", PASSWORD);
@@ -167,7 +169,9 @@ public class AccountServiceIT extends AbstractRegardsServiceIT {
 
         Account accountPasswordInvalid = new Account("passwordInvalid@c-s.fr", "Kylian", "Mbappé", "passWord");
         accountPasswordInvalid.setInvalidityDate(LocalDateTime.now().plusDays(5));
-        accountPasswordInvalid.setPasswordUpdateDate(LocalDateTime.now().minusDays(accountPasswordValidityDuration).minusDays(1L));
+        accountPasswordInvalid.setPasswordUpdateDate(LocalDateTime.now()
+                                                                  .minusDays(accountPasswordValidityDuration)
+                                                                  .minusDays(1L));
         accountPasswordInvalid.setStatus(AccountStatus.ACTIVE);
         accountPasswordInvalid.setOrigin(Account.REGARDS_ORIGIN);
         accountRepository.save(accountPasswordInvalid);
@@ -187,7 +191,10 @@ public class AccountServiceIT extends AbstractRegardsServiceIT {
         final Set<Account> toCheck = Sets.newHashSet(accountValid, accountInvalid, accountPasswordInvalid);
         Assert.assertEquals(1, toCheck.stream().filter(a -> a.getStatus().equals(AccountStatus.ACTIVE)).count());
         Assert.assertEquals(1, toCheck.stream().filter(a -> a.getStatus().equals(AccountStatus.INACTIVE)).count());
-        Assert.assertEquals(1, toCheck.stream().filter(a -> a.getStatus().equals(AccountStatus.INACTIVE_PASSWORD)).count());
+        Assert.assertEquals(1,
+                            toCheck.stream()
+                                   .filter(a -> a.getStatus().equals(AccountStatus.INACTIVE_PASSWORD))
+                                   .count());
         Assert.assertEquals(AccountStatus.INACTIVE, accountInvalid.getStatus());
         Assert.assertEquals(AccountStatus.INACTIVE_PASSWORD, accountPasswordInvalid.getStatus());
     }
@@ -197,8 +204,9 @@ public class AccountServiceIT extends AbstractRegardsServiceIT {
 
         Account accountPasswordInvalid = new Account("passwordInvalid@c-s.fr", "Kylian", "Mbappé", "passWord");
         accountPasswordInvalid.setInvalidityDate(LocalDateTime.now().plusDays(5));
-        accountPasswordInvalid
-                .setPasswordUpdateDate(LocalDateTime.now().minusDays(accountPasswordValidityDuration).minusDays(1L));
+        accountPasswordInvalid.setPasswordUpdateDate(LocalDateTime.now()
+                                                                  .minusDays(accountPasswordValidityDuration)
+                                                                  .minusDays(1L));
         accountPasswordInvalid.setStatus(AccountStatus.ACTIVE);
         accountPasswordInvalid.setOrigin(Account.REGARDS_ORIGIN);
         accountRepository.save(accountPasswordInvalid);

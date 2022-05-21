@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.indexer.domain.facet;
 
 /**
  * FaceType visitor
+ *
  * @param <T> visitor return type
  */
 public interface IFacetTypeVisitor<T> {

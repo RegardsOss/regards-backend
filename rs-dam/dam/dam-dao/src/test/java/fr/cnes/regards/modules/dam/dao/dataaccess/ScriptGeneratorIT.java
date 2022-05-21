@@ -18,16 +18,13 @@
  */
 package fr.cnes.regards.modules.dam.dao.dataaccess;
 
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorIT;
 import org.junit.Ignore;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorIT;
-
 /**
-*
-* @See {@link AbstractScriptGeneratorIT}
-* @author Marc Sordi
-*
-*/
+ * @author Marc Sordi
+ * @See {@link AbstractScriptGeneratorIT}
+ */
 @Ignore
 public class ScriptGeneratorIT extends AbstractScriptGeneratorIT {
 

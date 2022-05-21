@@ -1,5 +1,10 @@
 package fr.cnes.regards.framework.test.util;
 
+import com.google.common.base.Objects;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -8,12 +13,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Objects;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
 
 public final class Beans {
 
@@ -26,6 +25,7 @@ public final class Beans {
      * Compare two objects first with areEqual then by their properties readers, recursively follow inner objects using
      * same comparison mechanism.
      * <b>Beware of collections or arrays, in this case, native areEqual is used.</b>
+     *
      * @param pO1 first object to compare
      * @param pO2 second object to compare
      * @return true when objects equal, false otherwise
@@ -65,7 +65,7 @@ public final class Beans {
                 Method method = methodDesc.getMethod();
                 // if it is a read property method (starting by get or is and without any parameter)
                 if ((method.getParameterCount() == 0) && (method.getName().startsWith("get") || method.getName()
-                        .startsWith("is"))) {
+                                                                                                      .startsWith("is"))) {
                     if (contains(gettersToForget, method.getName())) {
                         continue;
                     }
@@ -74,21 +74,33 @@ public final class Beans {
                     if (v1 != null) {
                         if (v1.getClass().getName().startsWith("fr.cnes")) {
                             if (!Beans.areEqual(v1, v2, gettersToForget)) {
-                                LOGGER.warn("Objects differ : {}.{} : {} vs {}.{} : {}", pO1, method.getName(), v1, pO2,
-                                            method.getName(), v2);
+                                LOGGER.warn("Objects differ : {}.{} : {} vs {}.{} : {}",
+                                            pO1,
+                                            method.getName(),
+                                            v1,
+                                            pO2,
+                                            method.getName(),
+                                            v2);
                                 return false;
                             }
                         } else if (v1 instanceof Collection) { // For Hb9n PersistentBag type which seems to not be compatible with collections
-                            if (!Beans.areEqual(((Collection) v1).toArray(), ((Collection) v2).toArray(),
+                            if (!Beans.areEqual(((Collection) v1).toArray(),
+                                                ((Collection) v2).toArray(),
                                                 gettersToForget)) {
                                 LOGGER.warn("Object collections differ : {} vs {}",
-                                            Arrays.toString(((Collection) v1).toArray()), ((Collection) v2).toArray());
+                                            Arrays.toString(((Collection) v1).toArray()),
+                                            ((Collection) v2).toArray());
                                 return false;
                             }
                         } else {
                             if (!v1.equals(v2)) {
-                                LOGGER.warn("Objects differ : {}.{} : {} vs {}.{} : {}", pO1, method.getName(), v1, pO2,
-                                            method.getName(), v2);
+                                LOGGER.warn("Objects differ : {}.{} : {} vs {}.{} : {}",
+                                            pO1,
+                                            method.getName(),
+                                            v1,
+                                            pO2,
+                                            method.getName(),
+                                            v2);
                                 return false;
                             }
                         }

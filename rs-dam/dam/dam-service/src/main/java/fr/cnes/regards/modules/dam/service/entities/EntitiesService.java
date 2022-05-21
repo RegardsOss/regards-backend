@@ -89,12 +89,14 @@ public class EntitiesService implements IEntitiesService {
     public List<AbstractEntity<?>> loadAllWithRelations(UniformResourceName... pIpIds) {
         List<AbstractEntity<?>> entities = new ArrayList<>(pIpIds.length);
         Set<UniformResourceName> dsUrns = Arrays.stream(pIpIds)
-                .filter(ipId -> ipId.getEntityType() == EntityType.DATASET).collect(Collectors.toSet());
+                                                .filter(ipId -> ipId.getEntityType() == EntityType.DATASET)
+                                                .collect(Collectors.toSet());
         if (!dsUrns.isEmpty()) {
             entities.addAll(datasetRepository.findByIpIdIn(dsUrns));
         }
         Set<UniformResourceName> otherUrns = Arrays.stream(pIpIds)
-                .filter(ipId -> ipId.getEntityType() != EntityType.DATASET).collect(Collectors.toSet());
+                                                   .filter(ipId -> ipId.getEntityType() != EntityType.DATASET)
+                                                   .collect(Collectors.toSet());
         if (!otherUrns.isEmpty()) {
             entities.addAll(entityRepository.findByIpIdIn(otherUrns));
         }
@@ -105,19 +107,20 @@ public class EntitiesService implements IEntitiesService {
     @Override
     public <T extends IComputedAttribute<Dataset, ?>> Set<T> getComputationPlugins(Dataset pDataset) {
 
-        Set<ModelAttrAssoc> computedAttributes = modelAttributeService
-                .getComputedAttributes(pDataset.getModel().getId());
+        Set<ModelAttrAssoc> computedAttributes = modelAttributeService.getComputedAttributes(pDataset.getModel()
+                                                                                                     .getId());
         Set<T> computationPlugins = new HashSet<>();
         try {
             for (ModelAttrAssoc attr : computedAttributes) {
                 try {
-                    IPluginParam resultFragmentName = IPluginParam
-                            .build(IComputedAttribute.RESULT_FRAGMENT_NAME, attr.getAttribute().getFragment().getName())
-                            .dynamic();
-                    IPluginParam resultAttrName = IPluginParam
-                            .build(IComputedAttribute.RESULT_ATTRIBUTE_NAME, attr.getAttribute().getName()).dynamic();
+                    IPluginParam resultFragmentName = IPluginParam.build(IComputedAttribute.RESULT_FRAGMENT_NAME,
+                                                                         attr.getAttribute().getFragment().getName())
+                                                                  .dynamic();
+                    IPluginParam resultAttrName = IPluginParam.build(IComputedAttribute.RESULT_ATTRIBUTE_NAME,
+                                                                     attr.getAttribute().getName()).dynamic();
                     IComputedAttribute<?, ?> plugin = pluginService.getPlugin(attr.getComputationConf().getBusinessId(),
-                                                                              resultAttrName, resultFragmentName);
+                                                                              resultAttrName,
+                                                                              resultFragmentName);
                     // here we have a plugin with no idea of the type of the generic parameter used by the "compute"
                     // method, lets check that it is a IComputedAttribute<Dataset,?>
                     plugin.getClass().getMethod("compute", Dataset.class);
@@ -129,8 +132,9 @@ public class EntitiesService implements IEntitiesService {
                     // IComputedAttribute<Dataset, ?> we check if a method compute(Dataset) is defined, if not then we
                     // just don't consider this plugin
                 } catch (NotAvailablePluginConfigurationException e) {
-                    LOGGER.warn("Unable to compute dataset attribute value cause IComputedAttribute plugin is not avtive.",
-                                e);
+                    LOGGER.warn(
+                        "Unable to compute dataset attribute value cause IComputedAttribute plugin is not avtive.",
+                        e);
                 }
             }
         } catch (ModuleException e) {

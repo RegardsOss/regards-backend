@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+
 import java.util.Collection;
 import java.util.UUID;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
-
 /**
  * POJO containing information about a group of requests.
+ *
  * @author Sébastien Binda
  */
 public class RequestInfo {
@@ -61,8 +61,9 @@ public class RequestInfo {
         return ri;
     }
 
-    public static RequestInfo build(String groupId, Collection<RequestResultInfoDTO> successRequests,
-            Collection<RequestResultInfoDTO> errorRequests) {
+    public static RequestInfo build(String groupId,
+                                    Collection<RequestResultInfoDTO> successRequests,
+                                    Collection<RequestResultInfoDTO> errorRequests) {
         RequestInfo ri = new RequestInfo();
         ri.groupId = groupId;
         ri.successRequests = successRequests;

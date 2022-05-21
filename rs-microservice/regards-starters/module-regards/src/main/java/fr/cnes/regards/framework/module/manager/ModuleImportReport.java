@@ -4,6 +4,7 @@ import java.util.Set;
 
 /**
  * Pojo used to know if module configuration import had errors
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class ModuleImportReport {
@@ -62,8 +63,8 @@ public class ModuleImportReport {
             return false;
         }
         if (moduleInformation != null ?
-                !moduleInformation.equals(that.moduleInformation) :
-                that.moduleInformation != null) {
+            !moduleInformation.equals(that.moduleInformation) :
+            that.moduleInformation != null) {
             return false;
         }
         return importErrors != null ? importErrors.equals(that.importErrors) : that.importErrors == null;

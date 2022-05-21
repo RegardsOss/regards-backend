@@ -29,7 +29,6 @@ import org.springframework.util.LinkedMultiValueMap;
 
 /**
  * @author Marc Sordi
- *
  */
 @TestPropertySource("classpath:test.properties")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
@@ -37,8 +36,11 @@ public class SearchEngineClientIT extends AbstractSearchClientIT<ISearchEngineCl
 
     @Test
     public void search() {
-        ResponseEntity<?> result = client.searchAllDataobjects("legacy", new HttpHeaders(), new LinkedMultiValueMap<>(),
-                                                               0, 10000);
+        ResponseEntity<?> result = client.searchAllDataobjects("legacy",
+                                                               new HttpHeaders(),
+                                                               new LinkedMultiValueMap<>(),
+                                                               0,
+                                                               10000);
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.OK));
 
         // ResponseEntity<Set<UniformResourceName>> response = client.hasAccess(Collections.emptyList());

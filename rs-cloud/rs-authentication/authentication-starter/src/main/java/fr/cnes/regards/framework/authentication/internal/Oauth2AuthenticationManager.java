@@ -67,6 +67,7 @@ import java.util.Objects;
 /**
  * Authentication Manager. This class provides authentication process to check user/password and retrieve user
  * account.
+ *
  * @author Sébastien Binda
  * @author Christophe Mertz
  */
@@ -99,10 +100,12 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
     /**
      * The default constructor.
+     *
      * @param defaultAuthenticationPlugin The {@link IAuthenticationPlugin} to used
      */
     public Oauth2AuthenticationManager(IAuthenticationPlugin defaultAuthenticationPlugin,
-            IRuntimeTenantResolver runTimeTenantResolver, String staticRootLogin) {
+                                       IRuntimeTenantResolver runTimeTenantResolver,
+                                       String staticRootLogin) {
         super();
         this.defaultAuthenticationPlugin = defaultAuthenticationPlugin;
         this.runTimeTenantResolver = runTimeTenantResolver;
@@ -122,8 +125,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         Object details = authentication.getDetails();
         String scope;
         if (details instanceof Map) {
-            @SuppressWarnings("unchecked")
-            Map<String, String> detailsMap = (Map<String, String>) details;
+            @SuppressWarnings("unchecked") Map<String, String> detailsMap = (Map<String, String>) details;
             scope = detailsMap.get("scope");
             if (scope == null) {
                 String message = "Attribute scope is missing";
@@ -148,9 +150,10 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
     /**
      * Authenticate a user for a given project
-     * @param login user login
+     *
+     * @param login    user login
      * @param password user password
-     * @param scope project to authenticate to
+     * @param scope    project to authenticate to
      * @return Authentication token
      */
     private Authentication doAuthentication(String login, String password, String scope) {
@@ -172,22 +175,26 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         AuthenticationStatus status = checkUserStatus(response.getEmail(), scope);
 
         // If authentication is granted and user does not exist and plugin is not the regards internal authentication.
-        if (Boolean.TRUE.equals(response.isAccessGranted())
-                && (status.equals(AuthenticationStatus.USER_UNKNOWN) || status.equals(AuthenticationStatus.ACCOUNT_UNKNOWN))
-                && !response.getPluginClassName().equals(defaultAuthenticationPlugin.getClass().getName())
-        ) {
+        if (Boolean.TRUE.equals(response.isAccessGranted()) && (status.equals(AuthenticationStatus.USER_UNKNOWN)
+            || status.equals(AuthenticationStatus.ACCOUNT_UNKNOWN)) && !response.getPluginClassName()
+                                                                                .equals(defaultAuthenticationPlugin.getClass()
+                                                                                                                   .getName())) {
             this.createExternalProjectUser(response.getEmail(), response.getServiceProviderName());
             status = checkUserStatus(response.getEmail(), scope);
         }
 
         if (!status.equals(AuthenticationStatus.ACCESS_GRANTED)) {
-            String message = String.format("Access denied for user %s. cause : user status is %s", response.getEmail(), status.name());
+            String message = String.format("Access denied for user %s. cause : user status is %s",
+                                           response.getEmail(),
+                                           status.name());
             throw new AuthenticationException(message, status);
         }
 
         // If access is not allowed then return an unknown account error response
         if (!response.isAccessGranted()) {
-            String message = String.format("Access denied for user %s. cause: %s", response.getEmail(), response.getErrorMessage());
+            String message = String.format("Access denied for user %s. cause: %s",
+                                           response.getEmail(),
+                                           response.getErrorMessage());
             throw new AuthenticationException(message, AuthenticationStatus.ACCOUNT_UNKNOWN);
         }
 
@@ -198,9 +205,10 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
     /**
      * Authenticate thought authentication plugins for the given scope
-     * @param login User login
+     *
+     * @param login    User login
      * @param password User password
-     * @param scope Project
+     * @param scope    Project
      * @return Authentication
      */
     private AuthenticationPluginResponse doScopePluginsAuthentication(String login, String password, String scope) {
@@ -214,7 +222,10 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             for (PluginConfiguration pluginConfiguration : plgConfs) {
                 if (!pluginResponse.isAccessGranted()) {
                     try {
-                        pluginResponse = doPluginAuthentication(pluginService.getPlugin(pluginConfiguration.getBusinessId()), login, password, scope);
+                        pluginResponse = doPluginAuthentication(pluginService.getPlugin(pluginConfiguration.getBusinessId()),
+                                                                login,
+                                                                password,
+                                                                scope);
                         pluginResponse.setServiceProviderName(pluginConfiguration.getBusinessId());
                     } catch (ModuleException | NotAvailablePluginConfigurationException e) {
                         LOG.info(e.getMessage(), e);
@@ -231,6 +242,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
     /**
      * Check with administration service, the existence of the given project
+     *
      * @param scope Project to check
      * @return [true|false]
      */
@@ -253,16 +265,13 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
      */
     private void createExternalProjectUser(String userEmail, String serviceProviderName) {
         Try.of(() -> beanFactory.getBean(IUserAccountManager.class))
-                .flatMap(userAccountManager -> userAccountManager
-                        .createUserWithAccountAndGroups(
-                                new ServiceProviderAuthenticationInfo.UserInfo.Builder().withEmail(userEmail).withFirstname(userEmail).withLastname(userEmail).build(),
-                                serviceProviderName
-                        )
-                );
+           .flatMap(userAccountManager -> userAccountManager.createUserWithAccountAndGroups(new ServiceProviderAuthenticationInfo.UserInfo.Builder().withEmail(
+               userEmail).withFirstname(userEmail).withLastname(userEmail).build(), serviceProviderName));
     }
 
     /**
      * Check global user status by checking account status then projectUser status.
+     *
      * @return {@link AuthenticationStatus}
      */
     private AuthenticationStatus checkUserStatus(String userEmail, String tenant) {
@@ -277,8 +286,8 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             try {
                 FeignSecurityManager.asSystem();
                 // Retrieve user account
-                ResponseEntity<EntityModel<Account>> accountClientResponse = accountClient
-                        .retrieveAccounByEmail(userEmail);
+                ResponseEntity<EntityModel<Account>> accountClientResponse = accountClient.retrieveAccounByEmail(
+                    userEmail);
 
                 if (!accountClientResponse.getStatusCode().equals(HttpStatus.OK)) {
                     status = AuthenticationStatus.ACCOUNT_UNKNOWN;
@@ -310,12 +319,12 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             // Check for project user status if the tenant to access is not instance and the user logged is not instance
             // root user.
             if (status.equals(AuthenticationStatus.ACCESS_GRANTED) && (tenant != null)
-                    && !runTimeTenantResolver.isInstance() && !userEmail.equals(staticRootLogin)) {
+                && !runTimeTenantResolver.isInstance() && !userEmail.equals(staticRootLogin)) {
                 // Retrieve user projectUser
                 try {
                     FeignSecurityManager.asSystem();
-                    ResponseEntity<EntityModel<ProjectUser>> projectUserClientResponse = projectUsersClient
-                            .retrieveProjectUserByEmail(userEmail);
+                    ResponseEntity<EntityModel<ProjectUser>> projectUserClientResponse = projectUsersClient.retrieveProjectUserByEmail(
+                        userEmail);
 
                     if (!projectUserClientResponse.getStatusCode().equals(HttpStatus.OK)) {
                         status = AuthenticationStatus.USER_UNKNOWN;
@@ -355,14 +364,17 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
     /**
      * Do authentication job with the given authentication plugin
-     * @param plugin IAuthenticationPlugin to use for authentication
-     * @param userName username
+     *
+     * @param plugin       IAuthenticationPlugin to use for authentication
+     * @param userName     username
      * @param userPassword user password
-     * @param scope scope
+     * @param scope        scope
      * @return AbstractAuthenticationToken
      */
-    private AuthenticationPluginResponse doPluginAuthentication(IAuthenticationPlugin plugin, String userName,
-            String userPassword, String scope) {
+    private AuthenticationPluginResponse doPluginAuthentication(IAuthenticationPlugin plugin,
+                                                                String userName,
+                                                                String userPassword,
+                                                                String scope) {
 
         // Check user/password
         AuthenticationPluginResponse response = plugin.authenticate(userName, userPassword, scope);
@@ -380,13 +392,16 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
     /**
      * Generate a token for the given scope and userName
-     * @param scope project
-     * @param login user email
+     *
+     * @param scope    project
+     * @param login    user email
      * @param password user password
      * @return {@link AbstractAuthenticationToken}
      */
-    private AbstractAuthenticationToken generateAuthenticationToken(String scope, String login, String email,
-            String password) {
+    private AbstractAuthenticationToken generateAuthenticationToken(String scope,
+                                                                    String login,
+                                                                    String email,
+                                                                    String password) {
         UserDetails userDetails;
 
         List<GrantedAuthority> grantedAuths = new ArrayList<>();
@@ -401,7 +416,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         } else {
             // Unauthorized access to instance tenant for authenticated user.
             throw new AuthenticationException("Access denied to REGARDS instance administration for user " + login,
-                    AuthenticationStatus.INSTANCE_ACCESS_DENIED);
+                                              AuthenticationStatus.INSTANCE_ACCESS_DENIED);
         }
         grantedAuths.add(new SimpleGrantedAuthority(userDetails.getRole()));
         return new UsernamePasswordAuthenticationToken(userDetails, password, grantedAuths);
@@ -409,6 +424,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
     /**
      * Retrieve user information from internal REGARDS database
+     *
      * @param login user login
      * @param email user email
      * @param scope project to authenticate to
@@ -422,12 +438,11 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
             try {
                 FeignSecurityManager.asSystem();
-                ResponseEntity<EntityModel<ProjectUser>> response = projectUsersClient
-                        .retrieveProjectUserByEmail(email);
+                ResponseEntity<EntityModel<ProjectUser>> response = projectUsersClient.retrieveProjectUserByEmail(email);
                 if (response.getStatusCode() == HttpStatus.OK) {
                     // special case to handle root login because it is not a real ProjectUser
                     ProjectUser projectUser = response.getBody().getContent();
-                    if(!Objects.equals(email, staticRootLogin)) {
+                    if (!Objects.equals(email, staticRootLogin)) {
                         projectUser.setLastConnection(OffsetDateTime.now());
                         // update last connection date
                         projectUsersClient.updateProjectUser(projectUser.getId(), projectUser);

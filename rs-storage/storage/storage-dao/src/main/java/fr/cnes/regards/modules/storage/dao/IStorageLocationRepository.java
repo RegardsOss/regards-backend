@@ -18,21 +18,19 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import java.util.Optional;
-
+import fr.cnes.regards.modules.storage.domain.database.StorageLocation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-import fr.cnes.regards.modules.storage.domain.database.StorageLocation;
+import java.util.Optional;
 
 /**
  * JPA Repository to handle access to {@link StorageLocation} entities.
  *
  * @author Sébatien Binda
- *
  */
 public interface IStorageLocationRepository
-        extends JpaRepository<StorageLocation, Long>, JpaSpecificationExecutor<StorageLocation> {
+    extends JpaRepository<StorageLocation, Long>, JpaSpecificationExecutor<StorageLocation> {
 
     Optional<StorageLocation> findByName(String name);
 

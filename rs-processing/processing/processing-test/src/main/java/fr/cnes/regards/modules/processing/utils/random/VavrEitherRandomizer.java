@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.utils.random;
 
 import io.vavr.control.Either;
@@ -38,7 +38,8 @@ public class VavrEitherRandomizer<L, R> extends AbstractRandomizer<Either<L, R>>
     }
 
     public VavrEitherRandomizer(Randomizer<Boolean> booleanRandomizer,
-            Randomizer<? extends R> rightRandomizer, Randomizer<? extends L> leftRandomizer) {
+                                Randomizer<? extends R> rightRandomizer,
+                                Randomizer<? extends L> leftRandomizer) {
         this.booleanRandomizer = booleanRandomizer;
         this.rightRandomizer = rightRandomizer;
         this.leftRandomizer = leftRandomizer;
@@ -68,7 +69,8 @@ public class VavrEitherRandomizer<L, R> extends AbstractRandomizer<Either<L, R>>
         this.leftRandomizer = leftRandomizer;
     }
 
-    @Override public Either<L, R> getRandomValue() {
+    @Override
+    public Either<L, R> getRandomValue() {
         if (booleanRandomizer.getRandomValue()) {
             return Either.right(rightRandomizer.getRandomValue());
         } else {

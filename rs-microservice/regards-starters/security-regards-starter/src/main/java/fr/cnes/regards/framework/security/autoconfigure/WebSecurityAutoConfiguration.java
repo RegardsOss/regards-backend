@@ -18,10 +18,13 @@
  */
 package fr.cnes.regards.framework.security.autoconfigure;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
+import ch.qos.logback.classic.helpers.MDCInsertingServletFilter;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
+import fr.cnes.regards.framework.security.controller.SecurityResourcesController;
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import fr.cnes.regards.framework.security.filter.*;
+import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,16 +42,13 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.HeaderWriterFilter;
 
-import ch.qos.logback.classic.helpers.MDCInsertingServletFilter;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
-import fr.cnes.regards.framework.security.controller.SecurityResourcesController;
-import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
-import fr.cnes.regards.framework.security.filter.*;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Web security auto configuration
+ *
  * @author msordi
  * @author Sylvain Vissiere-Guerinet
  * @author Christophe Mertz

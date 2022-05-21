@@ -14,19 +14,19 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.parameters;
 
 import lombok.Value;
 import lombok.With;
-
 
 /**
  * This class defined the value for an execution parameter.
  *
  * @author gandrieu
  */
-@Value @With
+@Value
+@With
 public class ExecutionStringParameterValue {
 
     String name;

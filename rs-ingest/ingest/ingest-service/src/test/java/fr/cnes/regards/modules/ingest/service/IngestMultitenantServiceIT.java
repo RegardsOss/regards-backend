@@ -79,7 +79,7 @@ import static fr.cnes.regards.modules.ingest.service.TestData.*;
  * @author Marc SORDI
  */
 @TestPropertySource(properties = { "eureka.client.enabled=false" },
-        locations = { "classpath:application-test.properties" })
+    locations = { "classpath:application-test.properties" })
 public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServiceIT {
 
     protected static final long TWO_SECONDS = 2000;
@@ -151,6 +151,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
 
     /**
      * Custom test initialization to override
+     *
      * @throws Exception
      */
     protected void doInit() throws Exception {
@@ -162,8 +163,10 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
         // override this method to custom action performed after
         doAfter();
     }
+
     /**
      * Custom test cleaning to override
+     *
      * @throws Exception
      */
     protected void doAfter() throws Exception {
@@ -173,7 +176,9 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
     protected SIP create(String providerId, List<String> tags) {
         String fileName = String.format("file-%s.dat", providerId);
         SIP sip = SIP.build(EntityType.DATA, providerId);
-        sip.withDataObject(DataType.RAWDATA, Paths.get("src", "test", "resources", "data", fileName), "MD5",
+        sip.withDataObject(DataType.RAWDATA,
+                           Paths.get("src", "test", "resources", "data", fileName),
+                           "MD5",
                            UUID.randomUUID().toString());
         sip.withSyntax(MediaType.APPLICATION_JSON);
         sip.registerContentInformation();
@@ -188,7 +193,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
     }
 
     protected IngestProcessingChain createChainWithPostProcess(String label, Class<?> postProcessPluginClass)
-            throws ModuleException {
+        throws ModuleException {
         IngestProcessingChain newChain = new IngestProcessingChain();
         newChain.setDescription(label);
         newChain.setName(label);
@@ -198,7 +203,8 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
         validation.setLabel("validationPlugin_ipst");
         newChain.setValidationPlugin(validation);
 
-        PluginConfiguration generation = PluginConfiguration.build(AIPGenerationTestPlugin.class, null,
+        PluginConfiguration generation = PluginConfiguration.build(AIPGenerationTestPlugin.class,
+                                                                   null,
                                                                    Sets.newHashSet());
         generation.setIsActive(true);
         generation.setLabel("generationPlugin_ipst");
@@ -213,28 +219,48 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
         return ingestProcessingService.createNewChain(newChain);
     }
 
-    protected void publishSIPEvent(SIP sip, String storage, String session, String sessionOwner,
-            List<String> categories) {
+    protected void publishSIPEvent(SIP sip,
+                                   String storage,
+                                   String session,
+                                   String sessionOwner,
+                                   List<String> categories) {
         publishSIPEvent(sip, Lists.newArrayList(storage), session, sessionOwner, categories, Optional.empty());
     }
 
-    protected void publishSIPEvent(SIP sip, List<String> storages, String session, String sessionOwner,
-            List<String> categories, Optional<String> chainLabel) {
+    protected void publishSIPEvent(SIP sip,
+                                   List<String> storages,
+                                   String session,
+                                   String sessionOwner,
+                                   List<String> categories,
+                                   Optional<String> chainLabel) {
         publishSIPEvent(sip, storages, session, sessionOwner, categories, chainLabel, null);
     }
 
-    protected void publishSIPEvent(SIP sip, List<String> storages, String session, String sessionOwner,
-            List<String> categories, Optional<String> chainLabel, VersioningMode versioningMode) {
+    protected void publishSIPEvent(SIP sip,
+                                   List<String> storages,
+                                   String session,
+                                   String sessionOwner,
+                                   List<String> categories,
+                                   Optional<String> chainLabel,
+                                   VersioningMode versioningMode) {
         publishSIPEvent(Sets.newHashSet(sip), storages, session, sessionOwner, categories, chainLabel, versioningMode);
     }
 
-    protected void publishSIPEvent(Collection<SIP> sips, List<String> storages, String session, String sessionOwner,
-            List<String> categories, Optional<String> chainLabel, VersioningMode versioningMode) {
+    protected void publishSIPEvent(Collection<SIP> sips,
+                                   List<String> storages,
+                                   String session,
+                                   String sessionOwner,
+                                   List<String> categories,
+                                   Optional<String> chainLabel,
+                                   VersioningMode versioningMode) {
         // Create event
         List<StorageMetadata> storagesMeta = storages.stream().map(StorageMetadata::build).collect(Collectors.toList());
-        IngestMetadataDto mtd = IngestMetadataDto
-                .build(sessionOwner, session, chainLabel.orElse(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL),
-                       Sets.newHashSet(categories), versioningMode, storagesMeta);
+        IngestMetadataDto mtd = IngestMetadataDto.build(sessionOwner,
+                                                        session,
+                                                        chainLabel.orElse(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL),
+                                                        Sets.newHashSet(categories),
+                                                        versioningMode,
+                                                        storagesMeta);
         ingestServiceTest.sendIngestRequestEvent(sips, mtd);
     }
 
@@ -244,8 +270,11 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
 
     public void initRandomData(int nbSIP) {
         for (int i = 0; i < nbSIP; i++) {
-            publishSIPEvent(create(UUID.randomUUID().toString(), getRandomTags()), getRandomStorage().get(0),
-                            getRandomSession(), getRandomSessionOwner(), getRandomCategories());
+            publishSIPEvent(create(UUID.randomUUID().toString(), getRandomTags()),
+                            getRandomStorage().get(0),
+                            getRandomSession(),
+                            getRandomSessionOwner(),
+                            getRandomCategories());
         }
         // Wait for SIP ingestion
         ingestServiceTest.waitForIngestion(nbSIP, TEN_SECONDS * nbSIP, SIPState.STORED);
@@ -271,7 +300,8 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
                     Assert.assertEquals(InternalRequestState.RUNNING, ingestRequest.getState());
                 }
                 notificationService.handleNotificationSuccess(Sets.newHashSet(requests));
-                Assert.assertEquals("Ingest requests were not deleted as expected", 0L,
+                Assert.assertEquals("Ingest requests were not deleted as expected",
+                                    0L,
                                     ingestRequestRepository.count());
 
                 break;
@@ -284,7 +314,8 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
                     Assert.assertEquals(InternalRequestState.RUNNING, deletionRequest.getState());
                 }
                 notificationService.handleNotificationSuccess(Sets.newHashSet(requests));
-                Assert.assertEquals("Deletion requests were not deleted as expected", 0L,
+                Assert.assertEquals("Deletion requests were not deleted as expected",
+                                    0L,
                                     oaisDeletionRequestRepository.count());
                 break;
             case RequestTypeConstant.UPDATE_VALUE:
@@ -296,7 +327,8 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
                     Assert.assertEquals(InternalRequestState.RUNNING, updateRequest.getState());
                 }
                 notificationService.handleNotificationSuccess(Sets.newHashSet(requests));
-                Assert.assertEquals("Update requests were not deleted as expected", 0L,
+                Assert.assertEquals("Update requests were not deleted as expected",
+                                    0L,
                                     aipUpdateRequestRepository.count());
                 break;
             default:
@@ -305,7 +337,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
     }
 
     public void waitJobDone(JobInfo jobInfo, JobStatus jobStatus, long timeout) {
-        Assert.assertNotNull ("Job info should not be null", jobInfo);
+        Assert.assertNotNull("Job info should not be null", jobInfo);
         this.ingestServiceTest.waitJobDone(jobInfo, jobStatus, timeout);
     }
 
@@ -318,6 +350,8 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
         } catch (ConditionTimeoutException e) {
             Assert.fail(String.format("Fail after waiting for new job %s", jobClassName));
         }
-        return this.jobInfoService.retrieveJobs(jobClassName, PageRequest.of(0, 1), JobStatus.values()).getContent().get(0);
+        return this.jobInfoService.retrieveJobs(jobClassName, PageRequest.of(0, 1), JobStatus.values())
+                                  .getContent()
+                                  .get(0);
     }
 }

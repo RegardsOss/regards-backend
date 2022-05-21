@@ -18,44 +18,23 @@
  */
 package fr.cnes.regards.modules.model.gson;
 
-import java.io.Serializable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-
 import fr.cnes.regards.framework.gson.adapters.MultitenantPolymorphicTypeAdapterFactory;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactoryBean;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.Fragment;
-import fr.cnes.regards.modules.model.dto.properties.BooleanProperty;
-import fr.cnes.regards.modules.model.dto.properties.DateArrayProperty;
-import fr.cnes.regards.modules.model.dto.properties.DateIntervalProperty;
-import fr.cnes.regards.modules.model.dto.properties.DateProperty;
-import fr.cnes.regards.modules.model.dto.properties.DoubleArrayProperty;
-import fr.cnes.regards.modules.model.dto.properties.DoubleIntervalProperty;
-import fr.cnes.regards.modules.model.dto.properties.DoubleProperty;
-import fr.cnes.regards.modules.model.dto.properties.IProperty;
-import fr.cnes.regards.modules.model.dto.properties.IntegerArrayProperty;
-import fr.cnes.regards.modules.model.dto.properties.IntegerIntervalProperty;
-import fr.cnes.regards.modules.model.dto.properties.IntegerProperty;
-import fr.cnes.regards.modules.model.dto.properties.JsonProperty;
-import fr.cnes.regards.modules.model.dto.properties.LongArrayProperty;
-import fr.cnes.regards.modules.model.dto.properties.LongIntervalProperty;
-import fr.cnes.regards.modules.model.dto.properties.LongProperty;
-import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
-import fr.cnes.regards.modules.model.dto.properties.PropertyType;
-import fr.cnes.regards.modules.model.dto.properties.StringArrayProperty;
-import fr.cnes.regards.modules.model.dto.properties.StringProperty;
-import fr.cnes.regards.modules.model.dto.properties.UrlProperty;
+import fr.cnes.regards.modules.model.dto.properties.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.Serializable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Manage dynamic attribute (de)serialization
@@ -96,8 +75,10 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
         runtimeTenantResolver = pRuntimeTenantResolver;
     }
 
-    public void registerSubtype(final String pTenant, final Class<?> pType, final String pDiscriminatorFieldValue,
-            final String pNamespace) {
+    public void registerSubtype(final String pTenant,
+                                final Class<?> pType,
+                                final String pDiscriminatorFieldValue,
+                                final String pNamespace) {
         if (pNamespace == null) {
             registerSubtype(pTenant, pType, pDiscriminatorFieldValue);
         } else {
@@ -105,8 +86,10 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
         }
     }
 
-    public void unregisterSubtype(final String pTenant, final Class<?> pType, final String pDiscriminatorFieldValue,
-            final String pNamespace) {
+    public void unregisterSubtype(final String pTenant,
+                                  final Class<?> pType,
+                                  final String pDiscriminatorFieldValue,
+                                  final String pNamespace) {
         if (pNamespace == null) {
             unregisterSubtype(pTenant, pType, pDiscriminatorFieldValue);
         } else {
@@ -117,14 +100,16 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
     /**
      * Dynamically register configured {@link AttributeModel} for a particular tenant
      *
-     * @param pTenant
-     *            tenant
+     * @param pTenant     tenant
      * @param pAttributes
      */
     public void registerAttributes(final String pTenant, final List<AttributeModel> pAttributes) {
         if (pAttributes != null) {
             for (AttributeModel att : pAttributes) {
-                LOGGER.debug("{} - Registering attribute {} - {} - {}", pTenant, att.getName(), att.getFullName(),
+                LOGGER.debug("{} - Registering attribute {} - {} - {}",
+                             pTenant,
+                             att.getName(),
+                             att.getFullName(),
                              att.getFullJsonPath());
                 registerAttribute(pTenant, att);
             }
@@ -133,8 +118,9 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
 
     /**
      * Register attribute
+     *
      * @param pTenant tenant
-     * @param att the attribute containing its fragment with its name and its type and name.
+     * @param att     the attribute containing its fragment with its name and its type and name.
      */
     public void registerAttribute(String pTenant, AttributeModel att) {
         if (!att.isVirtual()) {
@@ -153,8 +139,9 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
 
     /**
      * Unregister attribute
+     *
      * @param pTenant tenant
-     * @param att the attribute containing its fragment with its name and its type and name.
+     * @param att     the attribute containing its fragment with its name and its type and name.
      */
     public void unregisterAttribute(String pTenant, AttributeModel att) {
         // Define namespace if required
@@ -170,7 +157,8 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
 
     /**
      * Unregister fragment mapping
-     * @param pTenant tenant
+     *
+     * @param pTenant  tenant
      * @param fragment the fragment containing its name
      */
     public void unregisterFragment(String pTenant, Fragment fragment) {
@@ -185,8 +173,7 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
     }
 
     /**
-     * @param pAttributeType
-     *            {@link PropertyType}
+     * @param pAttributeType {@link PropertyType}
      * @return corresponding {@link Serializable} class
      */
     public Class<?> getClassByType(PropertyType pAttributeType) { // NOSONAR
@@ -271,8 +258,9 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
     }
 
     @Override
-    protected JsonElement beforeRead(final JsonElement pJsonElement, final String pDiscriminator,
-            final Class<?> pSubType) {
+    protected JsonElement beforeRead(final JsonElement pJsonElement,
+                                     final String pDiscriminator,
+                                     final Class<?> pSubType) {
         final JsonElement restored = restore(pJsonElement, pSubType);
         if (pSubType == ObjectProperty.class) {
             addNamespaceToChildren(restored, pDiscriminator);
@@ -290,10 +278,8 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
      * Flatten a {@link JsonElement} carrying key and value in separated fields into a single field whose key is the
      * value of the key field and value the value of the value field
      *
-     * @param pJsonElement
-     *            {@link JsonElement} to flatten
-     * @param pSubType
-     *            sub type
+     * @param pJsonElement {@link JsonElement} to flatten
+     * @param pSubType     sub type
      * @return flattened {@link JsonElement}
      */
     protected JsonElement flatten(final JsonElement pJsonElement, final Class<?> pSubType) {
@@ -338,10 +324,8 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
     /**
      * Restore {@link JsonElement} object structure (inverse flattening)
      *
-     * @param pJsonElement
-     *            {@link JsonElement} to restore
-     * @param pSubType
-     *            sub type
+     * @param pJsonElement {@link JsonElement} to restore
+     * @param pSubType     sub type
      * @return restored {@link JsonElement}
      */
     protected JsonElement restore(final JsonElement pJsonElement, final Class<?> pSubType) {
@@ -383,10 +367,8 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
     /**
      * Add namespace to {@link JsonElement} children of {@link ObjectProperty}
      *
-     * @param pJsonElement
-     *            {@link JsonElement}
-     * @param pDiscriminator
-     *            discriminator value
+     * @param pJsonElement   {@link JsonElement}
+     * @param pDiscriminator discriminator value
      */
     protected void addNamespaceToChildren(final JsonElement pJsonElement, final String pDiscriminator) {
 
@@ -413,10 +395,8 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
     /**
      * Add namespace to {@link JsonElement} child keys
      *
-     * @param pJsonElement
-     *            {@link JsonElement}
-     * @param pDiscriminator
-     *            discriminator value
+     * @param pJsonElement   {@link JsonElement}
+     * @param pDiscriminator discriminator value
      */
     protected void addNamespaceToChild(final JsonElement pJsonElement, final String pDiscriminator) {
 
@@ -442,8 +422,7 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
     /**
      * Remove namespace from {@link JsonElement}
      *
-     * @param pJsonElement
-     *            target {@link JsonElement}
+     * @param pJsonElement target {@link JsonElement}
      */
     protected void removeParentNamespace(final JsonElement pJsonElement) {
 
@@ -465,10 +444,12 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
 
             if (LOGGER.isDebugEnabled()) {
                 if (splitNsName.length > 1) {
-                    LOGGER.debug(String.format("Namespace removed : \"%s\" -> \"%s\"", logOriginal,
+                    LOGGER.debug(String.format("Namespace removed : \"%s\" -> \"%s\"",
+                                               logOriginal,
                                                pJsonElement.toString()));
                 } else {
-                    LOGGER.debug(String.format("No namespace to remove : \"%s\" -> \"%s\"", logOriginal,
+                    LOGGER.debug(String.format("No namespace to remove : \"%s\" -> \"%s\"",
+                                               logOriginal,
                                                pJsonElement.toString()));
                 }
             }
@@ -486,7 +467,8 @@ public class MultitenantFlattenedAttributeAdapterFactory extends MultitenantPoly
 
     private IllegalArgumentException missingFieldException(final JsonElement pJsonElement, final String pFieldName) {
         final String errorMessage = String.format("JSON element %s must contains a \"%s\" field",
-                                                  pJsonElement.toString(), pFieldName);
+                                                  pJsonElement.toString(),
+                                                  pFieldName);
         LOGGER.error(errorMessage);
         return new IllegalArgumentException(errorMessage);
     }

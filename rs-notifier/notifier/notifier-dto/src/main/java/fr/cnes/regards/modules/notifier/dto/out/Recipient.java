@@ -23,7 +23,9 @@ import java.util.Objects;
 public class Recipient {
 
     private String label;
+
     private RecipientStatus status;
+
     private boolean ackRequired;
 
     public Recipient() {
@@ -64,8 +66,10 @@ public class Recipient {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Recipient)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Recipient))
+            return false;
         Recipient recipient = (Recipient) o;
         return Objects.equals(label, recipient.label);
     }

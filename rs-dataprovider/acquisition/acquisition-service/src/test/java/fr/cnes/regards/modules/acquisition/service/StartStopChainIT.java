@@ -66,7 +66,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 
-
 /**
  * Launch a chain with very long plugin actions and stop it.
  *
@@ -76,10 +75,10 @@ import static org.mockito.ArgumentMatchers.anyString;
  * @author Marc SORDI
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=acq_start_stop", "regards.amqp.enabled=true" }
-// ,locations = { "classpath:application-local.properties" }
+    properties = { "spring.jpa.properties.hibernate.default_schema=acq_start_stop", "regards.amqp.enabled=true" }
+    // ,locations = { "classpath:application-local.properties" }
 )
-@ActiveProfiles({"testAmqp", "nohandler"})
+@ActiveProfiles({ "testAmqp", "nohandler" })
 public class StartStopChainIT extends DataproviderMultitenantServiceIT {
 
     @SuppressWarnings("unused")
@@ -92,8 +91,11 @@ public class StartStopChainIT extends DataproviderMultitenantServiceIT {
     private INotificationClient notificationClient;
 
     private Path rootPath = Paths.get("src", "test", "resources", "startstop");
+
     private Path fakePath = rootPath.resolve("fake").toAbsolutePath();
+
     private Path imagePath = rootPath.resolve("images").toAbsolutePath();
+
     private Path blockerPath = rootPath.resolve("blocker").toAbsolutePath();
 
     @Override
@@ -104,8 +106,9 @@ public class StartStopChainIT extends DataproviderMultitenantServiceIT {
             loops++;
         } while (jobInfoRepo.countByStatusStatusIn(JobStatus.RUNNING) > 0 && loops < 600);
         this.doInit();
-        LOGGER.info("|-----------------------------> TEST DONE REMAINING RUNNING JOBS = {} <-----------------------------------------|",
-                    jobInfoRepo.countByStatusStatusIn(JobStatus.RUNNING));
+        LOGGER.info(
+            "|-----------------------------> TEST DONE REMAINING RUNNING JOBS = {} <-----------------------------------------|",
+            jobInfoRepo.countByStatusStatusIn(JobStatus.RUNNING));
         LOGGER.info("|-----------------------------> TEST ENDING .... <-----------------------------------------|");
         TimeUnit.SECONDS.sleep(5);
         LOGGER.info("|-----------------------------> TEST DONE .... <-----------------------------------------|");
@@ -115,9 +118,10 @@ public class StartStopChainIT extends DataproviderMultitenantServiceIT {
     public void doInit() throws InterruptedException {
         processingService.getFullChains().forEach(chain -> {
             try {
-                processingService.patchStateAndMode(
-                        chain.getId(),
-                        UpdateAcquisitionProcessingChains.build(false, AcquisitionProcessingChainMode.AUTO, UpdateAcquisitionProcessingChainType.ALL));
+                processingService.patchStateAndMode(chain.getId(),
+                                                    UpdateAcquisitionProcessingChains.build(false,
+                                                                                            AcquisitionProcessingChainMode.AUTO,
+                                                                                            UpdateAcquisitionProcessingChainType.ALL));
                 processingService.deleteChain(chain.getId());
             } catch (ModuleException e) {
                 Assert.fail(e.getMessage());
@@ -130,7 +134,10 @@ public class StartStopChainIT extends DataproviderMultitenantServiceIT {
     /**
      * Create chain with slow SIP generation plugin
      */
-    private AcquisitionProcessingChain createProcessingChain(String label, Class<?> sipGenPluginClass, Path searchDir, Path searchDirThumbnail) throws ModuleException {
+    private AcquisitionProcessingChain createProcessingChain(String label,
+                                                             Class<?> sipGenPluginClass,
+                                                             Path searchDir,
+                                                             Path searchDirThumbnail) throws ModuleException {
 
         // Create a processing chain
         AcquisitionProcessingChain processingChain = new AcquisitionProcessingChain();
@@ -173,21 +180,28 @@ public class StartStopChainIT extends DataproviderMultitenantServiceIT {
         }
 
         // Validation
-        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class, "validPlugin", new HashSet<>());
+        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class,
+                                                                         "validPlugin",
+                                                                         new HashSet<>());
         validationPlugin.setIsActive(true);
         validationPlugin.setLabel("Validation plugin");
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
-        Set<IPluginParam> parametersProduct = IPluginParam.set(IPluginParam.build(DefaultProductPlugin.FIELD_REMOVE_EXT, true));
+        Set<IPluginParam> parametersProduct = IPluginParam.set(IPluginParam.build(DefaultProductPlugin.FIELD_REMOVE_EXT,
+                                                                                  true));
 
-        PluginConfiguration productPlugin = PluginConfiguration.build(DefaultProductPlugin.class, "productPlugin", parametersProduct);
+        PluginConfiguration productPlugin = PluginConfiguration.build(DefaultProductPlugin.class,
+                                                                      "productPlugin",
+                                                                      parametersProduct);
         productPlugin.setIsActive(true);
         productPlugin.setLabel("Product plugin");
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginConfiguration.build(sipGenPluginClass, "sipGenPlugin", new HashSet<>());
+        PluginConfiguration sipGenPlugin = PluginConfiguration.build(sipGenPluginClass,
+                                                                     "sipGenPlugin",
+                                                                     new HashSet<>());
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin");
         processingChain.setGenerateSipPluginConf(sipGenPlugin);
@@ -210,7 +224,9 @@ public class StartStopChainIT extends DataproviderMultitenantServiceIT {
     private void updateProcessingChain(Long processingChainId) throws ModuleException {
         AcquisitionProcessingChain processingChain = processingService.getChain(processingChainId);
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginConfiguration.build(DefaultSIPGeneration.class, "sipGenPlugin", new HashSet<>());
+        PluginConfiguration sipGenPlugin = PluginConfiguration.build(DefaultSIPGeneration.class,
+                                                                     "sipGenPlugin",
+                                                                     new HashSet<>());
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("Default SIP generation plugin");
         processingChain.setGenerateSipPluginConf(sipGenPlugin);
@@ -227,53 +243,83 @@ public class StartStopChainIT extends DataproviderMultitenantServiceIT {
 
         // Create a chain
 
-        AcquisitionProcessingChain processingChain = createProcessingChain(source, DefaultSIPGeneration.class, fakePath, imagePath);
+        AcquisitionProcessingChain processingChain = createProcessingChain(source,
+                                                                           DefaultSIPGeneration.class,
+                                                                           fakePath,
+                                                                           imagePath);
         // Start chain
-        processingService.startManualChain(processingChain.getId(),  Optional.of(session), false);
+        processingService.startManualChain(processingChain.getId(), Optional.of(session), false);
 
         // Check all products are registered
         assertExactCount(100, () -> productRepository.count());
         LOGGER.info("-----> All {} products are registered !", 100);
 
         // Check that no running jobs remain
-        assertExactCount(0, () -> jobInfoService.retrieveJobsCount(ProductAcquisitionJob.class.getName(), JobStatus.RUNNING));
+        assertExactCount(0,
+                         () -> jobInfoService.retrieveJobsCount(ProductAcquisitionJob.class.getName(),
+                                                                JobStatus.RUNNING));
         LOGGER.info("-----> Number of running ProductAcquisitionJob jobs {} ", 0);
 
         // At the end, 95 product must be valid / 5 incomplete
-        assertExactCount(95, () -> productRepository.countByProcessingChainAndSipStateIn(processingChain, Collections.singletonList(ProductSIPState.SUBMITTED)));
+        assertExactCount(95,
+                         () -> productRepository.countByProcessingChainAndSipStateIn(processingChain,
+                                                                                     Collections.singletonList(
+                                                                                         ProductSIPState.SUBMITTED)));
 
-        Assert.assertEquals(5, productRepository
-                .countByProcessingChainAndStateIn(processingChain, Collections.singletonList(ProductState.ACQUIRING)));
+        Assert.assertEquals(5,
+                            productRepository.countByProcessingChainAndStateIn(processingChain,
+                                                                               Collections.singletonList(ProductState.ACQUIRING)));
 
         // Check notification for acquired files
         // --- 195 files scanned / 100 data / 95 images
         Assert.assertEquals(195,
-                            sessionNotificationHandler.getPropertyCount(source, session,
-                                    SessionNotifier.GLOBAL_SESSION_STEP, SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED.getName(), StepPropertyEventTypeEnum.INC));
+                            sessionNotificationHandler.getPropertyCount(source,
+                                                                        session,
+                                                                        SessionNotifier.GLOBAL_SESSION_STEP,
+                                                                        SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED.getName(),
+                                                                        StepPropertyEventTypeEnum.INC));
         // Check notification for completed files
         // -- 95 products set to COMPLETED status
         Assert.assertEquals(95,
-                            sessionNotificationHandler.getPropertyCount(source, session,
-                                    SessionNotifier.GLOBAL_SESSION_STEP, SessionProductPropertyEnum.PROPERTY_COMPLETED.getName(), StepPropertyEventTypeEnum.INC));
+                            sessionNotificationHandler.getPropertyCount(source,
+                                                                        session,
+                                                                        SessionNotifier.GLOBAL_SESSION_STEP,
+                                                                        SessionProductPropertyEnum.PROPERTY_COMPLETED.getName(),
+                                                                        StepPropertyEventTypeEnum.INC));
         // -- 95 products pass from COMPLETED to GENERATED
         Assert.assertEquals(95,
-                            sessionNotificationHandler.getPropertyCount(source, session,
-                                    SessionNotifier.GLOBAL_SESSION_STEP, SessionProductPropertyEnum.PROPERTY_COMPLETED.getName(), StepPropertyEventTypeEnum.DEC));
+                            sessionNotificationHandler.getPropertyCount(source,
+                                                                        session,
+                                                                        SessionNotifier.GLOBAL_SESSION_STEP,
+                                                                        SessionProductPropertyEnum.PROPERTY_COMPLETED.getName(),
+                                                                        StepPropertyEventTypeEnum.DEC));
         // Check notification for incomplet files
         // --- After All 5 products should be incomplets
-        long inc = sessionNotificationHandler.getPropertyCount(source, session,
-                SessionNotifier.GLOBAL_SESSION_STEP, SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getName(), StepPropertyEventTypeEnum.INC);
-        long dec = sessionNotificationHandler.getPropertyCount(source, session,
-                SessionNotifier.GLOBAL_SESSION_STEP, SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getName(), StepPropertyEventTypeEnum.DEC);
+        long inc = sessionNotificationHandler.getPropertyCount(source,
+                                                               session,
+                                                               SessionNotifier.GLOBAL_SESSION_STEP,
+                                                               SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getName(),
+                                                               StepPropertyEventTypeEnum.INC);
+        long dec = sessionNotificationHandler.getPropertyCount(source,
+                                                               session,
+                                                               SessionNotifier.GLOBAL_SESSION_STEP,
+                                                               SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getName(),
+                                                               StepPropertyEventTypeEnum.DEC);
         Assert.assertEquals(5, inc - dec);
 
         // Check notification for generated products files
         Assert.assertEquals(95,
-                            sessionNotificationHandler.getPropertyCount(source, session,
-                                    SessionNotifier.GLOBAL_SESSION_STEP, SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName(), StepPropertyEventTypeEnum.INC));
+                            sessionNotificationHandler.getPropertyCount(source,
+                                                                        session,
+                                                                        SessionNotifier.GLOBAL_SESSION_STEP,
+                                                                        SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName(),
+                                                                        StepPropertyEventTypeEnum.INC));
         Assert.assertEquals(0,
-                            sessionNotificationHandler.getPropertyCount(source, session,
-                                    SessionNotifier.GLOBAL_SESSION_STEP, SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName(), StepPropertyEventTypeEnum.DEC));
+                            sessionNotificationHandler.getPropertyCount(source,
+                                                                        session,
+                                                                        SessionNotifier.GLOBAL_SESSION_STEP,
+                                                                        SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName(),
+                                                                        StepPropertyEventTypeEnum.DEC));
         LOGGER.info("|-----------------------------> END TEST 2 <-----------------------------------------|");
     }
 
@@ -286,7 +332,10 @@ public class StartStopChainIT extends DataproviderMultitenantServiceIT {
         String session = UUID.randomUUID().toString();
 
         // Create a chain
-        AcquisitionProcessingChain processingChain = createProcessingChain(source, LongLastingSIPGeneration.class, fakePath, null);
+        AcquisitionProcessingChain processingChain = createProcessingChain(source,
+                                                                           LongLastingSIPGeneration.class,
+                                                                           fakePath,
+                                                                           null);
 
         sessionNotificationHandler.clear();
         // Start chain
@@ -302,8 +351,11 @@ public class StartStopChainIT extends DataproviderMultitenantServiceIT {
         processingService.stopAndCleanChain(processingChain.getId());
 
         // Check that no running jobs remain
-        assertExactCount(0, () -> jobInfoService.retrieveJobsCount(ProductAcquisitionJob.class.getName(), JobStatus.RUNNING));
-        assertExactCount(0, () -> jobInfoService.retrieveJobsCount(SIPGenerationJob.class.getName(), JobStatus.RUNNING));
+        assertExactCount(0,
+                         () -> jobInfoService.retrieveJobsCount(ProductAcquisitionJob.class.getName(),
+                                                                JobStatus.RUNNING));
+        assertExactCount(0,
+                         () -> jobInfoService.retrieveJobsCount(SIPGenerationJob.class.getName(), JobStatus.RUNNING));
 
         // Waiting for stop chain thread to really stop!
         TimeUnit.SECONDS.sleep(4);
@@ -313,33 +365,57 @@ public class StartStopChainIT extends DataproviderMultitenantServiceIT {
         processingService.startManualChain(processingChain.getId(), Optional.of(session), false);
 
         // At the end, all product must be valid
-        assertExactCount(100, () -> productRepository.countByProcessingChainAndSipStateIn(processingChain, Collections.singletonList(ProductSIPState.SUBMITTED)));
+        assertExactCount(100,
+                         () -> productRepository.countByProcessingChainAndSipStateIn(processingChain,
+                                                                                     Collections.singletonList(
+                                                                                         ProductSIPState.SUBMITTED)));
 
         // Check notification for acquired files
         Assert.assertEquals(100,
-                            sessionNotificationHandler.getPropertyCount(source, session,
-                                    SessionNotifier.GLOBAL_SESSION_STEP, SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED.getName(), StepPropertyEventTypeEnum.INC));
+                            sessionNotificationHandler.getPropertyCount(source,
+                                                                        session,
+                                                                        SessionNotifier.GLOBAL_SESSION_STEP,
+                                                                        SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED.getName(),
+                                                                        StepPropertyEventTypeEnum.INC));
         // Check notification for generated products files
         Assert.assertEquals(100,
-                            sessionNotificationHandler.getPropertyCount(source, session,
-                                    SessionNotifier.GLOBAL_SESSION_STEP, SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName(), StepPropertyEventTypeEnum.INC));
+                            sessionNotificationHandler.getPropertyCount(source,
+                                                                        session,
+                                                                        SessionNotifier.GLOBAL_SESSION_STEP,
+                                                                        SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName(),
+                                                                        StepPropertyEventTypeEnum.INC));
         Assert.assertEquals(0,
-                            sessionNotificationHandler.getPropertyCount(source, session,
-                                    SessionNotifier.GLOBAL_SESSION_STEP, SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName(), StepPropertyEventTypeEnum.DEC));
+                            sessionNotificationHandler.getPropertyCount(source,
+                                                                        session,
+                                                                        SessionNotifier.GLOBAL_SESSION_STEP,
+                                                                        SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName(),
+                                                                        StepPropertyEventTypeEnum.DEC));
         // Check notification for completed files
         Assert.assertEquals(100,
-                            sessionNotificationHandler.getPropertyCount(source, session,
-                                    SessionNotifier.GLOBAL_SESSION_STEP, SessionProductPropertyEnum.PROPERTY_COMPLETED.getName(), StepPropertyEventTypeEnum.INC));
+                            sessionNotificationHandler.getPropertyCount(source,
+                                                                        session,
+                                                                        SessionNotifier.GLOBAL_SESSION_STEP,
+                                                                        SessionProductPropertyEnum.PROPERTY_COMPLETED.getName(),
+                                                                        StepPropertyEventTypeEnum.INC));
         Assert.assertEquals(100,
-                            sessionNotificationHandler.getPropertyCount(source, session,
-                                    SessionNotifier.GLOBAL_SESSION_STEP, SessionProductPropertyEnum.PROPERTY_COMPLETED.getName(), StepPropertyEventTypeEnum.DEC));
+                            sessionNotificationHandler.getPropertyCount(source,
+                                                                        session,
+                                                                        SessionNotifier.GLOBAL_SESSION_STEP,
+                                                                        SessionProductPropertyEnum.PROPERTY_COMPLETED.getName(),
+                                                                        StepPropertyEventTypeEnum.DEC));
         // Check notification for incomplet files
         Assert.assertEquals(0,
-                            sessionNotificationHandler.getPropertyCount(source, session,
-                                    SessionNotifier.GLOBAL_SESSION_STEP, SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getName(), StepPropertyEventTypeEnum.INC));
+                            sessionNotificationHandler.getPropertyCount(source,
+                                                                        session,
+                                                                        SessionNotifier.GLOBAL_SESSION_STEP,
+                                                                        SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getName(),
+                                                                        StepPropertyEventTypeEnum.INC));
         Assert.assertEquals(0,
-                            sessionNotificationHandler.getPropertyCount(source, session,
-                                    SessionNotifier.GLOBAL_SESSION_STEP, SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getName(), StepPropertyEventTypeEnum.DEC));
+                            sessionNotificationHandler.getPropertyCount(source,
+                                                                        session,
+                                                                        SessionNotifier.GLOBAL_SESSION_STEP,
+                                                                        SessionProductPropertyEnum.PROPERTY_INCOMPLETE.getName(),
+                                                                        StepPropertyEventTypeEnum.DEC));
         LOGGER.info("|-----------------------------> END TEST 1 <-----------------------------------------|");
     }
 
@@ -347,11 +423,17 @@ public class StartStopChainIT extends DataproviderMultitenantServiceIT {
     public void startChainWithExecutionBlocker() throws ModuleException, IOException {
 
         String label = "Start with blockers";
-        AcquisitionProcessingChain processingChain = createProcessingChain(label, DefaultSIPGeneration.class, blockerPath, null);
+        AcquisitionProcessingChain processingChain = createProcessingChain(label,
+                                                                           DefaultSIPGeneration.class,
+                                                                           blockerPath,
+                                                                           null);
 
         // Add blocking plugin
-        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(CleanAndAcknowledgePlugin.CREATE_ACK_PARAM, true));
-        PluginConfiguration cleanAndAcknowledgePlugin = PluginConfiguration.build(CleanAndAcknowledgePlugin.class, "cleanAndAcknowledgePlugin", parameters);
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(CleanAndAcknowledgePlugin.CREATE_ACK_PARAM,
+                                                                           true));
+        PluginConfiguration cleanAndAcknowledgePlugin = PluginConfiguration.build(CleanAndAcknowledgePlugin.class,
+                                                                                  "cleanAndAcknowledgePlugin",
+                                                                                  parameters);
         cleanAndAcknowledgePlugin.setIsActive(true);
         cleanAndAcknowledgePlugin.setLabel("Clean and Acknowledge plugin");
         processingChain.setPostProcessSipPluginConf(cleanAndAcknowledgePlugin);
@@ -370,7 +452,10 @@ public class StartStopChainIT extends DataproviderMultitenantServiceIT {
 
         // Can't start a chain if the ack directory doesn't exist and the scan directory is not writable
         setWritePermission(blockerPath, false);
-        Assertions.assertThrows(EntityInvalidException.class, () -> processingService.startManualChain(processingChain.getId(), Optional.of(session), false));
+        Assertions.assertThrows(EntityInvalidException.class,
+                                () -> processingService.startManualChain(processingChain.getId(),
+                                                                         Optional.of(session),
+                                                                         false));
 
         // Reset
         setWritePermission(blockerPath, true);
@@ -378,10 +463,17 @@ public class StartStopChainIT extends DataproviderMultitenantServiceIT {
         // Can't start a chain if the ack directory doesn't exist and the scan directory is not writable
         Files.createDirectory(ackPath);
         setWritePermission(ackPath, false);
-        Assertions.assertThrows(EntityInvalidException.class, () -> processingService.startManualChain(processingChain.getId(), Optional.of(session), false));
+        Assertions.assertThrows(EntityInvalidException.class,
+                                () -> processingService.startManualChain(processingChain.getId(),
+                                                                         Optional.of(session),
+                                                                         false));
 
         Mockito.verify(notificationClient, Mockito.times(2))
-                .notify(messageCaptor.capture(), anyString(), any(NotificationLevel.class), any(MimeType.class), any(DefaultRole.class));
+               .notify(messageCaptor.capture(),
+                       anyString(),
+                       any(NotificationLevel.class),
+                       any(MimeType.class),
+                       any(DefaultRole.class));
         messageCaptor.getAllValues().forEach(message -> assertTrue(message.contains(label)));
 
         // Cleanup
@@ -392,7 +484,8 @@ public class StartStopChainIT extends DataproviderMultitenantServiceIT {
         assertExactCount(100, 1, expected, objectCount);
     }
 
-    private void assertExactCount(int maxLoops, int delay, long expected, LongSupplier objectCount) throws InterruptedException {
+    private void assertExactCount(int maxLoops, int delay, long expected, LongSupplier objectCount)
+        throws InterruptedException {
         int loops = maxLoops;
         while (loops > 0 && objectCount.getAsLong() != expected) {
             loops--;
@@ -405,7 +498,8 @@ public class StartStopChainIT extends DataproviderMultitenantServiceIT {
         assertMinCount(100, 1, expected, objectCount);
     }
 
-    private void assertMinCount(int maxLoops, int delay, long expected, LongSupplier objectCount) throws InterruptedException {
+    private void assertMinCount(int maxLoops, int delay, long expected, LongSupplier objectCount)
+        throws InterruptedException {
         int loops = maxLoops;
         while (loops > 0 && objectCount.getAsLong() < expected) {
             loops--;

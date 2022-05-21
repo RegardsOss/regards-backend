@@ -34,8 +34,11 @@ import java.util.Set;
 public class NotifierEvent implements ISubscribable {
 
     private final String requestId;
+
     private final String requestOwner;
+
     private final NotificationState state;
+
     private final Set<Recipient> recipients;
 
     public NotifierEvent(String requestId, String requestOwner, NotificationState state) {

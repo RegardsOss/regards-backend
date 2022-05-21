@@ -1,5 +1,10 @@
 package fr.cnes.regards.framework.feign;
 
+import feign.Request;
+import feign.RequestTemplate;
+import feign.Target;
+import org.apache.http.HttpHeaders;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -7,12 +12,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.apache.http.HttpHeaders;
-
-import feign.Request;
-import feign.RequestTemplate;
-import feign.Target;
 
 /**
  * Target to access external API through URL. Provide an access to headers

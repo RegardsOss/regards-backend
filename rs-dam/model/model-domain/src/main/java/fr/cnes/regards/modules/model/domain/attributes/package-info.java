@@ -17,10 +17,8 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- *
  * This package manages global attribute model.
- * 
- * @author msordi
  *
+ * @author msordi
  */
 package fr.cnes.regards.modules.model.domain.attributes;

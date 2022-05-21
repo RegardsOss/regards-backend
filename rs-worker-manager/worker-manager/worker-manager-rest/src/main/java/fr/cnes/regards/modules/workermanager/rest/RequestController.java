@@ -85,9 +85,10 @@ public class RequestController implements IResourceController<LightRequest> {
     @ResourceAccess(description = "Retrieve a page of requests matching given filters", role = DefaultRole.EXPLOIT)
     @Operation(summary = "Retrieve Requests", description = "Retrieve Requests matching given filters.")
     public ResponseEntity<PagedModel<EntityModel<LightRequest>>> retrieveLightRequestList(
-            @Parameter(description = "Filter requests using criteria") @RequestBody SearchRequestParameters filters,
-            @Parameter(description = "Sorting and page configuration") @PageableDefault(sort = "requestId", direction = Sort.Direction.ASC) Pageable pageable,
-            @Parameter(hidden = true) PagedResourcesAssembler<LightRequest> assembler) {
+        @Parameter(description = "Filter requests using criteria") @RequestBody SearchRequestParameters filters,
+        @Parameter(description = "Sorting and page configuration")
+        @PageableDefault(sort = "requestId", direction = Sort.Direction.ASC) Pageable pageable,
+        @Parameter(hidden = true) PagedResourcesAssembler<LightRequest> assembler) {
         Page<LightRequest> requests = requestService.searchLightRequests(filters, pageable);
         return new ResponseEntity<>(toPagedResources(requests, assembler), HttpStatus.OK);
     }
@@ -96,7 +97,8 @@ public class RequestController implements IResourceController<LightRequest> {
     @ResourceAccess(description = "Retrieve a request matching given requestId", role = DefaultRole.EXPLOIT)
     @Operation(summary = "Retrieve Request", description = "Retrieve a Request by its id.")
     public ResponseEntity<EntityModel<LightRequest>> retrieveLightRequest(
-            @Parameter(description = "Request ID", example = "1") @PathVariable("requestId") String requestId) throws EntityNotFoundException {
+        @Parameter(description = "Request ID", example = "1") @PathVariable("requestId") String requestId)
+        throws EntityNotFoundException {
         LightRequest request = requestService.retrieveLightRequest(requestId);
         return new ResponseEntity<>(toResource(request), HttpStatus.OK);
     }
@@ -104,7 +106,8 @@ public class RequestController implements IResourceController<LightRequest> {
     @RequestMapping(value = REQUEST_RETRY_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "Retry requests matching provided filters", role = DefaultRole.EXPLOIT)
     @Operation(summary = "Retry Requests", description = "Retry Requests matching provided filters.")
-    public void retryRequests(@Parameter(description = "Filter requests using criteria") @Valid @RequestBody SearchRequestParameters filters) {
+    public void retryRequests(@Parameter(description = "Filter requests using criteria") @Valid @RequestBody
+                              SearchRequestParameters filters) {
         LOGGER.debug("Received request to retry requests");
         requestService.scheduleRequestRetryJob(filters);
     }
@@ -112,7 +115,8 @@ public class RequestController implements IResourceController<LightRequest> {
     @RequestMapping(value = REQUEST_DELETE_PATH, method = RequestMethod.DELETE)
     @ResourceAccess(description = "Delete requests matching provided filters", role = DefaultRole.ADMIN)
     @Operation(summary = "Delete Requests", description = "Delete Requests matching provided filters.")
-    public void deleteRequests(@Parameter(description = "Filter requests using criteria") @Valid @RequestBody SearchRequestParameters filters) {
+    public void deleteRequests(@Parameter(description = "Filter requests using criteria") @Valid @RequestBody
+                               SearchRequestParameters filters) {
         LOGGER.debug("Received request to delete requests");
         requestService.scheduleRequestDeletionJob(filters);
     }
@@ -120,14 +124,26 @@ public class RequestController implements IResourceController<LightRequest> {
     @Override
     public EntityModel<LightRequest> toResource(LightRequest element, Object... extras) {
         EntityModel<LightRequest> resource = resourceService.toResource(element);
-        resourceService.addLink(resource, RequestController.class, "retrieveLightRequest", LinkRels.SELF,
+        resourceService.addLink(resource,
+                                RequestController.class,
+                                "retrieveLightRequest",
+                                LinkRels.SELF,
                                 MethodParamFactory.build(String.class, element.getRequestId()));
-        resourceService.addLink(resource, RequestController.class, "retrieveLightRequest", LinkRels.LIST,
+        resourceService.addLink(resource,
+                                RequestController.class,
+                                "retrieveLightRequest",
+                                LinkRels.LIST,
                                 MethodParamFactory.build(String.class, element.getRequestId()));
         if (RequestScanTask.BLOCKED_REQUESTS_STATUSES.contains(element.getStatus())) {
-            resourceService.addLink(resource, RequestController.class, "retryRequests", LinkRelation.of("retry"),
+            resourceService.addLink(resource,
+                                    RequestController.class,
+                                    "retryRequests",
+                                    LinkRelation.of("retry"),
                                     MethodParamFactory.build(SearchRequestParameters.class));
-            resourceService.addLink(resource, RequestController.class, "deleteRequests", LinkRels.DELETE,
+            resourceService.addLink(resource,
+                                    RequestController.class,
+                                    "deleteRequests",
+                                    LinkRels.DELETE,
                                     MethodParamFactory.build(SearchRequestParameters.class));
         }
         return resource;

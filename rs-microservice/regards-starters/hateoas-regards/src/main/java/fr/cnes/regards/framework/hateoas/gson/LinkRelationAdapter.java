@@ -18,20 +18,17 @@
  */
 package fr.cnes.regards.framework.hateoas.gson;
 
-import java.io.IOException;
-
-import org.springframework.hateoas.LinkRelation;
-
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
-
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
+import org.springframework.hateoas.LinkRelation;
+
+import java.io.IOException;
 
 /**
  * @author Marc SORDI
- *
  */
 @GsonTypeAdapter(adapted = LinkRelation.class)
 public class LinkRelationAdapter extends TypeAdapter<LinkRelation> {

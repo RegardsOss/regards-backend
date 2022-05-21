@@ -24,6 +24,7 @@ import java.util.Objects;
 
 /**
  * Geometric bbox criterion
+ *
  * @author Sébastien Binda
  */
 public class BoundaryBoxCriterion implements ICriterion {
@@ -46,6 +47,7 @@ public class BoundaryBoxCriterion implements ICriterion {
 
     /**
      * Creates BoundaryBoxCriterion from string format "left,bottom,right,top" where each field is a double.
+     *
      * @param bbox
      * @throws InvalidGeometryException
      */
@@ -57,8 +59,9 @@ public class BoundaryBoxCriterion implements ICriterion {
             this.maxX = Double.parseDouble(values[2].trim());
             this.maxY = Double.parseDouble(values[3].trim());
         } catch (NumberFormatException | NullPointerException | ArrayIndexOutOfBoundsException e) {
-            throw new InvalidGeometryException(
-                    String.format("Bbox %s is not a valid bbox format. Expected : minX,minY,maxX,maxY", bbox), e);
+            throw new InvalidGeometryException(String.format(
+                "Bbox %s is not a valid bbox format. Expected : minX,minY,maxX,maxY",
+                bbox), e);
         }
     }
 
@@ -116,8 +119,8 @@ public class BoundaryBoxCriterion implements ICriterion {
             return false;
         }
         BoundaryBoxCriterion crit = (BoundaryBoxCriterion) o;
-        return (crit.getMinX() == this.getMinX()) && (crit.getMinY() == this.getMinY())
-                && (crit.getMaxX() == this.getMaxX()) && (crit.getMaxY() == this.getMaxY());
+        return (crit.getMinX() == this.getMinX()) && (crit.getMinY() == this.getMinY()) && (crit.getMaxX()
+            == this.getMaxX()) && (crit.getMaxY() == this.getMaxY());
     }
 
 }

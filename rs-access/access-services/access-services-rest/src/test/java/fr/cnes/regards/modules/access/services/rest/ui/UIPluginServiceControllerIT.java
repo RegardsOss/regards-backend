@@ -18,20 +18,9 @@
  */
 package fr.cnes.regards.modules.access.services.rest.ui;
 
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -44,9 +33,17 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- *
  * Class UIPluginServiceControllerIT
  *
  * @author Sébastien Binda
@@ -82,7 +79,9 @@ public class UIPluginServiceControllerIT extends AbstractRegardsTransactionalIT 
 
     private UIPluginDefinition createPlugin(final UIPluginTypesEnum pType, final String roleName) {
         final UIPluginDefinition plugin = UIPluginDefinition.build("PluginTest",
-                "plugins/test/bundle.js", pType, roleName);
+                                                                   "plugins/test/bundle.js",
+                                                                   pType,
+                                                                   roleName);
         if (UIPluginTypesEnum.SERVICE.equals(pType)) {
             plugin.setApplicationModes(Sets.newHashSet(ServiceScope.ONE, ServiceScope.MANY));
             plugin.setEntityTypes(Sets.newHashSet(EntityType.COLLECTION, EntityType.DATA));
@@ -94,8 +93,9 @@ public class UIPluginServiceControllerIT extends AbstractRegardsTransactionalIT 
         return createPlugin(pType, DefaultRole.PUBLIC.toString());
     }
 
-    private UIPluginConfiguration createPluginConf(final UIPluginDefinition pPluginDef, final Boolean pIsActive,
-            final Boolean pIsLinked) {
+    private UIPluginConfiguration createPluginConf(final UIPluginDefinition pPluginDef,
+                                                   final Boolean pIsActive,
+                                                   final Boolean pIsLinked) {
         final UIPluginConfiguration conf = new UIPluginConfiguration();
         conf.setActive(pIsActive);
         conf.setLinkedToAllEntities(pIsLinked);
@@ -111,7 +111,7 @@ public class UIPluginServiceControllerIT extends AbstractRegardsTransactionalIT 
         plugin = pluginDefRepository.save(createPlugin(UIPluginTypesEnum.CRITERIA));
         final UIPluginDefinition plugin2 = pluginDefRepository.save(createPlugin(UIPluginTypesEnum.SERVICE));
         final UIPluginDefinition plugin3 = pluginDefRepository.save(createPlugin(UIPluginTypesEnum.SERVICE,
-                DefaultRole.INSTANCE_ADMIN.toString()));
+                                                                                 DefaultRole.INSTANCE_ADMIN.toString()));
 
         // Create plugin Configurations
         pluginConf = repository.save(createPluginConf(plugin2, true, false));
@@ -172,8 +172,9 @@ public class UIPluginServiceControllerIT extends AbstractRegardsTransactionalIT 
     @Purpose("Check retrieve dataset associated UIPluginServices")
     public void retrieveDatasetLinkedPlugins_1() {
         performDefaultGet(UIPluginServiceController.REQUEST_MAPPING_ROOT,
-                          customizer().expectStatusOk().expectToHaveSize(JSON_PATH_ROOT, 2).addParameter("dataset_id",
-                                                                                                         "firstOne"),
+                          customizer().expectStatusOk()
+                                      .expectToHaveSize(JSON_PATH_ROOT, 2)
+                                      .addParameter("dataset_id", "firstOne"),
                           "Error getting dataset linked UIPluginConfiguration");
     }
 
@@ -186,8 +187,9 @@ public class UIPluginServiceControllerIT extends AbstractRegardsTransactionalIT 
     @Purpose("Check retrieve dataset associated UIPluginServices")
     public void retrieveDatasetLinkedPlugins_2() {
         performDefaultGet(UIPluginServiceController.REQUEST_MAPPING_ROOT,
-                          customizer().expectStatusOk().expectToHaveSize(JSON_PATH_ROOT, 3).addParameter("dataset_id",
-                                                                                                         "second"),
+                          customizer().expectStatusOk()
+                                      .expectToHaveSize(JSON_PATH_ROOT, 3)
+                                      .addParameter("dataset_id", "second"),
                           "Error getting dataset linked UIPluginConfiguration");
 
     }
@@ -201,8 +203,9 @@ public class UIPluginServiceControllerIT extends AbstractRegardsTransactionalIT 
     @Purpose("Check retrieve dataset associated UIPluginServices")
     public void retrieveDatasetLinkedPlugins_3() {
         performDefaultGet(UIPluginServiceController.REQUEST_MAPPING_ROOT,
-                          customizer().expectStatusOk().expectToHaveSize(JSON_PATH_ROOT, 3).addParameter("dataset_id",
-                                                                                                         "third"),
+                          customizer().expectStatusOk()
+                                      .expectToHaveSize(JSON_PATH_ROOT, 3)
+                                      .addParameter("dataset_id", "third"),
                           "Error getting dataset linked UIPluginConfiguration");
 
     }
@@ -215,8 +218,9 @@ public class UIPluginServiceControllerIT extends AbstractRegardsTransactionalIT 
     @Purpose("Check retrieve dataset associated UIPluginServices")
     public void retrieveDatasetLinkedPlugins_4() {
         performDefaultGet(UIPluginServiceController.REQUEST_MAPPING_ROOT,
-                          customizer().expectStatusOk().expectToHaveSize(JSON_PATH_ROOT, 1).addParameter("dataset_id",
-                                                                                                         "unknown"),
+                          customizer().expectStatusOk()
+                                      .expectToHaveSize(JSON_PATH_ROOT, 1)
+                                      .addParameter("dataset_id", "unknown"),
                           "Error getting dataset linked UIPluginConfiguration");
     }
 

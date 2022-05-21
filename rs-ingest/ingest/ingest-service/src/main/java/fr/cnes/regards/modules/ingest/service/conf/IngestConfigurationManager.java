@@ -49,7 +49,7 @@ public class IngestConfigurationManager extends AbstractModuleManagerWithTenantS
     private final IIngestProcessingChainRepository ingestChainRepository;
 
     public IngestConfigurationManager(IIngestProcessingChainService processingService,
-            IIngestProcessingChainRepository ingestChainRepository) {
+                                      IIngestProcessingChainRepository ingestChainRepository) {
         this.processingService = processingService;
         this.ingestChainRepository = ingestChainRepository;
     }
@@ -63,20 +63,19 @@ public class IngestConfigurationManager extends AbstractModuleManagerWithTenantS
         return importErrors;
     }
 
-    private Collection<String> importIngestProcessingChainConfs(
-            Set<IngestProcessingChain> ingestProcessingChainSettings) {
+    private Collection<String> importIngestProcessingChainConfs(Set<IngestProcessingChain> ingestProcessingChainSettings) {
         Set<String> errors = Sets.newHashSet();
 
         for (IngestProcessingChain ipc : ingestProcessingChainSettings) {
             if (processingService.existsChain(ipc.getName())) {
-                errors.add(
-                        String.format("Ingest processing chain already exists with same name, skipping import of %s.",
-                                      ipc.getName()));
+                errors.add(String.format("Ingest processing chain already exists with same name, skipping import of %s.",
+                                         ipc.getName()));
             } else {
                 try {
                     processingService.createNewChain(ipc);
                 } catch (ModuleException e) {
-                    errors.add(String.format("Skipping import of IngestProcessingChain %s: %s", ipc.getName(),
+                    errors.add(String.format("Skipping import of IngestProcessingChain %s: %s",
+                                             ipc.getName(),
                                              e.getMessage()));
                 }
             }

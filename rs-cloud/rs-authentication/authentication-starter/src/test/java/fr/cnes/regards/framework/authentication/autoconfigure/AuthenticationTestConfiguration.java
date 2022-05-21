@@ -42,8 +42,9 @@ import java.util.ArrayList;
 
 /**
  * Class AuthenticationTestConfiguration
- *
+ * <p>
  * Test configuration class
+ *
  * @author Sébastien Binda
  */
 @Configuration
@@ -74,8 +75,9 @@ public class AuthenticationTestConfiguration {
         testUser.setRole(testRole);
         testUser.setStatus(UserStatus.ACCESS_GRANTED);
 
-        final ResponseEntity<EntityModel<ProjectUser>> response = new ResponseEntity<>(
-                EntityModel.of(testUser, new ArrayList<>()), HttpStatus.OK);
+        final ResponseEntity<EntityModel<ProjectUser>> response = new ResponseEntity<>(EntityModel.of(testUser,
+                                                                                                      new ArrayList<>()),
+                                                                                       HttpStatus.OK);
         Mockito.when(client.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(response);
 
         return client;
@@ -86,8 +88,11 @@ public class AuthenticationTestConfiguration {
     IProjectsClient projectsClient() {
         final IProjectsClient client = Mockito.mock(IProjectsClient.class);
 
-        final ResponseEntity<EntityModel<Project>> response = new ResponseEntity<>(
-                EntityModel.of(new Project("", "", true, PROJECT_TEST_NAME)), HttpStatus.OK);
+        final ResponseEntity<EntityModel<Project>> response = new ResponseEntity<>(EntityModel.of(new Project("",
+                                                                                                              "",
+                                                                                                              true,
+                                                                                                              PROJECT_TEST_NAME)),
+                                                                                   HttpStatus.OK);
         Mockito.when(client.retrieveProject(Mockito.anyString())).thenReturn(response);
         return client;
     }
@@ -105,9 +110,9 @@ public class AuthenticationTestConfiguration {
 
         // Password validation depends on password only for testing
         Mockito.when(mock.validatePassword(Mockito.anyString(), Mockito.eq(INVALID_PASSWORD)))
-                .thenReturn(new ResponseEntity<>(false, HttpStatus.OK));
+               .thenReturn(new ResponseEntity<>(false, HttpStatus.OK));
         Mockito.when(mock.validatePassword(Mockito.anyString(), Mockito.eq(VALID_PASSWORD)))
-                .thenReturn(new ResponseEntity<>(true, HttpStatus.OK));
+               .thenReturn(new ResponseEntity<>(true, HttpStatus.OK));
         return mock;
     }
 

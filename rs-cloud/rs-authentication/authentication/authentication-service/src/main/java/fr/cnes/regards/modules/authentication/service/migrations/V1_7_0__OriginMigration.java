@@ -40,22 +40,24 @@ public class V1_7_0__OriginMigration extends BaseJavaMigration {
     private static final String UNKNOWN_PROVIDER = "Unknown Service Provider";
 
     private static final int RETRY_DELAY = 30;
+
     private static final String SELECT_SERVICE_PROVIDERS = "SELECT name FROM t_service_provider";
+
     private static final String NAME_COLUMN = "name";
 
     private final IAccountsClient accountsClient;
+
     private final IProjectUsersClient projectUsersClient;
+
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-
-    public V1_7_0__OriginMigration(IAccountsClient accountsClient, IProjectUsersClient projectUsersClient,
-            IRuntimeTenantResolver runtimeTenantResolver
-    ) {
+    public V1_7_0__OriginMigration(IAccountsClient accountsClient,
+                                   IProjectUsersClient projectUsersClient,
+                                   IRuntimeTenantResolver runtimeTenantResolver) {
         this.accountsClient = accountsClient;
         this.projectUsersClient = projectUsersClient;
         this.runtimeTenantResolver = runtimeTenantResolver;
     }
-
 
     @Override
     public void migrate(Context context) throws InterruptedException {
@@ -75,7 +77,8 @@ public class V1_7_0__OriginMigration extends BaseJavaMigration {
                 break;
             case 1:
                 String uniqueServiceProvider = serviceProviders.iterator().next();
-                LOGGER.info("Found exactly 1 Service Provider : updating external users with \"{}\"", uniqueServiceProvider);
+                LOGGER.info("Found exactly 1 Service Provider : updating external users with \"{}\"",
+                            uniqueServiceProvider);
                 updateExternalUsers(uniqueServiceProvider);
                 break;
             default:
@@ -96,8 +99,9 @@ public class V1_7_0__OriginMigration extends BaseJavaMigration {
 
             try {
                 FeignSecurityManager.asSystem();
-                ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response = projectUsersClient.retrieveProjectUserList(new ProjectUserSearchParameters(),
-                                                                                                                           PageRequest.of(0, 1));
+                ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response = projectUsersClient.retrieveProjectUserList(
+                    new ProjectUserSearchParameters(),
+                    PageRequest.of(0, 1));
                 if (response != null && response.getStatusCode().is2xxSuccessful()) {
                     PagedModel<EntityModel<ProjectUser>> body = response.getBody();
                     if (body != null) {
@@ -130,7 +134,9 @@ public class V1_7_0__OriginMigration extends BaseJavaMigration {
 
             try {
                 FeignSecurityManager.asSystem();
-                ResponseEntity<PagedModel<EntityModel<Account>>> response = accountsClient.retrieveAccountList(new AccountSearchParameters(), 0, 1);
+                ResponseEntity<PagedModel<EntityModel<Account>>> response = accountsClient.retrieveAccountList(new AccountSearchParameters(),
+                                                                                                               0,
+                                                                                                               1);
                 if (response != null && response.getStatusCode().is2xxSuccessful()) {
                     PagedModel<EntityModel<Account>> body = response.getBody();
                     if (body != null) {
@@ -178,14 +184,17 @@ public class V1_7_0__OriginMigration extends BaseJavaMigration {
 
             FeignSecurityManager.asSystem();
 
-            AccountSearchParameters accountSearchParameters = new AccountSearchParameters().setProject(runtimeTenantResolver.getTenant());
-            List<Account> projectAccounts =
-                    HateoasUtils.retrieveAllPages(100, pageable -> accountsClient.retrieveAccountList(accountSearchParameters, pageable.getPageNumber(), pageable.getPageSize()));
-            List<String> externalAccounts = projectAccounts
-                    .stream()
-                    .filter(Account::isExternal)
-                    .map(Account::getEmail)
-                    .collect(Collectors.toList());
+            AccountSearchParameters accountSearchParameters = new AccountSearchParameters().setProject(
+                runtimeTenantResolver.getTenant());
+            List<Account> projectAccounts = HateoasUtils.retrieveAllPages(100,
+                                                                          pageable -> accountsClient.retrieveAccountList(
+                                                                              accountSearchParameters,
+                                                                              pageable.getPageNumber(),
+                                                                              pageable.getPageSize()));
+            List<String> externalAccounts = projectAccounts.stream()
+                                                           .filter(Account::isExternal)
+                                                           .map(Account::getEmail)
+                                                           .collect(Collectors.toList());
 
             LOGGER.info("Found {} users to update", externalAccounts.size());
 

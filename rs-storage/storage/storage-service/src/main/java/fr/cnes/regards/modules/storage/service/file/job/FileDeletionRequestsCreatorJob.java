@@ -18,20 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file.job;
 
-import java.time.Instant;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
@@ -45,6 +32,15 @@ import fr.cnes.regards.modules.storage.domain.flow.DeletionFlowItem;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import java.time.Instant;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * JOB to handle deletion requests on many {@link FileReference}s.<br>
@@ -53,7 +49,6 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
  * NOTE : Be careful that the {@link #run()} stays not transactional.
  *
  * @author Sébastien Binda
- *
  */
 public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
 
@@ -81,7 +76,7 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         this.parameters = parameters;
     }
 
@@ -97,7 +92,8 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
         Pageable pageRequest = PageRequest.of(0, DeletionFlowItem.MAX_REQUEST_PER_GROUP);
         Page<FileReference> pageResults;
         long start = System.currentTimeMillis();
-        logger.info("[DELETION JOB] Calculate all files to delete for storage location {} (forceDelete={})", storage,
+        logger.info("[DELETION JOB] Calculate all files to delete for storage location {} (forceDelete={})",
+                    storage,
                     forceDelete);
         String requestGroupId = String.format("DELETION-%s", UUID.randomUUID().toString());
         Set<FileDeletionRequestDTO> deletionRequests = Sets.newHashSet();
@@ -108,9 +104,12 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
             pageResults = fileRefService.searchWithOwners(storage, pageRequest);
             for (FileReference fileRef : pageResults.getContent()) {
                 for (String owner : fileRef.getLazzyOwners()) {
-                    deletionRequests.add(FileDeletionRequestDTO
-                                                 .build(fileRef.getMetaInfo().getChecksum(), storage, owner,
-                                                        sessionOwner, session, forceDelete));
+                    deletionRequests.add(FileDeletionRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
+                                                                      storage,
+                                                                      owner,
+                                                                      sessionOwner,
+                                                                      session,
+                                                                      forceDelete));
                     if (deletionRequests.size() == DeletionFlowItem.MAX_REQUEST_PER_GROUP) {
                         publisher.publish(DeletionFlowItem.build(deletionRequests, requestGroupId));
                         deletionRequests.clear();
@@ -124,14 +123,17 @@ public class FileDeletionRequestsCreatorJob extends AbstractJob<Void> {
             publisher.publish(DeletionFlowItem.build(deletionRequests, requestGroupId));
         }
         logger.info("[DELETION JOB] {} files to delete for storage location {} calculated in {}ms",
-                    pageResults.getTotalElements(), storage, System.currentTimeMillis() - start);
+                    pageResults.getTotalElements(),
+                    storage,
+                    System.currentTimeMillis() - start);
     };
 
     @Override
     public void run() {
         try {
-            lockingTaskExecutors.executeWithLock(publishdeletionFlowItemsTask, new LockConfiguration(
-                    DeletionFlowItem.DELETION_LOCK, Instant.now().plusSeconds(300)));
+            lockingTaskExecutors.executeWithLock(publishdeletionFlowItemsTask,
+                                                 new LockConfiguration(DeletionFlowItem.DELETION_LOCK,
+                                                                       Instant.now().plusSeconds(300)));
         } catch (Throwable e) {
             logger.error("[COPY JOB] Unable to get a lock for copy process. Copy job canceled");
             logger.error(e.getMessage(), e);

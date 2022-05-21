@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.geojson;
 
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,11 +29,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.google.gson.Gson;
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-
 /**
  * Test GeoJson feature (de)serialization
+ *
  * @author Marc Sordi
  */
 @RunWith(SpringRunner.class)

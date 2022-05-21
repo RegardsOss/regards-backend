@@ -40,19 +40,23 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
-
 @RestController
 @RequestMapping(AccessGroupController.PATH_ACCESS_GROUPS)
 public class AccessGroupController implements IResourceController<AccessGroup> {
 
     public static final String PATH_ACCESS_GROUPS = "/accessgroups";
+
     public static final String PATH_ACCESS_GROUPS_NAME = "/{name}";
 
     private final IResourceService resourceService;
+
     private final IAccessGroupService accessGroupService;
+
     private final IAccessRightService accessRightService;
 
-    public AccessGroupController(IResourceService resourceService, IAccessGroupService accessGroupService, IAccessRightService accessRightService) {
+    public AccessGroupController(IResourceService resourceService,
+                                 IAccessGroupService accessGroupService,
+                                 IAccessRightService accessRightService) {
         this.resourceService = resourceService;
         this.accessGroupService = accessGroupService;
         this.accessRightService = accessRightService;
@@ -61,36 +65,41 @@ public class AccessGroupController implements IResourceController<AccessGroup> {
     @GetMapping
     @ResourceAccess(description = "send the whole list of accessGroups", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<AccessGroup>>> retrieveAccessGroupsList(
-            @RequestParam(name = "public", required = false) Boolean isPublic,
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<AccessGroup> assembler
-    ) {
-        return ResponseEntity.ok(toPagedResources(accessGroupService.retrieveAccessGroups(isPublic, pageable), assembler));
+        @RequestParam(name = "public", required = false) Boolean isPublic,
+        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        PagedResourcesAssembler<AccessGroup> assembler) {
+        return ResponseEntity.ok(toPagedResources(accessGroupService.retrieveAccessGroups(isPublic, pageable),
+                                                  assembler));
     }
 
     @PostMapping
     @ResourceAccess(description = "create an access group according to the parameter")
-    public ResponseEntity<EntityModel<AccessGroup>> createAccessGroup(@Valid @RequestBody AccessGroup toBeCreated) throws EntityAlreadyExistsException {
-        return ResponseEntity.status(HttpStatus.CREATED).body(toResource(accessGroupService.createAccessGroup(toBeCreated)));
+    public ResponseEntity<EntityModel<AccessGroup>> createAccessGroup(@Valid @RequestBody AccessGroup toBeCreated)
+        throws EntityAlreadyExistsException {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                             .body(toResource(accessGroupService.createAccessGroup(toBeCreated)));
     }
 
     @GetMapping(PATH_ACCESS_GROUPS_NAME)
     @ResourceAccess(description = "send the access group of name requested", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<EntityModel<AccessGroup>> retrieveAccessGroup(@Valid @PathVariable("name") String groupName) throws EntityNotFoundException {
+    public ResponseEntity<EntityModel<AccessGroup>> retrieveAccessGroup(@Valid @PathVariable("name") String groupName)
+        throws EntityNotFoundException {
         return ResponseEntity.ok(toResource(accessGroupService.retrieveAccessGroup(groupName)));
     }
 
     @DeleteMapping(PATH_ACCESS_GROUPS_NAME)
     @ResourceAccess(description = "delete the access group of name requested")
-    public ResponseEntity<Void> deleteAccessGroup(@Valid @PathVariable("name") String groupName) throws EntityOperationForbiddenException, EntityNotFoundException {
+    public ResponseEntity<Void> deleteAccessGroup(@Valid @PathVariable("name") String groupName)
+        throws EntityOperationForbiddenException, EntityNotFoundException {
         accessGroupService.deleteAccessGroup(groupName);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping(PATH_ACCESS_GROUPS_NAME)
     @ResourceAccess(description = "only used to modify the privacy of the group")
-    public ResponseEntity<EntityModel<AccessGroup>> updateAccessGroup(@Valid @PathVariable("name") String groupName, @Valid @RequestBody AccessGroup accessGroup)
-            throws ModuleException {
+    public ResponseEntity<EntityModel<AccessGroup>> updateAccessGroup(@Valid @PathVariable("name") String groupName,
+                                                                      @Valid @RequestBody AccessGroup accessGroup)
+        throws ModuleException {
         return ResponseEntity.ok(toResource(accessGroupService.update(groupName, accessGroup)));
     }
 
@@ -99,11 +108,20 @@ public class AccessGroupController implements IResourceController<AccessGroup> {
         EntityModel<AccessGroup> resource = resourceService.toResource(accessGroup);
         MethodParam<String> nameParam = MethodParamFactory.build(String.class, accessGroup.getName());
         resourceService.addLink(resource, this.getClass(), "retrieveAccessGroup", LinkRels.SELF, nameParam);
-        resourceService.addLink(resource, this.getClass(), "updateAccessGroup", LinkRels.UPDATE, nameParam, MethodParamFactory.build(AccessGroup.class));
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "updateAccessGroup",
+                                LinkRels.UPDATE,
+                                nameParam,
+                                MethodParamFactory.build(AccessGroup.class));
         if (!accessRightService.hasAccessRights(accessGroup)) {
             resourceService.addLink(resource, this.getClass(), "deleteAccessGroup", LinkRels.DELETE, nameParam);
         }
-        resourceService.addLink(resource, this.getClass(), "createAccessGroup", LinkRels.CREATE, MethodParamFactory.build(AccessGroup.class, accessGroup));
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "createAccessGroup",
+                                LinkRels.CREATE,
+                                MethodParamFactory.build(AccessGroup.class, accessGroup));
         return resource;
     }
 

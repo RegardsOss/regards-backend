@@ -18,16 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.domain.database;
 
+import javax.persistence.*;
 import java.time.OffsetDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
 
 /**
  * Download tokens are entities to temporarly access download to one file thanks to a given token.

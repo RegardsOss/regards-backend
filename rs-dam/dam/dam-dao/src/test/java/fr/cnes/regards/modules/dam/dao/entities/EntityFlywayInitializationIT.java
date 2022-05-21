@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.dam.dao.entities;
 
-import org.junit.Ignore;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractFlywayInitializationIT;
+import org.junit.Ignore;
 
 /**
  * Init database public schema with Flyway
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
 @Ignore
 public class EntityFlywayInitializationIT extends AbstractFlywayInitializationIT {

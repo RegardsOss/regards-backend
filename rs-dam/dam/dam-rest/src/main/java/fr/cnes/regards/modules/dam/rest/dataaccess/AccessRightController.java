@@ -52,6 +52,7 @@ import java.util.Optional;
 
 /**
  * Access right REST controller
+ *
  * @author Sylvain Vissiere-Guerinet
  * @author Léo Mieulet
  */
@@ -92,27 +93,30 @@ public class AccessRightController implements IResourceController<AccessRight> {
 
     /**
      * Retrieve a page of access rights according to the parameters
+     *
      * @param accessGroupName name of the access group which the access rights belongs to
-     * @param datasetIpId ip id of the dataset which is constrained by the access rights
-     * @param pageable page information
-     * @param assembler page assembler
+     * @param datasetIpId     ip id of the dataset which is constrained by the access rights
+     * @param pageable        page information
+     * @param assembler       page assembler
      * @return page of access rights
      * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "send the list, or subset asked, of accessRight")
     public ResponseEntity<PagedModel<EntityModel<AccessRight>>> retrieveAccessRightsList(
-            @RequestParam(name = "accessgroup", required = false) String accessGroupName,
-            @RequestParam(name = "dataset", required = false) UniformResourceName datasetIpId,
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<AccessRight> assembler) throws ModuleException {
-        Page<AccessRight> accessRights = accessRightService.retrieveAccessRights(accessGroupName, datasetIpId,
+        @RequestParam(name = "accessgroup", required = false) String accessGroupName,
+        @RequestParam(name = "dataset", required = false) UniformResourceName datasetIpId,
+        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        PagedResourcesAssembler<AccessRight> assembler) throws ModuleException {
+        Page<AccessRight> accessRights = accessRightService.retrieveAccessRights(accessGroupName,
+                                                                                 datasetIpId,
                                                                                  pageable);
         return new ResponseEntity<>(toPagedResources(accessRights, assembler), HttpStatus.OK);
     }
 
     /**
      * Retrieve access group and dataset pair access right or nothing
+     *
      * @param accessGroupName
      * @param datasetIpId
      * @return {@link AccessRight}
@@ -120,9 +124,10 @@ public class AccessRightController implements IResourceController<AccessRight> {
      */
     @RequestMapping(method = RequestMethod.GET, path = ACCESS_RIGHT)
     @ResourceAccess(description = "Retrieve access right of given access group / dataset if there is one",
-            role = DefaultRole.PUBLIC)
+        role = DefaultRole.PUBLIC)
     public ResponseEntity<AccessRight> retrieveAccessRight(@RequestParam(name = "accessgroup") String accessGroupName,
-            @RequestParam(name = "dataset") UniformResourceName datasetIpId) throws ModuleException {
+                                                           @RequestParam(name = "dataset")
+                                                           UniformResourceName datasetIpId) throws ModuleException {
         try {
             Optional<AccessRight> accessRightOpt = accessRightService.retrieveAccessRight(accessGroupName, datasetIpId);
             if (accessRightOpt.isPresent()) {
@@ -136,6 +141,7 @@ public class AccessRightController implements IResourceController<AccessRight> {
 
     /**
      * Create an access right
+     *
      * @param accessRight
      * @return created access right
      * @throws ModuleException
@@ -143,13 +149,14 @@ public class AccessRightController implements IResourceController<AccessRight> {
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "create an accessRight according to the argument")
     public ResponseEntity<EntityModel<AccessRight>> createAccessRight(@Valid @RequestBody AccessRight accessRight)
-            throws ModuleException {
+        throws ModuleException {
         AccessRight created = accessRightService.createAccessRight(accessRight);
         return new ResponseEntity<>(toResource(created), HttpStatus.CREATED);
     }
 
     /**
      * Retrieve an access right by its id
+     *
      * @param id
      * @return retrieved access right
      * @throws ModuleException
@@ -157,13 +164,14 @@ public class AccessRightController implements IResourceController<AccessRight> {
     @RequestMapping(method = RequestMethod.GET, path = PATH_ACCESS_RIGHTS_ID)
     @ResourceAccess(description = "send the access right of id requested")
     public ResponseEntity<EntityModel<AccessRight>> retrieveAccessRight(@Valid @PathVariable("accessright_id") Long id)
-            throws ModuleException {
+        throws ModuleException {
         AccessRight requested = accessRightService.retrieveAccessRight(id);
         return new ResponseEntity<>(toResource(requested), HttpStatus.OK);
     }
 
     /**
      * Update an access right.
+     *
      * @param id
      * @param toBe
      * @return updated access right
@@ -172,7 +180,8 @@ public class AccessRightController implements IResourceController<AccessRight> {
     @RequestMapping(method = RequestMethod.PUT, path = PATH_ACCESS_RIGHTS_ID)
     @ResourceAccess(description = "modify the access right of id requested according to the argument")
     public ResponseEntity<EntityModel<AccessRight>> updateAccessRight(@Valid @PathVariable("accessright_id") Long id,
-            @Valid @RequestBody AccessRight toBe) throws ModuleException {
+                                                                      @Valid @RequestBody AccessRight toBe)
+        throws ModuleException {
         AccessRight updated = accessRightService.updateAccessRight(id, toBe);
         return new ResponseEntity<>(toResource(updated), HttpStatus.OK);
     }
@@ -180,7 +189,7 @@ public class AccessRightController implements IResourceController<AccessRight> {
     @RequestMapping(method = RequestMethod.DELETE, path = PATH_ACCESS_RIGHTS_ID)
     @ResourceAccess(description = "delete the access right of id requested")
     public ResponseEntity<Void> deleteAccessRight(@Valid @PathVariable("accessright_id") Long id)
-            throws ModuleException {
+        throws ModuleException {
         accessRightService.deleteAccessRight(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -188,8 +197,8 @@ public class AccessRightController implements IResourceController<AccessRight> {
     @RequestMapping(method = RequestMethod.GET, path = PATH_IS_DATASET_ACCESSIBLE)
     @ResourceAccess(description = "check if an user has access to a dataset")
     public ResponseEntity<Boolean> isUserAutorisedToAccessDataset(
-            @RequestParam(name = "dataset") OaisUniformResourceName datasetIpId,
-            @RequestParam(name = "user") String userEMail) throws ModuleException {
+        @RequestParam(name = "dataset") OaisUniformResourceName datasetIpId,
+        @RequestParam(name = "user") String userEMail) throws ModuleException {
         boolean hasAccessToDataset = accessRightService.isUserAuthorisedToAccessDataset(datasetIpId, userEMail);
         return new ResponseEntity<>(hasAccessToDataset, HttpStatus.OK);
     }
@@ -197,20 +206,33 @@ public class AccessRightController implements IResourceController<AccessRight> {
     @Override
     public EntityModel<AccessRight> toResource(AccessRight accessRight, Object... extras) {
         EntityModel<AccessRight> resource = EntityModel.of(accessRight);
-        resourceService.addLink(resource, this.getClass(), "createAccessRight", LinkRels.CREATE,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "createAccessRight",
+                                LinkRels.CREATE,
                                 MethodParamFactory.build(AccessRight.class, accessRight));
-        resourceService.addLink(resource, this.getClass(), "deleteAccessRight", LinkRels.DELETE,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "deleteAccessRight",
+                                LinkRels.DELETE,
                                 MethodParamFactory.build(Long.class, accessRight.getId()));
-        resourceService.addLink(resource, this.getClass(), "updateAccessRight", LinkRels.UPDATE,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "updateAccessRight",
+                                LinkRels.UPDATE,
                                 MethodParamFactory.build(Long.class, accessRight.getId()),
                                 MethodParamFactory.build(AccessRight.class, accessRight));
-        resourceService.addLink(resource, this.getClass(), "retrieveAccessRight", LinkRels.SELF,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "retrieveAccessRight",
+                                LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, accessRight.getId()));
         return resource;
     }
 
     /**
      * Data binder to recognize {@link OaisUniformResourceName}
+     *
      * @param dataBinder
      */
     @InitBinder

@@ -9,7 +9,8 @@ import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import java.time.OffsetDateTime;
 import java.util.Set;
 
-public interface AbstractEntityDecoder<F extends EntityFeature, E extends AbstractEntity<F>> extends NullSafeDecoderBuilder {
+public interface AbstractEntityDecoder<F extends EntityFeature, E extends AbstractEntity<F>>
+    extends NullSafeDecoderBuilder {
 
     default void readCommonFields(Any jsonAny, F feature, E result) {
         result.setTags(feature.getTags());
@@ -21,7 +22,9 @@ public interface AbstractEntityDecoder<F extends EntityFeature, E extends Abstra
         whenPresent(jsonAny.get("creationDate"), OffsetDateTime.class, result::setCreationDate);
         whenPresent(jsonAny.get("lastUpdate"), OffsetDateTime.class, result::setLastUpdate);
 
-        whenPresent(jsonAny.get("groups"), new TypeLiteral<Set<String>>(){}, result::setGroups);
+        whenPresent(jsonAny.get("groups"), new TypeLiteral<Set<String>>() {
+
+        }, result::setGroups);
     }
 
 }

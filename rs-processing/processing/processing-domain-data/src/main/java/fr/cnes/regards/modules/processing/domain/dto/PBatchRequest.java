@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.dto;
 
 import fr.cnes.regards.modules.processing.domain.size.FileSetStatistics;
@@ -31,19 +31,25 @@ import java.util.UUID;
  *
  * @author gandrieu
  */
-@Data @With
+@Data
+@With
 @AllArgsConstructor
 @Builder(toBuilder = true)
 
 public class PBatchRequest {
 
     private final String correlationId;
+
     private final UUID processBusinessId;
+
     private final String tenant;
+
     private final String user;
+
     private final String userRole;
 
     private final Map<String, String> parameters;
+
     private final Map<String, FileSetStatistics> filesetsByDataset;
 
 }

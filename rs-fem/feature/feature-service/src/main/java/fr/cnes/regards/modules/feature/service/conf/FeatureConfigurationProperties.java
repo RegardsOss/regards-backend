@@ -25,7 +25,6 @@ import org.springframework.context.annotation.Configuration;
  * Feature configuration properties
  *
  * @author Marc SORDI
- *
  */
 @Configuration
 public class FeatureConfigurationProperties {

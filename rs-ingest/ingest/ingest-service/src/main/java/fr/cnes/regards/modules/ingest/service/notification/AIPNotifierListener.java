@@ -20,22 +20,22 @@
 
 package fr.cnes.regards.modules.ingest.service.notification;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.notifier.client.INotifierRequestListener;
 import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Listener for aip notification events {@link AIPNotificationService}
+ *
  * @author Iliana Ghazali
  */
 
@@ -68,8 +68,9 @@ public class AIPNotifierListener implements INotifierRequestListener {
     public void onRequestSuccess(List<NotifierEvent> successEvents) {
         // Retrieve requests ids from events
         List<Long> requestIds = successEvents.stream()
-                .filter(event -> event.getRequestOwner().equals(this.microserviceName))
-                .map(event -> Long.parseLong(event.getRequestId())).collect(Collectors.toList());
+                                             .filter(event -> event.getRequestOwner().equals(this.microserviceName))
+                                             .map(event -> Long.parseLong(event.getRequestId()))
+                                             .collect(Collectors.toList());
 
         // Handle notification successes
         if (!requestIds.isEmpty()) {
@@ -92,8 +93,9 @@ public class AIPNotifierListener implements INotifierRequestListener {
     private void handleNotificationIssue(List<NotifierEvent> events) {
         // Retrieve requests ids from events
         List<Long> requestIds = events.stream()
-                .filter(event -> event.getRequestOwner().equals(this.microserviceName))
-                .map(event -> Long.parseLong(event.getRequestId())).collect(Collectors.toList());
+                                      .filter(event -> event.getRequestOwner().equals(this.microserviceName))
+                                      .map(event -> Long.parseLong(event.getRequestId()))
+                                      .collect(Collectors.toList());
 
         // Handle notification errors
         if (!requestIds.isEmpty()) {

@@ -1,17 +1,17 @@
 package fr.cnes.regards.framework.hateoas;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.common.base.Preconditions;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
 
-import com.google.common.base.Preconditions;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Alternative solution to {@link RepresentationModelAssemblerSupport}.
  * It does not require the developper to define a [PersonResource] type, which is often unnessary.
+ *
  * @param <T> The base type wrapped in {@link EntityModel}
  * @author Xavier-Alexandre Brochard
  */
@@ -19,6 +19,7 @@ public abstract class SimpleResourceAssemblerSupport<T> implements Representatio
 
     /**
      * Converts all given entities into resources.
+     *
      * @param entities must not be {@literal null}.
      * @see #toModel(Object)
      */

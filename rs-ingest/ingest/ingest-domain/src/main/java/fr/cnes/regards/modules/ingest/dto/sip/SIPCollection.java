@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.modules.ingest.dto.sip;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 import fr.cnes.regards.framework.geojson.AbstractFeatureCollection;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 /**
  * SIP collection representation based on GeoJson standard structure.
  *
  * @author Marc Sordi
- *
  */
 public class SIPCollection extends AbstractFeatureCollection<SIP> {
 
@@ -47,6 +46,7 @@ public class SIPCollection extends AbstractFeatureCollection<SIP> {
     /**
      * Create a new {@link SIPCollection} with a generated unique request id.<br/>
      * An {@link IngestRequestEvent} including this request id will be sent to monitor the progress of the request.
+     *
      * @param metadata metadata built with {@link IngestMetadataDto#build(String, String, String, java.util.Set, fr.cnes.regards.modules.ingest.domain.sip.VersioningMode, java.util.List)}
      * @return a {@link SIPCollection}
      */

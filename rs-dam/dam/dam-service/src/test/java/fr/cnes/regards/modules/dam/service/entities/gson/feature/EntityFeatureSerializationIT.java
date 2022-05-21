@@ -43,14 +43,12 @@ import org.springframework.test.context.TestPropertySource;
 import java.util.List;
 
 /**
- *
  * Test feature serialization
  *
  * @author Marc Sordi
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature" },
-        locations = "classpath:es.properties")
+    locations = "classpath:es.properties")
 @MultitenantTransactional
 public class EntityFeatureSerializationIT extends AbstractMultitenantServiceIT {
 
@@ -112,9 +110,11 @@ public class EntityFeatureSerializationIT extends AbstractMultitenantServiceIT {
         // Set dynamic properties
         feature.getProperties().add(IProperty.buildString(GALAXY, MILKY_WAY));
         feature.getProperties()
-                .add(IProperty.buildString(ABSTRACT, "The Milky Way is the galaxy that contains our Solar System."));
-        feature.getProperties().add(IProperty.buildObject(DATA, IProperty.buildInteger(STAR_NB, 300),
-                                                          IProperty.buildInteger(PLANET_NB, 100)));
+               .add(IProperty.buildString(ABSTRACT, "The Milky Way is the galaxy that contains our Solar System."));
+        feature.getProperties()
+               .add(IProperty.buildObject(DATA,
+                                          IProperty.buildInteger(STAR_NB, 300),
+                                          IProperty.buildInteger(PLANET_NB, 100)));
 
         // Set tags
         feature.addTag("first tag");
@@ -136,7 +136,8 @@ public class EntityFeatureSerializationIT extends AbstractMultitenantServiceIT {
         collection.addProperty(IProperty.buildString(GALAXY, MILKY_WAY));
         collection.addProperty(IProperty.buildString(ABSTRACT,
                                                      "The Milky Way is the galaxy that contains our Solar System."));
-        collection.addProperty(IProperty.buildObject(DATA, IProperty.buildInteger(STAR_NB, 300),
+        collection.addProperty(IProperty.buildObject(DATA,
+                                                     IProperty.buildInteger(STAR_NB, 300),
                                                      IProperty.buildInteger(PLANET_NB, 100)));
 
         // Set tags

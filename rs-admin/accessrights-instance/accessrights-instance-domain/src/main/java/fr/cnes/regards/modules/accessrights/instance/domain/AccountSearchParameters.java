@@ -23,16 +23,26 @@ import fr.cnes.regards.framework.jpa.utils.AbstractSearchParameters;
 public class AccountSearchParameters implements AbstractSearchParameters<Account> {
 
     private String email;
+
     private String lastName;
+
     private String firstName;
+
     private String status;
+
     private String project;
+
     private String origin;
 
     public AccountSearchParameters() {
     }
 
-    public AccountSearchParameters(String email, String lastName, String firstName, String status, String project, String origin) {
+    public AccountSearchParameters(String email,
+                                   String lastName,
+                                   String firstName,
+                                   String status,
+                                   String project,
+                                   String origin) {
         this.email = email;
         this.lastName = lastName;
         this.firstName = firstName;

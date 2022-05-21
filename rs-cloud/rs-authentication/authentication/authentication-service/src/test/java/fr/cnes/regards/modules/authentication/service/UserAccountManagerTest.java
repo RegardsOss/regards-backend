@@ -39,8 +39,8 @@ public class UserAccountManagerTest {
 
     public static final String PROVIDER_NAME = "foo";
 
-    public static final ServiceProviderAuthenticationInfo.UserInfo PROVIDER_USER_INFO = new ServiceProviderAuthenticationInfo.UserInfo.Builder()
-            .withEmail("email").withFirstname("firstname").withLastname("lastname").build();
+    public static final ServiceProviderAuthenticationInfo.UserInfo PROVIDER_USER_INFO = new ServiceProviderAuthenticationInfo.UserInfo.Builder().withEmail(
+        "email").withFirstname("firstname").withLastname("lastname").build();
 
     public static final Map<String, DynamicTenantSetting> ACCESS_SETTINGS;
 
@@ -52,7 +52,8 @@ public class UserAccountManagerTest {
     static {
         GsonUtil.setGson(new Gson());
         ACCESS_SETTINGS = AccessSettings.SETTING_LIST.stream()
-                .collect(Collectors.toMap(DynamicTenantSetting::getName, Function.identity()));
+                                                     .collect(Collectors.toMap(DynamicTenantSetting::getName,
+                                                                               Function.identity()));
     }
 
     @Mock
@@ -82,7 +83,10 @@ public class UserAccountManagerTest {
         user.setEmail("plop@plop.fr");
         user.setRole(new Role(DefaultRole.PUBLIC.toString()));
 
-        accountManager = spy(new UserAccountManagerImpl(accountsClient, usersClient, notificationClient, runtimeTenantResolver));
+        accountManager = spy(new UserAccountManagerImpl(accountsClient,
+                                                        usersClient,
+                                                        notificationClient,
+                                                        runtimeTenantResolver));
     }
 
     @Test
@@ -105,7 +109,8 @@ public class UserAccountManagerTest {
     public void createUserWithAccountAndGroups_fails_when_createProjectUser_fails() {
         RuntimeException expected = new RuntimeException("expected");
         doReturn(Try.success(Unit.UNIT)).when(accountManager).createAccount(eq(PROVIDER_USER_INFO), eq(PROVIDER_NAME));
-        doReturn(Try.failure(expected)).when(accountManager).createProjectUser(eq(PROVIDER_USER_INFO), eq(PROVIDER_NAME));
+        doReturn(Try.failure(expected)).when(accountManager)
+                                       .createProjectUser(eq(PROVIDER_USER_INFO), eq(PROVIDER_NAME));
 
         Try<String> result = accountManager.createUserWithAccountAndGroups(PROVIDER_USER_INFO, PROVIDER_NAME);
 

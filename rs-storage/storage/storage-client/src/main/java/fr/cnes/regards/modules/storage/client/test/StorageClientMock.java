@@ -18,22 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.client.test;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.MimeType;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
@@ -49,9 +34,19 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MimeType;
+
+import java.time.OffsetDateTime;
+import java.util.*;
 
 /**
  * Provide a bean to replace the behavior of the {@link StorageClient} while testing
+ *
  * @author Léo Mieulet
  */
 @Profile("StorageClientMock")
@@ -70,7 +65,6 @@ public class StorageClientMock implements IStorageClient {
     private final static String UNSUPORTED = "Not implemented yet !";
 
     /**
-     *
      * @param shouldReturnGranted when true return granted, otherwise denied
      * @param shouldReturnSuccess when true return success, otherwise error
      */
@@ -108,18 +102,27 @@ public class StorageClientMock implements IStorageClient {
 
         List<RequestResultInfo> requestInfos = new ArrayList<>();
         for (FileStorageRequestDTO file : files) {
-            RequestResultInfo resultInfo = new RequestResultInfo(requestInfo.getGroupId(), FileRequestType.STORAGE,
-                    file.getChecksum(), file.getStorage(), file.getOptionalSubDirectory().orElse(null),
-                    Sets.newHashSet(file.getOwner()));
+            RequestResultInfo resultInfo = new RequestResultInfo(requestInfo.getGroupId(),
+                                                                 FileRequestType.STORAGE,
+                                                                 file.getChecksum(),
+                                                                 file.getStorage(),
+                                                                 file.getOptionalSubDirectory().orElse(null),
+                                                                 Sets.newHashSet(file.getOwner()));
 
             resultInfo.setResultFile(new FileReference(file.getOwner(),
-                    new FileReferenceMetaInfo(file.getChecksum(), file.getAlgorithm(), file.getFileName(), 1000L,
-                            MimeType.valueOf(file.getMimeType())),
-                    new FileLocation(file.getStorage(), "http://somedomain.com/api/v1/storage/file/2")));
+                                                       new FileReferenceMetaInfo(file.getChecksum(),
+                                                                                 file.getAlgorithm(),
+                                                                                 file.getFileName(),
+                                                                                 1000L,
+                                                                                 MimeType.valueOf(file.getMimeType())),
+                                                       new FileLocation(file.getStorage(),
+                                                                        "http://somedomain.com/api/v1/storage/file/2")));
             requestInfos.add(resultInfo);
         }
 
-        publisher.publish(FileRequestsGroupEvent.build(requestInfo.getGroupId(), FileRequestType.STORAGE, firstStatus,
+        publisher.publish(FileRequestsGroupEvent.build(requestInfo.getGroupId(),
+                                                       FileRequestType.STORAGE,
+                                                       firstStatus,
                                                        requestInfos));
 
         // Send the second event if the first one is GRANTED
@@ -130,8 +133,10 @@ public class StorageClientMock implements IStorageClient {
             } else {
                 secondStatus = FlowItemStatus.ERROR;
             }
-            publisher.publish(FileRequestsGroupEvent.build(requestInfo.getGroupId(), FileRequestType.STORAGE,
-                                                           secondStatus, requestInfos));
+            publisher.publish(FileRequestsGroupEvent.build(requestInfo.getGroupId(),
+                                                           FileRequestType.STORAGE,
+                                                           secondStatus,
+                                                           requestInfos));
         }
 
         return Sets.newHashSet(requestInfo);
@@ -159,8 +164,12 @@ public class StorageClientMock implements IStorageClient {
     public RequestInfo reference(FileReferenceRequestDTO file) {
         RequestInfo requestInfo = RequestInfo.build();
 
-        RequestResultInfo resultInfo = new RequestResultInfo(requestInfo.getGroupId(), FileRequestType.STORAGE,
-                file.getChecksum(), file.getStorage(), null, Sets.newHashSet(file.getOwner()));
+        RequestResultInfo resultInfo = new RequestResultInfo(requestInfo.getGroupId(),
+                                                             FileRequestType.STORAGE,
+                                                             file.getChecksum(),
+                                                             file.getStorage(),
+                                                             null,
+                                                             Sets.newHashSet(file.getOwner()));
 
         //TODO call storage
         return requestInfo;
@@ -186,16 +195,24 @@ public class StorageClientMock implements IStorageClient {
             firstStatus = FlowItemStatus.DENIED;
         }
 
-        RequestResultInfo resultInfo = new RequestResultInfo(requestInfo.getGroupId(), FileRequestType.DELETION,
-                file.getChecksum(), file.getStorage(), null, Sets.newHashSet(file.getOwner()));
+        RequestResultInfo resultInfo = new RequestResultInfo(requestInfo.getGroupId(),
+                                                             FileRequestType.DELETION,
+                                                             file.getChecksum(),
+                                                             file.getStorage(),
+                                                             null,
+                                                             Sets.newHashSet(file.getOwner()));
 
-        resultInfo.setResultFile(
-                                 new FileReference(file.getOwner(),
-                                         new FileReferenceMetaInfo(file.getChecksum(), "some algo", "some file", 1000L,
-                                                 MimeType.valueOf("application/pdf")),
-                                         new FileLocation(file.getStorage(), null)));
+        resultInfo.setResultFile(new FileReference(file.getOwner(),
+                                                   new FileReferenceMetaInfo(file.getChecksum(),
+                                                                             "some algo",
+                                                                             "some file",
+                                                                             1000L,
+                                                                             MimeType.valueOf("application/pdf")),
+                                                   new FileLocation(file.getStorage(), null)));
         List<RequestResultInfo> requestInfos = Collections.singletonList(resultInfo);
-        publisher.publish(FileRequestsGroupEvent.build(requestInfo.getGroupId(), FileRequestType.DELETION, firstStatus,
+        publisher.publish(FileRequestsGroupEvent.build(requestInfo.getGroupId(),
+                                                       FileRequestType.DELETION,
+                                                       firstStatus,
                                                        requestInfos));
 
         // Send the second event if the first one is GRANTED
@@ -206,8 +223,10 @@ public class StorageClientMock implements IStorageClient {
             } else {
                 secondStatus = FlowItemStatus.ERROR;
             }
-            publisher.publish(FileRequestsGroupEvent.build(requestInfo.getGroupId(), FileRequestType.DELETION,
-                                                           secondStatus, requestInfos));
+            publisher.publish(FileRequestsGroupEvent.build(requestInfo.getGroupId(),
+                                                           FileRequestType.DELETION,
+                                                           secondStatus,
+                                                           requestInfos));
         }
 
         return requestInfo;

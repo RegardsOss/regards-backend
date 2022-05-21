@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.framework.modules.plugins.service;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import fr.cnes.regards.framework.modules.plugins.SamplePlugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /***
  * Constants and datas for unit testing of plugin's Service.
@@ -111,60 +111,79 @@ public class PluginServiceUtility {
     /**
      * A {@link AbstractPluginParam}
      */
-    protected static final Set<IPluginParam> DYNAMICPARAMETERS = IPluginParam
-            .set(IPluginParam.build("param11", "value11"),
-                 IPluginParam.build(SamplePlugin.FIELD_NAME_COEF, 0).dynamic(),
-                 IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE),
-                 IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, RED).dynamic(DYNAMICVALUES));
+    protected static final Set<IPluginParam> DYNAMICPARAMETERS = IPluginParam.set(IPluginParam.build("param11",
+                                                                                                     "value11"),
+                                                                                  IPluginParam.build(SamplePlugin.FIELD_NAME_COEF,
+                                                                                                     0).dynamic(),
+                                                                                  IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE,
+                                                                                                     Boolean.TRUE),
+                                                                                  IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX,
+                                                                                                     RED)
+                                                                                              .dynamic(DYNAMICVALUES));
 
     /**
      * A {@link AbstractPluginParam}
      */
-    protected static final Set<IPluginParam> DYNAMICPARAMETERS_TO_UPDATE = IPluginParam
-            .set(IPluginParam.build("param11", "value11"),
-                 IPluginParam.build(SamplePlugin.FIELD_NAME_COEF, 0).dynamic(),
-                 IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE),
-                 IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, RED).dynamic(DYNAMICVALUES));
+    protected static final Set<IPluginParam> DYNAMICPARAMETERS_TO_UPDATE = IPluginParam.set(IPluginParam.build("param11",
+                                                                                                               "value11"),
+                                                                                            IPluginParam.build(
+                                                                                                SamplePlugin.FIELD_NAME_COEF,
+                                                                                                0).dynamic(),
+                                                                                            IPluginParam.build(
+                                                                                                SamplePlugin.FIELD_NAME_ACTIVE,
+                                                                                                Boolean.TRUE),
+                                                                                            IPluginParam.build(
+                                                                                                            SamplePlugin.FIELD_NAME_SUFFIX,
+                                                                                                            RED)
+                                                                                                        .dynamic(
+                                                                                                            DYNAMICVALUES));
 
     /**
      * A list of {@link AbstractPluginParam}
      */
-    protected static final Set<IPluginParam> INTERFACEPARAMETERS = IPluginParam
-            .set(IPluginParam.build("param31", "value31"),
+    protected static final Set<IPluginParam> INTERFACEPARAMETERS = IPluginParam.set(IPluginParam.build("param31",
+                                                                                                       "value31"),
 
-                 IPluginParam.build("param32", "value32"),
-                 IPluginParam.build("param33", "value33"),
-                 IPluginParam.build("param34", "value34"),
-                 IPluginParam.build("param35", "value35"),
-                 IPluginParam.build(SamplePlugin.FIELD_NAME_COEF, 3).dynamic(),
-                 IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE),
-                 IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, "Toulouse"));
+                                                                                    IPluginParam.build("param32",
+                                                                                                       "value32"),
+                                                                                    IPluginParam.build("param33",
+                                                                                                       "value33"),
+                                                                                    IPluginParam.build("param34",
+                                                                                                       "value34"),
+                                                                                    IPluginParam.build("param35",
+                                                                                                       "value35"),
+                                                                                    IPluginParam.build(SamplePlugin.FIELD_NAME_COEF,
+                                                                                                       3).dynamic(),
+                                                                                    IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE,
+                                                                                                       Boolean.TRUE),
+                                                                                    IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX,
+                                                                                                       "Toulouse"));
 
     /**
      * A {@link PluginConfiguration}
      */
     private final PluginConfiguration pluginConfiguration1 = new PluginConfiguration(
-            "a configuration from PluginServiceUtility",
-            INTERFACEPARAMETERS,
-            0,
-            A_SAMPLE_PLUGIN_PLUGIN_ID);
+        "a configuration from PluginServiceUtility",
+        INTERFACEPARAMETERS,
+        0,
+        A_SAMPLE_PLUGIN_PLUGIN_ID);
 
     /**
      * A list of {@link AbstractPluginParam} with a dynamic {@link AbstractPluginParam}.
      */
     private final PluginConfiguration pluginConfiguration2 = new PluginConfiguration(
-            "second configuration from PluginServiceUtility",
-            DYNAMICPARAMETERS,
-            0,
-            A_SAMPLE_PLUGIN_PLUGIN_ID);
+        "second configuration from PluginServiceUtility",
+        DYNAMICPARAMETERS,
+        0,
+        A_SAMPLE_PLUGIN_PLUGIN_ID);
 
     /**
      * A list of {@link AbstractPluginParam} without parameters.
      */
     private final PluginConfiguration pluginConfiguration3 = new PluginConfiguration(
-            "third configuration from PluginServiceUtility",
-            CINQ,
-            A_SAMPLE_PLUGIN_PLUGIN_ID);
+        "third configuration from PluginServiceUtility",
+        CINQ,
+        A_SAMPLE_PLUGIN_PLUGIN_ID);
 
     /**
      * A list of {@link AbstractPluginParam} with a dynamic {@link AbstractPluginParam}.

@@ -18,11 +18,6 @@
  */
 package fr.cnes.regards.modules.search.rest.engine.plugin;
 
-import java.util.List;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
@@ -31,14 +26,19 @@ import fr.cnes.regards.modules.search.domain.plugin.IEntityLinkBuilder;
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.util.List;
 
 /**
  * Plugin for test purposes.
+ *
  * @author Sébastien Binda
  */
 @Plugin(id = SearchEngineTest.ENGINE_ID, author = "REGARDS Team", contact = "regards@c-s.fr",
-        description = "Test search engine", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",
-        version = "1.0.0")
+    description = "Test search engine", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",
+    version = "1.0.0")
 public class SearchEngineTest implements ISearchEngine<Object, Object, Object, List<String>> {
 
     public static final String ENGINE_ID = "testengine";
@@ -54,8 +54,9 @@ public class SearchEngineTest implements ISearchEngine<Object, Object, Object, L
     }
 
     @Override
-    public ResponseEntity<Object> search(SearchContext context, ISearchEngine<?, ?, ?, ?> parser,
-            IEntityLinkBuilder linkBuilder) throws ModuleException {
+    public ResponseEntity<Object> search(SearchContext context,
+                                         ISearchEngine<?, ?, ?, ?> parser,
+                                         IEntityLinkBuilder linkBuilder) throws ModuleException {
         return new ResponseEntity<Object>(associatedDataset, HttpStatus.OK);
     }
 
@@ -66,7 +67,7 @@ public class SearchEngineTest implements ISearchEngine<Object, Object, Object, L
 
     @Override
     public ResponseEntity<Object> getEntity(SearchContext context, IEntityLinkBuilder linkBuilder)
-            throws ModuleException {
+        throws ModuleException {
         return new ResponseEntity<Object>(associatedDataset, HttpStatus.OK);
     }
 

@@ -19,21 +19,14 @@
 
 package fr.cnes.regards.framework.modules.tenant.settings.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
-import java.util.Objects;
-
-import org.hibernate.annotations.Type;
-
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
+import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 @Entity
 @Table(name = "t_dynamic_tenant_setting")
@@ -173,7 +166,7 @@ public class DynamicTenantSetting {
     @Override
     public String toString() {
         return "DynamicTenantSetting{" + "name='" + name + '\'' + ", description='" + description + '\'' + ", "
-                + "value='" + value + '\'' + ", defaultValue='" + defaultValue + '\'' + '}';
+            + "value='" + value + '\'' + ", defaultValue='" + defaultValue + '\'' + '}';
     }
 
 }

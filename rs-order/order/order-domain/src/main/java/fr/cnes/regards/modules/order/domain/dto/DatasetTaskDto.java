@@ -18,13 +18,13 @@
  */
 package fr.cnes.regards.modules.order.domain.dto;
 
-import org.springframework.beans.BeanUtils;
-
 import fr.cnes.regards.modules.order.domain.DatasetTask;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
+import org.springframework.beans.BeanUtils;
 
 /**
  * DatasetTask Dto to avoid loading FilesTask and all associated files
+ *
  * @author oroussel
  */
 public class DatasetTaskDto {

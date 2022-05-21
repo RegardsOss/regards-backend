@@ -18,21 +18,21 @@
  */
 package fr.cnes.regards.modules.opensearch.service.parser;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Test;
-
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.PolygonCriterion;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
+import org.hamcrest.Matchers;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 /**
  * Unit test for {@link GeometryParser}
+ *
  * @author Xavier-Alexandre Brochard
  */
 public class GeometryParserTest {

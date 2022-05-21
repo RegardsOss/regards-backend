@@ -75,18 +75,20 @@ public class GeoCriterionWithCircleVisitorTest {
         Assert.assertNotEquals(resultFirstCrit, resultSecondCrit);
         // Let's find second circle criterion (exterior one)
         CircleCriterion secondCircleCriterion = (CircleCriterion) ((AndCriterion) resultSecondCrit).getCriterions()
-                .get(1);
-        Assert.assertTrue(Double.valueOf(((CircleCriterion) resultFirstCrit).getRadius()) < Double
-                .valueOf(secondCircleCriterion.getRadius()));
+                                                                                                   .get(1);
+        Assert.assertTrue(Double.valueOf(((CircleCriterion) resultFirstCrit).getRadius()) < Double.valueOf(
+            secondCircleCriterion.getRadius()));
     }
 
     @Test
     public void criterionWithCircleTest() {
         // Geo cricle visitor on Mars
         GeoCriterionWithCircleVisitor visitor = new GeoCriterionWithCircleVisitor(Crs.MARS_49900);
-        ICriterion criterion = ICriterion.and(ICriterion.in("toto", StringMatchType.KEYWORD, "text1", "text2"), ICriterion.eq("count", 25),
-                                              ICriterion.or(ICriterion.ge("altitude", 2552.36), ICriterion
-                                                      .intersectsCircle(new double[] { 45, 45 }, "50m")));
+        ICriterion criterion = ICriterion.and(ICriterion.in("toto", StringMatchType.KEYWORD, "text1", "text2"),
+                                              ICriterion.eq("count", 25),
+                                              ICriterion.or(ICriterion.ge("altitude", 2552.36),
+                                                            ICriterion.intersectsCircle(new double[] { 45, 45 },
+                                                                                        "50m")));
 
         Pair<ICriterion, ICriterion> resultPairCrit = criterion.accept(visitor);
 
@@ -103,7 +105,8 @@ public class GeoCriterionWithCircleVisitorTest {
         Assert.assertTrue(firstOrCriterion.getCriterions().get(1) instanceof CircleCriterion);
         CircleCriterion firstCircleCriterion = (CircleCriterion) firstOrCriterion.getCriterions().get(1);
         System.out.println(Arrays.toString(firstCircleCriterion.getCoordinates()));
-        Assert.assertArrayEquals(new double[] { 45.0, 45.15141819898613 }, firstCircleCriterion.getCoordinates(),
+        Assert.assertArrayEquals(new double[] { 45.0, 45.15141819898613 },
+                                 firstCircleCriterion.getCoordinates(),
                                  0.000001);
 
         Assert.assertTrue(resultSecondCrit instanceof AndCriterion);
@@ -125,11 +128,12 @@ public class GeoCriterionWithCircleVisitorTest {
 
         CircleCriterion secondCircleCriterion = (CircleCriterion) secondAndCirclesCriterion.getCriterions().get(1);
         System.out.println(Arrays.toString(secondCircleCriterion.getCoordinates()));
-        Assert.assertArrayEquals(new double[] { 45.0, 45.15141819898613 }, secondCircleCriterion.getCoordinates(),
+        Assert.assertArrayEquals(new double[] { 45.0, 45.15141819898613 },
+                                 secondCircleCriterion.getCoordinates(),
                                  0.000001);
 
-        Assert.assertTrue(EsHelper.toMeters(firstCircleCriterion.getRadius()) < EsHelper
-                .toMeters(secondCircleCriterion.getRadius()));
+        Assert.assertTrue(
+            EsHelper.toMeters(firstCircleCriterion.getRadius()) < EsHelper.toMeters(secondCircleCriterion.getRadius()));
     }
 
     @Test(expected = IllegalArgumentException.class)

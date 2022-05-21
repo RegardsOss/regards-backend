@@ -18,26 +18,22 @@
  */
 package fr.cnes.regards.modules.model.dao;
 
-import javax.persistence.PersistenceException;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.google.common.collect.Iterables;
-
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModelBuilder;
 import fr.cnes.regards.modules.model.domain.attributes.Fragment;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import org.junit.Assert;
+import org.junit.Test;
+
+import javax.persistence.PersistenceException;
 
 /**
- *
  * Fragment test
  *
  * @author Marc Sordi
- *
  */
 public class FragmentIT extends AbstractModelIT {
 
@@ -52,7 +48,8 @@ public class FragmentIT extends AbstractModelIT {
         final Fragment fragment = Fragment.buildFragment("fragment1", "description fragment 1");
 
         final AttributeModel attModel = AttributeModelBuilder.build("fragment_att1", PropertyType.STRING, "ForTests")
-                .fragment(fragment).withoutRestriction();
+                                                             .fragment(fragment)
+                                                             .withoutRestriction();
         saveAttribute(attModel);
 
         final Iterable<AttributeModel> attModels = attModelRepository.findByFragmentId(fragment.getId());

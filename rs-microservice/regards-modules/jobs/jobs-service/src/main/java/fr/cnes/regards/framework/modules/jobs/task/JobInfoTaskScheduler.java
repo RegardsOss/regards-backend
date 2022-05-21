@@ -23,8 +23,6 @@ import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import java.time.Instant;
-import java.time.OffsetDateTime;
 import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor;
@@ -36,6 +34,9 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import java.time.Instant;
+import java.time.OffsetDateTime;
 
 /**
  * @author Iliana Ghazali
@@ -77,7 +78,8 @@ public class JobInfoTaskScheduler extends AbstractTaskScheduler {
         LockAssert.assertLocked();
         // start searching pending jobs to be triggered
         OffsetDateTime currentDateTime = OffsetDateTime.now();
-        LOGGER.debug("[{}] Search jobs with pending status and trigger date before {}", INSTANCE_RANDOM_ID,
+        LOGGER.debug("[{}] Search jobs with pending status and trigger date before {}",
+                     INSTANCE_RANDOM_ID,
                      currentDateTime);
         jobInfoService.updatePendingJobsToBeTriggered(currentDateTime, poolSize);
     };

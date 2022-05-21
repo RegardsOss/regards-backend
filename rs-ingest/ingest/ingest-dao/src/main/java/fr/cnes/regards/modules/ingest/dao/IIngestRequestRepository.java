@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-
+import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -29,12 +28,13 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * {@link IngestRequest} repository
+ *
  * @author Marc SORDI
  */
 @Repository
@@ -54,8 +54,7 @@ public interface IIngestRequestRepository extends JpaRepository<IngestRequest, L
      * Find request by remote group id (i.e. remote request id) and retrieve linked AIPs
      */
     default Optional<IngestRequest> findOneWithAIPs(String remoteStepGroupId) {
-        List<IngestRequest> ingestRequests = findAll(IngestRequestSpecifications
-                .searchByRemoteStepId(remoteStepGroupId));
+        List<IngestRequest> ingestRequests = findAll(IngestRequestSpecifications.searchByRemoteStepId(remoteStepGroupId));
         Optional<IngestRequest> result = Optional.empty();
         if (!ingestRequests.isEmpty()) {
             result = Optional.ofNullable(ingestRequests.get(0));

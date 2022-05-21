@@ -18,24 +18,18 @@
  */
 package fr.cnes.regards.framework.modules.tenant.settings.client;
 
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSettingDto;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-
-import fr.cnes.regards.framework.hateoas.HateoasUtils;
-import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
-import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSettingDto;
 
 /**
  * This is the base of the feign client of a module that is being used in multiple microservices. As so, we cannot entirely create the feign client. It has to be create in each microservice using it.
@@ -46,20 +40,22 @@ public interface IDynamicTenantSettingClient {
 
     String UPDATE_PATH = "/{name}";
 
-    @PutMapping(path = ROOT_PATH + UPDATE_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = ROOT_PATH + UPDATE_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<EntityModel<DynamicTenantSettingDto>> update(@PathVariable(name = "name") String name,
-            @RequestBody DynamicTenantSettingDto setting);
+                                                                @RequestBody DynamicTenantSettingDto setting);
 
     @GetMapping(path = ROOT_PATH)
     ResponseEntity<List<EntityModel<DynamicTenantSettingDto>>> retrieveAll(
-            @RequestParam(name = "names") Set<String> names);
+        @RequestParam(name = "names") Set<String> names);
 
     default ResponseEntity<List<EntityModel<DynamicTenantSettingDto>>> retrieveAll() {
         return retrieveAll(null);
     }
 
     static Map<String, DynamicTenantSettingDto> transformToMap(List<EntityModel<DynamicTenantSettingDto>> responseBoby) {
-        return HateoasUtils.unwrapCollection(responseBoby).stream().collect(Collectors.toMap(DynamicTenantSettingDto::getName, Function
-                .identity()));
+        return HateoasUtils.unwrapCollection(responseBoby)
+                           .stream()
+                           .collect(Collectors.toMap(DynamicTenantSettingDto::getName, Function.identity()));
     }
 }

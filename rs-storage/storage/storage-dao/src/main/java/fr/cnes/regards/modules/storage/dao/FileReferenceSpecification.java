@@ -18,21 +18,18 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Set;
-
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.Predicate;
-
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
+import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.Predicate;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * Specification class to filter DAO searches on {@link FileReference} entities
@@ -44,9 +41,14 @@ public class FileReferenceSpecification {
     private FileReferenceSpecification() {
     }
 
-    public static Specification<FileReference> search(String fileName, String checksum, Collection<String> types,
-            Collection<String> storages, Collection<String> owners, OffsetDateTime from, OffsetDateTime to,
-            Pageable page) {
+    public static Specification<FileReference> search(String fileName,
+                                                      String checksum,
+                                                      Collection<String> types,
+                                                      Collection<String> storages,
+                                                      Collection<String> owners,
+                                                      OffsetDateTime from,
+                                                      OffsetDateTime to,
+                                                      Pageable page) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             Join<Object, Object> metaInfoJoin = root.join("metaInfo");

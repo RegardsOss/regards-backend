@@ -18,22 +18,20 @@
  */
 package fr.cnes.regards.modules.configuration.rest;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.modules.configuration.domain.LayoutDefaultApplicationIds;
+import fr.cnes.regards.modules.configuration.domain.UILayout;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.modules.configuration.domain.UILayout;
-import fr.cnes.regards.modules.configuration.domain.LayoutDefaultApplicationIds;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- *
  * Class InstanceLayoutControllerIT
- *
+ * <p>
  * IT Tests for REST Controller
  *
  * @author Sébastien Binda
@@ -50,7 +48,9 @@ public class UILayoutControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void getUserApplicationLayout() {
-        performDefaultGet("/layouts/{applicationId}", customizer().expectStatusOk(), "Plop",
+        performDefaultGet("/layouts/{applicationId}",
+                          customizer().expectStatusOk(),
+                          "Plop",
                           LayoutDefaultApplicationIds.USER.toString());
     }
 
@@ -60,8 +60,11 @@ public class UILayoutControllerIT extends AbstractRegardsTransactionalIT {
         UILayout.setId(1L);
         UILayout.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
         UILayout.setLayout("{}}");
-        performDefaultPut("/layouts/{applicationId}", UILayout, customizer().expect(status().isUnprocessableEntity()),
-                          "Plop", LayoutDefaultApplicationIds.USER.toString());
+        performDefaultPut("/layouts/{applicationId}",
+                          UILayout,
+                          customizer().expect(status().isUnprocessableEntity()),
+                          "Plop",
+                          LayoutDefaultApplicationIds.USER.toString());
     }
 
     @Test
@@ -70,7 +73,10 @@ public class UILayoutControllerIT extends AbstractRegardsTransactionalIT {
         UILayout.setId(1L);
         UILayout.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
         UILayout.setLayout("{\"test\":\"ok\"}");
-        performDefaultPut("/layouts/{applicationId}", UILayout, customizer().expectStatusOk(), "Plop",
+        performDefaultPut("/layouts/{applicationId}",
+                          UILayout,
+                          customizer().expectStatusOk(),
+                          "Plop",
                           LayoutDefaultApplicationIds.USER.toString());
     }
 

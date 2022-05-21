@@ -18,6 +18,12 @@
  */
 package fr.cnes.regards.modules.accessrights.service.role;
 
+import fr.cnes.regards.framework.amqp.IInstancePublisher;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionFailed;
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.event.ResourceAccessInit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
@@ -27,16 +33,10 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.amqp.IInstancePublisher;
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionFailed;
-import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.event.ResourceAccessInit;
-
 /**
  * Listener for {@link IRoleService} on a new {@link TenantConnectionReady}.
  * Initialize the default Roles for a new tenant.
+ *
  * @author Sébastien Binda
  */
 @Component
@@ -73,6 +73,7 @@ public class RoleEventListener {
 
     /**
      * {@link Order} : Needs to be initialize before other bean to creates default roles for new tenant.
+     *
      * @param event
      */
     @EventListener

@@ -34,7 +34,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author Marc SORDI
- *
  */
 @Service
 public class DamModelLinkService implements IModelLinkService {

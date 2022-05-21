@@ -24,6 +24,7 @@ import java.util.Set;
 
 /**
  * This class represents a database module
+ *
  * @author Marc Sordi
  */
 public class DatabaseModule {
@@ -57,6 +58,7 @@ public class DatabaseModule {
 
     /**
      * Compute max depth in the dependency tree of this module
+     *
      * @return max depth
      */
     public int getMaxDepth() {

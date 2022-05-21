@@ -39,13 +39,14 @@
  */
 package fr.cnes.regards.framework.jpa.json;
 
-import java.util.Properties;
-
 import org.hibernate.type.AbstractSingleColumnStandardBasicType;
 import org.hibernate.usertype.DynamicParameterizedType;
 
+import java.util.Properties;
+
 /**
  * Descriptor for a Json type.
+ *
  * @author Vlad MIhalcea
  */
 @SuppressWarnings("serial")

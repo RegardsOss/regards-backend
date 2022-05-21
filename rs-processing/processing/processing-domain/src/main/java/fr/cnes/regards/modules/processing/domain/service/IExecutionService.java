@@ -14,15 +14,15 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.service;
-
-import java.util.UUID;
 
 import fr.cnes.regards.modules.processing.domain.PExecution;
 import fr.cnes.regards.modules.processing.domain.events.PExecutionRequestEvent;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import reactor.core.publisher.Mono;
+
+import java.util.UUID;
 
 import static fr.cnes.regards.modules.processing.utils.LogUtils.setOrderIdInMdc;
 
@@ -40,13 +40,12 @@ public interface IExecutionService {
     Mono<ExecutionContext> createContext(UUID execId);
 
     default Mono<PExecution> runExecutable(UUID execId) {
-        return createContext(execId)
-                .flatMap(ctx -> {
-                    String correlationId = ctx.getExec().getBatchCorrelationId();
-                    setOrderIdInMdc(correlationId);
+        return createContext(execId).flatMap(ctx -> {
+            String correlationId = ctx.getExec().getBatchCorrelationId();
+            setOrderIdInMdc(correlationId);
 
-                    return ctx.getProcess().getExecutable().execute(ctx);
-                }).map(ExecutionContext::getExec);
+            return ctx.getProcess().getExecutable().execute(ctx);
+        }).map(ExecutionContext::getExec);
     }
 
 }

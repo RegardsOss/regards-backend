@@ -1,13 +1,14 @@
 package fr.cnes.regards.framework.modules.jobs.domain.event;
 
-import java.util.UUID;
-
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 
+import java.util.UUID;
+
 /**
  * AMQP event to notify job should be stopped. This event aims to change the job status, that's why it is not a JobEvent
+ *
  * @author oroussel
  * @author Sylvain Vissiere-Guerinet
  */

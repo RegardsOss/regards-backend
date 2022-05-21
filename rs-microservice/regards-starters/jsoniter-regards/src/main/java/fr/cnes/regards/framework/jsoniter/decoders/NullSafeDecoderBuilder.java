@@ -9,15 +9,22 @@ import java.io.IOException;
 public interface NullSafeDecoderBuilder extends SmartDecoder {
 
     class NullSafeDecoder implements Decoder {
+
         private final Decoder wrapped;
+
         public NullSafeDecoder(Decoder wrapped) {
             this.wrapped = wrapped;
         }
+
         @Override
         public Object decode(JsonIterator iter) throws IOException {
             ValueType valueType = iter.whatIsNext();
-            if (valueType == ValueType.NULL) { iter.readNull(); return null; }
-            else { return wrapped.decode(iter); }
+            if (valueType == ValueType.NULL) {
+                iter.readNull();
+                return null;
+            } else {
+                return wrapped.decode(iter);
+            }
         }
     }
 

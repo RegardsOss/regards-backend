@@ -23,7 +23,6 @@ import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSet
 import java.util.Collections;
 import java.util.List;
 
-
 public final class FeatureNotificationSettings {
 
     private FeatureNotificationSettings() {
@@ -33,14 +32,10 @@ public final class FeatureNotificationSettings {
 
     public static final boolean DEFAULT_ACTIVE_NOTIFICATION = true;
 
-    public static final DynamicTenantSetting ACTIVE_NOTIFICATION_SETTINGS = new DynamicTenantSetting(
-            ACTIVE_NOTIFICATION,
-            "Activate notifications on feature request",
-            DEFAULT_ACTIVE_NOTIFICATION
-    );
+    public static final DynamicTenantSetting ACTIVE_NOTIFICATION_SETTINGS = new DynamicTenantSetting(ACTIVE_NOTIFICATION,
+                                                                                                     "Activate notifications on feature request",
+                                                                                                     DEFAULT_ACTIVE_NOTIFICATION);
 
-    public static final List<DynamicTenantSetting> SETTING_LIST = Collections.singletonList(
-            ACTIVE_NOTIFICATION_SETTINGS
-    );
+    public static final List<DynamicTenantSetting> SETTING_LIST = Collections.singletonList(ACTIVE_NOTIFICATION_SETTINGS);
 
 }

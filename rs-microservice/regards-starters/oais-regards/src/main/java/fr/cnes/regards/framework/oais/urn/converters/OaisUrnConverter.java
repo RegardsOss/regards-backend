@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.framework.oais.urn.converters;
 
+import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
+
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
-import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
-
 /**
  * Converter used by Hibernate (see AbstractEntity)
+ *
  * @author Sylvain Vissiere-Guerinet
  */
 @Converter(autoApply = true)

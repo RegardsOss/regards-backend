@@ -18,30 +18,29 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.resolver;
 
-import javax.sql.DataSource;
-import java.util.Map;
-
+import fr.cnes.regards.framework.jpa.multitenant.exception.InvalidDataSourceTenant;
+import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.jpa.multitenant.exception.InvalidDataSourceTenant;
-import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
+import javax.sql.DataSource;
+import java.util.Map;
 
 /**
  * Multitenancy Database Connection Provider. By default only one connection is available. The one defined in the
  * DataSourceConfig class.
+ *
  * @author CS
  */
 @SuppressWarnings("serial")
 public class DataSourceBasedMultiTenantConnectionProviderImpl
-        extends AbstractDataSourceBasedMultiTenantConnectionProviderImpl {
+    extends AbstractDataSourceBasedMultiTenantConnectionProviderImpl {
 
     /**
      * Class logger
      */
-    private static final Logger LOGGER = LoggerFactory
-            .getLogger(DataSourceBasedMultiTenantConnectionProviderImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceBasedMultiTenantConnectionProviderImpl.class);
 
     /**
      * Pool of datasources available for this connection provider
@@ -67,11 +66,12 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
         DataSource tenantDataSource = dataSources.get(pTenantIdentifier);
         if (tenantDataSource == null) {
             String message = String.format("No data source found for tenant %s.\nActual defined datasources : %s.\n"
-                                                   + "If wanted tenant is 'default' and at least another one has been defined, "
-                                                   + "a transactional method may have been executed before multitenancy is set.\n"
-                                                   + "Check if this method really need a transaction (haven't you implemented "
-                                                   + "an onApplicationEvent() method recently fortuitously you prank ?)",
-                                           pTenantIdentifier, dataSources.keySet().toString());
+                                               + "If wanted tenant is 'default' and at least another one has been defined, "
+                                               + "a transactional method may have been executed before multitenancy is set.\n"
+                                               + "Check if this method really need a transaction (haven't you implemented "
+                                               + "an onApplicationEvent() method recently fortuitously you prank ?)",
+                                           pTenantIdentifier,
+                                           dataSources.keySet().toString());
 
             InvalidDataSourceTenant e = new InvalidDataSourceTenant(message);
             LOGGER.error(message, e);

@@ -1,8 +1,7 @@
 package fr.cnes.regards.modules.templates.dao;
 
-import org.junit.Ignore;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorIT;
+import org.junit.Ignore;
 
 /**
  * @author Sylvain VISSIERE-GUERINET

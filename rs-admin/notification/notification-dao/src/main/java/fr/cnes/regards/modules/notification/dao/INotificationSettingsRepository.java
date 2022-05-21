@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.notification.dao;
 
-import java.util.stream.Stream;
-
+import fr.cnes.regards.modules.notification.domain.NotificationFrequency;
+import fr.cnes.regards.modules.notification.domain.NotificationSettings;
 import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
-import fr.cnes.regards.modules.notification.domain.NotificationFrequency;
-import fr.cnes.regards.modules.notification.domain.NotificationSettings;
+import java.util.stream.Stream;
 
 /**
  * Interface for an JPA auto-generated CRUD repository managing NotificationSettings.<br>
@@ -39,8 +38,7 @@ public interface INotificationSettingsRepository extends JpaRepository<Notificat
     /**
      * Find the notification settings for the passed project user.
      *
-     * @param userEmail
-     *            The project user represented by its email
+     * @param userEmail The project user represented by its email
      * @return The found notification settings
      */
     NotificationSettings findOneByProjectUserEmail(String userEmail);
@@ -48,8 +46,7 @@ public interface INotificationSettingsRepository extends JpaRepository<Notificat
     /**
      * Retrieve all notification configuration parameters with passed frequency
      *
-     * @param pFrequency
-     *            The notification settings
+     * @param pFrequency The notification settings
      * @return The {@link NotificationSettings}
      */
     Stream<NotificationSettings> findByFrequency(NotificationFrequency pFrequency);

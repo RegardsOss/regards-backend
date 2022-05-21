@@ -18,27 +18,13 @@
  */
 package fr.cnes.regards.modules.storage.domain.database.request;
 
-import java.time.OffsetDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
+
+import javax.persistence.*;
+import java.time.OffsetDateTime;
 
 /**
  * Database definition of the table containing the requests for cache files.
@@ -46,13 +32,11 @@ import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
  * @author Sébastien Binda
  */
 @Entity
-@Table(name = "t_file_cache_request",
-        indexes = { @Index(name = "idx_file_cache_request_grp", columnList = "group_id"),
-                @Index(name = "idx_file_cache_request_cs", columnList = "checksum"),
-                @Index(name = "idx_file_cache_request_storage", columnList = "storage"),
-                @Index(name = "idx_file_cache_file_ref", columnList = "file_ref_id") },
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uk_t_file_cache_request_checksum", columnNames = { "checksum" }) })
+@Table(name = "t_file_cache_request", indexes = { @Index(name = "idx_file_cache_request_grp", columnList = "group_id"),
+    @Index(name = "idx_file_cache_request_cs", columnList = "checksum"),
+    @Index(name = "idx_file_cache_request_storage", columnList = "storage"),
+    @Index(name = "idx_file_cache_file_ref", columnList = "file_ref_id") },
+    uniqueConstraints = { @UniqueConstraint(name = "uk_t_file_cache_request_checksum", columnNames = { "checksum" }) })
 public class FileCacheRequest {
 
     @Id
@@ -100,8 +84,10 @@ public class FileCacheRequest {
     @Column(name = "job_id")
     private String jobId;
 
-    public FileCacheRequest(FileReference fileReference, String restorationDirectory, OffsetDateTime expirationDate,
-            String groupId) {
+    public FileCacheRequest(FileReference fileReference,
+                            String restorationDirectory,
+                            OffsetDateTime expirationDate,
+                            String groupId) {
         super();
         this.fileReference = fileReference;
         this.storage = fileReference.getLocation().getStorage();

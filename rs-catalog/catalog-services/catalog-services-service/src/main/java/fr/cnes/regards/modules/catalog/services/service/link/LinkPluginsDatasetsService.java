@@ -18,12 +18,7 @@
  */
 package fr.cnes.regards.modules.catalog.services.service.link;
 
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -37,6 +32,9 @@ import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
 import fr.cnes.regards.modules.catalog.services.domain.event.LinkPluginsDatasetsEvent;
 import fr.cnes.regards.modules.dam.domain.entities.event.BroadcastEntityEvent;
 import fr.cnes.regards.modules.dam.domain.entities.event.EventType;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 /**
  * Service handling properly how the mapping of plugin configurations to datasets is done.
@@ -74,8 +72,10 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService, 
      * @param pPublisher
      * @param pLinkRepo
      */
-    public LinkPluginsDatasetsService(IRuntimeTenantResolver pRuntimeTenantResolver, ISubscriber pSubscriber,
-            IPublisher pPublisher, ILinkPluginsDatasetsRepository pLinkRepo) {
+    public LinkPluginsDatasetsService(IRuntimeTenantResolver pRuntimeTenantResolver,
+                                      ISubscriber pSubscriber,
+                                      IPublisher pPublisher,
+                                      ILinkPluginsDatasetsRepository pLinkRepo) {
         super();
         runtimeTenantResolver = pRuntimeTenantResolver;
         subscriber = pSubscriber;
@@ -104,7 +104,7 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService, 
 
     @Override
     public LinkPluginsDatasets updateLink(final String pDatasetId, final LinkPluginsDatasets pUpdatedLink)
-            throws EntityInvalidException {
+        throws EntityInvalidException {
         if (!pDatasetId.equals(pUpdatedLink.getDatasetId())) {
             throw new EntityInvalidException(String.format("Invalid datasetId %s ", pDatasetId));
         }
@@ -157,9 +157,8 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService, 
     }
 
     /**
-     *
      * Class DeleteEntityEventHandler
-     *
+     * <p>
      * Handler to delete {@link LinkPluginsDatasets} for deleted datasets.
      *
      * @author Sébastien Binda

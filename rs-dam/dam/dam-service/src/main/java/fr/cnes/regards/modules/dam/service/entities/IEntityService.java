@@ -18,14 +18,6 @@
  */
 package fr.cnes.regards.modules.dam.service.entities;
 
-import java.io.OutputStream;
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.web.multipart.MultipartFile;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
@@ -36,13 +28,20 @@ import fr.cnes.regards.modules.dam.domain.entities.event.EventType;
 import fr.cnes.regards.modules.dam.service.entities.validation.IEntityValidationService;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.OutputStream;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Parameterized entity service interface
  *
+ * @param <U> extends {@link AbstractEntity}
  * @author Sylvain Vissiere-Guerinet
  * @author oroussel
- * @param <U> extends {@link AbstractEntity}
  */
 public interface IEntityService<U extends AbstractEntity<?>> extends IEntityValidationService<U> {
 
@@ -92,6 +91,7 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
 
     /**
      * Check if model is loaded else load it then set it on entity.
+     *
      * @param entity cocnerned entity
      * @throws ModuleException
      */
@@ -100,7 +100,7 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
     /**
      * Associate a set of URNs to an entity. Depending on entity types, association results in tags, groups or nothing.
      *
-     * @param entityId entity source id
+     * @param entityId     entity source id
      * @param toAssociates tags to be associated by source entity (may be entity URNs)
      * @throws EntityNotFoundException
      */
@@ -109,7 +109,7 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
     /**
      * Dissociate a set of URNs from an entity. Depending on entity types, dissociation impacts tags, groups or nothing.
      *
-     * @param entityId entity source id
+     * @param entityId        entity source id
      * @param toBeDissociated tags to be dissociated from source entity (may be entity URNs)
      * @throws EntityNotFoundException
      */
@@ -128,7 +128,7 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
      * Update entity of id pEntityId according to pEntity
      *
      * @param entityId id of entity to update
-     * @param entity "content" of entity to update
+     * @param entity   "content" of entity to update
      * @return updated entity from database
      * @throws ModuleException
      */
@@ -138,7 +138,7 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
      * Update entity of ipId entityUrn according to pEntity
      *
      * @param entityUrn ipId of entity to update
-     * @param entity "content" of entity to update
+     * @param entity    "content" of entity to update
      * @return updated entity from database
      * @throws ModuleException
      */
@@ -170,6 +170,7 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
 
     /**
      * Delete entity identified by its id. A deleted entity is "logged" into "deleted_entity" table
+     *
      * @param pEntityId
      * @return <U>
      * @throws ModuleException
@@ -178,21 +179,25 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
 
     /**
      * Attach files to given entity
-     * @param urn  {@link OaisUniformResourceName}
-     * @param dataType  {@link DataType}
-     * @param attachments {@link MultipartFile}
+     *
+     * @param urn             {@link OaisUniformResourceName}
+     * @param dataType        {@link DataType}
+     * @param attachments     {@link MultipartFile}
      * @param refs
      * @param fileUriTemplate
-     * @return  {@link AbstractEntity}
+     * @return {@link AbstractEntity}
      * @throws ModuleException
-     *
      */
-    AbstractEntity<?> attachFiles(UniformResourceName urn, DataType dataType, MultipartFile[] attachments,
-            List<DataFile> refs, String fileUriTemplate) throws ModuleException;
+    AbstractEntity<?> attachFiles(UniformResourceName urn,
+                                  DataType dataType,
+                                  MultipartFile[] attachments,
+                                  List<DataFile> refs,
+                                  String fileUriTemplate) throws ModuleException;
 
     /**
      * Retrieve a {@link DataFile} attached to the specified entity with the specified checksum
-     * @param urn {@link OaisUniformResourceName}
+     *
+     * @param urn      {@link OaisUniformResourceName}
      * @param checksum
      * @return {@link DataFile}
      * @throws ModuleException
@@ -202,16 +207,18 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
     /**
      * Write related file content to output stream.<br/>
      * {@link OutputStream} has to be flush after this method completes.
-     * @param urn  {@link UniformResourceName}
+     *
+     * @param urn      {@link UniformResourceName}
      * @param checksum
-     * @param output {@link OutputStream}
+     * @param output   {@link OutputStream}
      * @throws ModuleException
      */
     void downloadFile(UniformResourceName urn, String checksum, OutputStream output) throws ModuleException;
 
     /**
      * Remove file
-     * @param urn {@link OaisUniformResourceName}
+     *
+     * @param urn      {@link OaisUniformResourceName}
      * @param checksum
      * @return {@link AbstractEntity}
      * @throws ModuleException
@@ -220,19 +227,22 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
 
     /**
      * Publish events to AMQP, one event by IpId
+     *
      * @param eventType event type (CREATE, DELETE, ...)
-     * @param ipIds ipId URNs of entities that need an Event publication onto AMQP
+     * @param ipIds     ipId URNs of entities that need an Event publication onto AMQP
      */
     void publishEvents(EventType eventType, Set<UniformResourceName> ipIds);
 
     /**
      * Update stored file path for all matching {@link AbstractEntity} concerned by the succes of the store request
+     *
      * @param requests
      */
     void storeSucces(Set<RequestInfo> requests);
 
     /**
      * Update store requests after a storage error
+     *
      * @param requests
      */
     void storeError(Set<RequestInfo> requests);

@@ -18,25 +18,21 @@
  */
 package fr.cnes.regards.modules.ingest.dto.aip;
 
-import java.util.Optional;
-
-import javax.validation.constraints.NotBlank;
-
-import org.springframework.util.Assert;
-
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import org.springframework.util.Assert;
+
+import javax.validation.constraints.NotBlank;
+import java.util.Optional;
 
 /**
- *
  * Archival Information Package representation
  *
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
- *
  */
 public class AIP extends AbstractInformationPackage<OaisUniformResourceName> {
 
@@ -79,6 +75,7 @@ public class AIP extends AbstractInformationPackage<OaisUniformResourceName> {
 
     /**
      * Set the sip id
+     *
      * @param sipId
      */
     public void setSipId(String sipId) {
@@ -129,13 +126,17 @@ public class AIP extends AbstractInformationPackage<OaisUniformResourceName> {
 
     /**
      * Build a new {@link AIP}
-     * @param type {@link EntityType}
-     * @param aipId AIP URN
-     * @param sipId SIP URN
+     *
+     * @param type       {@link EntityType}
+     * @param aipId      AIP URN
+     * @param sipId      SIP URN
      * @param providerId the provider id
      */
-    public static AIP build(EntityType type, OaisUniformResourceName aipId, Optional<UniformResourceName> sipId,
-            String providerId, Integer version) {
+    public static AIP build(EntityType type,
+                            OaisUniformResourceName aipId,
+                            Optional<UniformResourceName> sipId,
+                            String providerId,
+                            Integer version) {
         Assert.notNull(type, "Entity type is required.");
         Assert.notNull(aipId, "Uniform resource Name is required.");
         Assert.notNull(providerId, "Provider id is required.");
@@ -148,13 +149,17 @@ public class AIP extends AbstractInformationPackage<OaisUniformResourceName> {
 
     /**
      * Build a new AIP from SIP properties
-     * @param sip source SIP
-     * @param aipId AIP URN
-     * @param sipId SIP URN
+     *
+     * @param sip        source SIP
+     * @param aipId      AIP URN
+     * @param sipId      SIP URN
      * @param providerId the provider id
      */
-    public static AIP build(SIP sip, OaisUniformResourceName aipId, Optional<UniformResourceName> sipId,
-            String providerId, Integer version) {
+    public static AIP build(SIP sip,
+                            OaisUniformResourceName aipId,
+                            Optional<UniformResourceName> sipId,
+                            String providerId,
+                            Integer version) {
         Assert.notNull(sip, "Valid SIP is required.");
         Assert.notNull(aipId, "Uniform resource Name is required.");
         Assert.notNull(providerId, "Provider id is required.");

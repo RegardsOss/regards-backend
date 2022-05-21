@@ -18,21 +18,6 @@
  */
 package fr.cnes.regards.modules.configuration.rest;
 
-import javax.validation.Valid;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -43,12 +28,20 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.configuration.domain.UILayout;
 import fr.cnes.regards.modules.configuration.service.IUILayoutService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 /**
  * REST controller for the microservice Access
  *
  * @author Sébastien Binda
- *
  */
 @RestController
 @RequestMapping("/layouts")
@@ -62,17 +55,17 @@ public class UILayoutController implements IResourceController<UILayout> {
 
     /**
      * Entry point to retrieve a {@link UILayout}
-     * @param applicationId
      *
+     * @param applicationId
      * @return {@link UILayout}
      * @throws EntityNotFoundException
      */
     @RequestMapping(value = "/{applicationId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve IHM UILayout configuration for the given applicationId",
-            role = DefaultRole.PUBLIC)
+        role = DefaultRole.PUBLIC)
     public HttpEntity<EntityModel<UILayout>> retrieveUILayout(@PathVariable("applicationId") final String applicationId)
-            throws EntityNotFoundException {
+        throws EntityNotFoundException {
         final UILayout UILayout = UILayoutService.retrieveLayout(applicationId);
         final EntityModel<UILayout> resource = toResource(UILayout);
         return new ResponseEntity<>(resource, HttpStatus.OK);
@@ -80,9 +73,9 @@ public class UILayoutController implements IResourceController<UILayout> {
 
     /**
      * Entry point to update {@link UILayout}
+     *
      * @param applicationId
      * @param UILayout
-     *
      * @return updated {@link UILayout}
      * @throws EntityException
      * @throws EntityNotFoundException
@@ -90,9 +83,10 @@ public class UILayoutController implements IResourceController<UILayout> {
     @RequestMapping(value = "/{applicationId}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve IHM UILayout configuration for the given applicationId",
-            role = DefaultRole.PROJECT_ADMIN)
+        role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<EntityModel<UILayout>> updateUILayout(@PathVariable("applicationId") final String applicationId,
-            @Valid @RequestBody final UILayout UILayout) throws EntityException {
+                                                            @Valid @RequestBody final UILayout UILayout)
+        throws EntityException {
         final UILayout updated = UILayoutService.updateLayout(UILayout);
         final EntityModel<UILayout> resource = toResource(updated);
         return new ResponseEntity<>(resource, HttpStatus.OK);
@@ -101,9 +95,15 @@ public class UILayoutController implements IResourceController<UILayout> {
     @Override
     public EntityModel<UILayout> toResource(final UILayout element, final Object... extras) {
         final EntityModel<UILayout> resource = resourceService.toResource(element);
-        resourceService.addLink(resource, this.getClass(), "retrieveUILayout", LinkRels.SELF,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "retrieveUILayout",
+                                LinkRels.SELF,
                                 MethodParamFactory.build(String.class, element.getApplicationId()));
-        resourceService.addLink(resource, this.getClass(), "updateUILayout", LinkRels.UPDATE,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "updateUILayout",
+                                LinkRels.UPDATE,
                                 MethodParamFactory.build(String.class, element.getApplicationId()),
                                 MethodParamFactory.build(UILayout.class));
         return resource;

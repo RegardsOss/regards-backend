@@ -96,53 +96,80 @@ import static org.mockito.ArgumentMatchers.any;
 @DirtiesContext
 public class OrderServiceIT {
 
-    public static final UniformResourceName DS1_IP_ID = UniformResourceName
-            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DS1_IP_ID = UniformResourceName.build(OAISIdentifier.AIP,
+                                                                                  EntityType.DATASET,
+                                                                                  "ORDER",
+                                                                                  UUID.randomUUID(),
+                                                                                  1);
 
-    public static final UniformResourceName DS2_IP_ID = UniformResourceName
-            .build(OAISIdentifier.AIP, EntityType.DATASET, "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DS2_IP_ID = UniformResourceName.build(OAISIdentifier.AIP,
+                                                                                  EntityType.DATASET,
+                                                                                  "ORDER",
+                                                                                  UUID.randomUUID(),
+                                                                                  1);
 
-    public static final UniformResourceName DO1_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                  "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DO1_IP_ID = UniformResourceName.build(OAISIdentifier.AIP,
+                                                                                  EntityType.DATA,
+                                                                                  "ORDER",
+                                                                                  UUID.randomUUID(),
+                                                                                  1);
 
-    public static final UniformResourceName DO2_IP_ID = UniformResourceName.build(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                  "ORDER", UUID.randomUUID(), 1);
+    public static final UniformResourceName DO2_IP_ID = UniformResourceName.build(OAISIdentifier.AIP,
+                                                                                  EntityType.DATA,
+                                                                                  "ORDER",
+                                                                                  UUID.randomUUID(),
+                                                                                  1);
 
     private static final String USER_EMAIL = "leo.mieulet@margoulin.com";
 
     @Autowired
     private IOrderService orderService;
+
     @Autowired
     private IOrderMaintenanceService orderMaintenanceService;
+
     @Autowired
     private IOrderRepository orderRepos;
+
     @Autowired
     private IOrderDataFileService orderDataFileService;
+
     @Autowired
     private IOrderJobService orderJobService;
+
     @Autowired
     private IOrderDataFileRepository dataFileRepos;
+
     @Autowired
     private IBasketRepository basketRepos;
+
     @Autowired
     private IJobInfoRepository jobInfoRepos;
+
     @Autowired
     private IAuthenticationResolver authResolver;
+
     @Autowired
     private IProjectsClient projectsClient;
+
     @Autowired
     private IJobService jobService;
+
     @Autowired
     private IJobInfoRepository jobInfoRepo;
+
     @Autowired
     private ApplicationEventPublisher eventPublisher;
+
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
+
     @Autowired
     private ThreadPoolTaskExecutor pool;
 
     @MockBean
     private IProjectUsersClient projectUsersClient;
+
     @MockBean
     private IEmailClient emailClient;
 
@@ -156,12 +183,13 @@ public class OrderServiceIT {
         Project project = new Project();
         project.setHost("regardsHost");
         Mockito.when(projectsClient.retrieveProject(Mockito.anyString()))
-                .thenReturn(new ResponseEntity<>(EntityModel.of(project), HttpStatus.OK));
+               .thenReturn(new ResponseEntity<>(EntityModel.of(project), HttpStatus.OK));
         Role role = new Role();
         role.setName(DefaultRole.REGISTERED_USER.name());
         ProjectUser projectUser = new ProjectUser();
         projectUser.setRole(role);
-        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(EntityModel.of(projectUser), HttpStatus.OK));
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString()))
+               .thenReturn(new ResponseEntity<>(EntityModel.of(projectUser), HttpStatus.OK));
     }
 
     public void clean() {
@@ -252,10 +280,14 @@ public class OrderServiceIT {
         Basket basket = OrderTestUtils.getBasketSingleSelection("testCreateNOKLabelTooLong");
         basket = basketRepos.save(basket);
         try {
-            orderService.createOrder(basket, "this-label-has-too-many-characters-if-we-append(51)", "http://perdu.com", 240);
+            orderService.createOrder(basket,
+                                     "this-label-has-too-many-characters-if-we-append(51)",
+                                     "http://perdu.com",
+                                     240);
             Assert.fail("An exception should have been thrown as label is too long");
         } catch (EntityInvalidException e) {
-            Assert.assertEquals("Exception message should hold the right enumerated reason", e.getMessages().get(0),
+            Assert.assertEquals("Exception message should hold the right enumerated reason",
+                                e.getMessages().get(0),
                                 OrderLabelErrorEnum.TOO_MANY_CHARACTERS_IN_LABEL.toString());
         }
     }
@@ -270,7 +302,8 @@ public class OrderServiceIT {
             orderService.createOrder(basket, "myCommand", "http://perdu2.com", 240);
             Assert.fail("An exception should have been thrown as label is too long");
         } catch (EntityInvalidException e) {
-            Assert.assertEquals("Exception message should hold the right enumerated reason", e.getMessages().get(0),
+            Assert.assertEquals("Exception message should hold the right enumerated reason",
+                                e.getMessages().get(0),
                                 OrderLabelErrorEnum.LABEL_NOT_UNIQUE_FOR_OWNER.toString());
         }
     }
@@ -452,7 +485,8 @@ public class OrderServiceIT {
         SimpleDateFormat sdf = new SimpleDateFormat("d MMM yyyy HH:mm:ss z");
         ArgumentCaptor<SimpleMailMessage> messageArgumentCaptor = ArgumentCaptor.forClass(SimpleMailMessage.class);
         Mockito.when(emailClient.sendEmail(any(), any(), any(), any())).thenCallRealMethod();
-        Mockito.when(emailClient.sendEmail(messageArgumentCaptor.capture())).thenReturn(new ResponseEntity<>(HttpStatus.CREATED));
+        Mockito.when(emailClient.sendEmail(messageArgumentCaptor.capture()))
+               .thenReturn(new ResponseEntity<>(HttpStatus.CREATED));
 
         OffsetDateTime start = OffsetDateTime.now();
         orderMaintenanceService.sendPeriodicNotifications();

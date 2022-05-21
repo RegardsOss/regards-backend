@@ -18,8 +18,14 @@
  */
 package fr.cnes.regards.modules.storage.service.location;
 
-import java.time.Instant;
-
+import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
+import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.storage.domain.database.StorageLocation;
+import net.javacrumbs.shedlock.core.LockAssert;
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,14 +35,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.jpa.multitenant.lock.AbstractTaskScheduler;
-import fr.cnes.regards.framework.jpa.multitenant.lock.LockingTaskExecutors;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.storage.domain.database.StorageLocation;
-import net.javacrumbs.shedlock.core.LockAssert;
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
+import java.time.Instant;
 
 /**
  * Enable storage task schedulers.
@@ -44,10 +43,10 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
  * <ul>
  * <li> Monitor storage locations {@link StorageLocation} </li>
  * </ul>
+ *
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet
  * @author Binda Sébastien
- *
  */
 @Component
 @Profile({ "!noscheduler" })
@@ -93,7 +92,7 @@ public class StorageLocationScheduler extends AbstractTaskScheduler {
     };
 
     @Scheduled(initialDelayString = "${regards.storage.location.schedule.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-            fixedDelayString = "${regards.storage.location.schedule.delay:" + DEFAULT_DELAY + "}")
+        fixedDelayString = "${regards.storage.location.schedule.delay:" + DEFAULT_DELAY + "}")
     public void scheduleUpdateRequests() {
         if (lightCalculationCount > fullCalculationRatio) {
             lightCalculationCount = 0;
@@ -106,8 +105,9 @@ public class StorageLocationScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, MONITOR_ACTIONS);
-                lockingTaskExecutors.executeWithLock(monitorTask, new LockConfiguration(FILE_LOCATION_SCHEDULER_LOCK,
-                        Instant.now().plusSeconds(120)));
+                lockingTaskExecutors.executeWithLock(monitorTask,
+                                                     new LockConfiguration(FILE_LOCATION_SCHEDULER_LOCK,
+                                                                           Instant.now().plusSeconds(120)));
             } catch (Throwable e) {
                 handleSchedulingError(MONITOR_ACTIONS, MONITOR_TITLE, e);
             } finally {

@@ -18,33 +18,8 @@
  */
 package fr.cnes.regards.modules.dam.rest.entities;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.StringJoiner;
-
-import fr.cnes.regards.framework.jsoniter.property.JsoniterAttributeModelPropertyTypeFinder;
-import org.assertj.core.util.Sets;
-import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.jsoniter.property.JsoniterAttributeModelPropertyTypeFinder;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
@@ -67,13 +42,37 @@ import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFactory;
 import fr.cnes.regards.modules.model.service.IAttributeModelService;
 import fr.cnes.regards.modules.model.service.IModelService;
+import org.assertj.core.util.Sets;
+import org.hamcrest.Matchers;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.StringJoiner;
 
 /**
  * @author Sylvain Vissiere-Guerinet
  */
 @DirtiesContext
 @TestPropertySource(locations = { "classpath:test.properties" },
-        properties = { "spring.jpa.properties.hibernate.default_schema=dam_datasets_test" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=dam_datasets_test" })
 @ContextConfiguration(classes = { DamRestConfiguration.class })
 public class DatasetControllerIT extends AbstractRegardsIT {
 
@@ -192,8 +191,10 @@ public class DatasetControllerIT extends AbstractRegardsIT {
         importModel("datasetModel.xml");
         final Model dataModel = modelService.getModelByName("dataModel");
         final Model datasetModel = modelService.getModelByName("datasetModel");
-        Mockito.when(attributeModelClient.getAttributes(null, null)).thenReturn(ResponseEntity
-                .ok(HateoasUtils.wrapList(attributeModelService.getAttributes(null, null, null))));
+        Mockito.when(attributeModelClient.getAttributes(null, null))
+               .thenReturn(ResponseEntity.ok(HateoasUtils.wrapList(attributeModelService.getAttributes(null,
+                                                                                                       null,
+                                                                                                       null))));
 
         final Dataset dataSet2 = new Dataset(datasetModel, getDefaultTenant(), "DS1", "Coucou");
         dataSet2.setLicence("licence");
@@ -226,8 +227,10 @@ public class DatasetControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer customizer = customizer();
         customizer.expect(MockMvcResultMatchers.status().isOk());
         customizer.expect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
-        performDefaultGet(DatasetController.TYPE_MAPPING + DatasetController.DATASET_ID_PATH, customizer,
-                          "Failed to fetch a specific dataset using its id", dataSet1.getId());
+        performDefaultGet(DatasetController.TYPE_MAPPING + DatasetController.DATASET_ID_PATH,
+                          customizer,
+                          "Failed to fetch a specific dataset using its id",
+                          dataSet1.getId());
     }
 
     @Test
@@ -243,8 +246,11 @@ public class DatasetControllerIT extends AbstractRegardsIT {
         expectations.expect(MockMvcResultMatchers.status().isOk());
         expectations.expect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
 
-        performDefaultPut(DatasetController.TYPE_MAPPING + DatasetController.DATASET_ID_PATH, dataSet1, expectations,
-                          "Failed to update a specific dataset using its id", dataSetClone.getId());
+        performDefaultPut(DatasetController.TYPE_MAPPING + DatasetController.DATASET_ID_PATH,
+                          dataSet1,
+                          expectations,
+                          "Failed to update a specific dataset using its id",
+                          dataSetClone.getId());
 
     }
 
@@ -261,16 +267,21 @@ public class DatasetControllerIT extends AbstractRegardsIT {
         expectations.expect(MockMvcResultMatchers.status().isOk());
         expectations.expect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
 
-        performDefaultPut(DatasetController.TYPE_MAPPING + DatasetController.DATASET_ID_PATH, dataSetClone,
-                          expectations, "Failed to update a specific dataset using its id", dataSetClone.getId());
+        performDefaultPut(DatasetController.TYPE_MAPPING + DatasetController.DATASET_ID_PATH,
+                          dataSetClone,
+                          expectations,
+                          "Failed to update a specific dataset using its id",
+                          dataSetClone.getId());
     }
 
     @Test
     public void testDeleteDataset() {
         RequestBuilderCustomizer expectations = customizer();
         expectations.expect(MockMvcResultMatchers.status().isNoContent());
-        performDefaultDelete(DatasetController.TYPE_MAPPING + DatasetController.DATASET_ID_PATH, expectations,
-                             "Failed to delete a specific dataset using its id", dataSet1.getId());
+        performDefaultDelete(DatasetController.TYPE_MAPPING + DatasetController.DATASET_ID_PATH,
+                             expectations,
+                             "Failed to delete a specific dataset using its id",
+                             dataSet1.getId());
     }
 
     @Test
@@ -293,8 +304,10 @@ public class DatasetControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer expectations = customizer();
         expectations.expect(MockMvcResultMatchers.status().isOk());
         expectations.expect(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(20)));
-        performDefaultPost(DatasetController.TYPE_MAPPING + DatasetController.DATASET_DATA_ATTRIBUTES_PATH, body,
-                           expectations, "failed to fetch the data attributes");
+        performDefaultPost(DatasetController.TYPE_MAPPING + DatasetController.DATASET_DATA_ATTRIBUTES_PATH,
+                           body,
+                           expectations,
+                           "failed to fetch the data attributes");
 
         final StringJoiner sj = new StringJoiner("&", "?", "");
         sj.add("page=1");
@@ -302,8 +315,11 @@ public class DatasetControllerIT extends AbstractRegardsIT {
         expectations = customizer();
         expectations.expect(MockMvcResultMatchers.status().isOk());
         expectations.expect(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(5)));
-        performDefaultPost(DatasetController.TYPE_MAPPING + DatasetController.DATASET_DATA_ATTRIBUTES_PATH
-                + queryParams, body, expectations, "failed to fetch the data attributes");
+        performDefaultPost(
+            DatasetController.TYPE_MAPPING + DatasetController.DATASET_DATA_ATTRIBUTES_PATH + queryParams,
+            body,
+            expectations,
+            "failed to fetch the data attributes");
     }
 
     @Test
@@ -326,16 +342,20 @@ public class DatasetControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer expectations = customizer();
         expectations.expect(MockMvcResultMatchers.status().isOk());
         expectations.expect(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(4)));
-        performDefaultPost(DatasetController.TYPE_MAPPING + DatasetController.DATASET_ATTRIBUTES_PATH, body,
-                           expectations, "failed to fetch the data attributes");
+        performDefaultPost(DatasetController.TYPE_MAPPING + DatasetController.DATASET_ATTRIBUTES_PATH,
+                           body,
+                           expectations,
+                           "failed to fetch the data attributes");
     }
 
     @Test
     public void testSubsettingValidation() throws ModuleException {
 
         importModel("dataModel.xml");
-        Mockito.when(attributeModelClient.getAttributes(null, null)).thenReturn(ResponseEntity
-                .ok(HateoasUtils.wrapList(attributeModelService.getAttributes(null, null, null))));
+        Mockito.when(attributeModelClient.getAttributes(null, null))
+               .thenReturn(ResponseEntity.ok(HateoasUtils.wrapList(attributeModelService.getAttributes(null,
+                                                                                                       null,
+                                                                                                       null))));
         final Model dataModel = modelService.getModelByName("dataModel");
 
         RequestBuilderCustomizer expectations = customizer();
@@ -343,26 +363,24 @@ public class DatasetControllerIT extends AbstractRegardsIT {
         expectations.expect(MockMvcResultMatchers.jsonPath("$.validity", Matchers.equalTo(true)));
 
         DatasetController.Query query = new DatasetController.Query("properties.FILE_SIZE:10%20AND%20tags:abc");
-        performDefaultPost(DatasetController.TYPE_MAPPING + DatasetController.DATA_SUB_SETTING_VALIDATION
-                + "?dataModelName=" + dataModel.getName(), query, expectations,
-                           "Could not validate that subsetting clause");
+        performDefaultPost(
+            DatasetController.TYPE_MAPPING + DatasetController.DATA_SUB_SETTING_VALIDATION + "?dataModelName="
+                + dataModel.getName(), query, expectations, "Could not validate that subsetting clause");
 
         query = new DatasetController.Query("properties.DO_NOT_EXIST:10");
         expectations = customizer();
         expectations.expect(MockMvcResultMatchers.status().isOk());
         expectations.expect(MockMvcResultMatchers.jsonPath("$.validity", Matchers.equalTo(false)));
-        performDefaultPost(DatasetController.TYPE_MAPPING + DatasetController.DATA_SUB_SETTING_VALIDATION
-                + "?dataModelName=" + dataModel.getName(), query, expectations,
-                           "Could validate that subsetting clause");
+        performDefaultPost(
+            DatasetController.TYPE_MAPPING + DatasetController.DATA_SUB_SETTING_VALIDATION + "?dataModelName="
+                + dataModel.getName(), query, expectations, "Could validate that subsetting clause");
     }
 
     /**
      * Import model definition file from resources directory
      *
-     * @param pFilename
-     *            filename
-     * @throws ModuleException
-     *             if error occurs
+     * @param pFilename filename
+     * @throws ModuleException if error occurs
      */
     private void importModel(final String pFilename) throws ModuleException {
         try {

@@ -18,14 +18,6 @@
  */
 package fr.cnes.regards.modules.model.service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.context.ApplicationListener;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.model.domain.Model;
@@ -34,6 +26,13 @@ import fr.cnes.regards.modules.model.domain.TypeMetadataConfMapping;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.Fragment;
 import fr.cnes.regards.modules.model.service.event.NewFragmentAttributeEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Model attribute association service description
@@ -52,7 +51,7 @@ public interface IModelAttrAssocService extends ApplicationListener<NewFragmentA
     ModelAttrAssoc getModelAttrAssoc(Long pModelId, AttributeModel pAttribute);
 
     ModelAttrAssoc updateModelAttribute(String modelName, Long pAttributeId, ModelAttrAssoc pModelAttribute)
-            throws ModuleException;
+        throws ModuleException;
 
     void unbindAttributeFromModel(String modelName, Long pAttributeId) throws ModuleException;
 
@@ -60,7 +59,8 @@ public interface IModelAttrAssocService extends ApplicationListener<NewFragmentA
 
     /**
      * Propagate a fragment update
-     * @param added  {@link AttributeModel}
+     *
+     * @param added {@link AttributeModel}
      */
     void updateNSBind(AttributeModel added);
 
@@ -68,6 +68,7 @@ public interface IModelAttrAssocService extends ApplicationListener<NewFragmentA
 
     /**
      * Find all model attribute associations by attribute
+     *
      * @param attr
      * @return the model attribute associations
      */
@@ -79,6 +80,7 @@ public interface IModelAttrAssocService extends ApplicationListener<NewFragmentA
 
     /**
      * Retrieve the computed attributes association to a model, represented by its id
+     *
      * @param pId
      * @return computed attributes association to the model
      */
@@ -86,6 +88,7 @@ public interface IModelAttrAssocService extends ApplicationListener<NewFragmentA
 
     /**
      * Find the model attribute associations for a given entity type(or all if none is given)
+     *
      * @param pType
      * @return model attribute associations for a given entity type(or all if none is given)
      */
@@ -98,6 +101,7 @@ public interface IModelAttrAssocService extends ApplicationListener<NewFragmentA
 
     /**
      * Find page attribute which are associated to at least one of the models
+     *
      * @param modelNames List of {@link Model}s names
      * @param pageable
      * @return a page of attribute which are associated to at least one of the models

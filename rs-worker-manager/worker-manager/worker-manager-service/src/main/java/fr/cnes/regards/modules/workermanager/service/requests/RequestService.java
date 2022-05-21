@@ -224,7 +224,9 @@ public class RequestService {
      * @param requestInfo various information about what's going on
      * @return {@link SessionsRequestsInfo}s various information about what's going on
      */
-    public SessionsRequestsInfo handleRequests(Collection<Request> requests, SessionsRequestsInfo requestInfo, boolean retry) {
+    public SessionsRequestsInfo handleRequests(Collection<Request> requests,
+                                               SessionsRequestsInfo requestInfo,
+                                               boolean retry) {
         SessionsRequestsInfo newRequestsInfo = new SessionsRequestsInfo();
         // For monitoring/logs purpose add skipped events to result info
         newRequestsInfo.getSkippedEvents().addAll(requestInfo.getSkippedEvents());
@@ -254,16 +256,24 @@ public class RequestService {
         for (String workerType : toDispatchRequests.keySet()) {
             Collection<Request> requestsByWorkerType = toDispatchRequests.get(workerType);
             List<Message> events = requestsByWorkerType.stream()
-                    .map(request -> RawMessageBuilder.build(runtimeTenantResolver.getTenant(), request.getContentType(),
-                                                            request.getSource(), request.getSession(),
-                                                            request.getRequestId(), request.getContent()))
-                    .collect(Collectors.toList());
+                                                       .map(request -> RawMessageBuilder.build(runtimeTenantResolver.getTenant(),
+                                                                                               request.getContentType(),
+                                                                                               request.getSource(),
+                                                                                               request.getSession(),
+                                                                                               request.getRequestId(),
+                                                                                               request.getContent()))
+                                                       .collect(Collectors.toList());
 
             // Send events to the worker queue
             String exchangeName = getExchangeName(workerType);
             LOGGER.debug("Sending {} messages to worker {}", events.size(), workerType);
-            publisher.broadcastAll(exchangeName, Optional.of(exchangeName), Optional.of(ROUTING_KEY),
-                                   Optional.of(WorkerRequestEvent.DLQ_ROOTING_KEY), 0, events, Maps.newHashMap());
+            publisher.broadcastAll(exchangeName,
+                                   Optional.of(exchangeName),
+                                   Optional.of(ROUTING_KEY),
+                                   Optional.of(WorkerRequestEvent.DLQ_ROOTING_KEY),
+                                   0,
+                                   events,
+                                   Maps.newHashMap());
         }
         // Notify owner of the request
         notifyStatus(requests);
@@ -278,8 +288,9 @@ public class RequestService {
      * @return Requests
      */
     private Collection<Request> getRequestsFromEvents(Collection<Message> validEvents) {
-        return validEvents.stream().map(event -> new Request(event, RequestStatus.TO_DISPATCH))
-                .collect(Collectors.toList());
+        return validEvents.stream()
+                          .map(event -> new Request(event, RequestStatus.TO_DISPATCH))
+                          .collect(Collectors.toList());
     }
 
     /**
@@ -292,13 +303,15 @@ public class RequestService {
         SessionsRequestsInfo requestInfo = new SessionsRequestsInfo();
         SessionsRequestsInfo newRequestInfo = new SessionsRequestsInfo();
         // Retrieve requests matching worker responses
-        List<Request> requests = requestRepository.findByRequestIdIn(
-                events.stream().map(e -> e.getRequestIdHeader()).collect(Collectors.toList()));
+        List<Request> requests = requestRepository.findByRequestIdIn(events.stream()
+                                                                           .map(e -> e.getRequestIdHeader())
+                                                                           .collect(Collectors.toList()));
         requestInfo.addRequests(requests.stream().map(Request::toDTO).collect(Collectors.toList()));
         // For each worker response update matching request status
         events.forEach(e -> {
-            Optional<Request> oRequest = requests.stream().filter(r -> e.getRequestIdHeader().equals(r.getRequestId()))
-                    .findFirst();
+            Optional<Request> oRequest = requests.stream()
+                                                 .filter(r -> e.getRequestIdHeader().equals(r.getRequestId()))
+                                                 .findFirst();
             if (oRequest.isPresent()) {
                 Request request = oRequest.get();
                 switch (e.getStatus()) {
@@ -319,7 +332,8 @@ public class RequestService {
                 }
             } else {
                 LOGGER.warn("Request id {} from worker {} does not match ay known request on manager.",
-                            e.getRequestIdHeader(), e.getRequestIdHeader());
+                            e.getRequestIdHeader(),
+                            e.getRequestIdHeader());
             }
         });
         // Save updated requests and notify clients
@@ -345,43 +359,47 @@ public class RequestService {
 
         // Dispatch events in a Pair of RequestId / error
         List<Pair<String, String>> requestErrors = requestEvents.stream()
-                .map(event -> Pair.of(
-                        (String) event.getMessageProperties().getHeader(EventHeadersHelper.REQUEST_ID_HEADER),
-                        getErrorStackTraceHeader(event)))
-                .collect(Collectors.toList());
+                                                                .map(event -> Pair.of((String) event.getMessageProperties()
+                                                                                                    .getHeader(
+                                                                                                        EventHeadersHelper.REQUEST_ID_HEADER),
+                                                                                      getErrorStackTraceHeader(event)))
+                                                                .collect(Collectors.toList());
 
         // Retrieve existing requests from database
-        List<Request> requests = requestRepository.findByRequestIdIn(requestErrors.stream().map(Pair::getFirst).collect(Collectors.toList()));
+        List<Request> requests = requestRepository.findByRequestIdIn(requestErrors.stream()
+                                                                                  .map(Pair::getFirst)
+                                                                                  .collect(Collectors.toList()));
         requestInfo.addRequests(requests.stream().map(Request::toDTO).collect(Collectors.toList()));
 
         // For each request update it with error status and error cause.
         for (Pair<String, String> requestError : requestErrors) {
             String requestId = requestError.getFirst();
             String error = requestError.getSecond();
-            requests.stream()
-                    .filter(r -> r.getRequestId().equals(requestId))
-                    .findFirst()
-                    .ifPresent(request -> {
-                        switch (request.getStatus()) {
-                            case DISPATCHED:
-                            case NO_WORKER_AVAILABLE:
-                            case RUNNING:
-                            case INVALID_CONTENT:
-                            case SUCCESS:
-                            case ERROR:
-                                LOGGER.error("Request error detected from workers dlq for request {} : {}", request.getRequestId(), error);
-                                request.setStatus(RequestStatus.ERROR);
-                                request.setError(error);
-                                break;
-                            case TO_DISPATCH:
-                            case TO_DELETE:
-                            default:
-                                LOGGER.error("Request error detected from workers dlq for request {} but request is in {} status. Error is skipped.", request.getRequestId(),
-                                        request.getStatus());
-                                LOGGER.error("Skipped error is : {}", error);
-                                break;
-                        }
-                    });
+            requests.stream().filter(r -> r.getRequestId().equals(requestId)).findFirst().ifPresent(request -> {
+                switch (request.getStatus()) {
+                    case DISPATCHED:
+                    case NO_WORKER_AVAILABLE:
+                    case RUNNING:
+                    case INVALID_CONTENT:
+                    case SUCCESS:
+                    case ERROR:
+                        LOGGER.error("Request error detected from workers dlq for request {} : {}",
+                                     request.getRequestId(),
+                                     error);
+                        request.setStatus(RequestStatus.ERROR);
+                        request.setError(error);
+                        break;
+                    case TO_DISPATCH:
+                    case TO_DELETE:
+                    default:
+                        LOGGER.error(
+                            "Request error detected from workers dlq for request {} but request is in {} status. Error is skipped.",
+                            request.getRequestId(),
+                            request.getStatus());
+                        LOGGER.error("Skipped error is : {}", error);
+                        break;
+                }
+            });
         }
 
         newRequestInfo.addRequests(requests.stream().map(Request::toDTO).collect(Collectors.toList()));
@@ -406,15 +424,17 @@ public class RequestService {
             return new ArrayList<>();
         } else {
             // Event requestId must be unique, check if any existing Request has one these events requestId
-            List<String> existingIds = requestRepository.findRequestIdByRequestIdIn(
-                    events.stream().map(EventHeadersHelper::getRequestIdHeader).filter(Optional::isPresent).map(Optional::get)
-                            .collect(Collectors.toList()));
+            List<String> existingIds = requestRepository.findRequestIdByRequestIdIn(events.stream()
+                                                                                          .map(EventHeadersHelper::getRequestIdHeader)
+                                                                                          .filter(Optional::isPresent)
+                                                                                          .map(Optional::get)
+                                                                                          .collect(Collectors.toList()));
 
             // Retrieve list of content types configured to be automatically skipped
             List<String> contentTypesToSkip = settingsService.getValue(WorkerManagerSettings.SKIP_CONTENT_TYPES_NAME);
             return events.stream()
-                    .filter(event -> this.omitInvalidMessages(event, contentTypesToSkip, existingIds, requestInfo))
-                    .collect(Collectors.toList());
+                         .filter(event -> this.omitInvalidMessages(event, contentTypesToSkip, existingIds, requestInfo))
+                         .collect(Collectors.toList());
         }
     }
 
@@ -427,28 +447,32 @@ public class RequestService {
      * @param requestInfo        RequestInfo information about current requests. New skipped events are added in this object.
      * @return True if event is valid.
      */
-    private boolean omitInvalidMessages(Message event, List<String> contentTypesToSkip, List<String> existingIds,
-            SessionsRequestsInfo requestInfo) {
+    private boolean omitInvalidMessages(Message event,
+                                        List<String> contentTypesToSkip,
+                                        List<String> existingIds,
+                                        SessionsRequestsInfo requestInfo) {
         List<String> errors = Lists.newArrayList();
         // Check owner is not empty
         if (!EventHeadersHelper.getOwnerHeader(event).isPresent()) {
-            errors.add(String.format(MISSING_HEADER_MESSAGE, EventHeadersHelper.OWNER_HEADER ));
+            errors.add(String.format(MISSING_HEADER_MESSAGE, EventHeadersHelper.OWNER_HEADER));
         }
         // Check content type is not empty and do not match a content type to skipp
         if (!EventHeadersHelper.getContentTypeHeader(event).isPresent()) {
-            errors.add(String.format(MISSING_HEADER_MESSAGE, EventHeadersHelper.CONTENT_TYPE_HEADER ));
+            errors.add(String.format(MISSING_HEADER_MESSAGE, EventHeadersHelper.CONTENT_TYPE_HEADER));
         } else if (contentTypesToSkip.contains(EventHeadersHelper.getContentTypeHeader(event).get())) {
-            errors.add(String.format(SKIPP_CONTENT_TYPE_MESSAGE, EventHeadersHelper.getContentTypeHeader(event),
+            errors.add(String.format(SKIPP_CONTENT_TYPE_MESSAGE,
+                                     EventHeadersHelper.getContentTypeHeader(event),
                                      runtimeTenantResolver.getTenant()));
         }
         // Check session is not empty
         if (!EventHeadersHelper.getSessionHeader(event).isPresent()) {
-            errors.add(String.format(MISSING_HEADER_MESSAGE, EventHeadersHelper.SESSION_HEADER ));
+            errors.add(String.format(MISSING_HEADER_MESSAGE, EventHeadersHelper.SESSION_HEADER));
         }
         // Check requestId does not exist already.
         if (EventHeadersHelper.getRequestIdHeader(event).isPresent()) {
             if (existingIds.contains(EventHeadersHelper.getRequestIdHeader(event).get())) {
-                errors.add(String.format(REQUEST_ID_ALREADY_EXISTS_MESSAGE, EventHeadersHelper.getRequestIdHeader(event)));
+                errors.add(String.format(REQUEST_ID_ALREADY_EXISTS_MESSAGE,
+                                         EventHeadersHelper.getRequestIdHeader(event)));
             } else {
                 existingIds.add(EventHeadersHelper.getRequestIdHeader(event).get());
             }
@@ -457,9 +481,13 @@ public class RequestService {
             String requestId = EventHeadersHelper.getRequestIdHeader(event).orElse(null);
             String owner = EventHeadersHelper.getOwnerHeader(event).orElse(null);
             String session = EventHeadersHelper.getSessionHeader(event).orElse(null);
-            LOGGER.warn("Skipped request {}. Causes : {}", EventHeadersHelper.getRequestIdHeader(event).orElse("undefined"),
+            LOGGER.warn("Skipped request {}. Causes : {}",
+                        EventHeadersHelper.getRequestIdHeader(event).orElse("undefined"),
                         String.join(",", errors));
-            ResponseEvent response = ResponseEvent.build(ResponseStatus.SKIPPED, requestId, getRequestTypeForSds(), owner).withMessages(errors);
+            ResponseEvent response = ResponseEvent.build(ResponseStatus.SKIPPED,
+                                                         requestId,
+                                                         getRequestTypeForSds(),
+                                                         owner).withMessages(errors);
             addResponseHeaders(response, requestId, owner, session, null);
             publisher.publish(response);
             requestInfo.getSkippedEvents().add(event);
@@ -472,6 +500,7 @@ public class RequestService {
      * FIXME : Remove when SDS is updated.
      * To avoid modifying interface with SDS by replacing featureFactory wit workerManager for extraction requests
      * we add the type parameter to EXTRACTION as it was in previous version of regards.
+     *
      * @return EXTRACTION
      */
     private String getRequestTypeForSds() {
@@ -484,9 +513,11 @@ public class RequestService {
      * @param requests {@link Request}s
      */
     private void notifyStatus(Collection<Request> requests) {
-        publisher.publish(
-                requests.stream().map(this::generateResponseFromRequest).filter(Optional::isPresent).map(Optional::get)
-                        .collect(Collectors.toList()), 0);
+        publisher.publish(requests.stream()
+                                  .map(this::generateResponseFromRequest)
+                                  .filter(Optional::isPresent)
+                                  .map(Optional::get)
+                                  .collect(Collectors.toList()), 0);
     }
 
     /**
@@ -502,39 +533,64 @@ public class RequestService {
                 // Do not inform clients for worker running process
                 break;
             case DISPATCHED:
-                event = ResponseEvent.build(ResponseStatus.GRANTED, request.getRequestId(), getRequestTypeForSds(), request.getSource()).withMessage(GRANTED_MESSAGE);
+                event = ResponseEvent.build(ResponseStatus.GRANTED,
+                                            request.getRequestId(),
+                                            getRequestTypeForSds(),
+                                            request.getSource()).withMessage(GRANTED_MESSAGE);
                 break;
             case NO_WORKER_AVAILABLE:
-                event = ResponseEvent.build(ResponseStatus.DELAYED, request.getRequestId(), getRequestTypeForSds(), request.getSource())
-                        .withMessage(String.format(DELAYED_MESSAGE, request.getContentType()));
+                event = ResponseEvent.build(ResponseStatus.DELAYED,
+                                            request.getRequestId(),
+                                            getRequestTypeForSds(),
+                                            request.getSource())
+                                     .withMessage(String.format(DELAYED_MESSAGE, request.getContentType()));
                 break;
             case INVALID_CONTENT:
-                event = ResponseEvent.build(ResponseStatus.INVALID_CONTENT, request.getRequestId(), getRequestTypeForSds(), request.getSource())
-                        .withMessage(String.format(INVALID_MESSAGE, request.getDispatchedWorkerType()));
+                event = ResponseEvent.build(ResponseStatus.INVALID_CONTENT,
+                                            request.getRequestId(),
+                                            getRequestTypeForSds(),
+                                            request.getSource())
+                                     .withMessage(String.format(INVALID_MESSAGE, request.getDispatchedWorkerType()));
                 break;
             case SUCCESS:
-                event = ResponseEvent.build(ResponseStatus.SUCCESS, request.getRequestId(), getRequestTypeForSds(), request.getSource())
-                        .withMessage(String.format(SUCCESS_MESSAGE, request.getDispatchedWorkerType()));
+                event = ResponseEvent.build(ResponseStatus.SUCCESS,
+                                            request.getRequestId(),
+                                            getRequestTypeForSds(),
+                                            request.getSource())
+                                     .withMessage(String.format(SUCCESS_MESSAGE, request.getDispatchedWorkerType()));
                 break;
             case ERROR:
-                event = ResponseEvent.build(ResponseStatus.ERROR, request.getRequestId(), getRequestTypeForSds(), request.getSource()).withMessage(
-                        String.format(ERROR_MESSAGE, request.getDispatchedWorkerType(), request.getError()));
+                event = ResponseEvent.build(ResponseStatus.ERROR,
+                                            request.getRequestId(),
+                                            getRequestTypeForSds(),
+                                            request.getSource())
+                                     .withMessage(String.format(ERROR_MESSAGE,
+                                                                request.getDispatchedWorkerType(),
+                                                                request.getError()));
                 break;
             case TO_DISPATCH:
             case TO_DELETE:
             default:
                 throw new RuntimeException(String.format("Invalid request status %s", request.getStatus().toString()));
         }
-        addResponseHeaders(event,  request.getRequestId(), request.getSource(), request.getSession(), request.getDispatchedWorkerType());
+        addResponseHeaders(event,
+                           request.getRequestId(),
+                           request.getSource(),
+                           request.getSession(),
+                           request.getDispatchedWorkerType());
         return Optional.ofNullable(event);
     }
 
-    private void addResponseHeaders(ResponseEvent event, String requestId, String owner, String session, String workerId) {
+    private void addResponseHeaders(ResponseEvent event,
+                                    String requestId,
+                                    String owner,
+                                    String session,
+                                    String workerId) {
         if (event != null) {
-            event.setHeader(EventHeadersHelper.REQUEST_ID_HEADER , requestId);
-            event.setHeader(EventHeadersHelper.OWNER_HEADER , owner);
-            event.setHeader(EventHeadersHelper.SESSION_HEADER , session);
-            event.setHeader(EventHeadersHelper.WORKER_ID , workerId);
+            event.setHeader(EventHeadersHelper.REQUEST_ID_HEADER, requestId);
+            event.setHeader(EventHeadersHelper.OWNER_HEADER, owner);
+            event.setHeader(EventHeadersHelper.SESSION_HEADER, session);
+            event.setHeader(EventHeadersHelper.WORKER_ID, workerId);
         }
     }
 
@@ -590,10 +646,15 @@ public class RequestService {
                                                           new JobParameter(ScanRequestJob.REQUEST_NEW_STATUS,
                                                                            newStatus));
         // Schedule request deletion job
-        JobInfo jobInfo = new JobInfo(false, WorkerManagerJobsPriority.REQUEST_SCAN_JOB, jobParameters,
-                                      authenticationResolver.getUser(), ScanRequestJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false,
+                                      WorkerManagerJobsPriority.REQUEST_SCAN_JOB,
+                                      jobParameters,
+                                      authenticationResolver.getUser(),
+                                      ScanRequestJob.class.getName());
         jobInfo = jobInfoService.createAsQueued(jobInfo);
-        LOGGER.debug("Schedule {} scan job to update {} to with id {}", ScanRequestJob.class.getName(), newStatus,
+        LOGGER.debug("Schedule {} scan job to update {} to with id {}",
+                     ScanRequestJob.class.getName(),
+                     newStatus,
                      jobInfo.getId());
     }
 
@@ -615,7 +676,8 @@ public class RequestService {
 
     private String getErrorStackTraceHeader(WorkerRequestEvent workerRequestEvent) {
         String error = "Unknown error from worker";
-        Object errorHeader = workerRequestEvent.getMessageProperties().getHeader(EventHeadersHelper.DLQ_ERROR_STACKTRACE_HEADER);
+        Object errorHeader = workerRequestEvent.getMessageProperties()
+                                               .getHeader(EventHeadersHelper.DLQ_ERROR_STACKTRACE_HEADER);
         if (errorHeader != null) {
             if (errorHeader instanceof LongString) {
                 byte[] errorArray = ((LongString) errorHeader).getBytes();

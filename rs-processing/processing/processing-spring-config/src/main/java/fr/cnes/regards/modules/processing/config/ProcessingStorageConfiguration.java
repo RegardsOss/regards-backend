@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.config;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
 /**
  * This class is the configuration for storage.
  *
@@ -35,6 +36,7 @@ public class ProcessingStorageConfiguration {
 
     @Value("${regards.processing.sharedStorage.basePath}")
     private String sharedStorageBasePath;
+
     @Value("${regards.processing.executionWorkdir.basePath}")
     private String executionWorkdirBasePath;
 

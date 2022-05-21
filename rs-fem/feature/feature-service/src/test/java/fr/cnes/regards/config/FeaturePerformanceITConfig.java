@@ -20,25 +20,23 @@
 
 package fr.cnes.regards.config;
 
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
 import fr.cnes.regards.modules.notifier.client.INotifierRequestListener;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.notifier.dto.out.NotificationState;
 import fr.cnes.regards.modules.notifier.dto.out.NotifierEvent;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
- *
  * @author Iliana Ghazali
  */
 @Configuration
@@ -55,13 +53,13 @@ public class FeaturePerformanceITConfig {
             @Override
             public void sendNotifications(List<NotificationRequestEvent> notification) {
                 ExecutorService executorToMockSubscribeThread = Executors.newSingleThreadExecutor();
-                executorToMockSubscribeThread.submit(() ->{runtimeTenantResolver.forceTenant("PROJECT");
-                    notifierRequestListener
-                            .onRequestSuccess(notification.stream()
-                                                      .map(notifEvent -> new NotifierEvent(notifEvent.getRequestId(),
-                                                                                           notifEvent.getRequestOwner(),
-                                                                                           NotificationState.SUCCESS))
-                                                      .collect(Collectors.toList()));
+                executorToMockSubscribeThread.submit(() -> {
+                    runtimeTenantResolver.forceTenant("PROJECT");
+                    notifierRequestListener.onRequestSuccess(notification.stream()
+                                                                         .map(notifEvent -> new NotifierEvent(notifEvent.getRequestId(),
+                                                                                                              notifEvent.getRequestOwner(),
+                                                                                                              NotificationState.SUCCESS))
+                                                                         .collect(Collectors.toList()));
                 });
             }
         };

@@ -18,11 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.dto.sip.flow;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import org.springframework.util.Assert;
-
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
@@ -31,6 +26,10 @@ import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import org.springframework.util.Assert;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 /**
  * Data flow item to ingest SIP using event driven mechanism.

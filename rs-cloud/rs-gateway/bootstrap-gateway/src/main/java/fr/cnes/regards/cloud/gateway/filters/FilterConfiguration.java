@@ -29,9 +29,9 @@ import org.springframework.core.annotation.Order;
 /**
  * Global filters to be applied on all routes ordered by execution.
  * In case "post-logic" filters are also implemented, they will be executed in descending order of the highest precedence.
- * @see <a href="https://cloud.spring.io/spring-cloud-gateway/reference/html/#global-filters">spring gateway doc</a>
  *
  * @author Iliana Ghazali
+ * @see <a href="https://cloud.spring.io/spring-cloud-gateway/reference/html/#global-filters">spring gateway doc</a>
  **/
 @Configuration
 public class FilterConfiguration {
@@ -44,7 +44,8 @@ public class FilterConfiguration {
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE + 2)
-    public GlobalFilter externalTokenVerificationFilter(JWTService jwtService, ExternalAuthenticationVerifier externalAuthenticationVerifier) {
+    public GlobalFilter externalTokenVerificationFilter(JWTService jwtService,
+                                                        ExternalAuthenticationVerifier externalAuthenticationVerifier) {
         return new ExternalTokenVerificationFilter(jwtService, externalAuthenticationVerifier);
     }
 }

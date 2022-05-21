@@ -18,23 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.ingest;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.OneToMany;
-import javax.persistence.UniqueConstraint;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Type;
-import org.springframework.lang.Nullable;
-
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
@@ -42,14 +25,21 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
+import org.springframework.lang.Nullable;
+
+import javax.persistence.*;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
- *
  * Each SIP received by message broker results in an {@link IngestRequest}
  *
  * @author Marc SORDI
  * @author Léo Mieulet
- *
  */
 @Entity(name = RequestTypeConstant.INGEST_VALUE)
 public class IngestRequest extends AbstractRequest {
@@ -63,23 +53,30 @@ public class IngestRequest extends AbstractRequest {
      */
     @OneToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "ta_ingest_request_aip", joinColumns = @JoinColumn(name = "ingest_request_id"),
-            inverseJoinColumns = @JoinColumn(name = "aip_id"), uniqueConstraints = {
-            @UniqueConstraint(name = "uk_ingest_request_aip_aip_id", columnNames = { "aip_id" }) },
-            foreignKey = @ForeignKey(name = "fk_ingest_request_aip_request_id"),
-            inverseForeignKey = @ForeignKey(name = "fk_ingest_request_aip_aip_id"))
+        inverseJoinColumns = @JoinColumn(name = "aip_id"),
+        uniqueConstraints = { @UniqueConstraint(name = "uk_ingest_request_aip_aip_id", columnNames = { "aip_id" }) },
+        foreignKey = @ForeignKey(name = "fk_ingest_request_aip_request_id"),
+        inverseForeignKey = @ForeignKey(name = "fk_ingest_request_aip_aip_id"))
     private List<AIPEntity> aips;
 
     public static String generateRequestId() {
         return UUID.randomUUID().toString();
     }
 
-    public static IngestRequest build(String requestId, IngestMetadata metadata, InternalRequestState state,
-            IngestRequestStep step, SIP sip) {
+    public static IngestRequest build(String requestId,
+                                      IngestMetadata metadata,
+                                      InternalRequestState state,
+                                      IngestRequestStep step,
+                                      SIP sip) {
         return build(requestId, metadata, state, step, sip, null);
     }
 
-    public static IngestRequest build(@Nullable String requestId, IngestMetadata metadata, InternalRequestState state,
-            IngestRequestStep step, SIP sip, @Nullable Set<String> errors) {
+    public static IngestRequest build(@Nullable String requestId,
+                                      IngestMetadata metadata,
+                                      InternalRequestState state,
+                                      IngestRequestStep step,
+                                      SIP sip,
+                                      @Nullable Set<String> errors) {
         IngestRequest request = new IngestRequest();
         request.setConfig(new IngestPayload());
         request.setRequestId(requestId == null ? generateRequestId() : requestId);
@@ -141,7 +138,7 @@ public class IngestRequest extends AbstractRequest {
     }
 
     /**
-     * @param step remote step
+     * @param step              remote step
      * @param remoteStepTimeout timeout in minute
      */
     public void setStep(IngestRequestStep step, long remoteStepTimeout) {
@@ -159,6 +156,7 @@ public class IngestRequest extends AbstractRequest {
 
     /**
      * Remove given AIP from the list of AIPs of this request
+     *
      * @param a {@link AIPEntity} to remove
      */
     public void removeAip(AIPEntity a) {

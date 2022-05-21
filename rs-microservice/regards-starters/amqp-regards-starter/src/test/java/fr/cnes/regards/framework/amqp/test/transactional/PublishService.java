@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.framework.amqp.test.transactional;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.IPollable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.event.IPollable;
-
 /**
  * A service that publish an event in a transaction to test tenant binding.
+ *
  * @author Marc Sordi
  */
 @Service

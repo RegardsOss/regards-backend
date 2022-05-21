@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.order.rest.mock;
 
 import com.google.common.collect.Maps;
@@ -63,15 +63,25 @@ public class StorageClientMock implements IStorageRestClient {
                 InputStream stream = new FileInputStream(testFile);
                 Map<String, Collection<String>> headers = Maps.newHashMap();
                 headers.put(HttpHeader.CONTENT_TYPE.toString(), Lists.newArrayList(TEST_MEDIA_TYPE.toString()));
-                return Response.builder().status(HttpStatus.OK.value()).body(stream, (int) testFile.length())
-                        .headers(headers).request(request).build();
+                return Response.builder()
+                               .status(HttpStatus.OK.value())
+                               .body(stream, (int) testFile.length())
+                               .headers(headers)
+                               .request(request)
+                               .build();
             } catch (IOException e) {
-                return Response.builder().status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                        .body(e.getMessage(), StandardCharsets.UTF_8).request(request).build();
+                return Response.builder()
+                               .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                               .body(e.getMessage(), StandardCharsets.UTF_8)
+                               .request(request)
+                               .build();
             }
         } else {
-            return Response.builder().status(HttpStatus.TOO_MANY_REQUESTS.value())
-                    .body(NO_QUOTA_MSG_STUB, StandardCharsets.UTF_8).request(request).build();
+            return Response.builder()
+                           .status(HttpStatus.TOO_MANY_REQUESTS.value())
+                           .body(NO_QUOTA_MSG_STUB, StandardCharsets.UTF_8)
+                           .request(request)
+                           .build();
         }
     }
 
@@ -97,7 +107,7 @@ public class StorageClientMock implements IStorageRestClient {
 
     @Override
     public ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(String userEmail,
-            @Valid DownloadQuotaLimitsDto quotaLimits) {
+                                                                    @Valid DownloadQuotaLimitsDto quotaLimits) {
         return null;
     }
 
@@ -125,6 +135,5 @@ public class StorageClientMock implements IStorageRestClient {
     public ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(String[] userEmails) {
         return null;
     }
-
 
 }

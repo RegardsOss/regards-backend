@@ -1,5 +1,5 @@
 /*
-	 * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -17,28 +17,6 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 package fr.cnes.regards.modules.dam.rest.model;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.assertj.core.util.Strings;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.Link;
-import org.springframework.http.MediaType;
-import org.springframework.restdocs.payload.FieldDescriptor;
-import org.springframework.restdocs.payload.PayloadDocumentation;
-import org.springframework.restdocs.request.RequestDocumentation;
-import org.springframework.restdocs.snippet.Attributes;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -58,6 +36,27 @@ import fr.cnes.regards.modules.model.rest.ModelController;
 import fr.cnes.regards.modules.model.service.IAttributeModelService;
 import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
 import fr.cnes.regards.modules.model.service.IModelService;
+import org.assertj.core.util.Strings;
+import org.hamcrest.Matchers;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.http.MediaType;
+import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.restdocs.payload.PayloadDocumentation;
+import org.springframework.restdocs.request.RequestDocumentation;
+import org.springframework.restdocs.snippet.Attributes;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Test model creation
@@ -104,15 +103,18 @@ public class ModelControllerIT extends AbstractRegardsTransactionalIT {
         }
         descriptors.add(constrainedFields.withPath(prefixPath + "name", "name", "model name"));
         descriptors.add(constrainedFields.withPath(prefixPath + "description", "description", "model description")
-                .type(JSON_STRING_TYPE).optional());
+                                         .type(JSON_STRING_TYPE)
+                                         .optional());
         descriptors.add(constrainedFields.withPath(prefixPath + "version", "version", "model version")
-                .type(JSON_STRING_TYPE).optional());
-        descriptors.add(
-                        constrainedFields
-                                .withPath(prefixPath + "type", "type", "model type",
-                                          "Available values: " + Arrays.stream(EntityType.values())
-                                                  .map(type -> type.name()).collect(Collectors.joining(", ")))
-                                .type(JSON_STRING_TYPE));
+                                         .type(JSON_STRING_TYPE)
+                                         .optional());
+        descriptors.add(constrainedFields.withPath(prefixPath + "type",
+                                                   "type",
+                                                   "model type",
+                                                   "Available values: " + Arrays.stream(EntityType.values())
+                                                                                .map(type -> type.name())
+                                                                                .collect(Collectors.joining(", ")))
+                                         .type(JSON_STRING_TYPE));
         // ignore links
         ConstrainedFields ignoreFields = new ConstrainedFields(EntityModel.class);
         descriptors.add(ignoreFields.withPath("links", "links", "hateoas links").optional().ignored());
@@ -136,7 +138,9 @@ public class ModelControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer();
         requestBuilderCustomizer.expect(MockMvcResultMatchers.status().isUnprocessableEntity());
 
-        performDefaultPost(ModelController.TYPE_MAPPING, model, requestBuilderCustomizer,
+        performDefaultPost(ModelController.TYPE_MAPPING,
+                           model,
+                           requestBuilderCustomizer,
                            "Empty model shouldn't be created.");
     }
 
@@ -174,9 +178,9 @@ public class ModelControllerIT extends AbstractRegardsTransactionalIT {
     /**
      * Create a model
      *
-     * @param pName name
+     * @param pName        name
      * @param pDescription description
-     * @param pType type
+     * @param pType        type
      */
     private void createModel(String pName, String pDescription, EntityType pType) {
         Assert.assertNotNull(pName);
@@ -196,7 +200,9 @@ public class ModelControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.document(PayloadDocumentation.requestFields(documentBody(true, "")));
         requestBuilderCustomizer.document(PayloadDocumentation.responseFields(documentBody(false, "content")));
 
-        performDefaultPost(ModelController.TYPE_MAPPING, model, requestBuilderCustomizer,
+        performDefaultPost(ModelController.TYPE_MAPPING,
+                           model,
+                           requestBuilderCustomizer,
                            "Consistent model should be created.");
     }
 
@@ -218,7 +224,7 @@ public class ModelControllerIT extends AbstractRegardsTransactionalIT {
 
         // Attribute #1 in default fragment
         AttributeModel attMod = AttributeModelBuilder.build("att_string", PropertyType.STRING, "ForTests")
-                .withoutRestriction();
+                                                     .withoutRestriction();
         attributeModelService.addAttribute(attMod, false);
 
         ModelAttrAssoc modAtt = new ModelAttrAssoc();
@@ -226,8 +232,9 @@ public class ModelControllerIT extends AbstractRegardsTransactionalIT {
         modelAttributeService.bindAttributeToModel(model.getName(), modAtt);
 
         // Attribute #2 in default fragment
-        attMod = AttributeModelBuilder.build("att_boolean", PropertyType.BOOLEAN, "ForTests").isAlterable()
-                .withoutRestriction();
+        attMod = AttributeModelBuilder.build("att_boolean", PropertyType.BOOLEAN, "ForTests")
+                                      .isAlterable()
+                                      .withoutRestriction();
         attributeModelService.addAttribute(attMod, false);
 
         modAtt = new ModelAttrAssoc();
@@ -238,8 +245,9 @@ public class ModelControllerIT extends AbstractRegardsTransactionalIT {
         final Fragment geo = Fragment.buildFragment("GEO", "Geographic information");
 
         // Attribute #3 in geo fragment
-        attMod = AttributeModelBuilder.build("CRS", PropertyType.STRING, "ForTests").fragment(geo)
-                .withEnumerationRestriction("Earth", "Mars", "Venus");
+        attMod = AttributeModelBuilder.build("CRS", PropertyType.STRING, "ForTests")
+                                      .fragment(geo)
+                                      .withEnumerationRestriction("Earth", "Mars", "Venus");
         attributeModelService.addAttribute(attMod, false);
 
         modelAttributeService.bindNSAttributeToModel(model.getName(), attMod.getFragment());
@@ -248,8 +256,9 @@ public class ModelControllerIT extends AbstractRegardsTransactionalIT {
         final Fragment contact = Fragment.buildFragment("Contact", "Contact information");
 
         // Attribute #5 in contact fragment
-        attMod = AttributeModelBuilder.build("Phone", PropertyType.STRING, "ForTests").fragment(contact)
-                .withPatternRestriction("[0-9 ]{10}");
+        attMod = AttributeModelBuilder.build("Phone", PropertyType.STRING, "ForTests")
+                                      .fragment(contact)
+                                      .withPatternRestriction("[0-9 ]{10}");
         attributeModelService.addAttribute(attMod, false);
 
         modelAttributeService.bindNSAttributeToModel(model.getName(), attMod.getFragment());
@@ -257,13 +266,20 @@ public class ModelControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer();
         requestBuilderCustomizer.expect(MockMvcResultMatchers.status().isOk());
 
-        requestBuilderCustomizer.document(RequestDocumentation
-                .pathParameters(RequestDocumentation.parameterWithName("modelName").description("model name")
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))));
+        requestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation.parameterWithName(
+                                                                                                      "modelName")
+                                                                                                  .description(
+                                                                                                      "model name")
+                                                                                                  .attributes(Attributes.key(
+                                                                                                                            RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                        .value(
+                                                                                                                            JSON_STRING_TYPE))));
 
-        final ResultActions resultActions = performDefaultGet(ModelController.TYPE_MAPPING
-                + ModelController.MODEL_MAPPING + "/export", requestBuilderCustomizer, "Should return result",
-                                                              model.getName());
+        final ResultActions resultActions = performDefaultGet(
+            ModelController.TYPE_MAPPING + ModelController.MODEL_MAPPING + "/export",
+            requestBuilderCustomizer,
+            "Should return result",
+            model.getName());
 
         assertMediaType(resultActions, MediaType.APPLICATION_XML);
         Assert.assertNotNull(payload(resultActions));
@@ -271,6 +287,7 @@ public class ModelControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Create a dataset model
+     *
      * @throws ModuleException
      */
     @Test
@@ -284,12 +301,19 @@ public class ModelControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer();
         requestBuilderCustomizer.expect(MockMvcResultMatchers.status().isNoContent());
 
-        requestBuilderCustomizer.document(RequestDocumentation
-                .pathParameters(RequestDocumentation.parameterWithName("modelName").description("model name")
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))));
+        requestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation.parameterWithName(
+                                                                                                      "modelName")
+                                                                                                  .description(
+                                                                                                      "model name")
+                                                                                                  .attributes(Attributes.key(
+                                                                                                                            RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                                        .value(
+                                                                                                                            JSON_STRING_TYPE))));
 
         // Perform test
-        performDefaultDelete(ModelController.TYPE_MAPPING + ModelController.MODEL_MAPPING, requestBuilderCustomizer,
-                             "Model should be deleted", model.getName());
+        performDefaultDelete(ModelController.TYPE_MAPPING + ModelController.MODEL_MAPPING,
+                             requestBuilderCustomizer,
+                             "Model should be deleted",
+                             model.getName());
     }
 }

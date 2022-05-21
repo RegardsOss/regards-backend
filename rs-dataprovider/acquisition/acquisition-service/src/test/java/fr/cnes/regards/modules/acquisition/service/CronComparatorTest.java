@@ -1,9 +1,10 @@
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 public class CronComparatorTest {
 

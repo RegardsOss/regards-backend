@@ -18,10 +18,6 @@
  */
 package fr.cnes.regards.modules.search.service;
 
-import java.util.List;
-
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.urn.DataType;
@@ -32,53 +28,67 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 /**
  * Business search service.<br/>
  * Relies on {@link ICatalogSearchService} but only return public features inside each entity.
  *
  * @author Marc Sordi
- *
  */
 public interface IBusinessSearchService {
 
     /**
      * Business search
-     * @param criterion business criterions according to indexed properties
+     *
+     * @param criterion  business criterions according to indexed properties
      * @param searchType search type
-     * @param facets list of facet
-     * @param pageable pagination properties
+     * @param facets     list of facet
+     * @param pageable   pagination properties
      * @return a facet page of entity feature
      */
-    <F extends EntityFeature> FacetPage<F> search(ICriterion criterion, SearchType searchType, List<String> facets,
-            Pageable pageable) throws SearchException, OpenSearchUnknownParameter;
+    <F extends EntityFeature> FacetPage<F> search(ICriterion criterion,
+                                                  SearchType searchType,
+                                                  List<String> facets,
+                                                  Pageable pageable) throws SearchException, OpenSearchUnknownParameter;
 
     /**
      * Retrieve a feature by its identifier
+     *
      * @param urn feature identifier
      */
     <F extends EntityFeature> F get(UniformResourceName urn)
-            throws EntityOperationForbiddenException, EntityNotFoundException;
+        throws EntityOperationForbiddenException, EntityNotFoundException;
 
     /**
      * Compute summary for given request (delegate method to catalog search service)
-     * @param criterion business criterions
+     *
+     * @param criterion  business criterions
      * @param searchType search key
-     * @param dataset restriction to a specified dataset
-     * @param dataTypes file types on which to compute summary
+     * @param dataset    restriction to a specified dataset
+     * @param dataTypes  file types on which to compute summary
      * @return summary
      */
-    DocFilesSummary computeDatasetsSummary(ICriterion criterion, SearchType searchType, UniformResourceName dataset,
-            List<DataType> dataTypes) throws SearchException;
+    DocFilesSummary computeDatasetsSummary(ICriterion criterion,
+                                           SearchType searchType,
+                                           UniformResourceName dataset,
+                                           List<DataType> dataTypes) throws SearchException;
 
     /**
      * Retrieve property values for specified property name (delegate method to catalog search service)
-     * @param criterion business criterions
-     * @param searchType the search type containing the search type and the result type
+     *
+     * @param criterion    business criterions
+     * @param searchType   the search type containing the search type and the result type
      * @param propertyPath target propertu
-     * @param maxCount maximum result count
-     * @param partialText text that property should contains (can be null)
+     * @param maxCount     maximum result count
+     * @param partialText  text that property should contains (can be null)
      */
-    List<String> retrieveEnumeratedPropertyValues(ICriterion criterion, SearchType searchType, String propertyPath,
-            int maxCount, String partialText) throws SearchException, OpenSearchUnknownParameter;
+    List<String> retrieveEnumeratedPropertyValues(ICriterion criterion,
+                                                  SearchType searchType,
+                                                  String propertyPath,
+                                                  int maxCount,
+                                                  String partialText)
+        throws SearchException, OpenSearchUnknownParameter;
 }

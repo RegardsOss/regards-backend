@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.indexer.dao;
 
+import org.elasticsearch.action.DocWriteResponse.Result;
+
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -25,10 +27,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 
-import org.elasticsearch.action.DocWriteResponse.Result;
-
 /**
  * Object permitting to know what IEsRepository.saveBulk() method has really done.
+ *
  * @author oroussel
  */
 public class BulkSaveResult {
@@ -59,12 +60,15 @@ public class BulkSaveResult {
 
     /**
      * add information needed to report document that could be indexed
+     *
      * @param docId
-     * @param session nullable, must not be null for document which are internal {@link fr.cnes.regards.modules.dam.domain.entities.DataObject}
+     * @param session      nullable, must not be null for document which are internal {@link fr.cnes.regards.modules.dam.domain.entities.DataObject}
      * @param sessionOwner nullable, must not be null for document which are internal {@link fr.cnes.regards.modules.dam.domain.entities.DataObject}
      */
-    public void addSavedDoc(String docId, Result docResultType, Optional<String> session,
-            Optional<String> sessionOwner) {
+    public void addSavedDoc(String docId,
+                            Result docResultType,
+                            Optional<String> session,
+                            Optional<String> sessionOwner) {
         // Add document to the current bulk save result
         savedDocIds.add(docId);
         // Only notify sessions for newly created documents. Updated ones should not be notified
@@ -88,13 +92,16 @@ public class BulkSaveResult {
 
     /**
      * add information needed to report document that could not be indexed
+     *
      * @param docId
      * @param exception
-     * @param session nullable, must not be null for document which are internal {@link fr.cnes.regards.modules.dam.domain.entities.DataObject}
+     * @param session      nullable, must not be null for document which are internal {@link fr.cnes.regards.modules.dam.domain.entities.DataObject}
      * @param sessionOwner nullable, must not be null for document which are internal {@link fr.cnes.regards.modules.dam.domain.entities.DataObject}
      */
-    public void addInErrorDoc(String docId, Exception exception, Optional<String> session,
-            Optional<String> sessionOwner) {
+    public void addInErrorDoc(String docId,
+                              Exception exception,
+                              Optional<String> session,
+                              Optional<String> sessionOwner) {
         // Add document to the current bulk save result
         inErrorDocsMap.put(docId, exception);
         // If session and sessionOwner are provided add it to the dispatched map by session owner too.
@@ -153,6 +160,7 @@ public class BulkSaveResult {
 
     /**
      * Append another bulk save result
+     *
      * @param otherBulkSaveResult another bulk save result
      * @return this
      */

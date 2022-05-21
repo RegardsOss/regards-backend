@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.amqp.event.WorkerMode;
 
 /**
  * {@link ISubscribable} information event
+ *
  * @author Marc Sordi
  */
 @Event(target = Target.ALL, mode = WorkerMode.UNICAST)

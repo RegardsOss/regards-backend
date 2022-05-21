@@ -28,17 +28,14 @@ import fr.cnes.regards.modules.processing.domain.dto.PProcessDTO;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
 import fr.cnes.regards.modules.processing.domain.parameters.ExecutionParameterType;
 import fr.cnes.regards.modules.processing.forecast.MultiplierResultSizeForecast;
-import fr.cnes.regards.modules.processing.order.Cardinality;
-import fr.cnes.regards.modules.processing.order.OrderProcessInfo;
-import fr.cnes.regards.modules.processing.order.OrderProcessInfoMapper;
-import fr.cnes.regards.modules.processing.order.Scope;
-import fr.cnes.regards.modules.processing.order.SizeLimit;
+import fr.cnes.regards.modules.processing.order.*;
 import io.vavr.collection.List;
-import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import reactor.core.publisher.Flux;
+
+import java.util.UUID;
 
 /**
  * @author Iliana Ghazali
@@ -78,9 +75,13 @@ public class ProcessingClientMock implements IProcessingRestClient {
 
     @Override
     public ResponseEntity<PProcessDTO> findByUuid(String processUUId) {
-        PProcessDTO processDTOFound =
-                Flux.fromIterable(processes).filter(p -> p.getProcessId().equals(UUID.fromString(processUUId))).next().block();
-        return processDTOFound == null ? new ResponseEntity<>(HttpStatus.NOT_FOUND) : new ResponseEntity<>(processDTOFound, HttpStatus.OK);
+        PProcessDTO processDTOFound = Flux.fromIterable(processes)
+                                          .filter(p -> p.getProcessId().equals(UUID.fromString(processUUId)))
+                                          .next()
+                                          .block();
+        return processDTOFound == null ?
+            new ResponseEntity<>(HttpStatus.NOT_FOUND) :
+            new ResponseEntity<>(processDTOFound, HttpStatus.OK);
     }
 
     @Override
@@ -90,72 +91,73 @@ public class ProcessingClientMock implements IProcessingRestClient {
     }
 
     @Override
-    public ResponseEntity<List<PExecution>> executions(String tenant, java.util.List<ExecutionStatus> status, Pageable page) {
+    public ResponseEntity<List<PExecution>> executions(String tenant,
+                                                       java.util.List<ExecutionStatus> status,
+                                                       Pageable page) {
         // nothing to mock for now
         return null;
     }
 
     private void createProcesses() {
-        processes = List.of(
-                createProcessDTO(PROCESS_ID_FEATURES_2L, new OrderProcessInfo(
-                        Scope.SUBORDER,
-                        Cardinality.ONE_PER_EXECUTION,
-                        List.of(DataType.RAWDATA),
-                        new SizeLimit(SizeLimit.Type.FEATURES, 2L),
-                        new MultiplierResultSizeForecast(1d), Boolean.TRUE
-                )),
-                createProcessDTO(PROCESS_ID_FEATURES_5L, new OrderProcessInfo(
-                        Scope.SUBORDER,
-                        Cardinality.ONE_PER_EXECUTION,
-                        List.of(DataType.RAWDATA),
-                        new SizeLimit(SizeLimit.Type.FEATURES, 5L),
-                        new MultiplierResultSizeForecast(1d), Boolean.TRUE
-                )),
-                createProcessDTO(PROCESS_ID_BYTES_150L, new OrderProcessInfo(
-                        Scope.SUBORDER,
-                        Cardinality.ONE_PER_EXECUTION,
-                        List.of(DataType.RAWDATA),
-                        new SizeLimit(SizeLimit.Type.BYTES, 150L),
-                        new MultiplierResultSizeForecast(1d), Boolean.TRUE
-                )),
-                createProcessDTO(PROCESS_ID_BYTES_300000L, new OrderProcessInfo(
-                        Scope.SUBORDER,
-                        Cardinality.ONE_PER_EXECUTION,
-                        List.of(DataType.RAWDATA),
-                        new SizeLimit(SizeLimit.Type.BYTES, 300000L),
-                        new MultiplierResultSizeForecast(1d), Boolean.TRUE
-                )),
-                createProcessDTO(PROCESS_ID_FILES_10L, new OrderProcessInfo(
-                        Scope.SUBORDER,
-                        Cardinality.ONE_PER_EXECUTION,
-                        List.of(DataType.RAWDATA),
-                        new SizeLimit(SizeLimit.Type.FILES, 10L),
-                        new MultiplierResultSizeForecast(1d), Boolean.TRUE
-                )),
-                createProcessDTO(PROCESS_ID_FILES_20L, new OrderProcessInfo(
-                        Scope.SUBORDER,
-                        Cardinality.ONE_PER_EXECUTION,
-                        List.of(DataType.RAWDATA),
-                        new SizeLimit(SizeLimit.Type.FILES, 20L),
-                        new MultiplierResultSizeForecast(1d), Boolean.TRUE
-                )),
-                createProcessDTO(PROCESS_ID_NO_LIMIT, new OrderProcessInfo(
-                        Scope.SUBORDER,
-                        Cardinality.ONE_PER_EXECUTION,
-                        List.of(DataType.RAWDATA),
-                        new SizeLimit(SizeLimit.Type.NO_LIMIT, 0L),
-                        new MultiplierResultSizeForecast(1d), Boolean.TRUE
-                )));
+        processes = List.of(createProcessDTO(PROCESS_ID_FEATURES_2L,
+                                             new OrderProcessInfo(Scope.SUBORDER,
+                                                                  Cardinality.ONE_PER_EXECUTION,
+                                                                  List.of(DataType.RAWDATA),
+                                                                  new SizeLimit(SizeLimit.Type.FEATURES, 2L),
+                                                                  new MultiplierResultSizeForecast(1d),
+                                                                  Boolean.TRUE)),
+                            createProcessDTO(PROCESS_ID_FEATURES_5L,
+                                             new OrderProcessInfo(Scope.SUBORDER,
+                                                                  Cardinality.ONE_PER_EXECUTION,
+                                                                  List.of(DataType.RAWDATA),
+                                                                  new SizeLimit(SizeLimit.Type.FEATURES, 5L),
+                                                                  new MultiplierResultSizeForecast(1d),
+                                                                  Boolean.TRUE)),
+                            createProcessDTO(PROCESS_ID_BYTES_150L,
+                                             new OrderProcessInfo(Scope.SUBORDER,
+                                                                  Cardinality.ONE_PER_EXECUTION,
+                                                                  List.of(DataType.RAWDATA),
+                                                                  new SizeLimit(SizeLimit.Type.BYTES, 150L),
+                                                                  new MultiplierResultSizeForecast(1d),
+                                                                  Boolean.TRUE)),
+                            createProcessDTO(PROCESS_ID_BYTES_300000L,
+                                             new OrderProcessInfo(Scope.SUBORDER,
+                                                                  Cardinality.ONE_PER_EXECUTION,
+                                                                  List.of(DataType.RAWDATA),
+                                                                  new SizeLimit(SizeLimit.Type.BYTES, 300000L),
+                                                                  new MultiplierResultSizeForecast(1d),
+                                                                  Boolean.TRUE)),
+                            createProcessDTO(PROCESS_ID_FILES_10L,
+                                             new OrderProcessInfo(Scope.SUBORDER,
+                                                                  Cardinality.ONE_PER_EXECUTION,
+                                                                  List.of(DataType.RAWDATA),
+                                                                  new SizeLimit(SizeLimit.Type.FILES, 10L),
+                                                                  new MultiplierResultSizeForecast(1d),
+                                                                  Boolean.TRUE)),
+                            createProcessDTO(PROCESS_ID_FILES_20L,
+                                             new OrderProcessInfo(Scope.SUBORDER,
+                                                                  Cardinality.ONE_PER_EXECUTION,
+                                                                  List.of(DataType.RAWDATA),
+                                                                  new SizeLimit(SizeLimit.Type.FILES, 20L),
+                                                                  new MultiplierResultSizeForecast(1d),
+                                                                  Boolean.TRUE)),
+                            createProcessDTO(PROCESS_ID_NO_LIMIT,
+                                             new OrderProcessInfo(Scope.SUBORDER,
+                                                                  Cardinality.ONE_PER_EXECUTION,
+                                                                  List.of(DataType.RAWDATA),
+                                                                  new SizeLimit(SizeLimit.Type.NO_LIMIT, 0L),
+                                                                  new MultiplierResultSizeForecast(1d),
+                                                                  Boolean.TRUE)));
     }
 
     private PProcessDTO createProcessDTO(String processUUID, OrderProcessInfo orderProcessInfo) {
         OrderProcessInfoMapper processInfoMapper = new OrderProcessInfoMapper();
-        return new PProcessDTO(
-                UUID.fromString(processUUID),
-                "the-process-name",
-                true,
-                processInfoMapper.toMap(orderProcessInfo),
-                List.of(new ExecutionParamDTO("the-param-name", ExecutionParameterType.STRING,
-                        "The param desc")));
+        return new PProcessDTO(UUID.fromString(processUUID),
+                               "the-process-name",
+                               true,
+                               processInfoMapper.toMap(orderProcessInfo),
+                               List.of(new ExecutionParamDTO("the-param-name",
+                                                             ExecutionParameterType.STRING,
+                                                             "The param desc")));
     }
 }

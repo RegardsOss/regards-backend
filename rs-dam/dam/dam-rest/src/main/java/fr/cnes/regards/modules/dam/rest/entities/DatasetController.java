@@ -35,7 +35,6 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
-import fr.cnes.regards.modules.model.service.validation.ValidationMode;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,7 +138,7 @@ public class DatasetController implements IResourceController<Dataset> {
     @ResourceAccess(description = "Retrieve all attributes related to given entity")
     @RequestMapping(path = ENTITY_ASSOCS_MAPPING, method = RequestMethod.GET)
     public ResponseEntity<Collection<ModelAttrAssoc>> getModelAttrAssocsForDataInDataset(
-            @RequestParam(name = "datasetUrn") UniformResourceName datasetUrn) throws ModuleException {
+        @RequestParam(name = "datasetUrn") UniformResourceName datasetUrn) throws ModuleException {
         Dataset dataset = service.load(datasetUrn);
         Collection<ModelAttrAssoc> assocs = modelAttrAssocService.getModelAttrAssocs(dataset.getDataModel());
         return ResponseEntity.ok(assocs);
@@ -155,7 +154,7 @@ public class DatasetController implements IResourceController<Dataset> {
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "create and send the dataset")
     public ResponseEntity<EntityModel<Dataset>> createDataset(@Valid @RequestBody Dataset dataset, BindingResult result)
-            throws ModuleException, IOException {
+        throws ModuleException, IOException {
         return new ResponseEntity<>(toResource(service.createDataset(dataset, result)), HttpStatus.CREATED);
     }
 
@@ -170,9 +169,9 @@ public class DatasetController implements IResourceController<Dataset> {
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "endpoint to retrieve the list of all datasets")
     public ResponseEntity<PagedModel<EntityModel<Dataset>>> retrieveDatasets(
-            @RequestParam(name = "label", required = false) String label,
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<Dataset> assembler) {
+        @RequestParam(name = "label", required = false) String label,
+        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        PagedResourcesAssembler<Dataset> assembler) {
         Page<Dataset> datasets = service.search(label, pageable);
         PagedModel<EntityModel<Dataset>> resources = toPagedResources(datasets, assembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
@@ -189,7 +188,7 @@ public class DatasetController implements IResourceController<Dataset> {
     @RequestMapping(method = RequestMethod.GET, value = DATASET_ID_PATH)
     @ResourceAccess(description = "Retrieves a dataset")
     public ResponseEntity<EntityModel<Dataset>> retrieveDataset(@PathVariable("dataset_id") final Long datasetId)
-            throws ModuleException {
+        throws ModuleException {
         Dataset dataset = service.load(datasetId);
         EntityModel<Dataset> resource = toResource(dataset);
         return new ResponseEntity<>(resource, HttpStatus.OK);
@@ -205,7 +204,7 @@ public class DatasetController implements IResourceController<Dataset> {
     @RequestMapping(method = RequestMethod.GET, value = DATASET_IP_ID_PATH)
     @ResourceAccess(description = "Retrieves a dataset")
     public ResponseEntity<Dataset> retrieveDataset(@PathVariable("dataset_ipId") final String datasetIpId)
-            throws ModuleException {
+        throws ModuleException {
         Dataset dataset = service.load(OaisUniformResourceName.fromString(datasetIpId));
         return new ResponseEntity<>(dataset, HttpStatus.OK);
     }
@@ -249,8 +248,10 @@ public class DatasetController implements IResourceController<Dataset> {
     @RequestMapping(method = RequestMethod.PUT, value = DATASET_ID_PATH)
     @ResourceAccess(description = "Update a dataset")
     public ResponseEntity<EntityModel<Dataset>> updateDataset(@PathVariable("dataset_id") Long datasetId,
-                                                              @Valid @RequestBody Dataset dataset, BindingResult result) throws ModuleException, IOException {
-        EntityModel<Dataset> resource = toResource(service.updateDataset(datasetId,dataset,result));
+                                                              @Valid @RequestBody Dataset dataset,
+                                                              BindingResult result)
+        throws ModuleException, IOException {
+        EntityModel<Dataset> resource = toResource(service.updateDataset(datasetId, dataset, result));
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
@@ -265,7 +266,8 @@ public class DatasetController implements IResourceController<Dataset> {
     @RequestMapping(method = RequestMethod.PUT, value = DATASET_ID_DISSOCIATE_PATH)
     @ResourceAccess(description = "Dissociate a list of entities from a dataset")
     public ResponseEntity<Void> dissociate(@PathVariable("dataset_id") final Long datasetId,
-                                           @Valid @RequestBody final Set<String> toBeDissociated) throws ModuleException {
+                                           @Valid @RequestBody final Set<String> toBeDissociated)
+        throws ModuleException {
         service.dissociate(datasetId, toBeDissociated);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -281,7 +283,8 @@ public class DatasetController implements IResourceController<Dataset> {
     @RequestMapping(method = RequestMethod.PUT, value = DATASET_ID_ASSOCIATE_PATH)
     @ResourceAccess(description = "associate the list of entities to the dataset")
     public ResponseEntity<Void> associate(@PathVariable("dataset_id") final Long datasetId,
-                                          @Valid @RequestBody final Set<String> toBeAssociatedWith) throws ModuleException {
+                                          @Valid @RequestBody final Set<String> toBeAssociatedWith)
+        throws ModuleException {
         service.associate(datasetId, toBeAssociatedWith);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -298,10 +301,12 @@ public class DatasetController implements IResourceController<Dataset> {
     @RequestMapping(method = RequestMethod.POST, value = DATASET_DATA_ATTRIBUTES_PATH)
     @ResourceAccess(description = "Retrieves data attributes of given datasets")
     public ResponseEntity<PagedModel<EntityModel<AttributeModel>>> retrieveDataAttributes(
-            @RequestBody DatasetDataAttributesRequestBody requestBody, final Pageable pageable,
-            final PagedResourcesAssembler<AttributeModel> assembler) throws ModuleException {
+        @RequestBody DatasetDataAttributesRequestBody requestBody,
+        final Pageable pageable,
+        final PagedResourcesAssembler<AttributeModel> assembler) throws ModuleException {
         Page<AttributeModel> result = service.getDataAttributeModels(requestBody.getDatasetIds(),
-                requestBody.getModelNames(), pageable);
+                                                                     requestBody.getModelNames(),
+                                                                     pageable);
         return new ResponseEntity<>(assembler.toModel(result), HttpStatus.OK);
     }
 
@@ -316,8 +321,9 @@ public class DatasetController implements IResourceController<Dataset> {
     @RequestMapping(method = RequestMethod.POST, value = DATASET_ATTRIBUTES_PATH)
     @ResourceAccess(description = "Retrieves data attributes of given datasets")
     public ResponseEntity<PagedModel<EntityModel<AttributeModel>>> retrieveAttributes(
-            @RequestBody DatasetDataAttributesRequestBody body, final Pageable pageable,
-            final PagedResourcesAssembler<AttributeModel> assembler) throws ModuleException {
+        @RequestBody DatasetDataAttributesRequestBody body,
+        final Pageable pageable,
+        final PagedResourcesAssembler<AttributeModel> assembler) throws ModuleException {
         Page<AttributeModel> result = service.getAttributeModels(body.getDatasetIds(), body.getModelNames(), pageable);
         return new ResponseEntity<>(assembler.toModel(result), HttpStatus.OK);
     }
@@ -340,23 +346,42 @@ public class DatasetController implements IResourceController<Dataset> {
     @Override
     public EntityModel<Dataset> toResource(final Dataset element, final Object... extras) {
         final EntityModel<Dataset> resource = resourceService.toResource(element);
-        resourceService.addLink(resource, this.getClass(), "retrieveDataset", LinkRels.SELF,
-                MethodParamFactory.build(Long.class, element.getId()));
-        resourceService.addLink(resource, this.getClass(), "retrieveDatasets", LinkRels.LIST,
-                MethodParamFactory.build(String.class, element.getLabel()),
-                MethodParamFactory.build(Pageable.class),
-                MethodParamFactory.build(PagedResourcesAssembler.class));
-        resourceService.addLink(resource, this.getClass(), "deleteDataset", LinkRels.DELETE,
-                MethodParamFactory.build(Long.class, element.getId()));
-        resourceService.addLink(resource, this.getClass(), "updateDataset", LinkRels.UPDATE,
-                MethodParamFactory.build(Long.class, element.getId()),
-                MethodParamFactory.build(Dataset.class), MethodParamFactory.build(BindingResult.class));
-        resourceService.addLink(resource, this.getClass(), "dissociate", LinkRelation.of("dissociate"),
-                MethodParamFactory.build(Long.class, element.getId()),
-                MethodParamFactory.build(Set.class));
-        resourceService.addLink(resource, this.getClass(), "associate", LinkRelation.of("associate"),
-                MethodParamFactory.build(Long.class, element.getId()),
-                MethodParamFactory.build(Set.class));
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "retrieveDataset",
+                                LinkRels.SELF,
+                                MethodParamFactory.build(Long.class, element.getId()));
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "retrieveDatasets",
+                                LinkRels.LIST,
+                                MethodParamFactory.build(String.class, element.getLabel()),
+                                MethodParamFactory.build(Pageable.class),
+                                MethodParamFactory.build(PagedResourcesAssembler.class));
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "deleteDataset",
+                                LinkRels.DELETE,
+                                MethodParamFactory.build(Long.class, element.getId()));
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "updateDataset",
+                                LinkRels.UPDATE,
+                                MethodParamFactory.build(Long.class, element.getId()),
+                                MethodParamFactory.build(Dataset.class),
+                                MethodParamFactory.build(BindingResult.class));
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "dissociate",
+                                LinkRelation.of("dissociate"),
+                                MethodParamFactory.build(Long.class, element.getId()),
+                                MethodParamFactory.build(Set.class));
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "associate",
+                                LinkRelation.of("associate"),
+                                MethodParamFactory.build(Long.class, element.getId()),
+                                MethodParamFactory.build(Set.class));
         return resource;
     }
 

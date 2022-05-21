@@ -18,22 +18,21 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.chain;
 
-import java.util.Set;
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
+import fr.cnes.regards.framework.urn.DataType;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.Column;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-
-import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.Type;
-
-import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
-import fr.cnes.regards.framework.urn.DataType;
+import java.util.Set;
 
 /**
  * Storage information
+ *
  * @author Léo Mieulet
  */
 public class StorageMetadataProvider {

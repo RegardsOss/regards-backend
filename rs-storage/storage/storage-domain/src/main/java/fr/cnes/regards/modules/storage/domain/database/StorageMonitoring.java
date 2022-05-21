@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.storage.domain.database;
 
-import java.time.OffsetDateTime;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.time.OffsetDateTime;
 
 /**
  * Database definition of the table containing information about storage location monitoring processus.
@@ -56,8 +55,10 @@ public class StorageMonitoring {
         super();
     }
 
-    public StorageMonitoring(boolean running, OffsetDateTime lastMonitoringDate, Long lastFileReferenceIdMonitored,
-            Long lastMonitoringDuration) {
+    public StorageMonitoring(boolean running,
+                             OffsetDateTime lastMonitoringDate,
+                             Long lastFileReferenceIdMonitored,
+                             Long lastMonitoringDuration) {
         super();
         this.running = running;
         this.lastMonitoringDate = lastMonitoringDate;

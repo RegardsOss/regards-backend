@@ -18,21 +18,18 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
-import java.util.Set;
-
-import javax.persistence.criteria.Predicate;
-
+import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
-import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestsSelectionDTO;
+import javax.persistence.criteria.Predicate;
+import java.util.Set;
 
 /**
  * JPA Specification to search for {@link FeatureCreationRequest} from {@link IFeatureCreationRequestRepositoryatu}
  *
  * @author Sébastien Binda
- *
  */
 public class FeatureCreationRequestSpecification {
 
@@ -42,15 +39,20 @@ public class FeatureCreationRequestSpecification {
 
     /**
      * Creates search {@link Specification} for {@link FeatureCreationRequest}s
+     *
      * @param selection {@link FeatureRequestsSelectionDTO}
-     * @param page {@link Pageable}
+     * @param page      {@link Pageable}
      * @return {@link Specification}
      */
     public static Specification<FeatureCreationRequest> searchAllByFilters(FeatureRequestsSelectionDTO selection,
-            Pageable page) {
+                                                                           Pageable page) {
         return (root, query, cb) -> {
 
-            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(selection, false, root, query, cb,
+            Set<Predicate> predicates = FeatureRequestSpecificationsHelper.init(selection,
+                                                                                false,
+                                                                                root,
+                                                                                query,
+                                                                                cb,
                                                                                 page);
             if (selection.getFilters() != null) {
                 if (selection.getFilters().getProviderId() != null) {

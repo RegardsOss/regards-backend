@@ -1,18 +1,19 @@
 package fr.cnes.regards.framework.microservice.rest.test;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import fr.cnes.regards.framework.microservice.rest.test.domain.ConfigurationPojo;
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.manager.ModuleReadinessReport;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
  * Some Dummy export/import for test purpose
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class TestConfigurationManager extends AbstractModuleManager<Void> {

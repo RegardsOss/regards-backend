@@ -18,30 +18,23 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
-import java.nio.file.Path;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-
-import javax.annotation.Nullable;
-
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.oais.*;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.oais.AbstractInformationPackage;
-import fr.cnes.regards.framework.oais.ContentInformation;
-import fr.cnes.regards.framework.oais.Event;
-import fr.cnes.regards.framework.oais.InformationPackageProperties;
-import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
-import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.urn.EntityType;
+import javax.annotation.Nullable;
+import java.nio.file.Path;
+import java.time.OffsetDateTime;
+import java.util.Collection;
 
 /**
  * Information package builder<br/>
- *
+ * <p>
  * An {@link AbstractInformationPackage} contains :
  * <ul>
  * <li>An array of {@link ContentInformation} to describe related physical files</li>
@@ -63,8 +56,8 @@ import fr.cnes.regards.framework.urn.EntityType;
  * <br/>
  * <br/>
  * To define descriptive information, just call {@link IPBuilder#addDescriptiveInformation(String, Object)}.
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  * @deprecated {@link InformationPackageProperties} fluent API instead
  */
 @Deprecated
@@ -115,8 +108,9 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Set optional feature bounding box an CRS
+     *
      * @param bbox bounding box
-     * @param crs coordinate reference system (default WGS 84)
+     * @param crs  coordinate reference system (default WGS 84)
      */
     public void setBbox(Double[] bbox, String crs) {
         ip.setBbox(bbox);
@@ -165,7 +159,8 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Add <b>optional</b> descriptive information to the current information package.
-     * @param key information key
+     *
+     * @param key   information key
      * @param value information value
      */
     public void addNullDescriptiveInformation(String key, Object value) {
@@ -174,7 +169,8 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Add descriptive information to the current information package.
-     * @param key information key
+     *
+     * @param key   information key
      * @param value information value
      */
     public void addDescriptiveInformation(String key, Object value) {
@@ -183,6 +179,7 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Add tags into context information
+     *
      * @param tags list of tags
      */
     public void addTags(String... tags) {
@@ -191,6 +188,7 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Add categories to context information (repeatable)
+     *
      * @param categories list of category
      */
     public void addContextCategories(String... categories) {
@@ -199,7 +197,8 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Add link into context information
-     * @param key link key
+     *
+     * @param key   link key
      * @param value link value
      */
     public void addContextInformation(String key, Object value) {
@@ -293,8 +292,9 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
     /**
      * Set the access right informtaion to the information package thanks to the given parameters
      */
-    public void setAccessRightInformation(String licence, String dataRights,
-            @Nullable OffsetDateTime publicReleaseDate) {
+    public void setAccessRightInformation(String licence,
+                                          String dataRights,
+                                          @Nullable OffsetDateTime publicReleaseDate) {
         ipPropertiesBuilder.setAccessRightInformation(licence, dataRights, publicReleaseDate);
     }
 
@@ -307,39 +307,50 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Set <b>required</b> data object properties<br/>
-     * @param dataType {@link DataType}
-     * @param filename filename
+     *
+     * @param dataType  {@link DataType}
+     * @param filename  filename
      * @param algorithm checksum algorithm
-     * @param checksum the checksum
-     * @param fileSize <b>optional</b> file size
+     * @param checksum  the checksum
+     * @param fileSize  <b>optional</b> file size
      * @param locations references to the physical file. Use {@link OAISDataObjectLocation} build methods to create location!
      */
-    public void setDataObject(DataType dataType, String filename, String algorithm, String checksum, Long fileSize,
-            OAISDataObjectLocation... locations) {
+    public void setDataObject(DataType dataType,
+                              String filename,
+                              String algorithm,
+                              String checksum,
+                              Long fileSize,
+                              OAISDataObjectLocation... locations) {
         ipPropertiesBuilder.setDataObject(dataType, filename, algorithm, checksum, fileSize, locations);
     }
 
     /**
      * Set <b>required</b> data object properties
-     * @param dataType {@link DataType}
-     * @param filePath reference to the physical file
-     * @param filename filename
+     *
+     * @param dataType  {@link DataType}
+     * @param filePath  reference to the physical file
+     * @param filename  filename
      * @param algorithm checksum algorithm
-     * @param checksum the checksum
-     * @param fileSize file size
+     * @param checksum  the checksum
+     * @param fileSize  file size
      */
-    public void setDataObject(DataType dataType, Path filePath, String filename, String algorithm, String checksum,
-            Long fileSize) {
+    public void setDataObject(DataType dataType,
+                              Path filePath,
+                              String filename,
+                              String algorithm,
+                              String checksum,
+                              Long fileSize) {
         ipPropertiesBuilder.setDataObject(dataType, filePath, filename, algorithm, checksum, fileSize);
     }
 
     /**
      * Alias for {@link ContentInformationBuilder#setDataObject(DataType, Path, String, String, String, Long)} (no
      * file size)
-     * @param dataType {@link DataType}
-     * @param filePath reference to the physical file
+     *
+     * @param dataType  {@link DataType}
+     * @param filePath  reference to the physical file
      * @param algorithm checksum algorithm
-     * @param checksum the checksum
+     * @param checksum  the checksum
      */
     public void setDataObject(DataType dataType, Path filePath, String algorithm, String checksum) {
         ipPropertiesBuilder.setDataObject(dataType, filePath, algorithm, checksum);
@@ -348,6 +359,7 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
     /**
      * Alias for {@link ContentInformationBuilder#setDataObject(DataType, Path, String, String, String, Long)} (no file
      * size and MD5 default checksum algorithm)
+     *
      * @param dataType {@link DataType}
      * @param filePath reference to the physical file
      * @param checksum the checksum
@@ -366,8 +378,10 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
     /**
      * Set syntax and semantic to the information package thanks to the given parameters
      */
-    public void setSyntaxAndSemantic(String mimeName, String mimeDescription, MimeType mimeType,
-            String semanticDescription) {
+    public void setSyntaxAndSemantic(String mimeName,
+                                     String mimeDescription,
+                                     MimeType mimeType,
+                                     String semanticDescription) {
         ipPropertiesBuilder.setSyntaxAndSemantic(mimeName, mimeDescription, mimeType, semanticDescription);
     }
 
@@ -387,6 +401,7 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Add IP events
+     *
      * @param events events to add
      */
     public void addEvents(Event... events) {
@@ -396,6 +411,7 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Add IP events
+     *
      * @param events events to add
      */
     public void addEvents(Collection<Event> events) {
@@ -405,9 +421,10 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Add an IP event
-     * @param type optional event type key (may be null)
+     *
+     * @param type    optional event type key (may be null)
      * @param comment event comment
-     * @param date event date
+     * @param date    event date
      */
     public void addEvent(@Nullable String type, String comment, OffsetDateTime date) {
         Event event = new Event();
@@ -419,8 +436,9 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Add IP event
+     *
      * @param comment event comment
-     * @param date event date
+     * @param date    event date
      */
     public void addEvent(String comment, OffsetDateTime date) {
         addEvent(null, comment, date);
@@ -428,6 +446,7 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Add IP event
+     *
      * @param comment event comment
      */
     public void addEvent(String comment) {

@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.plugin;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -28,14 +26,16 @@ import fr.cnes.regards.modules.ingest.domain.plugin.ISipPreprocessing;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPReference;
 import fr.cnes.regards.modules.ingest.service.chain.ProcessingChainTestErrorSimulator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Test plugin for the processing chains.
+ *
  * @author Sébastien Binda
  */
 @Plugin(author = "REGARDS Team", description = "Test plugin for SIP preprocessing", id = "TestSIPPreprocessing",
-        version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-        url = "https://regardsoss.github.io/")
+    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
+    url = "https://regardsoss.github.io/")
 public class PreprocessingTestPlugin implements ISipPreprocessing {
 
     public static final String SIP_ID_TEST = "SIPID_001";

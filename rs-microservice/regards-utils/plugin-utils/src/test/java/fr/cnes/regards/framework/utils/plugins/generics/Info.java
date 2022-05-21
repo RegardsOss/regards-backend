@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.utils.plugins.generics;
 
 /**
  * Simple POJO
+ *
  * @author Marc Sordi
  */
 public class Info {

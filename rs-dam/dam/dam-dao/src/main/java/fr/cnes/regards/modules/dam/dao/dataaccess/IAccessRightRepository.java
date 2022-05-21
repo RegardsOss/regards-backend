@@ -18,11 +18,9 @@
  */
 package fr.cnes.regards.modules.dam.dao.dataaccess;
 
-import java.math.BigInteger;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -31,9 +29,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.AccessRight;
-import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -42,6 +39,7 @@ public interface IAccessRightRepository extends JpaRepository<AccessRight, Long>
 
     /**
      * Retrieve an AccessRight with the associated Dataset and AccessGroup.
+     *
      * @param pId the {@link AccessRight} to retrieve
      * @return {@link AccessRight} with {@link Dataset} associated.
      * @since 1.0-SNAPSHOT
@@ -87,22 +85,28 @@ public interface IAccessRightRepository extends JpaRepository<AccessRight, Long>
 
     /**
      * This method returns zero or one AccessRight
+     *
      * @param accessGroup
      * @param dataset
      * @param pageable
      * @return {@link AccessRight}s by page
      */
-    default Page<AccessRight> findAllByAccessGroupAndDataset(AccessGroup accessGroup, Dataset dataset, Pageable pageable) {
+    default Page<AccessRight> findAllByAccessGroupAndDataset(AccessGroup accessGroup,
+                                                             Dataset dataset,
+                                                             Pageable pageable) {
         Page<Long> idPage = findIdPageByAccessGroupAndDataset(accessGroup, dataset, pageable);
         List<AccessRight> accessRights = findAllById(idPage.getContent());
         return new PageImpl<>(accessRights, idPage.getPageable(), idPage.getTotalElements());
     }
 
     @Query("select ar.id from AccessRight ar where ar.accessGroup=:accessGroup and ar.dataset=:dataset")
-    Page<Long> findIdPageByAccessGroupAndDataset(@Param("accessGroup") AccessGroup accessGroup,@Param("dataset") Dataset dataset, Pageable pageable);
+    Page<Long> findIdPageByAccessGroupAndDataset(@Param("accessGroup") AccessGroup accessGroup,
+                                                 @Param("dataset") Dataset dataset,
+                                                 Pageable pageable);
 
     /**
      * This methods return only zero or one AccessRight
+     *
      * @param accessGroup
      * @param dataset
      * @return {@link AccessRight}
@@ -112,6 +116,7 @@ public interface IAccessRightRepository extends JpaRepository<AccessRight, Long>
 
     /**
      * Find all {@link AccessRight}s associated a dataAccess plugin.
+     *
      * @return {@link AccessRight}s
      */
     @EntityGraph(value = "graph.accessright.dataset.and.accessgroup", type = EntityGraph.EntityGraphType.LOAD)

@@ -18,12 +18,12 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
+import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-
-import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 
 public final class StorageSetting {
 
@@ -50,15 +50,13 @@ public final class StorageSetting {
                                                                                    DEFAULT_CACHE_ROOT);
 
     public static final DynamicTenantSetting CACHE_MAX_SIZE = new DynamicTenantSetting(CACHE_MAX_SIZE_NAME,
-                                                                                        "Cache max size for this tenant in kilo-bytes. it has to be >0",
-                                                                                        500000000L);
+                                                                                       "Cache max size for this tenant in kilo-bytes. it has to be >0",
+                                                                                       500000000L);
 
-    public static final List<DynamicTenantSetting> SETTING_LIST = Arrays.asList(
-            MAX_QUOTA,
-            RATE_LIMIT,
-            CACHE_PATH,
-            CACHE_MAX_SIZE
-    );
+    public static final List<DynamicTenantSetting> SETTING_LIST = Arrays.asList(MAX_QUOTA,
+                                                                                RATE_LIMIT,
+                                                                                CACHE_PATH,
+                                                                                CACHE_MAX_SIZE);
 
     private StorageSetting() {
     }

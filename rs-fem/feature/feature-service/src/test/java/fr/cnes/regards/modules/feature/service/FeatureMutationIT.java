@@ -47,12 +47,10 @@ import java.util.List;
  * Test feature mutation based on null property values.
  *
  * @author Marc SORDI
- *
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=feature_mutation", "regards.amqp.enabled=true" },
-        locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
-                "classpath:metrics.properties" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=feature_mutation", "regards.amqp.enabled=true" },
+    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
 @ActiveProfiles({ "testAmqp", "noscheduler", "noFemHandler" })
 public class FeatureMutationIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -74,15 +72,19 @@ public class FeatureMutationIT extends AbstractFeatureMultitenantServiceIT {
     @Test
     public void createAndUpdateTest() throws EntityException {
 
-
         notificationSettingsService.setActiveNotification(false);
 
-
-        FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata
-                .build("sessionOwner", "session", PriorityLevel.NORMAL, Lists.emptyList(), true, false);
-        String modelName = mockModelClient("feature_mutation_model.xml", this.getCps(), this.getFactory(),
-                                           this.getDefaultTenant(), this.getModelAttrAssocClientMock()
-        );
+        FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata.build("sessionOwner",
+                                                                                       "session",
+                                                                                       PriorityLevel.NORMAL,
+                                                                                       Lists.emptyList(),
+                                                                                       true,
+                                                                                       false);
+        String modelName = mockModelClient("feature_mutation_model.xml",
+                                           this.getCps(),
+                                           this.getFactory(),
+                                           this.getDefaultTenant(),
+                                           this.getModelAttrAssocClientMock());
 
         // Build feature to create
         String id = String.format("F%05d", 1);
@@ -107,16 +109,21 @@ public class FeatureMutationIT extends AbstractFeatureMultitenantServiceIT {
         FeatureEntity entity = featureRepo.findTop1VersionByProviderIdOrderByVersionAsc(id);
 
         // Build feature to update
-        Feature updated = Feature.build(id, "owner", entity.getFeature().getUrn(), IGeometry.unlocated(),
-                                        EntityType.DATA, modelName);
+        Feature updated = Feature.build(id,
+                                        "owner",
+                                        entity.getFeature().getUrn(),
+                                        IGeometry.unlocated(),
+                                        EntityType.DATA,
+                                        modelName);
         updated.addProperty(IProperty.buildObject("file_characterization",
                                                   IProperty.buildBoolean("valid", Boolean.TRUE),
                                                   IProperty.buildDate("invalidation_date", null)));
 
         // Register update requests
         List<FeatureUpdateRequestEvent> updateEvents = new ArrayList<>();
-        updateEvents.add(FeatureUpdateRequestEvent
-                .build("TEST", FeatureMetadata.build(PriorityLevel.NORMAL, new ArrayList<>()), updated));
+        updateEvents.add(FeatureUpdateRequestEvent.build("TEST",
+                                                         FeatureMetadata.build(PriorityLevel.NORMAL, new ArrayList<>()),
+                                                         updated));
         featureUpdateService.registerRequests(updateEvents);
 
         // Schedule update job after retention delay

@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service.workflow.state;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Provider class returning the right {@link IAccountTransitions} for the passed {@link Account} according to its
@@ -60,8 +59,7 @@ public class AccountStateProvider {
     /**
      * Get the right account state based on the passed status
      *
-     * @param pStatus
-     *            The account status
+     * @param pStatus The account status
      * @return the account state object
      */
     public IAccountTransitions getState(final AccountStatus pStatus) {
@@ -87,8 +85,7 @@ public class AccountStateProvider {
     /**
      * Get the right account state based on the passed account's status
      *
-     * @param pAccount
-     *            The account
+     * @param pAccount The account
      * @return the account state object
      */
     public IAccountTransitions getState(final Account pAccount) {

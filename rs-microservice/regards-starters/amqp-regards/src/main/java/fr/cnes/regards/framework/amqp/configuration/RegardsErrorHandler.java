@@ -37,7 +37,6 @@ import java.util.Set;
 
 /**
  * @author Marc SORDI
- *
  */
 public class RegardsErrorHandler implements ErrorHandler {
 
@@ -55,8 +54,10 @@ public class RegardsErrorHandler implements ErrorHandler {
 
     private final String microserviceName;
 
-    public RegardsErrorHandler(IRuntimeTenantResolver runtimeTenantResolver, IInstancePublisher instancePublisher,
-            IPublisher publisher, String microserviceName) {
+    public RegardsErrorHandler(IRuntimeTenantResolver runtimeTenantResolver,
+                               IInstancePublisher instancePublisher,
+                               IPublisher publisher,
+                               String microserviceName) {
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.instancePublisher = instancePublisher;
         this.publisher = publisher;
@@ -82,15 +83,18 @@ public class RegardsErrorHandler implements ErrorHandler {
                 String message = "AMQP message has been routed to DLQ (dead letter queue).";
                 Set<String> roles = new HashSet<>(Arrays.asList(DefaultRole.PROJECT_ADMIN.toString()));
                 NotificationEvent event = NotificationEvent.build(new NotificationDtoBuilder(message,
-                        AMQP_DLQ_FAILURE_MESSAGE, NotificationLevel.ERROR, microserviceName).toRoles(roles));
+                                                                                             AMQP_DLQ_FAILURE_MESSAGE,
+                                                                                             NotificationLevel.ERROR,
+                                                                                             microserviceName).toRoles(
+                    roles));
 
                 // Publish to INSTANCE ADMIN
                 instancePublisher.publish(event);
 
                 // Try to publish to PROJECT_ADMIN looking for tenant to properly route the notification
                 String tenant = lefe.getFailedMessage()
-                    .getMessageProperties()
-                    .getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
+                                    .getMessageProperties()
+                                    .getHeader(AmqpConstants.REGARDS_TENANT_HEADER);
                 if (tenant != null && !tenant.isEmpty()) {
                     try {
                         // Route notification to the right tenant
@@ -104,8 +108,10 @@ public class RegardsErrorHandler implements ErrorHandler {
                 }
             }
         } else {
-            NotificationDtoBuilder notifBuilder = new NotificationDtoBuilder(t.getMessage(), AMQP_DLQ_FAILURE_MESSAGE,
-                    NotificationLevel.ERROR, microserviceName);
+            NotificationDtoBuilder notifBuilder = new NotificationDtoBuilder(t.getMessage(),
+                                                                             AMQP_DLQ_FAILURE_MESSAGE,
+                                                                             NotificationLevel.ERROR,
+                                                                             microserviceName);
             Set<String> roles = new HashSet<>();
             roles.add(DefaultRole.PROJECT_ADMIN.name());
             // Publish to INSTANCE ADMIN

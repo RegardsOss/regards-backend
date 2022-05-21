@@ -19,12 +19,14 @@
 package fr.cnes.regards.modules.ingest.dao;
 
 import fr.cnes.regards.modules.ingest.domain.dto.NativeSelectQuery;
+
 import java.util.List;
 
 public interface ICustomAIPRepository {
 
     /**
      * Used to retrieve tags with a custom SQL query
+     *
      * @param filters
      * @return list of String
      */

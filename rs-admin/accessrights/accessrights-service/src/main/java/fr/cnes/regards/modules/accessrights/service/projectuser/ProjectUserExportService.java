@@ -36,24 +36,25 @@ import java.util.stream.Collectors;
 public class ProjectUserExportService {
 
     private static final String INNER_SEPARATOR = ",";
+
     private static final String COLUMN_SEPARATOR = ";";
-    private static final String HEADER = String.join(
-            COLUMN_SEPARATOR,
-            "USER_ID",
-            "EMAIL",
-            "FIRST_NAME",
-            "LAST_NAME",
-            "STATUS",
-            "ROLE",
-            "ORIGIN",
-            "ACCESS_GROUPS",
-            "MAX_QUOTA",
-            "CURRENT_QUOTA",
-            "METADATA",
-            "LICENSE_ACCEPTED",
-            "CREATION_DATE",
-            "LAST_CONNECTION",
-            "LAST_UPDATE");
+
+    private static final String HEADER = String.join(COLUMN_SEPARATOR,
+                                                     "USER_ID",
+                                                     "EMAIL",
+                                                     "FIRST_NAME",
+                                                     "LAST_NAME",
+                                                     "STATUS",
+                                                     "ROLE",
+                                                     "ORIGIN",
+                                                     "ACCESS_GROUPS",
+                                                     "MAX_QUOTA",
+                                                     "CURRENT_QUOTA",
+                                                     "METADATA",
+                                                     "LICENSE_ACCEPTED",
+                                                     "CREATION_DATE",
+                                                     "LAST_CONNECTION",
+                                                     "LAST_UPDATE");
 
     private final IProjectUserService projectUserService;
 

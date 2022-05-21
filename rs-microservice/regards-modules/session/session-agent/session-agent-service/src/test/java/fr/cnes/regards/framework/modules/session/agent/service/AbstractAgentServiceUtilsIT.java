@@ -32,7 +32,6 @@ import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnaps
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
-import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.slf4j.Logger;
@@ -40,6 +39,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.TestPropertySource;
+
+import java.util.List;
 
 /**
  * Utils for tests
@@ -79,7 +80,6 @@ public abstract class AbstractAgentServiceUtilsIT extends AbstractMultitenantSer
 
     @Autowired
     protected AgentCleanSessionStepService agentCleanSessionStepService;
-
 
     /**
      * Repositories
@@ -121,7 +121,6 @@ public abstract class AbstractAgentServiceUtilsIT extends AbstractMultitenantSer
 
     protected static final String OWNER_3 = "OWNER 3";
 
-
     // -------------
     // BEFORE METHODS
     // -------------
@@ -135,7 +134,6 @@ public abstract class AbstractAgentServiceUtilsIT extends AbstractMultitenantSer
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         cleanRepositories();
-
 
         // override this method to custom action performed before
         doInit();

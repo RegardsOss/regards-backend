@@ -18,19 +18,19 @@
  */
 package fr.cnes.regards.framework.gson.adapters.sample5;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.JsonAdapter;
 import fr.cnes.regards.framework.gson.GsonAnnotationProcessor;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
+import org.junit.Assert;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Test with custom {@link GsonTypeAdapterFactory} annotation.
+ *
  * @author Marc Sordi
  */
 public class AdapterTest {

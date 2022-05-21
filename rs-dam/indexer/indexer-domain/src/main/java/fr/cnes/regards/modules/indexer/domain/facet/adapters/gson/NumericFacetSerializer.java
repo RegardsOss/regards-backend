@@ -18,17 +18,17 @@
  */
 package fr.cnes.regards.modules.indexer.domain.facet.adapters.gson;
 
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.Range;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import fr.cnes.regards.modules.indexer.domain.facet.NumericFacet;
 import fr.cnes.regards.modules.indexer.domain.facet.StringFacet;
+
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * Simplify the serialization of {@link StringFacet#valueMap}.
@@ -56,8 +56,11 @@ public class NumericFacetSerializer implements JsonSerializer<NumericFacet> {
         public AdaptedFacet(NumericFacet facet) {
             super();
             attributeName = facet.getAttributeName();
-            values = facet.getValues().entrySet().stream()
-                    .map(entry -> new AdaptedFacetValue(entry, facet.getAttributeName())).collect(Collectors.toList());
+            values = facet.getValues()
+                          .entrySet()
+                          .stream()
+                          .map(entry -> new AdaptedFacetValue(entry, facet.getAttributeName()))
+                          .collect(Collectors.toList());
         }
 
     }

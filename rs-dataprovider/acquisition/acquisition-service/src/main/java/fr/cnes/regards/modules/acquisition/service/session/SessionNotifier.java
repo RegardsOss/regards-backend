@@ -5,19 +5,17 @@ import fr.cnes.regards.framework.modules.session.agent.client.ISessionAgentClien
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyInfo;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
-
-import java.util.Collection;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /**
  * Service that sends notification to collect statistics about acquisition
@@ -48,7 +46,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class SessionNotifier {
 
-
     /**
      * The name of the property gathering all metadata about this processing step
      */
@@ -65,7 +62,6 @@ public class SessionNotifier {
     @Autowired
     private ISessionAgentClient notificationClient;
 
-
     // CHAIN
     public void notifyStartingChain(String source, String session) {
         notifyIncrementSession(source, session, SessionProductPropertyEnum.CHAIN_RUNNING, 1L);
@@ -81,19 +77,24 @@ public class SessionNotifier {
         notifyChangeProductState(product, Optional.of(nextSipState), isPreviousStateToDecrement);
     }
 
-    private void notifyChangeProductState(Product product, Optional<ISipState> nextSipState,
-            boolean isPreviousStateToDecrement) {
+    private void notifyChangeProductState(Product product,
+                                          Optional<ISipState> nextSipState,
+                                          boolean isPreviousStateToDecrement) {
         Optional<SessionProductPropertyEnum> current = getProperty(product.getState(), product.getSipState());
         Optional<SessionProductPropertyEnum> next = getProperty(product.getState(),
                                                                 nextSipState.orElse(product.getSipState()));
         if (!current.equals(next)) {
             if (isPreviousStateToDecrement) {
-                notifyDecrementSession(product.getProcessingChain().getLabel(), product.getSession(),
-                                       product.getState(), product.getSipState());
+                notifyDecrementSession(product.getProcessingChain().getLabel(),
+                                       product.getSession(),
+                                       product.getState(),
+                                       product.getSipState());
             }
 
             // Add to submitting
-            notifyIncrementSession(product.getProcessingChain().getLabel(), product.getSession(), product.getState(),
+            notifyIncrementSession(product.getProcessingChain().getLabel(),
+                                   product.getSession(),
+                                   product.getState(),
                                    nextSipState.orElse(product.getSipState()));
         }
     }
@@ -103,33 +104,44 @@ public class SessionNotifier {
         if (probe.shouldUpdateState()) {
             // First decrement the old state, if the product existed before and was in the same session
             if ((probe.getInitialProductState() != null) && !probe.isSessionChanged()) {
-                notifyDecrementSession(probe.getIngestionChain(), probe.getSession(), probe.getInitialProductState(),
+                notifyDecrementSession(probe.getIngestionChain(),
+                                       probe.getSession(),
+                                       probe.getInitialProductState(),
                                        probe.getInitialProductSIPState());
             }
-            notifyIncrementSession(probe.getIngestionChain(), probe.getSession(), probe.getProductState(),
+            notifyIncrementSession(probe.getIngestionChain(),
+                                   probe.getSession(),
+                                   probe.getProductState(),
                                    probe.getProductSIPState());
         }
     }
 
     public void notifyProductDeleted(String sessionOwner, Product product) {
         String session = product.getSession();
-        Optional<SessionProductPropertyEnum> property = notifyDecrementSession(sessionOwner, session,
+        Optional<SessionProductPropertyEnum> property = notifyDecrementSession(sessionOwner,
+                                                                               session,
                                                                                product.getState(),
                                                                                product.getSipState());
     }
 
     public void notifyFileAcquired(String session, String sessionOwner, long nbFilesAcquired) {
-        notifyIncrementSession(sessionOwner, session, SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED,
+        notifyIncrementSession(sessionOwner,
+                               session,
+                               SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED,
                                nbFilesAcquired);
     }
 
     public void notifyFileAcquiredDeleted(String session, String sessionOwner, int nbFilesAcquired) {
-        notifyDecrementSession(sessionOwner, session, SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED,
+        notifyDecrementSession(sessionOwner,
+                               session,
+                               SessionProductPropertyEnum.PROPERTY_FILES_ACQUIRED,
                                nbFilesAcquired);
     }
 
     public void notifyFileInvalid(String session, String sessionOwner, long nbFilesAcquired) {
-        notifyIncrementSession(sessionOwner, session, SessionProductPropertyEnum.PROPERTY_FILES_INVALID,
+        notifyIncrementSession(sessionOwner,
+                               session,
+                               SessionProductPropertyEnum.PROPERTY_FILES_INVALID,
                                nbFilesAcquired);
     }
 
@@ -155,25 +167,36 @@ public class SessionNotifier {
      * @param property property to be notified
      * @param nbItems  value to increment the corresponding property
      */
-    private void notifyIncrementSession(String source, String session, SessionProductPropertyEnum property,
-            long nbItems) {
+    private void notifyIncrementSession(String source,
+                                        String session,
+                                        SessionProductPropertyEnum property,
+                                        long nbItems) {
         if (!Strings.isNullOrEmpty(source) && !Strings.isNullOrEmpty(session)) {
-            StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source, session,
-                                                 new StepPropertyInfo(StepTypeEnum.ACQUISITION, property.getState(),
-                                                                      property.getName(), String.valueOf(nbItems),
+            StepProperty step = new StepProperty(GLOBAL_SESSION_STEP,
+                                                 source,
+                                                 session,
+                                                 new StepPropertyInfo(StepTypeEnum.ACQUISITION,
+                                                                      property.getState(),
+                                                                      property.getName(),
+                                                                      String.valueOf(nbItems),
                                                                       property.isInputRelated(),
                                                                       property.isOutputRelated()));
             notificationClient.increment(step);
         } else {
             LOGGER.debug(
-                    "Session has not been incremented of {} items because either sessionOwner({}) or session({}) is null or empty",
-                    nbItems, source, session);
+                "Session has not been incremented of {} items because either sessionOwner({}) or session({}) is null or empty",
+                nbItems,
+                source,
+                session);
         }
     }
 
     // DEC
 
-    private Optional<SessionProductPropertyEnum> notifyDecrementSession(String sessionOwner, String session, ProductState state, ISipState sipState) {
+    private Optional<SessionProductPropertyEnum> notifyDecrementSession(String sessionOwner,
+                                                                        String session,
+                                                                        ProductState state,
+                                                                        ISipState sipState) {
         Optional<SessionProductPropertyEnum> property = getProperty(state, sipState);
         if (property.isPresent()) {
             LOGGER.trace("Notify decrement {}:{} property {}", state, sipState, property.get().getName());
@@ -190,29 +213,39 @@ public class SessionNotifier {
      * @param property property to be notified
      * @param nbItems  value to decrement the corresponding property
      */
-    private void notifyDecrementSession(String source, String session, SessionProductPropertyEnum property,
-            long nbItems) {
+    private void notifyDecrementSession(String source,
+                                        String session,
+                                        SessionProductPropertyEnum property,
+                                        long nbItems) {
         if (!Strings.isNullOrEmpty(source) && !Strings.isNullOrEmpty(session)) {
-            StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source, session,
-                                                 new StepPropertyInfo(StepTypeEnum.ACQUISITION, property.getState(),
-                                                                      property.getName(), String.valueOf(nbItems),
+            StepProperty step = new StepProperty(GLOBAL_SESSION_STEP,
+                                                 source,
+                                                 session,
+                                                 new StepPropertyInfo(StepTypeEnum.ACQUISITION,
+                                                                      property.getState(),
+                                                                      property.getName(),
+                                                                      String.valueOf(nbItems),
                                                                       property.isInputRelated(),
                                                                       property.isOutputRelated()));
             notificationClient.decrement(step);
             // If property to decrement is ingested, decrement generated too.
             if (property == SessionProductPropertyEnum.PROPERTY_INGESTED) {
                 SessionProductPropertyEnum generatedProperty = SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS;
-                step = new StepProperty(GLOBAL_SESSION_STEP, source, session,
-                                                    new StepPropertyInfo(StepTypeEnum.ACQUISITION, generatedProperty.getState(),
-                                                                         generatedProperty.getName(), String.valueOf(nbItems),
-                                                                         generatedProperty.isInputRelated(),
-                                                                         generatedProperty.isOutputRelated()));
+                step = new StepProperty(GLOBAL_SESSION_STEP,
+                                        source,
+                                        session,
+                                        new StepPropertyInfo(StepTypeEnum.ACQUISITION,
+                                                             generatedProperty.getState(),
+                                                             generatedProperty.getName(),
+                                                             String.valueOf(nbItems),
+                                                             generatedProperty.isInputRelated(),
+                                                             generatedProperty.isOutputRelated()));
                 notificationClient.decrement(step);
             }
 
         } else {
             LOGGER.debug("Session has not been decremented of {} items because either sessionOwner({}) or session({}) "
-                                 + "is null or empty", nbItems, source, session);
+                             + "is null or empty", nbItems, source, session);
         }
     }
 

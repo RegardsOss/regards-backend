@@ -24,11 +24,14 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "t_user_download_quota_counter",
-    uniqueConstraints = @UniqueConstraint(name = UserDownloadQuotaEntity.UK_DOWNLOAD_QUOTA_COUNTER_INSTANCE_EMAIL, columnNames = { "instance_id", "email" }))
-@SequenceGenerator(name = UserDownloadQuotaEntity.DOWNLOAD_QUOTA_SEQUENCE, initialValue = 1, sequenceName = "seq_download_quota_counter")
+    uniqueConstraints = @UniqueConstraint(name = UserDownloadQuotaEntity.UK_DOWNLOAD_QUOTA_COUNTER_INSTANCE_EMAIL,
+        columnNames = { "instance_id", "email" }))
+@SequenceGenerator(name = UserDownloadQuotaEntity.DOWNLOAD_QUOTA_SEQUENCE, initialValue = 1,
+    sequenceName = "seq_download_quota_counter")
 public class UserDownloadQuotaEntity {
 
     public static final String UK_DOWNLOAD_QUOTA_COUNTER_INSTANCE_EMAIL = "uk_download_quota_counter_instance_email";
+
     public static final String DOWNLOAD_QUOTA_SEQUENCE = "downloadQuotaSequence";
 
     @Id
@@ -110,10 +113,9 @@ public class UserDownloadQuotaEntity {
             return false;
         }
         UserDownloadQuotaEntity that = (UserDownloadQuotaEntity) o;
-        return Objects.equals(id, that.id) &&
-            Objects.equals(instance, that.instance) &&
-            Objects.equals(email, that.email) &&
-            Objects.equals(counter, that.counter);
+        return Objects.equals(id, that.id) && Objects.equals(instance, that.instance) && Objects.equals(email,
+                                                                                                        that.email)
+            && Objects.equals(counter, that.counter);
     }
 
     @Override

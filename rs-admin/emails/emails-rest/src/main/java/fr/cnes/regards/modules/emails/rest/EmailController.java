@@ -18,21 +18,6 @@
  */
 package fr.cnes.regards.modules.emails.rest;
 
-import java.util.List;
-
-import javax.validation.Valid;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -41,9 +26,18 @@ import fr.cnes.regards.modules.emails.domain.Email;
 import fr.cnes.regards.modules.emails.service.EmailService;
 import fr.cnes.regards.modules.emails.service.IEmailService;
 import fr.cnes.regards.modules.emails.service.SimpleEmailService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
 
 /**
  * Controller defining the REST entry points of the module
+ *
  * @author Xavier-Alexandre Brochard
  */
 @RestController
@@ -70,6 +64,7 @@ public class EmailController {
 
     /**
      * Define the endpoint for retrieving the list of sent emails
+     *
      * @return A {@link List} of emails as {@link Email} wrapped in an {@link ResponseEntity}
      */
     @RequestMapping(method = RequestMethod.GET)
@@ -85,6 +80,7 @@ public class EmailController {
 
     /**
      * Define the endpoint for sending an email to recipients
+     *
      * @param pMessage The email in a simple representation.
      */
     @ResponseBody
@@ -101,6 +97,7 @@ public class EmailController {
 
     /**
      * Define the endpoint for retrieving an email
+     *
      * @param id The email id
      * @return The email as a {@link Email} wrapped in an {@link ResponseEntity}
      * @throws ModuleException if email cannot be found
@@ -118,6 +115,7 @@ public class EmailController {
 
     /**
      * Define the endpoint for re-sending an email
+     *
      * @throws ModuleException if email cannot be found
      */
     @RequestMapping(value = "/{mail_id}", method = RequestMethod.PUT)

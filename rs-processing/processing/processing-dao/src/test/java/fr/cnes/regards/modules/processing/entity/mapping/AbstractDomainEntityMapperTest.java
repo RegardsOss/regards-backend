@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.entity.mapping;
 
 import org.junit.Test;
@@ -25,7 +25,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 public abstract class AbstractDomainEntityMapperTest<D, E> {
 
     abstract DomainEntityMapper<D, E> makeMapper();
+
     abstract Class<D> domainClass();
+
     abstract Class<E> entityClass();
 
     DomainEntityMapper<D, E> mapper = makeMapper();
@@ -43,6 +45,5 @@ public abstract class AbstractDomainEntityMapperTest<D, E> {
             assertThat(mapper.toEntity(mapper.toDomain(entity))).isEqualTo(entity);
         }
     }
-
 
 }

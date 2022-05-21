@@ -18,25 +18,16 @@
  */
 package fr.cnes.regards.modules.model.domain.attributes.restriction;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.ForeignKey;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.validation.constraints.NotNull;
-
 import fr.cnes.regards.modules.model.domain.schema.Enumeration;
 import fr.cnes.regards.modules.model.domain.schema.Restriction;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
- *
  * Manage pattern restriction for attribute of type :
  * <ul>
  * <li>{@link PropertyType#STRING}</li>
@@ -44,7 +35,6 @@ import fr.cnes.regards.modules.model.dto.properties.PropertyType;
  * </ul>
  *
  * @author msordi
- *
  */
 @Entity
 @DiscriminatorValue("ENUMERATION")
@@ -56,7 +46,7 @@ public class EnumerationRestriction extends AbstractRestriction {
     @NotNull
     @ElementCollection(fetch = FetchType.EAGER) // Force loading all acceptable values
     @JoinTable(name = "ta_enum_restr_accept_values", joinColumns = @JoinColumn(name = "restriction_id",
-            foreignKey = @ForeignKey(name = "fk_enum_restr_accept_values_restriction_id")))
+        foreignKey = @ForeignKey(name = "fk_enum_restr_accept_values_restriction_id")))
     @Column(name = "value")
     private Set<String> acceptableValues;
 

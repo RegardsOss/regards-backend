@@ -34,7 +34,7 @@ public class SessionFeatureDisseminationInfos {
     private final Map<Triple<String, String, String>, FeatureDisseminationInfos> infosPerSessionAndRecipient = new HashMap<>();
 
     private static Triple<String, String, String> getKey(FeatureEntity featureEntity,
-            FeatureUpdateDisseminationRequest request) {
+                                                         FeatureUpdateDisseminationRequest request) {
         return Triple.of(featureEntity.getSessionOwner(), featureEntity.getSession(), request.getRecipientLabel());
     }
 
@@ -46,11 +46,14 @@ public class SessionFeatureDisseminationInfos {
         return this.infosPerSessionAndRecipient.getOrDefault(key, new FeatureDisseminationInfos());
     }
 
-    public void addRequest(FeatureEntity featureEntity,
-            FeatureUpdateDisseminationRequest request) {
+    public void addRequest(FeatureEntity featureEntity, FeatureUpdateDisseminationRequest request) {
 
-        FeatureDisseminationInfos featureDisseminationInfos = infosPerSessionAndRecipient.compute(
-                        getKey(featureEntity, request), (sessionKey, ri) -> ri == null ? new FeatureDisseminationInfos() : ri);
+        FeatureDisseminationInfos featureDisseminationInfos = infosPerSessionAndRecipient.compute(getKey(featureEntity,
+                                                                                                         request),
+                                                                                                  (sessionKey, ri) ->
+                                                                                                      ri == null ?
+                                                                                                          new FeatureDisseminationInfos() :
+                                                                                                          ri);
 
         featureDisseminationInfos.addRequest(request);
     }

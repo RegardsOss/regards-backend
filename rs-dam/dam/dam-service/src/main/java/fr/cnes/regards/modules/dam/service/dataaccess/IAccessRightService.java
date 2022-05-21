@@ -31,34 +31,38 @@ import java.util.Optional;
 
 /**
  * Access right service
+ *
  * @author Sylvain Vissiere-Guerinet
  */
 public interface IAccessRightService {
 
     /**
      * Retrieve access rights for given group and dataset
+     *
      * @param accessGroupName optional access group name
-     * @param datasetIpId optional dataset ipId
+     * @param datasetIpId     optional dataset ipId
      * @param pageable
      * @return page of {@link AccessRight}s
      * @throws ModuleException
      * @throws EntityNotFoundException
      */
     Page<AccessRight> retrieveAccessRights(String accessGroupName, UniformResourceName datasetIpId, Pageable pageable)
-            throws ModuleException;
+        throws ModuleException;
 
     /**
      * Retrieve access right for both given access group and dataset
+     *
      * @param accessGroupName mandatory access group name
-     * @param datasetIpId mandatory dataset IPID
+     * @param datasetIpId     mandatory dataset IPID
      * @return {@link AccessRight}
      * @throws ModuleException
      */
     Optional<AccessRight> retrieveAccessRight(String accessGroupName, UniformResourceName datasetIpId)
-            throws ModuleException;
+        throws ModuleException;
 
     /**
      * Check if access group is still linked to at least one access right
+     *
      * @param accessGroup
      * @return boolean
      */
@@ -66,6 +70,7 @@ public interface IAccessRightService {
 
     /**
      * Retrieve groups access levels of a specified dataset
+     *
      * @param datasetIpId concerned datasetIpId, must not be null
      * @return a set of {@link DatasetMetadata}
      * @throws ModuleException

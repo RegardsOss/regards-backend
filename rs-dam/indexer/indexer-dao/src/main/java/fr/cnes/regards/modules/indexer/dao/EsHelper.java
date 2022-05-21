@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 
 /**
  * Helper class used by indexer operations
+ *
  * @author oroussel
  * @author Christophe Mertz
  */
@@ -48,6 +49,7 @@ public class EsHelper {
 
     /**
      * 2 decimals scaled double operation
+     *
      * @param n value to scale
      * @return 2 decimal digits scaled value
      */
@@ -60,6 +62,7 @@ public class EsHelper {
 
     /**
      * 12 decimals scaled double operation
+     *
      * @param n value to scale
      * @return 12 decimal digits scaled value
      */
@@ -70,12 +73,12 @@ public class EsHelper {
         return BigDecimal.valueOf(n).round(hightPrecisionMathContext).doubleValue();
     }
 
-
     /**
      * 2 decimal scaled and always increments to the next digit if the parameter value is positive
      * otherwise decreases to the previous digit if the parameter value is negative
      * 3.4902 --> 3.50
      * 3.001  --> 3.01
+     *
      * @param n value to scale
      * @return 2 decimal scaled value
      */
@@ -91,6 +94,7 @@ public class EsHelper {
      * otherwise increments to the next digit if the parameter value is negative
      * 3.4902 --> 3.50
      * 3.001  --> 3.01
+     *
      * @param n value to scale
      * @return 2 decimal scaled value
      */
@@ -103,8 +107,9 @@ public class EsHelper {
 
     /**
      * Transform Distance with units value to meters
+     *
      * @param value distance value with units (valid units are in, inch, yd, yard, mi, miles, km, kilometers, m,meters,
-     * cm,centimeters, mm, millimeters)
+     *              cm,centimeters, mm, millimeters)
      * @return distance in meters
      */
     public static double toMeters(String value) {

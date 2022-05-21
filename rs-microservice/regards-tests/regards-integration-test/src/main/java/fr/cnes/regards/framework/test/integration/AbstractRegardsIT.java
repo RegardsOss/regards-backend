@@ -18,14 +18,11 @@
  */
 package fr.cnes.regards.framework.test.integration;
 
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.internal.Streams;
+import com.google.gson.stream.JsonReader;
+import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
@@ -41,16 +38,18 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.internal.Streams;
-import com.google.gson.stream.JsonReader;
-
-import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
 /**
  * Base class to realize integration tests using JWT and MockMvc and mocked Cots. Should hold all the configurations to
  * be considered by any of its children.
+ *
  * @author svissier
  * @author Sébastien Binda
  */
@@ -127,120 +126,201 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     /**
      * Allows to perform GET request with the security automatically handled
      */
-    protected ResultActions performDefaultGet(String urlTemplate, RequestBuilderCustomizer requestBuilderCustomizer,
-            String errorMsg, Object... urlVariables) {
-        return performGet(urlTemplate, manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.GET,
-                                                      getDefaultUserEmail(), getDefaultRole()),
-                          requestBuilderCustomizer, errorMsg, urlVariables);
+    protected ResultActions performDefaultGet(String urlTemplate,
+                                              RequestBuilderCustomizer requestBuilderCustomizer,
+                                              String errorMsg,
+                                              Object... urlVariables) {
+        return performGet(urlTemplate,
+                          manageSecurity(getDefaultTenant(),
+                                         urlTemplate,
+                                         RequestMethod.GET,
+                                         getDefaultUserEmail(),
+                                         getDefaultRole()),
+                          requestBuilderCustomizer,
+                          errorMsg,
+                          urlVariables);
     }
 
     /**
      * Allows to perform GET request without the security automatically handled
      */
-    protected ResultActions performGet(String urlTemplate, String authToken,
-            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+    protected ResultActions performGet(String urlTemplate,
+                                       String authToken,
+                                       RequestBuilderCustomizer requestBuilderCustomizer,
+                                       String errorMsg,
+                                       Object... urlVariables) {
         return requestBuilderCustomizer.performGet(mvc, urlTemplate, authToken, errorMsg, urlVariables);
     }
 
     /**
      * Allows to perform POST request with the security automatically handled
      */
-    protected ResultActions performDefaultPost(String urlTemplate, Object content,
-            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
-        return performPost(urlTemplate, manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.POST,
-                                                       getDefaultUserEmail(), getDefaultRole()),
-                           content, requestBuilderCustomizer, errorMsg, urlVariables);
+    protected ResultActions performDefaultPost(String urlTemplate,
+                                               Object content,
+                                               RequestBuilderCustomizer requestBuilderCustomizer,
+                                               String errorMsg,
+                                               Object... urlVariables) {
+        return performPost(urlTemplate,
+                           manageSecurity(getDefaultTenant(),
+                                          urlTemplate,
+                                          RequestMethod.POST,
+                                          getDefaultUserEmail(),
+                                          getDefaultRole()),
+                           content,
+                           requestBuilderCustomizer,
+                           errorMsg,
+                           urlVariables);
     }
 
     /**
      * Allows to perform POST request without the security automatically handled
      */
-    protected ResultActions performPost(String urlTemplate, String token, Object content,
-            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+    protected ResultActions performPost(String urlTemplate,
+                                        String token,
+                                        Object content,
+                                        RequestBuilderCustomizer requestBuilderCustomizer,
+                                        String errorMsg,
+                                        Object... urlVariables) {
         return requestBuilderCustomizer.performPost(mvc, urlTemplate, token, content, errorMsg, urlVariables);
     }
 
     /**
      * Allows to perform PUT request with the security automatically handled
      */
-    protected ResultActions performDefaultPut(String urlTemplate, Object content,
-            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
-        return performPut(urlTemplate, manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.PUT,
-                                                      getDefaultUserEmail(), getDefaultRole()),
-                          content, requestBuilderCustomizer, errorMsg, urlVariables);
+    protected ResultActions performDefaultPut(String urlTemplate,
+                                              Object content,
+                                              RequestBuilderCustomizer requestBuilderCustomizer,
+                                              String errorMsg,
+                                              Object... urlVariables) {
+        return performPut(urlTemplate,
+                          manageSecurity(getDefaultTenant(),
+                                         urlTemplate,
+                                         RequestMethod.PUT,
+                                         getDefaultUserEmail(),
+                                         getDefaultRole()),
+                          content,
+                          requestBuilderCustomizer,
+                          errorMsg,
+                          urlVariables);
     }
 
     /**
      * Allows to perform PUT request without the security automatically handled
      */
-    protected ResultActions performPut(String urlTemplate, String token, Object content,
-            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+    protected ResultActions performPut(String urlTemplate,
+                                       String token,
+                                       Object content,
+                                       RequestBuilderCustomizer requestBuilderCustomizer,
+                                       String errorMsg,
+                                       Object... urlVariables) {
         return requestBuilderCustomizer.performPut(mvc, urlTemplate, token, content, errorMsg, urlVariables);
     }
 
     /**
      * Allows to perform PATCH request with the security automatically handled
      */
-    protected ResultActions performDefaultPatch(String urlTemplate, Object content,
-            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+    protected ResultActions performDefaultPatch(String urlTemplate,
+                                                Object content,
+                                                RequestBuilderCustomizer requestBuilderCustomizer,
+                                                String errorMsg,
+                                                Object... urlVariables) {
         return performPatch(urlTemplate,
-                            manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.PATCH, getDefaultUserEmail(),
+                            manageSecurity(getDefaultTenant(),
+                                           urlTemplate,
+                                           RequestMethod.PATCH,
+                                           getDefaultUserEmail(),
                                            getDefaultRole()),
-                            content, requestBuilderCustomizer, errorMsg, urlVariables);
+                            content,
+                            requestBuilderCustomizer,
+                            errorMsg,
+                            urlVariables);
     }
 
     /**
      * Allows to perform PATCH request without the security automatically handled
      */
-    protected ResultActions performPatch(String urlTemplate, String token, Object content,
-            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+    protected ResultActions performPatch(String urlTemplate,
+                                         String token,
+                                         Object content,
+                                         RequestBuilderCustomizer requestBuilderCustomizer,
+                                         String errorMsg,
+                                         Object... urlVariables) {
         return requestBuilderCustomizer.performPatch(mvc, urlTemplate, token, content, errorMsg, urlVariables);
     }
 
     /**
      * Allows to perform DELETE request with the security automatically handled
      */
-    protected ResultActions performDefaultDelete(String urlTemplate, RequestBuilderCustomizer requestBuilderCustomizer,
-            String errorMsg, Object... urlVariables) {
+    protected ResultActions performDefaultDelete(String urlTemplate,
+                                                 RequestBuilderCustomizer requestBuilderCustomizer,
+                                                 String errorMsg,
+                                                 Object... urlVariables) {
         return performDelete(urlTemplate,
-                             manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.DELETE,
-                                            getDefaultUserEmail(), getDefaultRole()),
-                             requestBuilderCustomizer, errorMsg, urlVariables);
+                             manageSecurity(getDefaultTenant(),
+                                            urlTemplate,
+                                            RequestMethod.DELETE,
+                                            getDefaultUserEmail(),
+                                            getDefaultRole()),
+                             requestBuilderCustomizer,
+                             errorMsg,
+                             urlVariables);
     }
 
     /**
      * Allows to perform DELETE with body request with the security automatically handled
      */
-    protected ResultActions performDefaultDelete(String urlTemplate, Object content,
-            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+    protected ResultActions performDefaultDelete(String urlTemplate,
+                                                 Object content,
+                                                 RequestBuilderCustomizer requestBuilderCustomizer,
+                                                 String errorMsg,
+                                                 Object... urlVariables) {
         return performDelete(urlTemplate,
-                             manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.DELETE,
-                                            getDefaultUserEmail(), getDefaultRole()),
-                             content, requestBuilderCustomizer, errorMsg, urlVariables);
+                             manageSecurity(getDefaultTenant(),
+                                            urlTemplate,
+                                            RequestMethod.DELETE,
+                                            getDefaultUserEmail(),
+                                            getDefaultRole()),
+                             content,
+                             requestBuilderCustomizer,
+                             errorMsg,
+                             urlVariables);
     }
 
     /**
      * Allows to perform DELETE request without the security automatically handled
      */
-    protected ResultActions performDelete(String urlTemplate, String authToken,
-            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+    protected ResultActions performDelete(String urlTemplate,
+                                          String authToken,
+                                          RequestBuilderCustomizer requestBuilderCustomizer,
+                                          String errorMsg,
+                                          Object... urlVariables) {
         return requestBuilderCustomizer.performDelete(mvc, urlTemplate, authToken, errorMsg, urlVariables);
     }
 
     /**
      * Allows to perform DELETE request without the security automatically handled with content
      */
-    protected ResultActions performDelete(String urlTemplate, String authToken, Object content,
-            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+    protected ResultActions performDelete(String urlTemplate,
+                                          String authToken,
+                                          Object content,
+                                          RequestBuilderCustomizer requestBuilderCustomizer,
+                                          String errorMsg,
+                                          Object... urlVariables) {
         return requestBuilderCustomizer.performDelete(mvc, urlTemplate, authToken, content, errorMsg, urlVariables);
     }
 
     /**
      * Multipart request uses "file" as part name at the moment
      */
-    protected ResultActions performDefaultFileUpload(String urlTemplate, Path pFilePath,
-            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
-        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.POST, getDefaultUserEmail(),
+    protected ResultActions performDefaultFileUpload(String urlTemplate,
+                                                     Path pFilePath,
+                                                     RequestBuilderCustomizer requestBuilderCustomizer,
+                                                     String errorMsg,
+                                                     Object... urlVariables) {
+        String jwt = manageSecurity(getDefaultTenant(),
+                                    urlTemplate,
+                                    RequestMethod.POST,
+                                    getDefaultUserEmail(),
                                     getDefaultRole());
         return performFileUpload(urlTemplate, jwt, pFilePath, requestBuilderCustomizer, errorMsg, urlVariables);
     }
@@ -248,9 +328,15 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     /**
      * Multipart request uses "file" as part name at the moment
      */
-    protected ResultActions performDefaultFileUpload(String urlTemplate, List<MockMultipartFile> pFileList,
-            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
-        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.POST, getDefaultUserEmail(),
+    protected ResultActions performDefaultFileUpload(String urlTemplate,
+                                                     List<MockMultipartFile> pFileList,
+                                                     RequestBuilderCustomizer requestBuilderCustomizer,
+                                                     String errorMsg,
+                                                     Object... urlVariables) {
+        String jwt = manageSecurity(getDefaultTenant(),
+                                    urlTemplate,
+                                    RequestMethod.POST,
+                                    getDefaultUserEmail(),
                                     getDefaultRole());
         return performFileUpload(urlTemplate, jwt, pFileList, requestBuilderCustomizer, errorMsg, urlVariables);
     }
@@ -258,21 +344,30 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     /**
      * Multipart request uses "file" as part name at the moment
      */
-    protected ResultActions performFileUpload(String urlTemplate, String jwt, List<MockMultipartFile> pFileList,
-            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+    protected ResultActions performFileUpload(String urlTemplate,
+                                              String jwt,
+                                              List<MockMultipartFile> pFileList,
+                                              RequestBuilderCustomizer requestBuilderCustomizer,
+                                              String errorMsg,
+                                              Object... urlVariables) {
         return requestBuilderCustomizer.performFileUpload(mvc, urlTemplate, jwt, pFileList, errorMsg, urlVariables);
     }
 
     /**
      * Multipart request uses "file" as part name at the moment
      */
-    protected ResultActions performFileUpload(String urlTemplate, String jwt, Path pFilePath,
-            RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
+    protected ResultActions performFileUpload(String urlTemplate,
+                                              String jwt,
+                                              Path pFilePath,
+                                              RequestBuilderCustomizer requestBuilderCustomizer,
+                                              String errorMsg,
+                                              Object... urlVariables) {
         return requestBuilderCustomizer.performFileUpload(mvc, urlTemplate, jwt, pFilePath, errorMsg, urlVariables);
     }
 
     /**
      * Extract payload data from response optionally checking media type
+     *
      * @param pResultActions results
      * @return payload data
      */
@@ -290,8 +385,9 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * Check response media type
+     *
      * @param pResultActions results
-     * @param pMediaType {@link MediaType}
+     * @param pMediaType     {@link MediaType}
      */
     protected void assertMediaType(ResultActions pResultActions, MediaType pMediaType) {
         Assert.assertNotNull(pResultActions);
@@ -310,9 +406,10 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * Set authorities for specified tenant
-     * @param tenant related tenant
-     * @param urlPath endpoint
-     * @param method HTTP method
+     *
+     * @param tenant    related tenant
+     * @param urlPath   endpoint
+     * @param method    HTTP method
      * @param roleNames list of roles
      */
     protected void setAuthorities(String tenant, String urlPath, RequestMethod method, String... roleNames) {
@@ -334,13 +431,17 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
      * </ul>
      * The helper generates a JWT using its configuration and grants access to the endpoint for the specified role
      * role.
-     * @param tenant related tenant
+     *
+     * @param tenant   related tenant
      * @param pUrlPath target endpoint
-     * @param pMethod target HTTP method
+     * @param pMethod  target HTTP method
      * @return security token to authenticate user
      */
-    protected String manageSecurity(String tenant, String pUrlPath, RequestMethod pMethod, String email,
-            String roleName) {
+    protected String manageSecurity(String tenant,
+                                    String pUrlPath,
+                                    RequestMethod pMethod,
+                                    String email,
+                                    String roleName) {
 
         String path = pUrlPath;
         if (pUrlPath.contains("?")) {
@@ -353,6 +454,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * Utility method to read an external JSON file and get it as a string to perform a HTTP request
+     *
      * @param pJSonFileName JSON file contract in {@link AbstractRegardsIT#CONTRACT_REPOSITORY}
      * @return JSON as string
      */
@@ -378,6 +480,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * Allows to jsonify an object thanks to GSON
+     *
      * @return jsonified object
      */
     protected String gson(Object object) {

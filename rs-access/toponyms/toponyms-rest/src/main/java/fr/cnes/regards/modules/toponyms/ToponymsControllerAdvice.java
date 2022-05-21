@@ -7,7 +7,6 @@ import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
 import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotHandledException;
 import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotProcessedException;
 import fr.cnes.regards.modules.toponyms.service.exceptions.MaxLimitPerDayException;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
@@ -16,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.Map;
 
 /**
  * Advice for specific toponyms exceptions
@@ -35,10 +36,15 @@ public class ToponymsControllerAdvice {
      * Http Codes corresponding to the exception caught
      */
     private static final Map<String, HttpStatus> EXCEPTION_CODES = ImmutableMap.<String, HttpStatus>builder()
-            .put(EntityNotFoundException.class.getName(), HttpStatus.NOT_FOUND)
-            .put(GeometryNotProcessedException.class.getName(), HttpStatus.BAD_REQUEST)
-            .put(GeometryNotHandledException.class.getName(), HttpStatus.UNSUPPORTED_MEDIA_TYPE)
-            .put(MaxLimitPerDayException.class.getName(), HttpStatus.TOO_MANY_REQUESTS).build();
+                                                                               .put(EntityNotFoundException.class.getName(),
+                                                                                    HttpStatus.NOT_FOUND)
+                                                                               .put(GeometryNotProcessedException.class.getName(),
+                                                                                    HttpStatus.BAD_REQUEST)
+                                                                               .put(GeometryNotHandledException.class.getName(),
+                                                                                    HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                                                                               .put(MaxLimitPerDayException.class.getName(),
+                                                                                    HttpStatus.TOO_MANY_REQUESTS)
+                                                                               .build();
 
     // --- HANDLING GET EXCEPTIONS ---
 
@@ -75,7 +81,7 @@ public class ToponymsControllerAdvice {
         }
         LOGGER.error(message, exception);
         return ResponseEntity.status(getHttpStatus(exception.getClass().getName()))
-                .body(new ServerErrorResponse(message, exception));
+                             .body(new ServerErrorResponse(message, exception));
     }
 
     private HttpStatus getHttpStatus(String className) {

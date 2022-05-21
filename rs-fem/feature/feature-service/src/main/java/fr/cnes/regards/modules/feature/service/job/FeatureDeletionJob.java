@@ -18,16 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.service.job;
 
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.gson.reflect.TypeToken;
-
-import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
@@ -36,10 +27,15 @@ import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.service.IFeatureDeletionService;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author kevin
- *
  */
 public class FeatureDeletionJob extends AbstractFeatureJob {
 
@@ -56,12 +52,13 @@ public class FeatureDeletionJob extends AbstractFeatureJob {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         Type type = new TypeToken<Set<Long>>() {
 
         }.getType();
-        featureDeletionRequests = this.featureDeletionRequestRepo
-                .findAllById(getValue(parameters, IDS_PARAMETER, type));
+        featureDeletionRequests = this.featureDeletionRequestRepo.findAllById(getValue(parameters,
+                                                                                       IDS_PARAMETER,
+                                                                                       type));
     }
 
     @Override
@@ -70,8 +67,11 @@ public class FeatureDeletionJob extends AbstractFeatureJob {
         logger.info("[{}] Feature deletion job starts", jobInfoId);
         long start = System.currentTimeMillis();
         timer.record(() -> featureService.processRequests(featureDeletionRequests, this));
-        logger.info("[{}]{}{} deletion request(s) processed in {} ms", jobInfoId, INFO_TAB,
-                    featureDeletionRequests.size(), System.currentTimeMillis() - start);
+        logger.info("[{}]{}{} deletion request(s) processed in {} ms",
+                    jobInfoId,
+                    INFO_TAB,
+                    featureDeletionRequests.size(),
+                    System.currentTimeMillis() - start);
     }
 
     @Override

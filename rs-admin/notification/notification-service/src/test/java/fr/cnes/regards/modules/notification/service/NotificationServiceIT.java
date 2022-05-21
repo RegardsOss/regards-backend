@@ -47,11 +47,10 @@ import java.util.List;
 
 /**
  * @author sbinda
- *
  */
 @ActiveProfiles({ "test", "nomail" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=notif_tests",
-        "regards.accounts.root.user.login:test@test.fr", "purge.cron.expression=0 0 5 * * ?" })
+    "regards.accounts.root.user.login:test@test.fr", "purge.cron.expression=0 0 5 * * ?" })
 public class NotificationServiceIT extends AbstractMultitenantServiceIT {
 
     @Autowired
@@ -84,7 +83,7 @@ public class NotificationServiceIT extends AbstractMultitenantServiceIT {
         repo.deleteAll();
         if (!roleService.existByName(authResolver.getRole())) {
             roleService.createRole(new Role(authResolver.getRole(),
-                    roleService.retrieveRole(DefaultRole.REGISTERED_USER.toString())));
+                                            roleService.retrieveRole(DefaultRole.REGISTERED_USER.toString())));
         }
 
     }
@@ -92,16 +91,22 @@ public class NotificationServiceIT extends AbstractMultitenantServiceIT {
     @Test
     public void deleteNotifications() {
 
-        NotificationDTO notification = new NotificationDtoBuilder("message", "title", NotificationLevel.INFO, "moi")
-                .toRolesAndUsers(Sets.newHashSet(DefaultRole.ADMIN.toString()), Sets.newHashSet("jeanclaude"));
+        NotificationDTO notification = new NotificationDtoBuilder("message",
+                                                                  "title",
+                                                                  NotificationLevel.INFO,
+                                                                  "moi").toRolesAndUsers(Sets.newHashSet(DefaultRole.ADMIN.toString()),
+                                                                                         Sets.newHashSet("jeanclaude"));
         notificationService.createNotification(notification);
 
-        notification = new NotificationDtoBuilder("message2", "title2", NotificationLevel.INFO, "moi")
-                .toRolesAndUsers(Sets.newHashSet(authResolver.getRole()), Sets.newHashSet(authResolver.getUser()));
+        notification = new NotificationDtoBuilder("message2", "title2", NotificationLevel.INFO, "moi").toRolesAndUsers(
+            Sets.newHashSet(authResolver.getRole()),
+            Sets.newHashSet(authResolver.getUser()));
         notificationService.createNotification(notification);
 
-        notification = new NotificationDtoBuilder("message3", "title3", NotificationLevel.INFO, "moi")
-                .toRoles(Sets.newHashSet(authResolver.getRole()));
+        notification = new NotificationDtoBuilder("message3",
+                                                  "title3",
+                                                  NotificationLevel.INFO,
+                                                  "moi").toRoles(Sets.newHashSet(authResolver.getRole()));
         notificationService.createNotification(notification);
         Assert.assertTrue("notif should exists", repo.findAll().size() == 3);
 

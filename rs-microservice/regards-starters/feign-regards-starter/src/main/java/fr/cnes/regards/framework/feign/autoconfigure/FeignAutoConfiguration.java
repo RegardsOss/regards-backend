@@ -26,6 +26,7 @@ import org.springframework.context.annotation.Profile;
 /**
  * Feign auto configuration with profile restriction to ease mocking<br/>
  * If test profile is used, all feign clients in regards package have to be mocked.
+ *
  * @author Marc Sordi
  */
 @Profile({ "production", "feign" })

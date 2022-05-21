@@ -120,9 +120,9 @@ public class CatalogDownloadController {
     public ResponseEntity<InputStreamResource> downloadDamFile(@PathVariable(AIP_ID_PATH_PARAM) String aipId,
                                                                @PathVariable(CHECKSUM_PATH_PARAM) String checksum,
                                                                @RequestParam(name = "origin", required = false)
-                                                                   String origin,
+                                                               String origin,
                                                                @RequestParam(name = "isContentInline", required = false)
-                                                                   Boolean isContentInline,
+                                                               Boolean isContentInline,
                                                                HttpServletResponse response) throws IOException {
         FeignSecurityManager.asSystem();
         try {
@@ -165,7 +165,7 @@ public class CatalogDownloadController {
      */
     @RequestMapping(path = DOWNLOAD_AIP_FILE, method = RequestMethod.HEAD, produces = ALL_VALUE)
     @ResourceAccess(description = "test product access and license acceptation before download.",
-                    role = DefaultRole.PUBLIC)
+        role = DefaultRole.PUBLIC)
     public ResponseEntity<Void> testProductAccess(@PathVariable(AIP_ID_PATH_PARAM) String productUrn,
                                                   @PathVariable(CHECKSUM_PATH_PARAM) String fileChecksum) {
         // Same Status than GET endpoint but without storage download part
@@ -203,10 +203,9 @@ public class CatalogDownloadController {
     public ResponseEntity<Download> downloadFile(@PathVariable(AIP_ID_PATH_PARAM) String aipId,
                                                  @PathVariable(CHECKSUM_PATH_PARAM) String checksum,
                                                  @RequestParam(name = "isContentInline", required = false)
-                                                     Boolean isContentInline,
-                                                 @RequestParam(name = "acceptLicense",
-                                                               required = false,
-                                                               defaultValue = "false") Boolean acceptLicense,
+                                                 Boolean isContentInline,
+                                                 @RequestParam(name = "acceptLicense", required = false,
+                                                     defaultValue = "false") Boolean acceptLicense,
                                                  HttpServletResponse response) throws ModuleException, IOException {
         // Accept flag enable the license acceptation before file download
         if (acceptLicense) {

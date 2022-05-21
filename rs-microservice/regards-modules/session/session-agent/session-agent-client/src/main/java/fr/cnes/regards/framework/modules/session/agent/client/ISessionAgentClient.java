@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.modules.session.agent.client;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepProperty;
+
 import java.util.List;
 
 /**

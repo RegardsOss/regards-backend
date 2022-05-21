@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
+import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
+import fr.cnes.regards.modules.search.service.SearchException;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,15 +28,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
-import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
-import fr.cnes.regards.modules.search.service.SearchException;
-
 /**
- *
  * Advice for specific search exceptions
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
 @RestControllerAdvice(annotations = RestController.class)
 @Order(0)

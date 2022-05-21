@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.config;
 
 import lombok.Value;
@@ -26,13 +26,21 @@ import lombok.Value;
  */
 @Value
 public class PgSqlProperties {
+
     String host;
+
     int port;
+
     String dbname;
+
     String schema;
+
     String user;
+
     String password;
+
     int poolMinSize;
+
     int poolMaxSize;
 
 }

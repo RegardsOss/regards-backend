@@ -68,9 +68,8 @@ import static org.junit.Assert.*;
  * @author Léo Mieulet
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_dissemination_it",
-        "regards.amqp.enabled=true", "spring.task.scheduling.pool.size=2", "regards.feature.metrics.enabled=true" },
-        locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
-                "classpath:metrics.properties" })
+    "regards.amqp.enabled=true", "spring.task.scheduling.pool.size=2", "regards.feature.metrics.enabled=true" },
+    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
 @ActiveProfiles({ "testAmqp", "noscheduler", "noFemHandler" })
 public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -119,16 +118,18 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
         FeatureUniformResourceName featureURN = initValidFeatureThatHasBeenNotifiedToTwoRecipients();
 
         // The recipient send back ACK
-        List<DisseminationAckEvent> messages = Lists.newArrayList(
-                new DisseminationAckEvent(featureURN.toString(), recipientLabelRequired));
+        List<DisseminationAckEvent> messages = Lists.newArrayList(new DisseminationAckEvent(featureURN.toString(),
+                                                                                            recipientLabelRequired));
         featureUpdateDisseminationService.saveAckRequests(messages);
 
         // The FeatureUpdateDissemination request is saved
         List<FeatureUpdateDisseminationRequest> updateDisseminationRequests = featureUpdateDisseminationRequestRepository.findAll();
         Assert.assertEquals("should get one request", 1, updateDisseminationRequests.size());
-        Assert.assertEquals("should use right recipient label", recipientLabelRequired,
+        Assert.assertEquals("should use right recipient label",
+                            recipientLabelRequired,
                             updateDisseminationRequests.get(0).getRecipientLabel());
-        Assert.assertEquals("should use right request type", FeatureUpdateDisseminationInfoType.ACK,
+        Assert.assertEquals("should use right request type",
+                            FeatureUpdateDisseminationInfoType.ACK,
                             updateDisseminationRequests.get(0).getUpdateType());
         Assert.assertNull("should not use ack required", updateDisseminationRequests.get(0).getAckRequired());
 
@@ -139,11 +140,17 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
 
         Set<FeatureDisseminationInfo> disseminationsInfo = featureEntities.get(0).getDisseminationsInfo();
         FeatureDisseminationInfo featureDisseminationRequired = disseminationsInfo.stream()
-                .filter(disseminationInfo -> disseminationInfo.getLabel().equals(recipientLabelRequired)).findFirst()
-                .get();
+                                                                                  .filter(disseminationInfo -> disseminationInfo.getLabel()
+                                                                                                                                .equals(
+                                                                                                                                    recipientLabelRequired))
+                                                                                  .findFirst()
+                                                                                  .get();
         FeatureDisseminationInfo featureDisseminationNotRequired = disseminationsInfo.stream()
-                .filter(disseminationInfo -> disseminationInfo.getLabel().equals(recipientLabelNotRequired)).findFirst()
-                .get();
+                                                                                     .filter(disseminationInfo -> disseminationInfo.getLabel()
+                                                                                                                                   .equals(
+                                                                                                                                       recipientLabelNotRequired))
+                                                                                     .findFirst()
+                                                                                     .get();
 
         Assert.assertNull("should be ack", featureDisseminationRequired.getAckDate());
         Assert.assertNotNull("should be ack", featureDisseminationNotRequired.getAckDate());
@@ -164,11 +171,17 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
         Assert.assertEquals("should get two disseminations infos", 2, disseminationsInfo.size());
 
         featureDisseminationRequired = disseminationsInfo.stream()
-                .filter(disseminationInfo -> disseminationInfo.getLabel().equals(recipientLabelRequired)).findFirst()
-                .get();
+                                                         .filter(disseminationInfo -> disseminationInfo.getLabel()
+                                                                                                       .equals(
+                                                                                                           recipientLabelRequired))
+                                                         .findFirst()
+                                                         .get();
         featureDisseminationNotRequired = disseminationsInfo.stream()
-                .filter(disseminationInfo -> disseminationInfo.getLabel().equals(recipientLabelNotRequired)).findFirst()
-                .get();
+                                                            .filter(disseminationInfo -> disseminationInfo.getLabel()
+                                                                                                          .equals(
+                                                                                                              recipientLabelNotRequired))
+                                                            .findFirst()
+                                                            .get();
 
         Assert.assertNotNull("should be ack", featureDisseminationRequired.getAckDate());
         Assert.assertNotNull("should be ack", featureDisseminationNotRequired.getAckDate());
@@ -180,12 +193,19 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
         String requestId = abstractFeatureRequests.stream().findFirst().get().getRequestId();
         String requestOwner = abstractFeatureRequests.stream().findFirst().get().getRequestOwner();
         String recipientLabelAnotherRequired = "recipientLabelAnotherRequired";
-        Set<Recipient> recipients = Sets.newHashSet(
-                new Recipient(recipientLabelRequired, RecipientStatus.SUCCESS, true),
-                new Recipient(recipientLabelAnotherRequired, RecipientStatus.SUCCESS, true),
-                new Recipient(recipientLabelNotRequired, RecipientStatus.SUCCESS, false));
-        List<NotifierEvent> notifierEvents = Lists.newArrayList(
-                new NotifierEvent(requestId, requestOwner, NotificationState.SUCCESS, recipients));
+        Set<Recipient> recipients = Sets.newHashSet(new Recipient(recipientLabelRequired,
+                                                                  RecipientStatus.SUCCESS,
+                                                                  true),
+                                                    new Recipient(recipientLabelAnotherRequired,
+                                                                  RecipientStatus.SUCCESS,
+                                                                  true),
+                                                    new Recipient(recipientLabelNotRequired,
+                                                                  RecipientStatus.SUCCESS,
+                                                                  false));
+        List<NotifierEvent> notifierEvents = Lists.newArrayList(new NotifierEvent(requestId,
+                                                                                  requestOwner,
+                                                                                  NotificationState.SUCCESS,
+                                                                                  recipients));
         listener.onRequestSuccess(notifierEvents);
 
         // the FeatureCreationRequest must be deleted
@@ -205,26 +225,47 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
         Assert.assertEquals("should get two disseminations infos", 3, disseminationsInfo.size());
 
         featureDisseminationRequired = disseminationsInfo.stream()
-                .filter(disseminationInfo -> disseminationInfo.getLabel().equals(recipientLabelRequired)).findFirst()
-                .get();
+                                                         .filter(disseminationInfo -> disseminationInfo.getLabel()
+                                                                                                       .equals(
+                                                                                                           recipientLabelRequired))
+                                                         .findFirst()
+                                                         .get();
         featureDisseminationNotRequired = disseminationsInfo.stream()
-                .filter(disseminationInfo -> disseminationInfo.getLabel().equals(recipientLabelNotRequired)).findFirst()
-                .get();
+                                                            .filter(disseminationInfo -> disseminationInfo.getLabel()
+                                                                                                          .equals(
+                                                                                                              recipientLabelNotRequired))
+                                                            .findFirst()
+                                                            .get();
 
         FeatureDisseminationInfo featureDisseminationAnotherRequired = disseminationsInfo.stream()
-                .filter(disseminationInfo -> disseminationInfo.getLabel().equals(recipientLabelAnotherRequired))
-                .findFirst().get();
+                                                                                         .filter(disseminationInfo -> disseminationInfo.getLabel()
+                                                                                                                                       .equals(
+                                                                                                                                           recipientLabelAnotherRequired))
+                                                                                         .findFirst()
+                                                                                         .get();
         // Ack date has been reinitialised
         Assert.assertNull("should not ack", featureDisseminationRequired.getAckDate());
         Assert.assertNull("should not ack", featureDisseminationAnotherRequired.getAckDate());
         Assert.assertNotNull("should be ack", featureDisseminationNotRequired.getAckDate());
 
-        checkSession(featureEntities.get(0).getSessionOwner(), featureEntities.get(0).getSession(),
-                     recipientLabelRequired, 1, 1, 13);
-        checkSession(featureEntities.get(0).getSessionOwner(), featureEntities.get(0).getSession(),
-                     recipientLabelAnotherRequired, 1, 0, 13);
-        checkSession(featureEntities.get(0).getSessionOwner(), featureEntities.get(0).getSession(),
-                     recipientLabelNotRequired, 0, 2, 13);
+        checkSession(featureEntities.get(0).getSessionOwner(),
+                     featureEntities.get(0).getSession(),
+                     recipientLabelRequired,
+                     1,
+                     1,
+                     13);
+        checkSession(featureEntities.get(0).getSessionOwner(),
+                     featureEntities.get(0).getSession(),
+                     recipientLabelAnotherRequired,
+                     1,
+                     0,
+                     13);
+        checkSession(featureEntities.get(0).getSessionOwner(),
+                     featureEntities.get(0).getSession(),
+                     recipientLabelNotRequired,
+                     0,
+                     2,
+                     13);
     }
 
     private FeatureUniformResourceName initValidFeatureThatHasBeenNotifiedToTwoRecipients() {
@@ -239,11 +280,16 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
 
         String requestId = abstractFeatureRequests.stream().findFirst().get().getRequestId();
         String requestOwner = abstractFeatureRequests.stream().findFirst().get().getRequestOwner();
-        HashSet<Recipient> recipients = Sets.newHashSet(
-                new Recipient(recipientLabelRequired, RecipientStatus.SUCCESS, true),
-                new Recipient(recipientLabelNotRequired, RecipientStatus.SUCCESS, false));
-        List<NotifierEvent> notifierEvents = Lists.newArrayList(
-                new NotifierEvent(requestId, requestOwner, NotificationState.SUCCESS, recipients));
+        HashSet<Recipient> recipients = Sets.newHashSet(new Recipient(recipientLabelRequired,
+                                                                      RecipientStatus.SUCCESS,
+                                                                      true),
+                                                        new Recipient(recipientLabelNotRequired,
+                                                                      RecipientStatus.SUCCESS,
+                                                                      false));
+        List<NotifierEvent> notifierEvents = Lists.newArrayList(new NotifierEvent(requestId,
+                                                                                  requestOwner,
+                                                                                  NotificationState.SUCCESS,
+                                                                                  recipients));
         listener.onRequestSuccess(notifierEvents);
 
         // the FeatureCreationRequest must be deleted
@@ -253,11 +299,19 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
         Assert.assertEquals("should get two requests, one for each recipient", 2, updateDisseminationRequests.size());
 
         FeatureUpdateDisseminationRequest updateDisseminationRequestRequired = updateDisseminationRequests.stream()
-                .filter(disseminationInfo -> disseminationInfo.getRecipientLabel().equals(recipientLabelRequired))
-                .findFirst().get();
+                                                                                                          .filter(
+                                                                                                              disseminationInfo -> disseminationInfo.getRecipientLabel()
+                                                                                                                                                    .equals(
+                                                                                                                                                        recipientLabelRequired))
+                                                                                                          .findFirst()
+                                                                                                          .get();
         FeatureUpdateDisseminationRequest updateDisseminationRequestNotRequired = updateDisseminationRequests.stream()
-                .filter(disseminationInfo -> disseminationInfo.getRecipientLabel().equals(recipientLabelNotRequired))
-                .findFirst().get();
+                                                                                                             .filter(
+                                                                                                                 disseminationInfo -> disseminationInfo.getRecipientLabel()
+                                                                                                                                                       .equals(
+                                                                                                                                                           recipientLabelNotRequired))
+                                                                                                             .findFirst()
+                                                                                                             .get();
 
         FeatureUniformResourceName featureURN = abstractFeatureRequests.get(0).getUrn();
         assertEquals("should return the feature URN", featureURN, updateDisseminationRequestRequired.getUrn());
@@ -268,9 +322,11 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
         assertFalse("should return the right value for <ACK required>",
                     updateDisseminationRequestNotRequired.getAckRequired());
 
-        assertEquals("should return the feature URN", FeatureUpdateDisseminationInfoType.PUT,
+        assertEquals("should return the feature URN",
+                     FeatureUpdateDisseminationInfoType.PUT,
                      updateDisseminationRequestRequired.getUpdateType());
-        assertEquals("should return the feature URN", FeatureUpdateDisseminationInfoType.PUT,
+        assertEquals("should return the feature URN",
+                     FeatureUpdateDisseminationInfoType.PUT,
                      updateDisseminationRequestNotRequired.getUpdateType());
 
         featureUpdateDisseminationService.handleRequests();
@@ -282,14 +338,18 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
     }
 
     @Test
-    @Ignore("testing both feature update (properties) and feature update dissemination with lot of entities is not mandatory")
+    @Ignore(
+        "testing both feature update (properties) and feature update dissemination with lot of entities is not mandatory")
     public void testFeatureUpdateAndReceivingAndProcessingAckSimultaneously()
-            throws InterruptedException, EntityException {
+        throws InterruptedException, EntityException {
         notificationSettingsService.setActiveNotification(false);
 
         // create features
         int featureToCreateNumber = properties.getMaxBulkSize();
-        List<FeatureCreationRequestEvent> events = prepareCreationTestData(false, featureToCreateNumber, false, true,
+        List<FeatureCreationRequestEvent> events = prepareCreationTestData(false,
+                                                                           featureToCreateNumber,
+                                                                           false,
+                                                                           true,
                                                                            false);
 
         List<FeatureEntity> allFeatureEntities = featureWithDisseminationRepo.findAll();
@@ -302,17 +362,23 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
         // create update requests
         List<FeatureUpdateRequestEvent> updateEvents = new ArrayList<>();
         updateEvents = events.stream()
-                .map(event -> FeatureUpdateRequestEvent.build("test", event.getMetadata(), event.getFeature()))
-                .collect(Collectors.toList());
+                             .map(event -> FeatureUpdateRequestEvent.build("test",
+                                                                           event.getMetadata(),
+                                                                           event.getFeature()))
+                             .collect(Collectors.toList());
 
         updateEvents.stream().forEach(event -> {
             event.getFeature().getProperties().clear();
-            event.getFeature().setUrn(FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA,
-                                                                       getDefaultTenant(), UUID.nameUUIDFromBytes(
-                            event.getFeature().getId().getBytes()), 1));
-            event.getFeature().addProperty(
-                    IProperty.buildObject("file_characterization", IProperty.buildBoolean("valid", Boolean.FALSE),
-                                          IProperty.buildDate("invalidation_date", OffsetDateTime.now())));
+            event.getFeature()
+                 .setUrn(FeatureUniformResourceName.build(FeatureIdentifier.FEATURE,
+                                                          EntityType.DATA,
+                                                          getDefaultTenant(),
+                                                          UUID.nameUUIDFromBytes(event.getFeature().getId().getBytes()),
+                                                          1));
+            event.getFeature()
+                 .addProperty(IProperty.buildObject("file_characterization",
+                                                    IProperty.buildBoolean("valid", Boolean.FALSE),
+                                                    IProperty.buildDate("invalidation_date", OffsetDateTime.now())));
         });
         this.featureUpdateService.registerRequests(updateEvents);
 
@@ -332,36 +398,52 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
         featureUpdateDisseminationService.handleRequests();
 
         List<FeatureUpdateDisseminationRequest> updateDisseminationRequests = featureUpdateDisseminationRequestRepository.findAll();
-        Assert.assertNotEquals("requests cannot be handled right now as feature update requests are not handled", 0,
+        Assert.assertNotEquals("requests cannot be handled right now as feature update requests are not handled",
+                               0,
                                updateDisseminationRequests.size());
 
         Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
             runtimeTenantResolver.forceTenant(getDefaultTenant());
             featureUpdateDisseminationService.handleRequests();
             int nbFeatureUpdateDisseminationRequestRemaining = featureUpdateDisseminationRequestRepository.findAll()
-                    .size();
+                                                                                                          .size();
             LOGGER.info("{} remaining FeatureUpdateDissemination requests",
                         nbFeatureUpdateDisseminationRequestRemaining);
             return nbFeatureUpdateDisseminationRequestRemaining == 0;
         });
 
         List<ILightFeatureUpdateRequest> scheduled = this.featureUpdateRequestRepository.findRequestsToSchedule(
-                FeatureRequestStep.LOCAL_DELAYED, OffsetDateTime.now(), PageRequest.of(0, properties.getMaxBulkSize()),
-                OffsetDateTime.now()).getContent();
+            FeatureRequestStep.LOCAL_DELAYED,
+            OffsetDateTime.now(),
+            PageRequest.of(0, properties.getMaxBulkSize()),
+            OffsetDateTime.now()).getContent();
         assertEquals(0, scheduled.size());
 
         featureWithDisseminationRepo.findAll().forEach(feature -> {
             assertNotNull(feature.getDisseminationsInfo().stream().findFirst().get().getAckDate());
-            ObjectProperty file_characterization = (ObjectProperty) feature.getFeature().getProperties().stream()
-                    .filter(property -> property.getName().equals("file_characterization")).findFirst().get();
-            IProperty validProperty = file_characterization.getValue().stream()
-                    .filter(property -> property.getName().equals("valid")).findFirst().get();
+            ObjectProperty file_characterization = (ObjectProperty) feature.getFeature()
+                                                                           .getProperties()
+                                                                           .stream()
+                                                                           .filter(property -> property.getName()
+                                                                                                       .equals(
+                                                                                                           "file_characterization"))
+                                                                           .findFirst()
+                                                                           .get();
+            IProperty validProperty = file_characterization.getValue()
+                                                           .stream()
+                                                           .filter(property -> property.getName().equals("valid"))
+                                                           .findFirst()
+                                                           .get();
             assertEquals(false, validProperty.getValue());
         });
     }
 
-    public void checkSession(String source, String session, String recipientLabel, int running, int done,
-            int totalTransactionOnSession) {
+    public void checkSession(String source,
+                             String session,
+                             String recipientLabel,
+                             int running,
+                             int done,
+                             int totalTransactionOnSession) {
 
         Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
             runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -371,25 +453,35 @@ public class FeatureUpdateDisseminationServiceIT extends AbstractFeatureMultiten
         });
 
         Map<String, List<StepPropertyUpdateRequest>> stepProperties = stepPropertyUpdateRequestRepository.findBySession(
-                        session).stream().filter(s -> s.getSource().equals(source))
-                .collect(Collectors.groupingBy(s -> s.getStepPropertyInfo().getProperty()));
+                                                                                                             session)
+                                                                                                         .stream()
+                                                                                                         .filter(s -> s.getSource()
+                                                                                                                       .equals(
+                                                                                                                           source))
+                                                                                                         .collect(
+                                                                                                             Collectors.groupingBy(
+                                                                                                                 s -> s.getStepPropertyInfo()
+                                                                                                                       .getProperty()));
 
-        checkSessionProperty(recipientLabel, stepProperties, FeatureSessionProperty.RUNNING_DISSEMINATION_PRODUCTS,
+        checkSessionProperty(recipientLabel,
+                             stepProperties,
+                             FeatureSessionProperty.RUNNING_DISSEMINATION_PRODUCTS,
                              running);
         checkSessionProperty(recipientLabel, stepProperties, FeatureSessionProperty.DISSEMINATED_PRODUCTS, done);
 
     }
 
     private void checkSessionProperty(String recipientLabel,
-            Map<String, List<StepPropertyUpdateRequest>> stepProperties, FeatureSessionProperty property,
-            int expected) {
+                                      Map<String, List<StepPropertyUpdateRequest>> stepProperties,
+                                      FeatureSessionProperty property,
+                                      int expected) {
         String propertyName = this.featureUpdateDisseminationService.getSessionPropertyName(property, recipientLabel);
-        int count = stepProperties.getOrDefault(propertyName, new ArrayList<>()).stream()
-                .mapToInt(s -> s.getType() == StepPropertyEventTypeEnum.DEC ?
-                        -Integer.parseInt(s.getStepPropertyInfo().getValue()) :
-                        Integer.parseInt(s.getStepPropertyInfo().getValue())
-                )
-                .reduce(0, (total, value) -> total + value);
+        int count = stepProperties.getOrDefault(propertyName, new ArrayList<>())
+                                  .stream()
+                                  .mapToInt(s -> s.getType() == StepPropertyEventTypeEnum.DEC ?
+                                      -Integer.parseInt(s.getStepPropertyInfo().getValue()) :
+                                      Integer.parseInt(s.getStepPropertyInfo().getValue()))
+                                  .reduce(0, (total, value) -> total + value);
         Assert.assertEquals(String.format("Invalid number of %s requests in session", property), expected, count);
     }
 

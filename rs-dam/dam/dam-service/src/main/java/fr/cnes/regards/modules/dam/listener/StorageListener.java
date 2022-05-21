@@ -18,19 +18,18 @@
  */
 package fr.cnes.regards.modules.dam.listener;
 
-import java.util.Set;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.modules.dam.service.entities.ICollectionService;
 import fr.cnes.regards.modules.storage.client.IStorageRequestListener;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.Set;
 
 /**
  * Listener for storage callback requests
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
 @Component
 public class StorageListener implements IStorageRequestListener {

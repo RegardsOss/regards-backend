@@ -2,8 +2,8 @@ package fr.cnes.regards.modules.acquisition.domain.payload;
 
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 
-
 public class UpdateAcquisitionProcessingChain {
+
     private Boolean active = false;
 
     private AcquisitionProcessingChainMode mode = AcquisitionProcessingChainMode.MANUAL;
@@ -34,7 +34,9 @@ public class UpdateAcquisitionProcessingChain {
         this.updateType = updateType;
     }
 
-    public static UpdateAcquisitionProcessingChain build(Boolean active, AcquisitionProcessingChainMode mode, UpdateAcquisitionProcessingChainType updateType) {
+    public static UpdateAcquisitionProcessingChain build(Boolean active,
+                                                         AcquisitionProcessingChainMode mode,
+                                                         UpdateAcquisitionProcessingChainType updateType) {
         UpdateAcquisitionProcessingChain updateQuery = new UpdateAcquisitionProcessingChain();
         updateQuery.setActive(active);
         updateQuery.setMode(mode);

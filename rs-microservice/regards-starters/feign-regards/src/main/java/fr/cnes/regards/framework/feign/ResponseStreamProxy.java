@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.framework.feign;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.function.Function;
-
+import feign.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import feign.Response;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.function.Function;
 
 /**
  * Wrapper for feign response to get a closeable  {@link InputStream}.
@@ -33,7 +32,6 @@ import feign.Response;
  * Generally used to proxify a Feign client response from an other service as a stream.
  *
  * @author Sébastien Binda
- *
  */
 public class ResponseStreamProxy extends InputStream {
 
@@ -54,7 +52,7 @@ public class ResponseStreamProxy extends InputStream {
     }
 
     public ResponseStreamProxy(feign.Response response, Function<ResponseStreamProxy, Void> beforeClose)
-            throws IOException {
+        throws IOException {
         this.response = response;
         this.stream = response.body().asInputStream();
         this.beforeClose = beforeClose;

@@ -1,8 +1,7 @@
 package fr.cnes.regards.framework.microservice.rest.test;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
+import fr.cnes.regards.framework.microservice.rest.ModuleManagerController;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -12,8 +11,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import fr.cnes.regards.framework.microservice.rest.ModuleManagerController;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -29,7 +28,8 @@ public class ModuleManagerControllerIT extends AbstractRegardsIT {
     public void testExport() {
         // lets request export from REST endpoint
         performDefaultGet(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
-                          customizer().expectStatusOk(), "Should export configuration");
+                          customizer().expectStatusOk(),
+                          "Should export configuration");
     }
 
     @Test
@@ -41,7 +41,9 @@ public class ModuleManagerControllerIT extends AbstractRegardsIT {
         Path filePath = Paths.get("src", "test", "resources", "test-configuration.json");
 
         performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
-                                 filePath, customizer().expectStatusCreated(), "Should be able to import configuration");
+                                 filePath,
+                                 customizer().expectStatusCreated(),
+                                 "Should be able to import configuration");
     }
 
     @Test
@@ -53,7 +55,8 @@ public class ModuleManagerControllerIT extends AbstractRegardsIT {
         Path filePath = Paths.get("src", "test", "resources", "test-configuration.json");
 
         performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
-                                 filePath, customizer().expect(MockMvcResultMatchers.status().isPartialContent()),
+                                 filePath,
+                                 customizer().expect(MockMvcResultMatchers.status().isPartialContent()),
                                  "Should be able to import configuration");
     }
 
@@ -66,20 +69,23 @@ public class ModuleManagerControllerIT extends AbstractRegardsIT {
         Path filePath = Paths.get("src", "test", "resources", "test-configuration.json");
 
         performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
-                                 filePath, customizer().expect(MockMvcResultMatchers.status().isConflict()),
+                                 filePath,
+                                 customizer().expect(MockMvcResultMatchers.status().isConflict()),
                                  "Should be able to import configuration");
     }
 
     @Test
     public void testReady() {
         performDefaultGet(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.READY_MAPPING,
-                          customizer().expectStatusOk(), "Ready endpoint should be reached!");
+                          customizer().expectStatusOk(),
+                          "Ready endpoint should be reached!");
     }
 
     @Test
     public void testRestart() {
         performDefaultGet(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.RESTART_MAPPING,
-                          customizer().expectStatusOk(), "Restart endpoint should be reached!");
+                          customizer().expectStatusOk(),
+                          "Restart endpoint should be reached!");
     }
 
     @Configuration

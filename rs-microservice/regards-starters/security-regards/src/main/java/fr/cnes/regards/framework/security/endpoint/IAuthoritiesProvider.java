@@ -1,34 +1,37 @@
 package fr.cnes.regards.framework.security.endpoint;
 
-import java.util.List;
-import java.util.Set;
-
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 
+import java.util.List;
+import java.util.Set;
+
 /**
  * Class IAuthoritiesProvider
- *
+ * <p>
  * Interface to define the method to get informations about Authorities resources and roles.
+ *
  * @author CS
  */
 public interface IAuthoritiesProvider {
 
     /**
      * Register microservice local endpoints to the administration service.
+     *
      * @param microserviceName related microservice
-     * @param tenant working tenant
-     * @param localEndpoints collected end points
+     * @param tenant           working tenant
+     * @param localEndpoints   collected end points
      * @throws SecurityException if endpoints cannot be registered
      */
     void registerEndpoints(String microserviceName, String tenant, List<ResourceMapping> localEndpoints)
-            throws SecurityException;
+        throws SecurityException;
 
     /**
      * Retrieve all roles authorities for specified tenant and microservice
+     *
      * @param microserviceName related microservice
-     * @param tenant working tenant
+     * @param tenant           working tenant
      * @return all {@link RoleAuthority}
      * @throws SecurityException if role cannot be retrieved
      */
@@ -37,15 +40,17 @@ public interface IAuthoritiesProvider {
     /**
      * Retrieve ResourcesAccesses from a given role on a given tenant and microservice and then build ResourceMappings
      * corresponding
+     *
      * @param microserviceName microservice from which we want the resources
-     * @param tenant tenant on which we are working
-     * @param roleName role considered
+     * @param tenant           tenant on which we are working
+     * @param roleName         role considered
      * @return current ResourceMapping for a given role on a given microservice type for a given tenant
      */
     Set<ResourceMapping> getResourceMappings(String microserviceName, String tenant, String roleName);
 
     /**
      * Does provided ${@link Role} is inferior to the one brought by the current request
+     *
      * @param roleName that should be inferior
      * @return true when the current role should have access to something requiring at least the provided role
      */

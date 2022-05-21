@@ -18,12 +18,12 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import java.time.OffsetDateTime;
-
 import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
 
 /**
  * OAIS Access Right Information object
+ *
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
  */

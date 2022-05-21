@@ -18,18 +18,16 @@
  */
 package fr.cnes.regards.modules.model.dto.properties;
 
-import java.time.OffsetDateTime;
-
 import com.google.common.collect.Range;
 import com.google.gson.annotations.JsonAdapter;
-
 import fr.cnes.regards.modules.model.dto.properties.adapter.DateIntervalAttributeAdapter;
+
+import java.time.OffsetDateTime;
 
 /**
  * Represent a {@link PropertyType#DATE_INTERVAL} model attribute
  *
  * @author Marc Sordi
- *
  */
 @JsonAdapter(DateIntervalAttributeAdapter.class)
 public class DateIntervalProperty extends AbstractProperty<Range<OffsetDateTime>> {

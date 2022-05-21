@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.framework.jpa.converters;
 
+import javax.persistence.AttributeConverter;
+import javax.persistence.Converter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
-
 /**
  * This class allows to convert {@link Path} attribute to {@link String} to persist with JPA
+ *
  * @author Marc Sordi
  */
 @Converter(autoApply = true)

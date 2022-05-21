@@ -18,12 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.plugin;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
@@ -33,14 +27,20 @@ import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.service.chain.ProcessingChainTestErrorSimulator;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Test plugin for the processing chains.
+ *
  * @author Sébastien Binda
  */
 @Plugin(author = "REGARDS Team", description = "Test plugin for AIP generation", id = "TestAIPGenerator",
-        version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-        url = "https://regardsoss.github.io/")
+    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
+    url = "https://regardsoss.github.io/")
 public class AIPGenerationTestPlugin implements IAipGeneration {
 
     @Autowired
@@ -60,7 +60,9 @@ public class AIPGenerationTestPlugin implements IAipGeneration {
                                                        entityType,
                                                        tenant,
                                                        sipIdUrn.getEntityId(),
-                                                       version, null, null),
+                                                       version,
+                                                       null,
+                                                       null),
                            Optional.of(sipIdUrn),
                            sip.getProviderId(),
                            version));

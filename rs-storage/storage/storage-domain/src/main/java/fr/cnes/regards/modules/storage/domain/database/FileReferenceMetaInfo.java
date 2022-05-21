@@ -18,13 +18,12 @@
  */
 package fr.cnes.regards.modules.storage.domain.database;
 
+import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
+import org.springframework.util.MimeType;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Embeddable;
-
-import org.springframework.util.MimeType;
-
-import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 
 /**
  * Database definition of meta information on a file.

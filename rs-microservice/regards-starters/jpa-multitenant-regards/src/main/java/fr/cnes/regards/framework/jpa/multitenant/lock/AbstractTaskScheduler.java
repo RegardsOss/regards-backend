@@ -18,20 +18,20 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.lock;
 
-import java.util.UUID;
-
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.util.UUID;
+
 /**
  * Base class utilities for task schedulers based on {@link LockingTaskExecutors} locking.
- * @author Marc SORDI
  *
+ * @author Marc SORDI
  */
 public abstract class AbstractTaskScheduler {
 
-    protected static final String INSTANCE_RANDOM_ID = "------------------------------> "
-            + UUID.randomUUID().toString();
+    protected static final String INSTANCE_RANDOM_ID =
+        "------------------------------> " + UUID.randomUUID().toString();
 
     @Value("${spring.application.name}")
     private String applicationName;

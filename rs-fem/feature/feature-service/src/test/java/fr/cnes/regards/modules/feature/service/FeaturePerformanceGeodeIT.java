@@ -18,11 +18,14 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
+import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
+import fr.cnes.regards.modules.feature.dto.PriorityLevel;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
 import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,20 +35,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.feature.domain.FeatureEntity;
-import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
-import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
-import fr.cnes.regards.modules.feature.dto.PriorityLevel;
-import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=feature_perf", "regards.amqp.enabled=true",
-                "regards.feature.metrics.enabled=true" },
-        locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
-                "classpath:metrics.properties" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=feature_perf", "regards.amqp.enabled=true",
+        "regards.feature.metrics.enabled=true" },
+    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler", "noFemHandler" })
 public class FeaturePerformanceGeodeIT extends AbstractFeatureMultitenantServiceIT {
 
@@ -73,8 +71,12 @@ public class FeaturePerformanceGeodeIT extends AbstractFeatureMultitenantService
         String format = "F%05d";
 
         // Register creation requests
-        FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata
-                .build("sessionOwner", "session", PriorityLevel.NORMAL, Lists.emptyList(), true, false);
+        FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata.build("sessionOwner",
+                                                                                       "session",
+                                                                                       PriorityLevel.NORMAL,
+                                                                                       Lists.emptyList(),
+                                                                                       true,
+                                                                                       false);
         String modelName = mockModelClient(GeodeProperties.getGeodeModel());
 
         Thread.sleep(5_000);
@@ -101,7 +103,8 @@ public class FeaturePerformanceGeodeIT extends AbstractFeatureMultitenantService
             saveEvents(events);
         }
 
-        LOGGER.info(">>>>>>>>>>>>>>>>> {} requests registered in {} ms", NB_FEATURES,
+        LOGGER.info(">>>>>>>>>>>>>>>>> {} requests registered in {} ms",
+                    NB_FEATURES,
                     System.currentTimeMillis() - start);
 
         assertEquals(NB_FEATURES.longValue(), this.featureCreationRequestRepo.count());
@@ -115,7 +118,8 @@ public class FeaturePerformanceGeodeIT extends AbstractFeatureMultitenantService
 
         long duration = System.currentTimeMillis() - start;
         LOGGER.info(">>>>>>>>>>>>>>>>> {} requests processed in {} ms", NB_FEATURES, duration);
-        Assert.assertTrue(String.format("Performance not reached! (%dms/%dms)", duration, DURATION), duration < DURATION);
+        Assert.assertTrue(String.format("Performance not reached! (%dms/%dms)", duration, DURATION),
+                          duration < DURATION);
 
         assertEquals(NB_FEATURES.longValue(), this.featureRepo.count());
     }
@@ -124,7 +128,8 @@ public class FeaturePerformanceGeodeIT extends AbstractFeatureMultitenantService
         long start = System.currentTimeMillis();
         LOGGER.info(">>>>>>>>>>>>>>>>> Registering {} requests", events.size());
         featureService.registerRequests(events);
-        LOGGER.info(">>>>>>>>>>>>>>>>> {} requests registered in {} ms", events.size(),
+        LOGGER.info(">>>>>>>>>>>>>>>>> {} requests registered in {} ms",
+                    events.size(),
                     System.currentTimeMillis() - start);
     }
 }

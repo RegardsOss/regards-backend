@@ -18,25 +18,23 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Set;
-
-import javax.persistence.criteria.Predicate;
-
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+
+import javax.persistence.criteria.Predicate;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Set;
 
 /**
  * JPA {@link Specification} to define {@link Predicate}s for criteria search for {@link SIPEntity} from repository.
+ *
  * @author Sébastien Binda
  * @author Léo Mieulet
  */
@@ -51,18 +49,27 @@ public final class SIPEntitySpecifications {
     /**
      * Filter on the given attributes and return result ordered by descending
      * ingestDate
-     * @param providerIds list of providerId to keep or ignore (depends on areIdListInclusive)
-     * @param sipIds list of sipId to keep or ignore (depends on areIdListInclusive)
+     *
+     * @param providerIds        list of providerId to keep or ignore (depends on areIdListInclusive)
+     * @param sipIds             list of sipId to keep or ignore (depends on areIdListInclusive)
      * @param sessionOwner
      * @param session
      * @param from
-     * @param states list of states
+     * @param states             list of states
      * @param areIdListInclusive true when sipIds and providerIds should be include in the request, otherwise these
      * @param page
      */
-    public static Specification<SIPEntity> search(Set<String> providerIds, Set<String> sipIds, String sessionOwner,
-            String session, EntityType ipType, OffsetDateTime from, List<SIPState> states, boolean areIdListInclusive,
-            List<String> tags, Set<String> categories, Pageable page) {
+    public static Specification<SIPEntity> search(Set<String> providerIds,
+                                                  Set<String> sipIds,
+                                                  String sessionOwner,
+                                                  String session,
+                                                  EntityType ipType,
+                                                  OffsetDateTime from,
+                                                  List<SIPState> states,
+                                                  boolean areIdListInclusive,
+                                                  List<String> tags,
+                                                  Set<String> categories,
+                                                  Pageable page) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if ((states != null) && !states.isEmpty()) {
@@ -77,7 +84,7 @@ public final class SIPEntitySpecifications {
                 for (String providerId : providerIds) {
                     // Use the like operator only if the providerId contains a % directly in the chain
                     if (providerId.startsWith(SpecificationUtils.LIKE_CHAR)
-                            || providerId.endsWith(SpecificationUtils.LIKE_CHAR)) {
+                        || providerId.endsWith(SpecificationUtils.LIKE_CHAR)) {
                         if (areIdListInclusive) {
                             providerIdPredicates.add(cb.like(root.get(PROVIDER_ID), providerId));
                         } else {
@@ -108,8 +115,14 @@ public final class SIPEntitySpecifications {
                 predicates.add(cb.or(sipIdsPredicates.toArray(new Predicate[sipIdsPredicates.size()])));
             }
 
-            predicates.addAll(OAISEntitySpecification.buildCommonPredicate(root, cb, tags, sessionOwner, session,
-                                                                           ipType, null, categories));
+            predicates.addAll(OAISEntitySpecification.buildCommonPredicate(root,
+                                                                           cb,
+                                                                           tags,
+                                                                           sessionOwner,
+                                                                           session,
+                                                                           ipType,
+                                                                           null,
+                                                                           categories));
 
             // Add order
             Sort.Direction defaultDirection = Sort.Direction.ASC;

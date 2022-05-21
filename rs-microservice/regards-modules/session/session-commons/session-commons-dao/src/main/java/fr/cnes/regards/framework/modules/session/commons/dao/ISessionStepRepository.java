@@ -43,14 +43,18 @@ public interface ISessionStepRepository extends JpaRepository<SessionStep, Long>
      */
     int countBySourceAndRegistrationDateBefore(String source, OffsetDateTime schedulerStartDate);
 
-    Page<SessionStep> findBySourceAndRegistrationDateBefore(String source, OffsetDateTime freezeDate,
-            Pageable pageToRequest);
+    Page<SessionStep> findBySourceAndRegistrationDateBefore(String source,
+                                                            OffsetDateTime freezeDate,
+                                                            Pageable pageToRequest);
 
     int countBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(String source,
-            OffsetDateTime lastUpdateDate, OffsetDateTime schedulerStartDate);
+                                                                               OffsetDateTime lastUpdateDate,
+                                                                               OffsetDateTime schedulerStartDate);
 
     Page<SessionStep> findBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(String source,
-            OffsetDateTime lastUpdateDate, OffsetDateTime freezeDate, Pageable pageToRequest);
+                                                                                            OffsetDateTime lastUpdateDate,
+                                                                                            OffsetDateTime freezeDate,
+                                                                                            Pageable pageToRequest);
 
     /**
      * Clean SessionSteps

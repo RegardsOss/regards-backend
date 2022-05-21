@@ -18,10 +18,13 @@
  */
 package fr.cnes.regards.modules.notification.dao;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalIT;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
+import fr.cnes.regards.modules.notification.domain.Notification;
+import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,17 +33,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalIT;
-import fr.cnes.regards.framework.notification.NotificationLevel;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.notification.domain.Notification;
-import fr.cnes.regards.modules.notification.domain.NotificationStatus;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Christophe Mertz
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema:notif_dao" })
 @ContextConfiguration(classes = { NotificationDaoTestConfig.class })
@@ -51,7 +48,10 @@ public class NotificationDaoIT extends AbstractDaoTransactionalIT {
 
     @Test
     public void getAllNotifications() {
-        notificationRepository.findByStatusAndRecipientsContaining(NotificationStatus.UNREAD, "null", DefaultRole.PROJECT_ADMIN.toString(), PageRequest.of(0, 10));
+        notificationRepository.findByStatusAndRecipientsContaining(NotificationStatus.UNREAD,
+                                                                   "null",
+                                                                   DefaultRole.PROJECT_ADMIN.toString(),
+                                                                   PageRequest.of(0, 10));
     }
 
     @Test
@@ -120,8 +120,12 @@ public class NotificationDaoIT extends AbstractDaoTransactionalIT {
         notificationRepository.save(readNotif);
 
         // now lets retrieve them by status
-        Page<INotificationWithoutMessage> notifPage = notificationRepository.findByStatusAndRecipientsContaining(NotificationStatus.UNREAD, "jo-regards@c-s.fr", DefaultRole.PUBLIC.toString(),
-                                                                                      PageRequest.of(0,20));
-        Assert.assertTrue("There should be 2 notification: 2 notifications UNREAD for role PUBLIC", notifPage.getTotalElements() == 2);
+        Page<INotificationWithoutMessage> notifPage = notificationRepository.findByStatusAndRecipientsContaining(
+            NotificationStatus.UNREAD,
+            "jo-regards@c-s.fr",
+            DefaultRole.PUBLIC.toString(),
+            PageRequest.of(0, 20));
+        Assert.assertTrue("There should be 2 notification: 2 notifications UNREAD for role PUBLIC",
+                          notifPage.getTotalElements() == 2);
     }
 }

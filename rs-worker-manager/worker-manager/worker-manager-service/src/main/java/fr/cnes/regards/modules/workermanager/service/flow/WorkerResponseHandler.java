@@ -41,7 +41,7 @@ import java.util.List;
  */
 @Component
 public class WorkerResponseHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<WorkerResponseEvent> {
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<WorkerResponseEvent> {
 
     /**
      * Bulk size limit to handle messages
@@ -57,8 +57,11 @@ public class WorkerResponseHandler
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(WorkerResponseEvent.class, this, service.getWorkerResponseQueueName(),
-                               service.getWorkerResponseQueueName(), false);
+        subscriber.subscribeTo(WorkerResponseEvent.class,
+                               this,
+                               service.getWorkerResponseQueueName(),
+                               service.getWorkerResponseQueueName(),
+                               false);
     }
 
     @Override
@@ -82,7 +85,8 @@ public class WorkerResponseHandler
         LOGGER.info("Handling {} workers responses", messages.size());
         SessionsRequestsInfo info = service.handleWorkersResponses(messages);
         LOGGER.info("{} success requests, {} running requests and {} error requests handled in {}ms",
-                    info.getRequests(RequestStatus.SUCCESS).size(), info.getRequests(RequestStatus.RUNNING).size(),
+                    info.getRequests(RequestStatus.SUCCESS).size(),
+                    info.getRequests(RequestStatus.RUNNING).size(),
                     info.getRequests(RequestStatus.ERROR).size(),
                     System.currentTimeMillis() - start);
     }

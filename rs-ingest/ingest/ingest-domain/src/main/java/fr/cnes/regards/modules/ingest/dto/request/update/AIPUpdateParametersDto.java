@@ -19,12 +19,14 @@
 package fr.cnes.regards.modules.ingest.dto.request.update;
 
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.Valid;
 
 /**
  * Object containing some AIP criteria and a list of tags, categories and location to add or remove from these AIPs
+ *
  * @author Léo Mieulet
  */
 public class AIPUpdateParametersDto {
@@ -108,8 +110,12 @@ public class AIPUpdateParametersDto {
         this.removeStorages = removeStorages;
     }
 
-    public static AIPUpdateParametersDto build(SearchAIPsParameters aipsParameters, List<String> addTags,
-            List<String> removeTags, List<String> addCategories, List<String> removeCategories, List<String> removeStorages) {
+    public static AIPUpdateParametersDto build(SearchAIPsParameters aipsParameters,
+                                               List<String> addTags,
+                                               List<String> removeTags,
+                                               List<String> addCategories,
+                                               List<String> removeCategories,
+                                               List<String> removeStorages) {
         AIPUpdateParametersDto params = new AIPUpdateParametersDto();
         params.setCriteria(aipsParameters);
         params.setAddTags(addTags);
@@ -119,6 +125,7 @@ public class AIPUpdateParametersDto {
         params.setRemoveStorages(removeStorages);
         return params;
     }
+
     public static AIPUpdateParametersDto build(SearchAIPsParameters aipsParameters) {
         AIPUpdateParametersDto params = new AIPUpdateParametersDto();
         params.setCriteria(aipsParameters);
@@ -129,22 +136,27 @@ public class AIPUpdateParametersDto {
         params.setRemoveStorages(new ArrayList<>());
         return params;
     }
+
     public AIPUpdateParametersDto withAddTags(List<String> addTags) {
         this.addTags.addAll(addTags);
         return this;
     }
+
     public AIPUpdateParametersDto withRemoveTags(List<String> removeTags) {
         this.removeTags.addAll(removeTags);
         return this;
     }
+
     public AIPUpdateParametersDto withAddCategories(List<String> addCategories) {
         this.addCategories.addAll(addCategories);
         return this;
     }
+
     public AIPUpdateParametersDto withRemoveCategories(List<String> removeCategories) {
         this.removeCategories.addAll(removeCategories);
         return this;
     }
+
     public AIPUpdateParametersDto withRemoveStorages(List<String> removeStorages) {
         this.removeStorages.addAll(removeStorages);
         return this;

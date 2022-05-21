@@ -18,9 +18,14 @@
  */
 package fr.cnes.regards.modules.dam.dao.dataaccess;
 
-import java.time.OffsetDateTime;
-
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalIT;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.*;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import fr.cnes.regards.modules.model.dao.IModelRepository;
+import fr.cnes.regards.modules.model.domain.Model;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,16 +34,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalIT;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.dam.domain.entities.Dataset;
-import fr.cnes.regards.modules.model.dao.IModelRepository;
-import fr.cnes.regards.modules.model.domain.Model;
+import java.time.OffsetDateTime;
 
 /**
- *
  * @author Sylvain Vissiere-Guerinet
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=dam_ar_dao" })

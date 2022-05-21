@@ -29,7 +29,6 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author sbinda
- *
  */
 public class GsonHttpMessageConverterCustom extends GsonHttpMessageConverter {
 
@@ -42,8 +41,7 @@ public class GsonHttpMessageConverterCustom extends GsonHttpMessageConverter {
     @Override
     public Gson getGson() {
         try {
-            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
-                    .getRequest();
+            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
             String prettyValues = request.getParameter(PRETTY_PRINT_PARAMETER);
             if ((prettyValues != null)) {
                 LOGGER.trace("pretty print enabled.");

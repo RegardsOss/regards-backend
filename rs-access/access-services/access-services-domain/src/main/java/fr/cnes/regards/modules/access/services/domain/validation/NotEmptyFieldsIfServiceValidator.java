@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.access.services.domain.validation;
 
+import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
+
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-
-import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 
 /**
  * Validator enforcing {@link UIPluginDefinition} constraints
@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
  * @author Xavier-Alexandre Brochard
  */
 public class NotEmptyFieldsIfServiceValidator
-        implements ConstraintValidator<NotEmptyFieldsIfService, UIPluginDefinition> {
+    implements ConstraintValidator<NotEmptyFieldsIfService, UIPluginDefinition> {
 
     @Override
     public void initialize(NotEmptyFieldsIfService pConstraintAnnotation) {

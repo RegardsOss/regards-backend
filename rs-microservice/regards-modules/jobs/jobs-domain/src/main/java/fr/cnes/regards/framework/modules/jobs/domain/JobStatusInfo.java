@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.framework.modules.jobs.domain;
 
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
@@ -25,19 +29,9 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Embeddable;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Transient;
-
-import org.hibernate.annotations.Type;
-
-import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-
 /**
  * Store job status
+ *
  * @author Léo Mieulet
  * @author Christophe Mertz
  */
@@ -178,8 +172,8 @@ public class JobStatusInfo implements Observer {
             percentCompleted = (Integer) arg;
             Duration fromStart = Duration.between(startDate, now);
             if (percentCompleted > 0) {
-                estimatedCompletion = startDate
-                        .plus((fromStart.toMillis() * 100L) / percentCompleted, ChronoUnit.MILLIS);
+                estimatedCompletion = startDate.plus((fromStart.toMillis() * 100L) / percentCompleted,
+                                                     ChronoUnit.MILLIS);
             }
             completionChanged.set(true);
         }
@@ -187,16 +181,9 @@ public class JobStatusInfo implements Observer {
 
     @Override
     public String toString() {
-        return "JobStatusInfo{" +
-                "status=" + status +
-                ", statusDate=" + statusDate +
-                ", estimatedCompletion=" + estimatedCompletion +
-                ", percentCompleted=" + percentCompleted +
-                ", startDate=" + startDate +
-                ", stopDate=" + stopDate +
-                ", queuedDate=" + queuedDate +
-                ", stackTrace='" + stackTrace + '\'' +
-                ", completionChanged=" + completionChanged +
-                '}';
+        return "JobStatusInfo{" + "status=" + status + ", statusDate=" + statusDate + ", estimatedCompletion="
+            + estimatedCompletion + ", percentCompleted=" + percentCompleted + ", startDate=" + startDate
+            + ", stopDate=" + stopDate + ", queuedDate=" + queuedDate + ", stackTrace='" + stackTrace + '\''
+            + ", completionChanged=" + completionChanged + '}';
     }
 }

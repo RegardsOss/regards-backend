@@ -18,18 +18,17 @@
  */
 package fr.cnes.regards.modules.model.service;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.model.domain.attributes.Fragment;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.model.domain.attributes.Fragment;
 
 /**
  * Fragment service interface
  *
  * @author Marc Sordi
- *
  */
 public interface IFragmentService {
 

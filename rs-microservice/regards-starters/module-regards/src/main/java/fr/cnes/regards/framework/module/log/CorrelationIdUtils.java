@@ -28,12 +28,14 @@ public final class CorrelationIdUtils {
 
     private static final String CORRELATION_ID = "correlationId";
 
-    private CorrelationIdUtils() {}
+    private CorrelationIdUtils() {
+    }
 
     /**
      * Set correlation id to a specific value on current thread.<br/>
      * We recommend to use {@link CorrelationIdUtils#clearCorrelationId()} to clean the thread in a finally clause.<br/>
      * It is mostly recommended for server threads as they are reused.
+     *
      * @param correlationId correlationId
      */
     public static void setCorrelationId(String correlationId) {

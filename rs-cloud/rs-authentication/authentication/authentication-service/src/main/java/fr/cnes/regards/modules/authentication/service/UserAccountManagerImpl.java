@@ -48,13 +48,17 @@ import org.springframework.util.MimeTypeUtils;
 public class UserAccountManagerImpl implements IUserAccountManager {
 
     private final IAccountsClient accountsClient;
+
     private final IProjectUsersClient usersClient;
+
     private final INotificationClient notificationClient;
+
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    public UserAccountManagerImpl(IAccountsClient accountsClient, IProjectUsersClient usersClient, INotificationClient notificationClient,
-            IRuntimeTenantResolver runtimeTenantResolver
-    ) {
+    public UserAccountManagerImpl(IAccountsClient accountsClient,
+                                  IProjectUsersClient usersClient,
+                                  INotificationClient notificationClient,
+                                  IRuntimeTenantResolver runtimeTenantResolver) {
         this.accountsClient = accountsClient;
         this.usersClient = usersClient;
         this.notificationClient = notificationClient;
@@ -62,82 +66,97 @@ public class UserAccountManagerImpl implements IUserAccountManager {
     }
 
     @Override
-    public Try<String> createUserWithAccountAndGroups(ServiceProviderAuthenticationInfo.UserInfo userInfo, String serviceProviderName) {
-        return Try
-                .run(FeignSecurityManager::asSystem)
-                .flatMap(unit -> createAccount(userInfo, serviceProviderName)
-                        .onFailure(t -> notificationClient.notify(
-                                String.format("The user account creation failed with the following error message : %s.", t.getMessage()),
-                                "User account creation failed",
-                                NotificationLevel.INFO,
-                                MimeTypeUtils.TEXT_PLAIN,
-                                userInfo.getEmail(),
-                                DefaultRole.PROJECT_ADMIN)))
-                .flatMap(unit -> createProjectUser(userInfo, serviceProviderName)
-                        .transform(t -> wrapInUserCreationFailedHandler(t, userInfo)))
-                .map(user -> user.getRole().getName())
-                .andFinally(FeignSecurityManager::reset);
+    public Try<String> createUserWithAccountAndGroups(ServiceProviderAuthenticationInfo.UserInfo userInfo,
+                                                      String serviceProviderName) {
+        return Try.run(FeignSecurityManager::asSystem)
+                  .flatMap(unit -> createAccount(userInfo,
+                                                 serviceProviderName).onFailure(t -> notificationClient.notify(String.format(
+                                                                                                                   "The user account creation failed with the following error message : %s.",
+                                                                                                                   t.getMessage()),
+                                                                                                               "User account creation failed",
+                                                                                                               NotificationLevel.INFO,
+                                                                                                               MimeTypeUtils.TEXT_PLAIN,
+                                                                                                               userInfo.getEmail(),
+                                                                                                               DefaultRole.PROJECT_ADMIN)))
+                  .flatMap(unit -> createProjectUser(userInfo,
+                                                     serviceProviderName).transform(t -> wrapInUserCreationFailedHandler(
+                      t,
+                      userInfo)))
+                  .map(user -> user.getRole().getName())
+                  .andFinally(FeignSecurityManager::reset);
     }
 
     @VisibleForTesting
     protected Try<Unit> createAccount(ServiceProviderAuthenticationInfo.UserInfo userInfo, String serviceProviderName) {
-        return Try
-                .of(() -> accountsClient.retrieveAccounByEmail(userInfo.getEmail()))
-                .map(ResponseEntity::getStatusCode)
-                .map(status -> {
-                    switch (status) {
-                        case OK:
-                            return HttpStatus.CREATED;
-                        case NOT_FOUND:
-                            Account account = new Account(userInfo.getEmail(), userInfo.getFirstname(), userInfo.getLastname(), null);
-                            account.setStatus(AccountStatus.ACTIVE);
-                            account.setOrigin(serviceProviderName);
-                            AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword(), runtimeTenantResolver.getTenant());
-                            return accountsClient.createAccount(accountNPassword).getStatusCode();
-                        default:
-                            return status;
-                    }
-                })
-                .andThen(status -> {
-                    if (status != HttpStatus.CREATED) {
-                        throw new RuntimeException(String.format("Failed to retrieve existing account or create new account. Returned status code is %s.", status));
-                    }
-                })
-                .map(ignored -> Unit.UNIT);
+        return Try.of(() -> accountsClient.retrieveAccounByEmail(userInfo.getEmail()))
+                  .map(ResponseEntity::getStatusCode)
+                  .map(status -> {
+                      switch (status) {
+                          case OK:
+                              return HttpStatus.CREATED;
+                          case NOT_FOUND:
+                              Account account = new Account(userInfo.getEmail(),
+                                                            userInfo.getFirstname(),
+                                                            userInfo.getLastname(),
+                                                            null);
+                              account.setStatus(AccountStatus.ACTIVE);
+                              account.setOrigin(serviceProviderName);
+                              AccountNPassword accountNPassword = new AccountNPassword(account,
+                                                                                       account.getPassword(),
+                                                                                       runtimeTenantResolver.getTenant());
+                              return accountsClient.createAccount(accountNPassword).getStatusCode();
+                          default:
+                              return status;
+                      }
+                  })
+                  .andThen(status -> {
+                      if (status != HttpStatus.CREATED) {
+                          throw new RuntimeException(String.format(
+                              "Failed to retrieve existing account or create new account. Returned status code is %s.",
+                              status));
+                      }
+                  })
+                  .map(ignored -> Unit.UNIT);
     }
 
     @VisibleForTesting
-    protected Try<ProjectUser> createProjectUser(ServiceProviderAuthenticationInfo.UserInfo userInfo, String serviceProviderName) {
-        return Try
-                .of(() -> usersClient.retrieveProjectUserByEmail(userInfo.getEmail()))
-                .flatMap(response -> {
-                    HttpStatus status = response.getStatusCode();
-                    switch (status) {
-                        case OK:
-                            return Try.success(response.getBody().getContent());
-                        case NOT_FOUND:
-                            AccessRequestDto accessRequestDto = new AccessRequestDto()
-                                    .setEmail(userInfo.getEmail())
-                                    .setFirstName(userInfo.getFirstname())
-                                    .setLastName(userInfo.getLastname())
-                                    .setMetadata(userInfo.getMetadata().map(t -> new MetaData(t._1, t._2, UserVisibility.READABLE)).toJavaList())
-                                    .setOrigin(serviceProviderName);
-                            return Try.of(() -> usersClient.createUser(accessRequestDto).getBody().getContent());
-                        default:
-                            return Try.failure(
-                                    new RuntimeException(String.format("Failed to retrieve existing or to create new project user. Returned status code is %s.", status)));
-                    }
-                });
+    protected Try<ProjectUser> createProjectUser(ServiceProviderAuthenticationInfo.UserInfo userInfo,
+                                                 String serviceProviderName) {
+        return Try.of(() -> usersClient.retrieveProjectUserByEmail(userInfo.getEmail())).flatMap(response -> {
+            HttpStatus status = response.getStatusCode();
+            switch (status) {
+                case OK:
+                    return Try.success(response.getBody().getContent());
+                case NOT_FOUND:
+                    AccessRequestDto accessRequestDto = new AccessRequestDto().setEmail(userInfo.getEmail())
+                                                                              .setFirstName(userInfo.getFirstname())
+                                                                              .setLastName(userInfo.getLastname())
+                                                                              .setMetadata(userInfo.getMetadata()
+                                                                                                   .map(t -> new MetaData(
+                                                                                                       t._1,
+                                                                                                       t._2,
+                                                                                                       UserVisibility.READABLE))
+                                                                                                   .toJavaList())
+                                                                              .setOrigin(serviceProviderName);
+                    return Try.of(() -> usersClient.createUser(accessRequestDto).getBody().getContent());
+                default:
+                    return Try.failure(new RuntimeException(String.format(
+                        "Failed to retrieve existing or to create new project user. Returned status code is %s.",
+                        status)));
+            }
+        });
     }
 
-    private <T> Try<T> wrapInUserCreationFailedHandler(Try<T> call, ServiceProviderAuthenticationInfo.UserInfo userInfo) {
-        return call.onFailure(t -> notificationClient.notify(
-                String.format("The project user creation failed with the following error message : %s.%nThe associated account exists.", t.getMessage()),
-                "Project user creation failed",
-                NotificationLevel.INFO,
-                MimeTypeUtils.TEXT_PLAIN,
-                userInfo.getEmail(),
-                DefaultRole.PROJECT_ADMIN));
+    private <T> Try<T> wrapInUserCreationFailedHandler(Try<T> call,
+                                                       ServiceProviderAuthenticationInfo.UserInfo userInfo) {
+        return call.onFailure(t -> notificationClient.notify(String.format(
+                                                                 "The project user creation failed with the following error message : %s.%nThe associated account exists.",
+                                                                 t.getMessage()),
+                                                             "Project user creation failed",
+                                                             NotificationLevel.INFO,
+                                                             MimeTypeUtils.TEXT_PLAIN,
+                                                             userInfo.getEmail(),
+                                                             DefaultRole.PROJECT_ADMIN));
     }
 
 }

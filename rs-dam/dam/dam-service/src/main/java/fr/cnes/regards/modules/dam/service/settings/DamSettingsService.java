@@ -30,9 +30,10 @@ public class DamSettingsService extends AbstractSettingService implements IDamSe
 
     private DamSettingsService self;
 
-    protected DamSettingsService(IDynamicTenantSettingService dynamicTenantSettingService, ITenantResolver tenantsResolver,
-                                 IRuntimeTenantResolver runtimeTenantResolver, DamSettingsService damSettingsService
-    ) {
+    protected DamSettingsService(IDynamicTenantSettingService dynamicTenantSettingService,
+                                 ITenantResolver tenantsResolver,
+                                 IRuntimeTenantResolver runtimeTenantResolver,
+                                 DamSettingsService damSettingsService) {
         super(dynamicTenantSettingService);
         this.tenantsResolver = tenantsResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;

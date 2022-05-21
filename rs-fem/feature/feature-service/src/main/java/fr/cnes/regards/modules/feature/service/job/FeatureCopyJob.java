@@ -18,29 +18,24 @@
  */
 package fr.cnes.regards.modules.feature.service.job;
 
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.gson.reflect.TypeToken;
-
-import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.modules.feature.dao.IFeatureCopyRequestRepository;
 import fr.cnes.regards.modules.feature.domain.request.FeatureCopyRequest;
 import fr.cnes.regards.modules.feature.service.IFeatureCopyService;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
- *
  * Copy a feature in an other store
  *
  * @author Kevin Marchois
- *
  */
 public class FeatureCopyJob extends AbstractFeatureJob {
 
@@ -54,7 +49,7 @@ public class FeatureCopyJob extends AbstractFeatureJob {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         Type type = new TypeToken<Set<Long>>() {
 
         }.getType();
@@ -66,7 +61,9 @@ public class FeatureCopyJob extends AbstractFeatureJob {
         logger.info("[{}] Feature copy job starts", jobInfoId);
         long start = System.currentTimeMillis();
         this.featureCopyService.processRequests(featureCopyRequests, this);
-        logger.info("[{}]{} Copy request(s) processed in {} ms", jobInfoId, INFO_TAB,
+        logger.info("[{}]{} Copy request(s) processed in {} ms",
+                    jobInfoId,
+                    INFO_TAB,
                     System.currentTimeMillis() - start);
     }
 

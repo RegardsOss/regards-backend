@@ -21,11 +21,9 @@ package fr.cnes.regards.modules.dam.domain.dataaccess.accessright;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.plugins.ICheckDataAccess;
 
 /**
- *
  * describe the level of access to the physical data of a datum in a dataset
  *
  * @author Sylvain Vissiere-Guerinet
- *
  */
 public enum DataAccessLevel {
     /**

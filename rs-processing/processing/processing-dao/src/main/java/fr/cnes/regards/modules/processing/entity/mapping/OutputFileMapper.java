@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.entity.mapping;
 
 import fr.cnes.regards.modules.processing.domain.POutputFile;
@@ -31,37 +31,35 @@ import org.springframework.stereotype.Component;
 @Component
 public class OutputFileMapper implements DomainEntityMapper.OutputFile {
 
-    @Override public OutputFileEntity toEntity(POutputFile domain) {
-        return new OutputFileEntity(
-                domain.getId(),
-                domain.getExecId(),
-                domain.getUrl(),
-                domain.getName(),
-                domain.getChecksum().getValue(),
-                domain.getChecksum().getMethod(),
-                domain.getSize(),
-                domain.getInputCorrelationIds().asJava(),
-                domain.getCreated(),
-                domain.isDownloaded(),
-                domain.isDeleted(),
-                domain.isPersisted()
-        );
+    @Override
+    public OutputFileEntity toEntity(POutputFile domain) {
+        return new OutputFileEntity(domain.getId(),
+                                    domain.getExecId(),
+                                    domain.getUrl(),
+                                    domain.getName(),
+                                    domain.getChecksum().getValue(),
+                                    domain.getChecksum().getMethod(),
+                                    domain.getSize(),
+                                    domain.getInputCorrelationIds().asJava(),
+                                    domain.getCreated(),
+                                    domain.isDownloaded(),
+                                    domain.isDeleted(),
+                                    domain.isPersisted());
     }
 
-    @Override public POutputFile toDomain(OutputFileEntity entity) {
-        return new POutputFile(
-                entity.getId(),
-                entity.getExecId(),
-                entity.getName(),
-                new POutputFile.Digest(entity.getChecksumMethod(), entity.getChecksumValue()),
-                entity.getUrl(),
-                entity.getSizeInBytes(),
-                List.ofAll(entity.getInputCorrelationIds()),
-                entity.getCreated(),
-                entity.isDownloaded(),
-                entity.isDeleted(),
-                entity.isPersisted()
-        );
+    @Override
+    public POutputFile toDomain(OutputFileEntity entity) {
+        return new POutputFile(entity.getId(),
+                               entity.getExecId(),
+                               entity.getName(),
+                               new POutputFile.Digest(entity.getChecksumMethod(), entity.getChecksumValue()),
+                               entity.getUrl(),
+                               entity.getSizeInBytes(),
+                               List.ofAll(entity.getInputCorrelationIds()),
+                               entity.getCreated(),
+                               entity.isDownloaded(),
+                               entity.isDeleted(),
+                               entity.isPersisted());
     }
 
 }

@@ -169,32 +169,29 @@ public class OrderController implements IResourceController<OrderDto> {
     @Value("${regards.order.secret}")
     private String secret;
 
-    @ResourceAccess(description = "Validate current basket and create corresponding order", role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Validate current basket and create corresponding order",
+        role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.POST, path = USER_ROOT_PATH)
     public ResponseEntity<EntityModel<OrderDto>> createOrder(@RequestBody OrderRequest orderRequest)
-            throws IllegalStateException, EntityInvalidException, EmptyBasketException {
+        throws IllegalStateException, EntityInvalidException, EmptyBasketException {
         Basket basket = basketService.find(authResolver.getUser());
-        Order order = orderService.createOrder(
-                basket,
-                orderRequest.getLabel(),
-                orderRequest.getOnSuccessUrl(),
-                orderSettingsService.getUserOrderParameters().getSubOrderDuration()
-        );
+        Order order = orderService.createOrder(basket,
+                                               orderRequest.getLabel(),
+                                               orderRequest.getOnSuccessUrl(),
+                                               orderSettingsService.getUserOrderParameters().getSubOrderDuration());
         return new ResponseEntity<>(toResource(OrderDto.fromOrder(order)), HttpStatus.CREATED);
     }
 
     @ResourceAccess(description = "Validate current basket and create corresponding order", role = DefaultRole.ADMIN)
     @RequestMapping(method = RequestMethod.POST, path = ADMIN_ROOT_PATH)
     public ResponseEntity<EntityModel<OrderDto>> createAppOrder(@RequestBody OrderRequest orderRequest)
-            throws IllegalStateException, EntityInvalidException, EmptyBasketException {
+        throws IllegalStateException, EntityInvalidException, EmptyBasketException {
         String user = authResolver.getUser();
         Basket basket = basketService.find(user);
-        Order order = orderService.createOrder(
-                basket,
-                orderRequest.getLabel(),
-                orderRequest.getOnSuccessUrl(),
-                orderSettingsService.getAppSubOrderDuration()
-        );
+        Order order = orderService.createOrder(basket,
+                                               orderRequest.getLabel(),
+                                               orderRequest.getOnSuccessUrl(),
+                                               orderSettingsService.getAppSubOrderDuration());
         return new ResponseEntity<>(toResource(OrderDto.fromOrder(order)), HttpStatus.CREATED);
     }
 
@@ -225,8 +222,9 @@ public class OrderController implements IResourceController<OrderDto> {
 
     @ResourceAccess(description = "Ask for an order to be restarted", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.POST, path = RESTART_ORDER_PATH)
-    public ResponseEntity<EntityModel<OrderDto>> restartOrder(@PathVariable("orderId") Long orderId, @RequestBody OrderRequest orderRequest)
-            throws ModuleException {
+    public ResponseEntity<EntityModel<OrderDto>> restartOrder(@PathVariable("orderId") Long orderId,
+                                                              @RequestBody OrderRequest orderRequest)
+        throws ModuleException {
         Order order = orderService.restart(orderId, orderRequest.getLabel(), orderRequest.getOnSuccessUrl());
         return new ResponseEntity<>(toResource(OrderDto.fromOrder(order)), HttpStatus.CREATED);
     }
@@ -252,11 +250,12 @@ public class OrderController implements IResourceController<OrderDto> {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Find all specified user orders or all users orders matching given filters", role = DefaultRole.EXPLOIT)
+    @ResourceAccess(description = "Find all specified user orders or all users orders matching given filters",
+        role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.POST, path = SEARCH_ORDER_PATH)
     public ResponseEntity<PagedModel<EntityModel<OrderDto>>> findAllAdmin(
-            @PageableDefault(sort = "creationDate", direction = Sort.Direction.ASC) Pageable pageRequest,
-            @RequestBody SearchRequestParameters filters) {
+        @PageableDefault(sort = "creationDate", direction = Sort.Direction.ASC) Pageable pageRequest,
+        @RequestBody SearchRequestParameters filters) {
         Page<Order> orderPage = orderService.searchOrders(filters, pageRequest);
         return ResponseEntity.ok(toPagedResources(orderPage.map(OrderDto::fromOrder), orderDtoPagedResourcesAssembler));
     }
@@ -264,9 +263,9 @@ public class OrderController implements IResourceController<OrderDto> {
     @ResourceAccess(description = "Generate a CSV file with all orders", role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.GET, path = ADMIN_ROOT_PATH + CSV, produces = "text/csv")
     public void generateCsv(@RequestParam(name = "status", required = false) OrderStatus status,
-            @RequestParam(name = "from", required = false) String fromParam,
-            @RequestParam(name = "to", required = false) String toParam, HttpServletResponse response)
-            throws IOException {
+                            @RequestParam(name = "from", required = false) String fromParam,
+                            @RequestParam(name = "to", required = false) String toParam,
+                            HttpServletResponse response) throws IOException {
         OffsetDateTime from = Strings.isNullOrEmpty(fromParam) ? null : OffsetDateTimeAdapter.parse(fromParam);
         OffsetDateTime to = Strings.isNullOrEmpty(toParam) ? null : OffsetDateTimeAdapter.parse(toParam);
         response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=orders.csv");
@@ -278,21 +277,24 @@ public class OrderController implements IResourceController<OrderDto> {
     @RequestMapping(method = RequestMethod.GET, path = USER_ROOT_PATH)
     public ResponseEntity<PagedModel<EntityModel<OrderDto>>> findAll(Pageable pageRequest) {
         String user = authResolver.getUser();
-        return ResponseEntity.ok(toPagedResources(
-                orderService.findAll(user, pageRequest, OrderStatus.DELETED).map(OrderDto::fromOrder),
-                orderDtoPagedResourcesAssembler
-        ));
+        return ResponseEntity.ok(toPagedResources(orderService.findAll(user, pageRequest, OrderStatus.DELETED)
+                                                              .map(OrderDto::fromOrder),
+                                                  orderDtoPagedResourcesAssembler));
     }
 
-    @ResourceAccess(description = "Download a Zip file containing all currently available files", role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Download a Zip file containing all currently available files",
+        role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = ZIP_DOWNLOAD_PATH)
-    public ResponseEntity<Void> downloadAllAvailableFiles(@PathVariable("orderId") Long orderId, HttpServletResponse response) throws EntityNotFoundException {
+    public ResponseEntity<Void> downloadAllAvailableFiles(@PathVariable("orderId") Long orderId,
+                                                          HttpServletResponse response) throws EntityNotFoundException {
         Order order = orderService.loadSimple(orderId);
         if (order == null) {
             throw new EntityNotFoundException(orderId.toString(), Order.class);
         }
-        response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=order_" + orderId + "_"
-                + OffsetDateTime.now().toString().replaceAll(" ", "-") + ".zip");
+        response.addHeader(HttpHeaders.CONTENT_DISPOSITION,
+                           "attachment;filename=order_" + orderId + "_" + OffsetDateTime.now()
+                                                                                        .toString()
+                                                                                        .replaceAll(" ", "-") + ".zip");
         response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
         List<OrderDataFile> availableFiles = new ArrayList<>(dataFileService.findAllAvailables(orderId));
         // No file available
@@ -313,7 +315,8 @@ public class OrderController implements IResourceController<OrderDto> {
 
     @ResourceAccess(description = "Download a Metalink file containing all files", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.GET, path = METALINK_DOWNLOAD_PATH)
-    public ResponseEntity<Void> downloadMetalinkFile(@PathVariable("orderId") Long orderId, HttpServletResponse response) throws EntityNotFoundException {
+    public ResponseEntity<Void> downloadMetalinkFile(@PathVariable("orderId") Long orderId,
+                                                     HttpServletResponse response) throws EntityNotFoundException {
         Order order = orderService.loadSimple(orderId);
         if (order == null) {
             throw new EntityNotFoundException(orderId.toString(), Order.class);
@@ -322,10 +325,12 @@ public class OrderController implements IResourceController<OrderDto> {
 
     }
 
-    @ResourceAccess(description = "Download a metalink file containing all files granted by a token", role = DefaultRole.PUBLIC)
+    @ResourceAccess(description = "Download a metalink file containing all files granted by a token",
+        role = DefaultRole.PUBLIC)
     @RequestMapping(method = RequestMethod.GET, path = PUBLIC_METALINK_DOWNLOAD_PATH)
-    public ResponseEntity<Void> publicDownloadMetalinkFile(@RequestParam(name = IOrderService.ORDER_TOKEN) String validityToken, HttpServletResponse response)
-            throws EntityNotFoundException {
+    public ResponseEntity<Void> publicDownloadMetalinkFile(
+        @RequestParam(name = IOrderService.ORDER_TOKEN) String validityToken, HttpServletResponse response)
+        throws EntityNotFoundException {
         Long orderId;
         try {
             Jwts.parser().setSigningKey(Encoders.BASE64.encode(secret.getBytes())).parse(validityToken);
@@ -345,6 +350,7 @@ public class OrderController implements IResourceController<OrderDto> {
 
     /**
      * Fill Response headers and create streaming response
+     *
      * @throws EntityNotFoundException
      */
     private ResponseEntity<Void> createMetalinkDownloadResponse(Order order, HttpServletResponse response) {
@@ -373,7 +379,8 @@ public class OrderController implements IResourceController<OrderDto> {
         if (error != null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } else {
-            response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=order_" + order.getId() + "_" + OffsetDateTime.now() + ".metalink");
+            response.addHeader(HttpHeaders.CONTENT_DISPOSITION,
+                               "attachment;filename=order_" + order.getId() + "_" + OffsetDateTime.now() + ".metalink");
             response.setContentType("application/metalink+xml");
             try {
                 orderDownloadService.downloadOrderMetalink(order.getId(), response.getOutputStream());
@@ -391,32 +398,67 @@ public class OrderController implements IResourceController<OrderDto> {
 
         EntityModel<OrderDto> resource = resourceService.toResource(orderDto);
 
-        resourceService.addLink(resource, this.getClass(), "retrieveOrder", LinkRels.SELF, MethodParamFactory.build(Long.class, orderDto.getId()));
-        resourceService.addLink(resource, this.getClass(), "findAll", LinkRels.LIST, MethodParamFactory.build(Pageable.class));
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "retrieveOrder",
+                                LinkRels.SELF,
+                                MethodParamFactory.build(Long.class, orderDto.getId()));
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "findAll",
+                                LinkRels.LIST,
+                                MethodParamFactory.build(Pageable.class));
 
         if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.DOWNLOAD)) {
-            resourceService.addLink(resource, this.getClass(), "downloadAllAvailableFiles", LinkRelation.of("download"),
-                                    MethodParamFactory.build(Long.class, orderDto.getId()), MethodParamFactory.build(HttpServletResponse.class)
-            );
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "downloadAllAvailableFiles",
+                                    LinkRelation.of("download"),
+                                    MethodParamFactory.build(Long.class, orderDto.getId()),
+                                    MethodParamFactory.build(HttpServletResponse.class));
         }
         if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.PAUSE)) {
-            resourceService.addLink(resource, this.getClass(), "pauseOrder", LinkRelation.of("pause"), MethodParamFactory.build(Long.class, orderDto.getId()));
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "pauseOrder",
+                                    LinkRelation.of("pause"),
+                                    MethodParamFactory.build(Long.class, orderDto.getId()));
         }
         if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.RESUME)) {
-            resourceService.addLink(resource, this.getClass(), "resumeOrder", LinkRelation.of("resume"), MethodParamFactory.build(Long.class, orderDto.getId()));
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "resumeOrder",
+                                    LinkRelation.of("resume"),
+                                    MethodParamFactory.build(Long.class, orderDto.getId()));
         }
         if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.DELETE)) {
-            resourceService.addLink(resource, this.getClass(), "deleteOrder", LinkRels.DELETE, MethodParamFactory.build(Long.class, orderDto.getId()));
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "deleteOrder",
+                                    LinkRels.DELETE,
+                                    MethodParamFactory.build(Long.class, orderDto.getId()));
         }
         if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.REMOVE)) {
-            resourceService.addLink(resource, this.getClass(), "removeOrder", LinkRelation.of("remove"), MethodParamFactory.build(Long.class, orderDto.getId()));
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "removeOrder",
+                                    LinkRelation.of("remove"),
+                                    MethodParamFactory.build(Long.class, orderDto.getId()));
         }
         if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.RESTART)) {
-            resourceService.addLink(resource, this.getClass(), "restartOrder", LinkRelation.of("restart"),
-                                    MethodParamFactory.build(Long.class, orderDto.getId()), MethodParamFactory.build(OrderRequest.class));
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "restartOrder",
+                                    LinkRelation.of("restart"),
+                                    MethodParamFactory.build(Long.class, orderDto.getId()),
+                                    MethodParamFactory.build(OrderRequest.class));
         }
         if (orderService.isActionAvailable(orderDto.getId(), OrderService.Action.RETRY)) {
-            resourceService.addLink(resource, this.getClass(), "retryOrder", LinkRelation.of("retry"), MethodParamFactory.build(Long.class, orderDto.getId()));
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "retryOrder",
+                                    LinkRelation.of("retry"),
+                                    MethodParamFactory.build(Long.class, orderDto.getId()));
         }
         return resource;
     }

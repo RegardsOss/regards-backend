@@ -18,12 +18,13 @@
  */
 package fr.cnes.regards.modules.indexer.domain.reminder;
 
-import java.time.OffsetDateTime;
-
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
+
+import java.time.OffsetDateTime;
 
 /**
  * In case another reminder exist one day (by now only SearchAfterReminder does)
+ *
  * @author oroussel
  */
 public abstract class AbstractReminder implements IIndexable {

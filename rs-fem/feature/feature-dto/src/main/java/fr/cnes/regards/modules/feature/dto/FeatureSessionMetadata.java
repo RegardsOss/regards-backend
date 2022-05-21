@@ -18,17 +18,15 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
-import java.util.Arrays;
-import java.util.List;
+import org.springframework.util.Assert;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
-
-import org.springframework.util.Assert;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author kevin
- *
  */
 public class FeatureSessionMetadata extends FeatureMetadata {
 
@@ -61,25 +59,30 @@ public class FeatureSessionMetadata extends FeatureMetadata {
     }
 
     /**
-    
      * Build feature metadata
+     *
      * @param sessionOwner Owner of the session
-     * @param session session
-     * @param storages storage metadata
+     * @param session      session
+     * @param storages     storage metadata
      */
-    public static FeatureSessionMetadata build(String sessionOwner, String session, PriorityLevel priority,
-            StorageMetadata... storages) {
+    public static FeatureSessionMetadata build(String sessionOwner,
+                                               String session,
+                                               PriorityLevel priority,
+                                               StorageMetadata... storages) {
         return FeatureSessionMetadata.build(sessionOwner, session, priority, Arrays.asList(storages));
     }
 
     /**
      * Build feature metadata
+     *
      * @param sessionOwner Owner of the session
-     * @param session session
-     * @param storages storage metadata
+     * @param session      session
+     * @param storages     storage metadata
      */
-    public static FeatureSessionMetadata build(String sessionOwner, String session, PriorityLevel priority,
-            List<StorageMetadata> storages) {
+    public static FeatureSessionMetadata build(String sessionOwner,
+                                               String session,
+                                               PriorityLevel priority,
+                                               List<StorageMetadata> storages) {
         Assert.hasLength(sessionOwner, MISSING_SESSION_OWNER);
         Assert.hasLength(session, MISSING_SESSION);
         Assert.notNull(storages, MISSING_STORAGE_METADATA);

@@ -18,6 +18,14 @@
  */
 package fr.cnes.regards.modules.dam.rest.dataaccess;
 
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.dto.DatasetWithAccessRight;
+import fr.cnes.regards.modules.dam.service.dataaccess.IDatasetWithAccessRightService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,23 +36,11 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.modules.dam.domain.dataaccess.accessright.dto.DatasetWithAccessRight;
-import fr.cnes.regards.modules.dam.service.dataaccess.IDatasetWithAccessRightService;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Handle datasets access rights
+ *
  * @author Sébastien Binda
  */
 @RestController
@@ -69,20 +65,21 @@ public class DatasetWithAccessRightController implements IResourceController<Dat
 
     /**
      * Retrieve datasets with access rights
+     *
      * @param accessGroupName
-     * @param label String for label filter
-     * @param pageRequest the page request
-     * @param assembler the dataset resources assembler
+     * @param label           String for label filter
+     * @param pageRequest     the page request
+     * @param assembler       the dataset resources assembler
      * @return the page of dataset wrapped in an HTTP response
      * @throws ModuleException
      */
     @RequestMapping(value = GROUP_PATH, method = RequestMethod.GET)
     @ResourceAccess(description = "endpoint to retrieve the list of all datasets")
     public ResponseEntity<PagedModel<EntityModel<DatasetWithAccessRight>>> retrieveDatasets(
-            @PathVariable(name = "accessGroupName") String accessGroupName,
-            @RequestParam(name = "datasetLabel", required = false) String label,
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageRequest,
-            PagedResourcesAssembler<DatasetWithAccessRight> assembler) throws ModuleException {
+        @PathVariable(name = "accessGroupName") String accessGroupName,
+        @RequestParam(name = "datasetLabel", required = false) String label,
+        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageRequest,
+        PagedResourcesAssembler<DatasetWithAccessRight> assembler) throws ModuleException {
         final Page<DatasetWithAccessRight> datasetsWithAR = service.search(label, accessGroupName, pageRequest);
         final PagedModel<EntityModel<DatasetWithAccessRight>> resources = toPagedResources(datasetsWithAR, assembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
@@ -92,7 +89,10 @@ public class DatasetWithAccessRightController implements IResourceController<Dat
     public EntityModel<DatasetWithAccessRight> toResource(DatasetWithAccessRight element, Object... extras) {
         EntityModel<DatasetWithAccessRight> resource = resourceService.toResource(element);
         if (element.getAccessRight() != null) {
-            resourceService.addLink(resource, AccessRightController.class, "deleteAccessRight", LinkRels.DELETE,
+            resourceService.addLink(resource,
+                                    AccessRightController.class,
+                                    "deleteAccessRight",
+                                    LinkRels.DELETE,
                                     MethodParamFactory.build(Long.class, element.getAccessRight().getId()));
         }
         return resourceService.toResource(element);

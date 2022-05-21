@@ -27,6 +27,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Static context spring accessor
+ *
  * @author oroussel
  */
 @Component
@@ -56,6 +57,7 @@ public class SpringContext implements ApplicationContextAware, ApplicationListen
      * example of this behavior is receiving unproxied references to some beans, such as beans which were supposed
      * to have transactional semantics applied by AOP. By waiting for the context refresh event, the likelihood of
      * encountering such behavior is greatly reduced.
+     *
      * @return the set context, or {@code null} if the holder bean has not been initialized
      */
     public static ApplicationContext getApplicationContext() {
@@ -73,8 +75,9 @@ public class SpringContext implements ApplicationContextAware, ApplicationListen
 
     /**
      * Retrieved configured bean/value
+     *
      * @param beanName bean or name value
-     * @param <T> Type of expected bean or value
+     * @param <T>      Type of expected bean or value
      * @return guess
      */
     @SuppressWarnings("unchecked")

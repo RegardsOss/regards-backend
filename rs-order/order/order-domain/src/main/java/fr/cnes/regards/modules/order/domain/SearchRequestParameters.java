@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.modules.order.domain;
 
+import fr.cnes.regards.framework.jpa.restriction.DatesRangeRestriction;
+import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
+import fr.cnes.regards.framework.jpa.utils.AbstractSearchParameters;
+
 import javax.validation.Valid;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
-
-import fr.cnes.regards.framework.jpa.restriction.DatesRangeRestriction;
-import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
-import fr.cnes.regards.framework.jpa.utils.AbstractSearchParameters;
 
 /**
  * Allows complex research on {@link Order}
@@ -43,8 +43,7 @@ public class SearchRequestParameters implements AbstractSearchParameters<Order> 
     private DatesRangeRestriction creationDate = new DatesRangeRestriction();
 
     public static SearchRequestParameters build() {
-        return new SearchRequestParameters()
-                .withStatusesExcluded();
+        return new SearchRequestParameters().withStatusesExcluded();
     }
 
     private Boolean waitingForUser;
@@ -54,7 +53,9 @@ public class SearchRequestParameters implements AbstractSearchParameters<Order> 
         return this;
     }
 
-    public Boolean getWaitingForUser() { return waitingForUser; }
+    public Boolean getWaitingForUser() {
+        return waitingForUser;
+    }
 
     public SearchRequestParameters withOwner(String owner) {
         this.owner = owner;
@@ -80,9 +81,11 @@ public class SearchRequestParameters implements AbstractSearchParameters<Order> 
         return this;
     }
 
-    public ValuesRestriction<OrderStatus> getStatuses() { return this.statuses; }
+    public ValuesRestriction<OrderStatus> getStatuses() {
+        return this.statuses;
+    }
 
-    public SearchRequestParameters withStatusesIncluded(OrderStatus ...status) {
+    public SearchRequestParameters withStatusesIncluded(OrderStatus... status) {
         this.statuses = new ValuesRestriction<OrderStatus>().withInclude(Arrays.asList(status));
         return this;
     }
@@ -92,7 +95,7 @@ public class SearchRequestParameters implements AbstractSearchParameters<Order> 
         return this;
     }
 
-    public SearchRequestParameters withStatusesExcluded(OrderStatus ...status) {
+    public SearchRequestParameters withStatusesExcluded(OrderStatus... status) {
         this.statuses = new ValuesRestriction<OrderStatus>().withExclude(Arrays.asList(status));
         return this;
     }

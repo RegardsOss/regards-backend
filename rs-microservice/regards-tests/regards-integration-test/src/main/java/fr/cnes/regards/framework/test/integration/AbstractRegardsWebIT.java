@@ -25,8 +25,9 @@ import org.springframework.test.context.ContextConfiguration;
 
 /**
  * Class AbstractRegardsWebIT
- *
+ * <p>
  * Overides AbstractRegardsIT to change the WebEnvironement from Mock to defnied port.
+ *
  * @author Sébastien Binda
  */
 @ContextConfiguration(classes = { DefaultTestFeignConfiguration.class })

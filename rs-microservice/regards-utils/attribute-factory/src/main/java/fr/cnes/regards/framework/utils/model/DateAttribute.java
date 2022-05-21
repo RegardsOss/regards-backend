@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.framework.utils.model;
 
+import fr.cnes.regards.framework.utils.metamodel.MetaAttribute;
+
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 
-import fr.cnes.regards.framework.utils.metamodel.MetaAttribute;
-
 /**
  * Cette classe represente une date dont la precision est a la journee
- * 
- * @author Christophe Mertz
  *
+ * @author Christophe Mertz
  */
 public class DateAttribute extends Attribute {
 
@@ -41,12 +40,11 @@ public class DateAttribute extends Attribute {
 
     /**
      * Ajoute une valeur a l'attribut La classe de l'objet en entree doit correspondre avec la classe de l'attribut
-     * 
-     * @param value
-     *            La nouvelle valeur de l'attribut
+     *
+     * @param value La nouvelle valeur de l'attribut
      */
     public void addValue(Long value) {
         Date date = new Date(value);
-        super.addValue(OffsetDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC")));        
+        super.addValue(OffsetDateTime.ofInstant(date.toInstant(), ZoneId.of("UTC")));
     }
 }

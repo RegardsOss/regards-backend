@@ -18,19 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -40,6 +27,14 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.service.request.IRequestRetryService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
+import java.util.*;
 
 /**
  * This job handles request retry
@@ -70,7 +65,7 @@ public class RequestRetryJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
 
         // Retrieve request criteria payload
         criteria = getValue(parameters, CRITERIA_JOB_PARAM_NAME);
@@ -110,7 +105,8 @@ public class RequestRetryJob extends AbstractJob<Void> {
             nbRelaunchedRequests += byRequestType.size();
             advanceCompletion();
         } while (requestsPage.hasNext());
-        logger.debug("Job handled for {} AbstractRequest(s) in {}ms", nbRelaunchedRequests,
+        logger.debug("Job handled for {} AbstractRequest(s) in {}ms",
+                     nbRelaunchedRequests,
                      System.currentTimeMillis() - start);
     }
 

@@ -18,11 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service.workflow.state;
 
-import java.time.LocalDateTime;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
@@ -32,6 +27,10 @@ import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.instance.service.accountunlock.IAccountUnlockTokenService;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.project.service.ITenantService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
 
 /**
  * State class of the State Pattern implementing the available actions on a {@link Account} in status INACTIVE.
@@ -55,11 +54,18 @@ public class InactiveState extends AbstractDeletableState {
      * @param passwordResetService
      * @param accountUnlockTokenService
      */
-    public InactiveState(IProjectUsersClient projectUsersClient, IAccountRepository accountRepository,
-            ITenantService tenantService, IRuntimeTenantResolver runtimeTenantResolver,
-            IPasswordResetService passwordResetService, IAccountUnlockTokenService accountUnlockTokenService,
-            @Value("${regards.accounts.validity.duration}") Long accountValidityDuration) {
-        super(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver, passwordResetService,
+    public InactiveState(IProjectUsersClient projectUsersClient,
+                         IAccountRepository accountRepository,
+                         ITenantService tenantService,
+                         IRuntimeTenantResolver runtimeTenantResolver,
+                         IPasswordResetService passwordResetService,
+                         IAccountUnlockTokenService accountUnlockTokenService,
+                         @Value("${regards.accounts.validity.duration}") Long accountValidityDuration) {
+        super(projectUsersClient,
+              accountRepository,
+              tenantService,
+              runtimeTenantResolver,
+              passwordResetService,
               accountUnlockTokenService);
         this.accountValidityDuration = accountValidityDuration;
     }

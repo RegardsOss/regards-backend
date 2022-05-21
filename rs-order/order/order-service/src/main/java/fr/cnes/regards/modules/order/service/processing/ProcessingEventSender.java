@@ -37,7 +37,6 @@ import java.util.Collection;
  * Wrapper around {@link IPublisher}, used in  to be able to modify the sending behaviour during tests.
  *
  * @author Guillaume Andrieu
- *
  */
 @Service
 @Profile("!test")
@@ -72,7 +71,10 @@ public class ProcessingEventSender implements IProcessingEventSender {
 
     @Override
     public Try<DownloadedOutputFilesEvent> sendDownloadedFilesNotification(Collection<OrderDataFile> dataFiles) {
-        return sendDownloadedFilesNotification(new DownloadedOutputFilesEvent(List.ofAll(dataFiles).map(OrderDataFile::getUrl)
-                .flatMap(url -> Try.of(() -> new URL(url)).toOption()).toList()));
+        return sendDownloadedFilesNotification(new DownloadedOutputFilesEvent(List.ofAll(dataFiles)
+                                                                                  .map(OrderDataFile::getUrl)
+                                                                                  .flatMap(url -> Try.of(() -> new URL(
+                                                                                      url)).toOption())
+                                                                                  .toList()));
     }
 }

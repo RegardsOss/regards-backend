@@ -18,11 +18,13 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
-import java.time.OffsetDateTime;
-import java.util.Comparator;
-import java.util.Set;
-import java.util.UUID;
-
+import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.storage.dao.IFileCopyRequestRepository;
+import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
+import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
+import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -30,20 +32,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.modules.storage.dao.IFileCopyRequestRepository;
-import fr.cnes.regards.modules.storage.domain.database.request.FileCopyRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
-import fr.cnes.regards.modules.storage.domain.flow.AvailabilityFlowItem;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
+import java.time.OffsetDateTime;
+import java.util.Comparator;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Task to be executed once locked by {@link FileCopyRequestService}
  *
  * @author Sébastien Binda
- *
  */
 public class CopyRequestTask implements Task {
 
@@ -60,8 +57,10 @@ public class CopyRequestTask implements Task {
 
     private final RequestsGroupService reqGrpService;
 
-    public CopyRequestTask(FileCacheRequestService fileCacheReqService, IFileCopyRequestRepository copyRepository,
-            RequestsGroupService reqGrpService, FileRequestStatus status) {
+    public CopyRequestTask(FileCacheRequestService fileCacheReqService,
+                           IFileCopyRequestRepository copyRepository,
+                           RequestsGroupService reqGrpService,
+                           FileRequestStatus status) {
         super();
         this.status = status;
         this.fileCacheReqService = fileCacheReqService;
@@ -94,7 +93,10 @@ public class CopyRequestTask implements Task {
                 copyRepository.saveAll(pageResp.getContent());
 
                 if (!checksums.isEmpty()) {
-                    reqGrpService.granted(fileCacheGroupId, FileRequestType.AVAILABILITY, checksums.size(), true,
+                    reqGrpService.granted(fileCacheGroupId,
+                                          FileRequestType.AVAILABILITY,
+                                          checksums.size(),
+                                          true,
                                           expDate);
                     fileCacheReqService.makeAvailable(checksums, expDate, fileCacheGroupId);
                 }

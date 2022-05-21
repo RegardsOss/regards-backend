@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.storage.domain.dto.cache.CacheDTO;
+import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,16 +29,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.storage.domain.dto.cache.CacheDTO;
-import fr.cnes.regards.modules.storage.service.cache.CacheService;
-
 /**
  * Controller to provide information about cache system
  *
  * @author sbinda
- *
  */
 @RestController
 @RequestMapping(CacheController.CACHE_PATH)
@@ -48,8 +46,8 @@ public class CacheController {
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Download one file by checksum.", role = DefaultRole.EXPLOIT)
     public ResponseEntity<CacheDTO> getOccupation() {
-        return new ResponseEntity<CacheDTO>(
-                CacheDTO.build(cacheService.getCacheSizeLimit(), cacheService.getCacheSizeUsedBytes()), HttpStatus.OK);
+        return new ResponseEntity<CacheDTO>(CacheDTO.build(cacheService.getCacheSizeLimit(),
+                                                           cacheService.getCacheSizeUsedBytes()), HttpStatus.OK);
     }
 
 }

@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.indexer.domain.summary;
 
 /**
  * A simple POJO that contains filesCount and filesSize properties
+ *
  * @author oroussel
  */
 public class FilesSummary {

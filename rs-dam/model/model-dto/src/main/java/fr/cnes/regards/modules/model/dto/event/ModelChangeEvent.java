@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.modules.model.dto.event;
 
-import org.springframework.util.Assert;
-
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
+import org.springframework.util.Assert;
 
 /**
  * Event sent as soon as a change on the model is detected (creation, update or deletion)
- * @author Marc SORDI
  *
+ * @author Marc SORDI
  */
 @Event(target = Target.ALL)
 public class ModelChangeEvent implements ISubscribable {

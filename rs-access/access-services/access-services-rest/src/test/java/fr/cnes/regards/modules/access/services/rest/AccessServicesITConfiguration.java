@@ -67,8 +67,9 @@ public class AccessServicesITConfiguration {
         ICatalogServicesClient client = Mockito.mock(ICatalogServicesClient.class);
 
         Mockito.doReturn(new ResponseEntity<>(HateoasUtils.wrapList(Lists.newArrayList(dummyPluginConfigurationDto())),
-                HttpStatus.OK)).when(client)
-                .retrieveServices(Lists.newArrayList("datasetFromConfigClass"), Lists.newArrayList(ServiceScope.MANY));
+                                              HttpStatus.OK))
+               .when(client)
+               .retrieveServices(Lists.newArrayList("datasetFromConfigClass"), Lists.newArrayList(ServiceScope.MANY));
 
         return client;
     }
@@ -78,7 +79,8 @@ public class AccessServicesITConfiguration {
         PluginUtils.setup();
         PluginMetaData metaData = PluginUtils.createPluginMetaData(SampleServicePlugin.class);
         PluginConfiguration pluginConfiguration = new PluginConfiguration("testConf",
-                SampleServicePlugin.class.getAnnotation(Plugin.class).id());
+                                                                          SampleServicePlugin.class.getAnnotation(Plugin.class)
+                                                                                                   .id());
         pluginConfiguration.setId(ID);
         pluginConfiguration.setMetaDataAndPluginId(metaData);
         ID = ID + 1;

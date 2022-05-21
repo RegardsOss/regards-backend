@@ -41,10 +41,11 @@ import org.springframework.test.context.TestPropertySource;
 
 /**
  * REST module controller
+ *
  * @author Marc Sordi
  */
 @TestPropertySource(locations = { "classpath:test.properties" },
-        properties = { "spring.jpa.properties.hibernate.default_schema=dam_ag_rest" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=dam_ag_rest" })
 @ContextConfiguration(classes = { DamRestConfiguration.class })
 public class AccessGroupControllerIT extends AbstractRegardsIT {
 
@@ -84,9 +85,9 @@ public class AccessGroupControllerIT extends AbstractRegardsIT {
         runtimetenantResolver.forceTenant(getDefaultTenant());
         // Replace stubs by mocks
         Mockito.when(projectUserClientMock.retrieveProjectUserByEmail(ArgumentMatchers.any()))
-                .thenReturn(new ResponseEntity<>(EntityModel.of(new ProjectUser()), HttpStatus.OK));
+               .thenReturn(new ResponseEntity<>(EntityModel.of(new ProjectUser()), HttpStatus.OK));
         Mockito.when(projectUserClientMock.retrieveProjectUserByEmail(ArgumentMatchers.any()))
-                .thenReturn(new ResponseEntity<>(EntityModel.of(new ProjectUser()), HttpStatus.OK));
+               .thenReturn(new ResponseEntity<>(EntityModel.of(new ProjectUser()), HttpStatus.OK));
         ag1 = new AccessGroup(AG1_NAME);
         ag1 = dao.save(ag1);
         AccessGroup ag2 = new AccessGroup(AG2_NAME);
@@ -98,7 +99,8 @@ public class AccessGroupControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_DAM_SET_810")
     public void testRetrieveAccessGroupsList() {
         performDefaultGet(AccessGroupController.PATH_ACCESS_GROUPS,
-                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT), ACCESS_GROUPS_ERROR_MSG);
+                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT),
+                          ACCESS_GROUPS_ERROR_MSG);
     }
 
     @Test
@@ -113,7 +115,8 @@ public class AccessGroupControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_DAM_SET_810")
     public void testRetrieveAccessGroup() {
         performDefaultGet(AccessGroupController.PATH_ACCESS_GROUPS + AccessGroupController.PATH_ACCESS_GROUPS_NAME,
-                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT), ACCESS_GROUPS_ERROR_MSG,
+                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT),
+                          ACCESS_GROUPS_ERROR_MSG,
                           AG1_NAME);
     }
 
@@ -121,7 +124,9 @@ public class AccessGroupControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_DAM_SET_810")
     public void testDeleteAccessGroup() {
         performDefaultDelete(AccessGroupController.PATH_ACCESS_GROUPS + AccessGroupController.PATH_ACCESS_GROUPS_NAME,
-                             customizer().expectStatusNoContent(), ACCESS_GROUPS_ERROR_MSG, AG2_NAME);
+                             customizer().expectStatusNoContent(),
+                             ACCESS_GROUPS_ERROR_MSG,
+                             AG2_NAME);
     }
 
     @Test
@@ -129,7 +134,8 @@ public class AccessGroupControllerIT extends AbstractRegardsIT {
     public void testCreateAccessGroup() {
         AccessGroup toBeCreated = new AccessGroup("NameIsNeeded");
 
-        performDefaultPost(AccessGroupController.PATH_ACCESS_GROUPS, toBeCreated,
+        performDefaultPost(AccessGroupController.PATH_ACCESS_GROUPS,
+                           toBeCreated,
                            customizer().expectStatusCreated().expectIsNotEmpty(JSON_PATH_ROOT),
                            ACCESS_GROUPS_ERROR_MSG);
     }

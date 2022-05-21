@@ -22,6 +22,7 @@ import java.util.Arrays;
 
 /**
  * Geometric polygon criterion.
+ *
  * @author oroussel
  */
 public class PolygonCriterion implements ICriterion {

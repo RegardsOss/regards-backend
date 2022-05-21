@@ -36,7 +36,9 @@ public abstract class AbstractSettingService {
     }
 
     public Set<DynamicTenantSetting> retrieve() {
-        return dynamicTenantSettingService.readAll(getSettingList().stream().map(DynamicTenantSetting::getName).collect(Collectors.toSet()));
+        return dynamicTenantSettingService.readAll(getSettingList().stream()
+                                                                   .map(DynamicTenantSetting::getName)
+                                                                   .collect(Collectors.toSet()));
     }
 
     public void resetSettings() throws EntityException {
@@ -53,7 +55,8 @@ public abstract class AbstractSettingService {
         return value;
     }
 
-    private void createSetting(DynamicTenantSetting dynamicTenantSetting) throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
+    private void createSetting(DynamicTenantSetting dynamicTenantSetting)
+        throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
         if (!dynamicTenantSettingService.read(dynamicTenantSetting.getName()).isPresent()) {
             dynamicTenantSettingService.create(dynamicTenantSetting);
         }

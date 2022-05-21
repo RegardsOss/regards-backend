@@ -44,17 +44,17 @@ public class AcceptLicenseAndDownloadTest {
     public void fail_if_license_acceptation_failed() throws Exception {
         CatalogDownloadTester downloader = new CatalogDownloadTester(LicenseAcceptationStatus.FAILURE);
         assertThatExceptionOfType(ModuleException.class).isThrownBy(() -> downloader.acceptLicenseAndDownloadFile(
-                productFactory.authorizedProduct().toString(),
-                fileFactory.validFile()))
-            // Error Message contains http status from licence acceptation (mocked)
-            .withMessageContaining("" + HttpStatus.NO_CONTENT.value());
+                                                            productFactory.authorizedProduct().toString(),
+                                                            fileFactory.validFile()))
+                                                        // Error Message contains http status from licence acceptation (mocked)
+                                                        .withMessageContaining("" + HttpStatus.NO_CONTENT.value());
     }
 
     @Test
     public void send_error_response_if_http_error_occurred_during_licence_acceptation() throws Exception {
         CatalogDownloadTester downloader = new CatalogDownloadTester(LicenseAcceptationStatus.HTTP_ERROR);
         ResponseEntity<Download> response = downloader.acceptLicenseAndDownloadFile(productFactory.authorizedProduct()
-                                                                                        .toString(),
+                                                                                                  .toString(),
                                                                                     fileFactory.validFile());
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -63,7 +63,7 @@ public class AcceptLicenseAndDownloadTest {
     public void accept_license_and_then_download() throws Exception {
         CatalogDownloadTester downloader = new CatalogDownloadTester(LicenseAcceptationStatus.ACCEPTED);
         ResponseEntity<Download> response = downloader.acceptLicenseAndDownloadFile(productFactory.authorizedProduct()
-                                                                                        .toString(),
+                                                                                                  .toString(),
                                                                                     fileFactory.validFile());
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.hasBody()).isTrue();

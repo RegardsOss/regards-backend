@@ -81,27 +81,36 @@ public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsIT {
         String workerId2 = UUID.randomUUID().toString();
         String workerId3 = UUID.randomUUID().toString();
 
-        workerCacheService.registerWorkers(
-                Lists.list(new WorkerHeartBeatEvent(workerId1, workerType1, OffsetDateTime.now()),
-                           new WorkerHeartBeatEvent(workerId2, workerType2, OffsetDateTime.now().minusDays(1))));
+        workerCacheService.registerWorkers(Lists.list(new WorkerHeartBeatEvent(workerId1,
+                                                                               workerType1,
+                                                                               OffsetDateTime.now()),
+                                                      new WorkerHeartBeatEvent(workerId2,
+                                                                               workerType2,
+                                                                               OffsetDateTime.now().minusDays(1))));
 
-        contentTypes1.forEach(contentType -> Assert.assertEquals("Should get a worker", Optional.of(workerType1),
+        contentTypes1.forEach(contentType -> Assert.assertEquals("Should get a worker",
+                                                                 Optional.of(workerType1),
                                                                  workerCacheService.getWorkerTypeByContentType(
-                                                                         contentType)));
+                                                                     contentType)));
 
         Assert.assertEquals("Should not accept request related to a worker that sent outdated heart beat",
                             Optional.empty(),
                             workerCacheService.getWorkerTypeByContentType(contentTypes2.stream().findFirst().get()));
-        Assert.assertEquals("Should not find a worker", Optional.empty(),
+        Assert.assertEquals("Should not find a worker",
+                            Optional.empty(),
                             workerCacheService.getWorkerTypeByContentType("notRecognizedContentType"));
 
         // Check receive new heartbeat + new instance for same workerType
-        workerCacheService.registerWorkers(
-                Lists.list(new WorkerHeartBeatEvent(workerId1, workerType1, OffsetDateTime.now()),
-                           new WorkerHeartBeatEvent(workerId3, workerType2, OffsetDateTime.now())));
-        contentTypes1.forEach(contentType -> Assert.assertEquals("Should get a worker", Optional.of(workerType1),
+        workerCacheService.registerWorkers(Lists.list(new WorkerHeartBeatEvent(workerId1,
+                                                                               workerType1,
+                                                                               OffsetDateTime.now()),
+                                                      new WorkerHeartBeatEvent(workerId3,
+                                                                               workerType2,
+                                                                               OffsetDateTime.now())));
+        contentTypes1.forEach(contentType -> Assert.assertEquals("Should get a worker",
+                                                                 Optional.of(workerType1),
                                                                  workerCacheService.getWorkerTypeByContentType(
-                                                                         contentType)));
+                                                                     contentType)));
     }
 
     @Test
@@ -114,19 +123,22 @@ public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsIT {
 
         String workerId1 = UUID.randomUUID().toString();
 
-        workerCacheService.registerWorkers(
-                Lists.list(new WorkerHeartBeatEvent(workerId1, workerType1, OffsetDateTime.now())));
+        workerCacheService.registerWorkers(Lists.list(new WorkerHeartBeatEvent(workerId1,
+                                                                               workerType1,
+                                                                               OffsetDateTime.now())));
 
-        contentTypes1.forEach(contentType -> Assert.assertEquals("Should get a worker", Optional.of(workerType1),
+        contentTypes1.forEach(contentType -> Assert.assertEquals("Should get a worker",
+                                                                 Optional.of(workerType1),
                                                                  workerCacheService.getWorkerTypeByContentType(
-                                                                         contentType)));
+                                                                     contentType)));
         // remove all worker config - which sends the event to clear WorkerConfig cache
         configManager.resetConfiguration();
         // we dont test events that clears the cache, so let's do it manually
         workerConfigCacheService.cleanCache();
-        contentTypes1.forEach(
-                contentType -> Assert.assertEquals("No workerConf defined, so request refused", Optional.empty(),
-                                                   workerCacheService.getWorkerTypeByContentType(contentType)));
+        contentTypes1.forEach(contentType -> Assert.assertEquals("No workerConf defined, so request refused",
+                                                                 Optional.empty(),
+                                                                 workerCacheService.getWorkerTypeByContentType(
+                                                                     contentType)));
     }
 
     @Test
@@ -134,36 +146,39 @@ public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsIT {
     public void testCacheExpiration() throws InterruptedException {
 
         // Save configuration used by this test
-        workerConfigService.importConfiguration(Sets.newHashSet(
-                new WorkerConfigDto(workerType1, contentTypes1),
-                new WorkerConfigDto(workerType2, contentTypes2)
-        ));
+        workerConfigService.importConfiguration(Sets.newHashSet(new WorkerConfigDto(workerType1, contentTypes1),
+                                                                new WorkerConfigDto(workerType2, contentTypes2)));
 
         String workerId1 = UUID.randomUUID().toString();
         String workerId2 = UUID.randomUUID().toString();
 
-        workerCacheService.registerWorkers(
-                Lists.list(new WorkerHeartBeatEvent(workerId1, workerType1, OffsetDateTime.now()),
-                           new WorkerHeartBeatEvent(workerId2, workerType2, OffsetDateTime.now().minusDays(1))));
+        workerCacheService.registerWorkers(Lists.list(new WorkerHeartBeatEvent(workerId1,
+                                                                               workerType1,
+                                                                               OffsetDateTime.now()),
+                                                      new WorkerHeartBeatEvent(workerId2,
+                                                                               workerType2,
+                                                                               OffsetDateTime.now().minusDays(1))));
 
-        contentTypes1.forEach(contentType -> Assert.assertEquals("Should get a worker", Optional.of(workerType1),
+        contentTypes1.forEach(contentType -> Assert.assertEquals("Should get a worker",
+                                                                 Optional.of(workerType1),
                                                                  workerCacheService.getWorkerTypeByContentType(
-                                                                         contentType)));
+                                                                     contentType)));
 
         // The cache will remove the last heartbeat
         //        Thread.sleep(workerCacheService.EXPIRE_IN_CACHE_DURATION * 1000);
 
         Awaitility.await().atMost(workerCacheService.expireInCacheDuration * 2, TimeUnit.SECONDS).until(() -> {
-                                                                                                               runtimeTenantResolver.forceTenant(getDefaultTenant());
-                                                                                                               return Optional.empty()
-                                                                                                                       .equals(workerCacheService.getWorkerTypeByContentType(contentTypes1.iterator().next()));
-                                                                                                           }
+                                                                                                            runtimeTenantResolver.forceTenant(getDefaultTenant());
+                                                                                                            return Optional.empty()
+                                                                                                                           .equals(workerCacheService.getWorkerTypeByContentType(contentTypes1.iterator().next()));
+                                                                                                        }
 
         );
 
-        contentTypes1.forEach(contentType -> Assert.assertEquals("No more worker", Optional.empty(),
+        contentTypes1.forEach(contentType -> Assert.assertEquals("No more worker",
+                                                                 Optional.empty(),
                                                                  workerCacheService.getWorkerTypeByContentType(
-                                                                         contentType)));
+                                                                     contentType)));
     }
 
     @Test
@@ -178,11 +193,15 @@ public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsIT {
         String workerId2 = UUID.randomUUID().toString();
         String workerId3 = UUID.randomUUID().toString();
 
-        workerCacheService.registerWorkers(
-                Lists.list(new WorkerHeartBeatEvent(workerId1, workerType1, OffsetDateTime.now()),
-                           new WorkerHeartBeatEvent(workerId2, workerType2, OffsetDateTime.now()),
-                           new WorkerHeartBeatEvent(workerId3, workerType3, OffsetDateTime.now())
-                ));
+        workerCacheService.registerWorkers(Lists.list(new WorkerHeartBeatEvent(workerId1,
+                                                                               workerType1,
+                                                                               OffsetDateTime.now()),
+                                                      new WorkerHeartBeatEvent(workerId2,
+                                                                               workerType2,
+                                                                               OffsetDateTime.now()),
+                                                      new WorkerHeartBeatEvent(workerId3,
+                                                                               workerType3,
+                                                                               OffsetDateTime.now())));
         List<String> allContentTypeSet = Lists.newArrayList();
         allContentTypeSet.addAll(contentTypes1);
         allContentTypeSet.addAll(contentTypes2);
@@ -193,8 +212,9 @@ public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsIT {
         while (nbRequests < 100_000L) {
             int randomContentTypeI = new Random().nextInt(allContentTypeSet.size());
             String randomContentType = allContentTypeSet.get(randomContentTypeI);
-            Assert.assertNotEquals("Should get a worker", Optional.empty(),
-                                workerCacheService.getWorkerTypeByContentType(randomContentType));
+            Assert.assertNotEquals("Should get a worker",
+                                   Optional.empty(),
+                                   workerCacheService.getWorkerTypeByContentType(randomContentType));
             if (nbRequests % 10_000L == 0) {
                 LOGGER.info("Running requests {}", nbRequests);
             }
@@ -202,7 +222,7 @@ public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsIT {
         }
 
         int MAX_TEST_DURATION = 1; // 1 second
-        Assert.assertTrue("Should take less than few seconds", before.plusSeconds(MAX_TEST_DURATION)
-                .isAfter(OffsetDateTime.now()));
+        Assert.assertTrue("Should take less than few seconds",
+                          before.plusSeconds(MAX_TEST_DURATION).isAfter(OffsetDateTime.now()));
     }
 }

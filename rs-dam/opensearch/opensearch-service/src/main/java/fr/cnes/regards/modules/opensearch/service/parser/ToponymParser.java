@@ -19,14 +19,6 @@
 
 package fr.cnes.regards.modules.opensearch.service.parser;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -36,10 +28,18 @@ import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometr
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
 import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
 import fr.cnes.regards.modules.toponyms.domain.ToponymDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 /**
  * This {@link IParser} implementation only handles toponyms of the OpenSearch request and returns an
  * {@link ICriterion} describing the Geometry.<br>
+ *
  * @author Iliana Ghazali
  */
 
@@ -48,10 +48,14 @@ public class ToponymParser implements IParser {
     // Class logger
     private static final Logger LOGGER = LoggerFactory.getLogger(ToponymParser.class);
 
-    /** Parameter to retrieve from the opensearch query parameters */
+    /**
+     * Parameter to retrieve from the opensearch query parameters
+     */
     public static final String TOPONYM_BUSINESS_ID = "toponym";
 
-    /** Client to get toponyms */
+    /**
+     * Client to get toponyms
+     */
     private final IToponymsClient toponymClient;
 
     public ToponymParser(IToponymsClient toponymClient) {
@@ -65,8 +69,7 @@ public class ToponymParser implements IParser {
             return null;
         } else {
             try {
-                return ToponymGeometryCriterionBuilder
-                        .build(getToponymGeometry(parameters.getFirst(TOPONYM_BUSINESS_ID)));
+                return ToponymGeometryCriterionBuilder.build(getToponymGeometry(parameters.getFirst(TOPONYM_BUSINESS_ID)));
             } catch (InvalidGeometryException | DataSourceException | EntityNotFoundException e) {
                 throw new OpenSearchParseException(e);
             }
@@ -75,9 +78,10 @@ public class ToponymParser implements IParser {
 
     /**
      * Get a toponym from the toponym server
+     *
      * @param businessId reference of the toponym
      * @return toponym with {@link IGeometry} format
-     * @throws DataSourceException thrown if client could not be called
+     * @throws DataSourceException     thrown if client could not be called
      * @throws EntityNotFoundException thrown if the corresponding toponym was not found in the toponym database
      */
     public IGeometry getToponymGeometry(String businessId) throws DataSourceException, EntityNotFoundException {
@@ -96,7 +100,7 @@ public class ToponymParser implements IParser {
         // Manage request error
         if (!response.getStatusCode().is2xxSuccessful()) {
             throw new DataSourceException(
-                    "Error while calling Toponym client (HTTP STATUS : " + response.getStatusCode());
+                "Error while calling Toponym client (HTTP STATUS : " + response.getStatusCode());
         }
 
         // check if toponym was found in the toponym server, if not throw exception

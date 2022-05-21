@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.opensearch.service.converter;
 
-import java.util.stream.Stream;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.springframework.core.convert.converter.Converter;
+
+import java.util.stream.Stream;
 
 /**
  * @author Xavier-Alexandre Brochard

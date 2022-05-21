@@ -18,13 +18,12 @@
  */
 package fr.cnes.regards.modules.indexer.dao;
 
-import java.util.List;
-import java.util.Set;
-
+import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
-import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Page implementation with facets values

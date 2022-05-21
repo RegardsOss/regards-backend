@@ -97,16 +97,13 @@ import java.util.stream.Collectors;
 
 /**
  * Test class.
+ *
  * @author Sébastien Binda
  */
 @DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @ActiveProfiles({ "indexer-service", "noscheduler" })
-@TestPropertySource(
-    locations = { "classpath:test-indexer.properties" },
-    properties = {
-        "regards.tenant=entity_indexer",
-        "spring.jpa.properties.hibernate.default_schema=entity_indexer"
-    })
+@TestPropertySource(locations = { "classpath:test-indexer.properties" },
+    properties = { "regards.tenant=entity_indexer", "spring.jpa.properties.hibernate.default_schema=entity_indexer" })
 public class EntityIndexerServiceIT extends AbstractRegardsIT {
 
     private static final String SESSION_OWNER = "SOURCE 1";
@@ -174,9 +171,8 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
     @Autowired
     private AgentSnapshotService agentSnapshotService;
 
-
-//    @Autowired
-//    private Gson gson;
+    //    @Autowired
+    //    private Gson gson;
 
     private Dataset dataset;
 
@@ -284,36 +280,39 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
     }
 
     private PluginConfiguration createDataSource() throws ModuleException {
-        Set<IPluginParam> param = IPluginParam
-                .set(IPluginParam.build(TestDataSourcePlugin.MODEL, PluginParameterTransformer.toJson(model)));
+        Set<IPluginParam> param = IPluginParam.set(IPluginParam.build(TestDataSourcePlugin.MODEL,
+                                                                      PluginParameterTransformer.toJson(model)));
         return datasourceService.createDataSource(PluginConfiguration.build(TestDataSourcePlugin.class, null, param));
     }
 
     private PluginConfiguration createDataAccessPlugin()
-            throws EntityInvalidException, EntityNotFoundException, EncryptionException {
-        Set<IPluginParam> param = IPluginParam
-                .set(IPluginParam.build(TestDataAccessRightPlugin.LABEL_PARAM, objects.get(0).getLabel()));
+        throws EntityInvalidException, EntityNotFoundException, EncryptionException {
+        Set<IPluginParam> param = IPluginParam.set(IPluginParam.build(TestDataAccessRightPlugin.LABEL_PARAM,
+                                                                      objects.get(0).getLabel()));
         return PluginConfiguration.build(TestDataAccessRightPlugin.class, null, param);
     }
 
     private PluginConfiguration createNewDataAccessPlugin()
-            throws EntityInvalidException, EntityNotFoundException, EncryptionException {
+        throws EntityInvalidException, EntityNotFoundException, EncryptionException {
         Set<IPluginParam> param = IPluginParam.set(IPluginParam.build(NewDataObjectsAccessPlugin.NB_DAYS_PARAM, 5));
         return PluginConfiguration.build(NewDataObjectsAccessPlugin.class, null, param);
     }
 
     private PluginConfiguration createOldDataAccessPlugin()
-            throws EntityInvalidException, EntityNotFoundException, EncryptionException {
+        throws EntityInvalidException, EntityNotFoundException, EncryptionException {
         Set<IPluginParam> param = IPluginParam.set(IPluginParam.build(NewDataObjectsAccessPlugin.NB_DAYS_PARAM, 5));
-        return pluginService
-                .savePluginConfiguration(PluginConfiguration.build(NewDataObjectsAccessPlugin.class, null, param));
+        return pluginService.savePluginConfiguration(PluginConfiguration.build(NewDataObjectsAccessPlugin.class,
+                                                                               null,
+                                                                               param));
     }
 
     private DataObject createObject(String id, String label) {
         // create dataObjectFeature
-        DataObjectFeature dataObjectFeature =
-                new DataObjectFeature(OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP,
-                                                                                        EntityType.DATA, TENANT, 1), id, label);
+        DataObjectFeature dataObjectFeature = new DataObjectFeature(OaisUniformResourceName.pseudoRandomUrn(
+            OAISIdentifier.AIP,
+            EntityType.DATA,
+            TENANT,
+            1), id, label);
         dataObjectFeature.setSessionOwner(SESSION_OWNER);
         dataObjectFeature.setSession(SESSION);
 
@@ -343,11 +342,14 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         ar = rightsService.createAccessRight(ar);
         indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
 
-        @SuppressWarnings("rawtypes") final SimpleSearchKey<AbstractEntity> searchKey = Searches
-                .onSingleEntity(EntityType.DATA);
+        @SuppressWarnings("rawtypes") final SimpleSearchKey<AbstractEntity> searchKey = Searches.onSingleEntity(
+            EntityType.DATA);
         searchKey.setSearchIndex(TENANT);
-        @SuppressWarnings("rawtypes") Page<AbstractEntity> results = searchService
-                .search(searchKey, 100, ICriterion.contains("groups", "group1", StringMatchType.KEYWORD));
+        @SuppressWarnings("rawtypes") Page<AbstractEntity> results = searchService.search(searchKey,
+                                                                                          100,
+                                                                                          ICriterion.contains("groups",
+                                                                                                              "group1",
+                                                                                                              StringMatchType.KEYWORD));
         Assert.assertEquals(3, results.getTotalElements());
 
     }
@@ -361,13 +363,16 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // 2. Check that no DATA are associated to GROUP1 as no AccessRighrs are created.
         // -------------------------------------------------------------------------------
         runtimeTenantResolver.forceTenant(TENANT);
-        @SuppressWarnings("rawtypes") final SimpleSearchKey<AbstractEntity> searchKey = Searches
-                .onSingleEntity(EntityType.DATA);
+        @SuppressWarnings("rawtypes") final SimpleSearchKey<AbstractEntity> searchKey = Searches.onSingleEntity(
+            EntityType.DATA);
         searchKey.setSearchIndex(TENANT);
-        @SuppressWarnings("rawtypes") Page<AbstractEntity> results = searchService
-                .search(searchKey, 100, ICriterion.all());
+        @SuppressWarnings("rawtypes") Page<AbstractEntity> results = searchService.search(searchKey,
+                                                                                          100,
+                                                                                          ICriterion.all());
         Assert.assertEquals(objects.size(), results.getTotalElements());
-        results = searchService.search(searchKey, 100, ICriterion.contains("groups", "group1", StringMatchType.KEYWORD));
+        results = searchService.search(searchKey,
+                                       100,
+                                       ICriterion.contains("groups", "group1", StringMatchType.KEYWORD));
         Assert.assertEquals(0, results.getTotalElements());
 
         // -------------------------------------------------------------------------------
@@ -379,7 +384,9 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         ar = rightsService.createAccessRight(ar);
         // All data should be only in group1
         indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
-        results = searchService.search(searchKey, 100, ICriterion.contains("groups", "group1", StringMatchType.KEYWORD));
+        results = searchService.search(searchKey,
+                                       100,
+                                       ICriterion.contains("groups", "group1", StringMatchType.KEYWORD));
         Assert.assertEquals(objects.size(), results.getTotalElements());
 
         // -------------------------------------------------------------------------------
@@ -393,7 +400,9 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         results = searchService.search(searchKey,
                                        100,
                                        ICriterion.and(ICriterion.contains("groups", "group1", StringMatchType.KEYWORD),
-                                                      ICriterion.contains("groups", "group2", StringMatchType.KEYWORD)));
+                                                      ICriterion.contains("groups",
+                                                                          "group2",
+                                                                          StringMatchType.KEYWORD)));
         Assert.assertEquals(objects.size(), results.getTotalElements());
 
         // -------------------------------------------------------------------------------
@@ -405,8 +414,12 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // All data should be only in group2
         results = searchService.search(searchKey,
                                        100,
-                                       ICriterion.and(ICriterion.not(ICriterion.contains("groups", "group1", StringMatchType.KEYWORD)),
-                                                      ICriterion.contains("groups", "group2", StringMatchType.KEYWORD)));
+                                       ICriterion.and(ICriterion.not(ICriterion.contains("groups",
+                                                                                         "group1",
+                                                                                         StringMatchType.KEYWORD)),
+                                                      ICriterion.contains("groups",
+                                                                          "group2",
+                                                                          StringMatchType.KEYWORD)));
         Assert.assertEquals(objects.size(), results.getTotalElements());
 
         // -------------------------------------------------------------------------------
@@ -423,15 +436,23 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // All data should be in group2 and only one (DO1) in group3
         results = searchService.search(searchKey,
                                        100,
-                                       ICriterion.and(ICriterion.not(ICriterion.contains("groups", "group1", StringMatchType.KEYWORD)),
+                                       ICriterion.and(ICriterion.not(ICriterion.contains("groups",
+                                                                                         "group1",
+                                                                                         StringMatchType.KEYWORD)),
                                                       ICriterion.contains("groups", "group2", StringMatchType.KEYWORD),
-                                                      ICriterion.contains("groups", "group3", StringMatchType.KEYWORD)));
+                                                      ICriterion.contains("groups",
+                                                                          "group3",
+                                                                          StringMatchType.KEYWORD)));
         Assert.assertEquals(1, results.getTotalElements());
         results = searchService.search(searchKey,
                                        100,
-                                       ICriterion.and(ICriterion.not(ICriterion.contains("groups", "group1", StringMatchType.KEYWORD)),
+                                       ICriterion.and(ICriterion.not(ICriterion.contains("groups",
+                                                                                         "group1",
+                                                                                         StringMatchType.KEYWORD)),
                                                       ICriterion.contains("groups", "group2", StringMatchType.KEYWORD),
-                                                      ICriterion.not(ICriterion.contains("groups", "group3", StringMatchType.KEYWORD))));
+                                                      ICriterion.not(ICriterion.contains("groups",
+                                                                                         "group3",
+                                                                                         StringMatchType.KEYWORD))));
         Assert.assertEquals(objects.size() - 1, results.getTotalElements());
 
         // -------------------------------------------------------------------------------
@@ -444,12 +465,18 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // All data should be in group2 and only one (DO1) in group3
         results = searchService.search(searchKey,
                                        100,
-                                       ICriterion.and(ICriterion.not(ICriterion.contains("groups", "group1", StringMatchType.KEYWORD)),
+                                       ICriterion.and(ICriterion.not(ICriterion.contains("groups",
+                                                                                         "group1",
+                                                                                         StringMatchType.KEYWORD)),
                                                       ICriterion.contains("groups", "group2", StringMatchType.KEYWORD),
-                                                      ICriterion.not(ICriterion.contains("groups", "group3", StringMatchType.KEYWORD))));
+                                                      ICriterion.not(ICriterion.contains("groups",
+                                                                                         "group3",
+                                                                                         StringMatchType.KEYWORD))));
         Assert.assertEquals(objects.size(), results.getTotalElements());
         // No data should be in group3 as "unkown" label is not a valid label of existing objects
-        results = searchService.search(searchKey, 100, ICriterion.contains("groups", "group3", StringMatchType.KEYWORD));
+        results = searchService.search(searchKey,
+                                       100,
+                                       ICriterion.contains("groups", "group3", StringMatchType.KEYWORD));
         Assert.assertEquals(0, results.getTotalElements());
 
         // -------------------------------------------------------------------------------
@@ -460,7 +487,9 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         dataAccessPlugin = pluginService.updatePluginConfiguration(dataAccessPlugin);
         pluginService.cleanPluginCache();
         indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
-        results = searchService.search(searchKey, 100, ICriterion.contains("groups", "group3", StringMatchType.KEYWORD));
+        results = searchService.search(searchKey,
+                                       100,
+                                       ICriterion.contains("groups", "group3", StringMatchType.KEYWORD));
         Assert.assertEquals(1, results.getTotalElements());
 
         // -------------------------------------------------------------------------------
@@ -475,14 +504,18 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         ar4.setDataAccessLevel(DataAccessLevel.INHERITED_ACCESS);
         ar4 = rightsService.createAccessRight(ar4);
         indexerService.updateEntityIntoEs(TENANT, dataset2.getIpId(), OffsetDateTime.now(), false);
-        results = searchService.search(searchKey, 100, ICriterion.contains("groups", "group4", StringMatchType.KEYWORD));
+        results = searchService.search(searchKey,
+                                       100,
+                                       ICriterion.contains("groups", "group4", StringMatchType.KEYWORD));
         Assert.assertEquals(objects.size(), results.getTotalElements());
 
         results = searchService.search(searchKey,
                                        100,
                                        ICriterion.and(ICriterion.contains("groups", "group4", StringMatchType.KEYWORD),
                                                       ICriterion.contains("groups", "group3", StringMatchType.KEYWORD),
-                                                      ICriterion.contains("groups", "group2", StringMatchType.KEYWORD)));
+                                                      ICriterion.contains("groups",
+                                                                          "group2",
+                                                                          StringMatchType.KEYWORD)));
         Assert.assertEquals(1, results.getTotalElements());
 
         // -------------------------------------------------------------------------------
@@ -491,7 +524,9 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         ar3.setAccessLevel(AccessLevel.NO_ACCESS);
         ar3 = rightsService.updateAccessRight(ar3.getId(), ar3);
         indexerService.updateEntityIntoEs(TENANT, dataset.getIpId(), OffsetDateTime.now(), false);
-        results = searchService.search(searchKey, 100, ICriterion.contains("groups", "group3", StringMatchType.KEYWORD));
+        results = searchService.search(searchKey,
+                                       100,
+                                       ICriterion.contains("groups", "group3", StringMatchType.KEYWORD));
         Assert.assertEquals(0, results.getTotalElements());
 
     }
@@ -500,6 +535,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
      * Two goals:
      * -  test that if entities are tagged with ipId we can access them by looking for ipId or virtualId
      * -  test that if entities are tagged with virtualId we can access them by looking for ipId or virtualId
+     *
      * @throws ModuleException
      */
     @Test
@@ -508,10 +544,16 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // so lets try to get them with tag ipId and virtualId to compare results
         final SimpleSearchKey<AbstractEntity> searchKey = Searches.onSingleEntity(EntityType.DATA);
         searchKey.setSearchIndex(TENANT);
-        Page<AbstractEntity> fromIpId = searchService
-                .search(searchKey, 100, ICriterion.contains("tags", dataset.getIpId().toString(), StringMatchType.KEYWORD));
-        Page<AbstractEntity> fromVirtualId = searchService
-                .search(searchKey, 100, ICriterion.contains("tags", dataset.getVirtualId().toString(), StringMatchType.KEYWORD));
+        Page<AbstractEntity> fromIpId = searchService.search(searchKey,
+                                                             100,
+                                                             ICriterion.contains("tags",
+                                                                                 dataset.getIpId().toString(),
+                                                                                 StringMatchType.KEYWORD));
+        Page<AbstractEntity> fromVirtualId = searchService.search(searchKey,
+                                                                  100,
+                                                                  ICriterion.contains("tags",
+                                                                                      dataset.getVirtualId().toString(),
+                                                                                      StringMatchType.KEYWORD));
         Assert.assertEquals(fromIpId.getSize(), fromVirtualId.getSize());
         Assert.assertTrue("results from ipId search should contains all results from virtualId search",
                           fromIpId.getContent().containsAll(fromVirtualId.getContent()));
@@ -529,12 +571,18 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
                                          OffsetDateTime.now().minusDays(1),
                                          Lists.newArrayList(taggedWithLatest),
                                          "");
-        Page<AbstractEntity> taggedWithVirtualId = searchService
-                .search(searchKey, 100, ICriterion.contains("tags", virtualId.toString(), StringMatchType.KEYWORD));
+        Page<AbstractEntity> taggedWithVirtualId = searchService.search(searchKey,
+                                                                        100,
+                                                                        ICriterion.contains("tags",
+                                                                                            virtualId.toString(),
+                                                                                            StringMatchType.KEYWORD));
         Assert.assertTrue("we should have the object we just created and tagged",
                           taggedWithVirtualId.getContent().contains(taggedWithLatest));
-        taggedWithVirtualId = searchService
-                .search(searchKey, 100, ICriterion.contains("tags", taggingWith.getIpId().toString(), StringMatchType.KEYWORD));
+        taggedWithVirtualId = searchService.search(searchKey,
+                                                   100,
+                                                   ICriterion.contains("tags",
+                                                                       taggingWith.getIpId().toString(),
+                                                                       StringMatchType.KEYWORD));
         Assert.assertTrue("we should have the object we just created and tagged with virtualId by looking for ipId",
                           taggedWithVirtualId.getContent().contains(taggedWithLatest));
 
@@ -560,58 +608,84 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         //          [120,86.5],[180,86.5],[180,90],[-180,90],[-180,86.5],[-142.5,86.5],[-142.5,80],[-156.25005,80],
         //          [-156.25005,77],[-165,77],[-165,70]
 
-        Polygon geometry = IGeometry.simplePolygon(-122.40305900573729,37.63571307432668,
-                -122.402286529541,37.63109096309235,
-                -122.39636421203612,37.613619505104865,
-                -122.3818588256836,37.604304248565484,
-                -122.37876892089842,37.604508244779446,
-                -122.37791061401367,37.605188228119054,
-                -122.37859725952147,37.60600419992163,
-                -122.37181663513184,37.614639352839696,
-                -122.3587703704834,37.60940398608524,
-                -122.35490798950194,37.61511527699598,
-                -122.36383438110352,37.618650618224926,
-                -122.36443519592285,37.619534427267155,
-                -122.36615180969237,37.62062217781951,
-                -122.36743927001952,37.62021427322739,
-                -122.36855506896973,37.621437980289684,
-                -122.3646068572998,37.62694441280498,
-                -122.3649501800537,37.627828123247475,
-                -122.36692428588866,37.62884777608664,
-                -122.36855506896973,37.627556213461176,
-                -122.37190246582031,37.628643846637885,
-                -122.37250328063965,37.62789610053861,
-                -122.37979888916016,37.63047919153271,
-                -122.38520622253417,37.62857587003062,
-                -122.38863945007323,37.63000336572688,
-                -122.38906860351562,37.63347002683941,
-                -122.38572120666504,37.635645104185514,
-                -122.38821029663086,37.63931540283398,
-                -122.40022659301758,37.63856776411051);
+        Polygon geometry = IGeometry.simplePolygon(-122.40305900573729,
+                                                   37.63571307432668,
+                                                   -122.402286529541,
+                                                   37.63109096309235,
+                                                   -122.39636421203612,
+                                                   37.613619505104865,
+                                                   -122.3818588256836,
+                                                   37.604304248565484,
+                                                   -122.37876892089842,
+                                                   37.604508244779446,
+                                                   -122.37791061401367,
+                                                   37.605188228119054,
+                                                   -122.37859725952147,
+                                                   37.60600419992163,
+                                                   -122.37181663513184,
+                                                   37.614639352839696,
+                                                   -122.3587703704834,
+                                                   37.60940398608524,
+                                                   -122.35490798950194,
+                                                   37.61511527699598,
+                                                   -122.36383438110352,
+                                                   37.618650618224926,
+                                                   -122.36443519592285,
+                                                   37.619534427267155,
+                                                   -122.36615180969237,
+                                                   37.62062217781951,
+                                                   -122.36743927001952,
+                                                   37.62021427322739,
+                                                   -122.36855506896973,
+                                                   37.621437980289684,
+                                                   -122.3646068572998,
+                                                   37.62694441280498,
+                                                   -122.3649501800537,
+                                                   37.627828123247475,
+                                                   -122.36692428588866,
+                                                   37.62884777608664,
+                                                   -122.36855506896973,
+                                                   37.627556213461176,
+                                                   -122.37190246582031,
+                                                   37.628643846637885,
+                                                   -122.37250328063965,
+                                                   37.62789610053861,
+                                                   -122.37979888916016,
+                                                   37.63047919153271,
+                                                   -122.38520622253417,
+                                                   37.62857587003062,
+                                                   -122.38863945007323,
+                                                   37.63000336572688,
+                                                   -122.38906860351562,
+                                                   37.63347002683941,
+                                                   -122.38572120666504,
+                                                   37.635645104185514,
+                                                   -122.38821029663086,
+                                                   37.63931540283398,
+                                                   -122.40022659301758,
+                                                   37.63856776411051);
 
         taggedWithLatest.getFeature().setCrs("WGS_84");
         taggedWithLatest.setGeometry(geometry);
         indexerService.createDataObjects(TENANT,
-                datasource.getId(),
-                OffsetDateTime.now().minusDays(1),
-                Lists.newArrayList(taggedWithLatest),
-                "");
+                                         datasource.getId(),
+                                         OffsetDateTime.now().minusDays(1),
+                                         Lists.newArrayList(taggedWithLatest),
+                                         "");
 
-        Page<AbstractEntity> taggedWithVirtualId = searchService
-                .search(searchKey, 100, ICriterion.contains("tags", virtualId.toString(), StringMatchType.KEYWORD));
+        Page<AbstractEntity> taggedWithVirtualId = searchService.search(searchKey,
+                                                                        100,
+                                                                        ICriterion.contains("tags",
+                                                                                            virtualId.toString(),
+                                                                                            StringMatchType.KEYWORD));
 
         DataObject dataObject = (DataObject) taggedWithVirtualId.getContent().get(0);
 
-        Assert.assertEquals(dataObject.getNwPoint()
-                .getLon(),-122.40305900573729, 0.0000001);
-        Assert.assertEquals(dataObject.getNwPoint()
-                .getLat(),37.63931540283398, 0.0000001);
-        Assert.assertEquals(dataObject.getSePoint()
-                .getLon(),-122.35490798950194, 0.0000001);
-        Assert.assertEquals(dataObject.getSePoint()
-                .getLat(),37.604304248565484, 0.0000001);
+        Assert.assertEquals(dataObject.getNwPoint().getLon(), -122.40305900573729, 0.0000001);
+        Assert.assertEquals(dataObject.getNwPoint().getLat(), 37.63931540283398, 0.0000001);
+        Assert.assertEquals(dataObject.getSePoint().getLon(), -122.35490798950194, 0.0000001);
+        Assert.assertEquals(dataObject.getSePoint().getLat(), 37.604304248565484, 0.0000001);
     }
-
 
     @Test
     @Purpose("Test the deletion of an object and the correct sending of StepPropertyUpdateRequestEvents")
@@ -623,15 +697,27 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // check the stepEvents indexation were correctly sent
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        List<StepPropertyUpdateRequestEvent> stepEvents = argumentCaptor.getAllValues().stream()
-                .filter(event -> event instanceof StepPropertyUpdateRequestEvent)
-                .map(event -> (StepPropertyUpdateRequestEvent) event).collect(Collectors.toList());
-        Assert.assertEquals("Unexpected number of step events created. Check the workflow of "
-                                    + "StepPropertyUpdateRequestEvent sent.", 2, stepEvents.size());
-        checkStepEvent(stepEvents.get(0), SessionNotifierPropertyEnum.PROPERTY_AIP_INDEXED.getName(), "3",
-                       StepPropertyEventTypeEnum.INC, SESSION_OWNER, SESSION);
-        checkStepEvent(stepEvents.get(1), SessionNotifierPropertyEnum.PROPERTY_AIP_INDEXED.getName(), "3",
-                       StepPropertyEventTypeEnum.INC, SESSION_OWNER, SESSION);
+        List<StepPropertyUpdateRequestEvent> stepEvents = argumentCaptor.getAllValues()
+                                                                        .stream()
+                                                                        .filter(event -> event instanceof StepPropertyUpdateRequestEvent)
+                                                                        .map(event -> (StepPropertyUpdateRequestEvent) event)
+                                                                        .collect(Collectors.toList());
+        Assert.assertEquals(
+            "Unexpected number of step events created. Check the workflow of " + "StepPropertyUpdateRequestEvent sent.",
+            2,
+            stepEvents.size());
+        checkStepEvent(stepEvents.get(0),
+                       SessionNotifierPropertyEnum.PROPERTY_AIP_INDEXED.getName(),
+                       "3",
+                       StepPropertyEventTypeEnum.INC,
+                       SESSION_OWNER,
+                       SESSION);
+        checkStepEvent(stepEvents.get(1),
+                       SessionNotifierPropertyEnum.PROPERTY_AIP_INDEXED.getName(),
+                       "3",
+                       StepPropertyEventTypeEnum.INC,
+                       SESSION_OWNER,
+                       SESSION);
         Mockito.clearInvocations(publisher);
 
         // delete object
@@ -641,13 +727,21 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         Assert.assertNull("Object should have been deleted", searchService.get(objectId));
         argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        stepEvents = argumentCaptor.getAllValues().stream()
-                .filter(event -> event instanceof StepPropertyUpdateRequestEvent)
-                .map(event -> (StepPropertyUpdateRequestEvent) event).collect(Collectors.toList());
-        Assert.assertEquals("Unexpected number of step events created. Check the workflow of "
-                                    + "StepPropertyUpdateRequestEvent sent.", 1, stepEvents.size());
-        checkStepEvent(stepEvents.get(0), SessionNotifierPropertyEnum.PROPERTY_AIP_INDEXED.getName(), "1",
-                       StepPropertyEventTypeEnum.DEC, SESSION_OWNER, SESSION);
+        stepEvents = argumentCaptor.getAllValues()
+                                   .stream()
+                                   .filter(event -> event instanceof StepPropertyUpdateRequestEvent)
+                                   .map(event -> (StepPropertyUpdateRequestEvent) event)
+                                   .collect(Collectors.toList());
+        Assert.assertEquals(
+            "Unexpected number of step events created. Check the workflow of " + "StepPropertyUpdateRequestEvent sent.",
+            1,
+            stepEvents.size());
+        checkStepEvent(stepEvents.get(0),
+                       SessionNotifierPropertyEnum.PROPERTY_AIP_INDEXED.getName(),
+                       "1",
+                       StepPropertyEventTypeEnum.DEC,
+                       SESSION_OWNER,
+                       SESSION);
     }
 
     @Test
@@ -658,9 +752,11 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         // first save steps to database by capturing them
         ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
-        List<StepPropertyUpdateRequestEvent> stepEventsInit = argumentCaptor.getAllValues().stream()
-                .filter(event -> event instanceof StepPropertyUpdateRequestEvent)
-                .map(event -> (StepPropertyUpdateRequestEvent) event).collect(Collectors.toList());
+        List<StepPropertyUpdateRequestEvent> stepEventsInit = argumentCaptor.getAllValues()
+                                                                            .stream()
+                                                                            .filter(event -> event instanceof StepPropertyUpdateRequestEvent)
+                                                                            .map(event -> (StepPropertyUpdateRequestEvent) event)
+                                                                            .collect(Collectors.toList());
         Set<String> sources = stepHandlerService.createStepRequests(stepEventsInit);
         stepHandlerService.createMissingSnapshotProcesses(sources);
         // then generate sessionSteps from steps
@@ -670,32 +766,48 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         Mockito.clearInvocations(publisher);
         indexerService.deleteIndexNRecreateEntities(TENANT);
         // check step events were sent to reset all session step properties following the deletion of entities
-        ArgumentCaptor<List< ? extends ISubscribable>> argumentCaptor2 = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<List<? extends ISubscribable>> argumentCaptor2 = ArgumentCaptor.forClass(List.class);
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor2.capture());
-        List<List<StepPropertyUpdateRequestEvent>> stepEvents = argumentCaptor2.getAllValues().stream()
-                .filter(eventList -> !eventList.isEmpty() && eventList.get(0) instanceof StepPropertyUpdateRequestEvent)
-                .map(eventList -> (List<StepPropertyUpdateRequestEvent>) eventList).collect(Collectors.toList());
+        List<List<StepPropertyUpdateRequestEvent>> stepEvents = argumentCaptor2.getAllValues()
+                                                                               .stream()
+                                                                               .filter(eventList -> !eventList.isEmpty()
+                                                                                   && eventList.get(0) instanceof StepPropertyUpdateRequestEvent)
+                                                                               .map(eventList -> (List<StepPropertyUpdateRequestEvent>) eventList)
+                                                                               .collect(Collectors.toList());
         Assert.assertTrue("Step list should contains one event. Check if stepEventList was correctly sent",
-                           !stepEvents.isEmpty() && stepEvents.get(0).size() == 1);
-        checkStepEvent(stepEvents.get(0).get(0), SessionNotifierPropertyEnum.RESET.getName(), "0",
-                       StepPropertyEventTypeEnum.VALUE, SESSION_OWNER, SESSION);
+                          !stepEvents.isEmpty() && stepEvents.get(0).size() == 1);
+        checkStepEvent(stepEvents.get(0).get(0),
+                       SessionNotifierPropertyEnum.RESET.getName(),
+                       "0",
+                       StepPropertyEventTypeEnum.VALUE,
+                       SESSION_OWNER,
+                       SESSION);
     }
 
     /**
      * Method to check properties of StepPropertyUpdateRequestEvents
      */
-    private void checkStepEvent(StepPropertyUpdateRequestEvent step, String expectedProperty, String expectedValue,
-            StepPropertyEventTypeEnum expectedType, String expectedSessionOwner, String expectedSession) {
+    private void checkStepEvent(StepPropertyUpdateRequestEvent step,
+                                String expectedProperty,
+                                String expectedValue,
+                                StepPropertyEventTypeEnum expectedType,
+                                String expectedSessionOwner,
+                                String expectedSession) {
         StepProperty stepProperty = step.getStepProperty();
         Assert.assertEquals("This property was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
-                            expectedProperty, stepProperty.getStepPropertyInfo().getProperty());
+                            expectedProperty,
+                            stepProperty.getStepPropertyInfo().getProperty());
         Assert.assertEquals("This value was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
-                            expectedValue, stepProperty.getStepPropertyInfo().getValue());
+                            expectedValue,
+                            stepProperty.getStepPropertyInfo().getValue());
         Assert.assertEquals("This type was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
-                            expectedType, step.getType());
+                            expectedType,
+                            step.getType());
         Assert.assertEquals("This sessionOwner was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
-                            expectedSessionOwner, stepProperty.getSource());
+                            expectedSessionOwner,
+                            stepProperty.getSource());
         Assert.assertEquals("This session was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
-                            expectedSession, stepProperty.getSession());
+                            expectedSession,
+                            stepProperty.getSession());
     }
 }

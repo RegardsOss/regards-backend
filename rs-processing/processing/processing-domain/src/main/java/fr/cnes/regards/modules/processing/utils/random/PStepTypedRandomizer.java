@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.utils.random;
 
 import com.google.auto.service.AutoService;
@@ -23,6 +23,7 @@ import fr.cnes.regards.modules.processing.domain.step.PStepFinal;
 import fr.cnes.regards.modules.processing.domain.step.PStepIntermediary;
 import org.jeasy.random.EasyRandom;
 import org.jeasy.random.api.Randomizer;
+
 /**
  * This class allows to generate random instances for {@link PStep}
  *
@@ -38,7 +39,8 @@ public class PStepTypedRandomizer implements TypedRandomizer<PStep> {
 
     @Override
     public Randomizer<PStep> randomizer(EasyRandom generator) {
-        return () -> generator.nextBoolean() ? generator.nextObject(PStepFinal.class)
-                : generator.nextObject(PStepIntermediary.class);
+        return () -> generator.nextBoolean() ?
+            generator.nextObject(PStepFinal.class) :
+            generator.nextObject(PStepIntermediary.class);
     }
 }

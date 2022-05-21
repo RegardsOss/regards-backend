@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.modules.indexer.service;
 
-import java.util.Collection;
-
 import fr.cnes.regards.modules.indexer.dao.BulkSaveResult;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 
+import java.util.Collection;
+
 /**
  * Indexer interface
+ *
  * @author oroussel
  * @deprecated only used by dam and catalog tests
  */
@@ -33,6 +34,7 @@ public interface IIndexerService {
 
     /**
      * Create index if not already exists
+     *
      * @param index index name
      * @return true if index exists after method returns, false overwise
      */
@@ -40,6 +42,7 @@ public interface IIndexerService {
 
     /**
      * Delete index if index exists
+     *
      * @param index index name
      * @return true if index doesn't exist after method returns
      */
@@ -53,6 +56,7 @@ public interface IIndexerService {
      * Method only used for tests. Elasticsearch performs refreshes every second. So, il a search is called just after
      * a save, the document will not be available. A manual refresh is necessary (on saveBulkEntities, it is
      * automaticaly called)
+     *
      * @param index index to refresh
      */
     void refresh(String index);

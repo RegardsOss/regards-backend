@@ -14,18 +14,23 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-
 @Service
 public class AccessRightsEmailService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessRightsEmailService.class);
 
     private final ITemplateService templateService;
+
     private final IEmailService emailService;
+
     private final IAccountsClient accountsClient;
+
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    public AccessRightsEmailService(ITemplateService templateService, IEmailService emailService, IAccountsClient accountsClient, IRuntimeTenantResolver runtimeTenantResolver) {
+    public AccessRightsEmailService(ITemplateService templateService,
+                                    IEmailService emailService,
+                                    IAccountsClient accountsClient,
+                                    IRuntimeTenantResolver runtimeTenantResolver) {
         this.templateService = templateService;
         this.emailService = emailService;
         this.accountsClient = accountsClient;
@@ -50,7 +55,10 @@ public class AccessRightsEmailService {
             LOGGER.error("Could not find template to generate the message. Falling back to default.", e);
             message = wrapper.getDefaultMessage();
         }
-        emailService.sendEmail(message, wrapper.getSubject(), wrapper.getFrom(), wrapper.getTo().toArray(new String[0]));
+        emailService.sendEmail(message,
+                               wrapper.getSubject(),
+                               wrapper.getFrom(),
+                               wrapper.getTo().toArray(new String[0]));
     }
 
     private String getNameFromAccount(String email) {

@@ -233,7 +233,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
     @ResourceAccess(description = "update the project user", role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<ProjectUserReadDto>> updateProjectUser(@PathVariable("user_id") Long userId,
                                                                              @RequestBody
-                                                                                 ProjectUserUpdateDto updatedProjectUser)
+                                                                             ProjectUserUpdateDto updatedProjectUser)
         throws ModuleException {
         String userEmail = updatedProjectUser.getEmail();
         Tuple2<ProjectUser, DownloadQuotaLimitsDto> t = makeProjectUserAndQuotaLimitsDto(updatedProjectUser);
@@ -274,7 +274,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
     @ResourceAccess(description = "Create a projectUser by bypassing registration process (Administrator feature)",
         role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<ProjectUserReadDto>> createUser(@Valid @RequestBody
-                                                                          ProjectUserCreateDto projectUserCreateDto)
+                                                                      ProjectUserCreateDto projectUserCreateDto)
         throws ModuleException {
         String email = projectUserCreateDto.getEmail();
         DownloadQuotaLimitsDto limits = new DownloadQuotaLimitsDto(email,

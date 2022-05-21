@@ -19,16 +19,16 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.PluginParamType;
+import org.springframework.util.Assert;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.util.Assert;
-
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.PluginParamType;
-
 /**
  * Plugin parameter type
+ *
  * @author Christophe Mertz
  */
 public class PluginParamDescriptor {
@@ -110,31 +110,38 @@ public class PluginParamDescriptor {
      * <li>{@link #setParameterizedSubTypes(PluginParamType...)}</li>
      * <li>{@link #setKeyLabel(String)}</li>
      * </ul>
-     * @param name parameter's name used as a key for database registration
-     * @param label a required human readable information
+     *
+     * @param name        parameter's name used as a key for database registration
+     * @param label       a required human readable information
      * @param description an optional further human readable information if the label is not explicit enough!
-     * @param paramType {@link PluginParamType}
-     * @param optional true if parameter is optional
+     * @param paramType   {@link PluginParamType}
+     * @param optional    true if parameter is optional
      * @return {@link PluginParamDescriptor}
      */
-    public static PluginParamDescriptor create(String name, String label, String description, PluginParamType paramType,
-            Boolean optional, Boolean onlyDynamic, Boolean sensitive, String pluginType) {
+    public static PluginParamDescriptor create(String name,
+                                               String label,
+                                               String description,
+                                               PluginParamType paramType,
+                                               Boolean optional,
+                                               Boolean onlyDynamic,
+                                               Boolean sensitive,
+                                               String pluginType) {
         PluginParamDescriptor ppt = new PluginParamDescriptor();
 
         // Validate and set
         Assert.hasText(name, "One of the plugin parameter does not have a valid name attribute within its annotation.");
         ppt.setName(name);
 
-        String errorMsg = "The plugin parameter with name \"%s\" does not have a valid attribute \"%s\" within its "
-                + "annotation";
+        String errorMsg =
+            "The plugin parameter with name \"%s\" does not have a valid attribute \"%s\" within its " + "annotation";
         Assert.hasText(label, String.format(errorMsg, name, "label"));
         ppt.setLabel(label);
         ppt.setDescription(description);
 
-        Assert.notNull(paramType,  String.format(errorMsg, name, "type"));
+        Assert.notNull(paramType, String.format(errorMsg, name, "type"));
         ppt.setType(paramType);
 
-        Assert.notNull(optional,  String.format(errorMsg, name, "optional"));
+        Assert.notNull(optional, String.format(errorMsg, name, "optional"));
         ppt.setOptional(optional);
 
         ppt.setUnconfigurable(onlyDynamic);

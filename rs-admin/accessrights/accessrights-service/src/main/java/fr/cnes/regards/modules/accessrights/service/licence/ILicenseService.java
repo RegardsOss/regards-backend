@@ -26,7 +26,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
  * License business contract
  *
  * @author Marc Sordi
- *
  */
 public interface ILicenseService {
 
@@ -34,6 +33,7 @@ public interface ILicenseService {
 
     /**
      * Accept the license of the current project for the current user
+     *
      * @return {@link LicenseDTO}
      * @throws EntityException
      */

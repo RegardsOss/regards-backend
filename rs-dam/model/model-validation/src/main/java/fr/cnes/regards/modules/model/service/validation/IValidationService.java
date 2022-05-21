@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.modules.model.service.validation;
 
-import java.util.Set;
-
-import org.springframework.validation.Errors;
-
 import fr.cnes.regards.framework.geojson.AbstractFeature;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
+import org.springframework.validation.Errors;
+
+import java.util.Set;
 
 /**
  * Validation interface
+ *
  * @param <U> {@link AbstractFeature}
  */
 public interface IValidationService<U extends AbstractFeature<Set<IProperty<?>>, ?>> {

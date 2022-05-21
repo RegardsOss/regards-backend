@@ -51,11 +51,10 @@ import java.util.UUID;
 
 /**
  * @author Marc SORDI
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=feature_dao",
-        "spring.jpa.properties.hibernate.jdbc.batch_size=1024", "spring.jpa.properties.hibernate.order_inserts=true" },
-        locations = { "classpath:regards_perf.properties" })
+    "spring.jpa.properties.hibernate.jdbc.batch_size=1024", "spring.jpa.properties.hibernate.order_inserts=true" },
+    locations = { "classpath:regards_perf.properties" })
 @ContextConfiguration(classes = FeatureDaoConfiguration.class)
 public class FeatureEntityIT extends AbstractDaoIT {
 
@@ -96,7 +95,8 @@ public class FeatureEntityIT extends AbstractDaoIT {
 
         long creationStart = System.currentTimeMillis();
         entityRepo.saveAll(entities);
-        LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests done in {} ms", NB_FEATURES,
+        LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests done in {} ms",
+                    NB_FEATURES,
                     System.currentTimeMillis() - creationStart);
     }
 
@@ -120,7 +120,8 @@ public class FeatureEntityIT extends AbstractDaoIT {
             if (bulk == BULK_SIZE) {
                 bulkCreationStart = System.currentTimeMillis();
                 entityRepo.saveAll(entities);
-                LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests saved in {} ms", BULK_SIZE,
+                LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests saved in {} ms",
+                            BULK_SIZE,
                             System.currentTimeMillis() - bulkCreationStart);
                 entities.clear();
                 bulk = 0;
@@ -130,23 +131,29 @@ public class FeatureEntityIT extends AbstractDaoIT {
         if (bulk > 0) {
             bulkCreationStart = System.currentTimeMillis();
             entityRepo.saveAll(entities);
-            LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests saved in {} ms", bulk,
+            LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests saved in {} ms",
+                        bulk,
                         System.currentTimeMillis() - bulkCreationStart);
         }
 
-        LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests saved in {} ms", NB_FEATURES,
+        LOGGER.info(">>>>>>>>>>>>>>>>> {} creation requests saved in {} ms",
+                    NB_FEATURES,
                     System.currentTimeMillis() - creationStart);
     }
 
     private FeatureUniformResourceName getURN(String id) {
         UUID uuid = UUID.nameUUIDFromBytes(id.getBytes());
-        return FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA, getDefaultTenant(), uuid,
+        return FeatureUniformResourceName.build(FeatureIdentifier.FEATURE,
+                                                EntityType.DATA,
+                                                getDefaultTenant(),
+                                                uuid,
                                                 1);
     }
 
     private void addGeodeProperties(Feature feature) {
         // System
-        ObjectProperty system = IProperty.buildObject("system", IProperty.buildInteger("filesize", 8648),
+        ObjectProperty system = IProperty.buildObject("system",
+                                                      IProperty.buildInteger("filesize", 8648),
                                                       IProperty.buildDate("creation_date", OffsetDateTime.now()),
                                                       IProperty.buildDate("modification_date", OffsetDateTime.now()),
                                                       IProperty.buildStringArray("urls", "file://home/geode/test.tar"),
@@ -155,7 +162,8 @@ public class FeatureEntityIT extends AbstractDaoIT {
                                                                             "4e188bd8a6288164c25c3728ce394927"),
                                                       IProperty.buildString("extension", "tar"));
         // File infos
-        ObjectProperty fileInfos = IProperty.buildObject("file_infos", IProperty.buildString("type", "L0A_LR_Packet"),
+        ObjectProperty fileInfos = IProperty.buildObject("file_infos",
+                                                         IProperty.buildString("type", "L0A_LR_Packet"),
                                                          IProperty.buildString("nature", "TM"),
                                                          IProperty.buildString("date_type", "BEGINEND"),
                                                          IProperty.buildString("level", "L0A"),
@@ -166,27 +174,35 @@ public class FeatureEntityIT extends AbstractDaoIT {
                                                          IProperty.buildDate("tai_end_date", OffsetDateTime.now()),
                                                          IProperty.buildBoolean("valid", true));
         // Ground segment
-        ObjectProperty groundSegment = IProperty
-                .buildObject("ground_segment", IProperty.buildBoolean("sended", true),
-                             IProperty.buildDate("sending_date", OffsetDateTime.now()),
-                             IProperty.buildStringArray("recipients", "JPL", "REGARDS"),
-                             IProperty.buildBoolean("archived", true),
-                             IProperty.buildDate("archiving_date", OffsetDateTime.now()),
-                             IProperty.buildBoolean("public", false), IProperty.buildBoolean("distributed", false),
-                             IProperty.buildBoolean("restored", false), IProperty.buildString("state", "NOT ARCHIVED"));
+        ObjectProperty groundSegment = IProperty.buildObject("ground_segment",
+                                                             IProperty.buildBoolean("sended", true),
+                                                             IProperty.buildDate("sending_date", OffsetDateTime.now()),
+                                                             IProperty.buildStringArray("recipients", "JPL", "REGARDS"),
+                                                             IProperty.buildBoolean("archived", true),
+                                                             IProperty.buildDate("archiving_date",
+                                                                                 OffsetDateTime.now()),
+                                                             IProperty.buildBoolean("public", false),
+                                                             IProperty.buildBoolean("distributed", false),
+                                                             IProperty.buildBoolean("restored", false),
+                                                             IProperty.buildString("state", "NOT ARCHIVED"));
 
         // SWOT
-        ObjectProperty swot = IProperty
-                .buildObject("swot", IProperty.buildString("CRID", "crid"),
-                             IProperty.buildInteger("product_counter", 1),
-                             IProperty.buildBoolean("is_last_version", true), IProperty.buildString("station", "KUX"),
-                             IProperty.buildDate("day_date", OffsetDateTime.now()), IProperty.buildInteger("cycle", 23),
-                             IProperty.buildInteger("pass", 125), IProperty.buildInteger("tile", 25),
-                             IProperty.buildString("tile_side", "Full"), IProperty.buildString("granule_type", "Cycle"),
-                             IProperty.buildStringArray("continent_id", "eu"),
-                             IProperty.buildString("bassin_id", "bass1"));
+        ObjectProperty swot = IProperty.buildObject("swot",
+                                                    IProperty.buildString("CRID", "crid"),
+                                                    IProperty.buildInteger("product_counter", 1),
+                                                    IProperty.buildBoolean("is_last_version", true),
+                                                    IProperty.buildString("station", "KUX"),
+                                                    IProperty.buildDate("day_date", OffsetDateTime.now()),
+                                                    IProperty.buildInteger("cycle", 23),
+                                                    IProperty.buildInteger("pass", 125),
+                                                    IProperty.buildInteger("tile", 25),
+                                                    IProperty.buildString("tile_side", "Full"),
+                                                    IProperty.buildString("granule_type", "Cycle"),
+                                                    IProperty.buildStringArray("continent_id", "eu"),
+                                                    IProperty.buildString("bassin_id", "bass1"));
         // CORPUS
-        ObjectProperty corpus = IProperty.buildObject("corpus", IProperty.buildInteger("corpus_id", 10),
+        ObjectProperty corpus = IProperty.buildObject("corpus",
+                                                      IProperty.buildInteger("corpus_id", 10),
                                                       IProperty.buildString("corpus_lot", "lot2"));
 
         feature.setProperties(IProperty.set(system, fileInfos, groundSegment, swot, corpus));
@@ -194,6 +210,7 @@ public class FeatureEntityIT extends AbstractDaoIT {
 
     /**
      * Mock model client importing model specified by its filename
+     *
      * @param filename model filename found using {@link Class#getResourceAsStream(String)}
      * @return mocked model name
      */

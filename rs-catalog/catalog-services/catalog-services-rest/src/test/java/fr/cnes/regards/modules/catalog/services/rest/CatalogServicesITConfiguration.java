@@ -58,7 +58,7 @@ public class CatalogServicesITConfiguration {
     public IDatasetClient datasetClient() {
         IDatasetClient client = Mockito.mock(IDatasetClient.class);
         Mockito.when(client.retrieveDataset(1L))
-                .thenReturn(new ResponseEntity<EntityModel<Dataset>>(HateoasUtils.wrap(new Dataset()), HttpStatus.OK));
+               .thenReturn(new ResponseEntity<EntityModel<Dataset>>(HateoasUtils.wrap(new Dataset()), HttpStatus.OK));
         return client;
     }
 
@@ -110,7 +110,7 @@ public class CatalogServicesITConfiguration {
         objects.add(dbo);
         ServiceHelper mock = Mockito.mock(ServiceHelper.class);
         Mockito.when(mock.getDataObjects(Mockito.any(SearchRequest.class), Mockito.anyInt(), Mockito.anyInt()))
-                .thenReturn(new PageImpl<DataObject>(objects));
+               .thenReturn(new PageImpl<DataObject>(objects));
         return mock;
     }
 

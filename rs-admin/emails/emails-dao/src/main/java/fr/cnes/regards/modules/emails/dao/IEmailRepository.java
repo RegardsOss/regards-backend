@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.modules.emails.dao;
 
+import fr.cnes.regards.modules.emails.domain.Email;
 import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
-
-import fr.cnes.regards.modules.emails.domain.Email;
 
 /**
  * Interface for an JPA auto-generated CRUD repository managing Emails.<br>

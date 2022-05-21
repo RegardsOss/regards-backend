@@ -18,18 +18,16 @@
  */
 package fr.cnes.regards.microservices.dataprovider;
 
+import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
-
 /**
- *
  * Start microservice dataprovider
- * @author Christophe Mertz
  *
+ * @author Christophe Mertz
  */
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
 @MicroserviceInfo(name = "dataprovider", version = "2.0.0-SNAPSHOT")

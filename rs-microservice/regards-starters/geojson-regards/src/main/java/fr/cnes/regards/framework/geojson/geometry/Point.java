@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.geojson.coordinates.Position;
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJson Point representation
+ *
  * @author Marc Sordi
  */
 public class Point extends AbstractGeometry<Position> {
@@ -43,7 +44,9 @@ public class Point extends AbstractGeometry<Position> {
     }
 
     public double[] toArray() {
-        return coordinates.size() == 2 ? new double[] {coordinates.getLongitude(), coordinates.getLatitude()} : new double[] {coordinates.getLongitude(), coordinates.getLatitude(), coordinates.getAltitude().get()};
+        return coordinates.size() == 2 ?
+            new double[] { coordinates.getLongitude(), coordinates.getLatitude() } :
+            new double[] { coordinates.getLongitude(), coordinates.getLatitude(), coordinates.getAltitude().get() };
     }
 
     /**

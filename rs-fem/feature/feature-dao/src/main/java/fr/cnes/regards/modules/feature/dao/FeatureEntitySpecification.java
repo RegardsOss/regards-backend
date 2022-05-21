@@ -36,14 +36,14 @@ import java.util.Set;
  * JPA {@link Specification} builder for {@link FeatureEntity}
  *
  * @author Sébastien Binda
- *
  */
 public class FeatureEntitySpecification {
 
     /**
      * Creates search {@link Specification} for {@link FeatureSimpleEntity}s
+     *
      * @param selection {@link FeaturesSearchParameters}
-     * @param page {@link Pageable}
+     * @param page      {@link Pageable}
      * @return {@link Specification}
      */
     public static Specification<FeatureSimpleEntity> searchAllByFilters(FeaturesSelectionDTO selection, Pageable page) {
@@ -65,7 +65,8 @@ public class FeatureEntitySpecification {
                     predicates.add(criteriaBuilder.equal(root.get("session"), filters.getSession()));
                 }
                 if (filters.getProviderId() != null) {
-                    predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("providerId")), filters.getProviderId().toLowerCase() + "%"));
+                    predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("providerId")),
+                                                        filters.getProviderId().toLowerCase() + "%"));
                 }
                 if (filters.getFrom() != null) {
                     predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("lastUpdate"), filters.getFrom()));
@@ -74,7 +75,8 @@ public class FeatureEntitySpecification {
                     predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("lastUpdate"), filters.getTo()));
                 }
                 if (filters.getDisseminationPending() != null) {
-                    predicates.add(criteriaBuilder.equal(root.get("disseminationPending"), filters.getDisseminationPending()));
+                    predicates.add(criteriaBuilder.equal(root.get("disseminationPending"),
+                                                         filters.getDisseminationPending()));
                 }
             }
 
@@ -82,11 +84,13 @@ public class FeatureEntitySpecification {
                 Set<Predicate> idsPredicates = Sets.newHashSet();
                 switch (selection.getFeatureIdsSelectionMode()) {
                     case EXCLUDE:
-                        featureIds.forEach(requestId -> idsPredicates.add(criteriaBuilder.notEqual(root.get("id"), requestId)));
+                        featureIds.forEach(requestId -> idsPredicates.add(criteriaBuilder.notEqual(root.get("id"),
+                                                                                                   requestId)));
                         predicates.add(criteriaBuilder.and(idsPredicates.toArray(new Predicate[0])));
                         break;
                     case INCLUDE:
-                        featureIds.forEach(requestId -> idsPredicates.add(criteriaBuilder.equal(root.get("id"), requestId)));
+                        featureIds.forEach(requestId -> idsPredicates.add(criteriaBuilder.equal(root.get("id"),
+                                                                                                requestId)));
                         predicates.add(criteriaBuilder.or(idsPredicates.toArray(new Predicate[0])));
                         break;
                     default:

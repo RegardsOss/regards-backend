@@ -39,7 +39,7 @@ import java.util.List;
  */
 @Component
 public class AvailabilityFlowItemHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<AvailabilityFlowItem> {
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<AvailabilityFlowItem> {
 
     @Value("${regards.storage.availability.items.bulk.size:10}")
     private static final int BULK_SIZE = 1000;
@@ -60,7 +60,8 @@ public class AvailabilityFlowItemHandler
         LOGGER.debug("[AVAILABILITY REQUESTS HANDLER] Bulk saving {} AvailabilityFlowItem...", messages.size());
         long start = System.currentTimeMillis();
         fileCacheReqService.makeAvailable(messages);
-        LOGGER.debug("[AVAILABILITY REQUESTS HANDLER] {} AvailabilityFlowItem handled in {} ms", messages.size(),
+        LOGGER.debug("[AVAILABILITY REQUESTS HANDLER] {} AvailabilityFlowItem handled in {} ms",
+                     messages.size(),
                      System.currentTimeMillis() - start);
     }
 

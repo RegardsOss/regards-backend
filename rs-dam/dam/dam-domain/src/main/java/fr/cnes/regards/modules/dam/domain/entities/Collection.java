@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.modules.dam.domain.entities;
 
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-
 import fr.cnes.regards.modules.dam.domain.entities.feature.CollectionFeature;
 import fr.cnes.regards.modules.model.domain.Model;
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
 
 /**
  * Collection feature decorator

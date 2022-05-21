@@ -18,32 +18,28 @@
  */
 package fr.cnes.regards.microservices.administration;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.http.ResponseEntity;
-
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.modules.project.client.rest.ITenantConnectionClient;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.http.ResponseEntity;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
- *
  * Class DefaultMultitenantConnectionsReader
- *
+ * <p>
  * Default tenants connections configuration reader. Reads tenants from the microservice "rs-admin". Enabled, only if
  * the microservice is Eureka client.
  *
  * @author Sébastien Binda
  * @author Marc Sordi
-
  */
 public class RemoteTenantConnectionResolver extends AbstractInstanceDiscoveryClientChecker
-        implements ITenantConnectionResolver {
+    implements ITenantConnectionResolver {
 
     /**
      * Tenant connection client
@@ -51,7 +47,7 @@ public class RemoteTenantConnectionResolver extends AbstractInstanceDiscoveryCli
     private final ITenantConnectionClient tenantConnectionClient;
 
     public RemoteTenantConnectionResolver(final DiscoveryClient discoveryClient,
-            ITenantConnectionClient tenantConnectionClient) {
+                                          ITenantConnectionClient tenantConnectionClient) {
         super(discoveryClient);
         this.tenantConnectionClient = tenantConnectionClient;
     }
@@ -61,8 +57,8 @@ public class RemoteTenantConnectionResolver extends AbstractInstanceDiscoveryCli
 
         try {
             FeignSecurityManager.asSystem();
-            ResponseEntity<List<TenantConnection>> response = tenantConnectionClient
-                    .getTenantConnections(microserviceName);
+            ResponseEntity<List<TenantConnection>> response = tenantConnectionClient.getTenantConnections(
+                microserviceName);
             return response.getBody();
         } finally {
             FeignSecurityManager.reset();
@@ -86,8 +82,10 @@ public class RemoteTenantConnectionResolver extends AbstractInstanceDiscoveryCli
      * java.lang.String, fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState, java.util.Optional)
      */
     @Override
-    public void updateState(String microservice, String tenant, TenantConnectionState state,
-            Optional<String> errorCause) {
+    public void updateState(String microservice,
+                            String tenant,
+                            TenantConnectionState state,
+                            Optional<String> errorCause) {
         try {
             FeignSecurityManager.asSystem();
             TenantConnection connection = new TenantConnection();

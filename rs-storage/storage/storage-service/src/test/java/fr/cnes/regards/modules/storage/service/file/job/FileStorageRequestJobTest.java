@@ -18,22 +18,20 @@
  */
 package fr.cnes.regards.modules.storage.service.file.job;
 
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.nio.file.Paths;
-import java.util.Optional;
-
+import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
-import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
+import java.util.Optional;
 
 /**
  * @author sbinda
- *
  */
 public class FileStorageRequestJobTest {
 
@@ -51,8 +49,14 @@ public class FileStorageRequestJobTest {
         String originUrl = "file://" + Paths.get("src/test/resources/input/cnes.png").toAbsolutePath().toString();
         String storage = "storage";
         String groupId = "10";
-        FileStorageRequest request = new FileStorageRequest(owner, metaInfos, originUrl, storage, Optional.empty(),
-                groupId, sessionOwner, session);
+        FileStorageRequest request = new FileStorageRequest(owner,
+                                                            metaInfos,
+                                                            originUrl,
+                                                            storage,
+                                                            Optional.empty(),
+                                                            groupId,
+                                                            sessionOwner,
+                                                            session);
         FileStorageRequestJob.calculateImageDimension(request);
 
         Assert.assertEquals(Integer.valueOf(499), request.getMetaInfo().getWidth());

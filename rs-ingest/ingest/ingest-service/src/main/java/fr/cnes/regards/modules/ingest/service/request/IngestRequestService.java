@@ -84,7 +84,6 @@ import java.util.stream.Collectors;
  * Manage ingest requests
  *
  * @author Marc SORDI
- *
  */
 @Service
 @MultitenantTransactional
@@ -151,8 +150,11 @@ public class IngestRequestService implements IIngestRequestService {
         jobParameters.add(new JobParameter(IngestProcessingJob.IDS_PARAMETER, ids));
         jobParameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, chainName));
         // Lock job info
-        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.INGEST_PROCESSING_JOB_PRIORITY,
-                jobParameters, authResolver.getUser(), IngestProcessingJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false,
+                                      IngestJobPriority.INGEST_PROCESSING_JOB_PRIORITY,
+                                      jobParameters,
+                                      authResolver.getUser(),
+                                      IngestProcessingJob.class.getName());
         // Lock job to avoid automatic deletion. The job must be unlock when the link to the request is removed.
         jobInfo.setLocked(true);
         jobInfoService.createAsQueued(jobInfo);
@@ -181,7 +183,8 @@ public class IngestRequestService implements IIngestRequestService {
                 requests.forEach(r -> handleIngestJobFailed(r, null, jobInfo.getStatus().getStackTrace()));
             } catch (JobParameterMissingException | JobParameterInvalidException e) {
                 String message = String.format("Ingest request job with id \"%s\" fails with status \"%s\"",
-                                               jobEvent.getJobId(), jobEvent.getJobEventType());
+                                               jobEvent.getJobId(),
+                                               jobEvent.getJobEventType());
                 LOGGER.error(message, e);
                 notificationClient.notify(message, "Ingest job failure", NotificationLevel.ERROR, DefaultRole.ADMIN);
             }
@@ -200,8 +203,10 @@ public class IngestRequestService implements IIngestRequestService {
 
         // Publish
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
-                                                   request.getSip() != null ? request.getSip().getId() : null, null,
-                                                   RequestState.GRANTED, request.getErrors()));
+                                                   request.getSip() != null ? request.getSip().getId() : null,
+                                                   null,
+                                                   RequestState.GRANTED,
+                                                   request.getErrors()));
     }
 
     @Override
@@ -209,8 +214,10 @@ public class IngestRequestService implements IIngestRequestService {
         // Do not keep track of the request
         // Publish DENIED request
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
-                                                   request.getSip() != null ? request.getSip().getId() : null, null,
-                                                   RequestState.DENIED, request.getErrors()));
+                                                   request.getSip() != null ? request.getSip().getId() : null,
+                                                   null,
+                                                   RequestState.DENIED,
+                                                   request.getErrors()));
     }
 
     @Override
@@ -279,7 +286,7 @@ public class IngestRequestService implements IIngestRequestService {
      * Optimization method for loading {@link IngestProcessingChain}
      */
     private Map<String, Optional<IngestProcessingChain>> preloadChains(Set<IngestRequest> requests,
-            Map<String, Optional<IngestProcessingChain>> chains) {
+                                                                       Map<String, Optional<IngestProcessingChain>> chains) {
         if (requests != null) {
             for (IngestRequest request : requests) {
                 String chainName = request.getMetadata().getIngestChain();
@@ -295,11 +302,12 @@ public class IngestRequestService implements IIngestRequestService {
      * Optimization method for loading last versions of {@link AIPEntity}
      */
     private Map<String, AIPEntity> preloadLastVersions(Set<IngestRequest> requests,
-            Map<String, AIPEntity> aipEntities) {
+                                                       Map<String, AIPEntity> aipEntities) {
         Set<AIPEntity> lastVersions = Sets.newHashSet();
         if (requests != null) {
-            lastVersions = aipService
-                    .findLastByProviderIds(requests.stream().map(r -> r.getProviderId()).collect(Collectors.toSet()));
+            lastVersions = aipService.findLastByProviderIds(requests.stream()
+                                                                    .map(r -> r.getProviderId())
+                                                                    .collect(Collectors.toSet()));
         }
         return lastVersions.stream().collect(Collectors.toMap(AIPEntity::getProviderId, aip -> aip));
     }
@@ -326,16 +334,16 @@ public class IngestRequestService implements IIngestRequestService {
             } else {
                 // No files to store for the request AIPs. We can immediately store the manifest.
                 Set<IngestRequest> requests = Sets.newHashSet(request);
-                finalizeSuccessfulRequest(requests, false,
+                finalizeSuccessfulRequest(requests,
+                                          false,
                                           preloadChains(requests,
                                                         new HashMap<String, Optional<IngestProcessingChain>>()),
                                           preloadLastVersions(requests, new HashMap<String, AIPEntity>()));
             }
         } catch (ModuleException e) {
             // Keep track of the error
-            String message = String
-                    .format("Cannot send events to store AIP files because they are malformed. Cause: %s",
-                            e.getMessage());
+            String message = String.format("Cannot send events to store AIP files because they are malformed. Cause: %s",
+                                           e.getMessage());
             LOGGER.debug(message, e);
             saveAndPublishErrorRequest(request, message);
             // Monitoring
@@ -382,13 +390,17 @@ public class IngestRequestService implements IIngestRequestService {
 
         Map<String, Optional<IngestProcessingChain>> chains = new HashMap<>();
         for (Entry<RequestInfo, Set<IngestRequest>> entry : requests.entrySet()) {
-            handleRemoteStoreSuccess(entry.getKey(), entry.getValue(), preloadChains(entry.getValue(), chains),
+            handleRemoteStoreSuccess(entry.getKey(),
+                                     entry.getValue(),
+                                     preloadChains(entry.getValue(), chains),
                                      lastVersions);
         }
     }
 
-    private void handleRemoteStoreSuccess(RequestInfo requestInfo, Set<IngestRequest> requests,
-            Map<String, Optional<IngestProcessingChain>> chains, Map<String, AIPEntity> lastVersions) {
+    private void handleRemoteStoreSuccess(RequestInfo requestInfo,
+                                          Set<IngestRequest> requests,
+                                          Map<String, Optional<IngestProcessingChain>> chains,
+                                          Map<String, AIPEntity> lastVersions) {
 
         Set<IngestRequest> toFinalize = Sets.newHashSet();
 
@@ -422,8 +434,10 @@ public class IngestRequestService implements IIngestRequestService {
 
     // NOTE : potential error if 2 instances work on the same provider aip at the same time then ...
     // ... 2 "last" aip may occurs and db exception will be thrown.
-    private void finalizeSuccessfulRequest(Collection<IngestRequest> requests, boolean afterStorage,
-            Map<String, Optional<IngestProcessingChain>> chains, Map<String, AIPEntity> lastVersions) {
+    private void finalizeSuccessfulRequest(Collection<IngestRequest> requests,
+                                           boolean afterStorage,
+                                           Map<String, Optional<IngestProcessingChain>> chains,
+                                           Map<String, AIPEntity> lastVersions) {
 
         long start = System.currentTimeMillis();
 
@@ -472,8 +486,10 @@ public class IngestRequestService implements IIngestRequestService {
             sipService.save(sipEntity);
 
             // add ingest request event to list of ingest request events to publish
-            listIngestRequestEvents.add(IngestRequestEvent.build(request.getRequestId(), request.getSip().getId(),
-                                                                 sipEntity.getSipId(), RequestState.SUCCESS));
+            listIngestRequestEvents.add(IngestRequestEvent.build(request.getRequestId(),
+                                                                 request.getSip().getId(),
+                                                                 sipEntity.getSipId(),
+                                                                 RequestState.SUCCESS));
         }
 
         // NOTIFICATIONS
@@ -489,9 +505,14 @@ public class IngestRequestService implements IIngestRequestService {
         // POSTPROCESS
         for (Entry<IngestProcessingChain, Set<AIPEntity>> es : postProcessToSchedule.entrySet()) {
             for (AIPEntity aip : es.getValue()) {
-                LOGGER.info("New post process request to schedule for aip {} / {}",aip.getProviderId(), aip.getAipId());
-                AIPPostProcessRequest req = AIPPostProcessRequest
-                        .build(aip, es.getKey().getPostProcessingPlugin().get().getBusinessId());
+                LOGGER.info("New post process request to schedule for aip {} / {}",
+                            aip.getProviderId(),
+                            aip.getAipId());
+                AIPPostProcessRequest req = AIPPostProcessRequest.build(aip,
+                                                                        es.getKey()
+                                                                          .getPostProcessingPlugin()
+                                                                          .get()
+                                                                          .getBusinessId());
                 toSchedule.add(aipPostProcessRequestRepository.save(req));
                 sessionNotifier.incrementPostProcessPending(req);
             }
@@ -531,10 +552,11 @@ public class IngestRequestService implements IIngestRequestService {
         Set<IngestRequest> requestsToFinilized = Sets.newHashSet();
         for (AbstractRequest request : requestService.getRequests(requests)) {
             IngestRequest iReq = (IngestRequest) request;
-            if (iReq.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {// Check if there is another storage request we're waiting for
+            if (iReq.getStep()
+                == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {// Check if there is another storage request we're waiting for
                 for (RequestInfo ri : requests.stream()
-                        .filter(r -> request.getRemoteStepGroupIds().contains(r.getGroupId()))
-                        .collect(Collectors.toSet())) {
+                                              .filter(r -> request.getRemoteStepGroupIds().contains(r.getGroupId()))
+                                              .collect(Collectors.toSet())) {
                     aipStorageService.updateAIPsContentInfosAndLocations(iReq.getAips(), ri.getSuccessRequests());
                     List<String> remoteStepGroupIds = updateRemoteStepGroupId(iReq, ri);
                     if (!remoteStepGroupIds.isEmpty()) {
@@ -546,7 +568,9 @@ public class IngestRequestService implements IIngestRequestService {
                 }
             }
         }
-        finalizeSuccessfulRequest(requestsToFinilized, true, preloadChains(requestsToFinilized, chains),
+        finalizeSuccessfulRequest(requestsToFinilized,
+                                  true,
+                                  preloadChains(requestsToFinilized, chains),
                                   preloadLastVersions(requestsToFinilized, new HashMap<String, AIPEntity>()));
     }
 
@@ -588,11 +612,14 @@ public class IngestRequestService implements IIngestRequestService {
 
     @Override
     public void scheduleRequestWithVersioningMode(ChooseVersioningRequestParameters filters) {
-        Set<JobParameter> jobParameters = Sets
-                .newHashSet(new JobParameter(ChooseVersioningJob.CRITERIA_JOB_PARAM_NAME, filters));
+        Set<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(ChooseVersioningJob.CRITERIA_JOB_PARAM_NAME,
+                                                                           filters));
         // Schedule request retry job
-        JobInfo jobInfo = new JobInfo(false, IngestJobPriority.CHOOSE_VERSIONING_JOB_PRIORITY,
-                jobParameters, authResolver.getUser(), ChooseVersioningJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false,
+                                      IngestJobPriority.CHOOSE_VERSIONING_JOB_PRIORITY,
+                                      jobParameters,
+                                      authResolver.getUser(),
+                                      ChooseVersioningJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("Schedule {} job with id {}", ChooseVersioningJob.class.getName(), jobInfo.getId());
     }
@@ -608,14 +635,16 @@ public class IngestRequestService implements IIngestRequestService {
             ingestRequestToSchedulePerChain.add(request.getMetadata().getIngestChain(), request);
         }
         ingestRequestToSchedulePerChain.keySet()
-                .forEach(chain -> scheduleIngestProcessingJobByChain(chain,
-                                                                     ingestRequestToSchedulePerChain.get(chain)));
+                                       .forEach(chain -> scheduleIngestProcessingJobByChain(chain,
+                                                                                            ingestRequestToSchedulePerChain.get(
+                                                                                                chain)));
     }
 
     private void saveAndPublishErrorRequest(IngestRequest request, @Nullable String message) {
         // Mutate request
         request.addError(String.format("The ingest request with id \"%s\" and SIP provider id \"%s\" failed",
-                                       request.getRequestId(), request.getSip().getId()));
+                                       request.getRequestId(),
+                                       request.getSip().getId()));
         request.setState(InternalRequestState.ERROR);
         if (message != null) {
             request.addError(message);
@@ -625,12 +654,15 @@ public class IngestRequestService implements IIngestRequestService {
         saveRequestAndCheck(request);
         // Publish
         publisher.publish(IngestRequestEvent.build(request.getRequestId(),
-                                                   request.getSip() != null ? request.getSip().getId() : null, null,
-                                                   RequestState.ERROR, request.getErrors()));
+                                                   request.getSip() != null ? request.getSip().getId() : null,
+                                                   null,
+                                                   RequestState.ERROR,
+                                                   request.getErrors()));
     }
 
     /**
      * Creates or update the given {@link IngestRequest} and lock associated jobs if any.
+     *
      * @param request
      * @return saved {@link IngestRequest}
      */
@@ -654,8 +686,9 @@ public class IngestRequestService implements IIngestRequestService {
         return ingestRequestRepository.save(request);
     }
 
-    private void updateRequestWithErrors(IngestRequest request, Collection<RequestResultInfoDTO> errors,
-            String errorCause) {
+    private void updateRequestWithErrors(IngestRequest request,
+                                         Collection<RequestResultInfoDTO> errors,
+                                         String errorCause) {
         List<AIPEntity> aips = request.getAips();
         // Iterate overs AIPs and errors
         for (AIPEntity aipEntity : aips) {

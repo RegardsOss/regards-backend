@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.utils;
 
 import java.time.Instant;
@@ -31,7 +31,8 @@ public class TimeUtils {
 
     public static final ZoneId UTC = ZoneId.of("UTC");
 
-    private TimeUtils() {}
+    private TimeUtils() {
+    }
 
     public static OffsetDateTime parseUtc(String repr) {
         return OffsetDateTime.ofInstant(Instant.parse(repr), ZoneId.of("UTC"));

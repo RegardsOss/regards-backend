@@ -56,8 +56,6 @@ public class OpenIdConnectToken extends ServiceProviderAuthenticationInfo.Authen
 
     @Override
     public Map<String, String> getAuthenticationInfo() {
-        return HashMap.of(
-            OpenIdConnectPlugin.OPENID_CONNECT_TOKEN, token
-        );
+        return HashMap.of(OpenIdConnectPlugin.OPENID_CONNECT_TOKEN, token);
     }
 }

@@ -18,29 +18,26 @@
  */
 package fr.cnes.regards.modules.ingest.dto.sip;
 
+import fr.cnes.regards.framework.oais.builder.IPBuilder;
+import fr.cnes.regards.framework.urn.EntityType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
-
-import fr.cnes.regards.framework.oais.builder.IPBuilder;
-import fr.cnes.regards.framework.urn.EntityType;
-
 /**
- *
  * This {@link SIP} builder must be used to build SIP either by value or by reference.<br/>
- *
+ * <p>
  * To build SIP by reference, use {@link #buildReference(Path, String, String)} or
  * {@link #buildReference(URL, String, String)} directly.<br/>
  * To build SIP by value, use all other methods to fill in the SIP part by part then call {@link #build()} to get it at
  * the end.
  *
  * @author Marc Sordi
- *
  * @deprecated {@link SIP} fluent API instead
  */
 @Deprecated
@@ -56,9 +53,10 @@ public class SIPBuilder extends IPBuilder<SIP> {
 
     /**
      * Use this method to build a referenced SIP.
-     * @param url URL of the SIP file
+     *
+     * @param url       URL of the SIP file
      * @param algorithm {@link MessageDigest} checksum algorithm
-     * @param checksum checksum for current SIP file
+     * @param checksum  checksum for current SIP file
      */
     public SIP buildReference(URL url, String algorithm, String checksum) {
         Assert.notNull(url, "URL is required");
@@ -75,9 +73,10 @@ public class SIPBuilder extends IPBuilder<SIP> {
     /**
      * Alias of method {@link #buildReference(URL, String, String)} with a {@link Path} reference instead of
      * {@link URL}.
-     * @param filePath path to the SIP file
+     *
+     * @param filePath  path to the SIP file
      * @param algorithm {@link MessageDigest} checksum algorithm
-     * @param checksum checksum for current SIP file
+     * @param checksum  checksum for current SIP file
      */
     public SIP buildReference(Path filePath, String algorithm, String checksum) {
         Assert.notNull(filePath, "File path is required");
@@ -93,7 +92,8 @@ public class SIPBuilder extends IPBuilder<SIP> {
 
     /**
      * Alias for method {@link #buildReference(URL, String, String)} with MD5 default checksum algorithm
-     * @param url URL of the SIP file
+     *
+     * @param url      URL of the SIP file
      * @param checksum checksum for current SIP file
      */
     public SIP buildReference(URL url, String checksum) {
@@ -102,6 +102,7 @@ public class SIPBuilder extends IPBuilder<SIP> {
 
     /**
      * Alias for method {@link #buildReference(Path, String, String)} with MD5 default checksum algorithm
+     *
      * @param filePath path to the SIP file
      * @param checksum checksum for current SIP file
      */

@@ -119,8 +119,7 @@ public class OrderCreationNotificationTest {
 
     private IProjectsClient mockProjectClient() {
         Project project = new Project();
-        ResponseEntity<EntityModel<Project>> projectResponse = ResponseEntity.ok()
-                                                                             .body(EntityModel.of(project));
+        ResponseEntity<EntityModel<Project>> projectResponse = ResponseEntity.ok().body(EntityModel.of(project));
         IProjectsClient projectClient = mock(IProjectsClient.class);
         when(projectClient.retrieveProject(any())).thenReturn(projectResponse);
         return projectClient;
@@ -244,7 +243,11 @@ class FakeExceptions {
     }
 
     public static RetryableException aMailTimeoutException() {
-        Request request = Request.create(Request.HttpMethod.GET, "test", new HashMap<>(), Request.Body.empty(), new RequestTemplate());
+        Request request = Request.create(Request.HttpMethod.GET,
+                                         "test",
+                                         new HashMap<>(),
+                                         Request.Body.empty(),
+                                         new RequestTemplate());
         return new RetryableException(1, "", Request.HttpMethod.POST, null, request);
     }
 

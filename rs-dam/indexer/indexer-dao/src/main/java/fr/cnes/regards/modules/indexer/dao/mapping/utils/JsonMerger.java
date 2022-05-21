@@ -28,8 +28,10 @@ public class JsonMerger {
                 merged.add(key, oneValue);
             }
         });
-        two.entrySet().stream().filter(entry -> !one.has(entry.getKey()))
-                .forEach(entry -> merged.add(entry.getKey(), entry.getValue()));
+        two.entrySet()
+           .stream()
+           .filter(entry -> !one.has(entry.getKey()))
+           .forEach(entry -> merged.add(entry.getKey(), entry.getValue()));
         return merged;
     }
 

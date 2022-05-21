@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.config.reactive;
 
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
@@ -46,9 +46,8 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
         if (JWTAuthentication.class.isInstance(authentication)) {
-            return Mono.fromCallable(() -> jwtService.parseToken((JWTAuthentication)authentication));
-        }
-        else {
+            return Mono.fromCallable(() -> jwtService.parseToken((JWTAuthentication) authentication));
+        } else {
             return Mono.empty();
         }
     }

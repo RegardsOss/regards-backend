@@ -18,8 +18,11 @@
  */
 package fr.cnes.regards.modules.authentication.rest;
 
-import java.util.List;
-
+import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.accessrights.client.IRolesClient;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -28,12 +31,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import com.google.common.collect.Lists;
-
-import fr.cnes.regards.framework.hateoas.HateoasUtils;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.client.IRolesClient;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import java.util.List;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -56,7 +54,7 @@ public class BorrowRoleITConfiguration {
         IRolesClient roleClient = Mockito.mock(IRolesClient.class);
         List<Role> borrowables = Lists.newArrayList(roleAdmin, roleRegisteredUser, rolePublic);
         Mockito.when(roleClient.getBorrowableRoles())
-                .thenReturn(new ResponseEntity<>(HateoasUtils.wrapList(borrowables), HttpStatus.OK));
+               .thenReturn(new ResponseEntity<>(HateoasUtils.wrapList(borrowables), HttpStatus.OK));
         return roleClient;
     }
 

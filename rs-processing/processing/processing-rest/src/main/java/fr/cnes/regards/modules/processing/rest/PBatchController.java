@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.rest;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -54,8 +54,10 @@ public class PBatchController {
     private final IRuntimeTenantResolver tenantResolver;
 
     @Autowired
-    public PBatchController(IBatchService batchService, IPUserAuthService authFactory,
-            IAuthenticationResolver authResolver, IRuntimeTenantResolver tenantResolver) {
+    public PBatchController(IBatchService batchService,
+                            IPUserAuthService authFactory,
+                            IAuthenticationResolver authResolver,
+                            IRuntimeTenantResolver tenantResolver) {
         this.batchService = batchService;
         this.authFactory = authFactory;
         this.authResolver = authResolver;
@@ -65,10 +67,12 @@ public class PBatchController {
     @PostMapping
     @ResourceAccess(description = "Attempt to create a batch for future executions", role = DefaultRole.REGISTERED_USER)
     public PBatchResponse createBatch(@RequestBody PBatchRequest data) {
-        PUserAuth auth = authFactory.authFromUserEmailAndRole(tenantResolver.getTenant(), authResolver.getUser(),
+        PUserAuth auth = authFactory.authFromUserEmailAndRole(tenantResolver.getTenant(),
+                                                              authResolver.getUser(),
                                                               authResolver.getRole());
         return batchService.checkAndCreateBatch(auth, data)
-                .map(b -> new PBatchResponse(b.getId(), b.getCorrelationId())).block();
+                           .map(b -> new PBatchResponse(b.getId(), b.getCorrelationId()))
+                           .block();
     }
 
 }

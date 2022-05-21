@@ -18,31 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.rest;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import org.hamcrest.Matchers;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.restdocs.payload.FieldDescriptor;
-import org.springframework.restdocs.payload.PayloadDocumentation;
-import org.springframework.restdocs.request.ParameterDescriptor;
-import org.springframework.restdocs.request.RequestDocumentation;
-import org.springframework.restdocs.snippet.Attributes;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.geojson.GeoJsonFieldDescriptors;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.geojson.OaisFieldDescriptors;
@@ -61,17 +37,37 @@ import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
+import org.hamcrest.Matchers;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.restdocs.payload.PayloadDocumentation;
+import org.springframework.restdocs.request.ParameterDescriptor;
+import org.springframework.restdocs.request.RequestDocumentation;
+import org.springframework.restdocs.snippet.Attributes;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
- *
  * Test SIP submission. Just test the REST layer with bean validation.
  *
  * @author Marc Sordi
- *
  */
 @RegardsTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_it",
-        "regards.aips.save-metadata.bulk.delay=100", "regards.ingest.aip.delete.bulk.delay=100" })
+    "regards.aips.save-metadata.bulk.delay=100", "regards.ingest.aip.delete.bulk.delay=100" })
 @ActiveProfiles(value = { "default", "test" }, inheritProfiles = false)
 public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
@@ -95,13 +91,15 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Ingest valid SIPs")
     public void ingestSips() {
 
-        SIPCollection collection = SIPCollection
-                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                               CATEGORIES, STORAGE_METADATA));
+        SIPCollection collection = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
+                                                                               SESSION,
+                                                                               IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                                                               CATEGORIES,
+                                                                               STORAGE_METADATA));
 
         SIP firstSIPwithGeometry = buildSipOne("SIP_001", "data1.fits");
-        firstSIPwithGeometry
-                .setGeometry(IGeometry.multiPoint(IGeometry.position(5.0, 5.0), IGeometry.position(25.0, 25.0)));
+        firstSIPwithGeometry.setGeometry(IGeometry.multiPoint(IGeometry.position(5.0, 5.0),
+                                                              IGeometry.position(25.0, 25.0)));
 
         List<Double> ld = new ArrayList<Double>();
         ld.add(19.0);
@@ -116,7 +114,9 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         documentSipRequestBody(requestBuilderCustomizer);
 
-        performDefaultPost(SIPController.TYPE_MAPPING, collection, requestBuilderCustomizer,
+        performDefaultPost(SIPController.TYPE_MAPPING,
+                           collection,
+                           requestBuilderCustomizer,
                            "SIP collection should be submitted.");
     }
 
@@ -140,9 +140,9 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         OaisFieldDescriptors oaisFiledDescriptors = new OaisFieldDescriptors("features[].");
         lfd.addAll(oaisFiledDescriptors.build());
 
-        requestBuilderCustomizer.document(PayloadDocumentation
-                .relaxedRequestFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
-                        .value("Submission information package (SIP)")), lfd.toArray(new FieldDescriptor[lfd.size()])));
+        requestBuilderCustomizer.document(PayloadDocumentation.relaxedRequestFields(Attributes.attributes(Attributes.key(
+                                                                                        RequestBuilderCustomizer.PARAM_TITLE).value("Submission information package (SIP)")),
+                                                                                    lfd.toArray(new FieldDescriptor[lfd.size()])));
     }
 
     @Test
@@ -150,9 +150,11 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Get SIPs")
     public void getSips() {
 
-        SIPCollection collection = SIPCollection
-                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                               Sets.newHashSet("CAT"), STORAGE_METADATA));
+        SIPCollection collection = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
+                                                                               SESSION,
+                                                                               IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                                                               Sets.newHashSet("CAT"),
+                                                                               STORAGE_METADATA));
 
         collection.add(buildSipOne("SIP_001", "data1.fits"));
         collection.add(buildSipOne("SIP_002", "data2.fits"));
@@ -161,13 +163,16 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
 
-        performDefaultPost(SIPController.TYPE_MAPPING, collection, requestBuilderCustomizer,
+        performDefaultPost(SIPController.TYPE_MAPPING,
+                           collection,
+                           requestBuilderCustomizer,
                            "SIP collection should be submitted.");
         // End submission requests
 
         // No SIPs is already created / Just request
         requestBuilderCustomizer = customizer().expectStatusOk()
-                .expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.is(0)));
+                                               .expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements",
+                                                                                      Matchers.is(0)));
         SearchSIPsParameters body = SearchSIPsParameters.build();
         documentSearchSipParameters(requestBuilderCustomizer);
         performDefaultPost(SIPController.TYPE_MAPPING, body, requestBuilderCustomizer, "Error retrieving SIPs");
@@ -177,30 +182,48 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     private void documentSearchSipParameters(RequestBuilderCustomizer requestBuilderCustomizer) {
         List<ParameterDescriptor> paramDescrList = new ArrayList<ParameterDescriptor>();
 
-        paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_PROVIDER_ID).optional()
-                .description("SIP identifier filter")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
-        paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_FROM).optional()
-                .description("ISO Date time filter")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
-        paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_STATE).optional()
-                .description("SIP state filter")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
-        paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_PROCESSING).optional()
-                .description("Ingest processing name filter")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
-        paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_SESSION_OWNER).optional()
-                .description("Session source filter")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
-        paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_SESSION).optional()
-                .description("Session name filter")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"))
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
+        paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_PROVIDER_ID)
+                                               .optional()
+                                               .description("SIP identifier filter")
+                                               .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                     .value("Optional"))
+                                               .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                     .value("String")));
+        paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_FROM)
+                                               .optional()
+                                               .description("ISO Date time filter")
+                                               .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                     .value("Optional"))
+                                               .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                     .value("String")));
+        paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_STATE)
+                                               .optional()
+                                               .description("SIP state filter")
+                                               .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                     .value("Optional"))
+                                               .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                     .value("String")));
+        paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_PROCESSING)
+                                               .optional()
+                                               .description("Ingest processing name filter")
+                                               .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                     .value("Optional"))
+                                               .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                     .value("String")));
+        paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_SESSION_OWNER)
+                                               .optional()
+                                               .description("Session source filter")
+                                               .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                     .value("Optional"))
+                                               .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                     .value("String")));
+        paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_SESSION)
+                                               .optional()
+                                               .description("Session name filter")
+                                               .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                     .value("Optional"))
+                                               .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                     .value("String")));
 
         // Add request parameters documentation
         requestBuilderCustomizer.document(RequestDocumentation.requestParameters(paramDescrList));
@@ -211,28 +234,35 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Ingest valid and invalid SIPs")
     public void ingestInvalidSips() {
 
-        SIPCollection collection = SIPCollection
-                .build(IngestMetadataDto.build(SESSION_OWNER, SESSION, IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
-                                               Sets.newHashSet("CAT"), STORAGE_METADATA));
+        SIPCollection collection = SIPCollection.build(IngestMetadataDto.build(SESSION_OWNER,
+                                                                               SESSION,
+                                                                               IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                                                               Sets.newHashSet("CAT"),
+                                                                               STORAGE_METADATA));
 
         // SIP 1
         SIP sip = SIP.build(EntityType.DATA, "SIP_001");
         sip.withDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "FAKE_ALGO", "sdsdfm1211vd");
-        sip.withSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits",
+        sip.withSyntax("FITS(FlexibleImageTransport)",
+                       "http://www.iana.org/assignments/media-types/application/fits",
                        MediaType.valueOf("application/fits"));
         collection.add(sip.registerContentInformation());
 
         // SIP 2
         sip = SIP.build(EntityType.DATA, "SIP_002");
         sip.withDataObject(DataType.RAWDATA, Paths.get("data2.fits"), "sdsdfm1211vsdfdsfd");
-        sip.withSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits",
+        sip.withSyntax("FITS(FlexibleImageTransport)",
+                       "http://www.iana.org/assignments/media-types/application/fits",
                        MediaType.valueOf("application/fits"));
         collection.add(sip.registerContentInformation());
 
         // Define expectations
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk()
-                .addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
-        performDefaultPost(SIPController.TYPE_MAPPING, collection, requestBuilderCustomizer,
+                                                                        .addHeader(HttpHeaders.CONTENT_TYPE,
+                                                                                   GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
+        performDefaultPost(SIPController.TYPE_MAPPING,
+                           collection,
+                           requestBuilderCustomizer,
                            "Partial valid collection should be submitted.");
     }
 
@@ -247,14 +277,19 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
 
         documentFileRequestParameters(requestBuilderCustomizer);
 
-        performDefaultFileUpload(SIPController.TYPE_MAPPING + SIPController.IMPORT_PATH, filePath,
-                                 requestBuilderCustomizer, "Should be able to import valid SIP collection");
+        performDefaultFileUpload(SIPController.TYPE_MAPPING + SIPController.IMPORT_PATH,
+                                 filePath,
+                                 requestBuilderCustomizer,
+                                 "Should be able to import valid SIP collection");
     }
 
     private void documentFileRequestParameters(RequestBuilderCustomizer requestBuilderCustomizer) {
         ParameterDescriptor paramFile = RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_FILE)
-                .optional().description("A file containing a SIP collection in GeoJson format")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"));
+                                                            .optional()
+                                                            .description(
+                                                                "A file containing a SIP collection in GeoJson format")
+                                                            .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                  .value("String"));
         // Add request parameters documentation
         requestBuilderCustomizer.document(RequestDocumentation.requestParameters(paramFile));
     }
@@ -269,8 +304,10 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         documentFileRequestParameters(requestBuilderCustomizer);
 
-        performDefaultFileUpload(SIPController.TYPE_MAPPING + SIPController.IMPORT_PATH, filePath,
-                                 requestBuilderCustomizer, "Should be able to import a partial valid SIP collection");
+        performDefaultFileUpload(SIPController.TYPE_MAPPING + SIPController.IMPORT_PATH,
+                                 filePath,
+                                 requestBuilderCustomizer,
+                                 "Should be able to import a partial valid SIP collection");
     }
 
     @Test
@@ -282,35 +319,51 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         // Define expectations
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
 
-        performDefaultFileUpload(SIPController.TYPE_MAPPING + SIPController.IMPORT_PATH, filePath,
-                                 requestBuilderCustomizer, "Should be able to import a partial valid SIP collection");
+        performDefaultFileUpload(SIPController.TYPE_MAPPING + SIPController.IMPORT_PATH,
+                                 filePath,
+                                 requestBuilderCustomizer,
+                                 "Should be able to import a partial valid SIP collection");
     }
 
     private SIP buildSipOne(String providerId, String fileName) {
 
         SIP sip = SIP.build(EntityType.DATA, providerId);
-        sip.withDataObject(DataType.RAWDATA, Paths.get(fileName), Paths.get(fileName).getFileName().toString(), "MD5",
-                           "b463726cfbb52d47e432bedf08edbec3", new Long(12345));
-        sip.withSyntax("FITS(FlexibleImageTransport)", "http://www.iana.org/assignments/media-types/application/fits",
+        sip.withDataObject(DataType.RAWDATA,
+                           Paths.get(fileName),
+                           Paths.get(fileName).getFileName().toString(),
+                           "MD5",
+                           "b463726cfbb52d47e432bedf08edbec3",
+                           new Long(12345));
+        sip.withSyntax("FITS(FlexibleImageTransport)",
+                       "http://www.iana.org/assignments/media-types/application/fits",
                        MediaType.valueOf("application/fits"));
         sip.registerContentInformation();
 
         sip.withDescriptiveInformation("longProperty", 987654);
         sip.withDescriptiveInformation("stringProperty", "Lorem ipsum dolor sit amet");
-        sip.withDescriptiveInformation("dateProperty", OffsetDateTime.parse("2014-05-02T23:10:17-02:00",
-                                                                            DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        sip.withDescriptiveInformation("dateProperty",
+                                       OffsetDateTime.parse("2014-05-02T23:10:17-02:00",
+                                                            DateTimeFormatter.ISO_OFFSET_DATE_TIME));
         List<String> tags = new ArrayList<String>();
         tags.add("JASON_MISSION");
         sip.withContextTags(tags.toArray(new String[tags.size()]));
 
-        sip.withProvenanceInformationEvent("creation", "AIP creation", OffsetDateTime
-                .parse("2014-01-02T23:10:05+01:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-        sip.withProvenanceInformationEvent("update", "instrument calibration", OffsetDateTime
-                .parse("2014-01-09T09:01:37+01:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-        sip.withProvenanceInformationEvent("update", "data acquisition", OffsetDateTime
-                .parse("2014-02-13T12:25:36+01:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-        sip.withProvenanceInformationEvent("update", "new calibratiopn parameter 0.001", OffsetDateTime
-                .parse("2014-02-19T13:31:17+01:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        sip.withProvenanceInformationEvent("creation",
+                                           "AIP creation",
+                                           OffsetDateTime.parse("2014-01-02T23:10:05+01:00",
+                                                                DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        sip.withProvenanceInformationEvent("update",
+                                           "instrument calibration",
+                                           OffsetDateTime.parse("2014-01-09T09:01:37+01:00",
+                                                                DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        sip.withProvenanceInformationEvent("update",
+                                           "data acquisition",
+                                           OffsetDateTime.parse("2014-02-13T12:25:36+01:00",
+                                                                DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        sip.withProvenanceInformationEvent("update",
+                                           "new calibratiopn parameter 0.001",
+                                           OffsetDateTime.parse("2014-02-19T13:31:17+01:00",
+                                                                DateTimeFormatter.ISO_OFFSET_DATE_TIME));
         sip.withFacility("CNES");
         sip.withFilter("a filter");
         sip.withDetector("detector");
@@ -324,8 +377,10 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         sip.withReferenceInformation("ark", "http://example.org/ark:/13030/654xz321/s3/f8.05v.tiff");
         sip.withFixityInformation("key-fixity-1", "fixity value 1");
         sip.withFixityInformation("key-fixity-2", "fixity value 2");
-        sip.withAccessRightInformation("licence", "access rights", OffsetDateTime
-                .parse("2014-01-12T23:10:05+01:00", DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+        sip.withAccessRightInformation("licence",
+                                       "access rights",
+                                       OffsetDateTime.parse("2014-01-12T23:10:05+01:00",
+                                                            DateTimeFormatter.ISO_OFFSET_DATE_TIME));
         return sip;
     }
 

@@ -18,10 +18,10 @@
  */
 package fr.cnes.regards.modules.ingest.client;
 
+import org.springframework.lang.Nullable;
+
 import java.util.Set;
 import java.util.UUID;
-
-import org.springframework.lang.Nullable;
 
 /**
  * @author Marc SORDI
@@ -52,8 +52,10 @@ public class RequestInfo {
         return build(UUID.randomUUID().toString(), providerId, urn, errors);
     }
 
-    public static RequestInfo build(String requestId, String providerId, @Nullable String urn,
-            @Nullable Set<String> errors) {
+    public static RequestInfo build(String requestId,
+                                    String providerId,
+                                    @Nullable String urn,
+                                    @Nullable Set<String> errors) {
         RequestInfo ri = new RequestInfo();
         ri.setRequestId(requestId);
         ri.setProviderId(providerId);

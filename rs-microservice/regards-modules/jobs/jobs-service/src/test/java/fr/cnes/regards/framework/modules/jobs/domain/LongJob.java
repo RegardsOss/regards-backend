@@ -2,6 +2,7 @@ package fr.cnes.regards.framework.modules.jobs.domain;
 
 /**
  * 10 s job
+ *
  * @author oroussel
  */
 public class LongJob extends AbstractNoParamJob<Void> {

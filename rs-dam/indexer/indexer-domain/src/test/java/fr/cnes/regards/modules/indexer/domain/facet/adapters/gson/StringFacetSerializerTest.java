@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.indexer.domain.facet.adapters.gson;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import fr.cnes.regards.modules.indexer.domain.facet.StringFacet;
+import fr.cnes.regards.modules.indexer.domain.facet.adapters.gson.StringFacetSerializer.AdaptedFacet;
 import org.junit.Assert;
 import org.junit.Test;
 
-import fr.cnes.regards.modules.indexer.domain.facet.StringFacet;
-import fr.cnes.regards.modules.indexer.domain.facet.adapters.gson.StringFacetSerializer.AdaptedFacet;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Unit test for {@link StringFacetSerializer}

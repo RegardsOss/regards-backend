@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.testutils;
 
 import com.google.common.reflect.TypeToken;
@@ -45,7 +45,7 @@ public abstract class AbstractMarshallingTest<T> {
     @Test
     public void test_toJson_fromJson() {
         Class<T> testedType = testedType();
-        for (int i = 0; i < 100 ; i++) {
+        for (int i = 0; i < 100; i++) {
             T expected = randomInstance(testedType);
             String expectedJson = gson.toJson(expected);
             T actual = gson.fromJson(expectedJson, testedType);
@@ -53,8 +53,12 @@ public abstract class AbstractMarshallingTest<T> {
             boolean equal = actualJson.equals(expectedJson);
             // The string cannot be compared, as the order of JSON attributes are not assured
             // so we transform it into Map to compare it recursively
-            Map<Object, Object> resMap = gson.fromJson(expectedJson, new TypeToken<Map<Object, Object>>() {}.getType());
-            Map<Object, Object> expectedMap = gson.fromJson(actualJson, new TypeToken<Map<Object, Object>>() {}.getType());
+            Map<Object, Object> resMap = gson.fromJson(expectedJson, new TypeToken<Map<Object, Object>>() {
+
+            }.getType());
+            Map<Object, Object> expectedMap = gson.fromJson(actualJson, new TypeToken<Map<Object, Object>>() {
+
+            }.getType());
             assertThat(resMap).usingRecursiveComparison().isEqualTo(expectedMap);
         }
     }

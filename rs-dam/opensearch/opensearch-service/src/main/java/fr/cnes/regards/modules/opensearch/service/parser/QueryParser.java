@@ -18,6 +18,12 @@
  */
 package fr.cnes.regards.modules.opensearch.service.parser;
 
+import com.google.common.base.Strings;
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
+import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.opensearch.service.builder.RegardsQueryTreeBuilder;
+import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.core.QueryParserHelper;
 import org.apache.lucene.queryparser.flexible.standard.CommonQueryParserConfiguration;
@@ -29,20 +35,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
 
-import com.google.common.base.Strings;
-
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.opensearch.service.builder.RegardsQueryTreeBuilder;
-import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
-import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
-
 /**
  * Custom implementation of Lucene's {@link QueryParserHelper}.<br>
  * For more complex customizability, consider implementing {@link CommonQueryParserConfiguration}.<br>
- *
+ * <p>
  * This {@link IParser} implementation only handles the the "q" part of the OpenSearch request.<br>
- *
+ * <p>
  * Expects HTML-encoded string values. For example, <code>q=title:(harrypotter OR starwars)</code> will fail, but
  * <code>q=title%3A%28harrypotter+OR+starwars%29</code> will work
  *
@@ -68,14 +66,17 @@ public class QueryParser extends QueryParserHelper implements IParser {
 
     /**
      * Constructor
+     *
      * @param finder provides access to {@link AttributeModel}s with caching facilities
      */
     public QueryParser(IAttributeFinder finder) {
-        super(new StandardQueryConfigHandler(), new StandardSyntaxParser(),
-              new StandardQueryNodeProcessorPipeline(null), new RegardsQueryTreeBuilder(finder));
+        super(new StandardQueryConfigHandler(),
+              new StandardSyntaxParser(),
+              new StandardQueryNodeProcessorPipeline(null),
+              new RegardsQueryTreeBuilder(finder));
         setEnablePositionIncrements(true);
         setAllowLeadingWildcard(true);
-//        setLowercaseExpandedTerms(false);
+        //        setLowercaseExpandedTerms(false);
     }
 
     @Override
@@ -115,9 +116,9 @@ public class QueryParser extends QueryParserHelper implements IParser {
     /**
      * Enable or disable lowercase regexp transformation
      */
-//    public final void setLowercaseExpandedTerms(final boolean lowercaseExpandedTerms) {
-//        getQueryConfigHandler().set(ConfigurationKeys.LOWERCASE_EXPANDED_TERMS, lowercaseExpandedTerms);
-//    }
+    //    public final void setLowercaseExpandedTerms(final boolean lowercaseExpandedTerms) {
+    //        getQueryConfigHandler().set(ConfigurationKeys.LOWERCASE_EXPANDED_TERMS, lowercaseExpandedTerms);
+    //    }
 
     /**
      * Set to <code>true</code> to enable position increments in result query.

@@ -38,7 +38,9 @@ import static io.vavr.control.Option.some;
 public class ProcessInputCorrelationIdentifier {
 
     BatchSuborderCorrelationIdentifier batchSuborderIdentifier;
+
     Option<String> featureIpId;
+
     Option<String> fileName;
 
     public static String repr(BatchSuborderCorrelationIdentifier batchSuborderIdentifier) {
@@ -53,34 +55,37 @@ public class ProcessInputCorrelationIdentifier {
         return repr(batchSuborderIdentifier, feature.getId().toString());
     }
 
-    public static String repr(BatchSuborderCorrelationIdentifier batchSuborderIdentifier, EntityFeature feature, DataFile file) {
+    public static String repr(BatchSuborderCorrelationIdentifier batchSuborderIdentifier,
+                              EntityFeature feature,
+                              DataFile file) {
         return repr(batchSuborderIdentifier, feature.getId().toString(), file.getFilename());
     }
 
-    public static String repr(BatchSuborderCorrelationIdentifier batchSuborderIdentifier, String featureIpId, String fileName) {
+    public static String repr(BatchSuborderCorrelationIdentifier batchSuborderIdentifier,
+                              String featureIpId,
+                              String fileName) {
         return new ProcessInputCorrelationIdentifier(batchSuborderIdentifier, some(featureIpId), some(fileName)).repr();
     }
 
     public String repr() {
-        return String.format("file:/%s", batchSuborderIdentifier.repr())
-                + (featureIpId.map(urn -> "/" + urn).getOrElse(""))
-                + (fileName.map(f -> "/" + f).getOrElse(""));
+        return String.format("file:/%s", batchSuborderIdentifier.repr()) + (featureIpId.map(urn -> "/" + urn)
+                                                                                       .getOrElse(""))
+            + (fileName.map(f -> "/" + f).getOrElse(""));
     }
 
-    private static final Pattern PATTERN = Pattern.compile("file:/(?<batch>[^/]+)(?:/(?<feature>[^/]+))?(?:/(?<file>.*))?");
+    private static final Pattern PATTERN = Pattern.compile(
+        "file:/(?<batch>[^/]+)(?:/(?<feature>[^/]+))?(?:/(?<file>.*))?");
 
     public static Option<ProcessInputCorrelationIdentifier> parse(String repr) {
         Matcher matcher = PATTERN.matcher(repr);
         if (matcher.matches()) {
             String batch = matcher.group("batch");
-            return BatchSuborderCorrelationIdentifier.parse(batch)
-                .map(batchCorrelationId -> {
-                    Option<String> featureIpId = Option.of(matcher.group("feature"));
-                    Option<String> fileName = Option.of(matcher.group("file"));
-                    return new ProcessInputCorrelationIdentifier(batchCorrelationId, featureIpId, fileName);
-                });
-        }
-        else {
+            return BatchSuborderCorrelationIdentifier.parse(batch).map(batchCorrelationId -> {
+                Option<String> featureIpId = Option.of(matcher.group("feature"));
+                Option<String> fileName = Option.of(matcher.group("file"));
+                return new ProcessInputCorrelationIdentifier(batchCorrelationId, featureIpId, fileName);
+            });
+        } else {
             return none();
         }
     }

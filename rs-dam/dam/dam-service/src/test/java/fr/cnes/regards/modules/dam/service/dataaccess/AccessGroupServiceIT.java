@@ -35,7 +35,6 @@ import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @TestPropertySource(locations = "classpath:dataaccess.properties")
 @ContextConfiguration(classes = { TestAccessGroupConfiguration.class })

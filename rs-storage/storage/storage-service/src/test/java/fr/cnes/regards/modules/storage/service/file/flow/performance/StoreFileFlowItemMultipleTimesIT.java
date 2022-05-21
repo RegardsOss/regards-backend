@@ -52,10 +52,9 @@ import java.util.concurrent.TimeUnit;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(
-        properties = { "spring.jpa.show-sql=false", "spring.jpa.properties.hibernate.default_schema=storage_flow_tests",
-                "regards.amqp.enabled=true", "regards.storage.schedule.initial.delay=100",
-                "regards.storage.schedule.delay=50", "regards.jobs.scan.delay=50" },
-        locations = { "classpath:application-test.properties" })
+    properties = { "spring.jpa.show-sql=false", "spring.jpa.properties.hibernate.default_schema=storage_flow_tests",
+        "regards.amqp.enabled=true", "regards.storage.schedule.initial.delay=100", "regards.storage.schedule.delay=50",
+        "regards.jobs.scan.delay=50" }, locations = { "classpath:application-test.properties" })
 @ActiveProfiles({ "testAmqp" })
 @Ignore("Performances tests")
 public class StoreFileFlowItemMultipleTimesIT extends AbstractStorageIT {
@@ -113,10 +112,14 @@ public class StoreFileFlowItemMultipleTimesIT extends AbstractStorageIT {
         int nbItems = 1000;
 
         for (int i = 0; i < nbItems; i++) {
-            StorageFlowItem item = StorageFlowItem.build(FileStorageRequestDTO.build("file.name", checksum, "MD5",
+            StorageFlowItem item = StorageFlowItem.build(FileStorageRequestDTO.build("file.name",
+                                                                                     checksum,
+                                                                                     "MD5",
                                                                                      "application/octet-stream",
-                                                                                     FILE_REF_OWNER + i, SESSION_OWNER,
-                                                                                     SESSION, originUrl,
+                                                                                     FILE_REF_OWNER + i,
+                                                                                     SESSION_OWNER,
+                                                                                     SESSION,
+                                                                                     originUrl,
                                                                                      ONLINE_CONF_LABEL,
                                                                                      Optional.empty()),
                                                          UUID.randomUUID().toString());
@@ -133,8 +136,13 @@ public class StoreFileFlowItemMultipleTimesIT extends AbstractStorageIT {
         Thread.sleep(2_000);
 
         // check if there are as many notification requests as files stored
-        Assert.assertEquals("Wrong number of storedFiles notification", nbItems, this.stepRepo.findAll().stream()
-                .filter(step -> step.getStepPropertyInfo().getProperty()
-                        .equals(SessionNotifierPropertyEnum.STORED_FILES.getName())).count());
+        Assert.assertEquals("Wrong number of storedFiles notification",
+                            nbItems,
+                            this.stepRepo.findAll()
+                                         .stream()
+                                         .filter(step -> step.getStepPropertyInfo()
+                                                             .getProperty()
+                                                             .equals(SessionNotifierPropertyEnum.STORED_FILES.getName()))
+                                         .count());
     }
 }

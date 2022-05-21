@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.demo.engine.event;
 
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
@@ -28,6 +28,8 @@ import io.vavr.collection.List;
  */
 @lombok.Value
 public class StartWithProfileEvent implements ISubscribable {
+
     String profile;
+
     List<String> inputUrls;
 }

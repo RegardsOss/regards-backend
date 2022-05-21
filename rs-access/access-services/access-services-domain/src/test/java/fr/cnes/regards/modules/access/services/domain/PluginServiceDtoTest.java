@@ -18,16 +18,7 @@
  */
 package fr.cnes.regards.modules.access.services.domain;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -37,6 +28,13 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Set;
 
 /**
  * Unit test for {@link PluginServiceDto}
@@ -110,6 +108,7 @@ public class PluginServiceDtoTest {
 
     /**
      * Check the values of the DTO
+     *
      * @param pPluginServiceDto
      */
     private void checkDto(PluginServiceDto pPluginServiceDto) {

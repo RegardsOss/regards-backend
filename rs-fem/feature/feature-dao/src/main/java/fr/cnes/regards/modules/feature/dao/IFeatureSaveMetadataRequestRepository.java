@@ -19,15 +19,16 @@
 
 package fr.cnes.regards.modules.feature.dao;
 
-import org.springframework.stereotype.Repository;
-
 import fr.cnes.regards.modules.feature.domain.request.FeatureSaveMetadataRequest;
+import org.springframework.stereotype.Repository;
 
 /**
  * JPA to access {@link FeatureSaveMetadataRequest} repository
+ *
  * @author Iliana Ghazali
  */
 @Repository
-public interface IFeatureSaveMetadataRequestRepository extends IAbstractFeatureRequestRepository<FeatureSaveMetadataRequest>{
+public interface IFeatureSaveMetadataRequestRepository
+    extends IAbstractFeatureRequestRepository<FeatureSaveMetadataRequest> {
 
 }

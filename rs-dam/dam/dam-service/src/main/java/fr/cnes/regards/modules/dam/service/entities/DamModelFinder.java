@@ -18,18 +18,18 @@
  */
 package fr.cnes.regards.modules.dam.service.entities;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
 import fr.cnes.regards.modules.model.service.validation.AbstractCacheableModelFinder;
 import fr.cnes.regards.modules.model.service.validation.IModelFinder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * Retrieve model attributes in DAM context (directly from database)
+ *
  * @author Marc SORDI
  */
 @Service

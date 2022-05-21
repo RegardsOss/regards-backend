@@ -24,14 +24,15 @@ import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.service.exception.ImportException;
 
 /**
- *
  * Delegate plugin configuration initialization to module implementing computation plugins related to model configuration
+ *
  * @author Marc SORDI
  */
 public interface IComputationPluginService {
 
     /**
      * Initialize a plugin configuration according to XML imported configuration
+     *
      * @return {@link PluginConfiguration}
      * @throws ImportException if plugin cannot be initialized
      */

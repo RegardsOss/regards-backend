@@ -18,19 +18,19 @@
  */
 package fr.cnes.regards.framework.hateoas;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import com.google.common.base.Preconditions;
 import org.springframework.data.domain.Page;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 
-import com.google.common.base.Preconditions;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Single resource interface
+ *
  * @param <T> data transfer object (whatever object)
  * @author msordi
  */
@@ -39,16 +39,18 @@ public interface IResourceController<T> {
 
     /**
      * Convert an element to an {@link EntityModel}
+     *
      * @param element element to convert
-     * @param extras Extra URL path parameters for links
+     * @param extras  Extra URL path parameters for links
      * @return a {@link EntityModel}
      */
     EntityModel<T> toResource(T element, Object... extras);
 
     /**
      * Convert a list of elements to a list of {@link EntityModel}
+     *
      * @param elements list of elements to convert
-     * @param extras Extra URL path parameters for links
+     * @param extras   Extra URL path parameters for links
      * @return a list of {@link EntityModel}
      */
     default List<EntityModel<T>> toResources(final Collection<T> elements, final Object... extras) {
@@ -58,12 +60,14 @@ public interface IResourceController<T> {
 
     /**
      * Convert a list of elements to a list of {@link EntityModel}
+     *
      * @param elements list of elements to convert
-     * @param extras Extra URL path parameters for links
+     * @param extras   Extra URL path parameters for links
      * @return a list of {@link EntityModel}
      */
     default PagedModel<EntityModel<T>> toPagedResources(final Page<T> elements,
-            final PagedResourcesAssembler<T> assembler, final Object... extras) {
+                                                        final PagedResourcesAssembler<T> assembler,
+                                                        final Object... extras) {
         Preconditions.checkNotNull(elements);
         final PagedModel<EntityModel<T>> pageResources = assembler.toModel(elements);
         pageResources.forEach(resource -> resource.add(toResource(resource.getContent(), extras).getLinks()));

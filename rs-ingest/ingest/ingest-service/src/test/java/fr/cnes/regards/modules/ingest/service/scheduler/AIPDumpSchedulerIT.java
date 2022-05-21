@@ -41,13 +41,13 @@ import java.util.concurrent.ScheduledFuture;
 
 /**
  * Test for {@link AIPSaveMetadataScheduler}
+ *
  * @author Iliana Ghazali
  */
 
-@TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=dump_manager_it" },
-        locations = { "classpath:application-test.properties" })
-@ActiveProfiles(value = {"noscheduler"})
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=dump_manager_it" },
+    locations = { "classpath:application-test.properties" })
+@ActiveProfiles(value = { "noscheduler" })
 public class AIPDumpSchedulerIT extends IngestMultitenantServiceIT {
 
     private String tenant;
@@ -67,10 +67,9 @@ public class AIPDumpSchedulerIT extends IngestMultitenantServiceIT {
     @Test
     @Purpose("Test update of a scheduler")
     public void testUpdateDumpAndScheduler() throws ExecutionException, InterruptedException, ModuleException {
-        DumpParameters dumpParameters = new DumpParameters()
-                .setActiveModule(true)
-                .setDumpLocation("target/dump")
-                .setCronTrigger("0 * * * * *");
+        DumpParameters dumpParameters = new DumpParameters().setActiveModule(true)
+                                                            .setDumpLocation("target/dump")
+                                                            .setCronTrigger("0 * * * * *");
 
         dumpSettingsService.setDumpParameters(dumpParameters);
 
@@ -89,10 +88,9 @@ public class AIPDumpSchedulerIT extends IngestMultitenantServiceIT {
     @Test
     @Purpose("Test update of a scheduler with an incorrect dump configuration")
     public void testUpdateDumpAndSchedulerError() {
-        DumpParameters dumpParameters = new DumpParameters()
-                .setActiveModule(true)
-                .setDumpLocation("target/dump")
-                .setCronTrigger("* * *");
+        DumpParameters dumpParameters = new DumpParameters().setActiveModule(true)
+                                                            .setDumpLocation("target/dump")
+                                                            .setCronTrigger("* * *");
         try {
             dumpSettingsService.setDumpParameters(dumpParameters);
             Assert.fail(String.format("%s was expected", EntityInvalidException.class.getName()));

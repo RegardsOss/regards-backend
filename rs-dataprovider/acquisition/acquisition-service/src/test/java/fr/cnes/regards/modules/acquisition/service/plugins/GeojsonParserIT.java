@@ -25,6 +25,11 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,10 +37,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=geojson_test" })
 public class GeojsonParserIT extends AbstractMultitenantServiceIT {

@@ -18,16 +18,6 @@
  */
 package fr.cnes.regards.modules.dam.service.entities.plugins;
 
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -43,6 +33,8 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 
@@ -56,8 +48,8 @@ import java.util.stream.Collectors;
  * @author Christophe Mertz
  */
 @Plugin(description = "This plugin allows to POST AIP entities to storage unit", id = "StoragePlugin",
-        version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+    version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
+    url = "https://github.com/RegardsOss")
 public class StoragePlugin implements IStorageService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StoragePlugin.class);
@@ -85,18 +77,23 @@ public class StoragePlugin implements IStorageService {
     @Override
     public <T extends AbstractEntity<?>> T store(T toPersist) {
 
-        Collection<FileStorageRequestDTO> files = toPersist.getFiles().values().stream()
-                .map(entry -> initStorageRequest(entry, toPersist.getIpId())).collect(Collectors.toSet());
+        Collection<FileStorageRequestDTO> files = toPersist.getFiles()
+                                                           .values()
+                                                           .stream()
+                                                           .map(entry -> initStorageRequest(entry, toPersist.getIpId()))
+                                                           .collect(Collectors.toSet());
 
         if (!StringUtils.isEmpty(damSettingsService.getStorageLocation()) && (!files.isEmpty())) {
-            Set<AbstractEntityRequest> infos = this.storageClient.store(files).stream()
-                    .map(request -> new AbstractEntityRequest(request.getGroupId(), toPersist.getIpId()))
-                    .collect(Collectors.toSet());
+            Set<AbstractEntityRequest> infos = this.storageClient.store(files)
+                                                                 .stream()
+                                                                 .map(request -> new AbstractEntityRequest(request.getGroupId(),
+                                                                                                           toPersist.getIpId()))
+                                                                 .collect(Collectors.toSet());
             this.entityRequestRepo.saveAll(infos);
         } else {
             String message = "Data files are stored localy on datamanagement service as no storage location has been defined in microservice configuration.";
             String title = "Files stored locally";
-            String[] users = new String[]{authResolver.getUser()};
+            String[] users = new String[] { authResolver.getUser() };
             notificationClient.notify(message, title, NotificationLevel.INFO, users);
         }
         return toPersist;
@@ -108,22 +105,40 @@ public class StoragePlugin implements IStorageService {
         if (!StringUtils.isEmpty(damSettingsService.getStorageLocation())) {
 
             // manage added files in toUpdate and not in oldEntity
-            Collection<FileStorageRequestDTO> filesToAdd = toUpdate.getFiles().values().stream()
-                    .filter(file -> !oldEntity.getFiles().values().stream()
-                            .anyMatch(f -> f.getChecksum().equals(file.getChecksum())))
-                    .map(entry -> initStorageRequest(entry, toUpdate.getIpId())).collect(Collectors.toSet());
+            Collection<FileStorageRequestDTO> filesToAdd = toUpdate.getFiles()
+                                                                   .values()
+                                                                   .stream()
+                                                                   .filter(file -> !oldEntity.getFiles()
+                                                                                             .values()
+                                                                                             .stream()
+                                                                                             .anyMatch(f -> f.getChecksum()
+                                                                                                             .equals(
+                                                                                                                 file.getChecksum())))
+                                                                   .map(entry -> initStorageRequest(entry,
+                                                                                                    toUpdate.getIpId()))
+                                                                   .collect(Collectors.toSet());
             if (!filesToAdd.isEmpty()) {
-                Set<AbstractEntityRequest> infos = this.storageClient.store(filesToAdd).stream()
-                        .map(request -> new AbstractEntityRequest(request.getGroupId(), toUpdate.getIpId()))
-                        .collect(Collectors.toSet());
+                Set<AbstractEntityRequest> infos = this.storageClient.store(filesToAdd)
+                                                                     .stream()
+                                                                     .map(request -> new AbstractEntityRequest(request.getGroupId(),
+                                                                                                               toUpdate.getIpId()))
+                                                                     .collect(Collectors.toSet());
                 this.entityRequestRepo.saveAll(infos);
             }
             // manage deleted file in toUpdate and present in oldEntity
-            Collection<FileDeletionRequestDTO> filesToDelete = oldEntity.getFiles().values().stream()
-                    .filter(file -> !toUpdate.getFiles().values().stream()
-                            .anyMatch(f -> f.getChecksum().equals(file.getChecksum())))
-                    .map(entry -> initDeletionRequest(entry, toUpdate.getIpId().toString()))
-                    .collect(Collectors.toSet());
+            Collection<FileDeletionRequestDTO> filesToDelete = oldEntity.getFiles()
+                                                                        .values()
+                                                                        .stream()
+                                                                        .filter(file -> !toUpdate.getFiles()
+                                                                                                 .values()
+                                                                                                 .stream()
+                                                                                                 .anyMatch(f -> f.getChecksum()
+                                                                                                                 .equals(
+                                                                                                                     file.getChecksum())))
+                                                                        .map(entry -> initDeletionRequest(entry,
+                                                                                                          toUpdate.getIpId()
+                                                                                                                  .toString()))
+                                                                        .collect(Collectors.toSet());
             if (!filesToDelete.isEmpty()) {
                 this.storageClient.delete(filesToDelete);
             }
@@ -138,9 +153,13 @@ public class StoragePlugin implements IStorageService {
     public void delete(AbstractEntity<?> toDelete) {
         if (!StringUtils.isEmpty(damSettingsService.getStorageLocation())) {
 
-            Collection<FileDeletionRequestDTO> files = toDelete.getFiles().values().stream()
-                    .map(entry -> initDeletionRequest(entry, toDelete.getIpId().toString()))
-                    .collect(Collectors.toList());
+            Collection<FileDeletionRequestDTO> files = toDelete.getFiles()
+                                                               .values()
+                                                               .stream()
+                                                               .map(entry -> initDeletionRequest(entry,
+                                                                                                 toDelete.getIpId()
+                                                                                                         .toString()))
+                                                               .collect(Collectors.toList());
             if (!files.isEmpty()) {
                 this.storageClient.delete(files);
             }
@@ -150,28 +169,24 @@ public class StoragePlugin implements IStorageService {
     }
 
     private FileStorageRequestDTO initStorageRequest(DataFile file, UniformResourceName urn) {
-        return FileStorageRequestDTO.build(
-                file.getFilename(),
-                file.getChecksum(),
-                file.getDigestAlgorithm(),
-                file.getMimeType().toString(),
-                urn.toString(),
-                null, 
-                null,
-                String.format(URI_TEMPLATE, file.getUri(), this.tenantResolver.getTenant()),
-                damSettingsService.getStorageLocation(),
-                Optional.ofNullable(damSettingsService.getStorageSubDirectory())
-        );
+        return FileStorageRequestDTO.build(file.getFilename(),
+                                           file.getChecksum(),
+                                           file.getDigestAlgorithm(),
+                                           file.getMimeType().toString(),
+                                           urn.toString(),
+                                           null,
+                                           null,
+                                           String.format(URI_TEMPLATE, file.getUri(), this.tenantResolver.getTenant()),
+                                           damSettingsService.getStorageLocation(),
+                                           Optional.ofNullable(damSettingsService.getStorageSubDirectory()));
     }
 
     private FileDeletionRequestDTO initDeletionRequest(DataFile file, String urn) {
-        return FileDeletionRequestDTO.build(
-                file.getChecksum(),
-                damSettingsService.getStorageLocation(),
-                urn,
-                null,
-                null,
-                false
-        );
+        return FileDeletionRequestDTO.build(file.getChecksum(),
+                                            damSettingsService.getStorageLocation(),
+                                            urn,
+                                            null,
+                                            null,
+                                            false);
     }
 }

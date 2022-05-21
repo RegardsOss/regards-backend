@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.client;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
@@ -43,19 +43,25 @@ import static fr.cnes.regards.modules.processing.ProcessingConstants.Path.*;
 @RestClient(name = "rs-processing", contextId = "rs-processing.rest.client")
 public interface IProcessingRestClient {
 
-    @GetMapping(path = PROCESS_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = PROCESS_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<PProcessDTO>> listAll();
 
-    @GetMapping(path = PROCESS_PATH + "/{name}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = PROCESS_PATH + "/{name}", consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PProcessDTO> findByName(@PathVariable("name") String processName);
 
-    @GetMapping(path = PROCESS_PATH + "/{uuid}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = PROCESS_PATH + "/{uuid}", consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PProcessDTO> findByUuid(@PathVariable("uuid") String processName);
 
-    @PostMapping(path = BATCH_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = BATCH_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PBatchResponse> createBatch(@RequestBody PBatchRequest request);
 
-    @GetMapping(path = MONITORING_EXECUTIONS_PATH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = MONITORING_EXECUTIONS_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<List<PExecution>> executions(@RequestParam String tenant,
-            @RequestParam java.util.List<ExecutionStatus> status, Pageable page);
+                                                @RequestParam java.util.List<ExecutionStatus> status,
+                                                Pageable page);
 }

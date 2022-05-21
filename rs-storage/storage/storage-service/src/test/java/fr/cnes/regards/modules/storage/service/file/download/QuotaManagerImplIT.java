@@ -38,27 +38,33 @@ import java.util.concurrent.*;
 
 import static org.junit.Assert.assertEquals;
 
-@TestPropertySource(properties = {"spring.jpa.properties.hibernate.default_schema=storage_download_quota_tests"})
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_download_quota_tests" })
 public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(QuotaManagerImplIT.class);
 
-    @Value("${regards.storage.rate.expiration.tick}") private long rateExpirationTick;
+    @Value("${regards.storage.rate.expiration.tick}")
+    private long rateExpirationTick;
 
-    @Value("${regards.storage.quota.sync.tick}") private long syncTick;
+    @Value("${regards.storage.quota.sync.tick}")
+    private long syncTick;
 
-    @Autowired private IDownloadQuotaRepository quotaRepository;
+    @Autowired
+    private IDownloadQuotaRepository quotaRepository;
 
     private IDownloadQuotaRepository quotaRepositoryDelegate;
 
-    @Autowired private ITenantResolver tenantResolver;
+    @Autowired
+    private ITenantResolver tenantResolver;
 
-    @Autowired private IRuntimeTenantResolver runtimeTenantResolver;
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @MockBean
     private IPublisher publisher;
 
-    @Autowired @InjectMocks
+    @Autowired
+    @InjectMocks
     private QuotaManagerImpl quotaManager;
 
     @Autowired
@@ -68,8 +74,7 @@ public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
     public void setUp() throws EntityNotFoundException, EntityOperationForbiddenException, EntityInvalidException {
         MockitoAnnotations.initMocks(this);
         quotaRepositoryDelegate = quotaRepository;
-        quotaRepository =
-            Mockito.mock(IDownloadQuotaRepository.class, AdditionalAnswers.delegatesTo(quotaRepository));
+        quotaRepository = Mockito.mock(IDownloadQuotaRepository.class, AdditionalAnswers.delegatesTo(quotaRepository));
         ReflectionTestUtils.setField(quotaManager, "quotaRepository", quotaRepository);
 
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -89,7 +94,7 @@ public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
         // there is a user with some quota definition
         DownloadQuotaLimits downloadQuota = new DownloadQuotaLimits(getDefaultTenant(), "foo@bar.com", -1L, -1L);
         Cache<String, QuotaManagerImpl.UserDiffs> cache = Caffeine.newBuilder().build();
-        quotaManager.setUserDiffsByTenant(new HashMap<String, Cache<String, QuotaManagerImpl.UserDiffs>>(){{
+        quotaManager.setUserDiffsByTenant(new HashMap<String, Cache<String, QuotaManagerImpl.UserDiffs>>() {{
             put(getDefaultTenant(), cache);
         }});
 
@@ -98,19 +103,17 @@ public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
         // a bunch of threads try to get, increment and decrement its gauge
         int nbRequests = 10_000;
         CountDownLatch latch = new CountDownLatch(nbRequests);
-        for (int i = 0; i<nbRequests; i++) {
-            CompletableFuture.runAsync(
-                () -> {
-                    try {
-                        runtimeTenantResolver.forceTenant(downloadQuota.getTenant());
-                        quotaManager.get(downloadQuota);
-                        quotaManager.increment(downloadQuota);
-                        quotaManager.decrement(downloadQuota);
-                        latch.countDown();
-                    } catch (Exception ignored) {}
-                },
-                executor
-            );
+        for (int i = 0; i < nbRequests; i++) {
+            CompletableFuture.runAsync(() -> {
+                try {
+                    runtimeTenantResolver.forceTenant(downloadQuota.getTenant());
+                    quotaManager.get(downloadQuota);
+                    quotaManager.increment(downloadQuota);
+                    quotaManager.decrement(downloadQuota);
+                    latch.countDown();
+                } catch (Exception ignored) {
+                }
+            }, executor);
         }
         latch.await(60, TimeUnit.SECONDS);
         executor.shutdownNow();
@@ -140,12 +143,14 @@ public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
         quotaRepository.upsertOrCombineDownloadQuota(instanceId2, email, quotaOnInstance2);
 
         // and a diff on one of the two instances
-        DownloadQuotaLimits downloadQuotaStub = new DownloadQuotaLimits(getDefaultTenant(), email, (long) rand.nextInt(10_000), (long) rand.nextInt(10_000));
+        DownloadQuotaLimits downloadQuotaStub = new DownloadQuotaLimits(getDefaultTenant(),
+                                                                        email,
+                                                                        (long) rand.nextInt(10_000),
+                                                                        (long) rand.nextInt(10_000));
         long quotaDiffOnInstance1 = rand.nextInt(10_000);
-        Map<String, QuotaManagerImpl.DiffSync> diffSyncs =
-            new HashMap<String, QuotaManagerImpl.DiffSync>() {{
-                put(email, new QuotaManagerImpl.DiffSync(0L, quotaDiffOnInstance1));
-            }};
+        Map<String, QuotaManagerImpl.DiffSync> diffSyncs = new HashMap<String, QuotaManagerImpl.DiffSync>() {{
+            put(email, new QuotaManagerImpl.DiffSync(0L, quotaDiffOnInstance1));
+        }};
 
         // when
         // this instance flushes its diff and refreshes the global gauge value across instances
@@ -154,10 +159,7 @@ public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
         // then
         // the gauge retrieved is the sum of the gauges from instance 1 and 2 and the diff
         UserQuotaAggregate result = quotaRepository.fetchDownloadQuotaSum(email);
-        assertEquals(
-            quotaOnInstance1 + quotaOnInstance2 + quotaDiffOnInstance1,
-            result.getCounter().longValue()
-        );
+        assertEquals(quotaOnInstance1 + quotaOnInstance2 + quotaDiffOnInstance1, result.getCounter().longValue());
     }
 
     @Test
@@ -178,12 +180,14 @@ public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
         quotaRepository.upsertOrCombineDownloadRate(instanceId2, email, rateOnInstance2, LocalDateTime.now());
 
         // and a diff on one of the two instances
-        DownloadQuotaLimits downloadQuotaStub = new DownloadQuotaLimits(getDefaultTenant(), email, (long) rand.nextInt(10_000), (long) rand.nextInt(10_000));
+        DownloadQuotaLimits downloadQuotaStub = new DownloadQuotaLimits(getDefaultTenant(),
+                                                                        email,
+                                                                        (long) rand.nextInt(10_000),
+                                                                        (long) rand.nextInt(10_000));
         long rateDiffOnInstance1 = rand.nextInt(10_000);
-        Map<String, QuotaManagerImpl.DiffSync> diffSyncs =
-            new HashMap<String, QuotaManagerImpl.DiffSync>() {{
-                put(email, new QuotaManagerImpl.DiffSync(rateDiffOnInstance1, 0L));
-            }};
+        Map<String, QuotaManagerImpl.DiffSync> diffSyncs = new HashMap<String, QuotaManagerImpl.DiffSync>() {{
+            put(email, new QuotaManagerImpl.DiffSync(rateDiffOnInstance1, 0L));
+        }};
 
         // when
         // instance1 flushes its diff and refreshes the global gauge value across instances
@@ -192,10 +196,7 @@ public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
         // then
         // the gauge retrieved is the sum of the gauges from instance 1 and 2 and the diff
         UserRateAggregate result = quotaRepository.fetchDownloadRatesSum(email);
-        assertEquals(
-            rateOnInstance1 + rateOnInstance2 + rateDiffOnInstance1,
-            result.getGauge().longValue()
-        );
+        assertEquals(rateOnInstance1 + rateOnInstance2 + rateDiffOnInstance1, result.getGauge().longValue());
     }
 }
 

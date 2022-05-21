@@ -18,14 +18,15 @@
  */
 package fr.cnes.regards.framework.test.integration;
 
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.restdocs.request.ParameterDescriptor;
 import org.springframework.restdocs.request.RequestParametersSnippet;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * REGARDS customization of {@link RequestParametersSnippet}.
+ *
  * @author Marc Sordi
  */
 public class RegardsRequestParametersSnippet extends RequestParametersSnippet {
@@ -35,8 +36,9 @@ public class RegardsRequestParametersSnippet extends RequestParametersSnippet {
      * @param attributes
      * @param ignoreUndocumentedParameters
      */
-    protected RegardsRequestParametersSnippet(List<ParameterDescriptor> descriptors, Map<String, Object> attributes,
-            boolean ignoreUndocumentedParameters) {
+    protected RegardsRequestParametersSnippet(List<ParameterDescriptor> descriptors,
+                                              Map<String, Object> attributes,
+                                              boolean ignoreUndocumentedParameters) {
         super(descriptors, attributes, ignoreUndocumentedParameters);
         // TODO Auto-generated constructor stub
     }

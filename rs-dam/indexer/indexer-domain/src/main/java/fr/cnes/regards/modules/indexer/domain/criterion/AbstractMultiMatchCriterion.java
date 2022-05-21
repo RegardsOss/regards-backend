@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.modules.indexer.domain.criterion;
 
-import java.util.Set;
-
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
+
+import java.util.Set;
 
 /**
  * A match criterion specifies how a value has to be matched and on which properties
+ *
  * @param <T> type of value
  * @author Marc SORDI
- *
  */
 public abstract class AbstractMultiMatchCriterion<T> implements ICriterion {
 

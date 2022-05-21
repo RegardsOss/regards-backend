@@ -1,13 +1,14 @@
 package fr.cnes.regards.framework.modules.jobs.domain.event;
 
-import java.util.UUID;
-
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 
+import java.util.UUID;
+
 /**
  * This event is used to propagate information from a job to the rest of the world. It is ideal to monitor what's happening to a job.
+ *
  * @author oroussel
  * @author svissier
  */

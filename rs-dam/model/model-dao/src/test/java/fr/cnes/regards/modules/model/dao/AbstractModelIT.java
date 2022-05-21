@@ -18,21 +18,19 @@
  */
 package fr.cnes.regards.modules.model.dao;
 
-import java.util.Optional;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Iterables;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalIT;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.Fragment;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.AbstractRestriction;
+import org.junit.Assert;
+import org.junit.Before;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
+
+import java.util.Optional;
 
 /**
  * Common attribute model test methods
@@ -119,9 +117,9 @@ public abstract class AbstractModelIT extends AbstractDaoTransactionalIT {
     /**
      * Create a model
      *
-     * @param name model name
+     * @param name        model name
      * @param description description
-     * @param modelType model type
+     * @param modelType   model type
      * @return a model
      */
     protected Model createModel(String name, String description, EntityType modelType) {

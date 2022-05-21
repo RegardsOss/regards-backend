@@ -22,8 +22,10 @@ import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 
 /**
  * Identifies that something has a shape (IGeometry) associated
+ *
  * @author oroussel
  */
 public interface ILocalizable {
+
     <T extends IGeometry> T getNormalizedGeometry();
 }

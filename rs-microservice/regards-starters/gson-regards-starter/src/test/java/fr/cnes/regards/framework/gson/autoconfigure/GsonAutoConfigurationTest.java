@@ -18,8 +18,8 @@ package fr.cnes.regards.framework.gson.autoconfigure;
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import java.util.Map;
-
+import com.google.gson.TypeAdapterFactory;
+import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,11 +29,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
-import com.google.gson.TypeAdapterFactory;
-import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
+import java.util.Map;
 
 /**
  * Test auto configuration
+ *
  * @author msordi
  */
 public class GsonAutoConfigurationTest {
@@ -75,6 +75,7 @@ public class GsonAutoConfigurationTest {
 
     /**
      * Empty configuration
+     *
      * @author msordi
      */
     @Configuration
@@ -84,6 +85,7 @@ public class GsonAutoConfigurationTest {
 
     /**
      * Define custom GSON factory as bean
+     *
      * @author msordi
      */
     @Configuration

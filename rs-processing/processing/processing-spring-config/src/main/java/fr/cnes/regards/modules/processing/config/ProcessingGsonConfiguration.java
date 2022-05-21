@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.config;
 
 import com.google.gson.GsonBuilder;
@@ -39,17 +39,20 @@ import java.util.ServiceLoader;
 @Configuration
 public class ProcessingGsonConfiguration {
 
-    @Autowired private GsonProperties properties;
-    @Autowired private ApplicationContext applicationContext;
+    @Autowired
+    private GsonProperties properties;
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @Bean
     public GsonBuilderFactory gsonBuilderFactory() {
-        return new GsonBuilderFactory(properties, applicationContext){
-            @Override public GsonBuilder newBuilder() {
-                GsonBuilder builder = GsonCustomizer.gsonBuilder(
-                        Optional.ofNullable(properties),
-                        Optional.ofNullable(applicationContext)
-                );
+        return new GsonBuilderFactory(properties, applicationContext) {
+
+            @Override
+            public GsonBuilder newBuilder() {
+                GsonBuilder builder = GsonCustomizer.gsonBuilder(Optional.ofNullable(properties),
+                                                                 Optional.ofNullable(applicationContext));
                 ServiceLoader<TypedGsonTypeAdapter> loader = ServiceLoader.load(TypedGsonTypeAdapter.class);
                 loader.iterator().forEachRemaining(tr -> {
                     builder.registerTypeAdapter(tr.type(), tr.serializer());

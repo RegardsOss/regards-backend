@@ -85,8 +85,8 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
         if (value instanceof String) {
             return Boolean.valueOf((String) value); // always returns a value
         }
-        throw new IllegalArgumentException(
-                String.format("Value '%s' cannot be converted into a boolean", value.toString()));
+        throw new IllegalArgumentException(String.format("Value '%s' cannot be converted into a boolean",
+                                                         value.toString()));
     }
 
     /**
@@ -111,8 +111,8 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 // do nothing, raise final exception instead
             }
         }
-        throw new IllegalArgumentException(
-                String.format("Value '%s' cannot be converted into a date", value.toString()));
+        throw new IllegalArgumentException(String.format("Value '%s' cannot be converted into a date",
+                                                         value.toString()));
     }
 
     /**
@@ -133,8 +133,8 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 // do nothing, raise final exception instead
             }
         }
-        throw new IllegalArgumentException(
-                String.format("Value '%s' cannot be converted into a double number", value.toString()));
+        throw new IllegalArgumentException(String.format("Value '%s' cannot be converted into a double number",
+                                                         value.toString()));
     }
 
     /**
@@ -155,8 +155,8 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 // do nothing, raise final exception instead
             }
         }
-        throw new IllegalArgumentException(
-                String.format("Input value '%s' cannot be converted into an integer number", value.toString()));
+        throw new IllegalArgumentException(String.format("Input value '%s' cannot be converted into an integer number",
+                                                         value.toString()));
     }
 
     /**
@@ -177,8 +177,8 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 // do nothing, raise final exception instead
             }
         }
-        throw new IllegalArgumentException(
-                String.format("Input value '%s' cannot be converted into a long number", value.toString()));
+        throw new IllegalArgumentException(String.format("Input value '%s' cannot be converted into a long number",
+                                                         value.toString()));
     }
 
     /**
@@ -209,8 +209,8 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 // do nothing, raise final exception instead
             }
         }
-        throw new IllegalArgumentException(
-                String.format("Input value '%s' cannot be converted into an URL", value.toString()));
+        throw new IllegalArgumentException(String.format("Input value '%s' cannot be converted into an URL",
+                                                         value.toString()));
     }
 
     /**
@@ -225,7 +225,7 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
      */
     @SuppressWarnings("unchecked")
     static <T> T[] toArrayValue(Object value, Function<Object, T> elementsConverter, Class<T> elementsClass)
-            throws IllegalArgumentException {
+        throws IllegalArgumentException {
         Collection<?> sourceList = null;
         List<String> invalidValues = new ArrayList<>();
 
@@ -237,8 +237,9 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
             sourceList = (Collection<?>) value;
         } else {
             throw new IllegalArgumentException(String.format(
-                    "Input value '%s' cannot be converted into an %s[] (expected array or collection types)",
-                    value.toString(), elementsClass.getName()));
+                "Input value '%s' cannot be converted into an %s[] (expected array or collection types)",
+                value.toString(),
+                elementsClass.getName()));
         }
         // 2 - convert each element
         ArrayList<T> converted = new ArrayList<>(sourceList.size());
@@ -254,9 +255,10 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
             //noinspection unchecked
             return converted.toArray((T[]) Array.newInstance(elementsClass, converted.size()));
         } else {
-            throw new IllegalArgumentException(
-                    String.format("In input array, the values '%s' could not be converted into %s",
-                                  String.join(",", invalidValues), elementsClass.getName()));
+            throw new IllegalArgumentException(String.format(
+                "In input array, the values '%s' could not be converted into %s",
+                String.join(",", invalidValues),
+                elementsClass.getName()));
         }
     }
 
@@ -273,7 +275,7 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
      */
     @SuppressWarnings("unchecked")
     public static IProperty<?> forType(PropertyType attributeType, String name, Object value)
-            throws IllegalArgumentException {
+        throws IllegalArgumentException {
         if ((name == null) || (attributeType == null)) {
             throw new IllegalArgumentException("An attribute cannot have a null name");
         }
@@ -318,8 +320,8 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 return buildUrl(name, toURLValue(value));
             default:
                 throw new IllegalArgumentException(
-                        attributeType + " is not a handled value of " + PropertyType.class.getName() + " in "
-                                + IProperty.class.getName());
+                    attributeType + " is not a handled value of " + PropertyType.class.getName() + " in "
+                        + IProperty.class.getName());
         }
     }
 
@@ -340,8 +342,10 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
      * @return a newly created AbstractAttribute according the given AttributeType, name and value
      */
     @SuppressWarnings("unchecked")
-    public static <U, T extends IProperty<U>> T forType(PropertyType attributeType, String name, U lowerBound,
-            U upperBound) {
+    public static <U, T extends IProperty<U>> T forType(PropertyType attributeType,
+                                                        String name,
+                                                        U lowerBound,
+                                                        U upperBound) {
 
         if (!attributeType.isInterval()) {
             throw new IllegalArgumentException(attributeType + " with name " + name + " is not an interval type");
@@ -354,9 +358,9 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
         switch (attributeType) {
             case DATE_INTERVAL:
                 OffsetDateTime lowerDateTime =
-                        lowerBound == null ? null : OffsetDateTimeAdapter.parse((String) lowerBound);
+                    lowerBound == null ? null : OffsetDateTimeAdapter.parse((String) lowerBound);
                 OffsetDateTime upperDateTime =
-                        upperBound == null ? null : OffsetDateTimeAdapter.parse((String) upperBound);
+                    upperBound == null ? null : OffsetDateTimeAdapter.parse((String) upperBound);
                 return (T) buildDateInterval(name, buildRange(lowerDateTime, upperDateTime));
             case DOUBLE_INTERVAL:
                 Double lowerDouble = lowerBound == null ? null : ((Number) lowerBound).doubleValue();
@@ -372,14 +376,14 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 return (T) buildLongInterval(name, buildRange(lowerLong, upperLong));
             default:
                 throw new IllegalArgumentException(
-                        attributeType + " is not a handled value of " + PropertyType.class.getName() + " in "
-                                + IProperty.class.getName());
+                    attributeType + " is not a handled value of " + PropertyType.class.getName() + " in "
+                        + IProperty.class.getName());
         }
     }
 
     @SuppressWarnings("unchecked")
     public static IProperty<?> updatePropertyValue(IProperty<?> property, Object value)
-            throws IllegalArgumentException {
+        throws IllegalArgumentException {
         if (value == null) {
             property.updateValue(null);
             return property;
@@ -390,8 +394,9 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 ((BooleanProperty) property).updateValue(toBooleanValue(value));
                 break;
             case DATE_ARRAY:
-                ((DateArrayProperty) property)
-                        .updateValue(toArrayValue(value, IProperty::toDateValue, OffsetDateTime.class));
+                ((DateArrayProperty) property).updateValue(toArrayValue(value,
+                                                                        IProperty::toDateValue,
+                                                                        OffsetDateTime.class));
                 break;
             case DATE_INTERVAL:
                 ((DateIntervalProperty) property).updateValue((Range<OffsetDateTime>) value);
@@ -403,8 +408,9 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 ((DoubleProperty) property).updateValue(toDoubleValue(value));
                 break;
             case DOUBLE_ARRAY:
-                ((DoubleArrayProperty) property)
-                        .updateValue(toArrayValue(value, IProperty::toDoubleValue, Double.class));
+                ((DoubleArrayProperty) property).updateValue(toArrayValue(value,
+                                                                          IProperty::toDoubleValue,
+                                                                          Double.class));
                 break;
             case DOUBLE_INTERVAL:
                 ((DoubleIntervalProperty) property).updateValue((Range<Double>) value);
@@ -413,8 +419,9 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 ((IntegerProperty) property).updateValue(toIntegerValue(value));
                 break;
             case INTEGER_ARRAY:
-                ((IntegerArrayProperty) property)
-                        .updateValue(toArrayValue(value, IProperty::toIntegerValue, Integer.class));
+                ((IntegerArrayProperty) property).updateValue(toArrayValue(value,
+                                                                           IProperty::toIntegerValue,
+                                                                           Integer.class));
                 break;
             case INTEGER_INTERVAL:
                 ((IntegerIntervalProperty) property).updateValue((Range<Integer>) value);
@@ -432,8 +439,9 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 ((StringProperty) property).updateValue(toStringValue(value));
                 break;
             case STRING_ARRAY:
-                ((StringArrayProperty) property)
-                        .updateValue(toArrayValue(value, IProperty::toStringValue, String.class));
+                ((StringArrayProperty) property).updateValue(toArrayValue(value,
+                                                                          IProperty::toStringValue,
+                                                                          String.class));
                 break;
             case URL:
                 ((UrlProperty) property).updateValue(toURLValue(value));
@@ -443,8 +451,8 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 break;
             default:
                 throw new IllegalArgumentException(
-                        property.getType() + " is not a handled value of " + PropertyType.class.getName() + " in "
-                                + IProperty.class.getName());
+                    property.getType() + " is not a handled value of " + PropertyType.class.getName() + " in "
+                        + IProperty.class.getName());
         }
         return property;
     }
@@ -503,8 +511,8 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 return (T) buildUrl(name);
             default:
                 throw new IllegalArgumentException(
-                        attributeType + " is not a handled value of " + PropertyType.class.getName() + " in "
-                                + IProperty.class.getName());
+                    attributeType + " is not a handled value of " + PropertyType.class.getName() + " in "
+                        + IProperty.class.getName());
         }
     }
 
@@ -594,8 +602,9 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
         return att;
     }
 
-    public static DateIntervalProperty buildDateInterval(String name, OffsetDateTime lowerBoundDate,
-            OffsetDateTime upperBoundDate) {
+    public static DateIntervalProperty buildDateInterval(String name,
+                                                         OffsetDateTime lowerBoundDate,
+                                                         OffsetDateTime upperBoundDate) {
         DateIntervalProperty att = new DateIntervalProperty();
         att.setName(name);
         att.setValue(Range.closed(lowerBoundDate, upperBoundDate));
@@ -628,8 +637,9 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
         return att;
     }
 
-    public static DoubleIntervalProperty buildDoubleInterval(String name, Double lowerBoundDouble,
-            Double upperBoundDouble) {
+    public static DoubleIntervalProperty buildDoubleInterval(String name,
+                                                             Double lowerBoundDouble,
+                                                             Double upperBoundDouble) {
         DoubleIntervalProperty att = new DoubleIntervalProperty();
         att.setName(name);
         att.setValue(Range.closed(lowerBoundDouble, upperBoundDouble));
@@ -662,8 +672,9 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
         return att;
     }
 
-    public static IntegerIntervalProperty buildIntegerInterval(String name, Integer lowerBoundInteger,
-            Integer upperBoundInteger) {
+    public static IntegerIntervalProperty buildIntegerInterval(String name,
+                                                               Integer lowerBoundInteger,
+                                                               Integer upperBoundInteger) {
         IntegerIntervalProperty att = new IntegerIntervalProperty();
         att.setName(name);
         att.setValue(Range.closed(lowerBoundInteger, upperBoundInteger));
@@ -766,8 +777,9 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
     /**
      * Build a fast access map for properties and objects
      */
-    public static void getPropertyMap(Map<String, IProperty<?>> pmap, Map<String, ObjectProperty> omap,
-            Set<IProperty<?>> properties) {
+    public static void getPropertyMap(Map<String, IProperty<?>> pmap,
+                                      Map<String, ObjectProperty> omap,
+                                      Set<IProperty<?>> properties) {
         if (properties != null) {
             for (IProperty<?> ppt : properties) {
                 addPropertyToMap(pmap, omap, ppt, null);
@@ -775,8 +787,10 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
         }
     }
 
-    public static void addPropertyToMap(Map<String, IProperty<?>> pmap, Map<String, ObjectProperty> omap,
-            IProperty<?> ppt, String namespace) {
+    public static void addPropertyToMap(Map<String, IProperty<?>> pmap,
+                                        Map<String, ObjectProperty> omap,
+                                        IProperty<?> ppt,
+                                        String namespace) {
         if (ppt.represents(PropertyType.OBJECT)) {
             omap.put(ppt.getName(), (ObjectProperty) ppt);
             for (IProperty<?> inner : ((ObjectProperty) ppt).getValue()) {
@@ -807,8 +821,10 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
      * @param identifier not <code>null</code>
      * @param modifier   user that modify the feature
      */
-    public static void mergeProperties(Set<IProperty<?>> reference, Set<IProperty<?>> patch, String identifier,
-            String modifier) {
+    public static void mergeProperties(Set<IProperty<?>> reference,
+                                       Set<IProperty<?>> patch,
+                                       String identifier,
+                                       String modifier) {
 
         Assert.notNull(reference, "Reference properties must not be null");
         Assert.notNull(patch, "Patch properties must not be null");
@@ -834,7 +850,10 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 }
             } else {
                 if (refMap.containsKey(entry.getKey())) {
-                    PropertyPatchLogger.log(modifier, identifier, entry.getKey(), refMap.get(entry.getKey()).getValue(),
+                    PropertyPatchLogger.log(modifier,
+                                            identifier,
+                                            entry.getKey(),
+                                            refMap.get(entry.getKey()).getValue(),
                                             property.getValue());
                     // Update property if already exists
                     IProperty.updatePropertyValue(refMap.get(entry.getKey()), property.getValue());

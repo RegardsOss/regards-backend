@@ -18,8 +18,12 @@
  */
 package fr.cnes.regards.modules.feature.client;
 
-import java.time.OffsetDateTime;
-
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.feign.FeignClientBuilder;
+import fr.cnes.regards.framework.feign.TokenClientProvider;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
+import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,17 +39,10 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.gson.Gson;
-
-import fr.cnes.regards.framework.feign.FeignClientBuilder;
-import fr.cnes.regards.framework.feign.TokenClientProvider;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
-import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
+import java.time.OffsetDateTime;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=fem_client" })
 @DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
@@ -73,15 +70,13 @@ public class IFeatureEntityClientIT extends AbstractRegardsWebIT {
     @Before
     public void init() {
         jwtService.injectMockToken(getDefaultTenant(), DEFAULT_ROLE);
-        client = FeignClientBuilder.build(
-                                          new TokenClientProvider<>(IFeatureEntityClient.class,
-                                                  "http://" + serverAddress + ":" + getPort(), feignSecurityManager),
-                                          gson);
+        client = FeignClientBuilder.build(new TokenClientProvider<>(IFeatureEntityClient.class,
+                                                                    "http://" + serverAddress + ":" + getPort(),
+                                                                    feignSecurityManager), gson);
         FeignSecurityManager.asSystem();
     }
 
     /**
-     *
      * Check that the access right Feign Client handle the pagination parameters.
      *
      * @since 1.0-SNAPSHOT
@@ -89,7 +84,9 @@ public class IFeatureEntityClientIT extends AbstractRegardsWebIT {
     @Test
     public void testFindAll() {
         ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> response = client.findAll("model",
-                                                                                            OffsetDateTime.now(), 0, 1);
+                                                                                            OffsetDateTime.now(),
+                                                                                            0,
+                                                                                            1);
         Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
     }
 

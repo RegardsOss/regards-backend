@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.framework.module.rest.filter;
 
+import fr.cnes.regards.framework.module.log.CorrelationIdUtils;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import fr.cnes.regards.framework.module.log.CorrelationIdUtils;
 
 /**
  * @author Théo Lasserre
@@ -40,7 +39,7 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+        throws ServletException, IOException {
         CorrelationIdUtils.clearCorrelationId();
     }
 }

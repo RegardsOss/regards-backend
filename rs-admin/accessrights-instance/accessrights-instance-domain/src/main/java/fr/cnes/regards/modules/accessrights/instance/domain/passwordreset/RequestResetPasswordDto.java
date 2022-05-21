@@ -49,8 +49,7 @@ public class RequestResetPasswordDto {
     }
 
     /**
-     * @param pOriginUrl
-     *            the originUrl to set
+     * @param pOriginUrl the originUrl to set
      */
     public void setOriginUrl(final String pOriginUrl) {
         originUrl = pOriginUrl;

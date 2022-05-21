@@ -18,15 +18,6 @@
  */
 package fr.cnes.regards.modules.project.rest;
 
-import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -37,11 +28,20 @@ import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
+import org.hamcrest.Matchers;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 /**
  * Class TenantControllerIT
- *
+ * <p>
  * Tests for REST endpoints to access tenant entities.
+ *
  * @author Sébastien Binda
  */
 @InstanceTransactional
@@ -67,7 +67,8 @@ public class TenantControllerIT extends AbstractRegardsIT {
 
     @Before
     public void initialize() {
-        instanceAdmintoken = jwtService.generateToken("test1", getDefaultUserEmail(),
+        instanceAdmintoken = jwtService.generateToken("test1",
+                                                      getDefaultUserEmail(),
                                                       DefaultRole.INSTANCE_ADMIN.name());
 
         Project activeProject = new Project("description", "icon", true, ACTIVE_PROJECT_NAME);
@@ -76,11 +77,19 @@ public class TenantControllerIT extends AbstractRegardsIT {
         deletedProject.setDeleted(true);
         deletedProject.setLabel("label");
 
-        ProjectConnection rsTestConnection = new ProjectConnection(activeProject, TEST_MS, "user", "password", "driver",
-                "url");
+        ProjectConnection rsTestConnection = new ProjectConnection(activeProject,
+                                                                   TEST_MS,
+                                                                   "user",
+                                                                   "password",
+                                                                   "driver",
+                                                                   "url");
         rsTestConnection.setState(TenantConnectionState.ENABLED);
-        ProjectConnection rsTestConnection2 = new ProjectConnection(deletedProject, TEST_MS, "user", "password",
-                "driver", "url");
+        ProjectConnection rsTestConnection2 = new ProjectConnection(deletedProject,
+                                                                    TEST_MS,
+                                                                    "user",
+                                                                    "password",
+                                                                    "driver",
+                                                                    "url");
         rsTestConnection2.setState(TenantConnectionState.DISABLED);
 
         projectRepository.save(activeProject);
@@ -103,11 +112,15 @@ public class TenantControllerIT extends AbstractRegardsIT {
     @Purpose("Check REST Access to project resources and returned Hateoas links")
     @Test
     public void retrievePublicProjectsTest() {
-        performGet(TenantController.BASE_PATH + TenantController.MICROSERVICE_PATH, instanceAdmintoken,
-                   customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT).expectToHaveSize(JSON_PATH_ROOT, 1)
-                           .expect(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT,
-                                                                  Matchers.contains(ACTIVE_PROJECT_NAME))),
-                   "error", TEST_MS);
+        performGet(TenantController.BASE_PATH + TenantController.MICROSERVICE_PATH,
+                   instanceAdmintoken,
+                   customizer().expectStatusOk()
+                               .expectIsNotEmpty(JSON_PATH_ROOT)
+                               .expectToHaveSize(JSON_PATH_ROOT, 1)
+                               .expect(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT,
+                                                                      Matchers.contains(ACTIVE_PROJECT_NAME))),
+                   "error",
+                   TEST_MS);
     }
 
 }

@@ -18,8 +18,7 @@
  */
 package fr.cnes.regards.modules.project.client.rest;
 
-import javax.validation.Valid;
-
+import fr.cnes.regards.modules.project.domain.Project;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.hateoas.EntityModel;
@@ -27,13 +26,12 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.modules.project.domain.Project;
+import javax.validation.Valid;
 
 /**
- *
  * Default project client
- * @author Marc SORDI
  *
+ * @author Marc SORDI
  */
 @Profile("standalone")
 @Component

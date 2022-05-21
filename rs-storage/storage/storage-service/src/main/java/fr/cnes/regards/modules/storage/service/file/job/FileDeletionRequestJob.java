@@ -37,7 +37,6 @@ import java.util.Map;
  * The deletion jobs are used to delete files on a specific storage location.
  *
  * @author Sébastien Binda
- *
  */
 public class FileDeletionRequestJob extends AbstractJob<Void> {
 
@@ -101,15 +100,18 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
             // Publish event for all not handled files
             for (FileDeletionRequest req : workingSubset.getFileDeletionRequests()) {
                 if (!progressManager.isHandled(req)) {
-                    progressManager.deletionFailed(req, String
-                            .format("File %s (checksum: %s) not handled by deletion job. Deletion job failed cause : %s",
-                                    req.getFileReference().getMetaInfo().getFileName(),
-                                    req.getFileReference().getMetaInfo().getChecksum(), errorCause));
+                    progressManager.deletionFailed(req,
+                                                   String.format(
+                                                       "File %s (checksum: %s) not handled by deletion job. Deletion job failed cause : %s",
+                                                       req.getFileReference().getMetaInfo().getFileName(),
+                                                       req.getFileReference().getMetaInfo().getChecksum(),
+                                                       errorCause));
                 }
             }
             if (nbRequestToHandle > 0) {
                 logger.info("[DELETION JOB] Deletion job handled in {}ms for {} deletion requests",
-                            System.currentTimeMillis() - start, nbRequestToHandle);
+                            System.currentTimeMillis() - start,
+                            nbRequestToHandle);
             }
         }
     }

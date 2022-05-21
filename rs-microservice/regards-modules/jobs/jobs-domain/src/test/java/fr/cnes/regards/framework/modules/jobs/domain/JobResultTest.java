@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.framework.modules.jobs.domain;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  *

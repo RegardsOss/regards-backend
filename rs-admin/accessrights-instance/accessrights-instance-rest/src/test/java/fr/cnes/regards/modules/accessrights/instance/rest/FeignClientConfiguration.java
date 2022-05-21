@@ -26,7 +26,6 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * @author Marc Sordi
- *
  */
 @Configuration
 public class FeignClientConfiguration {

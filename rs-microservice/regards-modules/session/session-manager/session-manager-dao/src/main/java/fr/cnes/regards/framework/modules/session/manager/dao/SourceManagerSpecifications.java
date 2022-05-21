@@ -21,10 +21,11 @@ package fr.cnes.regards.framework.modules.session.manager.dao;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.modules.session.manager.domain.ManagerState;
 import fr.cnes.regards.framework.modules.session.manager.domain.Source;
-import java.util.Set;
+import org.springframework.data.jpa.domain.Specification;
+
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
-import org.springframework.data.jpa.domain.Specification;
+import java.util.Set;
 
 /**
  * Specifications to filter DAO search on {@link Source}
@@ -33,21 +34,21 @@ import org.springframework.data.jpa.domain.Specification;
  **/
 public class SourceManagerSpecifications {
 
-    private SourceManagerSpecifications(){
+    private SourceManagerSpecifications() {
     }
 
     public static Specification<Source> search(String name, String state) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
-            if(name != null) {
+            if (name != null) {
                 predicates.add(cb.like(root.get("name"), "%" + name + "%"));
             }
 
-            if(state !=null) {
+            if (state != null) {
                 Path<ManagerState> managerState = root.get("managerState");
-                if(state.equals("errors") || state.equals("waiting") || state.equals("running")) {
+                if (state.equals("errors") || state.equals("waiting") || state.equals("running")) {
                     predicates.add(cb.isTrue(managerState.get(state)));
-                } else if(state.equals("ok")) {
+                } else if (state.equals("ok")) {
                     predicates.add(cb.isFalse(managerState.get("errors")));
                     predicates.add(cb.isFalse(managerState.get("waiting")));
                     predicates.add(cb.isFalse(managerState.get("running")));

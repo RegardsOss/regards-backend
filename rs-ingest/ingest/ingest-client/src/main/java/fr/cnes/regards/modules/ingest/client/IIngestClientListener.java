@@ -29,24 +29,28 @@ public interface IIngestClientListener {
 
     /**
      * Callback on request denied
+     *
      * @param infos {@link RequestInfo}s to track request
      */
     void onDenied(Collection<RequestInfo> infos);
 
     /**
      * Callback on request granted
+     *
      * @param infos {@link RequestInfo}s to track request
      */
     void onGranted(Collection<RequestInfo> infos);
 
     /**
      * Callback on request error
+     *
      * @param infos {@link RequestInfo}s to track request
      */
     void onError(Collection<RequestInfo> infos);
 
     /**
      * Callback on request success
+     *
      * @param infos {@link RequestInfo}s to track request
      */
     void onSuccess(Collection<RequestInfo> infos);

@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.opensearch.service.builder;
 
 /**
- *
  * @author Xavier-Alexandre Brochard
  */
 public enum RangeComparison {

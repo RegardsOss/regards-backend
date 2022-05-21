@@ -33,25 +33,20 @@ public interface ILinkUIPluginsDatasetsService {
     /**
      * Retrieves a {@link LinkUIPluginsDatasets} from a dataset
      *
-     * @param pDatasetId
-     *            the given dataset id
+     * @param pDatasetId the given dataset id
      * @return the {@link LinkUIPluginsDatasets}
-     * @throws EntityNotFoundException
-     *             if the given dataset does not exist
+     * @throws EntityNotFoundException if the given dataset does not exist
      */
     LinkUIPluginsDatasets retrieveLink(String pDatasetId) throws EntityNotFoundException;
 
     /**
      * Update a {@link LinkUIPluginsDatasets}
      *
-     * @param pDatasetId
-     *            the dataset id
-     * @param pUpdatedLink
-     *            the {@link LinkUIPluginsDatasets} to update
+     * @param pDatasetId   the dataset id
+     * @param pUpdatedLink the {@link LinkUIPluginsDatasets} to update
      * @return the updated {@link LinkUIPluginsDatasets}
      * @throws EntityException
-     * @throws EntityNotFoundException
-     *             if the given dataset does not exist
+     * @throws EntityNotFoundException if the given dataset does not exist
      * @throws EntityInvalidException
      */
     LinkUIPluginsDatasets updateLink(String pDatasetId, LinkUIPluginsDatasets pUpdatedLink) throws EntityException;

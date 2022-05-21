@@ -18,22 +18,22 @@
  */
 package fr.cnes.regards.modules.notifier.service.plugin;
 
-import com.google.gson.JsonObject;
-import java.util.Map.Entry;
-
 import com.google.gson.JsonElement;
-
+import com.google.gson.JsonObject;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.notifier.domain.plugin.IRuleMatcher;
 
+import java.util.Map.Entry;
+
 /**
  * Default plugin rule matcher
+ *
  * @author Kevin Marchois
  */
 @Plugin(author = "REGARDS Team", description = "Default rule matcher", id = DefaultRuleMatcher.PLUGIN_ID,
-        version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-        url = "https://regardsoss.github.io/")
+    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
+    url = "https://regardsoss.github.io/")
 public class DefaultRuleMatcher implements IRuleMatcher {
 
     public static final String PLUGIN_ID = "DefaultRuleMatcher";
@@ -62,6 +62,7 @@ public class DefaultRuleMatcher implements IRuleMatcher {
     /**
      * Browse a list of properties to find the one with the name of the class attribute 'attributeToSeek'
      * and the value 'attributeValueToSeek'
+     *
      * @param jsonObject
      */
     private boolean handleProperties(JsonObject jsonObject) {
@@ -74,6 +75,7 @@ public class DefaultRuleMatcher implements IRuleMatcher {
 
     /**
      * Check if an entry match with the attributeToSeek and attributeValueToSeek
+     *
      * @param entry to check
      * @return true if match, false otherwise
      */
@@ -82,8 +84,11 @@ public class DefaultRuleMatcher implements IRuleMatcher {
             return true;
         }
         if (entry.getValue().isJsonObject()) {
-            return entry.getValue().getAsJsonObject().entrySet().stream()
-                    .anyMatch(subEntry -> containsAttributeToSeek(subEntry));
+            return entry.getValue()
+                        .getAsJsonObject()
+                        .entrySet()
+                        .stream()
+                        .anyMatch(subEntry -> containsAttributeToSeek(subEntry));
         }
         return false;
     }

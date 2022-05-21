@@ -42,6 +42,7 @@ import java.util.List;
 
 /**
  * Templates controller unit test
+ *
  * @author Xavier-Alexandre Brochard
  */
 public class TemplateControllerTest {
@@ -101,6 +102,7 @@ public class TemplateControllerTest {
 
     /**
      * Test method for {@link fr.cnes.regards.modules.templates.rest.TemplateController#findById(java.lang.Long)}.
+     *
      * @throws EntityNotFoundException if no template with passed id could be found
      */
     @Test
@@ -121,6 +123,7 @@ public class TemplateControllerTest {
 
     /**
      * Test method for {@link fr.cnes.regards.modules.templates.rest.TemplateController#findById(java.lang.Long)}.
+     *
      * @throws EntityNotFoundException if no template with passed id could be found
      */
     @Test(expected = EntityNotFoundException.class)
@@ -139,6 +142,7 @@ public class TemplateControllerTest {
     /**
      * Test method for
      * {@link fr.cnes.regards.modules.templates.rest.TemplateController#update(java.lang.Long, fr.cnes.regards.modules.templates.domain.Template)}.
+     *
      * @throws EntityException <br>
      *                         {@link EntityNotFoundException} if no template with passed id could be found<br>
      *                         {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
@@ -160,6 +164,7 @@ public class TemplateControllerTest {
     /**
      * Test method for
      * {@link fr.cnes.regards.modules.templates.rest.TemplateController#update(java.lang.Long, fr.cnes.regards.modules.templates.domain.Template)}.
+     *
      * @throws EntityException <br>
      *                         {@link EntityNotFoundException} if no template with passed id could be found<br>
      *                         {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
@@ -180,6 +185,7 @@ public class TemplateControllerTest {
     /**
      * Test method for
      * {@link fr.cnes.regards.modules.templates.rest.TemplateController#update(java.lang.Long, fr.cnes.regards.modules.templates.domain.Template)}.
+     *
      * @throws EntityException <br>
      *                         {@link EntityNotFoundException} if no template with passed id could be found<br>
      *                         {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
@@ -191,8 +197,9 @@ public class TemplateControllerTest {
     @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testUpdateInconsistentIdentifier() throws EntityException {
         // Mock
-        Mockito.doThrow(EntityInconsistentIdentifierException.class).when(templateService)
-                .update(TemplateTestConstants.ID, template);
+        Mockito.doThrow(EntityInconsistentIdentifierException.class)
+               .when(templateService)
+               .update(TemplateTestConstants.ID, template);
 
         // Trigger exception
         templateController.update(TemplateTestConstants.ID, template);

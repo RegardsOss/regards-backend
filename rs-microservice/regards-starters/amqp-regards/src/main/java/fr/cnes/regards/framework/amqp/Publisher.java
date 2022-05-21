@@ -18,19 +18,19 @@
  */
 package fr.cnes.regards.framework.amqp;
 
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
+import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
-import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-
 /**
  * {@link Publisher} uses {@link IRuntimeTenantResolver} to resolve current thread tenant to publish an event in the
  * multitenant context.
+ *
  * @author svissier
  * @author lmieulet
  * @author Marc Sordi
@@ -48,8 +48,11 @@ public class Publisher extends AbstractPublisher implements IPublisher {
      */
     private final IRuntimeTenantResolver threadTenantResolver;
 
-    public Publisher(IRabbitVirtualHostAdmin pVirtualHostAdmin, RabbitTemplate rabbitTemplate, RabbitAdmin rabbitAdmin,
-            IAmqpAdmin amqpAdmin, IRuntimeTenantResolver pThreadTenantResolver) {
+    public Publisher(IRabbitVirtualHostAdmin pVirtualHostAdmin,
+                     RabbitTemplate rabbitTemplate,
+                     RabbitAdmin rabbitAdmin,
+                     IAmqpAdmin amqpAdmin,
+                     IRuntimeTenantResolver pThreadTenantResolver) {
         super(rabbitTemplate, rabbitAdmin, amqpAdmin, pVirtualHostAdmin);
         this.threadTenantResolver = pThreadTenantResolver;
     }

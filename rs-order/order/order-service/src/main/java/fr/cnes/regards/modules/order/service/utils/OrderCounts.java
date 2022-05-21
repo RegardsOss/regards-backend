@@ -24,11 +24,10 @@ import java.util.UUID;
 
 /**
  * Allows to count internal/external files and suborders during the order creation.
- *
+ * <p>
  * {@link #add(OrderCounts, OrderCounts)} allows to combine easily two instances.
  *
  * @author Guillaume Andrieu
- *
  */
 public final class OrderCounts {
 
@@ -107,11 +106,10 @@ public final class OrderCounts {
     public static OrderCounts add(OrderCounts one, OrderCounts two) {
         Set<UUID> mergedSet = new HashSet<>(one.getJobInfoIdSet());
         mergedSet.addAll(two.getJobInfoIdSet());
-        return new OrderCounts(
-                one.internalFilesCount + two.internalFilesCount,
-                one.externalFilesCount + two.externalFilesCount,
-                one.subOrderCount + two.subOrderCount,
-                mergedSet);
+        return new OrderCounts(one.internalFilesCount + two.internalFilesCount,
+                               one.externalFilesCount + two.externalFilesCount,
+                               one.subOrderCount + two.subOrderCount,
+                               mergedSet);
     }
 
 }

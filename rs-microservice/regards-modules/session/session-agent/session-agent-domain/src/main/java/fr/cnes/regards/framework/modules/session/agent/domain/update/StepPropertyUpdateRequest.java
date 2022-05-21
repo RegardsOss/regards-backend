@@ -22,9 +22,10 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
-import java.time.OffsetDateTime;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
 
 /**
  * Entity created after receiving a
@@ -72,8 +73,8 @@ public class StepPropertyUpdateRequest {
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({ @JoinColumn(name = "gen_step_id", referencedColumnName = "step_id"),
-            @JoinColumn(name = "gen_source", referencedColumnName = "source"),
-            @JoinColumn(name = "gen_session", referencedColumnName = "session") })
+        @JoinColumn(name = "gen_source", referencedColumnName = "source"),
+        @JoinColumn(name = "gen_session", referencedColumnName = "session") })
     private SessionStep sessionStep;
 
     @Column(name = "registration_date")
@@ -81,9 +82,12 @@ public class StepPropertyUpdateRequest {
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime registrationDate;
 
-    public StepPropertyUpdateRequest(@NotNull String stepId, @NotNull String source, @NotNull String session,
-            @NotNull OffsetDateTime creationDate, @NotNull StepPropertyEventTypeEnum type,
-            @NotNull StepPropertyUpdateRequestInfo stepPropertyUpdateRequestInfo) {
+    public StepPropertyUpdateRequest(@NotNull String stepId,
+                                     @NotNull String source,
+                                     @NotNull String session,
+                                     @NotNull OffsetDateTime creationDate,
+                                     @NotNull StepPropertyEventTypeEnum type,
+                                     @NotNull StepPropertyUpdateRequestInfo stepPropertyUpdateRequestInfo) {
         this.stepId = stepId;
         this.source = source;
         this.session = session;
@@ -92,7 +96,8 @@ public class StepPropertyUpdateRequest {
         this.stepPropertyUpdateRequestInfo = stepPropertyUpdateRequestInfo;
         this.registrationDate = OffsetDateTime.now();
     }
-    public StepPropertyUpdateRequest(){
+
+    public StepPropertyUpdateRequest() {
     }
 
     public Long getId() {
@@ -166,8 +171,8 @@ public class StepPropertyUpdateRequest {
     @Override
     public String toString() {
         return "StepPropertyUpdateRequest{" + "id=" + id + ", stepId='" + stepId + '\'' + ", source='" + source + '\''
-                + ", session='" + session + '\'' + ", creationDate=" + creationDate + ", type=" + type
-                + ", stepPropertyUpdateRequestInfo=" + stepPropertyUpdateRequestInfo + ", sessionStep=" + sessionStep
-                + ", registrationDate=" + registrationDate + '}';
+            + ", session='" + session + '\'' + ", creationDate=" + creationDate + ", type=" + type
+            + ", stepPropertyUpdateRequestInfo=" + stepPropertyUpdateRequestInfo + ", sessionStep=" + sessionStep
+            + ", registrationDate=" + registrationDate + '}';
     }
 }

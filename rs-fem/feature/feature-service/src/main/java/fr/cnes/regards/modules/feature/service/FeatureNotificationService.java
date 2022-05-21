@@ -70,7 +70,7 @@ import java.util.stream.Collectors;
 @Service
 @MultitenantTransactional
 public class FeatureNotificationService extends AbstractFeatureService<FeatureNotificationRequest>
-        implements IFeatureNotificationService {
+    implements IFeatureNotificationService {
 
     public static final String DEBUG_MSG_NOTIFICATION_REQUESTS_IN_MS = "------------->>> {} Notification requests sent in {} ms";
 
@@ -119,18 +119,26 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
         List<FeatureNotificationRequest> notificationsRequest = new ArrayList<>();
         Set<String> existingRequestIds = this.featureNotificationRequestRepository.findRequestId();
 
-        Set<FeatureUniformResourceName> featureUrns = events.stream().map(FeatureNotificationRequestEvent::getUrn)
-                .collect(Collectors.toSet());
-        Map<FeatureUniformResourceName, FeatureEntity> featureByUrn = featureRepo.findCompleteByUrnIn(featureUrns).stream().collect(Collectors.toMap(FeatureEntity::getUrn, Function.identity()));
+        Set<FeatureUniformResourceName> featureUrns = events.stream()
+                                                            .map(FeatureNotificationRequestEvent::getUrn)
+                                                            .collect(Collectors.toSet());
+        Map<FeatureUniformResourceName, FeatureEntity> featureByUrn = featureRepo.findCompleteByUrnIn(featureUrns)
+                                                                                 .stream()
+                                                                                 .collect(Collectors.toMap(FeatureEntity::getUrn,
+                                                                                                           Function.identity()));
 
-        events.forEach(item -> prepareNotificationRequest(item, featureByUrn.get(item.getUrn()),
-                                                          notificationsRequest, existingRequestIds));
-        LOGGER.trace("------------->>> {} Notification requests prepared in {} ms", notificationsRequest.size(),
+        events.forEach(item -> prepareNotificationRequest(item,
+                                                          featureByUrn.get(item.getUrn()),
+                                                          notificationsRequest,
+                                                          existingRequestIds));
+        LOGGER.trace("------------->>> {} Notification requests prepared in {} ms",
+                     notificationsRequest.size(),
                      System.currentTimeMillis() - registrationStart);
 
         // Save a list of validated FeatureDeletionRequest from a list of
         featureNotificationRequestRepository.saveAll(notificationsRequest);
-        LOGGER.debug("------------->>> {} Notification requests registered in {} ms", notificationsRequest.size(),
+        LOGGER.debug("------------->>> {} Notification requests registered in {} ms",
+                     notificationsRequest.size(),
                      System.currentTimeMillis() - registrationStart);
         return notificationsRequest.size();
     }
@@ -139,19 +147,23 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
      * Prepare {@link FeatureNotificationRequest} from {@link FeatureNotificationRequestEvent} to register in database
      *
      * @param item                 {@link FeatureNotificationRequestEvent} source
-     * @param featureToNotify {@link FeatureEntity} feature to notify
+     * @param featureToNotify      {@link FeatureEntity} feature to notify
      * @param notificationsRequest list of {@link FeatureNotificationRequest} granted
      * @param existingRequestIds   list of existing request in database
      */
-    private void prepareNotificationRequest(FeatureNotificationRequestEvent item, FeatureEntity featureToNotify,
-            List<FeatureNotificationRequest> notificationsRequest, Set<String> existingRequestIds) {
+    private void prepareNotificationRequest(FeatureNotificationRequestEvent item,
+                                            FeatureEntity featureToNotify,
+                                            List<FeatureNotificationRequest> notificationsRequest,
+                                            Set<String> existingRequestIds) {
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), FeatureDeletionRequest.class.getName());
         validator.validate(item, errors);
         validateRequest(item, errors);
 
         if (existingRequestIds.contains(item.getRequestId()) || notificationsRequest.stream()
-                .anyMatch(request -> request.getRequestId().equals(item.getRequestId()))) {
+                                                                                    .anyMatch(request -> request.getRequestId()
+                                                                                                                .equals(
+                                                                                                                    item.getRequestId()))) {
             errors.rejectValue("requestId", "request.requestId.exists.error.message", "Request id already exists");
         }
 
@@ -161,29 +173,41 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
 
         if (errors.hasErrors()) {
             // Monitoring log
-            FeatureLogger.notificationDenied(item.getRequestOwner(), item.getRequestId(), item.getUrn(),
+            FeatureLogger.notificationDenied(item.getRequestOwner(),
+                                             item.getRequestId(),
+                                             item.getUrn(),
                                              ErrorTranslator.getErrors(errors));
             // Publish DENIED request
-            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION, item.getRequestId(),
-                                                        item.getRequestOwner(), null, item.getUrn(),
-                                                        RequestState.DENIED, ErrorTranslator.getErrors(errors)));
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION,
+                                                        item.getRequestId(),
+                                                        item.getRequestOwner(),
+                                                        null,
+                                                        item.getUrn(),
+                                                        RequestState.DENIED,
+                                                        ErrorTranslator.getErrors(errors)));
             // Update session properties
             if (featureToNotify != null) {
                 featureSessionNotifier.incrementCount(featureToNotify, FeatureSessionProperty.DENIED_NOTIFY_REQUESTS);
             }
         } else {
-            FeatureNotificationRequest request = FeatureNotificationRequest
-                    .build(item.getRequestId(), item.getRequestOwner(), item.getRequestDate(),
-                           FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, item.getPriority(), item.getUrn(),
-                           RequestState.GRANTED);
+            FeatureNotificationRequest request = FeatureNotificationRequest.build(item.getRequestId(),
+                                                                                  item.getRequestOwner(),
+                                                                                  item.getRequestDate(),
+                                                                                  FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
+                                                                                  item.getPriority(),
+                                                                                  item.getUrn(),
+                                                                                  RequestState.GRANTED);
             request.setToNotify(featureToNotify.getFeature());
             request.setSessionToNotify(featureToNotify.getSession());
             request.setSourceToNotify(featureToNotify.getSessionOwner());
             // Monitoring log
             FeatureLogger.notificationGranted(item.getRequestOwner(), item.getRequestId(), item.getUrn());
             // Publish GRANTED request
-            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION, item.getRequestId(),
-                                                        item.getRequestOwner(), null, item.getUrn(),
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION,
+                                                        item.getRequestId(),
+                                                        item.getRequestOwner(),
+                                                        null,
+                                                        item.getUrn(),
                                                         RequestState.GRANTED));
             notificationsRequest.add(request);
 
@@ -197,34 +221,38 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
     @Override
     public int sendToNotifier() {
         long sendingStart = System.currentTimeMillis();
-        List<AbstractFeatureRequest> requestsToSend = abstractFeatureRequestRepo
-                .findByStepAndRequestDateLessThanEqual(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, OffsetDateTime.now(),
-                                                       PageRequest.of(0, properties.getMaxBulkSize(), Sort
-                                                               .by(Order.asc("priority"), Order.asc("requestDate"))))
-                .getContent();
+        List<AbstractFeatureRequest> requestsToSend = abstractFeatureRequestRepo.findByStepAndRequestDateLessThanEqual(
+                                                                                    FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
+                                                                                    OffsetDateTime.now(),
+                                                                                    PageRequest.of(0, properties.getMaxBulkSize(), Sort.by(Order.asc("priority"), Order.asc("requestDate"))))
+                                                                                .getContent();
         Set<AbstractFeatureRequest> visitorErrorRequests = new HashSet<>();
-        CreateNotificationRequestEventVisitor visitor = new CreateNotificationRequestEventVisitor(gson, featureRepo,
-                visitorErrorRequests);
+        CreateNotificationRequestEventVisitor visitor = new CreateNotificationRequestEventVisitor(gson,
+                                                                                                  featureRepo,
+                                                                                                  visitorErrorRequests);
         if (!requestsToSend.isEmpty()) {
             List<NotificationRequestEvent> eventToSend = requestsToSend.stream()
-                    .map(r -> r.accept(visitor))
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .collect(Collectors.toList());
+                                                                       .map(r -> r.accept(visitor))
+                                                                       .filter(Optional::isPresent)
+                                                                       .map(Optional::get)
+                                                                       .collect(Collectors.toList());
             effectivelySend(sendingStart, eventToSend);
             // remove visitor error requests from requests to send because they are in error and not sent!
             Set<AbstractFeatureRequest> requestsSent = new HashSet<>(requestsToSend);
             requestsSent.removeAll(visitorErrorRequests);
-            abstractFeatureRequestRepo
-                    .updateStep(FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED,
-                                requestsSent.stream().map(AbstractFeatureRequest::getId).collect(Collectors.toSet()));
+            abstractFeatureRequestRepo.updateStep(FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED,
+                                                  requestsSent.stream()
+                                                              .map(AbstractFeatureRequest::getId)
+                                                              .collect(Collectors.toSet()));
             // handle notification error for visitor error requests
             handleNotificationError(visitorErrorRequests, FeatureRequestStep.LOCAL_NOTIFICATION_ERROR);
 
-            getSessionInfoByUrn(requestsToSend.stream().filter(FeatureNotificationRequest.class::isInstance)
-                    .map(AbstractFeatureRequest::getUrn).collect(Collectors.toList()))
-                            .forEach((urn, entity) -> featureSessionNotifier
-                                    .incrementCount(entity, FeatureSessionProperty.RUNNING_NOTIFY_REQUESTS));
+            getSessionInfoByUrn(requestsToSend.stream()
+                                              .filter(FeatureNotificationRequest.class::isInstance)
+                                              .map(AbstractFeatureRequest::getUrn)
+                                              .collect(Collectors.toList())).forEach((urn, entity) -> featureSessionNotifier.incrementCount(
+                entity,
+                FeatureSessionProperty.RUNNING_NOTIFY_REQUESTS));
         }
         return requestsToSend.size();
     }
@@ -242,8 +270,11 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
         for (AbstractFeatureRequest request : success) {
             FeatureLogger.notificationSuccess(request.getRequestOwner(), request.getRequestId(), request.getUrn());
             // Publish request success
-            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION, request.getRequestId(),
-                                                        request.getRequestOwner(), null, request.getUrn(),
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION,
+                                                        request.getRequestId(),
+                                                        request.getRequestOwner(),
+                                                        null,
+                                                        request.getUrn(),
                                                         RequestState.SUCCESS));
         }
         onSuccess(success);
@@ -256,8 +287,11 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
         for (AbstractFeatureRequest request : error) {
             FeatureLogger.notificationError(request.getRequestOwner(), request.getRequestId(), request.getUrn());
             // Publish request success
-            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION, request.getRequestId(),
-                                                        request.getRequestOwner(), null, request.getUrn(),
+            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.NOTIFICATION,
+                                                        request.getRequestId(),
+                                                        request.getRequestOwner(),
+                                                        null,
+                                                        request.getUrn(),
                                                         RequestState.ERROR));
         }
         onError(error);
@@ -278,19 +312,21 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
 
     @Override
     public Page<FeatureNotificationRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page) {
-        return featureNotificationRequestRepository
-                .findAll(FeatureNotificationRequestSpecification.searchAllByFilters(selection, page), page);
+        return featureNotificationRequestRepository.findAll(FeatureNotificationRequestSpecification.searchAllByFilters(
+            selection,
+            page), page);
     }
 
     @Override
     public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
-        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null)
-                && (selection.getFilters().getState() != RequestState.ERROR))) {
+        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null) && (
+            selection.getFilters().getState() != RequestState.ERROR))) {
             return RequestsInfo.build(0L);
         } else {
             selection.getFilters().withState(RequestState.ERROR);
-            return RequestsInfo.build(featureNotificationRequestRepository.count(FeatureNotificationRequestSpecification
-                    .searchAllByFilters(selection, PageRequest.of(0, 1))));
+            return RequestsInfo.build(featureNotificationRequestRepository.count(FeatureNotificationRequestSpecification.searchAllByFilters(
+                selection,
+                PageRequest.of(0, 1))));
         }
     }
 
@@ -313,15 +349,21 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
     @Override
     protected void sessionInfoUpdateForRetry(Collection<FeatureNotificationRequest> requests) {
         Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(requests.stream()
-                .map(FeatureNotificationRequest::getUrn).collect(Collectors.toSet()));
-        sessionInfoByUrn.forEach((urn, entity) -> featureSessionNotifier
-                .decrementCount(entity, FeatureSessionProperty.IN_ERROR_NOTIFY_REQUESTS));
+                                                                                                            .map(
+                                                                                                                FeatureNotificationRequest::getUrn)
+                                                                                                            .collect(
+                                                                                                                Collectors.toSet()));
+        sessionInfoByUrn.forEach((urn, entity) -> featureSessionNotifier.decrementCount(entity,
+                                                                                        FeatureSessionProperty.IN_ERROR_NOTIFY_REQUESTS));
     }
 
     @Override
     protected void sessionInfoUpdateForDelete(Collection<FeatureNotificationRequest> requests) {
         Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(requests.stream()
-                .map(FeatureNotificationRequest::getUrn).collect(Collectors.toSet()));
+                                                                                                            .map(
+                                                                                                                FeatureNotificationRequest::getUrn)
+                                                                                                            .collect(
+                                                                                                                Collectors.toSet()));
         sessionInfoByUrn.forEach((urn, entity) -> {
             featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.IN_ERROR_NOTIFY_REQUESTS);
             featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.NOTIFY_REQUESTS);
@@ -331,7 +373,10 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
     @Override
     public void doOnSuccess(Collection<FeatureNotificationRequest> requests) {
         Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(requests.stream()
-                .map(FeatureNotificationRequest::getUrn).collect(Collectors.toSet()));
+                                                                                                            .map(
+                                                                                                                FeatureNotificationRequest::getUrn)
+                                                                                                            .collect(
+                                                                                                                Collectors.toSet()));
         sessionInfoByUrn.forEach((urn, entity) -> {
             featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.RUNNING_NOTIFY_REQUESTS);
             featureSessionNotifier.incrementCount(entity, FeatureSessionProperty.NOTIFY_PRODUCTS);
@@ -346,9 +391,13 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
     @Override
     public void doOnError(Collection<FeatureNotificationRequest> requests) {
         // Only notify session for requests not already in error state.
-        Set<FeatureUniformResourceName> newErrorRequestsFeatureUrn = requests.stream().filter(r -> r.getState() != RequestState.ERROR)
-                .map(FeatureNotificationRequest::getUrn).collect(Collectors.toSet());
-        Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(newErrorRequestsFeatureUrn);
+        Set<FeatureUniformResourceName> newErrorRequestsFeatureUrn = requests.stream()
+                                                                             .filter(r -> r.getState()
+                                                                                 != RequestState.ERROR)
+                                                                             .map(FeatureNotificationRequest::getUrn)
+                                                                             .collect(Collectors.toSet());
+        Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(
+            newErrorRequestsFeatureUrn);
         sessionInfoByUrn.forEach((urn, entity) -> {
             featureSessionNotifier.incrementCount(entity, FeatureSessionProperty.IN_ERROR_NOTIFY_REQUESTS);
             featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.RUNNING_NOTIFY_REQUESTS);
@@ -370,7 +419,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
     }
 
     private <T extends AbstractFeatureRequest> Collection<T> filterRequests(Collection<AbstractFeatureRequest> requests,
-            Class<T> clazz) {
+                                                                            Class<T> clazz) {
         return requests.stream().filter(clazz::isInstance).map(clazz::cast).collect(Collectors.toSet());
     }
 

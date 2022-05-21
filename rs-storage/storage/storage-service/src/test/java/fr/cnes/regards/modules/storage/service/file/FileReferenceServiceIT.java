@@ -42,15 +42,13 @@ import java.util.stream.Collectors;
  * Test class
  *
  * @author Sébastien Binda
- *
  */
 @ActiveProfiles({ "noscheduler" })
-@TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests" },
-        locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests" },
+    locations = { "classpath:application-test.properties" })
 public class FileReferenceServiceIT extends AbstractStorageIT {
 
-    private static final  String SESSION_OWNER_1 = "SOURCE 1";
+    private static final String SESSION_OWNER_1 = "SOURCE 1";
 
     private static final String SESSION_1 = "SESSION 1";
 
@@ -65,7 +63,12 @@ public class FileReferenceServiceIT extends AbstractStorageIT {
         // 1. Add reference for search tests
         String owner = "someone";
         OffsetDateTime beforeDate = OffsetDateTime.now().minusSeconds(1);
-        FileReference fileRef = referenceRandomFile(owner, null, "file1.test", "anywhere", SESSION_OWNER_1, SESSION_1).get();
+        FileReference fileRef = referenceRandomFile(owner,
+                                                    null,
+                                                    "file1.test",
+                                                    "anywhere",
+                                                    SESSION_OWNER_1,
+                                                    SESSION_1).get();
         OffsetDateTime afterFirstDate = OffsetDateTime.now();
         Thread.sleep(1);
         referenceRandomFile("someone-else", "Type1", "file2.test", "somewhere-else", SESSION_OWNER_1, SESSION_1);
@@ -75,60 +78,107 @@ public class FileReferenceServiceIT extends AbstractStorageIT {
         OffsetDateTime afterEndDate = OffsetDateTime.now().plusSeconds(1);
 
         // Search all
-        Assert.assertEquals("There should be 5 file references.", 5,
+        Assert.assertEquals("There should be 5 file references.",
+                            5,
                             fileRefService.search(PageRequest.of(0, 100, Direction.ASC, "id")).getTotalElements());
         // Search by fileName
         PageRequest page = PageRequest.of(0, 100, Direction.ASC, "id");
-        Assert.assertEquals("There should be one file references named file1.test.", 1, fileRefService
-                .search(FileReferenceSpecification.search("file1.test", null, null, null, null, null, null, page), page)
-                .getTotalElements());
-        Assert.assertEquals("There should be 3 file references with name containing file", 3, fileRefService
-                .search(FileReferenceSpecification.search("file", null, null, null, null, null, null, page), page)
-                .getTotalElements());
+        Assert.assertEquals("There should be one file references named file1.test.",
+                            1,
+                            fileRefService.search(FileReferenceSpecification.search("file1.test",
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    page), page).getTotalElements());
+        Assert.assertEquals("There should be 3 file references with name containing file",
+                            3,
+                            fileRefService.search(FileReferenceSpecification.search("file",
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    page), page).getTotalElements());
         // Search by checksum
-        Assert.assertEquals("There should be one file references with checksum given", 1,
-                            fileRefService
-                                    .search(FileReferenceSpecification.search(null, fileRef.getMetaInfo().getChecksum(),
-                                                                              null, null, null, null, null, page),
-                                            page)
-                                    .getTotalElements());
+        Assert.assertEquals("There should be one file references with checksum given",
+                            1,
+                            fileRefService.search(FileReferenceSpecification.search(null,
+                                                                                    fileRef.getMetaInfo().getChecksum(),
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    page), page).getTotalElements());
         // Search by storage
-        Assert.assertEquals("There should be 5 file references in given storages", 5,
-                            fileRefService
-                                    .search(FileReferenceSpecification.search(null, null, null,
-                                                                              Sets.newHashSet("anywhere",
-                                                                                              "somewhere-else", "void"),
-                                                                              null, null, null, page),
-                                            page)
-                                    .getTotalElements());
-        Assert.assertEquals("There should be 3 file references in given storages", 3, fileRefService
-                .search(FileReferenceSpecification.search(null, null, null, Sets.newHashSet("somewhere-else"), null,
-                                                          null, null, page),
-                        page)
-                .getTotalElements());
+        Assert.assertEquals("There should be 5 file references in given storages",
+                            5,
+                            fileRefService.search(FileReferenceSpecification.search(null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    Sets.newHashSet("anywhere",
+                                                                                                    "somewhere-else",
+                                                                                                    "void"),
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    page), page).getTotalElements());
+        Assert.assertEquals("There should be 3 file references in given storages",
+                            3,
+                            fileRefService.search(FileReferenceSpecification.search(null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    Sets.newHashSet("somewhere-else"),
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    page), page).getTotalElements());
         // Search by type
-        Assert.assertEquals("There should be 0 file references for given type", 0,
-                            fileRefService
-                                    .search(FileReferenceSpecification.search(null, null, Lists.newArrayList("Type0"),
-                                                                              null, null, null, null, page),
-                                            page)
-                                    .getTotalElements());
-        Assert.assertEquals("There should be 1 file references for given type", 1,
-                            fileRefService
-                                    .search(FileReferenceSpecification.search(null, null, Sets.newHashSet("Type2"),
-                                                                              null, null, null, null, page),
-                                            page)
-                                    .getTotalElements());
+        Assert.assertEquals("There should be 0 file references for given type",
+                            0,
+                            fileRefService.search(FileReferenceSpecification.search(null,
+                                                                                    null,
+                                                                                    Lists.newArrayList("Type0"),
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    page), page).getTotalElements());
+        Assert.assertEquals("There should be 1 file references for given type",
+                            1,
+                            fileRefService.search(FileReferenceSpecification.search(null,
+                                                                                    null,
+                                                                                    Sets.newHashSet("Type2"),
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    page), page).getTotalElements());
         // Search by date
-        Assert.assertEquals("There should be 5 file references for given from date", 5, fileRefService
-                .search(FileReferenceSpecification.search(null, null, null, null, null, beforeDate, null, page), page)
-                .getTotalElements());
-        Assert.assertEquals("There should be 4 file references for given from and to date", 4,
-                            fileRefService
-                                    .search(FileReferenceSpecification.search(null, null, null, null, null,
-                                                                              afterFirstDate, afterEndDate, page),
-                                            page)
-                                    .getTotalElements());
+        Assert.assertEquals("There should be 5 file references for given from date",
+                            5,
+                            fileRefService.search(FileReferenceSpecification.search(null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    beforeDate,
+                                                                                    null,
+                                                                                    page), page).getTotalElements());
+        Assert.assertEquals("There should be 4 file references for given from and to date",
+                            4,
+                            fileRefService.search(FileReferenceSpecification.search(null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    null,
+                                                                                    afterFirstDate,
+                                                                                    afterEndDate,
+                                                                                    page), page).getTotalElements());
     }
 
     @Test
@@ -156,7 +206,9 @@ public class FileReferenceServiceIT extends AbstractStorageIT {
 
         // --- THEN ---
         Assert.assertEquals("Unexpected number of file references", nbFiles, filesReferenced.size());
-        Set<String> checksumsFound = filesReferenced.stream().map(fileRef -> fileRef.getMetaInfo().getChecksum()).collect(Collectors.toSet());
+        Set<String> checksumsFound = filesReferenced.stream()
+                                                    .map(fileRef -> fileRef.getMetaInfo().getChecksum())
+                                                    .collect(Collectors.toSet());
         Assert.assertEquals("Unexpected checksums returned", checksums, checksumsFound);
     }
 

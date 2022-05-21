@@ -25,6 +25,7 @@ import java.util.List;
 
 /**
  * List of requirements
+ *
  * @author msordi
  */
 @XmlRootElement(name = "requirements")

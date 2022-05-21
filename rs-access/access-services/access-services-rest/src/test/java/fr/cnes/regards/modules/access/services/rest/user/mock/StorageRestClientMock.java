@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 @Component
 public class StorageRestClientMock implements IStorageRestClient {
 
-
     public static final String USER_QUOTA_LIMITS_STUB_EMAIL = UUID.randomUUID().toString();
 
     private static final Random random = new Random();
@@ -32,9 +31,9 @@ public class StorageRestClientMock implements IStorageRestClient {
     public static final long USER_QUOTA_LIMITS_STUB_RATE_LIMIT = random.nextInt(10_000);
 
     public static final DownloadQuotaLimitsDto USER_QUOTA_LIMITS_STUB = new DownloadQuotaLimitsDto(
-            USER_QUOTA_LIMITS_STUB_EMAIL,
-            USER_QUOTA_LIMITS_STUB_MAX_QUOTA,
-            USER_QUOTA_LIMITS_STUB_RATE_LIMIT);
+        USER_QUOTA_LIMITS_STUB_EMAIL,
+        USER_QUOTA_LIMITS_STUB_MAX_QUOTA,
+        USER_QUOTA_LIMITS_STUB_RATE_LIMIT);
 
     public static final long CURRENT_USER_QUOTA_STUB = random.nextInt(10_000);
 
@@ -50,16 +49,17 @@ public class StorageRestClientMock implements IStorageRestClient {
 
     @Override
     public ResponseEntity<DownloadQuotaLimitsDto> upsertQuotaLimits(String userEmail,
-            @Valid DownloadQuotaLimitsDto quotaLimits) {
+                                                                    @Valid DownloadQuotaLimitsDto quotaLimits) {
         return new ResponseEntity<>(quotaLimits, HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<List<DownloadQuotaLimitsDto>> getQuotaLimits(String[] userEmails) {
-        return new ResponseEntity<>(Arrays.stream(userEmails).map(userEmail -> new DownloadQuotaLimitsDto(userEmail,
-                                                                                                          USER_QUOTA_LIMITS_STUB_MAX_QUOTA,
-                                                                                                          USER_QUOTA_LIMITS_STUB_RATE_LIMIT))
-                                            .collect(Collectors.toList()), HttpStatus.OK);
+        return new ResponseEntity<>(Arrays.stream(userEmails)
+                                          .map(userEmail -> new DownloadQuotaLimitsDto(userEmail,
+                                                                                       USER_QUOTA_LIMITS_STUB_MAX_QUOTA,
+                                                                                       USER_QUOTA_LIMITS_STUB_RATE_LIMIT))
+                                          .collect(Collectors.toList()), HttpStatus.OK);
     }
 
     @Override
@@ -89,12 +89,13 @@ public class StorageRestClientMock implements IStorageRestClient {
 
     @Override
     public ResponseEntity<List<UserCurrentQuotas>> getCurrentQuotasList(String[] userEmails) {
-        return new ResponseEntity<>(Arrays.stream(userEmails).map(userEmail -> new UserCurrentQuotas(userEmail,
-                                                                                                     USER_QUOTA_LIMITS_STUB_MAX_QUOTA,
-                                                                                                     USER_QUOTA_LIMITS_STUB_RATE_LIMIT,
-                                                                                                     CURRENT_USER_QUOTA_STUB,
-                                                                                                     CURRENT_USER_RATE_STUB))
-                                            .collect(Collectors.toList()), HttpStatus.OK);
+        return new ResponseEntity<>(Arrays.stream(userEmails)
+                                          .map(userEmail -> new UserCurrentQuotas(userEmail,
+                                                                                  USER_QUOTA_LIMITS_STUB_MAX_QUOTA,
+                                                                                  USER_QUOTA_LIMITS_STUB_RATE_LIMIT,
+                                                                                  CURRENT_USER_QUOTA_STUB,
+                                                                                  CURRENT_USER_RATE_STUB))
+                                          .collect(Collectors.toList()), HttpStatus.OK);
     }
 
     @Override

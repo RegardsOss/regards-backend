@@ -1,10 +1,6 @@
 package fr.cnes.regards.framework.jsoniter.autoconfigure;
 
 import com.google.gson.Gson;
-import com.jsoniter.JsonIterator;
-import com.jsoniter.output.EncodingMode;
-import com.jsoniter.output.JsonStream;
-import com.jsoniter.spi.DecodingMode;
 import com.jsoniter.spi.JsoniterSpi;
 import fr.cnes.regards.framework.jsoniter.IIndexableJsoniterConfig;
 import fr.cnes.regards.framework.jsoniter.JsoniterDecoderRegisterer;
@@ -30,11 +26,9 @@ public class JsoniterAutoConfiguration {
     }
 
     @Bean
-    public JsoniterDecoderRegisterer jsoniterDecoderRegisterer(
-            AttributeModelPropertyTypeFinder propTypeFinder,
-            IIndexableJsoniterConfig spiConfig,
-            Gson gson
-    ) {
+    public JsoniterDecoderRegisterer jsoniterDecoderRegisterer(AttributeModelPropertyTypeFinder propTypeFinder,
+                                                               IIndexableJsoniterConfig spiConfig,
+                                                               Gson gson) {
         JsoniterSpi.setCurrentConfig(spiConfig);
         return new JsoniterDecoderRegisterer(propTypeFinder, gson);
     }

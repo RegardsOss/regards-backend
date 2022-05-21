@@ -26,7 +26,6 @@ import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
  * Creation event
  *
  * @author Marc Sordi
- *
  */
 @Event(target = Target.ALL)
 public class AttributeModelCreated extends AbstractAttributeModelEvent {

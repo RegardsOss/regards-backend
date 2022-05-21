@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.execution;
 
 import fr.cnes.regards.modules.processing.domain.PBatch;
@@ -44,42 +44,39 @@ import java.util.function.BiFunction;
  *
  * @author gandrieu
  */
-@Value @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Value
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ExecutionContext {
 
-    @With PExecution exec;
+    @With
+    PExecution exec;
+
     PBatch batch;
+
     PProcess process;
 
     IExecutionEventNotifier eventNotifier;
 
-    @With Map<Class<?>, Object> params;
+    @With
+    Map<Class<?>, Object> params;
 
     public ExecutionContext(PExecution exec, PBatch batch, PProcess process, IExecutionEventNotifier notifierFor) {
         this(exec, batch, process, notifierFor, HashMap.empty());
     }
 
     public Mono<ExecutionContext> sendEvent(ExecutionEvent event) {
-        return getEventNotifier()
-                .notifyEvent(event)
-                .map(this::withExec);
+        return getEventNotifier().notifyEvent(event).map(this::withExec);
     }
 
     public <T> ExecutionContext withParam(Class<T> type, T newValue, BiFunction<T, T, T> mergeFn) {
-        return withParam(
-            type,
-            params.get(type)
-                .map(t -> {
-                    try {
-                        T t1 = (T) t;
-                        return mergeFn.apply(t1, newValue);
-                    }
-                    catch(Exception e) {
-                        return newValue;
-                    }
-                })
-                .getOrElse(newValue)
-        );
+        return withParam(type, params.get(type).map(t -> {
+            try {
+                T t1 = (T) t;
+                return mergeFn.apply(t1, newValue);
+            } catch (Exception e) {
+                return newValue;
+            }
+        }).getOrElse(newValue));
     }
 
     public <T> ExecutionContext withParam(Class<T> type, T value) {
@@ -89,17 +86,21 @@ public class ExecutionContext {
     @SuppressWarnings("unchecked")
     public <T> Mono<T> getParam(Class<T> type) {
         return params.get(type)
-            .map(o -> (T)o)
-            .map(Mono::just)
-            .getOrElse(() -> Mono.error(new MissingExecutionContextParameterException("Param for type '" + type.getSimpleName() + "' not found")));
+                     .map(o -> (T) o)
+                     .map(Mono::just)
+                     .getOrElse(() -> Mono.error(new MissingExecutionContextParameterException(
+                         "Param for type '" + type.getSimpleName() + "' not found")));
     }
 
     @SuppressWarnings("serial")
     public static class MissingExecutionContextParameterException extends ProcessingException {
+
         public MissingExecutionContextParameterException(String desc) {
             super(ProcessingExceptionType.MISSING_EXECUTION_CONTEXT_PARAM_ERROR, desc);
         }
-        @Override public String getMessage() {
+
+        @Override
+        public String getMessage() {
             return desc;
         }
     }

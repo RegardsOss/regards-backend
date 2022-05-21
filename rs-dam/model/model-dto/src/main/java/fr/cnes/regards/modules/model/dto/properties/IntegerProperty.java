@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.model.dto.properties;
  * Represent a {@link PropertyType#INTEGER} model attribute
  *
  * @author Marc Sordi
- *
  */
 public class IntegerProperty extends AbstractProperty<Integer> {
 

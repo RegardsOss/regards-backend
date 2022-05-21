@@ -25,8 +25,9 @@ import java.lang.annotation.Target;
 
 /**
  * Class MicroserviceInfo
- *
+ * <p>
  * Meta data informations about a Microservice
+ *
  * @author CS
  */
 @Target(ElementType.TYPE)

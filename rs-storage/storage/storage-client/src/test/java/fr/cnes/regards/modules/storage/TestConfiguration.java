@@ -18,10 +18,8 @@
  */
 package fr.cnes.regards.modules.storage;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
-
+import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.hateoas.IResourceService;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.client.ServiceInstance;
@@ -30,9 +28,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Lists;
-
-import fr.cnes.regards.framework.hateoas.IResourceService;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
 
 /**
  * Global test configuration for storage tests

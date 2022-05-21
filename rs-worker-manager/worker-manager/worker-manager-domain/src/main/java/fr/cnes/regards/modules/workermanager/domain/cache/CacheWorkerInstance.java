@@ -50,7 +50,8 @@ public class CacheWorkerInstance {
     }
 
     public static CacheWorkerInstance build(WorkerHeartBeatEvent workerHeartBeatEvent) {
-        return new CacheWorkerInstance(workerHeartBeatEvent.getId(), workerHeartBeatEvent.getType(),
+        return new CacheWorkerInstance(workerHeartBeatEvent.getId(),
+                                       workerHeartBeatEvent.getType(),
                                        workerHeartBeatEvent.getHeartBeatDate());
     }
 

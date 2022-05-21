@@ -35,7 +35,7 @@ public class AccessWaitingForQualificationTest extends UserAccessUpdateTest {
     public void fail_if_not_waiting_for_activation() {
         ProjectUser givenUser = UserBuilder.aUser().authorized().build();
         Assertions.assertThatExceptionOfType(EntityOperationForbiddenException.class)
-            .isThrownBy(() -> userWorkflowManager.makeWaitForQualification(givenUser));
+                  .isThrownBy(() -> userWorkflowManager.makeWaitForQualification(givenUser));
     }
 
     @Test

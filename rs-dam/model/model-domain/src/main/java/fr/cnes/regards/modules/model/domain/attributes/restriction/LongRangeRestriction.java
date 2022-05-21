@@ -18,11 +18,6 @@
  */
 package fr.cnes.regards.modules.model.domain.attributes.restriction;
 
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.validation.constraints.NotNull;
-
 import fr.cnes.regards.modules.model.domain.attributes.restriction.validator.CheckLongRange;
 import fr.cnes.regards.modules.model.domain.schema.LongRange;
 import fr.cnes.regards.modules.model.domain.schema.LongRange.Max;
@@ -30,8 +25,12 @@ import fr.cnes.regards.modules.model.domain.schema.LongRange.Min;
 import fr.cnes.regards.modules.model.domain.schema.Restriction;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 
+import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.validation.constraints.NotNull;
+
 /**
- *
  * Manage date format restriction for attribute of type :
  * <ul>
  * <li>{@link PropertyType#LONG}</li>
@@ -40,7 +39,6 @@ import fr.cnes.regards.modules.model.dto.properties.PropertyType;
  * </ul>
  *
  * @author oroussel
- *
  */
 @CheckLongRange
 @Entity
@@ -82,7 +80,7 @@ public class LongRangeRestriction extends AbstractRestriction {
     @Override
     public Boolean supports(PropertyType pPropertyType) {
         return PropertyType.LONG.equals(pPropertyType) || PropertyType.LONG_ARRAY.equals(pPropertyType)
-                || PropertyType.LONG_INTERVAL.equals(pPropertyType);
+            || PropertyType.LONG_INTERVAL.equals(pPropertyType);
     }
 
     public Long getMin() {

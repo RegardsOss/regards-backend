@@ -18,17 +18,18 @@
  */
 package fr.cnes.regards.framework.geojson.geometry;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import fr.cnes.regards.framework.geojson.GeoJsonType;
 import fr.cnes.regards.framework.geojson.coordinates.Positions;
 import fr.cnes.regards.framework.geojson.validator.MultiLineStringConstraints;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJson MultiLineString representation
+ *
  * @author Marc Sordi
  */
 @MultiLineStringConstraints
@@ -55,8 +56,9 @@ public class MultiLineString extends AbstractGeometry<List<Positions>> {
      */
     public static MultiLineString fromArray(double[][][] lonLatsArray) {
         MultiLineString multiLineString = new MultiLineString();
-        multiLineString.coordinates.addAll(Arrays.asList(
-                Arrays.stream(lonLatsArray).map(Positions::fromArray).toArray(Positions[]::new)));
+        multiLineString.coordinates.addAll(Arrays.asList(Arrays.stream(lonLatsArray)
+                                                               .map(Positions::fromArray)
+                                                               .toArray(Positions[]::new)));
         return multiLineString;
     }
 

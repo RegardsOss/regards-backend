@@ -18,8 +18,12 @@
  */
 package fr.cnes.regards.modules.ingest.service.request;
 
-import java.util.Set;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.request.update.*;
+import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,17 +31,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateCategoryTask;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateFileLocationTask;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateState;
-import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateTaskType;
-import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
-import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
+import java.util.Set;
 
 /**
  * Test class for {@link AIPUpdateRequestService}
@@ -46,7 +40,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
  */
 @ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=ingest_aip_update_request",
-        "spring.jpa.show-sql=false" }, locations = { "classpath:application-test.properties" })
+    "spring.jpa.show-sql=false" }, locations = { "classpath:application-test.properties" })
 public class AIPUpdateRequestServiceIT extends AbstractIngestRequestIT {
 
     @Autowired
@@ -64,9 +58,14 @@ public class AIPUpdateRequestServiceIT extends AbstractIngestRequestIT {
         AIPUpdateFileLocationTask task = new AIPUpdateFileLocationTask();
         task.setType(AIPUpdateTaskType.ADD_FILE_LOCATION);
         task.setState(AIPUpdateState.READY);
-        task.setFileLocationUpdates(Lists.newArrayList(RequestResultInfoDTO
-                .build("groupId", "checksum", "somewhere", null, Sets.newHashSet("someone"),
-                       simulatefileReference(checksum, aipEntity.getAipId()), null)));
+        task.setFileLocationUpdates(Lists.newArrayList(RequestResultInfoDTO.build("groupId",
+                                                                                  "checksum",
+                                                                                  "somewhere",
+                                                                                  null,
+                                                                                  Sets.newHashSet("someone"),
+                                                                                  simulatefileReference(checksum,
+                                                                                                        aipEntity.getAipId()),
+                                                                                  null)));
         updateTasks.add(task);
         AIPUpdateCategoryTask catTask = new AIPUpdateCategoryTask();
         catTask.setType(AIPUpdateTaskType.ADD_CATEGORY);
@@ -74,13 +73,15 @@ public class AIPUpdateRequestServiceIT extends AbstractIngestRequestIT {
         catTask.setCategories(Lists.newArrayList("cat1", "cat2"));
         updateTasks.add(catTask);
 
-        Assert.assertEquals(0, aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
-                .getTotalElements());
+        Assert.assertEquals(0,
+                            aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
+                                               .getTotalElements());
         aipUpdateReqService.create(Sets.newHashSet(aipEntity), updateTasks);
 
         // Two new update requests should be created
-        Assert.assertEquals(2, aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
-                .getTotalElements());
+        Assert.assertEquals(2,
+                            aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
+                                               .getTotalElements());
     }
 
     @Test
@@ -89,10 +90,14 @@ public class AIPUpdateRequestServiceIT extends AbstractIngestRequestIT {
         String providerId = "providerId";
         initSipAndAip(checksum, providerId);
         Set<AbstractAIPUpdateTask> updateTasks = Sets.newHashSet();
-        AIPUpdateFileLocationTask task = AIPUpdateFileLocationTask
-                .buildAddLocationTask(Lists.newArrayList(RequestResultInfoDTO
-                        .build("groupId", "checksum", "somewhere", null, Sets.newHashSet("someone"),
-                               simulatefileReference(checksum, aipEntity.getAipId()), null)));
+        AIPUpdateFileLocationTask task = AIPUpdateFileLocationTask.buildAddLocationTask(Lists.newArrayList(
+            RequestResultInfoDTO.build("groupId",
+                                       "checksum",
+                                       "somewhere",
+                                       null,
+                                       Sets.newHashSet("someone"),
+                                       simulatefileReference(checksum, aipEntity.getAipId()),
+                                       null)));
         AIPUpdateCategoryTask catTask = new AIPUpdateCategoryTask();
         catTask.setType(AIPUpdateTaskType.ADD_CATEGORY);
         catTask.setState(AIPUpdateState.READY);
@@ -101,25 +106,32 @@ public class AIPUpdateRequestServiceIT extends AbstractIngestRequestIT {
         updateTasks.add(task);
         updateTasks.add(catTask);
 
-        Assert.assertEquals(0, aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
-                .getTotalElements());
+        Assert.assertEquals(0,
+                            aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
+                                               .getTotalElements());
         aipUpdateReqService.create(Lists.newArrayList(aipEntity), updateTasks);
         // Two new update requests should be created
-        Assert.assertEquals(2, aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
-                .getTotalElements());
+        Assert.assertEquals(2,
+                            aipUpdateReqService.search(InternalRequestState.CREATED, PageRequest.of(0, 10))
+                                               .getTotalElements());
 
         // Simulate all requests running
         aipUpdateReqService.updateState(repo.findAll(), InternalRequestState.RUNNING);
 
         // Send the same requests
-        AIPUpdateFileLocationTask newTask = AIPUpdateFileLocationTask
-                .buildAddLocationTask(Lists.newArrayList(RequestResultInfoDTO
-                        .build("groupId", "checksum", "somewhere", null, Sets.newHashSet("someone"),
-                               simulatefileReference(checksum, aipEntity.getAipId()), null)));
+        AIPUpdateFileLocationTask newTask = AIPUpdateFileLocationTask.buildAddLocationTask(Lists.newArrayList(
+            RequestResultInfoDTO.build("groupId",
+                                       "checksum",
+                                       "somewhere",
+                                       null,
+                                       Sets.newHashSet("someone"),
+                                       simulatefileReference(checksum, aipEntity.getAipId()),
+                                       null)));
         aipUpdateReqService.create(Lists.newArrayList(aipEntity), Sets.newHashSet(newTask));
         // The new update request should be blocked as requests are already running for the give aip
-        Assert.assertEquals(1, aipUpdateReqService.search(InternalRequestState.BLOCKED, PageRequest.of(0, 10))
-                .getTotalElements());
+        Assert.assertEquals(1,
+                            aipUpdateReqService.search(InternalRequestState.BLOCKED, PageRequest.of(0, 10))
+                                               .getTotalElements());
     }
 
 }

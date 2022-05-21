@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.entity;
 
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionStatus;
@@ -32,7 +32,8 @@ import java.util.UUID;
  *
  * @author gandrieu
  */
-@Data @With
+@Data
+@With
 @AllArgsConstructor
 @RequiredArgsConstructor
 @NoArgsConstructor
@@ -40,37 +41,47 @@ import java.util.UUID;
 @Table("t_execution")
 public class ExecutionEntity implements Persistable<UUID> {
 
-    @Id @NonNull
+    @Id
+    @NonNull
     private UUID id;
 
-    @Column("batch_id") @NonNull
+    @Column("batch_id")
+    @NonNull
     private UUID batchId;
 
-    @Column("file_parameters") @NonNull
+    @Column("file_parameters")
+    @NonNull
     private FileParameters fileParameters;
 
-    @Column("timeout_after_millis") @NonNull
+    @Column("timeout_after_millis")
+    @NonNull
     private Long timeoutAfterMillis;
 
-    @Column("steps") @NonNull
+    @Column("steps")
+    @NonNull
     private Steps steps;
 
     @Column("current_status")
     private ExecutionStatus currentStatus;
 
-    @Column("tenant") @NonNull
+    @Column("tenant")
+    @NonNull
     private String tenant;
 
-    @Column("user_email") @NonNull
+    @Column("user_email")
+    @NonNull
     private String userEmail;
 
-    @Column("process_business_id") @NonNull
+    @Column("process_business_id")
+    @NonNull
     private UUID processBusinessId;
 
-    @Column("correlation_id") @NonNull
+    @Column("correlation_id")
+    @NonNull
     private String correlationId;
 
-    @Column("batch_correlation_id") @NonNull
+    @Column("batch_correlation_id")
+    @NonNull
     private String batchCorrelationId;
 
     @Column("created")
@@ -97,7 +108,8 @@ public class ExecutionEntity implements Persistable<UUID> {
         return this;
     }
 
-    @Override public boolean isNew() {
+    @Override
+    public boolean isNew() {
         return !persisted;
     }
 

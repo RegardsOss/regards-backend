@@ -18,14 +18,15 @@
  */
 package fr.cnes.regards.framework.modules.workspace.service;
 
+import fr.cnes.regards.framework.modules.workspace.domain.WorkspaceMonitoringInformation;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 
-import fr.cnes.regards.framework.modules.workspace.domain.WorkspaceMonitoringInformation;
-
 /**
  * Allows to use a workspace inside the application. This workspace should be separated by tenant.
+ *
  * @author svissier
  */
 public interface IWorkspaceService {
@@ -38,6 +39,7 @@ public interface IWorkspaceService {
     /**
      * Retrieves the file which name is fileName from the workspace. Take care that the returned InputStream is to be
      * closed by the caller.
+     *
      * @return new input stream from the file into the workspace.
      */
     InputStream retrieveFromWorkspace(String fileName) throws IOException;
@@ -67,6 +69,7 @@ public interface IWorkspaceService {
 
     /**
      * Allows to get the path of the given file in the workspace of the current tenant.
+     *
      * @return the path of the given file in the workspace of the current tenant
      */
     Path getFilePath(String fileName) throws IOException;

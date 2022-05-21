@@ -28,17 +28,17 @@ public enum NotificationFrequency {
      * Daily frequency
      */
     DAILY,
-    
+
     /**
      * Weekly frequency
      */
     WEEKLY,
-    
+
     /**
      * Monthly frequency
      */
     MONTHLY,
-    
+
     /**
      * Custom frequency
      */

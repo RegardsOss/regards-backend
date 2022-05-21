@@ -11,7 +11,6 @@ import java.util.NoSuchElementException;
  *
  * @author xbrochard
  * @author Sébastien Binda
- *
  */
 public class RoleLineageIterator implements Iterator<Role> {
 

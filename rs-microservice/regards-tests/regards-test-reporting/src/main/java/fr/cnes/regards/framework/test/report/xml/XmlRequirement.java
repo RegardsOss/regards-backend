@@ -26,6 +26,7 @@ import java.util.List;
 
 /**
  * Requirement information
+ *
  * @author msordi
  */
 @XmlRootElement(name = "requirement")
@@ -73,6 +74,7 @@ public class XmlRequirement {
 
     /**
      * Add a test
+     *
      * @param pTest test to add
      */
     public void addTest(XmlTest pTest) {
@@ -84,6 +86,7 @@ public class XmlRequirement {
 
     /**
      * Add all tests
+     *
      * @param pTests tests to add
      */
     public void addAllTests(List<XmlTest> pTests) {

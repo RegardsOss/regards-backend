@@ -45,9 +45,10 @@ public interface IDatasetService extends IEntityService<Dataset> {
 
     /**
      * Update dataset
+     *
      * @param datasetId internal identifier
-     * @param dataset the dataset to update
-     * @param errors validation errors
+     * @param dataset   the dataset to update
+     * @param errors    validation errors
      * @return updated dataset
      */
     Dataset updateDataset(Long datasetId, Dataset dataset, Errors errors) throws ModuleException;
@@ -67,8 +68,9 @@ public interface IDatasetService extends IEntityService<Dataset> {
      * @return {@link AttributeModel}s
      * @throws ModuleException
      */
-    Page<AttributeModel> getDataAttributeModels(Set<UniformResourceName> pUrns, Set<String> modelNames, Pageable pPageable)
-            throws ModuleException;
+    Page<AttributeModel> getDataAttributeModels(Set<UniformResourceName> pUrns,
+                                                Set<String> modelNames,
+                                                Pageable pPageable) throws ModuleException;
 
     /**
      * Retrieve {@link AttributeModel}s associated to the given {@link Dataset}s or {@link Model}s given.
@@ -80,7 +82,7 @@ public interface IDatasetService extends IEntityService<Dataset> {
      * @throws ModuleException
      */
     Page<AttributeModel> getAttributeModels(Set<UniformResourceName> pUrns, Set<String> modelNames, Pageable pPageable)
-            throws ModuleException;
+        throws ModuleException;
 
     /**
      * Validate clause

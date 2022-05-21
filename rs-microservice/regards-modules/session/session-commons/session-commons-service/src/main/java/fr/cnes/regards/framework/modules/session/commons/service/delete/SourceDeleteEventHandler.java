@@ -22,12 +22,13 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SourceDeleteEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+
+import java.util.List;
 
 /**
  * Handle deletion of source
@@ -35,7 +36,7 @@ import org.springframework.context.ApplicationListener;
  * @author Iliana Ghazali
  **/
 public class SourceDeleteEventHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IHandler<SourceDeleteEvent> {
+    implements ApplicationListener<ApplicationReadyEvent>, IHandler<SourceDeleteEvent> {
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -61,10 +62,12 @@ public class SourceDeleteEventHandler
             long start = System.currentTimeMillis();
 
             LOGGER.trace("Handling deleting of source {} for tenant {}", source, tenant);
-            for(ISourceDeleteService sourceDeleteService : sourceDeleteServices) {
+            for (ISourceDeleteService sourceDeleteService : sourceDeleteServices) {
                 sourceDeleteService.deleteSource(source);
             }
-            LOGGER.trace("Deleting of source {} for tenant {} handled in {}ms", source, tenant,
+            LOGGER.trace("Deleting of source {} for tenant {} handled in {}ms",
+                         source,
+                         tenant,
                          start - System.currentTimeMillis());
         } finally {
             runtimeTenantResolver.clearTenant();

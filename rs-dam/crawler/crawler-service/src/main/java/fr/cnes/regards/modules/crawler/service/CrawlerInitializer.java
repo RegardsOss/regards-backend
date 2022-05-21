@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Crawler initializer.
  * This component is used to launch crawler services as daemons.
+ *
  * @author oroussel
  */
 @Component

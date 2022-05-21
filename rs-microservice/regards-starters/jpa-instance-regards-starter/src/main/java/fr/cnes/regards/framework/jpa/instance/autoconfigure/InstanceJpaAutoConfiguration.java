@@ -18,8 +18,11 @@
  */
 package fr.cnes.regards.framework.jpa.instance.autoconfigure;
 
-import java.lang.annotation.Annotation;
-
+import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
+import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
+import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
+import fr.cnes.regards.framework.jpa.instance.properties.InstanceDaoProperties;
+import fr.cnes.regards.framework.jpa.utils.DaoUtils;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -32,25 +35,22 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
-import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
-import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
-import fr.cnes.regards.framework.jpa.instance.properties.InstanceDaoProperties;
-import fr.cnes.regards.framework.jpa.utils.DaoUtils;
+import java.lang.annotation.Annotation;
 
 /**
  * Class InstanceJpaAutoConfiguration
- *
+ * <p>
  * Configuration class to define hibernate/jpa instance database strategy This class use @InstanceEntity annotation to
  * find JPA Entities and Repositories.
+ *
  * @author Sébastien Binda
  */
 @Configuration
 @Conditional(value = EnableInstanceCondition.class)
 @EnableJpaRepositories(
-        includeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
-        basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "instanceEntityManagerFactory",
-        transactionManagerRef = InstanceDaoProperties.INSTANCE_TRANSACTION_MANAGER)
+    includeFilters = { @ComponentScan.Filter(value = InstanceEntity.class, type = FilterType.ANNOTATION) },
+    basePackages = DaoUtils.ROOT_PACKAGE, entityManagerFactoryRef = "instanceEntityManagerFactory",
+    transactionManagerRef = InstanceDaoProperties.INSTANCE_TRANSACTION_MANAGER)
 @EnableTransactionManagement
 @EnableConfigurationProperties(InstanceDaoProperties.class)
 @ConditionalOnProperty(prefix = "regards.jpa", name = "instance.enabled", matchIfMissing = true)

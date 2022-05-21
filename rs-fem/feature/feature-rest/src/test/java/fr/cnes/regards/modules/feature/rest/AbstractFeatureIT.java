@@ -125,9 +125,13 @@ public abstract class AbstractFeatureIT extends AbstractRegardsTransactionalIT {
         for (int i = 0; i < nbFeatures; i++) {
             Feature featureToAdd = initValidFeature(providerId + i);
             List<FeatureCreationRequestEvent> features = Lists.newArrayList();
-            FeatureCreationSessionMetadata meta = FeatureCreationSessionMetadata
-                    .build(source, session, PriorityLevel.NORMAL, Lists.newArrayList(StorageMetadata.build("disk")),
-                           true, false);
+            FeatureCreationSessionMetadata meta = FeatureCreationSessionMetadata.build(source,
+                                                                                       session,
+                                                                                       PriorityLevel.NORMAL,
+                                                                                       Lists.newArrayList(
+                                                                                           StorageMetadata.build("disk")),
+                                                                                       true,
+                                                                                       false);
             features.add(FeatureCreationRequestEvent.build("owner", meta, featureToAdd));
             Assert.assertEquals(1, featureService.registerRequests(features).getGranted().size());
         }
@@ -137,12 +141,15 @@ public abstract class AbstractFeatureIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Mock model client importing model specified by its filename
+     *
      * @param filename model filename found using {@link Class#getResourceAsStream(String)}
      * @return mocked model name
      */
-    public String mockModelClient(String filename, IComputationPluginService cps,
-            MultitenantFlattenedAttributeAdapterFactory factory, String tenant,
-            IModelAttrAssocClient modelAttrAssocClientMock) {
+    public String mockModelClient(String filename,
+                                  IComputationPluginService cps,
+                                  MultitenantFlattenedAttributeAdapterFactory factory,
+                                  String tenant,
+                                  IModelAttrAssocClient modelAttrAssocClientMock) {
 
         try (InputStream input = FeatureControllerIT.class.getResourceAsStream(filename)) {
             // Import model
@@ -170,7 +177,7 @@ public abstract class AbstractFeatureIT extends AbstractRegardsTransactionalIT {
             models.add(EntityModel.of((mockModel)));
             Mockito.when(modelClientMock.getModels(null)).thenReturn(ResponseEntity.ok(models));
             Mockito.when(modelAttrAssocClientMock.getModelAttrAssocs(modelName))
-                    .thenReturn(ResponseEntity.ok(resources));
+                   .thenReturn(ResponseEntity.ok(resources));
 
             return modelName;
         } catch (IOException | ImportException e) {
@@ -181,38 +188,60 @@ public abstract class AbstractFeatureIT extends AbstractRegardsTransactionalIT {
     }
 
     protected Feature initValidFeature(String providerId) {
-        String model = mockModelClient("feature_model_01.xml", cps, factory, this.getDefaultTenant(),
+        String model = mockModelClient("feature_model_01.xml",
+                                       cps,
+                                       factory,
+                                       this.getDefaultTenant(),
                                        modelAttrAssocClientMock);
 
-        Feature feature = Feature.build(providerId, "owner", null, IGeometry.point(IGeometry.position(10.0, 20.0)),
-                                        EntityType.DATA, model);
+        Feature feature = Feature.build(providerId,
+                                        "owner",
+                                        null,
+                                        IGeometry.point(IGeometry.position(10.0, 20.0)),
+                                        EntityType.DATA,
+                                        model);
         feature.addProperty(IProperty.buildString("data_type", "TYPE01"));
         feature.addProperty(IProperty.buildObject("file_characterization", IProperty.buildBoolean("valid", true)));
-        feature.withFiles(FeatureFile.build(FeatureFileAttributes
-                .build(DataType.RAWDATA, MimeType.valueOf("application/xml"), "filename", 100l, "MD5", "checksum"),
+        feature.withFiles(FeatureFile.build(FeatureFileAttributes.build(DataType.RAWDATA,
+                                                                        MimeType.valueOf("application/xml"),
+                                                                        "filename",
+                                                                        100l,
+                                                                        "MD5",
+                                                                        "checksum"),
                                             FeatureFileLocation.build("http://www.test.com/filename.xml")));
 
         return feature;
     }
 
     protected Feature initValidUpdateFeature() {
-        String model = mockModelClient("feature_model_01.xml", cps, factory, this.getDefaultTenant(),
+        String model = mockModelClient("feature_model_01.xml",
+                                       cps,
+                                       factory,
+                                       this.getDefaultTenant(),
                                        modelAttrAssocClientMock);
 
-        Feature feature = Feature.build("MyId", "owner",
-                                        FeatureUniformResourceName.build(FeatureIdentifier.FEATURE, EntityType.DATA,
-                                                                         "tenant", UUID.randomUUID(), 1),
-                                        null, EntityType.DATA, model);
-        feature.addProperty(IProperty.buildObject("file_characterization", IProperty.buildBoolean("valid", false),
+        Feature feature = Feature.build("MyId",
+                                        "owner",
+                                        FeatureUniformResourceName.build(FeatureIdentifier.FEATURE,
+                                                                         EntityType.DATA,
+                                                                         "tenant",
+                                                                         UUID.randomUUID(),
+                                                                         1),
+                                        null,
+                                        EntityType.DATA,
+                                        model);
+        feature.addProperty(IProperty.buildObject("file_characterization",
+                                                  IProperty.buildBoolean("valid", false),
                                                   IProperty.buildDate("invalidation_date", OffsetDateTime.now())));
         return feature;
     }
 
     /**
      * Wait until feature are properly created
+     *
      * @param expected expected feature number
-     * @param from feature updated after from date. May be <code>null</code>.
-     * @param timeout timeout in milliseconds
+     * @param from     feature updated after from date. May be <code>null</code>.
+     * @param timeout  timeout in milliseconds
      */
     protected void waitFeature(long expected, @Nullable OffsetDateTime from, long timeout) {
         long end = System.currentTimeMillis() + timeout;

@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.feature.service;
 
 import com.google.gson.Gson;
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
@@ -38,7 +37,6 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
-
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
@@ -49,7 +47,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -66,13 +63,12 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * Test for {@link FeatureNotificationRequestEvent} publishing
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=feature_notif", "regards.amqp.enabled=true" },
-        locations = { "classpath:regards_perf.properties", "classpath:batch.properties",
-                "classpath:metrics.properties" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=feature_notif", "regards.amqp.enabled=true" },
+    locations = { "classpath:regards_perf.properties", "classpath:batch.properties", "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp", "noscheduler" })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServiceIT {
@@ -96,71 +92,84 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         String session = UUID.randomUUID().toString();
 
         int numberFeature = 2;
-        List<Feature> featuresNotified = doNotificationProcess(numberFeature,source,session);
+        List<Feature> featuresNotified = doNotificationProcess(numberFeature, source, session);
 
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(recordsCaptor.capture());
         // the first publish message to be intercepted must be the creation of createdEntity
         assertEquals(gson.toJson(new CreateNotificationRequestEventVisitor.NotificationActionEventMetadata(
-                FeatureManagementAction.NOTIFIED,source,session)), recordsCaptor.getValue().get(0).getMetadata().toString());
+            FeatureManagementAction.NOTIFIED,
+            source,
+            session)), recordsCaptor.getValue().get(0).getMetadata().toString());
         assertEquals(gson.toJson(featuresNotified.get(0)), recordsCaptor.getValue().get(0).getPayload().toString());
         // the second message is the update of updatedEntity
         assertEquals(gson.toJson(new CreateNotificationRequestEventVisitor.NotificationActionEventMetadata(
-                FeatureManagementAction.NOTIFIED,source,session)), recordsCaptor.getValue().get(1).getMetadata().toString());
+            FeatureManagementAction.NOTIFIED,
+            source,
+            session)), recordsCaptor.getValue().get(1).getMetadata().toString());
         assertEquals(gson.toJson(featuresNotified.get(1)), recordsCaptor.getValue().get(1).getPayload().toString());
     }
 
     @Test
     @Ignore("Test to manuel check perf using logs of feature notification request handling.")
     public void testNotification1000() {
-        doNotificationProcess(1000, "source","session");
+        doNotificationProcess(1000, "source", "session");
     }
 
     private List<Feature> doNotificationProcess(int numberNotified, String source, String session) {
         // use it only to initialize Feature
-        List<FeatureCreationRequestEvent> list = initFeatureCreationRequestEvent(numberNotified, true,false,
-                                                                                 source, session);
-        for(FeatureCreationRequestEvent event: list) {
-            event.getFeature().setUrn(FeatureUniformResourceName.pseudoRandomUrn(FeatureIdentifier.FEATURE,
-                                                                                 EntityType.DATA,
-                                                                                 "tenant",
-                                                                                 1));
+        List<FeatureCreationRequestEvent> list = initFeatureCreationRequestEvent(numberNotified,
+                                                                                 true,
+                                                                                 false,
+                                                                                 source,
+                                                                                 session);
+        for (FeatureCreationRequestEvent event : list) {
+            event.getFeature()
+                 .setUrn(FeatureUniformResourceName.pseudoRandomUrn(FeatureIdentifier.FEATURE,
+                                                                    EntityType.DATA,
+                                                                    "tenant",
+                                                                    1));
         }
-        List<FeatureNotificationRequestEvent> notifCreated = new ArrayList<>(numberNotified /2);
-        List<FeatureNotificationRequestEvent> notifUpdated = new ArrayList<>(numberNotified /2);
+        List<FeatureNotificationRequestEvent> notifCreated = new ArrayList<>(numberNotified / 2);
+        List<FeatureNotificationRequestEvent> notifUpdated = new ArrayList<>(numberNotified / 2);
         // consider half to be update entities
         List<Feature> featuresNotified = new ArrayList<>(numberNotified);
-        for(int i = 0; i< numberNotified /2; i++) {
-            FeatureEntity createdEntity = FeatureEntity
-                    .build(source, session, list.get(i).getFeature(), null, list.get(i).getFeature().getModel());
-            FeatureEntity updatedEntity = FeatureEntity
-                    .build(source, session, list.get(i+ numberNotified /2).getFeature(), null, list.get(i+ numberNotified
-                            /2).getFeature().getModel());
+        for (int i = 0; i < numberNotified / 2; i++) {
+            FeatureEntity createdEntity = FeatureEntity.build(source,
+                                                              session,
+                                                              list.get(i).getFeature(),
+                                                              null,
+                                                              list.get(i).getFeature().getModel());
+            FeatureEntity updatedEntity = FeatureEntity.build(source,
+                                                              session,
+                                                              list.get(i + numberNotified / 2).getFeature(),
+                                                              null,
+                                                              list.get(i + numberNotified / 2).getFeature().getModel());
             updatedEntity.setLastUpdate(OffsetDateTime.now().plusSeconds(1));
             createdEntity.setUrn(list.get(i).getFeature().getUrn());
-            updatedEntity.setUrn(list.get(i+ numberNotified /2).getFeature().getUrn());
+            updatedEntity.setUrn(list.get(i + numberNotified / 2).getFeature().getUrn());
             // to skip creation and update process
             featuresNotified.add(createdEntity.getFeature());
             featuresNotified.add(updatedEntity.getFeature());
             this.featureRepo.save(createdEntity);
             this.featureRepo.save(updatedEntity);
-            notifCreated.add(FeatureNotificationRequestEvent.build("notifier", createdEntity.getUrn(), PriorityLevel.LOW));
-            notifUpdated.add(FeatureNotificationRequestEvent.build("notifier", updatedEntity.getUrn(), PriorityLevel.LOW));
+            notifCreated.add(FeatureNotificationRequestEvent.build("notifier",
+                                                                   createdEntity.getUrn(),
+                                                                   PriorityLevel.LOW));
+            notifUpdated.add(FeatureNotificationRequestEvent.build("notifier",
+                                                                   updatedEntity.getUrn(),
+                                                                   PriorityLevel.LOW));
         }
 
-        this.publisher
-                .publish(notifCreated);
-        this.publisher
-                .publish(notifUpdated);
+        this.publisher.publish(notifCreated);
+        this.publisher.publish(notifUpdated);
 
         this.waitRequest(notificationRequestRepo, numberNotified, 30000);
         assertEquals(numberNotified, notificationService.sendToNotifier());
         //simulate that notification has been handle with success
-        Page<AbstractFeatureRequest> requestsToSend = abstractFeatureRequestRepo
-                .findByStepAndRequestDateLessThanEqual(FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED,
-                                                       OffsetDateTime.now().plusDays(1),
-                                                       PageRequest.of(0,
-                                                                      numberNotified, Sort.by(Sort.Order.asc("priority"),
-                                                                                             Sort.Order.asc("requestDate"))));
+        Page<AbstractFeatureRequest> requestsToSend = abstractFeatureRequestRepo.findByStepAndRequestDateLessThanEqual(
+            FeatureRequestStep.REMOTE_NOTIFICATION_REQUESTED,
+            OffsetDateTime.now().plusDays(1),
+            PageRequest.of(0, numberNotified, Sort.by(Sort.Order.asc("priority"), Sort.Order.asc("requestDate"))));
         featureNotificationService.handleNotificationSuccess(requestsToSend.toSet());
         this.waitRequest(notificationRequestRepo, 0, 30000);
         return featuresNotified;
@@ -172,20 +181,23 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         OffsetDateTime start = OffsetDateTime.now();
         // Create features
         prepareCreationTestData(false, nbValid, true, true, false);
-        RequestsPage<FeatureRequestDTO> results = this.featureRequestService
-                .findAll(FeatureRequestTypeEnum.NOTIFICATION, FeatureRequestsSelectionDTO.build(),
-                         PageRequest.of(0, 100));
+        RequestsPage<FeatureRequestDTO> results = this.featureRequestService.findAll(FeatureRequestTypeEnum.NOTIFICATION,
+                                                                                     FeatureRequestsSelectionDTO.build(),
+                                                                                     PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
 
         // Notify them
-        List<FeatureUniformResourceName> urns = this.featureRepo.findAll().stream().map(FeatureEntity::getUrn)
-                .collect(Collectors.toList());
+        List<FeatureUniformResourceName> urns = this.featureRepo.findAll()
+                                                                .stream()
+                                                                .map(FeatureEntity::getUrn)
+                                                                .collect(Collectors.toList());
         this.featureNotificationService.registerRequests(prepareNotificationRequests(urns));
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.NOTIFICATION,
-                                                     FeatureRequestsSelectionDTO.build(), PageRequest.of(0, 100));
+                                                     FeatureRequestsSelectionDTO.build(),
+                                                     PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
@@ -198,16 +210,20 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.NOTIFICATION,
-                                                     FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED)
-                                                             .withStart(OffsetDateTime.now().plusSeconds(5)),
+                                                     FeatureRequestsSelectionDTO.build()
+                                                                                .withState(RequestState.GRANTED)
+                                                                                .withStart(OffsetDateTime.now()
+                                                                                                         .plusSeconds(5)),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
         Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.NOTIFICATION,
-                                                     FeatureRequestsSelectionDTO.build().withStart(start)
-                                                             .withEnd(OffsetDateTime.now().plusSeconds(5)),
+                                                     FeatureRequestsSelectionDTO.build()
+                                                                                .withStart(start)
+                                                                                .withEnd(OffsetDateTime.now()
+                                                                                                       .plusSeconds(5)),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
@@ -221,28 +237,36 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         // Create features
         prepareCreationTestData(false, nbValid, true, true, false);
         // Notify them
-        List<FeatureUniformResourceName> urns = this.featureRepo.findAll().stream().map(FeatureEntity::getUrn)
-                .collect(Collectors.toList());
+        List<FeatureUniformResourceName> urns = this.featureRepo.findAll()
+                                                                .stream()
+                                                                .map(FeatureEntity::getUrn)
+                                                                .collect(Collectors.toList());
         Assert.assertTrue(urns.size() > 0);
         int results = this.featureNotificationService.registerRequests(prepareNotificationRequests(urns));
         Assert.assertTrue(results > 0);
 
         // Try delete all requests.
         RequestHandledResponse response = this.featureRequestService.delete(FeatureRequestTypeEnum.NOTIFICATION,
-                                                                            FeatureRequestsSelectionDTO.build().withState(RequestState.ERROR));
+                                                                            FeatureRequestsSelectionDTO.build()
+                                                                                                       .withState(
+                                                                                                           RequestState.ERROR));
         LOGGER.info(response.getMessage());
-        Assert.assertEquals("There should be 0 requests deleted as request are not in ERROR state", 0,
+        Assert.assertEquals("There should be 0 requests deleted as request are not in ERROR state",
+                            0,
                             response.getTotalHandled());
-        Assert.assertEquals("There should be 0 requests to delete as request are not in ERROR state", 0,
+        Assert.assertEquals("There should be 0 requests to delete as request are not in ERROR state",
+                            0,
                             response.getTotalRequested());
 
-        response = this.featureRequestService
-                .delete(FeatureRequestTypeEnum.NOTIFICATION,
-                        FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED));
+        response = this.featureRequestService.delete(FeatureRequestTypeEnum.NOTIFICATION,
+                                                     FeatureRequestsSelectionDTO.build()
+                                                                                .withState(RequestState.GRANTED));
         LOGGER.info(response.getMessage());
-        Assert.assertEquals("There should be 0 requests deleted as selection set on GRANTED Requests", nbValid,
+        Assert.assertEquals("There should be 0 requests deleted as selection set on GRANTED Requests",
+                            nbValid,
                             response.getTotalHandled());
-        Assert.assertEquals("There should be 0 requests to delete as selection set on GRANTED Requests", nbValid,
+        Assert.assertEquals("There should be 0 requests to delete as selection set on GRANTED Requests",
+                            nbValid,
                             response.getTotalRequested());
 
     }
@@ -254,28 +278,36 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         // Create features
         prepareCreationTestData(false, nbValid, true, true, false);
         // Notify them
-        List<FeatureUniformResourceName> urns = this.featureRepo.findAll().stream().map(FeatureEntity::getUrn)
-                .collect(Collectors.toList());
+        List<FeatureUniformResourceName> urns = this.featureRepo.findAll()
+                                                                .stream()
+                                                                .map(FeatureEntity::getUrn)
+                                                                .collect(Collectors.toList());
         Assert.assertTrue(urns.size() > 0);
         int results = this.featureNotificationService.registerRequests(prepareNotificationRequests(urns));
         Assert.assertTrue(results > 0);
 
         // Try delete all requests.
         RequestHandledResponse response = this.featureRequestService.retry(FeatureRequestTypeEnum.NOTIFICATION,
-                                                                           FeatureRequestsSelectionDTO.build().withState(RequestState.ERROR));
+                                                                           FeatureRequestsSelectionDTO.build()
+                                                                                                      .withState(
+                                                                                                          RequestState.ERROR));
         LOGGER.info(response.getMessage());
-        Assert.assertEquals("There should be 0 requests retryed as request are not in ERROR state", 0,
+        Assert.assertEquals("There should be 0 requests retryed as request are not in ERROR state",
+                            0,
                             response.getTotalHandled());
-        Assert.assertEquals("There should be 0 requests to retry as request are not in ERROR state", 0,
+        Assert.assertEquals("There should be 0 requests to retry as request are not in ERROR state",
+                            0,
                             response.getTotalRequested());
 
-        response = this.featureRequestService
-                .retry(FeatureRequestTypeEnum.NOTIFICATION,
-                       FeatureRequestsSelectionDTO.build().withState(RequestState.GRANTED));
+        response = this.featureRequestService.retry(FeatureRequestTypeEnum.NOTIFICATION,
+                                                    FeatureRequestsSelectionDTO.build()
+                                                                               .withState(RequestState.GRANTED));
         LOGGER.info(response.getMessage());
-        Assert.assertEquals("There should be 0 requests retryed as selection set on GRANTED Requests", nbValid,
+        Assert.assertEquals("There should be 0 requests retryed as selection set on GRANTED Requests",
+                            nbValid,
                             response.getTotalHandled());
-        Assert.assertEquals("There should be 0 requests to retry as selection set on GRANTED Requests", nbValid,
+        Assert.assertEquals("There should be 0 requests to retry as selection set on GRANTED Requests",
+                            nbValid,
                             response.getTotalRequested());
 
     }
@@ -284,7 +316,10 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
     public void testSessionNotifier() throws InterruptedException {
 
         prepareCreationTestData(false, 1, true, true, false);
-        List<FeatureUniformResourceName> urn = featureRepo.findAll().stream().map(FeatureEntity::getUrn).collect(Collectors.toList());
+        List<FeatureUniformResourceName> urn = featureRepo.findAll()
+                                                          .stream()
+                                                          .map(FeatureEntity::getUrn)
+                                                          .collect(Collectors.toList());
         featureNotificationService.registerRequests(prepareNotificationRequests(urn));
         mockNotificationSuccess();
         waitRequest(notificationRequestRepo, 0, 20000);
@@ -403,7 +438,10 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
     private void createOneRequestWithError() throws InterruptedException {
 
         prepareCreationTestData(false, 1, true, true, false);
-        List<FeatureUniformResourceName> urn = featureRepo.findAll().stream().map(FeatureEntity::getUrn).collect(Collectors.toList());
+        List<FeatureUniformResourceName> urn = featureRepo.findAll()
+                                                          .stream()
+                                                          .map(FeatureEntity::getUrn)
+                                                          .collect(Collectors.toList());
         featureNotificationService.registerRequests(prepareNotificationRequests(urn));
         mockNotificationError();
         waitForSate(notificationRequestRepo, RequestState.ERROR, 1, 20);

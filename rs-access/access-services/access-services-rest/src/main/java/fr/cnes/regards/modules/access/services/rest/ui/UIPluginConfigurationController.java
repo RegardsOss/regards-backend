@@ -18,27 +18,6 @@
  */
 package fr.cnes.regards.modules.access.services.rest.ui;
 
-import javax.validation.Valid;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -51,6 +30,20 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 import fr.cnes.regards.modules.access.services.service.ui.IUIPluginConfigurationService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 /**
  * Controller managing {@link UIPluginConfiguration}s
@@ -81,56 +74,63 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
 
     /**
      * Endpoint to retrieve all {@link UIPluginConfiguration}
-     * @param isActive QueryParam Retrieve only the active {@link UIPluginConfiguration}
+     *
+     * @param isActive              QueryParam Retrieve only the active {@link UIPluginConfiguration}
      * @param isLinkedToAllEntities QueryParam Retrieve only the pluginConfigurations linked to all entities
-     * @param pluginType The plugin type
-     * @param assembler Assembler to manage PagedResources.
-     * @param pageable Pagination parameters
+     * @param pluginType            The plugin type
+     * @param assembler             Assembler to manage PagedResources.
+     * @param pageable              Pagination parameters
      * @return Page {@link UIPluginConfiguration}
      */
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATIONS, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve all IHM plugin configurations", role = DefaultRole.PUBLIC)
     public HttpEntity<PagedModel<EntityModel<UIPluginConfiguration>>> retrievePluginConfigurations(
-            @RequestParam(value = "isActive", required = false) final Boolean isActive,
-            @RequestParam(value = "isLinkedToAllEntities", required = false) final Boolean isLinkedToAllEntities,
-            @RequestParam(value = "type", required = false) final UIPluginTypesEnum pluginType,
-            final PagedResourcesAssembler<UIPluginConfiguration> assembler,
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
-        final Page<UIPluginConfiguration> pluginConfs = service
-                .retrievePluginConfigurations(pluginType, isActive, isLinkedToAllEntities, pageable);
+        @RequestParam(value = "isActive", required = false) final Boolean isActive,
+        @RequestParam(value = "isLinkedToAllEntities", required = false) final Boolean isLinkedToAllEntities,
+        @RequestParam(value = "type", required = false) final UIPluginTypesEnum pluginType,
+        final PagedResourcesAssembler<UIPluginConfiguration> assembler,
+        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+        final Page<UIPluginConfiguration> pluginConfs = service.retrievePluginConfigurations(pluginType,
+                                                                                             isActive,
+                                                                                             isLinkedToAllEntities,
+                                                                                             pageable);
         return new ResponseEntity<>(toPagedResources(pluginConfs, assembler), HttpStatus.OK);
     }
 
     /**
      * Endpoint to retrieve all {@link UIPluginConfiguration} for a given plugin
-     * @param pPluginId Identifier of {@link UIPluginDefinition} to retrieve configurations
-     * @param isActive QueryParam Retrieve only the active pluginConfiguration
+     *
+     * @param pPluginId             Identifier of {@link UIPluginDefinition} to retrieve configurations
+     * @param isActive              QueryParam Retrieve only the active pluginConfiguration
      * @param isLinkedToAllEntities QueryParam Retrieve only the pluginConfigurations linked to all entities
-     * @param assembler Assembler to manage PagedResources.
-     * @param pageable Pagination parameters
+     * @param assembler             Assembler to manage PagedResources.
+     * @param pageable              Pagination parameters
      * @return Page {@link UIPluginConfiguration}
      * @throws EntityException error occurred.
      */
     @RequestMapping(value = REQUEST_PLUGIN_DEFINITION, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve an IHM plugin for a given PluginDefinition",
-            role = DefaultRole.PUBLIC)
+        role = DefaultRole.PUBLIC)
     public HttpEntity<PagedModel<EntityModel<UIPluginConfiguration>>> retrievePluginConfigurationsByPlugin(
-            @PathVariable("pluginId") final Long pPluginId,
-            @RequestParam(value = "isActive", required = false) final Boolean isActive,
-            @RequestParam(value = "isLinkedToAllEntities", required = false) final Boolean isLinkedToAllEntities,
-            final PagedResourcesAssembler<UIPluginConfiguration> assembler,
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable) throws EntityException {
+        @PathVariable("pluginId") final Long pPluginId,
+        @RequestParam(value = "isActive", required = false) final Boolean isActive,
+        @RequestParam(value = "isLinkedToAllEntities", required = false) final Boolean isLinkedToAllEntities,
+        final PagedResourcesAssembler<UIPluginConfiguration> assembler,
+        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable) throws EntityException {
         final UIPluginDefinition plugin = new UIPluginDefinition();
         plugin.setId(pPluginId);
-        final Page<UIPluginConfiguration> pluginConfs = service
-                .retrievePluginConfigurations(plugin, isActive, isLinkedToAllEntities, pageable);
+        final Page<UIPluginConfiguration> pluginConfs = service.retrievePluginConfigurations(plugin,
+                                                                                             isActive,
+                                                                                             isLinkedToAllEntities,
+                                                                                             pageable);
         return new ResponseEntity<>(toPagedResources(pluginConfs, assembler), HttpStatus.OK);
     }
 
     /**
      * Endpoint to retrieve one {@link UIPluginConfiguration} by his identifier.
+     *
      * @param pluginConfigurationId {@link UIPluginConfiguration} identifier
      * @return {@lunk PluginConfiguration}
      * @throws EntityInvalidException
@@ -139,13 +139,14 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve an IHM plugin", role = DefaultRole.PUBLIC)
     public HttpEntity<EntityModel<UIPluginConfiguration>> retrievePluginConfiguration(
-            @PathVariable("pluginConfId") final Long pluginConfigurationId) throws EntityInvalidException {
+        @PathVariable("pluginConfId") final Long pluginConfigurationId) throws EntityInvalidException {
         final UIPluginConfiguration pluginConf = service.retrievePluginconfiguration(pluginConfigurationId);
         return new ResponseEntity<>(toResource(pluginConf), HttpStatus.OK);
     }
 
     /**
      * Endpoint to update a {@link UIPluginConfiguration} by his identifier.
+     *
      * @param pluginConfigurationId {@link UIPluginConfiguration} identifier
      * @param pluginConfiguration
      * @return {@link UIPluginConfiguration} to update
@@ -155,8 +156,8 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
     @ResponseBody
     @ResourceAccess(description = "Endpoint to update an IHM plugin configuration", role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<EntityModel<UIPluginConfiguration>> updatePluginConfiguration(
-            @PathVariable("pluginConfId") final Long pluginConfigurationId,
-            @Valid @RequestBody final UIPluginConfiguration pluginConfiguration) throws EntityException {
+        @PathVariable("pluginConfId") final Long pluginConfigurationId,
+        @Valid @RequestBody final UIPluginConfiguration pluginConfiguration) throws EntityException {
         if ((pluginConfigurationId == null) || !pluginConfigurationId.equals(pluginConfiguration.getId())) {
             throw new EntityInvalidException(String.format("Invalid entity id %s", pluginConfigurationId));
         }
@@ -166,6 +167,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
 
     /**
      * Endpoint to create a new {@link UIPluginConfiguration}.
+     *
      * @param pluginConfiguration
      * @return {@link UIPluginConfiguration}
      * @throws EntityException
@@ -174,13 +176,14 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM plugin configuration", role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<EntityModel<UIPluginConfiguration>> createPluginConfiguration(
-            @Valid @RequestBody final UIPluginConfiguration pluginConfiguration) throws EntityException {
+        @Valid @RequestBody final UIPluginConfiguration pluginConfiguration) throws EntityException {
         final UIPluginConfiguration pluginConf = service.createPluginconfiguration(pluginConfiguration);
         return new ResponseEntity<>(toResource(pluginConf), HttpStatus.OK);
     }
 
     /**
      * Endpoint to delete a {@link UIPluginConfiguration}.
+     *
      * @param pluginConfigurationId {@link UIPluginConfiguration} identifier to delete
      * @return {@lunk PluginConfiguration}
      * @throws EntityException
@@ -189,7 +192,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
     @ResponseBody
     @ResourceAccess(description = "Endpoint to delete an IHM plugin configuration", role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<EntityModel<Void>> deletePluginConfiguration(
-            @PathVariable("pluginConfId") final Long pluginConfigurationId) throws EntityException {
+        @PathVariable("pluginConfId") final Long pluginConfigurationId) throws EntityException {
         final UIPluginConfiguration pluginConfToDelete = new UIPluginConfiguration();
         pluginConfToDelete.setId(pluginConfigurationId);
         service.deletePluginconfiguration(pluginConfToDelete);
@@ -199,18 +202,28 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
     @Override
     public EntityModel<UIPluginConfiguration> toResource(final UIPluginConfiguration element, final Object... extras) {
         final EntityModel<UIPluginConfiguration> resource = resourceService.toResource(element);
-        resourceService.addLink(resource, this.getClass(), "retrievePluginConfiguration", LinkRels.SELF,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "retrievePluginConfiguration",
+                                LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, element.getId()));
-        resourceService.addLink(resource, this.getClass(), "updatePluginConfiguration", LinkRels.UPDATE,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "updatePluginConfiguration",
+                                LinkRels.UPDATE,
                                 MethodParamFactory.build(Long.class, element.getId()),
                                 MethodParamFactory.build(UIPluginConfiguration.class));
-        resourceService.addLink(resource, this.getClass(), "deletePluginConfiguration", LinkRels.DELETE,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "deletePluginConfiguration",
+                                LinkRels.DELETE,
                                 MethodParamFactory.build(Long.class, element.getId()));
         return resource;
     }
 
     /**
      * Convert services to resources
+     *
      * @param element
      * @return {@link UIPluginConfiguration}
      */

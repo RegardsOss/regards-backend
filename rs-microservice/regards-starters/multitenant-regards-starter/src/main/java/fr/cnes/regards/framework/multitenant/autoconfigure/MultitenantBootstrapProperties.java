@@ -22,6 +22,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * Allows to configured a set of tenant to initialize at bootstrap during bean construction.
+ *
  * @author Marc Sordi
  */
 @ConfigurationProperties(prefix = "regards")

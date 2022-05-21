@@ -24,13 +24,13 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.dam.domain.entities.metadata.DataObjectMetadata;
 import fr.cnes.regards.modules.model.domain.Model;
-import java.util.HashSet;
-import java.util.Set;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.springframework.util.Assert;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
- *
  * Data object feature decorator<br/>
  * A DataObject is created by a DataSource when a data source (external database or AIPs by example) is ingested.
  *
@@ -71,6 +71,7 @@ public class DataObject extends AbstractEntity<DataObjectFeature> {
      * If internal, this means it is managed by storage (in this case, all files are ONLINE or NEARLINE).
      * By default, to provide ascendant compatibility, a DataObject is internal (event if it is not the case on already
      * created dataObjects)
+     *
      * @see fr.cnes.regards.modules.indexer.domain.DataFile#online
      */
     private boolean internal = true;
@@ -81,9 +82,10 @@ public class DataObject extends AbstractEntity<DataObjectFeature> {
 
     public DataObject(Model model, String tenant, String providerId, String label) {
         super(model,
-              new DataObjectFeature(
-                      OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP, EntityType.DATA, tenant, 1),
-                      providerId, label));
+              new DataObjectFeature(OaisUniformResourceName.pseudoRandomUrn(OAISIdentifier.AIP,
+                                                                            EntityType.DATA,
+                                                                            tenant,
+                                                                            1), providerId, label));
     }
 
     public DataObject(Model model, DataObjectFeature feature) {
@@ -150,8 +152,9 @@ public class DataObject extends AbstractEntity<DataObjectFeature> {
 
     /**
      * Wrap a {@link DataObjectFeature} into a {@link DataObject} decorator
-     * @param model  {@link Model}
-     * @param feature {@link DataObjectFeature}
+     *
+     * @param model    {@link Model}
+     * @param feature  {@link DataObjectFeature}
      * @param internal
      * @return {@link DataObject}
      */

@@ -19,9 +19,7 @@
 package fr.cnes.regards.modules.accessrights.instance.domain.passwordreset;
 
 /**
- *
  * @author Sébastien Binda
- *
  */
 public class PerformChangePasswordDto {
 

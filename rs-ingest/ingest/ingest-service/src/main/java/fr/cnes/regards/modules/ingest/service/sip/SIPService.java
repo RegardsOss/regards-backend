@@ -18,23 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.sip;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.NoSuchAlgorithmException;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.ingest.dao.ILastSIPRepository;
@@ -46,9 +30,24 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Service to handle access to {@link SIPEntity} entities.
+ *
  * @author Sébastien Binda
  */
 @Service
@@ -71,10 +70,17 @@ public class SIPService implements ISIPService {
 
     @Override
     public Page<SIPEntity> search(SearchSIPsParameters params, Pageable page) {
-        return sipRepository.loadAll(SIPEntitySpecifications
-                .search(params.getProviderIds(), null, params.getSessionOwner(), params.getSession(),
-                        params.getIpType(), params.getFrom(), params.getStates(), true, params.getTags(),
-                        params.getCategories(), page), page);
+        return sipRepository.loadAll(SIPEntitySpecifications.search(params.getProviderIds(),
+                                                                    null,
+                                                                    params.getSessionOwner(),
+                                                                    params.getSession(),
+                                                                    params.getIpType(),
+                                                                    params.getFrom(),
+                                                                    params.getStates(),
+                                                                    true,
+                                                                    params.getTags(),
+                                                                    params.getCategories(),
+                                                                    page), page);
     }
 
     @Override

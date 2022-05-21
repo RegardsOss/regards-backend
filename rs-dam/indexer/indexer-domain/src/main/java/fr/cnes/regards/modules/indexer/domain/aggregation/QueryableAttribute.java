@@ -61,8 +61,11 @@ public class QueryableAttribute {
      */
     private int termsLimit = 0;
 
-    public QueryableAttribute(String attributeName, Aggregation aggregation, boolean textAttribute, int termsLimit,
-            boolean booleanAttribute) {
+    public QueryableAttribute(String attributeName,
+                              Aggregation aggregation,
+                              boolean textAttribute,
+                              int termsLimit,
+                              boolean booleanAttribute) {
         super();
         this.attributeName = attributeName;
         this.aggregation = aggregation;
@@ -71,8 +74,12 @@ public class QueryableAttribute {
         this.termsLimit = termsLimit;
     }
 
-    public QueryableAttribute(String attributeName, Aggregation aggregation, boolean textAttribute, int termsLimit,
-                              boolean booleanAttribute, boolean geoBoundsAttribute) {
+    public QueryableAttribute(String attributeName,
+                              Aggregation aggregation,
+                              boolean textAttribute,
+                              int termsLimit,
+                              boolean booleanAttribute,
+                              boolean geoBoundsAttribute) {
         super();
         this.attributeName = attributeName;
         this.aggregation = aggregation;

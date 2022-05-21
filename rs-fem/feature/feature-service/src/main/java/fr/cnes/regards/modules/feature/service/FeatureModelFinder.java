@@ -18,14 +18,6 @@
  */
 package fr.cnes.regards.modules.feature.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
@@ -34,10 +26,16 @@ import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.service.validation.AbstractCacheableModelFinder;
 import fr.cnes.regards.modules.model.service.validation.IModelFinder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Marc SORDI
- *
  */
 @Service
 public class FeatureModelFinder extends AbstractCacheableModelFinder implements IModelFinder {
@@ -55,12 +53,15 @@ public class FeatureModelFinder extends AbstractCacheableModelFinder implements 
             ResponseEntity<List<EntityModel<Model>>> modelResponse = modelClient.getModels(null);
 
             // if the model doesn't exists we return null
-            if ((modelResponse == null) || !modelResponse.getBody().stream()
-                    .anyMatch(model -> model.getContent().getName().equals(modelName))) {
+            if ((modelResponse == null) || !modelResponse.getBody()
+                                                         .stream()
+                                                         .anyMatch(model -> model.getContent()
+                                                                                 .getName()
+                                                                                 .equals(modelName))) {
                 return null; // NOSONAR
             }
-            ResponseEntity<List<EntityModel<ModelAttrAssoc>>> response = modelAttrAssocClient
-                    .getModelAttrAssocs(modelName);
+            ResponseEntity<List<EntityModel<ModelAttrAssoc>>> response = modelAttrAssocClient.getModelAttrAssocs(
+                modelName);
             List<ModelAttrAssoc> attModelAssocs = new ArrayList<>();
             if (response != null) {
                 attModelAssocs = HateoasUtils.unwrapCollection(response.getBody());

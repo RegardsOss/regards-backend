@@ -56,8 +56,10 @@ public class FileDeletionJobProgressManager implements IDeletionProgressManager 
     public void deletionFailed(FileDeletionRequest fileDeletionRequest, String cause) {
         FileReference fileRef = fileDeletionRequest.getFileReference();
         LOGGER.error("[DELETION ERROR] - Deletion error for file {} from {} (checksum: {}). Cause : {}",
-                     fileRef.getMetaInfo().getFileName(), fileRef.getLocation(),
-                     fileRef.getMetaInfo().getChecksum(), cause);
+                     fileRef.getMetaInfo().getFileName(),
+                     fileRef.getLocation(),
+                     fileRef.getMetaInfo().getChecksum(),
+                     cause);
         job.advanceCompletion();
         fileDeletionRequestService.handleError(fileDeletionRequest, cause);
         handled.add(fileDeletionRequest);
@@ -67,7 +69,8 @@ public class FileDeletionJobProgressManager implements IDeletionProgressManager 
     public void deletionSucceed(FileDeletionRequest fileDeletionRequest) {
         FileReference fileRef = fileDeletionRequest.getFileReference();
         String successMessage = String.format("File %s successfully deleted from %s (checksum: %s)",
-                                              fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
+                                              fileRef.getMetaInfo().getFileName(),
+                                              fileRef.getLocation().toString(),
                                               fileRef.getMetaInfo().getChecksum());
         LOGGER.debug("[DELETION SUCCESS] - {}", successMessage);
         job.advanceCompletion();

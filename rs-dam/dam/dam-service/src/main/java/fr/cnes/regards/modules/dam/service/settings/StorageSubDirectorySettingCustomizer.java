@@ -7,11 +7,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class StorageSubDirectorySettingCustomizer implements IDynamicTenantSettingCustomizer {
-    
+
     @Override
     public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
-        return isProperValue(dynamicTenantSetting.getDefaultValue())
-                && (dynamicTenantSetting.getValue() == null || isProperValue(dynamicTenantSetting.getValue()));
+        return isProperValue(dynamicTenantSetting.getDefaultValue()) && (dynamicTenantSetting.getValue() == null
+            || isProperValue(dynamicTenantSetting.getValue()));
     }
 
     @Override

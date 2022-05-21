@@ -18,22 +18,20 @@
  */
 package fr.cnes.regards.modules.accessrights.client.cache;
 
-import java.lang.reflect.Method;
-
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.util.StringUtils;
 
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import java.lang.reflect.Method;
 
 /**
  * Cache manager for RolesHierarchy
  *
  * @author Sébastien Binda
- *
  */
 public class RolesHierarchyKeyGenerator implements IRolesHierarchyKeyGenerator, InitializingBean {
 
@@ -67,7 +65,7 @@ public class RolesHierarchyKeyGenerator implements IRolesHierarchyKeyGenerator, 
     @Override
     public Object generate(Object target, Method method, Object... params) {
         String key = "RolesHierarchyKeyGenerator_" + method.getName() + "_" + tenantResolver.getTenant() + "_"
-                + authResolver.getRole() + "_" + StringUtils.arrayToDelimitedString(params, "_");
+            + authResolver.getRole() + "_" + StringUtils.arrayToDelimitedString(params, "_");
         LOGGER.debug("Generated key {} for cache {} ", key, CACHE_NAME);
         return key;
     }

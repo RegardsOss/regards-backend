@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.storage;
 
 import fr.cnes.regards.modules.processing.domain.PExecution;
@@ -31,7 +31,8 @@ public interface IExecutionLocalWorkdirService {
 
     Mono<ExecutionLocalWorkdir> makeWorkdir(PExecution exec);
 
-    Mono<ExecutionLocalWorkdir> writeInputFilesToWorkdirInput(ExecutionLocalWorkdir workdir, Seq<PInputFile> inputFiles);
+    Mono<ExecutionLocalWorkdir> writeInputFilesToWorkdirInput(ExecutionLocalWorkdir workdir,
+                                                              Seq<PInputFile> inputFiles);
 
     Mono<ExecutionLocalWorkdir> cleanupWorkdir(ExecutionLocalWorkdir workdir);
 

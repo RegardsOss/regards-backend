@@ -18,19 +18,19 @@
  */
 package fr.cnes.regards.framework.multitenant.autoconfigure;
 
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.DefaultTenantResolver;
+import fr.cnes.regards.framework.multitenant.test.SingleRuntimeTenantResolver;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.DefaultTenantResolver;
-import fr.cnes.regards.framework.multitenant.test.SingleRuntimeTenantResolver;
-
 /**
  * Manage tenant resolver bean
+ *
  * @author msordi
  */
 @Configuration
@@ -52,6 +52,7 @@ public class MultitenantAutoConfiguration {
     /**
      * This implementation is intended to be used for development purpose.<br/>
      * In production, an on request dynamic resolver must be set to retrieve request tenant.
+     *
      * @return {@link IRuntimeTenantResolver}
      */
     @ConditionalOnMissingBean

@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 // Things appearing here are not meant to be part of domain, and from a "clean architecture"
 // dogmatic point of view should be elsewhere. It would require to create yet another
 // module for them, but it's just easier to have them here.

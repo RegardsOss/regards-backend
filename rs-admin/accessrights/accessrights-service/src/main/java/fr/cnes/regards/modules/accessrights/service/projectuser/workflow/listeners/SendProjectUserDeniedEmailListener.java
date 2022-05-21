@@ -45,12 +45,13 @@ public class SendProjectUserDeniedEmailListener implements ApplicationListener<O
 
     @Override
     public void onApplicationEvent(OnDenyEvent event) {
-        AccessRightsEmailWrapper wrapper = new AccessRightsEmailWrapper()
-                .setProjectUser(event.getProjectUser())
-                .setSubject("[REGARDS] User access denied")
-                .setTo(Collections.singleton(event.getProjectUser().getEmail()))
-                .setTemplate(AccessRightsTemplateConfiguration.USER_DENIED_TEMPLATE_NAME)
-                .setDefaultMessage("Your access request was refused by admin.");
+        AccessRightsEmailWrapper wrapper = new AccessRightsEmailWrapper().setProjectUser(event.getProjectUser())
+                                                                         .setSubject("[REGARDS] User access denied")
+                                                                         .setTo(Collections.singleton(event.getProjectUser()
+                                                                                                           .getEmail()))
+                                                                         .setTemplate(AccessRightsTemplateConfiguration.USER_DENIED_TEMPLATE_NAME)
+                                                                         .setDefaultMessage(
+                                                                             "Your access request was refused by admin.");
 
         accessRightsEmailService.sendEmail(wrapper);
     }

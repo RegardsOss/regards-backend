@@ -102,7 +102,7 @@ class ExternalTokenVerificationFilterTest {
 
     @Test
     void invalid_regards_token_is_verified_against_authentication_service_and_cached_as_invalid_if_verification_fails()
-            throws JwtException {
+        throws JwtException {
         // -- GIVEN --
         String token = UUID.randomUUID().toString();
         String authenticationToken = UUID.randomUUID().toString();
@@ -121,7 +121,8 @@ class ExternalTokenVerificationFilterTest {
         exchange = MockServerWebExchange.from(request);
 
         RuntimeException err = new RuntimeException("Expected test exception");
-        when(externalAuthenticationVerifier.verifyAndAuthenticate(anyString(), anyString())).thenReturn(Mono.error(err));
+        when(externalAuthenticationVerifier.verifyAndAuthenticate(anyString(),
+                                                                  anyString())).thenReturn(Mono.error(err));
 
         // -- WHEN --
         StepVerifier.create(tokenFilter.filter(exchange, filterChain)).verifyComplete();
@@ -133,7 +134,7 @@ class ExternalTokenVerificationFilterTest {
 
     @Test
     void invalid_regards_token_is_verified_against_authentication_service_and_cached_as_valid_if_verification_succeeds()
-            throws JwtException {
+        throws JwtException {
         // -- GIVEN --
         String token = UUID.randomUUID().toString();
 
@@ -153,9 +154,14 @@ class ExternalTokenVerificationFilterTest {
         when(filterChain.filter(captor.capture())).thenReturn(Mono.empty());
 
         String newToken = UUID.randomUUID().toString();
-        when(externalAuthenticationVerifier.verifyAndAuthenticate(anyString(), anyString())).thenReturn(Mono.just(
-                new Authentication(TENANT, "example@test.com", null, "rs-authentication", newToken,
-                                                 OffsetDateTime.now())));
+        when(externalAuthenticationVerifier.verifyAndAuthenticate(anyString(),
+                                                                  anyString())).thenReturn(Mono.just(new Authentication(
+            TENANT,
+            "example@test.com",
+            null,
+            "rs-authentication",
+            newToken,
+            OffsetDateTime.now())));
 
         // -- WHEN --
         StepVerifier.create(tokenFilter.filter(exchange, filterChain)).verifyComplete();
@@ -168,7 +174,8 @@ class ExternalTokenVerificationFilterTest {
         assertTrue(modifiedRequest.getHeaders().containsKey(HttpConstants.AUTHORIZATION));
         assertEquals(BEARER + " " + newToken, modifiedRequest.getHeaders().getFirst(HttpConstants.AUTHORIZATION));
 
-        verify(externalAuthenticationVerifier).verifyAndAuthenticate(authentication.getTenant(), authentication.getJwt());
+        verify(externalAuthenticationVerifier).verifyAndAuthenticate(authentication.getTenant(),
+                                                                     authentication.getJwt());
 
     }
 
@@ -224,20 +231,32 @@ class ExternalTokenVerificationFilterTest {
         verify(externalAuthenticationVerifier, times(0)).verifyAndAuthenticate(anyString(), anyString());
     }
 
-   @Test
+    @Test
     void verify_fail_when_client_fails() {
         HttpClientErrorException:
         {
-            WebClientResponseException expected = new WebClientResponseException(HttpStatus.BAD_REQUEST.value(), "Bad request", null, null, null);
-            when(externalAuthenticationVerifier.verifyAndAuthenticate(anyString(), anyString())).thenReturn(Mono.error(expected));
-            StepVerifier.create(externalAuthenticationVerifier.verifyAndAuthenticate("plop", "plop")).verifyError(WebClientResponseException.class);
+            WebClientResponseException expected = new WebClientResponseException(HttpStatus.BAD_REQUEST.value(),
+                                                                                 "Bad request",
+                                                                                 null,
+                                                                                 null,
+                                                                                 null);
+            when(externalAuthenticationVerifier.verifyAndAuthenticate(anyString(), anyString())).thenReturn(Mono.error(
+                expected));
+            StepVerifier.create(externalAuthenticationVerifier.verifyAndAuthenticate("plop", "plop"))
+                        .verifyError(WebClientResponseException.class);
         }
 
         HttpServerErrorException:
         {
-            WebClientResponseException expected = new WebClientResponseException(HttpStatus.SERVICE_UNAVAILABLE.value(), "Service not available", null, null, null);
-            when(externalAuthenticationVerifier.verifyAndAuthenticate(anyString(), anyString())).thenReturn(Mono.error(expected));
-            StepVerifier.create(externalAuthenticationVerifier.verifyAndAuthenticate("plop", "plop")).verifyError(WebClientResponseException.class);
+            WebClientResponseException expected = new WebClientResponseException(HttpStatus.SERVICE_UNAVAILABLE.value(),
+                                                                                 "Service not available",
+                                                                                 null,
+                                                                                 null,
+                                                                                 null);
+            when(externalAuthenticationVerifier.verifyAndAuthenticate(anyString(), anyString())).thenReturn(Mono.error(
+                expected));
+            StepVerifier.create(externalAuthenticationVerifier.verifyAndAuthenticate("plop", "plop"))
+                        .verifyError(WebClientResponseException.class);
         }
     }
 }

@@ -22,11 +22,12 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 
 /**
  * Test plugin class impl
+ *
  * @author Sébastien Binda
  */
 @Plugin(description = "Plugin test", id = UniqueConfActivePluginImpl.PLUGIN_ID, version = "0.0.1",
-        author = "REGARDS Dream Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+    author = "REGARDS Dream Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
+    url = "https://github.com/RegardsOss")
 public class UniqueConfActivePluginImpl implements IUniqueConfActivePlugin {
 
     public static final String PLUGIN_ID = "UniqueConfActivePluginImpl";

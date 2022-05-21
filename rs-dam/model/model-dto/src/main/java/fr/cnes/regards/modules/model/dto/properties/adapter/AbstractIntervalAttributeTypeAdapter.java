@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.model.dto.properties.adapter;
 
-import java.io.IOException;
-
 import com.google.common.collect.Range;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-
 import fr.cnes.regards.modules.model.dto.properties.AbstractProperty;
+
+import java.io.IOException;
 
 /**
  * Adapter abstraction to serialize range attribute following a simplified format.<br/>
@@ -46,12 +45,13 @@ import fr.cnes.regards.modules.model.dto.properties.AbstractProperty;
  *     "upperBound": &lt;upper bound value>
  *   }
  * }</pre>
+ *
  * @param <T> range value type, must be comparable (at least with a super type, like LocalDateTime which is Comparable&lt;ChronoLocalDateTime>)
  * @param <A> real attribute range type (not just AbstractAttribute&lt;Range&lt;T>>
  * @author oroussel
  */
 public abstract class AbstractIntervalAttributeTypeAdapter<T extends Comparable<? super T>, A extends AbstractProperty<Range<T>>>
-        extends TypeAdapter<A> {
+    extends TypeAdapter<A> {
 
     @Override
     public void write(JsonWriter out, A value) throws IOException {

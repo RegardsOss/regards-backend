@@ -51,15 +51,17 @@ import java.util.Optional;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=manager_lock_jobs_it",
-        "regards.session.manager.clean.session.limit.store=30", "regards.session.management.snapshot.process"
-        + ".scheduler.bulk.initial.delay=10000000" })
+    "regards.session.manager.clean.session.limit.store=30",
+    "regards.session.management.snapshot.process" + ".scheduler.bulk.initial.delay=10000000" })
 @ActiveProfiles({ "testAMQP" })
 public class ManagerLockSchedulersIT extends AbstractManagerServiceUtilsIT {
 
     /**
      * Reference date for tests
      */
-    private static final OffsetDateTime UPDATE_DATE = OffsetDateTime.now(ZoneOffset.UTC).minusDays(30).truncatedTo(ChronoUnit.MICROS);
+    private static final OffsetDateTime UPDATE_DATE = OffsetDateTime.now(ZoneOffset.UTC)
+                                                                    .minusDays(30)
+                                                                    .truncatedTo(ChronoUnit.MICROS);
 
     @Autowired
     private ManagerCleanScheduler cleanScheduler;
@@ -88,10 +90,12 @@ public class ManagerLockSchedulersIT extends AbstractManagerServiceUtilsIT {
         // Check results, Snapshot jobs should have been created, Clean jobs should be blocked
         List<JobInfo> createdJobList = (List<JobInfo>) this.jobInfoRepo.findAll();
         Optional<JobInfo> managerCleanJob = createdJobList.stream()
-                .max(Comparator.comparing(job -> job.getStatus().getQueuedDate()));
+                                                          .max(Comparator.comparing(job -> job.getStatus()
+                                                                                              .getQueuedDate()));
         Assert.assertTrue("CleanJobs should have been queued in last position",
-                          managerCleanJob.isPresent() && managerCleanJob.get().getClassName()
-                                  .equals(ManagerCleanJob.class.getName()));
+                          managerCleanJob.isPresent() && managerCleanJob.get()
+                                                                        .getClassName()
+                                                                        .equals(ManagerCleanJob.class.getName()));
     }
 
     @Test
@@ -113,8 +117,11 @@ public class ManagerLockSchedulersIT extends AbstractManagerServiceUtilsIT {
         // Check results, snapshot jobs should not be created because there was a clean process ongoing
         List<JobInfo> createdJobList = (List<JobInfo>) this.jobInfoRepo.findAll();
         long nbSnapshotJobs = createdJobList.stream()
-                .filter(job -> job.getClassName().equals(ManagerSnapshotJob.class.getName())).count();
-        Assert.assertEquals("SnapshotJobs should not have been created because there was a clean process ongoing", 0L,
+                                            .filter(job -> job.getClassName()
+                                                              .equals(ManagerSnapshotJob.class.getName()))
+                                            .count();
+        Assert.assertEquals("SnapshotJobs should not have been created because there was a clean process ongoing",
+                            0L,
                             nbSnapshotJobs);
     }
 
@@ -141,7 +148,10 @@ public class ManagerLockSchedulersIT extends AbstractManagerServiceUtilsIT {
         for (int i = 0; i < nbSessionSteps; i++) {
             String source = "SOURCE_" + i;
             // ACQUISITION - scan event SOURCE 0-nbSources / SESSION 1
-            SessionStep sessionStep = new SessionStep("scan", source, "SESSION_1", StepTypeEnum.ACQUISITION,
+            SessionStep sessionStep = new SessionStep("scan",
+                                                      source,
+                                                      "SESSION_1",
+                                                      StepTypeEnum.ACQUISITION,
                                                       new StepState(0, 0, 1));
             sessionStep.setLastUpdateDate(UPDATE_DATE.minusDays(limitStoreSessionSteps + 1));
             sessionStep.setRegistrationDate(sessionStep.getLastUpdateDate());

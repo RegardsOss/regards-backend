@@ -38,9 +38,12 @@ public interface IFeatureEntityClient {
 
     String PATH_DATA_FEATURE_OBJECT = "/admin/features";
 
-    @GetMapping(path = PATH_DATA_FEATURE_OBJECT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = PATH_DATA_FEATURE_OBJECT, consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> findAll(@RequestParam("model") String model,
-            @RequestParam("from") OffsetDateTime lastUpdateDate, @RequestParam("page") int page,
-            @RequestParam("size") int size);
+                                                                      @RequestParam("from")
+                                                                      OffsetDateTime lastUpdateDate,
+                                                                      @RequestParam("page") int page,
+                                                                      @RequestParam("size") int size);
 }

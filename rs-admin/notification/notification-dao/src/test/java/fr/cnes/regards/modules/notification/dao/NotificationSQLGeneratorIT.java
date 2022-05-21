@@ -21,10 +21,9 @@ package fr.cnes.regards.modules.notification.dao;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorIT;
 
 /**
- *
- * @See {@link AbstractScriptGeneratorIT}
  * @author Marc Sordi
- *
+ * @See {@link AbstractScriptGeneratorIT}
  */
 public class NotificationSQLGeneratorIT extends AbstractScriptGeneratorIT {
+
 }

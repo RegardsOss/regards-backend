@@ -41,13 +41,15 @@ public class GatewayDiscoveryConfiguration {
         return WebClient.builder();
     }
 
-    @Bean public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+    @Bean
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http.csrf().disable().headers().disable().authorizeExchange().anyExchange().permitAll().and().build();
     }
 
     @Bean
-    public ExternalAuthenticationVerifier authClient(WebClient.Builder webClientBuilder, JWTService jwtService,
-            @Value("${spring.application.name}") String appName) {
+    public ExternalAuthenticationVerifier authClient(WebClient.Builder webClientBuilder,
+                                                     JWTService jwtService,
+                                                     @Value("${spring.application.name}") String appName) {
         return new ExternalAuthenticationVerifier(webClientBuilder, jwtService, appName);
     }
 }

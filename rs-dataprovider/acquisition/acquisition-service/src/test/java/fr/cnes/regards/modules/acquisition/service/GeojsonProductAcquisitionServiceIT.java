@@ -18,33 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
-import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
-import fr.cnes.regards.modules.acquisition.domain.chain.ScanDirectoryInfo;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -57,14 +31,12 @@ import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
+import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
-import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider;
+import fr.cnes.regards.modules.acquisition.domain.chain.*;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
@@ -72,12 +44,26 @@ import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.GeoJsonFeatureCollectionParserPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.GeoJsonSIPGeneration;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 /**
  * Test {@link AcquisitionProcessingService} for {@link Product} workflow
  *
  * @author Marc Sordi
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_geojson_product" })
 public class GeojsonProductAcquisitionServiceIT extends AbstractMultitenantServiceIT {
@@ -145,10 +131,11 @@ public class GeojsonProductAcquisitionServiceIT extends AbstractMultitenantServi
         fileInfo.setDataType(DataType.RAWDATA);
         fileInfo.setScanDirInfo(Sets.newHashSet(new ScanDirectoryInfo(dataPath, null)));
 
-        Set<IPluginParam> parameters = IPluginParam
-                .set(IPluginParam.build(GeoJsonFeatureCollectionParserPlugin.FIELD_FEATURE_ID, "nom"));
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(GeoJsonFeatureCollectionParserPlugin.FIELD_FEATURE_ID,
+                                                                           "nom"));
 
-        PluginConfiguration scanPlugin = PluginConfiguration.build(GeoJsonFeatureCollectionParserPlugin.class, null,
+        PluginConfiguration scanPlugin = PluginConfiguration.build(GeoJsonFeatureCollectionParserPlugin.class,
+                                                                   null,
                                                                    parameters);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin RAWDATA" + Math.random());
@@ -157,7 +144,8 @@ public class GeojsonProductAcquisitionServiceIT extends AbstractMultitenantServi
         processingChain.addFileInfo(fileInfo);
 
         // Validation
-        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class, null,
+        PluginConfiguration validationPlugin = PluginConfiguration.build(DefaultFileValidation.class,
+                                                                         null,
                                                                          new HashSet<IPluginParam>());
         ;
         validationPlugin.setIsActive(true);
@@ -165,7 +153,8 @@ public class GeojsonProductAcquisitionServiceIT extends AbstractMultitenantServi
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
-        PluginConfiguration productPlugin = PluginConfiguration.build(DefaultProductPlugin.class, null,
+        PluginConfiguration productPlugin = PluginConfiguration.build(DefaultProductPlugin.class,
+                                                                      null,
                                                                       new HashSet<IPluginParam>());
 
         productPlugin.setIsActive(true);
@@ -173,7 +162,8 @@ public class GeojsonProductAcquisitionServiceIT extends AbstractMultitenantServi
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginConfiguration.build(GeoJsonSIPGeneration.class, null,
+        PluginConfiguration sipGenPlugin = PluginConfiguration.build(GeoJsonSIPGeneration.class,
+                                                                     null,
                                                                      new HashSet<IPluginParam>());
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin" + Math.random());
@@ -213,9 +203,10 @@ public class GeojsonProductAcquisitionServiceIT extends AbstractMultitenantServi
 
         // Check registered files
         for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
-            Page<AcquisitionFile> inProgressFiles = acqFileRepository
-                    .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS, fileInfo,
-                                                        PageRequest.of(0, 1));
+            Page<AcquisitionFile> inProgressFiles = acqFileRepository.findByStateAndFileInfoOrderByIdAsc(
+                AcquisitionFileState.IN_PROGRESS,
+                fileInfo,
+                PageRequest.of(0, 1));
             Assert.assertEquals(1, inProgressFiles.getTotalElements());
         }
 
@@ -223,17 +214,22 @@ public class GeojsonProductAcquisitionServiceIT extends AbstractMultitenantServi
 
         // Check registered files
         for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
-            Page<AcquisitionFile> inProgressFiles = acqFileRepository
-                    .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS, fileInfo,
-                                                        PageRequest.of(0, 1));
+            Page<AcquisitionFile> inProgressFiles = acqFileRepository.findByStateAndFileInfoOrderByIdAsc(
+                AcquisitionFileState.IN_PROGRESS,
+                fileInfo,
+                PageRequest.of(0, 1));
             Assert.assertTrue(inProgressFiles.getTotalElements() == 0);
 
-            Page<AcquisitionFile> validFiles = acqFileRepository
-                    .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.VALID, fileInfo, PageRequest.of(0, 1));
+            Page<AcquisitionFile> validFiles = acqFileRepository.findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.VALID,
+                                                                                                    fileInfo,
+                                                                                                    PageRequest.of(0,
+                                                                                                                   1));
             Assert.assertTrue(validFiles.getTotalElements() == 0);
 
-            Page<AcquisitionFile> acquiredFiles = acqFileRepository
-                    .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.ACQUIRED, fileInfo, PageRequest.of(0, 1));
+            Page<AcquisitionFile> acquiredFiles = acqFileRepository.findByStateAndFileInfoOrderByIdAsc(
+                AcquisitionFileState.ACQUIRED,
+                fileInfo,
+                PageRequest.of(0, 1));
             Assert.assertTrue(acquiredFiles.getTotalElements() == 1);
         }
 

@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.order;
 
 import fr.cnes.regards.framework.urn.DataType;
@@ -24,20 +24,26 @@ import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.With;
 
-
 /**
  * This class defines how to interpret process info map for rs-order usage of processing.
  *
  * @author gandrieu
  */
-@With @Value @AllArgsConstructor
+@With
+@Value
+@AllArgsConstructor
 public class OrderProcessInfo {
 
     Scope scope;
+
     Cardinality cardinality;
+
     List<DataType> requiredDatatypes;
+
     SizeLimit sizeLimit;
+
     IResultSizeForecast sizeForecast;
+
     Boolean forbidSplitInSuborders;
 
 }

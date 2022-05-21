@@ -18,26 +18,27 @@
  */
 package fr.cnes.regards.framework.security.endpoint.voter;
 
-import java.util.Collection;
-import java.util.List;
-
-import org.springframework.security.access.ConfigAttribute;
-import org.springframework.security.core.Authentication;
-
 import fr.cnes.regards.framework.security.utils.endpoint.IInstanceAdminAccessVoter;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import org.springframework.security.access.ConfigAttribute;
+import org.springframework.security.core.Authentication;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * This class authorizes access to all endpoints for instance administrator.
+ *
  * @author Sébastien Binda
  * @author Marc Sordi
  */
 public class InstanceAdminAccessVoter implements IInstanceAdminAccessVoter {
 
     @Override
-    public int vote(final Authentication pAuthentication, final Object pObject,
-            final Collection<ConfigAttribute> pAttributes) {
+    public int vote(final Authentication pAuthentication,
+                    final Object pObject,
+                    final Collection<ConfigAttribute> pAttributes) {
         // Default behavior : deny access
         int access = ACCESS_DENIED;
 
@@ -45,8 +46,8 @@ public class InstanceAdminAccessVoter implements IInstanceAdminAccessVoter {
         final JWTAuthentication authentication = (JWTAuthentication) pAuthentication;
 
         // If authenticated user is the instance admin user allow all.
-        @SuppressWarnings("unchecked") final List<RoleAuthority> roles = (List<RoleAuthority>) authentication
-                .getAuthorities();
+        @SuppressWarnings("unchecked")
+        final List<RoleAuthority> roles = (List<RoleAuthority>) authentication.getAuthorities();
         if (RoleAuthority.isInstanceAdminRole(roles.get(0).getAuthority())) {
             access = ACCESS_GRANTED;
         }

@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.modules.feature.dao;
 
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
+import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
+import fr.cnes.regards.modules.feature.domain.request.ILightFeatureCreationRequest;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,10 +30,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import fr.cnes.regards.modules.feature.domain.FeatureEntity;
-import fr.cnes.regards.modules.feature.domain.request.FeatureCreationRequest;
-import fr.cnes.regards.modules.feature.domain.request.ILightFeatureCreationRequest;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface IFeatureCreationRequestRepository extends IAbstractFeatureRequestRepository<FeatureCreationRequest> {
@@ -54,14 +53,15 @@ public interface IFeatureCreationRequestRepository extends IAbstractFeatureReque
      * @return a list of {@link ILightFeatureCreationRequest}
      */
     @Query("select request.requestOwner as requestOwner, request.state as state, request.priority as priority,"
-            + " request.step as step, request.registrationDate as registrationDate, request.requestDate as requestDate,"
-            + " request.requestId as requestId, request.providerId as providerId, request.metadata as metadata,"
-            + " request.id as id, request.errors as errors, request.groupId as groupId"
-            + " from FeatureCreationRequest request where request.providerId not in ("
-            + " select scheduledRequest.providerId from FeatureCreationRequest scheduledRequest"
-            + " where scheduledRequest.step = 'LOCAL_SCHEDULED') and request.step = :step and request.requestDate <= :now")
+        + " request.step as step, request.registrationDate as registrationDate, request.requestDate as requestDate,"
+        + " request.requestId as requestId, request.providerId as providerId, request.metadata as metadata,"
+        + " request.id as id, request.errors as errors, request.groupId as groupId"
+        + " from FeatureCreationRequest request where request.providerId not in ("
+        + " select scheduledRequest.providerId from FeatureCreationRequest scheduledRequest"
+        + " where scheduledRequest.step = 'LOCAL_SCHEDULED') and request.step = :step and request.requestDate <= :now")
     Page<ILightFeatureCreationRequest> findRequestsToSchedule(@Param("step") FeatureRequestStep step,
-            @Param("now") OffsetDateTime now, Pageable page);
+                                                              @Param("now") OffsetDateTime now,
+                                                              Pageable page);
 
     List<FeatureCreationRequest> findAllByIdIn(Iterable<Long> ids);
 
@@ -69,8 +69,9 @@ public interface IFeatureCreationRequestRepository extends IAbstractFeatureReque
     List<FeatureCreationRequest> findAllById(Iterable<Long> longs);
 
     @Modifying
-    @Query(value = "UPDATE t_feature SET feature = jsonb_set(feature, CAST('{last}' AS text[]), CAST(CAST(:last AS text) AS jsonb)) WHERE urn IN :urns",
-            nativeQuery = true)
+    @Query(
+        value = "UPDATE t_feature SET feature = jsonb_set(feature, CAST('{last}' AS text[]), CAST(CAST(:last AS text) AS jsonb)) WHERE urn IN :urns",
+        nativeQuery = true)
     void updateLastByUrnIn(@Param("last") boolean last, @Param("urns") Set<String> urns);
 
     Long deleteByFeatureEntityIn(Collection<FeatureEntity> features);

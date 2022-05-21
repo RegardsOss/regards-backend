@@ -18,8 +18,14 @@
  */
 package fr.cnes.regards.framework.microservice.autoconfigure;
 
-import javax.servlet.Filter;
-
+import fr.cnes.regards.framework.microservice.configurer.MaintenanceWebSecurityConfiguration;
+import fr.cnes.regards.framework.microservice.maintenance.MaintenanceHealthIndicator;
+import fr.cnes.regards.framework.microservice.manager.DefaultApplicationManager;
+import fr.cnes.regards.framework.microservice.manager.IApplicationManager;
+import fr.cnes.regards.framework.microservice.web.ControllerHandlingConfiguration;
+import fr.cnes.regards.framework.microservice.web.MicroserviceWebConfiguration;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
 import org.springframework.boot.ExitCodeExceptionMapper;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -32,21 +38,15 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 
-import fr.cnes.regards.framework.microservice.configurer.MaintenanceWebSecurityConfiguration;
-import fr.cnes.regards.framework.microservice.maintenance.MaintenanceHealthIndicator;
-import fr.cnes.regards.framework.microservice.manager.DefaultApplicationManager;
-import fr.cnes.regards.framework.microservice.manager.IApplicationManager;
-import fr.cnes.regards.framework.microservice.web.ControllerHandlingConfiguration;
-import fr.cnes.regards.framework.microservice.web.MicroserviceWebConfiguration;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
+import javax.servlet.Filter;
 
 /**
  * FIXME microservice starter should not depends on security starter to manage maintenance mode!
- *
+ * <p>
  * Class MicroserviceAutoConfigure
- *
+ * <p>
  * Auto configuration for microservices web mvc
+ *
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet
  * @author Christophe Mertz
@@ -75,14 +75,14 @@ public class MicroserviceAutoConfiguration {
 
     @Bean
     @ConditionalOnProperty(prefix = "regards.microservices", name = "maintenance.enabled", havingValue = "true",
-            matchIfMissing = true)
+        matchIfMissing = true)
     public MaintenanceHealthIndicator maintenanceHealthIndicator(IRuntimeTenantResolver runtimeTenantResolver) {
         return new MaintenanceHealthIndicator(runtimeTenantResolver);
     }
 
     @Bean
     @ConditionalOnProperty(prefix = "regards.microservices", name = "maintenance.enabled", havingValue = "true",
-            matchIfMissing = true)
+        matchIfMissing = true)
     public ICustomWebSecurityConfiguration maintenanceWebSecurity(IRuntimeTenantResolver runtimeTenantResolver) {
         return new MaintenanceWebSecurityConfiguration(runtimeTenantResolver);
     }

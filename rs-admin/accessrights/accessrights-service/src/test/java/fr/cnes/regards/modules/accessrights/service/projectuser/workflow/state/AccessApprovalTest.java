@@ -33,7 +33,7 @@ public class AccessApprovalTest extends UserAccessUpdateTest {
     public void fail_if_not_waiting_access_or_unauthorized() throws Exception {
         ProjectUser givenUser = UserBuilder.aUser().authorized().build();
         Assertions.assertThatExceptionOfType(EntityTransitionForbiddenException.class)
-            .isThrownBy(() -> userWorkflowManager.grantAccess(givenUser));
+                  .isThrownBy(() -> userWorkflowManager.grantAccess(givenUser));
     }
 
     @Test

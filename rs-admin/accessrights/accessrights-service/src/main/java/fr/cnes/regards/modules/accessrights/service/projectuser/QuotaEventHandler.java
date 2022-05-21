@@ -13,11 +13,14 @@ import org.springframework.stereotype.Component;
 public class QuotaEventHandler implements ApplicationListener<ApplicationReadyEvent> {
 
     private final ISubscriber subscriber;
+
     private final IRuntimeTenantResolver runtimeTenantResolver;
+
     private final IProjectUserService projectUserService;
 
-    public QuotaEventHandler(ISubscriber subscriber, IRuntimeTenantResolver runtimeTenantResolver, IProjectUserService projectUserService
-    ) {
+    public QuotaEventHandler(ISubscriber subscriber,
+                             IRuntimeTenantResolver runtimeTenantResolver,
+                             IProjectUserService projectUserService) {
         this.subscriber = subscriber;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.projectUserService = projectUserService;

@@ -12,8 +12,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Configuration
 @EnableAutoConfiguration
 @PropertySource(
-        value = { "classpath:test-multitenant.properties", "classpath:test-multitenant_${user.name}.properties" },
-        ignoreResourceNotFound = true)
+    value = { "classpath:test-multitenant.properties", "classpath:test-multitenant_${user.name}.properties" },
+    ignoreResourceNotFound = true)
 @EnableAsync
 @EnableScheduling
 public class JobMultitenantConfiguration {

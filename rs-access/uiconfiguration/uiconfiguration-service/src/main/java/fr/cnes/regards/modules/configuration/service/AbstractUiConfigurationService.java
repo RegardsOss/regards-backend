@@ -18,27 +18,25 @@
  */
 package fr.cnes.regards.modules.configuration.service;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.stream.Collectors;
-
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.configuration.domain.UILayout;
+import fr.cnes.regards.modules.configuration.service.exception.MissingResourceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.core.io.Resource;
 
-import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.configuration.domain.UILayout;
-import fr.cnes.regards.modules.configuration.service.exception.MissingResourceException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.stream.Collectors;
 
 /**
- *
  * Class AbstractUiConfigurationService
- *
+ * <p>
  * Abstract class for all rs-access microservice services. Allow to define a specific init method at start-up for
  * multintenant and instance microservices.
  *

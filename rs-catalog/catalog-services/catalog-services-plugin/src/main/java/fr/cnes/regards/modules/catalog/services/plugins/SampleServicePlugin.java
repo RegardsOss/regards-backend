@@ -18,20 +18,6 @@
  */
 package fr.cnes.regards.modules.catalog.services.plugins;
 
-import java.io.IOException;
-import java.util.Optional;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
@@ -44,6 +30,18 @@ import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFact
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
 import fr.cnes.regards.modules.catalog.services.helper.ServiceHelper;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Optional;
 
 /**
  * SampleServicePlugin
@@ -51,8 +49,8 @@ import fr.cnes.regards.modules.dam.domain.entities.DataObject;
  * @author Christophe Mertz
  */
 @Plugin(description = "Sample plugin test", id = SampleServicePlugin.PLUGIN_ID, version = "0.0.1",
-        author = "REGARDS Dream Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
+    author = "REGARDS Dream Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
+    url = "https://github.com/RegardsOss")
 @CatalogServicePlugin(applicationModes = { ServiceScope.ONE, ServiceScope.MANY }, entityTypes = { EntityType.DATA })
 public class SampleServicePlugin extends AbstractCatalogServicePlugin implements ISampleServicePlugin {
 
@@ -92,7 +90,7 @@ public class SampleServicePlugin extends AbstractCatalogServicePlugin implements
      * A {@link String} parameter
      */
     @PluginParameter(description = "Response type", name = RESPONSE_TYPE_PARAMETER, defaultValue = RESPONSE_TYPE_JSON,
-            optional = false, label = "Response type")
+        optional = false, label = "Response type")
     private String responseType;
 
     @Autowired
@@ -108,7 +106,7 @@ public class SampleServicePlugin extends AbstractCatalogServicePlugin implements
 
     @Override
     public ResponseEntity<StreamingResponseBody> apply(ServicePluginParameters pParameters,
-            HttpServletResponse response) {
+                                                       HttpServletResponse response) {
         Page<DataObject> results;
         try {
             results = helper.getDataObjects(pParameters.getSearchRequest(), 0, 500);
@@ -116,8 +114,8 @@ public class SampleServicePlugin extends AbstractCatalogServicePlugin implements
             return apply("Error during data search !" + e.getMessage(), response);
         }
         if ((results != null) && results.hasContent() && !results.getContent().isEmpty()) {
-            if ((results.getContent().size() == 1) && (results.getContent().get(0).getFeature() != null)
-                    && (results.getContent().get(0).getFeature().getId() != null)) {
+            if ((results.getContent().size() == 1) && (results.getContent().get(0).getFeature() != null) && (
+                results.getContent().get(0).getFeature().getId() != null)) {
                 return apply(results.getContent().get(0).getFeature().getId().toString(), response);
             } else {
                 return apply(String.format("Number of entities %d", results.getContent().size()), response);
@@ -131,7 +129,7 @@ public class SampleServicePlugin extends AbstractCatalogServicePlugin implements
      * Sample method to return a result for the current service.
      *
      * @param pResultValue String to return in JSON or XML format
-     * @param response HttpResponse
+     * @param response     HttpResponse
      * @return {@link ResponseEntity}
      */
     private ResponseEntity<StreamingResponseBody> apply(String pResultValue, HttpServletResponse response) {
@@ -140,23 +138,33 @@ public class SampleServicePlugin extends AbstractCatalogServicePlugin implements
         switch (responseType) {
             case RESPONSE_TYPE_JSON:
                 LOGGER.info("[Sample plugin] Applying for JSON format response");
-                streamResponse = CatalogPluginResponseFactory
-                        .createSuccessResponse(response, CatalogPluginResponseType.JSON, resp);
+                streamResponse = CatalogPluginResponseFactory.createSuccessResponse(response,
+                                                                                    CatalogPluginResponseType.JSON,
+                                                                                    resp);
                 break;
             case RESPONSE_TYPE_XML:
                 LOGGER.info("[Sample plugin] Applying for XML format response");
-                streamResponse = CatalogPluginResponseFactory
-                        .createSuccessResponse(response, CatalogPluginResponseType.XML, resp);
+                streamResponse = CatalogPluginResponseFactory.createSuccessResponse(response,
+                                                                                    CatalogPluginResponseType.XML,
+                                                                                    resp);
                 break;
             case RESPONSE_TYPE_IMG:
                 LOGGER.info("[Sample plugin] Applying for IMG format response");
-                InputStreamResource resource = new InputStreamResource(
-                        this.getClass().getClassLoader().getResourceAsStream("LogoCnes.png"));
+                InputStreamResource resource = new InputStreamResource(this.getClass()
+                                                                           .getClassLoader()
+                                                                           .getResourceAsStream("LogoCnes.png"));
                 try {
-                    streamResponse = CatalogPluginResponseFactory
-                            .createSuccessResponseFromInputStream(response, CatalogPluginResponseType.FILE_IMG_PNG,
-                                                                  resource.getInputStream(), "LogoCnes.png",
-                                                                  Optional.of(Long.valueOf(this.getClass().getClassLoader().getResource("LogoCnes.png").getFile().length())));
+                    streamResponse = CatalogPluginResponseFactory.createSuccessResponseFromInputStream(response,
+                                                                                                       CatalogPluginResponseType.FILE_IMG_PNG,
+                                                                                                       resource.getInputStream(),
+                                                                                                       "LogoCnes.png",
+                                                                                                       Optional.of(Long.valueOf(
+                                                                                                           this.getClass()
+                                                                                                               .getClassLoader()
+                                                                                                               .getResource(
+                                                                                                                   "LogoCnes.png")
+                                                                                                               .getFile()
+                                                                                                               .length())));
                 } catch (IOException e) {
                     LOGGER.error("Error sending file", e);
                     streamResponse = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -164,13 +172,21 @@ public class SampleServicePlugin extends AbstractCatalogServicePlugin implements
                 break;
             case RESPONSE_TYPE_OTHER:
                 LOGGER.info("[Sample plugin] Applying for Other format response");
-                InputStreamResource resourceDownload = new InputStreamResource(
-                        this.getClass().getClassLoader().getResourceAsStream("result.other"));
+                InputStreamResource resourceDownload = new InputStreamResource(this.getClass()
+                                                                                   .getClassLoader()
+                                                                                   .getResourceAsStream("result.other"));
                 try {
-                    streamResponse = CatalogPluginResponseFactory
-                            .createSuccessResponseFromInputStream(response, CatalogPluginResponseType.FILE_DOWNLOAD,
-                                                                  resourceDownload.getInputStream(), "result.other",
-                                                                  Optional.of(Long.valueOf(this.getClass().getClassLoader().getResource("LogoCnes.png").getFile().length())));
+                    streamResponse = CatalogPluginResponseFactory.createSuccessResponseFromInputStream(response,
+                                                                                                       CatalogPluginResponseType.FILE_DOWNLOAD,
+                                                                                                       resourceDownload.getInputStream(),
+                                                                                                       "result.other",
+                                                                                                       Optional.of(Long.valueOf(
+                                                                                                           this.getClass()
+                                                                                                               .getClassLoader()
+                                                                                                               .getResource(
+                                                                                                                   "LogoCnes.png")
+                                                                                                               .getFile()
+                                                                                                               .length())));
                 } catch (IOException e) {
                     LOGGER.error("Error sending file", e);
                     streamResponse = new ResponseEntity<>(HttpStatus.BAD_REQUEST);

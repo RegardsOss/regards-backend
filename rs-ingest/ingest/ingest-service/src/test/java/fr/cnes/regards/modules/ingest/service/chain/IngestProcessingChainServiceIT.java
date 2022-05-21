@@ -18,17 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain;
 
-import java.util.Optional;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.TestPropertySource;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -36,10 +26,18 @@ import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.TestPropertySource;
+
+import java.util.Optional;
 
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=ingestchain", "eureka.client.enabled=false" },
-        locations = { "classpath:application-test.properties" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=ingestchain", "eureka.client.enabled=false" },
+    locations = { "classpath:application-test.properties" })
 public class IngestProcessingChainServiceIT extends IngestMultitenantServiceIT {
 
     @Autowired
@@ -50,8 +48,8 @@ public class IngestProcessingChainServiceIT extends IngestMultitenantServiceIT {
 
     @Test
     public void checkDefaultProcessingChain() {
-        Page<IngestProcessingChain> results = ingestProcessingService
-                .searchChains(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, PageRequest.of(0, 100));
+        Page<IngestProcessingChain> results = ingestProcessingService.searchChains(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
+                                                                                   PageRequest.of(0, 100));
         Assert.assertEquals(1, results.getTotalElements());
     }
 
@@ -65,7 +63,8 @@ public class IngestProcessingChainServiceIT extends IngestMultitenantServiceIT {
         validation.setLabel("validationPlugin_ipst");
         newChain.setValidationPlugin(validation);
 
-        PluginConfiguration generation = PluginConfiguration.build(AIPGenerationTestPlugin.class, null,
+        PluginConfiguration generation = PluginConfiguration.build(AIPGenerationTestPlugin.class,
+                                                                   null,
                                                                    Sets.newHashSet());
         generation.setIsActive(true);
         generation.setLabel("generationPlugin_ipst");

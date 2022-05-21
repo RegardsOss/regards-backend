@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.entity;
 
 import com.vladmihalcea.hibernate.type.array.StringArrayType;
@@ -34,17 +34,16 @@ import java.util.UUID;
 /**
  * This class decorates a PluginConfiguration, corresponding to a Process plugin,
  * with associated access rights for the corresponding process.
- *
+ * <p>
  * It allows to determine that a given process is usable by a given user role,
  * and for a given list of datasets.
  *
  * @author gandrieu
  */
-@Data @NoArgsConstructor @AllArgsConstructor
-@TypeDef(
-        name = "string-array",
-        typeClass = StringArrayType.class
-)
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@TypeDef(name = "string-array", typeClass = StringArrayType.class)
 @Entity
 @Table(name = "t_rights_plugin_configuration")
 @SequenceGenerator(name = "pluginRightsConfSequence", initialValue = 1, sequenceName = "seq_plugin_rights_conf")
@@ -68,7 +67,7 @@ public class RightsPluginConfiguration {
     @Type(type = "string-array")
     private String[] datasets;
 
-    @Column(name="is_linked_to_all_datasets")
+    @Column(name = "is_linked_to_all_datasets")
     private boolean linkedToAllDatasets;
 
     public List<String> getDatasets() {
@@ -80,24 +79,19 @@ public class RightsPluginConfiguration {
     }
 
     public static ProcessPluginConfigurationRightsDTO toDto(RightsPluginConfiguration rights) {
-        return new ProcessPluginConfigurationRightsDTO(
-                rights.getPluginConfiguration(),
-                new ProcessPluginConfigurationRightsDTO.Rights(
-                        rights.getRole(),
-                        io.vavr.collection.List.ofAll(rights.getDatasets()),
-                        rights.isLinkedToAllDatasets()
-                )
-        );
+        return new ProcessPluginConfigurationRightsDTO(rights.getPluginConfiguration(),
+                                                       new ProcessPluginConfigurationRightsDTO.Rights(rights.getRole(),
+                                                                                                      io.vavr.collection.List.ofAll(
+                                                                                                          rights.getDatasets()),
+                                                                                                      rights.isLinkedToAllDatasets()));
     }
 
     public static RightsPluginConfiguration fromDto(ProcessPluginConfigurationRightsDTO dto) {
-        return new RightsPluginConfiguration(
-                null,
-                dto.getPluginConfiguration(),
-                UUID.fromString(dto.getPluginConfiguration().getBusinessId()),
-                dto.getRights().getRole(),
-                dto.getRights().getDatasets().toJavaArray(String[]::new),
-                dto.getRights().isLinkedToAllDatasets()
-        );
+        return new RightsPluginConfiguration(null,
+                                             dto.getPluginConfiguration(),
+                                             UUID.fromString(dto.getPluginConfiguration().getBusinessId()),
+                                             dto.getRights().getRole(),
+                                             dto.getRights().getDatasets().toJavaArray(String[]::new),
+                                             dto.getRights().isLinkedToAllDatasets());
     }
 }

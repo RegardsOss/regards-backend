@@ -52,12 +52,14 @@ public class TemporaryToponymsCleanScheduler {
      * Default : scheduled to be run every hour.
      */
     @Scheduled(initialDelayString = "${regards.toponyms.temporary.cleanup.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
-            fixedDelayString = "${regards.toponyms.temporary.cleanup.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
+        fixedDelayString = "${regards.toponyms.temporary.cleanup.delay:" + DEFAULT_SCHEDULING_DELAY + "}")
     public void cleanTemporaryToponyms() {
         long start = System.currentTimeMillis();
         LOGGER.info("[CLEAN TEMPORARY TOPONYMS SCHEDULER] - Scanning the number of temporary toponyms to delete");
         int nbDeleted = cleanService.clean();
-        LOGGER.info("[CLEAN TEMPORARY TOPONYMS SCHEDULER] - {} Temporary toponyms deleted. Handled in {}ms.", nbDeleted, System.currentTimeMillis() - start);
+        LOGGER.info("[CLEAN TEMPORARY TOPONYMS SCHEDULER] - {} Temporary toponyms deleted. Handled in {}ms.",
+                    nbDeleted,
+                    System.currentTimeMillis() - start);
     }
 }
 

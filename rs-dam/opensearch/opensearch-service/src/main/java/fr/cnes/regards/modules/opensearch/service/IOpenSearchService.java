@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.opensearch.service;
 
-import java.net.URL;
-
-import org.springframework.http.MediaType;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.opensearch.service.parser.IParser;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.schema.UrlType;
+import org.springframework.http.MediaType;
+
+import java.net.URL;
 
 /**
  * @author Xavier-Alexandre Brochard

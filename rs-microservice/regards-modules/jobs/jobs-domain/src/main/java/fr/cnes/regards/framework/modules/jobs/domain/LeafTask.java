@@ -7,6 +7,7 @@ import java.util.Set;
  * A reliant task that is not reliant.
  * Database mapping is the same as AbstractReliantTask one (to permit creating trees of dependent tasks) but as this
  * task depends on nothing, to avoid lazy exceptions while retrieving reliant tasks, accessor method are bypassed.
+ *
  * @author oroussel
  */
 @SuppressWarnings("rawtypes")

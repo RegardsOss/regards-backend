@@ -18,13 +18,6 @@
  */
 package fr.cnes.regards.modules.dam.service.datasources;
 
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -34,6 +27,12 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 import fr.cnes.regards.modules.dam.domain.datasources.Column;
 import fr.cnes.regards.modules.dam.domain.datasources.Table;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDBConnectionPlugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Christophe Mertz
@@ -51,6 +50,7 @@ public class DBConnectionService implements IDBConnectionService {
 
     /**
      * The constructor with an instance of the {@link PluginService}
+     *
      * @param pPluginService The {@link PluginService} to used by this service
      */
     public DBConnectionService(IPluginService pPluginService) {
@@ -106,14 +106,14 @@ public class DBConnectionService implements IDBConnectionService {
 
     @Override
     public Map<String, Table> getTables(String businessId)
-            throws ModuleException, NotAvailablePluginConfigurationException {
+        throws ModuleException, NotAvailablePluginConfigurationException {
         IDBConnectionPlugin plg = pluginService.getPlugin(businessId);
         return plg == null ? null : plg.getTables(null, null);
     }
 
     @Override
     public Map<String, Column> getColumns(String businessId, String tableName)
-            throws ModuleException, NotAvailablePluginConfigurationException {
+        throws ModuleException, NotAvailablePluginConfigurationException {
         IDBConnectionPlugin plg = pluginService.getPlugin(businessId);
         return plg == null ? null : plg.getColumns(tableName);
     }

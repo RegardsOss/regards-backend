@@ -18,28 +18,26 @@
  */
 package fr.cnes.regards.modules.feature.domain.request;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Set;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
+import fr.cnes.regards.modules.feature.dto.PriorityLevel;
+import fr.cnes.regards.modules.feature.dto.StorageMetadata;
+import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
+import org.springframework.util.Assert;
 
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.validation.constraints.NotBlank;
-
-import fr.cnes.regards.modules.feature.dto.StorageMetadata;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-import org.hibernate.annotations.TypeDefs;
-import org.springframework.util.Assert;
-
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.FeatureRequestStep;
-import fr.cnes.regards.modules.feature.dto.PriorityLevel;
-import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
-import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Marc SORDI
@@ -68,14 +66,20 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
     @Type(type = "jsonb")
     private Feature toNotify;
 
-    @Column(name="sessionToNotify", length=255)
+    @Column(name = "sessionToNotify", length = 255)
     private String sessionToNotify;
 
-    @Column(name="sourceToNotify", length=255)
+    @Column(name = "sourceToNotify", length = 255)
     private String sourceToNotify;
 
-    public static FeatureUpdateRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
-            RequestState state, Set<String> errors, Feature feature, PriorityLevel priority, FeatureRequestStep step) {
+    public static FeatureUpdateRequest build(String requestId,
+                                             String requestOwner,
+                                             OffsetDateTime requestDate,
+                                             RequestState state,
+                                             Set<String> errors,
+                                             Feature feature,
+                                             PriorityLevel priority,
+                                             FeatureRequestStep step) {
         Assert.notNull(feature, "Feature is required");
         FeatureUpdateRequest request = new FeatureUpdateRequest();
         request.with(requestId, requestOwner, requestDate, state, step, priority, errors);
@@ -85,10 +89,23 @@ public class FeatureUpdateRequest extends AbstractFeatureRequest {
         return request;
     }
 
-    public static FeatureUpdateRequest build(String requestId, String requestOwner, OffsetDateTime requestDate,
-            RequestState state, Set<String> errors, Feature feature, PriorityLevel priority,
-            List<StorageMetadata> storages, FeatureRequestStep step) {
-        FeatureUpdateRequest request = build(requestId, requestOwner, requestDate, state, errors, feature, priority, step);
+    public static FeatureUpdateRequest build(String requestId,
+                                             String requestOwner,
+                                             OffsetDateTime requestDate,
+                                             RequestState state,
+                                             Set<String> errors,
+                                             Feature feature,
+                                             PriorityLevel priority,
+                                             List<StorageMetadata> storages,
+                                             FeatureRequestStep step) {
+        FeatureUpdateRequest request = build(requestId,
+                                             requestOwner,
+                                             requestDate,
+                                             state,
+                                             errors,
+                                             feature,
+                                             priority,
+                                             step);
         FeatureStorageMedataEntity metadata = new FeatureStorageMedataEntity();
         metadata.setStorages(storages);
         request.setMetadata(metadata);

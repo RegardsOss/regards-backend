@@ -1,13 +1,5 @@
 package fr.cnes.regards.modules.ingest.service.job;
 
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -19,6 +11,13 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.dto.request.ChooseVersioningRequestParameters;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import java.util.Map;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -42,15 +41,16 @@ public class ChooseVersioningJob extends AbstractJob<Void> {
     public void run() {
         filters.setStates(Sets.newHashSet(InternalRequestState.WAITING_VERSIONING_MODE));
         Pageable pageable = PageRequest.of(0, requestIterationLimit);
-        Page<IngestRequest> requestPage = ingestRequestRepository
-                .findAll(IngestRequestSpecifications.searchAllByFilters(filters, pageable), pageable);
+        Page<IngestRequest> requestPage = ingestRequestRepository.findAll(IngestRequestSpecifications.searchAllByFilters(
+            filters,
+            pageable), pageable);
         do {
             ingestRequestService.fromWaitingTo(requestPage.getContent(), filters.getNewVersioningMode());
             pageable = requestPage.getPageable().next();
-            requestPage = ingestRequestRepository
-                    .findAll(IngestRequestSpecifications.searchAllByFilters(filters, pageable), pageable);
-        }
-        while(requestPage.hasNext());
+            requestPage = ingestRequestRepository.findAll(IngestRequestSpecifications.searchAllByFilters(filters,
+                                                                                                         pageable),
+                                                          pageable);
+        } while (requestPage.hasNext());
     }
 
     @Override
@@ -60,7 +60,7 @@ public class ChooseVersioningJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         this.filters = getValue(parameters, CRITERIA_JOB_PARAM_NAME, ChooseVersioningRequestParameters.class);
     }
 

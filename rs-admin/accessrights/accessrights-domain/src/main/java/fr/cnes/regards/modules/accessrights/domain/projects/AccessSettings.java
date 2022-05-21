@@ -32,43 +32,40 @@ public final class AccessSettings {
     }
 
     public static final String MODE = "acceptance_mode";
+
     public static final String DEFAULT_ROLE = "default_role";
+
     public static final String DEFAULT_GROUPS = "default_groups";
+
     public static final String USER_CREATION_MAIL_RECIPIENTS = "user_creation_mail_recipients";
 
     public static final AcceptanceMode DEFAULT_MODE = AcceptanceMode.AUTO_ACCEPT;
 
-    public static final DynamicTenantSetting MODE_SETTING = new DynamicTenantSetting(
-            MODE,
-            "Acceptance Mode",
-            DEFAULT_MODE.getName()
-    );
-    public static final DynamicTenantSetting DEFAULT_ROLE_SETTING = new DynamicTenantSetting(
-            DEFAULT_ROLE,
-            "Default Role",
-            DefaultRole.REGISTERED_USER.toString()
-    );
-    public static final DynamicTenantSetting DEFAULT_GROUPS_SETTING = new DynamicTenantSetting(
-            DEFAULT_GROUPS,
-            "Default Groups",
-            new ArrayList<>()
-    );
+    public static final DynamicTenantSetting MODE_SETTING = new DynamicTenantSetting(MODE,
+                                                                                     "Acceptance Mode",
+                                                                                     DEFAULT_MODE.getName());
+
+    public static final DynamicTenantSetting DEFAULT_ROLE_SETTING = new DynamicTenantSetting(DEFAULT_ROLE,
+                                                                                             "Default Role",
+                                                                                             DefaultRole.REGISTERED_USER.toString());
+
+    public static final DynamicTenantSetting DEFAULT_GROUPS_SETTING = new DynamicTenantSetting(DEFAULT_GROUPS,
+                                                                                               "Default Groups",
+                                                                                               new ArrayList<>());
+
     public static final DynamicTenantSetting USER_CREATION_MAIL_RECIPIENTS_SETTING = new DynamicTenantSetting(
-            USER_CREATION_MAIL_RECIPIENTS,
-            "User creation mail recipients",
-            new HashSet<>()
-    );
-    public static final List<DynamicTenantSetting> SETTING_LIST = Arrays.asList(
-            MODE_SETTING,
-            DEFAULT_ROLE_SETTING,
-            DEFAULT_GROUPS_SETTING,
-            USER_CREATION_MAIL_RECIPIENTS_SETTING
-    );
+        USER_CREATION_MAIL_RECIPIENTS,
+        "User creation mail recipients",
+        new HashSet<>());
+
+    public static final List<DynamicTenantSetting> SETTING_LIST = Arrays.asList(MODE_SETTING,
+                                                                                DEFAULT_ROLE_SETTING,
+                                                                                DEFAULT_GROUPS_SETTING,
+                                                                                USER_CREATION_MAIL_RECIPIENTS_SETTING);
 
     public enum AcceptanceMode {
 
-        MANUAL("manual"),
-        AUTO_ACCEPT("auto-accept");
+        MANUAL("manual"), AUTO_ACCEPT("auto-accept");
 
         private final String name;
 

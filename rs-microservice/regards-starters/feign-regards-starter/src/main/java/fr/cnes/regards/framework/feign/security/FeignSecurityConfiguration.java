@@ -18,15 +18,15 @@
  */
 package fr.cnes.regards.framework.feign.security;
 
+import feign.RequestInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import feign.RequestInterceptor;
 
 /**
  * This class allows to customize Feign behavior.<br>
  * This class has to be annotated with <code>@Configuration</code>. <br/>
  * It uses an internal JWT with a system role to call another microservice.
+ *
  * @author Marc Sordi
  */
 @Configuration
@@ -34,6 +34,7 @@ public class FeignSecurityConfiguration {
 
     /**
      * Interceptor for Feign client request security. This interceptor injects a token into request headers.
+     *
      * @param feignSecurityManager the Feign security manager
      * @return RequestInterceptor custom system interceptor
      */

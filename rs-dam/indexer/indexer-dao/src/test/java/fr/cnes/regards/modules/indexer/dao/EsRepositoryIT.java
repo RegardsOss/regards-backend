@@ -56,6 +56,7 @@ import java.util.stream.Stream;
 
 /**
  * EsRepository test
+ *
  * @author oroussel
  */
 @RunWith(SpringRunner.class)
@@ -95,7 +96,6 @@ public class EsRepositoryIT {
 
     private static class IGeometryAdapter extends TypeAdapter<IGeometry> {
 
-
         @Override
         public void write(JsonWriter out, IGeometry value) throws IOException {
             out.beginObject();
@@ -114,7 +114,7 @@ public class EsRepositoryIT {
                 out.endArray();
                 out.name("type");
                 out.value("POINT");
-            }else{
+            } else {
 
             }
             out.endObject();
@@ -148,12 +148,12 @@ public class EsRepositoryIT {
         }
     }
 
-
-    private static class MultimapAdapter implements JsonDeserializer<Multimap<String, ?>>, JsonSerializer<Multimap<String, ?>> {
+    private static class MultimapAdapter
+        implements JsonDeserializer<Multimap<String, ?>>, JsonSerializer<Multimap<String, ?>> {
 
         @Override
         public Multimap<String, ?> deserialize(JsonElement json, Type type, JsonDeserializationContext context)
-                throws JsonParseException {
+            throws JsonParseException {
             final HashMultimap<String, Object> result = HashMultimap.create();
             final Map<String, Collection<?>> map = context.deserialize(json, multimapTypeToMapType(type));
             for (final Map.Entry<String, ?> e : map.entrySet()) {
@@ -177,14 +177,14 @@ public class EsRepositoryIT {
 
             }.where(new TypeParameter<KK>() {
 
-            }, (com.google.common.reflect.TypeToken<KK>) com.google.common.reflect.TypeToken.of(typeArguments[0])).where(new TypeParameter<V>() {
+             }, (com.google.common.reflect.TypeToken<KK>) com.google.common.reflect.TypeToken.of(typeArguments[0]))
+             .where(new TypeParameter<V>() {
 
-            }, (com.google.common.reflect.TypeToken<V>) com.google.common.reflect.TypeToken.of(typeArguments[1]));
+             }, (com.google.common.reflect.TypeToken<V>) com.google.common.reflect.TypeToken.of(typeArguments[1]));
             return mapTypeToken.getType();
         }
 
     }
-
 
     public static class FeatureTypeAdapterFactory implements TypeAdapterFactory {
 
@@ -209,8 +209,7 @@ public class EsRepositoryIT {
                 @SuppressWarnings("unchecked")
                 @Override
                 public T read(JsonReader in) throws IOException {
-                    @SuppressWarnings("rawtypes")
-                    AbstractFeature feature = (AbstractFeature) delegate.read(in);
+                    @SuppressWarnings("rawtypes") AbstractFeature feature = (AbstractFeature) delegate.read(in);
                     // Set feature unlocated if geometry is null
                     if (feature.getGeometry() == null) {
                         feature.setGeometry(IGeometry.unlocated());
@@ -353,20 +352,21 @@ public class EsRepositoryIT {
 
     }
 
-    private static class ItemGeo extends DataObject{
+    private static class ItemGeo extends DataObject {
 
         private final String type = TYPEDATAOBJECT;
 
-        public ItemGeo(Model model,String tenant,String providerId,String label){
-            super(model, tenant,providerId,label);
+        public ItemGeo(Model model, String tenant, String providerId, String label) {
+            super(model, tenant, providerId, label);
         }
 
     }
 
     private static final String TYPE = "item";
-    private static final String TYPEGEO = "itemgeo";
-    private static final String TYPEDATAOBJECT = EntityType.DATA.toString();
 
+    private static final String TYPEGEO = "itemgeo";
+
+    private static final String TYPEDATAOBJECT = EntityType.DATA.toString();
 
     /**
      * Class to test
@@ -386,6 +386,7 @@ public class EsRepositoryIT {
 
     /**
      * Befor class setting up method
+     *
      * @throws Exception exception
      */
     @Before
@@ -393,14 +394,14 @@ public class EsRepositoryIT {
         boolean repositoryOK = true;
         // we get the properties into target/test-classes because this is where maven will put the filtered file(with real values and not placeholder)
         try {
-            gson = new GsonBuilder()
-                    .disableInnerClassSerialization()
-                    .registerTypeAdapterFactory(new ItemAdapterFactory())
-                    .registerTypeAdapterFactory(new FeatureTypeAdapterFactory())
-                    .registerTypeAdapter(UniformResourceName.class, new UrnAdpater())
-                    .registerTypeAdapter(IGeometry.class, new IGeometryAdapter())
-                    .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter().nullSafe())
-                    .registerTypeHierarchyAdapter(Multimap.class, new MultimapAdapter()).create();
+            gson = new GsonBuilder().disableInnerClassSerialization()
+                                    .registerTypeAdapterFactory(new ItemAdapterFactory())
+                                    .registerTypeAdapterFactory(new FeatureTypeAdapterFactory())
+                                    .registerTypeAdapter(UniformResourceName.class, new UrnAdpater())
+                                    .registerTypeAdapter(IGeometry.class, new IGeometryAdapter())
+                                    .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter().nullSafe())
+                                    .registerTypeHierarchyAdapter(Multimap.class, new MultimapAdapter())
+                                    .create();
 
             repository = new EsRepository(gson,
                                           null,
@@ -508,7 +509,7 @@ public class EsRepositoryIT {
         try {
             repository.saveBulk("bulktest", list);
             Assert.fail("saveBulk should have thrown an IllegalArgumentException (last item does not provide id nor "
-                                + "type ");
+                            + "type ");
         } catch (IllegalArgumentException e) {
         }
 
@@ -527,6 +528,7 @@ public class EsRepositoryIT {
 
     /**
      * Load generated data into Elsaticsearch
+     *
      * @param pCount number of documents to insert
      */
     private void loadItemsBulk(int pCount) {
@@ -539,8 +541,9 @@ public class EsRepositoryIT {
         for (int i = 0; i < pCount; i++) {
             final Item item = new Item(Integer.toString(i),
                                        Stream.generate(() -> words[(int) (Math.random() * words.length)])
-                                               .limit((int) (Math.random() * 10)).collect(Collectors.toSet())
-                                               .toArray(new String[0]));
+                                             .limit((int) (Math.random() * 10))
+                                             .collect(Collectors.toSet())
+                                             .toArray(new String[0]));
             item.setName(words[(int) (Math.random() * words.length)]);
             item.setHeight((int) (Math.random() * 1000));
             item.setPrice(Math.random() * 10000.);
@@ -564,24 +567,25 @@ public class EsRepositoryIT {
         String itemsIndexName = "items";
         repository.createIndex(itemsIndexName);
         // Creations for first two
-        final Item item1 = new Item("1", "toto",10, 10000d,"group1", "group2", "group3");
+        final Item item1 = new Item("1", "toto", 10, 10000d, "group1", "group2", "group3");
         repository.save(itemsIndexName, item1);
         Item item2 = new Item("2", "titi", 10, 20000d, "group1", "group3");
         repository.save(itemsIndexName, item2);
 
         Map<String, QueryableAttribute> qas = Maps.newHashMap();
-        qas.put("price", new QueryableAttribute("price", null,
-                false, 10, false));
+        qas.put("price", new QueryableAttribute("price", null, false, 10, false));
 
         repository.refresh(itemsIndexName);
 
-//        ICriterion all = ICriterion.all();
+        //        ICriterion all = ICriterion.all();
         ICriterion all = ICriterion.contains("groups", "group1", StringMatchType.KEYWORD);
         SearchKey<Item, Item> searchKey = new SearchKey<>(TYPE, Item.class);
         searchKey.setSearchIndex(itemsIndexName);
-        Aggregations aggregations = repository.getAggregations(searchKey, all, (Collection<QueryableAttribute>) qas.values());
-        Assert.assertEquals(20000d,((ParsedStats) aggregations.asList().get(0)).getMax(), 0.0001d);
-        Assert.assertEquals(10000d,((ParsedStats) aggregations.asList().get(0)).getMin(), 0.0001d);
+        Aggregations aggregations = repository.getAggregations(searchKey,
+                                                               all,
+                                                               (Collection<QueryableAttribute>) qas.values());
+        Assert.assertEquals(20000d, ((ParsedStats) aggregations.asList().get(0)).getMax(), 0.0001d);
+        Assert.assertEquals(10000d, ((ParsedStats) aggregations.asList().get(0)).getMin(), 0.0001d);
         repository.deleteIndex(itemsIndexName);
 
     }
@@ -593,16 +597,20 @@ public class EsRepositoryIT {
 
         // Creations for first two
         DataObject dataObject1 = new ItemGeo(new Model(), itemsTenant, "provider", "label");
-        GeoPoint do1SePoint = new GeoPoint(43.524768,1.4879276);
-        GeoPoint do1NwPoint = new GeoPoint(43.5889203,1.3747632);
+        GeoPoint do1SePoint = new GeoPoint(43.524768, 1.4879276);
+        GeoPoint do1NwPoint = new GeoPoint(43.5889203, 1.3747632);
         dataObject1.setSePoint(do1SePoint);
         dataObject1.setNwPoint(do1NwPoint);
         dataObject1.setId(1L);
-        dataObject1.setTags(Sets.newHashSet("group1","group2","group3"));
+        dataObject1.setTags(Sets.newHashSet("group1", "group2", "group3"));
         dataObject1.setLabel("toto");
-        dataObject1.setIpId(UniformResourceName.build(OAISIdentifier.AIP.name(), EntityType.DATA, itemsTenant,
-                UUID.fromString("74f2c965-0136-47f0-93e1-4fd098db701c"), 1, null,
-                null));
+        dataObject1.setIpId(UniformResourceName.build(OAISIdentifier.AIP.name(),
+                                                      EntityType.DATA,
+                                                      itemsTenant,
+                                                      UUID.fromString("74f2c965-0136-47f0-93e1-4fd098db701c"),
+                                                      1,
+                                                      null,
+                                                      null));
         Point point = IGeometry.point(1.3747632, 43.524768);
         dataObject1.setWgs84(GeoHelper.normalize(point));
         dataObject1.setNormalizedGeometry(GeoHelper.normalize(point));
@@ -610,12 +618,16 @@ public class EsRepositoryIT {
         dataObject1.getFeature().setNormalizedGeometry(GeoHelper.normalize(point));
 
         DataObject dataObject2 = new ItemGeo(new Model(), itemsTenant, "provider", "label");
-        GeoPoint do2SePoint = new GeoPoint(43.4461681,-0.0369283);
-        GeoPoint do2NwPoint = new GeoPoint(43.7695852,-0.5334374);
+        GeoPoint do2SePoint = new GeoPoint(43.4461681, -0.0369283);
+        GeoPoint do2NwPoint = new GeoPoint(43.7695852, -0.5334374);
         dataObject2.setId(2L);
-        dataObject1.setIpId(UniformResourceName.build(OAISIdentifier.AIP.name(), EntityType.DATA, itemsTenant,
-                UUID.fromString("74f2c965-0136-47f0-93e1-4fd098db1234"), 1, null,
-                null));
+        dataObject1.setIpId(UniformResourceName.build(OAISIdentifier.AIP.name(),
+                                                      EntityType.DATA,
+                                                      itemsTenant,
+                                                      UUID.fromString("74f2c965-0136-47f0-93e1-4fd098db1234"),
+                                                      1,
+                                                      null,
+                                                      null));
         dataObject2.setSePoint(do2SePoint);
         dataObject2.setNwPoint(do2NwPoint);
         dataObject2.setTags(Sets.newHashSet("group1"));
@@ -626,29 +638,27 @@ public class EsRepositoryIT {
         dataObject2.getFeature().setGeometry(GeoHelper.normalize(point2));
         dataObject2.getFeature().setNormalizedGeometry(GeoHelper.normalize(point));
 
-
         repository.save(itemsTenant, dataObject1);
         repository.save(itemsTenant, dataObject2);
 
         Map<String, QueryableAttribute> qas = Maps.newHashMap();
-        qas.put("sePoint", new QueryableAttribute("sePoint", null,
-                false, 10, false, true));
-        qas.put("nwPoint", new QueryableAttribute("nwPoint", null,
-                false, 10, false, true));
+        qas.put("sePoint", new QueryableAttribute("sePoint", null, false, 10, false, true));
+        qas.put("nwPoint", new QueryableAttribute("nwPoint", null, false, 10, false, true));
 
         ICriterion all = ICriterion.contains("tags", "group1", StringMatchType.KEYWORD);
         repository.refresh(itemsTenant);
         Assert.assertTrue(repository.indexExists(itemsTenant));
 
-
         SearchKey<ItemGeo, ItemGeo> searchKey = new SearchKey<>(TYPEDATAOBJECT, ItemGeo.class);
         searchKey.setSearchIndex(itemsTenant);
-        Aggregations aggregations = repository.getAggregations(searchKey, all, (Collection<QueryableAttribute>) qas.values());
+        Aggregations aggregations = repository.getAggregations(searchKey,
+                                                               all,
+                                                               (Collection<QueryableAttribute>) qas.values());
         //We only check extrem NW and SE values
-        Assert.assertEquals(43.7695,((ParsedGeoBounds) aggregations.asList().get(0)).topLeft().lat(), 0.0001d);
-        Assert.assertEquals(-0.5334,((ParsedGeoBounds) aggregations.asList().get(0)).topLeft().lon(), 0.0001d);
-        Assert.assertEquals(43.4461,((ParsedGeoBounds) aggregations.asList().get(1)).bottomRight().lat(), 0.0001d);
-        Assert.assertEquals(1.4879276,((ParsedGeoBounds) aggregations.asList().get(1)).bottomRight().lon(), 0.0001d);
+        Assert.assertEquals(43.7695, ((ParsedGeoBounds) aggregations.asList().get(0)).topLeft().lat(), 0.0001d);
+        Assert.assertEquals(-0.5334, ((ParsedGeoBounds) aggregations.asList().get(0)).topLeft().lon(), 0.0001d);
+        Assert.assertEquals(43.4461, ((ParsedGeoBounds) aggregations.asList().get(1)).bottomRight().lat(), 0.0001d);
+        Assert.assertEquals(1.4879276, ((ParsedGeoBounds) aggregations.asList().get(1)).bottomRight().lon(), 0.0001d);
         repository.deleteIndex(itemsTenant);
     }
 
@@ -667,8 +677,10 @@ public class EsRepositoryIT {
         facetMap.put("tata", FacetType.STRING);
         SimpleSearchKey<IIndexable> searchKey = new SimpleSearchKey<>("toto", IIndexable.class);
         searchKey.setSearchIndex(index);
-        FacetPage<IIndexable> page = (FacetPage<IIndexable>) repository
-                .search(searchKey, 10, ICriterion.all(), facetMap);
+        FacetPage<IIndexable> page = (FacetPage<IIndexable>) repository.search(searchKey,
+                                                                               10,
+                                                                               ICriterion.all(),
+                                                                               facetMap);
         Assert.assertNotNull(page.getFacets());
         Assert.assertTrue(page.getFacets().isEmpty());
     }

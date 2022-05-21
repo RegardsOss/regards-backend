@@ -21,13 +21,13 @@
 package fr.cnes.regards.modules.ingest.service.schedule;
 
 /**
- *
  * @author Iliana Ghazali
  */
 
 public class SchedulerConstant {
 
-    private SchedulerConstant() {}
+    private SchedulerConstant() {
+    }
 
     /**
      * Common

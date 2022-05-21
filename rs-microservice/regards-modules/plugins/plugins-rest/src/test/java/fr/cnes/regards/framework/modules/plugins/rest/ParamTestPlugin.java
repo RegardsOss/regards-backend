@@ -18,19 +18,20 @@
  */
 package fr.cnes.regards.framework.modules.plugins.rest;
 
-import java.util.List;
-import java.util.Map;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * Fake SIP validation for testing purpose. Do not use in production!
+ *
  * @author Marc Sordi
  */
 @Plugin(author = "REGARDS Team", description = "Plugin for plugin parameter type testing", id = "ParamTestPlugin",
-        version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-        url = "https://regardsoss.github.io/")
+    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
+    url = "https://regardsoss.github.io/")
 public class ParamTestPlugin implements IParamTestPlugin {
 
     @PluginParameter(label = "Simple string", description = "Simple string description")
@@ -61,7 +62,7 @@ public class ParamTestPlugin implements IParamTestPlugin {
     private List<String> sList;
 
     @PluginParameter(keylabel = "ssMapKey", label = "Map string to string",
-            description = "Map string to string description")
+        description = "Map string to string description")
     private Map<String, String> ssMap;
 
     @PluginParameter(label = "Pojo containing string")
@@ -114,7 +115,7 @@ public class ParamTestPlugin implements IParamTestPlugin {
         private String pattern;
 
         @PluginParameter(label = "Enabled", description = "Contraint may be enabled/disabled", optional = true,
-                defaultValue = "true")
+            defaultValue = "true")
         private boolean enabled;
 
         public String getPattern() {

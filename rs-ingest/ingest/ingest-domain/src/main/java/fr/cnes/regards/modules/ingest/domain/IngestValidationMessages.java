@@ -19,10 +19,9 @@
 package fr.cnes.regards.modules.ingest.domain;
 
 /**
- *
  * Ingest validation messages
- * @author Marc SORDI
  *
+ * @author Marc SORDI
  */
 public final class IngestValidationMessages {
 

@@ -18,14 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -35,12 +27,18 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
 import fr.cnes.regards.modules.accessrights.service.licence.LicenseService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * REST Controller to handle links between project's license and project's user
  *
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @RestController
 @RequestMapping(LicenseController.PATH_LICENSE)
@@ -70,12 +68,13 @@ public class LicenseController implements IResourceController<LicenseDTO> {
 
     /**
      * Retrieve if the current user has accepted the license of the given project, represented by its name.
+     *
      * @return if the current user has accepted the license of the project
      * @throws EntityNotFoundException
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve if the current user has accepted the license of the project",
-            role = DefaultRole.PUBLIC)
+        role = DefaultRole.PUBLIC)
     public ResponseEntity<EntityModel<LicenseDTO>> retrieveLicense() throws EntityNotFoundException {
         LicenseDTO licenseDto = licenseService.retrieveLicenseState();
         return new ResponseEntity<>(toResource(licenseDto), HttpStatus.OK);
@@ -83,6 +82,7 @@ public class LicenseController implements IResourceController<LicenseDTO> {
 
     /**
      * Accept the license for the current user for the given project, represented by its name
+     *
      * @return the license state
      * @throws EntityException
      */
@@ -95,23 +95,21 @@ public class LicenseController implements IResourceController<LicenseDTO> {
 
     /**
      * Reset the license for the given project, represented by its name.
+     *
      * @return Void
      */
     @RequestMapping(method = RequestMethod.PUT, path = PATH_RESET)
     @ResourceAccess(
-            description = "Allow admins to invalidate the license of the project for all the users of the project",
-            role = DefaultRole.ADMIN)
+        description = "Allow admins to invalidate the license of the project for all the users of the project",
+        role = DefaultRole.ADMIN)
     public ResponseEntity<Void> resetLicense() {
         licenseService.resetLicence();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**
-     *
-     * @param element
-     *            element to convert
-     * @param extras
-     *            Extra URL path parameters for links extra[0] has to be given and should be the projectName
+     * @param element element to convert
+     * @param extras  Extra URL path parameters for links extra[0] has to be given and should be the projectName
      * @return {@link LicenseDTO}
      */
     @Override

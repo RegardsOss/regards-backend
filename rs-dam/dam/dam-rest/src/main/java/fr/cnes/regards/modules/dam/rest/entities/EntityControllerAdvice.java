@@ -18,6 +18,12 @@
  */
 package fr.cnes.regards.modules.dam.rest.entities;
 
+import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
+import fr.cnes.regards.modules.dam.rest.entities.exception.AssociatedAccessRightExistsException;
+import fr.cnes.regards.modules.dam.service.entities.exception.InvalidCharsetException;
+import fr.cnes.regards.modules.dam.service.entities.exception.InvalidContentTypeException;
+import fr.cnes.regards.modules.dam.service.entities.exception.InvalidFileLocation;
+import fr.cnes.regards.modules.dam.service.entities.exception.InvalidFilenameException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -26,15 +32,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
-import fr.cnes.regards.modules.dam.rest.entities.exception.AssociatedAccessRightExistsException;
-import fr.cnes.regards.modules.dam.service.entities.exception.InvalidCharsetException;
-import fr.cnes.regards.modules.dam.service.entities.exception.InvalidContentTypeException;
-import fr.cnes.regards.modules.dam.service.entities.exception.InvalidFileLocation;
-import fr.cnes.regards.modules.dam.service.entities.exception.InvalidFilenameException;
-
 /**
  * Advice for specific entity exceptions
+ *
  * @author Marc Sordi
  */
 @RestControllerAdvice(annotations = RestController.class)
@@ -44,30 +44,30 @@ public class EntityControllerAdvice {
     @ExceptionHandler(InvalidCharsetException.class)
     public ResponseEntity<ServerErrorResponse> invalidCharsetException(InvalidCharsetException exception) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(new ServerErrorResponse(exception.getMessage(), exception));
+                             .body(new ServerErrorResponse(exception.getMessage(), exception));
     }
 
     @ExceptionHandler(InvalidContentTypeException.class)
     public ResponseEntity<ServerErrorResponse> invalidContentTypeException(InvalidContentTypeException exception) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(new ServerErrorResponse(exception.getMessage(), exception));
+                             .body(new ServerErrorResponse(exception.getMessage(), exception));
     }
 
     @ExceptionHandler(InvalidFilenameException.class)
     public ResponseEntity<ServerErrorResponse> invalidFilenameException(InvalidFilenameException exception) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(new ServerErrorResponse(exception.getMessage(), exception));
+                             .body(new ServerErrorResponse(exception.getMessage(), exception));
     }
 
     @ExceptionHandler(InvalidFileLocation.class)
     public ResponseEntity<ServerErrorResponse> invalidFileLocation(InvalidFileLocation exception) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(new ServerErrorResponse(exception.getMessage(), exception));
+                             .body(new ServerErrorResponse(exception.getMessage(), exception));
     }
 
     @ExceptionHandler(AssociatedAccessRightExistsException.class)
     public ResponseEntity<ServerErrorResponse> handleAssociatedAccessRightExistsException(
-            AssociatedAccessRightExistsException e) {
+        AssociatedAccessRightExistsException e) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(e.getMessage(), e));
     }
 

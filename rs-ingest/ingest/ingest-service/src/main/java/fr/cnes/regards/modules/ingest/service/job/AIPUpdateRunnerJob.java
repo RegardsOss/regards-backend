@@ -96,7 +96,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         // Retrieve param
         Type type = new TypeToken<List<Long>>() {
 
@@ -118,8 +118,9 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         // filter out requests with notification step (in case of retry)
         Set<AbstractRequest> notificationRetryRequests;
         notificationRetryRequests = requests.stream()
-                .filter(req -> req.getStep() == AIPUpdateRequestStep.REMOTE_NOTIFICATION_ERROR)
-                .collect(Collectors.toSet());
+                                            .filter(req -> req.getStep()
+                                                == AIPUpdateRequestStep.REMOTE_NOTIFICATION_ERROR)
+                                            .collect(Collectors.toSet());
         if (!notificationRetryRequests.isEmpty()) {
             // remove notifications from requests to process and send them again
             this.requests.removeAll(notificationRetryRequests);
@@ -138,7 +139,8 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
             updateAIPs(requestByAIP);
         }
 
-        logger.debug("[AIP UPDATE JOB] Job handled for {} AIPUpdateRequest(s) requests in {}ms", nbRequestsToHandle,
+        logger.debug("[AIP UPDATE JOB] Job handled for {} AIPUpdateRequest(s) requests in {}ms",
+                     nbRequestsToHandle,
                      System.currentTimeMillis() - start);
     }
 
@@ -174,7 +176,8 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
                     if (aipWrapper.hasDeletionRequests()) {
                         // Request files deletion
                         Collection<FileDeletionRequestDTO> deletionRequests = aipWrapper.getDeletionRequests();
-                        logger.trace("[AIP {}] Run {} deletion requests on storage.", aipWrapper.getAip().getAipId(),
+                        logger.trace("[AIP {}] Run {} deletion requests on storage.",
+                                     aipWrapper.getAip().getAipId(),
                                      deletionRequests.size());
                         numberOfDeletionRequest += deletionRequests.size();
                         storageClient.delete(deletionRequests);
@@ -191,10 +194,13 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         logger.info(this.getClass().getSimpleName() + ": {} file deletion requested.", numberOfDeletionRequest);
 
         // Keep only ERROR requests
-        List<AIPUpdateRequest> succeedRequestsToDelete = requestByAIP.values().stream()
-                .filter(request -> (request.getState() != InternalRequestState.ERROR)
-                        && (request.getState() != InternalRequestState.ABORTED))
-                .collect(Collectors.toList());
+        List<AIPUpdateRequest> succeedRequestsToDelete = requestByAIP.values()
+                                                                     .stream()
+                                                                     .filter(request -> (request.getState()
+                                                                         != InternalRequestState.ERROR) && (
+                                                                         request.getState()
+                                                                             != InternalRequestState.ABORTED))
+                                                                     .collect(Collectors.toList());
 
         // If notifications are active, send them to notifier
         // remark : only requests corresponding to modified aip are notified
@@ -209,10 +215,12 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         }
 
         // Save ERROR requests
-        List<AIPUpdateRequest> errorRequests = requestByAIP.values().stream()
-                .filter(request -> (request.getState() == InternalRequestState.ERROR)
-                        || (request.getState() == InternalRequestState.ABORTED))
-                .collect(Collectors.toList());
+        List<AIPUpdateRequest> errorRequests = requestByAIP.values()
+                                                           .stream()
+                                                           .filter(request -> (request.getState()
+                                                               == InternalRequestState.ERROR) || (request.getState()
+                                                               == InternalRequestState.ABORTED))
+                                                           .collect(Collectors.toList());
         aipUpdateRequestRepository.saveAll(errorRequests);
 
         // Save AIPs
@@ -282,7 +290,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
     }
 
     private List<AIPUpdateRequest> getOrderedTaskList(String aipId,
-            ListMultimap<String, AIPUpdateRequest> requestByAIP) {
+                                                      ListMultimap<String, AIPUpdateRequest> requestByAIP) {
         List<AIPUpdateRequest> aipUpdateRequests = requestByAIP.get(aipId);
         aipUpdateRequests.sort(AIPUpdateRunnerJob::compareUpdateRequests);
         return aipUpdateRequests;

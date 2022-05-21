@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.indexer.dao;
 
 /**
  * Object permitting to know what IEsRepository.saveBulk() method has really done.
+ *
  * @author sbinda
  */
 public class BulkSaveLightResult {
@@ -50,6 +51,7 @@ public class BulkSaveLightResult {
 
     /**
      * Append another bulk save result
+     *
      * @param bulkSaveResult another bulk save result
      * @return this
      */

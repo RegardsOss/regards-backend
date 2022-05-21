@@ -18,18 +18,16 @@
  */
 package fr.cnes.regards.modules.configuration.dao;
 
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalIT;
+import fr.cnes.regards.modules.configuration.domain.UILayout;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalIT;
-import fr.cnes.regards.modules.configuration.domain.UILayout;
-
 /**
- *
  * Class LayoutRepositoryTest
- *
+ * <p>
  * DAO Test
  *
  * @author Sébastien Binda

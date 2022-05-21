@@ -18,10 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.plugin;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
@@ -30,14 +26,18 @@ import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 /**
  * Default AIP generation plugin. The plugin automatically build a single AIP based on SIP information.
  *
  * @author Marc Sordi
  */
 @Plugin(author = "REGARDS Team", description = "Default single AIP generation", id = "DefaultSingleAIPGeneration",
-        version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
-        url = "https://regardsoss.github.io/")
+    version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
+    url = "https://regardsoss.github.io/")
 public class DefaultSingleAIPGeneration implements IAipGeneration {
 
     @Override
@@ -51,7 +51,9 @@ public class DefaultSingleAIPGeneration implements IAipGeneration {
                                                        entityType,
                                                        tenant,
                                                        sipIdUrn.getEntityId(),
-                                                       version, null, null),
+                                                       version,
+                                                       null,
+                                                       null),
                            Optional.of(sipIdUrn),
                            sip.getProviderId(),
                            version));

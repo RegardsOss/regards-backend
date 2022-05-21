@@ -40,12 +40,6 @@ import fr.cnes.regards.modules.order.rest.mock.ProcessingClientMock;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import io.vavr.collection.HashMap;
-import java.nio.charset.Charset;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
@@ -61,6 +55,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+
+import java.nio.charset.Charset;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * @author oroussel
@@ -113,7 +114,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
         Project project = new Project();
         project.setHost("regards.org");
         Mockito.when(projectsClient.retrieveProject(ArgumentMatchers.anyString()))
-                .thenReturn(ResponseEntity.ok(EntityModel.of(project)));
+               .thenReturn(ResponseEntity.ok(EntityModel.of(project)));
         authResolver = Mockito.spy(authResolver);
         Mockito.when(authResolver.getUser()).thenReturn(getDefaultUserEmail());
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
@@ -121,8 +122,10 @@ public class BasketControllerIT extends AbstractRegardsIT {
 
     @Test
     public void testAddBadSelection() {
-        performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, new BasketSelectionRequest(),
-                           customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY), "error");
+        performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION,
+                           new BasketSelectionRequest(),
+                           customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY),
+                           "error");
     }
 
     @Test
@@ -130,11 +133,13 @@ public class BasketControllerIT extends AbstractRegardsIT {
         // Test POST without argument : order should be created with RUNNING status
         BasketSelectionRequest request = new BasketSelectionRequest();
         request.setEngineType("legacy");
-        request.setEntityIdsToInclude(Collections
-                .singleton("URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1"));
+        request.setEntityIdsToInclude(Collections.singleton(
+            "URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1"));
 
-        performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request,
-                           customizer().expectStatusNoContent(), "error");
+        performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION,
+                           request,
+                           customizer().expectStatusNoContent(),
+                           "error");
     }
 
     @Test
@@ -142,11 +147,13 @@ public class BasketControllerIT extends AbstractRegardsIT {
         // Test POST without argument : order should be created with RUNNING status
         BasketSelectionRequest request = new BasketSelectionRequest();
         request.setEngineType("legacy");
-        request.setEntityIdsToInclude(Collections
-                .singleton("URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1"));
+        request.setEntityIdsToInclude(Collections.singleton(
+            "URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1"));
 
-        performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request,
-                           customizer().expectStatusNoContent(), "error");
+        performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION,
+                           request,
+                           customizer().expectStatusNoContent(),
+                           "error");
     }
 
     @Test
@@ -154,8 +161,8 @@ public class BasketControllerIT extends AbstractRegardsIT {
         // Test POST without argument : order should be created with RUNNING status
         BasketSelectionRequest request = new BasketSelectionRequest();
         request.setEngineType("legacy");
-        request.setEntityIdsToInclude(Collections
-                .singleton("URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1"));
+        request.setEntityIdsToInclude(Collections.singleton(
+            "URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1"));
         request.setDatasetUrn("URN%3AAIP%3ADATASET%3AOlivier%3A4af7fa7f-110e-42c8-b434-7c863c280548%3AV1");
 
         RequestBuilderCustomizer customizer = customizer().expectStatusNoContent();
@@ -178,10 +185,11 @@ public class BasketControllerIT extends AbstractRegardsIT {
         parameters.add("q", "MACHIN: BIDULE AND PATATIPATAT: POUET");
         request.setSearchParameters(parameters);
 
-        performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request,
-                           customizer().expectStatusNoContent(), "error");
+        performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION,
+                           request,
+                           customizer().expectStatusNoContent(),
+                           "error");
     }
-
 
     @Test
     @Purpose("Attach a process to a basket when the limit of items added is not reached")
@@ -193,42 +201,62 @@ public class BasketControllerIT extends AbstractRegardsIT {
         // Attach processing when FEATURES is below limit
         UUID processBusinessIdFeatures = UUID.fromString(ProcessingClientMock.PROCESS_ID_FEATURES_5L);
         RequestBuilderCustomizer customizerAddFeatures = customizer().expectStatusOk()
-                .expectValue("$.content.datasetSelections[0].processDatasetDescription.processBusinessId",
-                        processBusinessIdFeatures.toString())
-                .expectValue("$.content.datasetSelections[0].processDatasetDescription.parameters.key", "value");
+                                                                     .expectValue(
+                                                                         "$.content.datasetSelections[0].processDatasetDescription.processBusinessId",
+                                                                         processBusinessIdFeatures.toString())
+                                                                     .expectValue(
+                                                                         "$.content.datasetSelections[0].processDatasetDescription.parameters.key",
+                                                                         "value");
         performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
-                new ProcessDatasetDescription(processBusinessIdFeatures, parameters), customizerAddFeatures, "error",
-                basket.getDatasetSelections().first().getId());
+                          new ProcessDatasetDescription(processBusinessIdFeatures, parameters),
+                          customizerAddFeatures,
+                          "error",
+                          basket.getDatasetSelections().first().getId());
 
         // Attach processing when FILES is below limit
         UUID processBusinessIdFiles = UUID.fromString(ProcessingClientMock.PROCESS_ID_FILES_20L);
         RequestBuilderCustomizer customizerAddFiles = customizer().expectStatusOk()
-                .expectValue("$.content.datasetSelections[0].processDatasetDescription.processBusinessId",
-                        processBusinessIdFiles.toString())
-                .expectValue("$.content.datasetSelections[0].processDatasetDescription.parameters.key", "value");
+                                                                  .expectValue(
+                                                                      "$.content.datasetSelections[0].processDatasetDescription.processBusinessId",
+                                                                      processBusinessIdFiles.toString())
+                                                                  .expectValue(
+                                                                      "$.content.datasetSelections[0].processDatasetDescription.parameters.key",
+                                                                      "value");
         performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
-                new ProcessDatasetDescription(processBusinessIdFiles, parameters), customizerAddFiles, "error",
-                basket.getDatasetSelections().first().getId());
+                          new ProcessDatasetDescription(processBusinessIdFiles, parameters),
+                          customizerAddFiles,
+                          "error",
+                          basket.getDatasetSelections().first().getId());
 
         // Attach processing when BYTES is below limit
         UUID processBusinessIdSize = UUID.fromString(ProcessingClientMock.PROCESS_ID_BYTES_300000L);
         RequestBuilderCustomizer customizerAddSize = customizer().expectStatusOk()
-                .expectValue("$.content.datasetSelections[0].processDatasetDescription.processBusinessId",
-                        processBusinessIdSize.toString())
-                .expectValue("$.content.datasetSelections[0].processDatasetDescription.parameters.key", "value");
+                                                                 .expectValue(
+                                                                     "$.content.datasetSelections[0].processDatasetDescription.processBusinessId",
+                                                                     processBusinessIdSize.toString())
+                                                                 .expectValue(
+                                                                     "$.content.datasetSelections[0].processDatasetDescription.parameters.key",
+                                                                     "value");
         performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
-                new ProcessDatasetDescription(processBusinessIdSize, parameters), customizerAddSize, "error",
-                basket.getDatasetSelections().first().getId());
+                          new ProcessDatasetDescription(processBusinessIdSize, parameters),
+                          customizerAddSize,
+                          "error",
+                          basket.getDatasetSelections().first().getId());
 
         // Attach processing when there is no limit
         UUID processBusinessIdNoLimit = UUID.fromString(ProcessingClientMock.PROCESS_ID_NO_LIMIT);
         RequestBuilderCustomizer customizerAddNoLimit = customizer().expectStatusOk()
-                .expectValue("$.content.datasetSelections[0].processDatasetDescription.processBusinessId",
-                        processBusinessIdNoLimit.toString())
-                .expectValue("$.content.datasetSelections[0].processDatasetDescription.parameters.key", "value");
+                                                                    .expectValue(
+                                                                        "$.content.datasetSelections[0].processDatasetDescription.processBusinessId",
+                                                                        processBusinessIdNoLimit.toString())
+                                                                    .expectValue(
+                                                                        "$.content.datasetSelections[0].processDatasetDescription.parameters.key",
+                                                                        "value");
         performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
-                new ProcessDatasetDescription(processBusinessIdNoLimit, parameters), customizerAddNoLimit, "error",
-                basket.getDatasetSelections().first().getId());
+                          new ProcessDatasetDescription(processBusinessIdNoLimit, parameters),
+                          customizerAddNoLimit,
+                          "error",
+                          basket.getDatasetSelections().first().getId());
     }
 
     @Test
@@ -241,20 +269,27 @@ public class BasketControllerIT extends AbstractRegardsIT {
 
         // Fail to attach processing because FEATURES limit is reached
         performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
-                new ProcessDatasetDescription(UUID.fromString(ProcessingClientMock.PROCESS_ID_FEATURES_2L), parameters), customizerAdd, "error",
-                basket.getDatasetSelections().first().getId());
+                          new ProcessDatasetDescription(UUID.fromString(ProcessingClientMock.PROCESS_ID_FEATURES_2L),
+                                                        parameters),
+                          customizerAdd,
+                          "error",
+                          basket.getDatasetSelections().first().getId());
 
         // Fail to attach processing because FILES limit is reached
         performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
-                new ProcessDatasetDescription(UUID.fromString(ProcessingClientMock.PROCESS_ID_FILES_10L),
-                        parameters), customizerAdd, "error",
-                basket.getDatasetSelections().first().getId());
+                          new ProcessDatasetDescription(UUID.fromString(ProcessingClientMock.PROCESS_ID_FILES_10L),
+                                                        parameters),
+                          customizerAdd,
+                          "error",
+                          basket.getDatasetSelections().first().getId());
 
         // Fail to attach processing because BYTES limit is reached
         performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
-                new ProcessDatasetDescription(UUID.fromString(ProcessingClientMock.PROCESS_ID_BYTES_150L), parameters),
-                customizerAdd, "error",
-                basket.getDatasetSelections().first().getId());
+                          new ProcessDatasetDescription(UUID.fromString(ProcessingClientMock.PROCESS_ID_BYTES_150L),
+                                                        parameters),
+                          customizerAdd,
+                          "error",
+                          basket.getDatasetSelections().first().getId());
     }
 
     @Test
@@ -265,17 +300,26 @@ public class BasketControllerIT extends AbstractRegardsIT {
         Basket basket = createBasket();
 
         RequestBuilderCustomizer customizerAdd = customizer().expectStatusOk()
-                .expectValue("$.content.datasetSelections[0].processDatasetDescription.processBusinessId",
-                             processBusinessId.toString())
-                .expectValue("$.content.datasetSelections[0].processDatasetDescription.parameters.key", "value");
+                                                             .expectValue(
+                                                                 "$.content.datasetSelections[0].processDatasetDescription.processBusinessId",
+                                                                 processBusinessId.toString())
+                                                             .expectValue(
+                                                                 "$.content.datasetSelections[0].processDatasetDescription.parameters.key",
+                                                                 "value");
         performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
-                          new ProcessDatasetDescription(processBusinessId, parameters), customizerAdd, "error",
+                          new ProcessDatasetDescription(processBusinessId, parameters),
+                          customizerAdd,
+                          "error",
                           basket.getDatasetSelections().first().getId());
 
         RequestBuilderCustomizer customizerRemove = customizer().expectStatusOk()
-                .expectDoesNotExist("$.content.datasetSelections[0].processDatasetDescription");
+                                                                .expectDoesNotExist(
+                                                                    "$.content.datasetSelections[0].processDatasetDescription");
         performDefaultPut(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS,
-                          "", customizerRemove, "error", basket.getDatasetSelections().first().getId());
+                          "",
+                          customizerRemove,
+                          "error",
+                          basket.getDatasetSelections().first().getId());
     }
 
     @Test
@@ -286,13 +330,21 @@ public class BasketControllerIT extends AbstractRegardsIT {
     @Test
     public void testGetBasket() {
         createBasket();
-        RequestBuilderCustomizer customizer = customizer().expectStatusOk().expectValue("$.content.quota", 8L)
-                .expectValue("$.content.datasetSelections[0].filesCount", 10L)
-                .expectValue("$.content.datasetSelections[0].filesSize", 124452L)
-                .expectValue("$.content.datasetSelections[0].quota", 8L)
-                .expectValue("$.content.datasetSelections[0].itemsSelections[0].filesCount", 10L)
-                .expectValue("$.content.datasetSelections[0].itemsSelections[0].filesSize", 124452L)
-                .expectValue("$.content.datasetSelections[0].itemsSelections[0].quota", 8L);
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                                                          .expectValue("$.content.quota", 8L)
+                                                          .expectValue("$.content.datasetSelections[0].filesCount", 10L)
+                                                          .expectValue("$.content.datasetSelections[0].filesSize",
+                                                                       124452L)
+                                                          .expectValue("$.content.datasetSelections[0].quota", 8L)
+                                                          .expectValue(
+                                                              "$.content.datasetSelections[0].itemsSelections[0].filesCount",
+                                                              10L)
+                                                          .expectValue(
+                                                              "$.content.datasetSelections[0].itemsSelections[0].filesSize",
+                                                              124452L)
+                                                          .expectValue(
+                                                              "$.content.datasetSelections[0].itemsSelections[0].quota",
+                                                              8L);
         performDefaultGet(BasketController.ORDER_BASKET, customizer, "error");
     }
 
@@ -332,22 +384,32 @@ public class BasketControllerIT extends AbstractRegardsIT {
     @Test
     public void testRemoveDatasetSelection() {
         Basket basket = createBasket();
-        RequestBuilderCustomizer customizer = customizer().expectStatusOk().expectIsEmpty("$.content.datasetSelections")
-                .expectValue("$.content.quota", 0L);
-        performDefaultDelete(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID, customizer,
-                             "error", basket.getDatasetSelections().first().getId());
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                                                          .expectIsEmpty("$.content.datasetSelections")
+                                                          .expectValue("$.content.quota", 0L);
+        performDefaultDelete(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID,
+                             customizer,
+                             "error",
+                             basket.getDatasetSelections().first().getId());
     }
 
     @Test
     public void testRemoveDatedItemSelection() {
         Basket basket = createBasket();
-        OffsetDateTime date = basket.getDatasetSelections().first().getItemsSelections().first().getSelectionRequest()
-                .getSelectionDate();
+        OffsetDateTime date = basket.getDatasetSelections()
+                                    .first()
+                                    .getItemsSelections()
+                                    .first()
+                                    .getSelectionRequest()
+                                    .getSelectionDate();
 
-        performDefaultDelete(BasketController.ORDER_BASKET
-                + BasketController.DATASET_DATASET_SELECTION_ID_ITEMS_SELECTION_DATE, customizer().expectStatusOk(),
-                             "error", basket.getDatasetSelections().first().getId(), OffsetDateTimeAdapter.format(date),
-                             Charset.defaultCharset().toString());
+        performDefaultDelete(
+            BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_ITEMS_SELECTION_DATE,
+            customizer().expectStatusOk(),
+            "error",
+            basket.getDatasetSelections().first().getId(),
+            OffsetDateTimeAdapter.format(date),
+            Charset.defaultCharset().toString());
     }
 
     @Test

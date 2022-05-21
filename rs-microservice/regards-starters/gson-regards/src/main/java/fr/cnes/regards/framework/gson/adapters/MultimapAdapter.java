@@ -1,30 +1,26 @@
 package fr.cnes.regards.framework.gson.adapters;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.reflect.TypeParameter;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.*;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Map;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.reflect.TypeParameter;
-import com.google.common.reflect.TypeToken;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
-
 /**
  * Multimap Gson adapter
+ *
  * @author oroussel
  */
 public class MultimapAdapter implements JsonDeserializer<Multimap<?, ?>>, JsonSerializer<Multimap<?, ?>> {
 
     @Override
     public Multimap<?, ?> deserialize(JsonElement json, Type type, JsonDeserializationContext context)
-            throws JsonParseException {
+        throws JsonParseException {
         final HashMultimap<Object, Object> result = HashMultimap.create();
         final Map<?, Collection<?>> map = context.deserialize(json, multimapTypeToMapType(type));
         for (final Map.Entry<?, ?> e : map.entrySet()) {

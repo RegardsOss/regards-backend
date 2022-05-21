@@ -18,21 +18,6 @@
  */
 package fr.cnes.regards.modules.dam.service.entities;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Set;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -44,12 +29,25 @@ import fr.cnes.regards.modules.model.dao.IModelRepository;
 import fr.cnes.regards.modules.model.domain.IComputedAttribute;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.service.IModelService;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Set;
 
 /**
  * @author Sylvain Vissiere-Guerinet
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=entities",
-        "regards.dam.post.aip.entities.to.storage=false" }, locations = "classpath:es.properties")
+    "regards.dam.post.aip.entities.to.storage=false" }, locations = "classpath:es.properties")
 @MultitenantTransactional
 public class EntitiesServiceIT extends AbstractMultitenantServiceIT {
 

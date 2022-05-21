@@ -18,17 +18,15 @@
  */
 package fr.cnes.regards.framework.modules.plugins.rest;
 
+import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-
 /**
- *
  * Test metadata build process
- * @author Marc SORDI
  *
+ * @author Marc SORDI
  */
 public class PluginMetadataTest {
 

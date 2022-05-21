@@ -22,20 +22,25 @@ import fr.cnes.regards.modules.dam.domain.settings.DamSettings;
 
 /**
  * Configuration for ES index creation
+ *
  * @author Thibaud Michaudel
  **/
 public class CreateIndexConfiguration {
+
     private long numberOfShards;
+
     private long numberOfReplicas;
 
     /**
      * Default configuration using 5 shards and 1 replica for each shard.
      */
-    public static final CreateIndexConfiguration DEFAULT = new CreateIndexConfiguration(DamSettings.DEFAULT_INDEX_NUMBER_OF_SHARDS, DamSettings.DEFAULT_INDEX_NUMBER_OF_REPLICAS);
+    public static final CreateIndexConfiguration DEFAULT = new CreateIndexConfiguration(DamSettings.DEFAULT_INDEX_NUMBER_OF_SHARDS,
+                                                                                        DamSettings.DEFAULT_INDEX_NUMBER_OF_REPLICAS);
 
     /**
      * Constructor
-     * @param numberOfShards number of shards in the index, this number cannot be changed after index creation
+     *
+     * @param numberOfShards   number of shards in the index, this number cannot be changed after index creation
      * @param numberOfReplicas number of replicas for each shards in the index, this number cannot be changed after index creation
      */
     public CreateIndexConfiguration(long numberOfShards, long numberOfReplicas) {
@@ -43,7 +48,10 @@ public class CreateIndexConfiguration {
         this.numberOfReplicas = numberOfReplicas;
     }
 
-    public CreateIndexConfiguration(){};
+    public CreateIndexConfiguration() {
+    }
+
+    ;
 
     public long getNumberOfShards() {
         return numberOfShards;

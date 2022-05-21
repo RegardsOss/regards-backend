@@ -18,17 +18,17 @@
  */
 package fr.cnes.regards.framework.utils.plugins.free;
 
-import org.junit.Assert;
-
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import org.junit.Assert;
 
 /**
  * Test with primitive
+ *
  * @author Marc Sordi
  */
 @Plugin(author = "REGARDS Team", description = "Plugin with string", id = "FreePluginWithString", version = "1.0.0",
-        contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
+    contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
 public class FreePluginWithString implements IFreePlugin {
 
     public static final String FIELD_NAME_STRING = "sfield";

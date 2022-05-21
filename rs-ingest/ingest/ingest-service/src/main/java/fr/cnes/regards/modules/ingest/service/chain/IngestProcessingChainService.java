@@ -114,12 +114,14 @@ public class IngestProcessingChainService implements IIngestProcessingChainServi
 
             // Create default validation plugin configuration
             PluginConfiguration validationDefaultConf = new PluginConfiguration(DEFAULT_VALIDATION_PLUGIN_CONF_LABEL,
-                    DefaultSipValidation.class.getAnnotation(Plugin.class).id());
+                                                                                DefaultSipValidation.class.getAnnotation(
+                                                                                    Plugin.class).id());
             defaultChain.setValidationPlugin(validationDefaultConf);
 
             // Create default generation plugin configuration
             PluginConfiguration generationDefaultConf = new PluginConfiguration(DEFAULT_GENERATION_PLUGIN_CONF_LABEL,
-                    DefaultSingleAIPGeneration.class.getAnnotation(Plugin.class).id());
+                                                                                DefaultSingleAIPGeneration.class.getAnnotation(
+                                                                                    Plugin.class).id());
             defaultChain.setGenerationPlugin(generationDefaultConf);
 
             createNewChain(defaultChain);
@@ -131,15 +133,16 @@ public class IngestProcessingChainService implements IIngestProcessingChainServi
 
         // Check no identifier
         if (newChain.getId() != null) {
-            throw new EntityInvalidException(
-                    String.format("New chain %s must not already have and identifier.", newChain.getName()));
+            throw new EntityInvalidException(String.format("New chain %s must not already have and identifier.",
+                                                           newChain.getName()));
         }
 
         // Check not already exists
         Optional<IngestProcessingChain> oChain = ingestChainRepository.findOneByName(newChain.getName());
         if (oChain.isPresent()) {
-            throw new EntityAlreadyExistsException(String
-                    .format("%s for name %s aleady exists", IngestProcessingChain.class.getName(), newChain.getName()));
+            throw new EntityAlreadyExistsException(String.format("%s for name %s aleady exists",
+                                                                 IngestProcessingChain.class.getName(),
+                                                                 newChain.getName()));
         }
 
         // Register plugin configurations
@@ -192,13 +195,13 @@ public class IngestProcessingChainService implements IIngestProcessingChainServi
     }
 
     private PluginConfiguration createPluginConfiguration(PluginConfiguration pluginConfiguration)
-            throws ModuleException {
+        throws ModuleException {
         // Check no identifier. For each new chain, we force plugin configuration creation. A configuration cannot be
         // reused.
         if (pluginConfiguration.getId() != null) {
-            throw new EntityInvalidException(
-                    String.format("Plugin configuration %s must not already have and identifier.",
-                                  pluginConfiguration.getLabel()));
+            throw new EntityInvalidException(String.format(
+                "Plugin configuration %s must not already have and identifier.",
+                pluginConfiguration.getLabel()));
         }
         return pluginService.savePluginConfiguration(pluginConfiguration);
     }
@@ -216,8 +219,7 @@ public class IngestProcessingChainService implements IIngestProcessingChainServi
         // Manage plugin configuration
         // ---------------------------
         // Pre-processing plugine
-        Optional<PluginConfiguration> existing = ingestChainRepository
-                .findOnePreProcessingPluginByName(chainToUpdate.getName());
+        Optional<PluginConfiguration> existing = ingestChainRepository.findOnePreProcessingPluginByName(chainToUpdate.getName());
         confsToRemove.add(updatePluginConfiguration(chainToUpdate.getPreProcessingPlugin(), existing));
         // Validation plugin
         existing = ingestChainRepository.findOneValidationPluginByName(chainToUpdate.getName());
@@ -247,13 +249,15 @@ public class IngestProcessingChainService implements IIngestProcessingChainServi
 
     /**
      * Create or update a plugin configuration cleaning old one if necessary
+     *
      * @param pluginConfiguration new plugin configuration or update
-     * @param existing existing plugin configuration
+     * @param existing            existing plugin configuration
      * @return configuration to remove because it is no longer used
      * @throws ModuleException if error occurs!
      */
     private Optional<PluginConfiguration> updatePluginConfiguration(Optional<PluginConfiguration> pluginConfiguration,
-            Optional<PluginConfiguration> existing) throws ModuleException {
+                                                                    Optional<PluginConfiguration> existing)
+        throws ModuleException {
 
         Optional<PluginConfiguration> confToRemove = Optional.empty();
 

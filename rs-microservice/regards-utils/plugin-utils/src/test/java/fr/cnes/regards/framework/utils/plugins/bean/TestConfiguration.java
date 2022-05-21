@@ -23,8 +23,9 @@ import org.springframework.context.annotation.PropertySource;
 
 /**
  * Class TestConfiguration
- *
+ * <p>
  * Plugin utils Spring context configuration class
+ *
  * @author Sébastien Binda
  */
 @PropertySource("application-test.properties")

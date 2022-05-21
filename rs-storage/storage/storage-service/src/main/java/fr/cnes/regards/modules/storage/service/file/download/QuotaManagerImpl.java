@@ -54,12 +54,19 @@ public class QuotaManagerImpl implements IQuotaManager, InitializingBean {
 
     // We want to be sure to always have our own thread pool to maintain quota and rate coherence between all storage instances
     private final ThreadPoolTaskScheduler rateExpirationTickingScheduler;
+
     private final ThreadPoolTaskScheduler syncTickingScheduler;
+
     private final IDownloadQuotaRepository quotaRepository;
+
     private final ITenantResolver tenantResolver;
+
     private final IRuntimeTenantResolver runtimeTenantResolver;
+
     private final IPublisher publisher;
+
     private final Environment env;
+
     private IQuotaManager self;
 
     // not final because tests use the setter to assert
@@ -81,11 +88,15 @@ public class QuotaManagerImpl implements IQuotaManager, InitializingBean {
     // are dumped into userDiffByTenant so things stay clean for the next sync attempt.
     private Map<String, Map<String, DiffSync>> diffsAccumulatorByTenant = new ConcurrentHashMap<>();
 
-
-    public QuotaManagerImpl(@Qualifier(RATE_EXPIRATION_TICKING_SCHEDULER) ThreadPoolTaskScheduler rateExpirationTickingScheduler,
-            @Qualifier(SYNC_TICKING_SCHEDULER) ThreadPoolTaskScheduler syncTickingScheduler, IDownloadQuotaRepository quotaRepository, ITenantResolver tenantResolver,
-            IRuntimeTenantResolver runtimeTenantResolver, IPublisher publisher, Environment env, IQuotaManager quotaManager
-    ) {
+    public QuotaManagerImpl(
+        @Qualifier(RATE_EXPIRATION_TICKING_SCHEDULER) ThreadPoolTaskScheduler rateExpirationTickingScheduler,
+        @Qualifier(SYNC_TICKING_SCHEDULER) ThreadPoolTaskScheduler syncTickingScheduler,
+        IDownloadQuotaRepository quotaRepository,
+        ITenantResolver tenantResolver,
+        IRuntimeTenantResolver runtimeTenantResolver,
+        IPublisher publisher,
+        Environment env,
+        IQuotaManager quotaManager) {
         this.rateExpirationTickingScheduler = rateExpirationTickingScheduler;
         this.syncTickingScheduler = syncTickingScheduler;
         this.quotaRepository = quotaRepository;
@@ -106,8 +117,9 @@ public class QuotaManagerImpl implements IQuotaManager, InitializingBean {
         });
 
         // start schedulers only if not in "noscheduler" profile (i.e. disable schedulers for tests)
-        boolean shouldStartSchedulers = Arrays.stream(env.getActiveProfiles()).distinct() // maybe useless but I don't trust
-                .noneMatch(profile -> profile.equals("noscheduler"));
+        boolean shouldStartSchedulers = Arrays.stream(env.getActiveProfiles())
+                                              .distinct() // maybe useless but I don't trust
+                                              .noneMatch(profile -> profile.equals("noscheduler"));
         if (shouldStartSchedulers) {
             startGaugeExpirationScheduler();
             startDiffSyncScheduler();
@@ -116,15 +128,17 @@ public class QuotaManagerImpl implements IQuotaManager, InitializingBean {
 
     private void startGaugeExpirationScheduler() {
         rateExpirationTickingScheduler.setThreadNamePrefix("gauge-expiration-");
-        rateExpirationTickingScheduler
-                .scheduleWithFixedDelay(() -> tenantResolver.getAllActiveTenants().forEach(tenant -> {
-                    runtimeTenantResolver.forceTenant(tenant);
-                    try {
-                        self.purgeExpiredGauges();
-                    } finally {
-                        runtimeTenantResolver.clearTenant();
-                    }
-                }), Duration.ofSeconds(rateExpirationTick));
+        rateExpirationTickingScheduler.scheduleWithFixedDelay(() -> tenantResolver.getAllActiveTenants()
+                                                                                  .forEach(tenant -> {
+                                                                                      runtimeTenantResolver.forceTenant(
+                                                                                          tenant);
+                                                                                      try {
+                                                                                          self.purgeExpiredGauges();
+                                                                                      } finally {
+                                                                                          runtimeTenantResolver.clearTenant();
+                                                                                      }
+                                                                                  }),
+                                                              Duration.ofSeconds(rateExpirationTick));
     }
 
     private void startDiffSyncScheduler() {
@@ -179,13 +193,12 @@ public class QuotaManagerImpl implements IQuotaManager, InitializingBean {
 
             // Publish quota update message for rs-admin to update project users
             if (!newUserDiffs.isEmpty()) {
-                publisher.publish(
-                        new QuotaUpdateEvent(
-                                newUserDiffs.entrySet()
-                                            .stream()
-                                            .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getQuota().getCounter()))
-                        )
-                );
+                publisher.publish(new QuotaUpdateEvent(newUserDiffs.entrySet()
+                                                                   .stream()
+                                                                   .collect(Collectors.toMap(Map.Entry::getKey,
+                                                                                             entry -> entry.getValue()
+                                                                                                           .getQuota()
+                                                                                                           .getCounter()))));
             }
 
             // swap user gauges for fresh global gauge but keep working instance counter diff
@@ -200,8 +213,11 @@ public class QuotaManagerImpl implements IQuotaManager, InitializingBean {
     }
 
     private Cache<String, UserDiffs> getUserDiffsCache(String tenant) {
-        return userDiffsByTenant.computeIfAbsent(tenant, t -> Caffeine.newBuilder()
-                .expireAfterAccess(30, TimeUnit.MINUTES).maximumSize(10_000).build());
+        return userDiffsByTenant.computeIfAbsent(tenant,
+                                                 t -> Caffeine.newBuilder()
+                                                              .expireAfterAccess(30, TimeUnit.MINUTES)
+                                                              .maximumSize(10_000)
+                                                              .build());
     }
 
     @Override
@@ -212,7 +228,9 @@ public class QuotaManagerImpl implements IQuotaManager, InitializingBean {
         diffSyncs.forEach((email, sync) -> {
             // sync current instance quota/rate for user
             quotaRepository.upsertOrCombineDownloadQuota(instanceId, email, sync.quotaDiff);
-            quotaRepository.upsertOrCombineDownloadRate(instanceId, email, sync.rateDiff,
+            quotaRepository.upsertOrCombineDownloadRate(instanceId,
+                                                        email,
+                                                        sync.rateDiff,
                                                         LocalDateTime.now().plusSeconds(syncTick * 2));
 
             // and refresh its global quota/rate (select across all instances gauges)
@@ -237,7 +255,9 @@ public class QuotaManagerImpl implements IQuotaManager, InitializingBean {
         UserDiffs diffs = gaugeSyncs.get(email, ignored -> {
             // create its current instance quota/rate if not exist (diff = 0L so operation is idempotent and thus CAS-loop safe)
             quotaRepository.upsertOrCombineDownloadQuota(instanceId, email, 0L);
-            quotaRepository.upsertOrCombineDownloadRate(instanceId, email, 0L,
+            quotaRepository.upsertOrCombineDownloadRate(instanceId,
+                                                        email,
+                                                        0L,
                                                         LocalDateTime.now().plusSeconds(syncTick * 2));
             // and get its global quota/rate (select across all instances gauges)
             UserQuotaAggregate globalQuota = quotaRepository.fetchDownloadQuotaSum(email);
@@ -264,7 +284,8 @@ public class QuotaManagerImpl implements IQuotaManager, InitializingBean {
         userDiffs.asMap().computeIfPresent(email, (key, userDiff) -> {
             if ((userDiff.getTotalRate() >= quota.getRateLimit()) && (quota.getRateLimit() >= 0)) {
                 // nice try little thread, but no, you're too late
-                throw DownloadLimitExceededException.buildDownloadRateExceededException(email, quota.getRateLimit(),
+                throw DownloadLimitExceededException.buildDownloadRateExceededException(email,
+                                                                                        quota.getRateLimit(),
                                                                                         userDiff.getTotalRate());
             }
             return UserDiffs.incrementQuotaAndRateDiffs(userDiff);
@@ -340,8 +361,10 @@ public class QuotaManagerImpl implements IQuotaManager, InitializingBean {
         }
 
         public static UserDiffs renew(UserDiffs old) {
-            return new UserDiffs(new UserRateAggregate(old.rate.getGauge() + old.rateDiff), 0L,
-                    new UserQuotaAggregate(old.quota.getCounter() + old.quotaDiff), 0L);
+            return new UserDiffs(new UserRateAggregate(old.rate.getGauge() + old.rateDiff),
+                                 0L,
+                                 new UserQuotaAggregate(old.quota.getCounter() + old.quotaDiff),
+                                 0L);
         }
 
         public static UserDiffs refresh(UserDiffs old, UserDiffs fresh) {

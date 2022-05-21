@@ -53,6 +53,7 @@ import java.util.stream.Collectors;
 
 /**
  * {@link INotificationService} implementation
+ *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
@@ -90,14 +91,18 @@ public class NotificationService implements INotificationService {
 
     /**
      * Creates a {@link NotificationService} wired to the given {@link INotificationRepository}.
+     *
      * @param notificationRepository Autowired by Spring. Must not be {@literal null}.
-     * @param roleService Autowired by Spring. Must not be {@literal null}.
-     * @param projectUserClient Autowired by Spring. Must not be {@literal null}.
+     * @param roleService            Autowired by Spring. Must not be {@literal null}.
+     * @param projectUserClient      Autowired by Spring. Must not be {@literal null}.
      */
-    public NotificationService(INotificationRepository notificationRepository, IRoleService roleService,
-            IProjectUserService projectUserClient, ApplicationEventPublisher applicationEventPublisher,
-            IAuthenticationResolver authenticationResolver,
-            @Value("${regards.notification.mode:MULTITENANT}") NotificationMode notificationMode, INotificationService notificationService) {
+    public NotificationService(INotificationRepository notificationRepository,
+                               IRoleService roleService,
+                               IProjectUserService projectUserClient,
+                               ApplicationEventPublisher applicationEventPublisher,
+                               IAuthenticationResolver authenticationResolver,
+                               @Value("${regards.notification.mode:MULTITENANT}") NotificationMode notificationMode,
+                               INotificationService notificationService) {
         super();
         this.notificationRepository = notificationRepository;
         this.roleService = roleService;
@@ -136,7 +141,8 @@ public class NotificationService implements INotificationService {
     public Page<INotificationWithoutMessage> retrieveNotifications(Pageable page) {
         if (notificationMode == NotificationMode.MULTITENANT) {
             return notificationRepository.findByRecipientsContaining(authenticationResolver.getUser(),
-                                                                     authenticationResolver.getRole(), page);
+                                                                     authenticationResolver.getRole(),
+                                                                     page);
         } else {
             return notificationRepository.findAllNotificationsWithoutMessage(page);
         }
@@ -144,21 +150,25 @@ public class NotificationService implements INotificationService {
 
     /**
      * Lets get all roles that should have the notification through the role hierarchy
+     *
      * @return all recipient role names
      */
     private Set<String> getAllRecipientRoles(Set<String> roleRecipients) {
-        return roleRecipients.stream().map(roleName -> {
-            try {
-                return roleService.retrieveRole(roleName);
-            } catch (EntityNotFoundException e) {
-                LOG.error(String
-                        .format("Notification should have been sent to %s but that role does not exist anymore. Sending it to PROJECT_ADMIN",
-                                roleName),
-                          e);
-                return new Role(DefaultRole.PROJECT_ADMIN.toString());
-            }
-        }).filter(Objects::nonNull).flatMap(role -> roleService.getDescendants(role).stream()).map(Role::getName)
-                .collect(Collectors.toSet());
+        return roleRecipients.stream()
+                             .map(roleName -> {
+                                 try {
+                                     return roleService.retrieveRole(roleName);
+                                 } catch (EntityNotFoundException e) {
+                                     LOG.error(String.format(
+                                         "Notification should have been sent to %s but that role does not exist anymore. Sending it to PROJECT_ADMIN",
+                                         roleName), e);
+                                     return new Role(DefaultRole.PROJECT_ADMIN.toString());
+                                 }
+                             })
+                             .filter(Objects::nonNull)
+                             .flatMap(role -> roleService.getDescendants(role).stream())
+                             .map(Role::getName)
+                             .collect(Collectors.toSet());
     }
 
     @Override
@@ -215,10 +225,9 @@ public class NotificationService implements INotificationService {
                     page = page.next();
                 } while (hasNext);
             } catch (EntityNotFoundException e) {
-                LOG.error(String
-                        .format("Notification should have been sent to %s but that role does not exist anymore. Silently skipping part of the recipients",
-                                roleName),
-                          e);
+                LOG.error(String.format(
+                    "Notification should have been sent to %s but that role does not exist anymore. Silently skipping part of the recipients",
+                    roleName), e);
             }
         }
         // Merge the two streams
@@ -230,9 +239,10 @@ public class NotificationService implements INotificationService {
     public Page<INotificationWithoutMessage> retrieveNotifications(Pageable page, NotificationStatus state) {
         if (state != null) {
             if (notificationMode == NotificationMode.MULTITENANT) {
-                return notificationRepository
-                        .findByStatusAndRecipientsContaining(state, authenticationResolver.getUser(),
-                                                             authenticationResolver.getRole(), page);
+                return notificationRepository.findByStatusAndRecipientsContaining(state,
+                                                                                  authenticationResolver.getUser(),
+                                                                                  authenticationResolver.getRole(),
+                                                                                  page);
             } else {
                 return notificationRepository.findAllNotificationsWithoutMessageByStatus(state, page);
             }
@@ -283,8 +293,10 @@ public class NotificationService implements INotificationService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Page<INotificationWithoutMessage> deleteReadNotificationsPage(Pageable page) {
         Page<INotificationWithoutMessage> results = this.retrieveNotifications(page, NotificationStatus.READ);
-        Set<Long> idsToDelete = results.getContent().stream().map(INotificationWithoutMessage::getId)
-                .collect(Collectors.toSet());
+        Set<Long> idsToDelete = results.getContent()
+                                       .stream()
+                                       .map(INotificationWithoutMessage::getId)
+                                       .collect(Collectors.toSet());
         notificationRepository.deleteByIdIn(idsToDelete);
         return results;
     }

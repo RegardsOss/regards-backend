@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.dao;
 
 import com.github.benmanes.caffeine.cache.Cache;
@@ -46,46 +46,43 @@ public class PBatchRepositoryImpl implements IPBatchRepository {
     private static final Logger LOGGER = LoggerFactory.getLogger(PBatchRepositoryImpl.class);
 
     static Cache<UUID, PBatch> cache = Caffeine.newBuilder()
-            .expireAfterAccess(30, TimeUnit.MINUTES)
-            .maximumSize(10000)
-            .build();
+                                               .expireAfterAccess(30, TimeUnit.MINUTES)
+                                               .maximumSize(10000)
+                                               .build();
 
     private final IBatchEntityRepository delegate;
 
     private final DomainEntityMapper.Batch mapper;
 
     @Autowired
-    public PBatchRepositoryImpl(
-            IBatchEntityRepository delegate,
-            DomainEntityMapper.Batch mapper) {
+    public PBatchRepositoryImpl(IBatchEntityRepository delegate, DomainEntityMapper.Batch mapper) {
         this.delegate = delegate;
         this.mapper = mapper;
     }
 
-    @Override public Mono<PBatch> save(PBatch domain) {
-        return delegate
-            .save(mapper.toEntity(domain))
-            .map(BatchEntity::persisted)
-            .map(mapper::toDomain)
-            .doOnNext(b -> cache.put(b.getId(), b));
+    @Override
+    public Mono<PBatch> save(PBatch domain) {
+        return delegate.save(mapper.toEntity(domain))
+                       .map(BatchEntity::persisted)
+                       .map(mapper::toDomain)
+                       .doOnNext(b -> cache.put(b.getId(), b));
     }
 
-    @Override public Mono<PBatch> findById(UUID id) {
+    @Override
+    public Mono<PBatch> findById(UUID id) {
         return Option.of(cache.getIfPresent(id))
-            .map(Mono::just)
-            .getOrElse(() -> delegate
-                .findById(id)
-                .map(BatchEntity::persisted)
-                .map(mapper::toDomain)
-                .doOnNext(b -> cache.put(b.getId(), b))
-            )
-            .switchIfEmpty(Mono.defer(() -> Mono.error(new BatchNotFoundException(id))));
+                     .map(Mono::just)
+                     .getOrElse(() -> delegate.findById(id)
+                                              .map(BatchEntity::persisted)
+                                              .map(mapper::toDomain)
+                                              .doOnNext(b -> cache.put(b.getId(), b)))
+                     .switchIfEmpty(Mono.defer(() -> Mono.error(new BatchNotFoundException(id))));
     }
 
     @Override
     public Mono<Void> deleteAllFinishedForMoreThan(long batchRipeForDeleteAgeMs) {
         return delegate.deleteAll(delegate.getCleanableBatches(batchRipeForDeleteAgeMs)
-                .doOnNext(b -> LOGGER.info("Deleting batch {}", b)));
+                                          .doOnNext(b -> LOGGER.info("Deleting batch {}", b)));
     }
 
     @Override
@@ -95,14 +92,21 @@ public class PBatchRepositoryImpl implements IPBatchRepository {
 
     @Override
     public Mono<Void> deleteAll() {
-        return delegate.deleteAll().doOnTerminate(() -> {cache.invalidateAll();cache.cleanUp();});
+        return delegate.deleteAll().doOnTerminate(() -> {
+            cache.invalidateAll();
+            cache.cleanUp();
+        });
     }
 
     public static final class BatchNotFoundException extends ProcessingException {
+
         public BatchNotFoundException(UUID batchId) {
-            super(ProcessingExceptionType.BATCH_NOT_FOUND_EXCEPTION, String.format("Batch uuid not found: %s", batchId));
+            super(ProcessingExceptionType.BATCH_NOT_FOUND_EXCEPTION,
+                  String.format("Batch uuid not found: %s", batchId));
         }
-        @Override public String getMessage() {
+
+        @Override
+        public String getMessage() {
             return desc;
         }
     }

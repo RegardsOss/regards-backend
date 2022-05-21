@@ -33,7 +33,7 @@ public class AccessDenialTest extends UserAccessUpdateTest {
     public void fail_if_not_waiting_access() throws Exception {
         ProjectUser givenUser = UserBuilder.aUser().authorized().build();
         Assertions.assertThatExceptionOfType(EntityTransitionForbiddenException.class)
-            .isThrownBy(() -> userWorkflowManager.denyAccess(givenUser));
+                  .isThrownBy(() -> userWorkflowManager.denyAccess(givenUser));
     }
 
     @Test

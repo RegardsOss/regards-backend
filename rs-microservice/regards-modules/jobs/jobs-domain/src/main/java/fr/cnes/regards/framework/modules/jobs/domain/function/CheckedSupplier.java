@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.modules.jobs.domain.function;
 /**
  * Checked supplier functional interface.
  * Same as Supplier functional interface but with an Exception
+ *
  * @param <R> supplied value type
  * @param <E> thrown checked exception type
  * @author oroussel

@@ -1,16 +1,5 @@
 package fr.cnes.regards.modules.workermanager.service.cache;
 
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
@@ -19,6 +8,16 @@ import fr.cnes.regards.modules.workermanager.domain.cache.CacheWorkerInstance;
 import fr.cnes.regards.modules.workermanager.dto.WorkerTypeAlive;
 import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerHeartBeatEvent;
 import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigCacheService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 @Service
 public class WorkerCacheService implements InitializingBean {
@@ -43,8 +42,9 @@ public class WorkerCacheService implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() {
-        cache = CacheBuilder.newBuilder().expireAfterWrite(Duration.of(expireInCacheDuration, ChronoUnit.SECONDS))
-                .build();
+        cache = CacheBuilder.newBuilder()
+                            .expireAfterWrite(Duration.of(expireInCacheDuration, ChronoUnit.SECONDS))
+                            .build();
     }
 
     public Cache<String, CacheEntry> getCache() {
@@ -86,8 +86,8 @@ public class WorkerCacheService implements InitializingBean {
     /**
      * @param contentType Content Type of a request
      * @return an optional containing the workerType when the cache contains a worker
-     *              accepting provided content type and tenant,
-     *              empty otherwise
+     * accepting provided content type and tenant,
+     * empty otherwise
      */
     public Optional<String> getWorkerTypeByContentType(String contentType) {
         Optional<String> workerTypeOpt = workerConfigCacheService.getWorkerType(contentType);
@@ -106,7 +106,7 @@ public class WorkerCacheService implements InitializingBean {
         Set<String> workerTypesToKeep = new HashSet<>();
         Map<String, String> workerConfigs = workerConfigCacheService.getWorkerConfigs();
         // Init worker types to keep
-        for(Map.Entry <String, String> workerConfig : workerConfigs.entrySet()) {
+        for (Map.Entry<String, String> workerConfig : workerConfigs.entrySet()) {
             String workerType = workerConfig.getValue();
             if (contentTypes == null || contentTypes.isEmpty()) {
                 // Don't ignore any worker type
@@ -120,7 +120,7 @@ public class WorkerCacheService implements InitializingBean {
             }
         }
         // Compute result
-        for (Map.Entry<String, CacheEntry> entry: cache.asMap().entrySet()) {
+        for (Map.Entry<String, CacheEntry> entry : cache.asMap().entrySet()) {
             String workerType = entry.getKey();
             if (workerTypesToKeep.contains(workerType)) {
                 result.add(new WorkerTypeAlive(workerType, entry.getValue().getNbWorkerIns()));
@@ -135,20 +135,20 @@ public class WorkerCacheService implements InitializingBean {
     private Map<String, Set<CacheWorkerInstance>> getWorkerInsSetByWorkerType(List<WorkerHeartBeatEvent> events) {
         Map<String, Set<CacheWorkerInstance>> messagesByWorkerType = new HashMap<>();
         events.stream()
-                // Remove events outdated
-                .filter(event -> CacheEntry.isValidHeartBeat(event.getHeartBeatDate(), expireInCacheDuration))
-                // Regroup events into a Map with workerType as key and a list of CacheWorkerIns as value
-                .forEach(workerHeartBeatEvent -> {
-                    String workerType = workerHeartBeatEvent.getType();
-                    // Convert the event into a CacheWorkerIns
-                    CacheWorkerInstance cacheWorkerInstance = CacheWorkerInstance.build(workerHeartBeatEvent);
-                    // Save it to the returned Map
-                    if (messagesByWorkerType.containsKey(workerType)) {
-                        messagesByWorkerType.get(workerType).add(cacheWorkerInstance);
-                    } else {
-                        messagesByWorkerType.put(workerType, Sets.newHashSet(cacheWorkerInstance));
-                    }
-                });
+              // Remove events outdated
+              .filter(event -> CacheEntry.isValidHeartBeat(event.getHeartBeatDate(), expireInCacheDuration))
+              // Regroup events into a Map with workerType as key and a list of CacheWorkerIns as value
+              .forEach(workerHeartBeatEvent -> {
+                  String workerType = workerHeartBeatEvent.getType();
+                  // Convert the event into a CacheWorkerIns
+                  CacheWorkerInstance cacheWorkerInstance = CacheWorkerInstance.build(workerHeartBeatEvent);
+                  // Save it to the returned Map
+                  if (messagesByWorkerType.containsKey(workerType)) {
+                      messagesByWorkerType.get(workerType).add(cacheWorkerInstance);
+                  } else {
+                      messagesByWorkerType.put(workerType, Sets.newHashSet(cacheWorkerInstance));
+                  }
+              });
         return messagesByWorkerType;
     }
 }

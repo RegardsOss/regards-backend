@@ -19,9 +19,7 @@
 package fr.cnes.regards.modules.order.domain;
 
 /**
- *
  * @author Sébastien Binda
- *
  */
 public class OrderControllerEndpointConfiguration {
 

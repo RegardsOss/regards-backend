@@ -21,9 +21,7 @@ package fr.cnes.regards.modules.access.services.service.ui;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 
 /**
- *
  * @author Sébastien Binda
- *
  */
 public class UIPluginDefConfAssociation {
 

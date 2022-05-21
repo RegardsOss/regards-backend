@@ -51,7 +51,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.OffsetDateTime;
 import java.util.*;
 
-
 @Service
 @MultitenantTransactional
 @RefreshScope
@@ -62,20 +61,35 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderMaintenanceService.class);
 
     private IOrderMaintenanceService self;
+
     private final IOrderService orderService;
+
     private final IOrderRepository orderRepository;
+
     private final IOrderDataFileService orderDataFileService;
+
     private final IJobInfoService jobInfoService;
+
     private final ITenantResolver tenantResolver;
+
     private final IRuntimeTenantResolver runtimeTenantResolver;
+
     private final TemplateService templateService;
+
     private final IEmailClient emailClient;
+
     private final IOrderSettingsService orderSettingsService;
 
-    public OrderMaintenanceService(IOrderService orderService, IOrderRepository orderRepository, IOrderDataFileService orderDataFileService, IJobInfoService jobInfoService,
-                                   ITenantResolver tenantResolver, IRuntimeTenantResolver runtimeTenantResolver, TemplateService templateService, IEmailClient emailClient,
-                                   IOrderSettingsService orderSettingsService, IOrderMaintenanceService orderMaintenanceService
-    ) {
+    public OrderMaintenanceService(IOrderService orderService,
+                                   IOrderRepository orderRepository,
+                                   IOrderDataFileService orderDataFileService,
+                                   IJobInfoService jobInfoService,
+                                   ITenantResolver tenantResolver,
+                                   IRuntimeTenantResolver runtimeTenantResolver,
+                                   TemplateService templateService,
+                                   IEmailClient emailClient,
+                                   IOrderSettingsService orderSettingsService,
+                                   IOrderMaintenanceService orderMaintenanceService) {
         this.orderService = orderService;
         this.orderRepository = orderRepository;
         this.orderDataFileService = orderDataFileService;
@@ -87,7 +101,6 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
         this.orderSettingsService = orderSettingsService;
         this.self = orderMaintenanceService;
     }
-
 
     @Override
     @Transactional(propagation = Propagation.NEVER) // Must not create a transaction, it is a multitenant method
@@ -118,12 +131,11 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
         List<Order> finishedOrders = orderRepository.findFinishedOrdersToUpdate();
         if (!finishedOrders.isEmpty()) {
             // For orders with DONE status and download errors, set status to DONE_WITH_WARNING
-            finishedOrders.stream().filter(order -> OrderStatus.DONE.equals(order.getStatus()))
-                    .forEach(order -> {
-                        if (orderDataFileService.hasDownloadErrors(order.getId())) {
-                            order.setStatus(OrderStatus.DONE_WITH_WARNING);
-                        }
-                    });
+            finishedOrders.stream().filter(order -> OrderStatus.DONE.equals(order.getStatus())).forEach(order -> {
+                if (orderDataFileService.hasDownloadErrors(order.getId())) {
+                    order.setStatus(OrderStatus.DONE_WITH_WARNING);
+                }
+            });
             finishedOrders.forEach(order -> order.setAvailableFilesCount(0));
             orderRepository.saveAll(finishedOrders);
         }
@@ -149,7 +161,8 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
         int delayBeforeEmailNotification = userOrderParameters.getDelayBeforeEmailNotification();
         List<Order> asideOrders = orderRepository.findAsideOrders(delayBeforeEmailNotification);
 
-        Multimap<String, Order> orderMultimap = TreeMultimap.create(Comparator.naturalOrder(), Comparator.comparing(Order::getCreationDate));
+        Multimap<String, Order> orderMultimap = TreeMultimap.create(Comparator.naturalOrder(),
+                                                                    Comparator.comparing(Order::getCreationDate));
         asideOrders.forEach(o -> orderMultimap.put(o.getOwner(), o));
 
         // For each owner
@@ -213,8 +226,11 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
     // specified by Spring so it is cached in first level)
     public void cleanExpiredOrder(Order order) {
         // Ask for all jobInfos abortion (don't call self.pause() because of status, order must stay EXPIRED)
-        order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream()).map(FilesTask::getJobInfo)
-                .forEach(jobInfo -> jobInfoService.stopJob(jobInfo.getId()));
+        order.getDatasetTasks()
+             .stream()
+             .flatMap(dsTask -> dsTask.getReliantTasks().stream())
+             .map(FilesTask::getJobInfo)
+             .forEach(jobInfo -> jobInfoService.stopJob(jobInfo.getId()));
 
         // Wait for its complete stop
         order = orderService.loadComplete(order.getId());

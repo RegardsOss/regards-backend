@@ -19,16 +19,11 @@
  */
 package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.multitransactional;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * Basic pojo to test transaction synchronization
+ *
  * @author Marc Sordi
  */
 @Entity

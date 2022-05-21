@@ -18,49 +18,41 @@
  */
 package fr.cnes.regards.microservices.administration;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.project.service.IProjectConnectionService;
 import fr.cnes.regards.modules.project.service.IProjectService;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 /**
- *
  * Class MicroserviceTenantResolverAutoConfigure
- *
+ * <p>
  * Autoconfiguration class for Administration Local multitenant resolver
  *
  * @author Sébastien Binda
-
  */
 @Configuration
 public class LocalTenantConnectionResolverAutoConfiguration {
 
     /**
-     *
      * {@link ITenantConnectionResolver} implementation for local resolver for administration service.
      *
-     * @param pProjectService
-     *            internal Project service.
+     * @param pProjectService internal Project service.
      * @return ITenantConnectionResolver
-
      */
     @Bean
     @Primary
     ITenantConnectionResolver tenantConnectionResolver(IProjectService pProjectService,
-            IProjectConnectionService pProjectConnectionService) {
+                                                       IProjectConnectionService pProjectConnectionService) {
         return new LocalTenantConnectionResolver(pProjectService, pProjectConnectionService);
     }
 
     /**
-     *
      * {@link ITenantResolver} implementation for local tenant resolver for administration service
      *
      * @return ITenantResolver
-
      */
     @Bean("local-tenant-resolver")
     @Primary

@@ -12,10 +12,11 @@ import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
-import java.util.Collection;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+import java.util.Optional;
 
 @Service
 @MultitenantTransactional
@@ -255,27 +256,39 @@ public class SessionNotifier {
 
     // INC
     public void incrementCount(AbstractRequest request, SessionNotifierPropertyEnum property, int nbProducts) {
-        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, request.getSessionOwner(), request.getSession(),
-                                             new StepPropertyInfo(StepTypeEnum.REFERENCING, property.getState(),
-                                                                  property.getName(), String.valueOf(nbProducts),
+        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP,
+                                             request.getSessionOwner(),
+                                             request.getSession(),
+                                             new StepPropertyInfo(StepTypeEnum.REFERENCING,
+                                                                  property.getState(),
+                                                                  property.getName(),
+                                                                  String.valueOf(nbProducts),
                                                                   property.isInputRelated(),
                                                                   property.isOutputRelated()));
         sessionNotificationClient.increment(step);
     }
 
     public void incrementCount(AIPEntity aipEntity, SessionNotifierPropertyEnum property, int nbProducts) {
-        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, aipEntity.getSessionOwner(), aipEntity.getSession(),
-                                             new StepPropertyInfo(StepTypeEnum.REFERENCING, property.getState(),
-                                                                  property.getName(), String.valueOf(nbProducts),
+        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP,
+                                             aipEntity.getSessionOwner(),
+                                             aipEntity.getSession(),
+                                             new StepPropertyInfo(StepTypeEnum.REFERENCING,
+                                                                  property.getState(),
+                                                                  property.getName(),
+                                                                  String.valueOf(nbProducts),
                                                                   property.isInputRelated(),
                                                                   property.isOutputRelated()));
         sessionNotificationClient.increment(step);
     }
 
     public void incrementCount(String source, String session, SessionNotifierPropertyEnum property, int nbProducts) {
-        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source, session,
-                                             new StepPropertyInfo(StepTypeEnum.REFERENCING, property.getState(),
-                                                                  property.getName(), String.valueOf(nbProducts),
+        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP,
+                                             source,
+                                             session,
+                                             new StepPropertyInfo(StepTypeEnum.REFERENCING,
+                                                                  property.getState(),
+                                                                  property.getName(),
+                                                                  String.valueOf(nbProducts),
                                                                   property.isInputRelated(),
                                                                   property.isOutputRelated()));
         sessionNotificationClient.increment(step);
@@ -283,18 +296,26 @@ public class SessionNotifier {
 
     // DEC
     public void decrementCount(AbstractRequest request, SessionNotifierPropertyEnum property, int nbProducts) {
-        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, request.getSessionOwner(), request.getSession(),
-                                             new StepPropertyInfo(StepTypeEnum.REFERENCING, property.getState(),
-                                                                  property.getName(), String.valueOf(nbProducts),
+        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP,
+                                             request.getSessionOwner(),
+                                             request.getSession(),
+                                             new StepPropertyInfo(StepTypeEnum.REFERENCING,
+                                                                  property.getState(),
+                                                                  property.getName(),
+                                                                  String.valueOf(nbProducts),
                                                                   property.isInputRelated(),
                                                                   property.isOutputRelated()));
         sessionNotificationClient.decrement(step);
     }
 
     public void decrementCount(String source, String session, SessionNotifierPropertyEnum property, int nbProducts) {
-        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP, source, session,
-                                             new StepPropertyInfo(StepTypeEnum.REFERENCING, property.getState(),
-                                                                  property.getName(), String.valueOf(nbProducts),
+        StepProperty step = new StepProperty(GLOBAL_SESSION_STEP,
+                                             source,
+                                             session,
+                                             new StepPropertyInfo(StepTypeEnum.REFERENCING,
+                                                                  property.getState(),
+                                                                  property.getName(),
+                                                                  String.valueOf(nbProducts),
                                                                   property.isInputRelated(),
                                                                   property.isOutputRelated()));
         sessionNotificationClient.decrement(step);

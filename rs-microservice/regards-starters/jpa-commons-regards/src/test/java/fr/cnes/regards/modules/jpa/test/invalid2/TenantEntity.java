@@ -22,8 +22,9 @@ import javax.persistence.Entity;
 
 /**
  * Class TenantEntity
- *
+ * <p>
  * Test class
+ *
  * @author CS
  */
 @Entity

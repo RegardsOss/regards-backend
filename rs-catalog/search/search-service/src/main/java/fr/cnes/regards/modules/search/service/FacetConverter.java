@@ -18,27 +18,24 @@
  */
 package fr.cnes.regards.modules.search.service;
 
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableMap;
-
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * The converter retrieves attributes regarding their names. It may be internal, static or dynamic attributes.
  * And then build facets according to attribute properties.
  *
  * @author Marc Sordi
- *
  */
 @Service
 public class FacetConverter implements IFacetConverter {
@@ -77,7 +74,7 @@ public class FacetConverter implements IFacetConverter {
 
     @Override
     public Map<String, FacetType> convert(List<String> propertyNames, Map<String, String> reverseFacetNames)
-            throws OpenSearchUnknownParameter {
+        throws OpenSearchUnknownParameter {
         if (propertyNames == null) {
             return null;
         }

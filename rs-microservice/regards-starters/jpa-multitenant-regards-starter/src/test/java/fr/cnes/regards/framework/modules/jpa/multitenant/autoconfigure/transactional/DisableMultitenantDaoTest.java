@@ -18,19 +18,19 @@
  */
 package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional;
 
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-
 /**
  * Class DisableInstanceDaoTest
- *
+ * <p>
  * Test class for JPA multitenant disactivation.
+ *
  * @author CS
  */
 @RunWith(SpringRunner.class)

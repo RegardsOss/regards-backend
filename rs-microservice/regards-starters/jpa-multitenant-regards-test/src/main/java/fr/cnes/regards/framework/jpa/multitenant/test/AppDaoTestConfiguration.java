@@ -23,6 +23,7 @@ import org.springframework.context.annotation.PropertySource;
 
 /**
  * Default JPA multitenant test configuration
+ *
  * @author Marc Sordi
  */
 @Configuration

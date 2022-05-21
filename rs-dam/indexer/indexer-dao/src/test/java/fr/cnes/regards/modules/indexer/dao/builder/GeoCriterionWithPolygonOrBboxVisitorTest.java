@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.indexer.dao.builder;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import fr.cnes.regards.modules.indexer.domain.criterion.BoundaryBoxCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.PolygonCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
 import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author oroussel
@@ -66,15 +65,17 @@ public class GeoCriterionWithPolygonOrBboxVisitorTest {
         PolygonCriterion criterion;
         PolygonCriterion resultCrit;
 
-        criterion = (PolygonCriterion) ICriterion.intersectsPolygon(
-                new double[][][] { { { 0.0, 0.0 }, { 90.0, 0.0 }, { 180.0, 45.0 }, { 90.0, 60.0 } }, {} });
+        criterion = (PolygonCriterion) ICriterion.intersectsPolygon(new double[][][] {
+            { { 0.0, 0.0 }, { 90.0, 0.0 }, { 180.0, 45.0 }, { 90.0, 60.0 } }, {} });
         resultCrit = (PolygonCriterion) criterion.accept(visitor);
         Assert.assertEquals(2, resultCrit.getCoordinates().length);
         Assert.assertEquals(0, resultCrit.getCoordinates()[1].length);
         Assert.assertEquals(4, resultCrit.getCoordinates()[0].length);
         Assert.assertArrayEquals(new double[] { 0.0, 0.0 }, resultCrit.getCoordinates()[0][0], 0.00001);
         Assert.assertArrayEquals(new double[] { 90.0, 0.0 }, resultCrit.getCoordinates()[0][1], 0.00001);
-        Assert.assertArrayEquals(new double[] { -180.0, 45.15141819898613 }, resultCrit.getCoordinates()[0][2], 0.00001);
+        Assert.assertArrayEquals(new double[] { -180.0, 45.15141819898613 },
+                                 resultCrit.getCoordinates()[0][2],
+                                 0.00001);
         Assert.assertArrayEquals(new double[] { 90.0, 60.13055834426036 }, resultCrit.getCoordinates()[0][3], 0.00001);
     }
 

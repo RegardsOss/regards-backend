@@ -74,9 +74,12 @@ public class DamConfigurationManager extends AbstractModuleManagerWithTenantSett
 
     private final IPluginService pluginService;
 
-    public DamConfigurationManager(Validator validator, IRuntimeTenantResolver runtimeTenantResolver,
-            IDatasetService datasetService, IDatasetRepository datasetRepository, IModelService modelService,
-            IPluginService pluginService) {
+    public DamConfigurationManager(Validator validator,
+                                   IRuntimeTenantResolver runtimeTenantResolver,
+                                   IDatasetService datasetService,
+                                   IDatasetRepository datasetRepository,
+                                   IModelService modelService,
+                                   IPluginService pluginService) {
         this.validator = validator;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.datasetService = datasetService;
@@ -87,8 +90,10 @@ public class DamConfigurationManager extends AbstractModuleManagerWithTenantSett
 
     @Override
     protected Set<String> importConfiguration(ModuleConfiguration configuration, Set<String> importErrors) {
-        Set<PluginConfiguration> pluginConfigurations = getConfigurationSettingsByClass(configuration, PluginConfiguration.class);
-        Set<DatasetConfiguration> datasetConfigurations = getConfigurationSettingsByClass(configuration, DatasetConfiguration.class);
+        Set<PluginConfiguration> pluginConfigurations = getConfigurationSettingsByClass(configuration,
+                                                                                        PluginConfiguration.class);
+        Set<DatasetConfiguration> datasetConfigurations = getConfigurationSettingsByClass(configuration,
+                                                                                          DatasetConfiguration.class);
 
         // First create connections and datasources
         importErrors.addAll(importPluginConfigurations(pluginConfigurations));
@@ -150,10 +155,11 @@ public class DamConfigurationManager extends AbstractModuleManagerWithTenantSett
                 // Retrieve datasource
                 PluginConfiguration datasource = pluginService.getPluginConfiguration(conf.getDatasource());
                 // Validate subsetting clause
-                if (!datasetService.validateOpenSearchSubsettingClause(
-                        UriUtils.encode(conf.getSubsetting(), "UTF-8"))) {
+                if (!datasetService.validateOpenSearchSubsettingClause(UriUtils.encode(conf.getSubsetting(),
+                                                                                       "UTF-8"))) {
                     String message = String.format("Cannot import dataset %s cause to an invalid subsetting clause %s",
-                                                   conf.getFeature().getId(), conf.getSubsetting());
+                                                   conf.getFeature().getId(),
+                                                   conf.getSubsetting());
                     errors.add(message);
                     continue;
                 }
@@ -162,7 +168,8 @@ public class DamConfigurationManager extends AbstractModuleManagerWithTenantSett
                 createOrUpdateDataset(model, datasource, conf, validationErrors);
             } catch (ModuleException mex) {
                 LOGGER.error("Dataset import throw an exception", mex);
-                String message = String.format("Cannot import dataset %s : %s", conf.getFeature().getId(),
+                String message = String.format("Cannot import dataset %s : %s",
+                                               conf.getFeature().getId(),
                                                mex.getMessage());
                 errors.add(message);
             }
@@ -170,8 +177,10 @@ public class DamConfigurationManager extends AbstractModuleManagerWithTenantSett
         return errors;
     }
 
-    private void createOrUpdateDataset(Model model, PluginConfiguration datasource, DatasetConfiguration conf,
-            Errors validationErrors) throws ModuleException {
+    private void createOrUpdateDataset(Model model,
+                                       PluginConfiguration datasource,
+                                       DatasetConfiguration conf,
+                                       Errors validationErrors) throws ModuleException {
 
         // First : try to load dataset from its id or provider id
         Optional<Dataset> existingOne = Optional.empty();
@@ -188,8 +197,8 @@ public class DamConfigurationManager extends AbstractModuleManagerWithTenantSett
             if (!datasets.isEmpty()) {
                 if (datasets.size() > 1) {
                     String message = String.format(
-                            "Multiple datasets exist with this provider id : %s. Import cannot select right one! Please fulfil the id to precisely select it!",
-                            conf.getFeature().getProviderId());
+                        "Multiple datasets exist with this provider id : %s. Import cannot select right one! Please fulfil the id to precisely select it!",
+                        conf.getFeature().getProviderId());
                     throw new ModuleException(message);
                 } else {
                     existingOne = datasets.stream().findFirst();
@@ -215,7 +224,9 @@ public class DamConfigurationManager extends AbstractModuleManagerWithTenantSett
             datasetService.updateDataset(dataset.getId(), dataset, validationErrors);
         } else {
             // Create new dataset
-            Dataset dataset = new Dataset(model, runtimeTenantResolver.getTenant(), conf.getFeature().getProviderId(),
+            Dataset dataset = new Dataset(model,
+                                          runtimeTenantResolver.getTenant(),
+                                          conf.getFeature().getProviderId(),
                                           conf.getFeature().getLabel());
             dataset.setDataSource(datasource);
             dataset.setOpenSearchSubsettingClause(conf.getSubsetting());
@@ -229,8 +240,11 @@ public class DamConfigurationManager extends AbstractModuleManagerWithTenantSett
         List<ModuleConfigurationItem<DatasetConfiguration>> exportedDatasets = new ArrayList<>();
         for (Dataset dataset : datasetService.findAll()) {
             DatasetConfiguration configuration = DatasetConfiguration.builder()
-                    .datasource(dataset.getDataSource().getBusinessId())
-                    .subsetting(dataset.getOpenSearchSubsettingClause()).feature(dataset.getFeature()).build();
+                                                                     .datasource(dataset.getDataSource()
+                                                                                        .getBusinessId())
+                                                                     .subsetting(dataset.getOpenSearchSubsettingClause())
+                                                                     .feature(dataset.getFeature())
+                                                                     .build();
             exportedDatasets.add(ModuleConfigurationItem.build(configuration));
         }
         return exportedDatasets;

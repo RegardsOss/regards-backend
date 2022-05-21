@@ -18,6 +18,25 @@
  */
 package fr.cnes.regards.modules.opensearch.service.parser;
 
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
+import fr.cnes.regards.modules.indexer.domain.criterion.*;
+import fr.cnes.regards.modules.model.gson.IAttributeHelper;
+import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.AttributeFinder;
+import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
+import fr.cnes.regards.modules.opensearch.service.utils.SampleDataUtils;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.mockito.Mockito;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.time.OffsetDateTime;
@@ -27,40 +46,9 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
-import fr.cnes.regards.modules.indexer.domain.criterion.AndCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.BooleanMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ComparisonOperator;
-import fr.cnes.regards.modules.indexer.domain.criterion.DateMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.DateRangeCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.IntMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.MatchType;
-import fr.cnes.regards.modules.indexer.domain.criterion.NotCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.OrCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
-import fr.cnes.regards.modules.indexer.domain.criterion.ValueComparison;
-import fr.cnes.regards.modules.model.gson.IAttributeHelper;
-import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.AttributeFinder;
-import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
-import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
-import fr.cnes.regards.modules.opensearch.service.utils.SampleDataUtils;
-
 /**
  * Unit test for {@link QueryParser}.
+ *
  * @author Marc Sordi
  * @author Xavier-Alexandre Brochard
  */
@@ -164,8 +152,8 @@ public class QueryParserTest {
 
         Assert.assertEquals(field, getShortCriterionName(crit.getName()));
         final Set<ValueComparison<Double>> expectedValueComparisons = new HashSet<>();
-        expectedValueComparisons
-                .add(new ValueComparison<Double>(ComparisonOperator.GREATER_OR_EQUAL, Math.nextDown(value)));
+        expectedValueComparisons.add(new ValueComparison<Double>(ComparisonOperator.GREATER_OR_EQUAL,
+                                                                 Math.nextDown(value)));
         expectedValueComparisons.add(new ValueComparison<Double>(ComparisonOperator.LESS_OR_EQUAL, Math.nextUp(value)));
         Assert.assertEquals(expectedValueComparisons, crit.getValueComparisons());
     }
@@ -196,8 +184,7 @@ public class QueryParserTest {
         final String key = SampleDataUtils.STRING_ATTRIBUTE_MODEL.getJsonPath();
         final String val = "harrypotter";
         final String term = key + ":" + val;
-        @SuppressWarnings("unused")
-        final ICriterion criterion = parser.parse(QUERY_PREFIX + term);
+        @SuppressWarnings("unused") final ICriterion criterion = parser.parse(QUERY_PREFIX + term);
 
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof StringMatchCriterion);
@@ -574,8 +561,8 @@ public class QueryParserTest {
 
         Assert.assertEquals(field, getShortCriterionName(crit.getName()));
         final Set<ValueComparison<OffsetDateTime>> expectedValueComparisons = new HashSet<>();
-        expectedValueComparisons
-                .add(new ValueComparison<OffsetDateTime>(ComparisonOperator.GREATER_OR_EQUAL, lowerValue));
+        expectedValueComparisons.add(new ValueComparison<OffsetDateTime>(ComparisonOperator.GREATER_OR_EQUAL,
+                                                                         lowerValue));
         Assert.assertEquals(expectedValueComparisons, crit.getValueComparisons());
     }
 
@@ -586,10 +573,12 @@ public class QueryParserTest {
         final String field = SampleDataUtils.LOCAL_DATE_TIME_ATTRIBUTE_MODEL.getJsonPath();
         final OffsetDateTime lowerValue = OffsetDateTime.now();
         DateTimeFormatter ISO_DATE_TIME_UTC = new DateTimeFormatterBuilder().parseCaseInsensitive()
-                .append(DateTimeFormatter.ISO_LOCAL_DATE_TIME).optionalStart().appendOffset("+HH:MM", "Z")
-                .toFormatter();
-        final String term = field + ": \"" + ISO_DATE_TIME_UTC.format(lowerValue.withOffsetSameInstant(ZoneOffset.UTC))
-                + "\"";
+                                                                            .append(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                                                                            .optionalStart()
+                                                                            .appendOffset("+HH:MM", "Z")
+                                                                            .toFormatter();
+        final String term =
+            field + ": \"" + ISO_DATE_TIME_UTC.format(lowerValue.withOffsetSameInstant(ZoneOffset.UTC)) + "\"";
         final ICriterion criterion = parser.parse(QUERY_PREFIX + URLEncoder.encode(term, "UTF-8"));
 
         Assert.assertNotNull(criterion);
@@ -762,8 +751,8 @@ public class QueryParserTest {
 
         Assert.assertEquals(field, getShortCriterionName(crit.getName()));
         final Set<ValueComparison<Double>> expectedValueComparisons = new HashSet<>();
-        expectedValueComparisons
-                .add(new ValueComparison<Double>(ComparisonOperator.GREATER_OR_EQUAL, Math.nextDown(value)));
+        expectedValueComparisons.add(new ValueComparison<Double>(ComparisonOperator.GREATER_OR_EQUAL,
+                                                                 Math.nextDown(value)));
         expectedValueComparisons.add(new ValueComparison<Double>(ComparisonOperator.LESS_OR_EQUAL, Math.nextUp(value)));
         Assert.assertEquals(expectedValueComparisons, crit.getValueComparisons());
     }
@@ -827,8 +816,8 @@ public class QueryParserTest {
 
         final String key = SampleDataUtils.STRING_ATTRIBUTE_MODEL.getJsonPath();
         final String val = "harrypotter";
-        final ICriterion criterion = parser.parse(QUERY_PREFIX
-                + URLEncoder.encode("!(" + key + ":" + val + " OR " + key + ":" + val + ")", "UTF-8"));
+        final ICriterion criterion = parser.parse(
+            QUERY_PREFIX + URLEncoder.encode("!(" + key + ":" + val + " OR " + key + ":" + val + ")", "UTF-8"));
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof NotCriterion);
     }

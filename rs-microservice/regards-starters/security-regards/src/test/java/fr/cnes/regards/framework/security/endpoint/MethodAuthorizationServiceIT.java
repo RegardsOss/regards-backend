@@ -18,12 +18,13 @@
  */
 package fr.cnes.regards.framework.security.endpoint;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.domain.ResourceMapping;
+import fr.cnes.regards.framework.security.endpoint.voter.ResourceAccessVoter;
+import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,18 +39,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.domain.ResourceMapping;
-import fr.cnes.regards.framework.security.endpoint.voter.ResourceAccessVoter;
-import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
-import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import java.util.*;
 
 /**
  * Class MethodAuthorizationServiceIT
- *
+ * <p>
  * Test class for method authorization service.
+ *
  * @author sbinda
  */
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -69,7 +65,8 @@ public class MethodAuthorizationServiceIT {
 
     /**
      * Check that the resource voter accept or denied access to endpoints controller
-     * @throws SecurityException     test internal error
+     *
+     * @throws SecurityException test internal error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify access granted/denied to endpoints defined in authorized resources for a specific tenant")
@@ -118,7 +115,8 @@ public class MethodAuthorizationServiceIT {
 
     /**
      * Check that the resource voter denied access to endpoints controller not auhtorized
-     * @throws SecurityException     test internal error
+     *
+     * @throws SecurityException test internal error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify access denied to endpoints not defined in authorized resources")
@@ -170,15 +168,20 @@ public class MethodAuthorizationServiceIT {
         final String resourcePath = "new/path";
         final int expectedResult = 6;
         methodAuthService.onApplicationEvent(null);
-        methodAuthService.setAuthorities(TestConfiguration.TENANT_1, resourcePath, "Controller", RequestMethod.GET,
-                                         "TEST_ROLE", "TEST_ROLE_2");
+        methodAuthService.setAuthorities(TestConfiguration.TENANT_1,
+                                         resourcePath,
+                                         "Controller",
+                                         RequestMethod.GET,
+                                         "TEST_ROLE",
+                                         "TEST_ROLE_2");
 
-        final Map<String, ArrayList<GrantedAuthority>> authorities = methodAuthService
-                .getTenantAuthorities(TestConfiguration.TENANT_1);
+        final Map<String, ArrayList<GrantedAuthority>> authorities = methodAuthService.getTenantAuthorities(
+            TestConfiguration.TENANT_1);
         Assert.assertEquals(authorities.size(), expectedResult);
-        final Optional<List<GrantedAuthority>> roles = methodAuthService
-                .getAuthorities(TestConfiguration.TENANT_1,
-                                new ResourceMapping(resourcePath, "Controller", RequestMethod.GET));
+        final Optional<List<GrantedAuthority>> roles = methodAuthService.getAuthorities(TestConfiguration.TENANT_1,
+                                                                                        new ResourceMapping(resourcePath,
+                                                                                                            "Controller",
+                                                                                                            RequestMethod.GET));
         Assert.assertEquals(roles.get().size(), 2);
         Assert.assertEquals(roles.get().get(0).getAuthority(), "ROLE_TEST_ROLE");
 

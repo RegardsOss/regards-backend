@@ -58,8 +58,7 @@ public class StorageModuleManager extends AbstractModuleManagerWithTenantSetting
 
     @Override
     protected Set<String> importConfiguration(ModuleConfiguration configuration, Set<String> importErrors) {
-        Set<StorageLocationConfiguration> storageLocationConfigs = getStorageLocationConfigs(
-                configuration.getConfiguration());
+        Set<StorageLocationConfiguration> storageLocationConfigs = getStorageLocationConfigs(configuration.getConfiguration());
 
         importErrors.addAll(importStorageLocationConfigs(storageLocationConfigs));
         return importErrors;
@@ -72,12 +71,13 @@ public class StorageModuleManager extends AbstractModuleManagerWithTenantSetting
                 importErrors.add(String.format("Storage location %s is already defined.", conf.getName()));
             } else {
                 try {
-                    storageConfService.create(conf.getName(), conf.getPluginConfiguration(),
+                    storageConfService.create(conf.getName(),
+                                              conf.getPluginConfiguration(),
                                               conf.getAllocatedSizeInKo());
                 } catch (ModuleException e) {
-                    importErrors.add(
-                            String.format("Skipping import of StorageLocationConfiguration %s: %s", conf.getName(),
-                                          e.getMessage()));
+                    importErrors.add(String.format("Skipping import of StorageLocationConfiguration %s: %s",
+                                                   conf.getName(),
+                                                   e.getMessage()));
                     LOGGER.error(e.getMessage(), e);
                 }
             }
@@ -86,7 +86,9 @@ public class StorageModuleManager extends AbstractModuleManagerWithTenantSetting
     }
 
     private Set<StorageLocationConfiguration> getStorageLocationConfigs(Collection<ModuleConfigurationItem<?>> items) {
-        return items.stream().filter(i -> StorageLocationConfiguration.class.isAssignableFrom(i.getKey()))
-                .map(i -> (StorageLocationConfiguration) i.getTypedValue()).collect(Collectors.toSet());
+        return items.stream()
+                    .filter(i -> StorageLocationConfiguration.class.isAssignableFrom(i.getKey()))
+                    .map(i -> (StorageLocationConfiguration) i.getTypedValue())
+                    .collect(Collectors.toSet());
     }
 }

@@ -59,7 +59,7 @@ public class LicenseAcceptTest extends LicenseServiceTest {
         licenseService = givenLicenseService();
 
         assertThatExceptionOfType(EntityException.class) //
-            .isThrownBy(() -> licenseService.acceptLicense());
+                                                         .isThrownBy(() -> licenseService.acceptLicense());
     }
 
     @Test

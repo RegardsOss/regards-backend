@@ -49,9 +49,7 @@ import java.util.Set;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @TestPropertySource(
-    properties = {
-        "spring.jpa.properties.hibernate.default_schema=theia_authentication_service_provider_tests",
-    })
+    properties = { "spring.jpa.properties.hibernate.default_schema=theia_authentication_service_provider_tests", })
 public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(TheiaOpenIdConnectPluginIT.class);
@@ -85,29 +83,31 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
 
         // Set all parameters
         String secretStr = "";
-        StringPluginParam secret = IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET, encryptionService.encrypt(secretStr));
+        StringPluginParam secret = IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET,
+                                                      encryptionService.encrypt(secretStr));
         secret.setDecryptedValue(secretStr);
-        Set<IPluginParam> parameters = IPluginParam
-            .set(
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_ID, "rRLGfEh6jtXjiiGUf53UOdmJLXga"),
-                secret,
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_REDIRECT_URI, "http://vm-perf.cloud-espace.si.c-s.fr/authenticate/perf/theia"),
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT, "https://sso.theia-land.fr/oauth2/token"),
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT, "https://sso.theia-land.fr/theia/services/userinfo"),
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_EMAIL_MAPPING, "http://theia.org/claims/emailaddress"),
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_FIRSTNAME_MAPPING, "http://theia.org/claims/givenname"),
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_LASTNAME_MAPPING, "http://theia.org/claims/lastname"),
-                IPluginParam.build(OpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT, (String) null)
-            );
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_ID,
+                                                                           "rRLGfEh6jtXjiiGUf53UOdmJLXga"),
+                                                        secret,
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_REDIRECT_URI,
+                                                                           "http://vm-perf.cloud-espace.si.c-s.fr/authenticate/perf/theia"),
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_TOKEN_ENDPOINT,
+                                                                           "https://sso.theia-land.fr/oauth2/token"),
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_ENDPOINT,
+                                                                           "https://sso.theia-land.fr/theia/services/userinfo"),
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_EMAIL_MAPPING,
+                                                                           "http://theia.org/claims/emailaddress"),
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_FIRSTNAME_MAPPING,
+                                                                           "http://theia.org/claims/givenname"),
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_USER_INFO_LASTNAME_MAPPING,
+                                                                           "http://theia.org/claims/lastname"),
+                                                        IPluginParam.build(OpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT,
+                                                                           (String) null));
         PluginConfiguration conf = PluginConfiguration.build(OpenIdConnectPlugin.class, "", parameters);
         OpenIdConnectPlugin plugin = PluginUtils.getPlugin(conf, new HashMap<>());
 
-        Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> result =
-            plugin.authenticate(
-                new OpenIdAuthenticationParams(
-                    "f4136307-1223-353c-9fdc-87bfe5c10be4"
-                )
-            );
+        Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> result = plugin.authenticate(new OpenIdAuthenticationParams(
+            "f4136307-1223-353c-9fdc-87bfe5c10be4"));
 
         if (result.isFailure()) {
             LOG.debug("import of model failed", result.getCause());
@@ -119,7 +119,8 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
         assertThat(userInfo.getEmail()).isEqualTo("arnaud@monkeypatch.io");
         assertThat(userInfo.getFirstname()).isEqualTo("Arnaud");
         assertThat(userInfo.getLastname()).isEqualTo("Bos");
-        assertThat(userInfo.getMetadata().get("http://theia.org/claims/organization")).isEqualTo(Option.some("CS Group"));
+        assertThat(userInfo.getMetadata()
+                           .get("http://theia.org/claims/organization")).isEqualTo(Option.some("CS Group"));
         assertThat(userInfo.getMetadata().get("http://theia.org/claims/function")).isEqualTo(Option.some("ff"));
         assertThat(userInfo.getMetadata().get("http://theia.org/claims/type")).isEqualTo(Option.some("person"));
         assertThat(userInfo.getMetadata().get("http://theia.org/claims/streetaddress")).isEqualTo(Option.some("ff"));
@@ -127,9 +128,12 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
         assertThat(userInfo.getMetadata().get("http://theia.org/claims/country")).isEqualTo(Option.some("FR"));
         assertThat(userInfo.getMetadata().get("http://theia.org/claims/ignkey")).isEqualTo(Option.some(""));
         assertThat(userInfo.getMetadata().get("http://theia.org/claims/ignauthentication")).isEqualTo(Option.some(""));
-        assertThat(userInfo.getMetadata().get("http://theia.org/claims/foreignauthorization")).isEqualTo(Option.some(Boolean.toString(false)));
-        assertThat(userInfo.getMetadata().get("http://theia.org/claims/role")).isEqualTo(Option.some("Internal/identity,Internal/everyone"));
-        assertThat(userInfo.getMetadata().get("http://theia.org/claims/regDate")).isEqualTo(Option.some("1614872166974"));
+        assertThat(userInfo.getMetadata().get("http://theia.org/claims/foreignauthorization")).isEqualTo(Option.some(
+            Boolean.toString(false)));
+        assertThat(userInfo.getMetadata().get("http://theia.org/claims/role")).isEqualTo(Option.some(
+            "Internal/identity,Internal/everyone"));
+        assertThat(userInfo.getMetadata()
+                           .get("http://theia.org/claims/regDate")).isEqualTo(Option.some("1614872166974"));
     }
 
 }

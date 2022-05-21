@@ -18,9 +18,6 @@
  */
 package fr.cnes.regards.framework.microservice.web;
 
-import java.util.Iterator;
-import java.util.List;
-
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
@@ -28,10 +25,14 @@ import org.springframework.web.servlet.config.annotation.ContentNegotiationConfi
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * Class MicroserviceWebConfiguration
- *
+ * <p>
  * Configuration class for Spring Web Mvc.
+ *
  * @author Sébastien Binda
  * @author Marc Sordi
  */

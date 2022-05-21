@@ -1,11 +1,5 @@
 package fr.cnes.regards.framework.modules.plugins.service.it;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.encryption.IEncryptionService;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -20,9 +14,15 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * Integration tests on sensitive plugin parameter handling
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 @TestPropertySource(properties = "spring.jpa.properties.hibernate.default_schema=plugins")
@@ -45,9 +45,8 @@ public class PluginServiceEncryptionIT extends AbstractRegardsServiceTransaction
         String paramValue = "Un petit test";
         encryptionService.encrypt(paramValue);
         PluginConfiguration pluginConf = new PluginConfiguration(PLUGIN_CONF_LABEL,
-                                                                 IPluginParam.set(IPluginParam
-                                                                                          .build(SensitivePlugin.MESSAGE_PLUGIN_PARAM,
-                                                                                                 paramValue)),
+                                                                 IPluginParam.set(IPluginParam.build(SensitivePlugin.MESSAGE_PLUGIN_PARAM,
+                                                                                                     paramValue)),
                                                                  0,
                                                                  pluginMeta.getPluginId());
         pluginService.savePluginConfiguration(pluginConf);
@@ -64,9 +63,8 @@ public class PluginServiceEncryptionIT extends AbstractRegardsServiceTransaction
         PluginMetaData pluginMeta = PluginUtils.createPluginMetaData(SensitivePlugin.class);
         String paramValue = "Un petit test";
         PluginConfiguration pluginConf = new PluginConfiguration(PLUGIN_CONF_LABEL,
-                                                                 IPluginParam.set(IPluginParam
-                                                                                          .build(SensitivePlugin.MESSAGE_PLUGIN_PARAM,
-                                                                                                 paramValue)),
+                                                                 IPluginParam.set(IPluginParam.build(SensitivePlugin.MESSAGE_PLUGIN_PARAM,
+                                                                                                     paramValue)),
                                                                  0,
                                                                  pluginMeta.getPluginId());
         pluginService.savePluginConfiguration(pluginConf);
@@ -82,9 +80,8 @@ public class PluginServiceEncryptionIT extends AbstractRegardsServiceTransaction
         String paramValue = "Un petit test";
         encryptionService.encrypt(paramValue);
         PluginConfiguration pluginConf = new PluginConfiguration(PLUGIN_CONF_LABEL,
-                                                                 IPluginParam.set(IPluginParam
-                                                                                          .build(SensitivePlugin.MESSAGE_PLUGIN_PARAM,
-                                                                                                 paramValue)),
+                                                                 IPluginParam.set(IPluginParam.build(SensitivePlugin.MESSAGE_PLUGIN_PARAM,
+                                                                                                     paramValue)),
                                                                  0,
                                                                  pluginMeta.getPluginId());
         PluginConfiguration savedPlgConf = pluginService.savePluginConfiguration(pluginConf);
@@ -100,16 +97,14 @@ public class PluginServiceEncryptionIT extends AbstractRegardsServiceTransaction
         PluginMetaData pluginMeta = PluginUtils.createPluginMetaData(SensitivePlugin.class);
         String paramValue = "Un petit test";
         PluginConfiguration pluginConf = new PluginConfiguration(PLUGIN_CONF_LABEL,
-                                                                 IPluginParam.set(IPluginParam
-                                                                                          .build(SensitivePlugin.MESSAGE_PLUGIN_PARAM,
-                                                                                                 paramValue)),
+                                                                 IPluginParam.set(IPluginParam.build(SensitivePlugin.MESSAGE_PLUGIN_PARAM,
+                                                                                                     paramValue)),
                                                                  0,
                                                                  pluginMeta.getPluginId());
         PluginConfiguration savedPlgConf = pluginService.savePluginConfiguration(pluginConf);
         String updatedParamValue = paramValue + "2";
         encryptionService.encrypt(updatedParamValue);
-        StringPluginParam savedParam = (StringPluginParam) savedPlgConf
-                .getParameter(SensitivePlugin.MESSAGE_PLUGIN_PARAM);
+        StringPluginParam savedParam = (StringPluginParam) savedPlgConf.getParameter(SensitivePlugin.MESSAGE_PLUGIN_PARAM);
         savedParam.setValue(updatedParamValue);
         PluginConfiguration updated = pluginService.updatePluginConfiguration(savedPlgConf);
         Assert.assertEquals("Plugin parameter value in DB should have been updated and encrypted",

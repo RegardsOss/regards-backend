@@ -52,6 +52,7 @@ import java.util.Optional;
 
 /**
  * Static Gson customizer
+ *
  * @author Marc Sordi
  */
 public final class GsonCustomizer {
@@ -63,7 +64,7 @@ public final class GsonCustomizer {
     }
 
     public static GsonBuilder gsonBuilder(Optional<GsonProperties> properties,
-            Optional<ApplicationContext> applicationContext) {
+                                          Optional<ApplicationContext> applicationContext) {
         GsonBuilder builder = new GsonBuilder().enableComplexMapKeySerialization();
         VavrGson.registerAll(builder);
         customizeBuilder(builder);
@@ -97,7 +98,8 @@ public final class GsonCustomizer {
     /**
      * Add {@link TypeAdapterFactory} annotated with {@link GsonTypeAdapterFactory} and {@link TypeAdapter} annotated
      * with {@link GsonTypeAdapter}
-     * @param builder GSON builder to customize
+     *
+     * @param builder    GSON builder to customize
      * @param properties optional Gson properties
      */
     private static void addTypeAdapters(GsonBuilder builder, Optional<GsonProperties> properties) {
@@ -114,14 +116,15 @@ public final class GsonCustomizer {
 
     /**
      * Add {@link TypeAdapterFactory} annotated with {@link GsonTypeAdapterFactoryBean} with Spring support.
-     * @param builder GSON builder to customize
+     *
+     * @param builder            GSON builder to customize
      * @param applicationContext optional application context
      */
     private static void addBeanFactories(GsonBuilder builder, Optional<ApplicationContext> applicationContext) {
 
         if (applicationContext.isPresent()) {
             Map<String, TypeAdapterFactory> beanFactories = applicationContext.get()
-                    .getBeansOfType(TypeAdapterFactory.class);
+                                                                              .getBeansOfType(TypeAdapterFactory.class);
             if (beanFactories != null) {
                 for (Map.Entry<String, TypeAdapterFactory> beanFactory : beanFactories.entrySet()) {
                     builder.registerTypeAdapterFactory(beanFactory.getValue());
@@ -132,14 +135,16 @@ public final class GsonCustomizer {
 
     /**
      * Add {@link TypeAdapter} annotated with {@link GsonTypeAdapterBean} to GSON
-     * @param builder GSON builder to customize
+     *
+     * @param builder            GSON builder to customize
      * @param applicationContext optional application context
      */
     private static void addBeanAdapters(GsonBuilder builder, Optional<ApplicationContext> applicationContext) {
 
         if (applicationContext.isPresent()) {
-            @SuppressWarnings("rawtypes")
-            Map<String, TypeAdapter> beanFactories = applicationContext.get().getBeansOfType(TypeAdapter.class);
+            @SuppressWarnings("rawtypes") Map<String, TypeAdapter> beanFactories = applicationContext.get()
+                                                                                                     .getBeansOfType(
+                                                                                                         TypeAdapter.class);
             if (beanFactories != null) {
                 for (@SuppressWarnings("rawtypes")
                 Map.Entry<String, TypeAdapter> beanFactory : beanFactories.entrySet()) {

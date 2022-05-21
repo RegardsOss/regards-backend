@@ -19,11 +19,19 @@
 
 package fr.cnes.regards.modules.feature.service;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
+import fr.cnes.regards.config.FeaturePerformanceITConfig;
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.feature.dto.Feature;
+import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
+import fr.cnes.regards.modules.feature.dto.FeatureMetadata;
+import fr.cnes.regards.modules.feature.dto.PriorityLevel;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
+import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.model.dto.properties.IProperty;
+import fr.cnes.regards.modules.notifier.client.INotifierRequestListener;
 import org.assertj.core.util.Lists;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -37,31 +45,20 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.config.FeaturePerformanceITConfig;
-import fr.cnes.regards.modules.feature.dto.Feature;
-import fr.cnes.regards.modules.feature.dto.FeatureCreationSessionMetadata;
-import fr.cnes.regards.modules.feature.dto.FeatureMetadata;
-import fr.cnes.regards.modules.feature.dto.PriorityLevel;
-import fr.cnes.regards.modules.feature.dto.event.in.FeatureCreationRequestEvent;
-import fr.cnes.regards.modules.feature.dto.event.in.FeatureUpdateRequestEvent;
-import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
-import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
-import fr.cnes.regards.modules.model.dto.properties.IProperty;
-import fr.cnes.regards.modules.notifier.client.INotifierRequestListener;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Test feature mutation based on null property values.
  *
  * @author Marc SORDI
- *
  */
 
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=feature_perfit", "regards.amqp.enabled=true" },
-        locations = { "classpath:regards_local.properties", "classpath:batch.properties",
-                "classpath:metrics.properties" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=feature_perfit", "regards.amqp.enabled=true" },
+    locations = { "classpath:regards_local.properties", "classpath:batch.properties", "classpath:metrics.properties" })
 @ActiveProfiles(value = { "testAmqp" })
 //Clean all context (schedulers)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS, hierarchyMode = HierarchyMode.EXHAUSTIVE)
@@ -82,8 +79,12 @@ public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceIT {
         String format = "F%05d";
 
         // Register creation requests
-        FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata
-                .build("sessionOwner", "session", PriorityLevel.NORMAL, Lists.emptyList(), true, false);
+        FeatureCreationSessionMetadata metadata = FeatureCreationSessionMetadata.build("sessionOwner",
+                                                                                       "session",
+                                                                                       PriorityLevel.NORMAL,
+                                                                                       Lists.emptyList(),
+                                                                                       true,
+                                                                                       false);
         String modelName = mockModelClient("feature_mutation_model.xml",
                                            this.getCps(),
                                            this.getFactory(),
@@ -95,8 +96,12 @@ public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceIT {
         long creationStart = System.currentTimeMillis();
         List<FeatureCreationRequestEvent> creationRequestEvents = new ArrayList<>();
         for (int i = 1; i <= NB_FEATURES; i++) {
-            Feature feature = Feature
-                    .build(String.format(format, i), "owner", null, IGeometry.unlocated(), EntityType.DATA, modelName);
+            Feature feature = Feature.build(String.format(format, i),
+                                            "owner",
+                                            null,
+                                            IGeometry.unlocated(),
+                                            EntityType.DATA,
+                                            modelName);
             feature.addProperty(IProperty.buildString("data_type", "TYPE01"));
             feature.addProperty(IProperty.buildObject("file_characterization",
                                                       IProperty.buildBoolean("valid", Boolean.TRUE)));
@@ -135,7 +140,7 @@ public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceIT {
                     NB_FEATURES,
                     System.currentTimeMillis() - updateStart);
 
-        if(initDefaultNotificationSettings()) {
+        if (initDefaultNotificationSettings()) {
             mockNotificationSuccess();
         }
 
@@ -147,8 +152,11 @@ public class FeaturePerformanceIT extends AbstractFeatureMultitenantServiceIT {
 
     private FeatureUniformResourceName getURN(String id) {
         UUID uuid = UUID.nameUUIDFromBytes(id.getBytes());
-        return FeatureUniformResourceName
-                .build(FeatureIdentifier.FEATURE, EntityType.DATA, getDefaultTenant(), uuid, 1);
+        return FeatureUniformResourceName.build(FeatureIdentifier.FEATURE,
+                                                EntityType.DATA,
+                                                getDefaultTenant(),
+                                                uuid,
+                                                1);
     }
 }
 

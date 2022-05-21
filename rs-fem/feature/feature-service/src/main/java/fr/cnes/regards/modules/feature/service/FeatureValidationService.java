@@ -48,7 +48,7 @@ import java.util.HashMap;
  */
 @Service
 public class FeatureValidationService extends AbstractValidationService<Feature>
-        implements IFeatureValidationService, IValidationService<Feature> {
+    implements IFeatureValidationService, IValidationService<Feature> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureValidationService.class);
 
@@ -96,7 +96,8 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
             errors.rejectValue(ID_FIELD, "feature.id.null.error.message", "Feature id must not be null");
         } else {
             if ((featureId != null) && (featureId.length() > ID_LENGTH)) {
-                errors.rejectValue(ID_FIELD, "feature.id.length.error.message",
+                errors.rejectValue(ID_FIELD,
+                                   "feature.id.length.error.message",
                                    String.format("Feature id must not exceed %s characters", ID_LENGTH));
             }
         }
@@ -111,7 +112,8 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
             case UPDATE:
             case PATCH:
                 if (urn == null) {
-                    errors.rejectValue(URN_FIELD, "feature.urn.required.error.message",
+                    errors.rejectValue(URN_FIELD,
+                                       "feature.urn.required.error.message",
                                        "URN is required in feature update");
                 }
                 break;
@@ -121,7 +123,7 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
 
         // Try validating properties according to data model
         if ((feature.getModel() != null) && (feature.getProperties()
-                != null)) { // If model is null, error already detected before!
+            != null)) { // If model is null, error already detected before!
             errors.addAllErrors(validate(feature.getModel(), feature, mode, objectName));
         }
 
@@ -147,26 +149,31 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
         if (!CollectionUtils.isEmpty(feature.getFiles())) {
             for (FeatureFile file : feature.getFiles()) {
                 numberOfFilesToStore += file.getLocations().stream().filter(loc -> loc.getStorage() == null).count();
-                numberOfFilesToReference += file.getLocations().stream().filter(loc -> loc.getStorage() != null)
-                        .count();
+                numberOfFilesToReference += file.getLocations()
+                                                .stream()
+                                                .filter(loc -> loc.getStorage() != null)
+                                                .count();
                 file.getLocations().forEach(loc -> validateFileLocation(loc, errors));
             }
             if (numberOfFilesToStore > 0 && numberOfFilesToReference > 0) {
                 String message = String.format("Feature creation can not handle both store and reference files. "
-                                                       + "Feature contains %s files to store and %s files to reference",
-                                               numberOfFilesToStore, numberOfFilesToReference);
+                                                   + "Feature contains %s files to store and %s files to reference",
+                                               numberOfFilesToStore,
+                                               numberOfFilesToReference);
                 errors.rejectValue(FILES_FIELD, FILES_STORAGE_ERROR_CODE, message);
             }
 
             if (numberOfFilesToStore > ReferenceFlowItem.MAX_REQUEST_PER_GROUP) {
                 String message = String.format("Too many files to store for feature {}. Limit is {}.",
-                                               numberOfFilesToStore, ReferenceFlowItem.MAX_REQUEST_PER_GROUP);
+                                               numberOfFilesToStore,
+                                               ReferenceFlowItem.MAX_REQUEST_PER_GROUP);
                 errors.rejectValue(FILES_FIELD, FILES_STORAGE_ERROR_CODE, message);
             }
 
             if (numberOfFilesToReference > ReferenceFlowItem.MAX_REQUEST_PER_GROUP) {
                 String message = String.format("Too many files to reference for feature {}. Limit is {}.",
-                                               numberOfFilesToReference, ReferenceFlowItem.MAX_REQUEST_PER_GROUP);
+                                               numberOfFilesToReference,
+                                               ReferenceFlowItem.MAX_REQUEST_PER_GROUP);
                 errors.rejectValue(FILES_FIELD, FILES_STORAGE_ERROR_CODE, message);
             }
         }

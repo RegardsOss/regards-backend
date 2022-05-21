@@ -22,11 +22,9 @@ public class IPluginParamJsoniterDecoder implements NullSafeDecoderBuilder {
             Any param = iter.readAny();
             String type = param.toString("@type@");
             return param.as(Class.forName(type));
-        }
-        catch(IOException e) {
+        } catch (IOException e) {
             throw e;
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             throw new IOException(e);
         }
     }

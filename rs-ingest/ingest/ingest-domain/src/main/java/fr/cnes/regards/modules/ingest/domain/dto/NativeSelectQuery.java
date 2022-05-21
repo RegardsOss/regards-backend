@@ -21,15 +21,12 @@ package fr.cnes.regards.modules.ingest.domain.dto;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.utils.SpecificationUtils;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 
 /**
  * Holds info about a query to run (with named parameters)
+ *
  * @author Léo Mieulet
  */
 public class NativeSelectQuery {
@@ -71,8 +68,7 @@ public class NativeSelectQuery {
      * @return the SQL to execute
      */
     public String getSQL() {
-        StringBuilder request = new StringBuilder("SELECT ").append(selectClause).append(" FROM ")
-                .append(fromClause);
+        StringBuilder request = new StringBuilder("SELECT ").append(selectClause).append(" FROM ").append(fromClause);
 
         if (!predicates.isEmpty()) {
             request.append(" WHERE ");
@@ -80,7 +76,6 @@ public class NativeSelectQuery {
         }
         return request.toString();
     }
-
 
     public void andPredicate(String predicate, String paramName, String paramValue) {
         params.put(paramName, paramValue);
@@ -92,7 +87,10 @@ public class NativeSelectQuery {
         predicates.add(predicate);
     }
 
-    public void andListPredicate(String predicateStart, String predicateStop, String rootParamName, Collection<String> paramValues) {
+    public void andListPredicate(String predicateStart,
+                                 String predicateStop,
+                                 String rootParamName,
+                                 Collection<String> paramValues) {
         Set<String> preparedPredicates = Sets.newHashSet();
         int i = 0;
         for (String paramValue : paramValues) {
@@ -104,7 +102,10 @@ public class NativeSelectQuery {
         predicates.add(predicateStart + String.join(" , ", preparedPredicates) + predicateStop);
     }
 
-    public void addOneOf(String predicateStart, String predicateStop, String rootParamName, Collection<String> paramValues) {
+    public void addOneOf(String predicateStart,
+                         String predicateStop,
+                         String rootParamName,
+                         Collection<String> paramValues) {
         Set<String> internalPredicates = Sets.newHashSet();
         int i = 0;
         for (String paramValue : paramValues) {
@@ -123,10 +124,11 @@ public class NativeSelectQuery {
         for (String paramValue : paramValues) {
             String paramName = rootParamName + i;
             String operator = "=";
-            if (paramValue.startsWith(SpecificationUtils.LIKE_CHAR) || paramValue.endsWith(SpecificationUtils.LIKE_CHAR)) {
+            if (paramValue.startsWith(SpecificationUtils.LIKE_CHAR)
+                || paramValue.endsWith(SpecificationUtils.LIKE_CHAR)) {
                 operator = "like";
             }
-            internalPredicates.add("("+rootParamName + " " + operator + " :" + paramName + ")");
+            internalPredicates.add("(" + rootParamName + " " + operator + " :" + paramName + ")");
             this.params.put(paramName, paramValue);
             i = i + 1;
         }

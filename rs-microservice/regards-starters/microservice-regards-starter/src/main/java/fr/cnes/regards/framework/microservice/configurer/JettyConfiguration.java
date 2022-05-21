@@ -32,6 +32,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * This configuration is needed to manage timeout
+ *
  * @author oroussel
  */
 @Configuration

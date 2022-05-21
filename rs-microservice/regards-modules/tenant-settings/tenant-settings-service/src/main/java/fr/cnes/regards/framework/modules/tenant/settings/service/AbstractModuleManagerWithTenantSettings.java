@@ -86,7 +86,7 @@ public abstract class AbstractModuleManagerWithTenantSettings<S> extends Abstrac
      */
     private void exportDynamicTenantSettings(List<ModuleConfigurationItem<?>> configuration) {
         dynamicTenantSettingService.readAll()
-                .forEach(setting -> configuration.add(ModuleConfigurationItem.build(setting)));
+                                   .forEach(setting -> configuration.add(ModuleConfigurationItem.build(setting)));
     }
 
     /**
@@ -102,7 +102,8 @@ public abstract class AbstractModuleManagerWithTenantSettings<S> extends Abstrac
                 dynamicTenantSettingService.update(dynamicTenantSetting.getName(), dynamicTenantSetting.getValue());
             } catch (ModuleException e) {
                 String error = String.format("Failed to import dynamic tenant settings %s : %s",
-                                             dynamicTenantSetting.getName(), e.getMessage());
+                                             dynamicTenantSetting.getName(),
+                                             e.getMessage());
                 errors.add(error);
             }
         }

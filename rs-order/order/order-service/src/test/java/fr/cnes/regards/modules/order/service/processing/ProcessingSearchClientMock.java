@@ -39,6 +39,7 @@ import java.util.List;
 
 /**
  * Mock of ISearchClient to be used by ServiceConfiguration
+ *
  * @author oroussel
  * @author Sébastien Binda
  */
@@ -70,21 +71,24 @@ public class ProcessingSearchClientMock extends SearchClientMock {
     }
 
     @Override
-    public ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchDataObjects(
-            ComplexSearchRequest complexSearchRequest) {
+    public ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> searchDataObjects(ComplexSearchRequest complexSearchRequest) {
         if (complexSearchRequest.getPage() == 0) {
             try {
                 List<EntityModel<EntityFeature>> list = new ArrayList<>();
                 registerFilesIn("src/test/resources/files", list);
                 registerFilesIn("src/test/resources/processing/files", list);
-                return ResponseEntity.ok(new FacettedPagedModel<>(Sets.newHashSet(), list,
-                        new PagedModel.PageMetadata(list.size(), 0, list.size())));
+                return ResponseEntity.ok(new FacettedPagedModel<>(Sets.newHashSet(),
+                                                                  list,
+                                                                  new PagedModel.PageMetadata(list.size(),
+                                                                                              0,
+                                                                                              list.size())));
             } catch (URISyntaxException e) {
                 throw new RsRuntimeException(e);
             }
         }
-        return ResponseEntity.ok(new FacettedPagedModel<>(Sets.newHashSet(), Collections.emptyList(),
-                new PagedModel.PageMetadata(0, 0, 0)));
+        return ResponseEntity.ok(new FacettedPagedModel<>(Sets.newHashSet(),
+                                                          Collections.emptyList(),
+                                                          new PagedModel.PageMetadata(0, 0, 0)));
     }
 
 }

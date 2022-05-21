@@ -58,7 +58,7 @@ public class PublicAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain pFilterChain)
-            throws ServletException, IOException {
+        throws ServletException, IOException {
 
         // Retrieve authentication header
         String authHeader = request.getHeader(HttpConstants.AUTHORIZATION);

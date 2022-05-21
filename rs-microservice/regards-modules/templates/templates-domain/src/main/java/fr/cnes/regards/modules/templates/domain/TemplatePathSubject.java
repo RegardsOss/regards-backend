@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.templates.domain;
 
 /**
  * Convenient bean to store both template path and subject
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class TemplatePathSubject {

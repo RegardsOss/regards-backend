@@ -21,11 +21,12 @@ import fr.cnes.regards.modules.processing.domain.POutputFile;
 import fr.cnes.regards.modules.processing.domain.execution.ExecutionContext;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
+import reactor.core.publisher.Mono;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.util.UUID;
-import reactor.core.publisher.Mono;
 
 /**
  * This service allows to share execution results by moving them to a shared
@@ -37,12 +38,18 @@ public interface ISharedStorageService {
 
     Mono<Seq<POutputFile>> storeResult(ExecutionContext ctx, ExecutionLocalWorkdir workdir);
 
-    POutputFile createOutputFile(UUID execId, Path storedFilePath, String outputFilename,
-            List<String> inputFileCorrelationIds, long size) throws MalformedURLException;
+    POutputFile createOutputFile(UUID execId,
+                                 Path storedFilePath,
+                                 String outputFilename,
+                                 List<String> inputFileCorrelationIds,
+                                 long size) throws MalformedURLException;
 
     Path storeFile(Path filePathToCopy, UUID executionContextId) throws IOException;
 
     Mono<POutputFile> deleteFile(POutputFile outFile);
 
-    Mono<POutputFile> storeOutputFile(UUID execId, Path outputFileOldPath, String outputFilename, List<String> inputFileCorrelationIds);
+    Mono<POutputFile> storeOutputFile(UUID execId,
+                                      Path outputFileOldPath,
+                                      String outputFilename,
+                                      List<String> inputFileCorrelationIds);
 }

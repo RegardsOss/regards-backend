@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.crawler.domain;
 
 /**
  * Ingestion status enumeration
+ *
  * @author oroussel
  */
 public enum IngestionStatus {

@@ -18,6 +18,11 @@
  */
 package fr.cnes.regards.framework.utils.file;
 
+import com.google.common.collect.Sets;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -28,14 +33,9 @@ import java.nio.file.Path;
 import java.util.Set;
 import java.util.SortedSet;
 
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Sets;
-
 /**
  * Utils to cut files into multiple files.
+ *
  * @author sbinda
  */
 public final class CutFileUtils {
@@ -56,15 +56,18 @@ public final class CutFileUtils {
 
     /**
      * Cut the give {@link File} pFile into parts of maximum pCutfilesMaxSize into pTargetDirectory
-     * @param pFileToCut {@link File} to cut
-     * @param pTargetDirectory Target directory to create cut files.
+     *
+     * @param pFileToCut          {@link File} to cut
+     * @param pTargetDirectory    Target directory to create cut files.
      * @param pCutFileNamesPrefix cut file are named with this prefix and "_<part index>".
-     * @param pCutfilesMaxSize Max size of each cuted file.
+     * @param pCutfilesMaxSize    Max size of each cuted file.
      * @return {@link Set} of cut {@link File}
      * @throws IOException I/O exception during file cuting.
      */
-    public static Set<File> cutFile(File pFileToCut, String pTargetDirectory, String pCutFileNamesPrefix,
-            long pCutfilesMaxSize) throws IOException {
+    public static Set<File> cutFile(File pFileToCut,
+                                    String pTargetDirectory,
+                                    String pCutFileNamesPrefix,
+                                    long pCutfilesMaxSize) throws IOException {
 
         Set<File> cutFiles = Sets.newHashSet();
         try (FileInputStream inputStream = new FileInputStream(pFileToCut)) {
@@ -99,14 +102,15 @@ public final class CutFileUtils {
 
     /**
      * Write from a given {@link FileInputStream} to the output given {@link File} a maximum of <maxSizeToWrite> bytes.
-     * @param pInputStream {@link FileInputStream} reader
-     * @param outputFile {@link File} to write to
+     *
+     * @param pInputStream   {@link FileInputStream} reader
+     * @param outputFile     {@link File} to write to
      * @param maxSizeToWrite maximum number of bytes to write
      * @return TRUE if there is more bytes to read from pInputStream after writing the maximum number of bytes.
      * @throws IOException I/O exception.
      */
     private static boolean writeInFile(FileInputStream pInputStream, File outputFile, Long maxSizeToWrite)
-            throws IOException {
+        throws IOException {
         byte[] buffer = new byte[BUFFER_SIZE];
         if (maxSizeToWrite < BUFFER_SIZE) {
             buffer = new byte[maxSizeToWrite.intValue()];
@@ -128,18 +132,19 @@ public final class CutFileUtils {
 
     /**
      * Rebuild a cuted file by concatenation of the part files
-     * @param pFilePathToRebuild {@link Path} to the result file
+     *
+     * @param pFilePathToRebuild    {@link Path} to the result file
      * @param pOrderedPartFilePaths {@link SortedSet} of {@link Path}s of part files. <br/>
-     * The set have to be ordered from the first part of the result file to the last one.
+     *                              The set have to be ordered from the first part of the result file to the last one.
      */
     public static void rebuildCutedfile(Path pFilePathToRebuild, SortedSet<Path> pOrderedPartFilePaths)
-            throws IOException {
+        throws IOException {
 
         // 1. Check if result file already exists
         if (Files.exists(pFilePathToRebuild)) {
-            throw new FileAlreadyExistsException(
-                    String.format("Error rebuilding cuted file. Destination file %s already exists",
-                                  pFilePathToRebuild.toString()));
+            throw new FileAlreadyExistsException(String.format(
+                "Error rebuilding cuted file. Destination file %s already exists",
+                pFilePathToRebuild.toString()));
         }
         Files.createFile(pFilePathToRebuild);
         try (FileOutputStream os = new FileOutputStream(pFilePathToRebuild.toFile(), true)) {
@@ -153,7 +158,8 @@ public final class CutFileUtils {
 
     /**
      * Read and write the given {@link Path} file to the given {@link FileOutputStream}
-     * @param pOutputStream {@link FileOutputStream} of the result.
+     *
+     * @param pOutputStream   {@link FileOutputStream} of the result.
      * @param filePathToWrite {@link Path} of the file to read and write.
      */
     private static void writeFile(FileOutputStream pOutputStream, Path filePathToWrite) throws IOException {

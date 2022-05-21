@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.framework.test.integration;
 
-import java.util.Map;
-
 import org.springframework.restdocs.operation.Operation;
 import org.springframework.restdocs.payload.RequestBodySnippet;
 
+import java.util.Map;
+
 /**
  * REGARDS customization of {@link RequestBodySnippet}.
+ *
  * @author Marc Sordi
  */
 public class RegardsRequestBodySnippet extends RequestBodySnippet {

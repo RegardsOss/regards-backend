@@ -18,19 +18,19 @@
  */
 package fr.cnes.regards.framework.gson.adapters.sample1;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapter;
+import com.google.gson.annotations.JsonAdapter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
-
 /**
  * Test with {@link JsonAdapter} annotation. This test does not work for serialization! <br/>
  * {@link TypeAdapter} is only used when reading JSON and not writing. (GSON bug maybe)
+ *
  * @author Marc Sordi
  */
 public class AdapterTest {

@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.framework.amqp.test;
 
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-
+import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.VirtualHostMode;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.VirtualHostMode;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
 
 /**
  * @author svissier
@@ -82,9 +81,16 @@ public class RabbitVirtualHostAdminTests {
 
     @BeforeClass
     public static void init() {
-        rabbitVirtualHostAdmin = new RabbitVirtualHostAdmin(VirtualHostMode.MULTI, null, RABBITMQ_USERNAME,
-                                                            RABBITMQ_PASSWORD, AMQP_MANAGEMENT_HOST,
-                                                            AMQP_MANAGEMENT_PORT, null, null, ADDRESSES, null);
+        rabbitVirtualHostAdmin = new RabbitVirtualHostAdmin(VirtualHostMode.MULTI,
+                                                            null,
+                                                            RABBITMQ_USERNAME,
+                                                            RABBITMQ_PASSWORD,
+                                                            AMQP_MANAGEMENT_HOST,
+                                                            AMQP_MANAGEMENT_PORT,
+                                                            null,
+                                                            null,
+                                                            ADDRESSES,
+                                                            null);
     }
 
     /**
@@ -116,14 +122,12 @@ public class RabbitVirtualHostAdminTests {
         for (int i = 0; i < inferiorTwoHundred.size(); i++) {
             inferiorTwoHundred.set(i, i);
         }
-        inferiorTwoHundred.parallelStream()
-                .forEach(i -> Assert.assertFalse(rabbitVirtualHostAdmin.isSuccess(i)));
+        inferiorTwoHundred.parallelStream().forEach(i -> Assert.assertFalse(rabbitVirtualHostAdmin.isSuccess(i)));
 
         final List<Integer> superiorTwoNintyNine = new ArrayList<>(300);
         for (int i = 0; i < superiorTwoNintyNine.size(); i++) {
             superiorTwoNintyNine.set(i, THREE_HUNDRED + i);
         }
-        superiorTwoNintyNine.parallelStream()
-                .forEach(i -> Assert.assertFalse(rabbitVirtualHostAdmin.isSuccess(i)));
+        superiorTwoNintyNine.parallelStream().forEach(i -> Assert.assertFalse(rabbitVirtualHostAdmin.isSuccess(i)));
     }
 }

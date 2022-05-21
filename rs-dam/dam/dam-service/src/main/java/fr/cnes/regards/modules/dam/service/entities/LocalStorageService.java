@@ -18,6 +18,26 @@
  */
 package fr.cnes.regards.modules.dam.service.entities;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.modules.dam.dao.entities.ILocalFileRepository;
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
+import fr.cnes.regards.modules.dam.domain.entities.LocalFile;
+import fr.cnes.regards.modules.indexer.domain.DataFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.util.MimeType;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
@@ -30,29 +50,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.util.MimeType;
-import org.springframework.web.multipart.MultipartFile;
-
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.framework.utils.file.ChecksumUtils;
-import fr.cnes.regards.modules.dam.dao.entities.ILocalFileRepository;
-import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
-import fr.cnes.regards.modules.dam.domain.entities.LocalFile;
-import fr.cnes.regards.modules.indexer.domain.DataFile;
 
 /**
  * A service to save document files on disk.</br>
+ *
  * @author Léo Mieulet
  */
 @Service
@@ -96,8 +97,10 @@ public class LocalStorageService implements ILocalStorageService, InitializingBe
     }
 
     @Override
-    public Collection<DataFile> attachFiles(AbstractEntity<?> entity, DataType dataType, MultipartFile[] attachments,
-            String fileUriTemplate) throws ModuleException {
+    public Collection<DataFile> attachFiles(AbstractEntity<?> entity,
+                                            DataType dataType,
+                                            MultipartFile[] attachments,
+                                            String fileUriTemplate) throws ModuleException {
         Set<DataFile> docFiles = new HashSet<>();
         if (attachments != null) {
             try {
@@ -108,8 +111,11 @@ public class LocalStorageService implements ILocalStorageService, InitializingBe
                         URI fileRef = new URI(fileUriTemplate.replace(FILE_CHECKSUM_URL_TEMPLATE, checksum));
 
                         // Build data file
-                        DataFile dataFile = DataFile.build(dataType, file.getOriginalFilename(), fileRef,
-                                                           MimeType.valueOf(file.getContentType()), Boolean.TRUE,
+                        DataFile dataFile = DataFile.build(dataType,
+                                                           file.getOriginalFilename(),
+                                                           fileRef,
+                                                           MimeType.valueOf(file.getContentType()),
+                                                           Boolean.TRUE,
                                                            Boolean.FALSE);
                         dataFile.setFilesize(file.getSize());
                         dataFile.setDigestAlgorithm(DIGEST_ALGORITHM);
@@ -144,16 +150,16 @@ public class LocalStorageService implements ILocalStorageService, InitializingBe
                                                                                            dataFile.getChecksum());
         if (!localFileOpt.isPresent()) {
             throw new EntityNotFoundException(String.format("Failed to remove the file %s for the document %s",
-                                                            dataFile.getFilename(), entity.getIpId()),
-                    LocalFile.class);
+                                                            dataFile.getFilename(),
+                                                            entity.getIpId()), LocalFile.class);
         }
 
         Path filePath = getDataFilePath(dataFile.getChecksum());
         if (Files.exists(filePath)) {
             // Check rights
             if (!Files.isWritable(filePath)) {
-                throw new ModuleException(
-                        String.format("Failed to remove the file %s : Permission refused", filePath.toString()));
+                throw new ModuleException(String.format("Failed to remove the file %s : Permission refused",
+                                                        filePath.toString()));
             }
             // Remove file
             // Do not remove the file if its used by another document
@@ -204,7 +210,8 @@ public class LocalStorageService implements ILocalStorageService, InitializingBe
 
         if (localStorageRepo.findOneByEntityAndFileChecksum(entity, checksum).isPresent()) {
             // Silently skip
-            LOGGER.warn("File {} already attached to the entity {}. Skipping store action.", file.getOriginalFilename(),
+            LOGGER.warn("File {} already attached to the entity {}. Skipping store action.",
+                        file.getOriginalFilename(),
                         entity.getLabel());
             return;
         }

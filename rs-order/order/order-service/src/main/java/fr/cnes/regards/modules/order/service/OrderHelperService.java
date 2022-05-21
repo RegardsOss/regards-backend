@@ -164,10 +164,10 @@ public class OrderHelperService {
             JobInfo jobInfo = jobInfoService.createAsPending(storageJobInfo);
             currentFilesTask.setJobInfo(jobInfo);
             datasetTask.addReliantTask(currentFilesTask);
-        LOGGER.info("Storage sub-order of {} files created (Order: {} - Owner: {})",
-                    orderDataFiles.size(),
-                    orderId,
-                    owner);
+            LOGGER.info("Storage sub-order of {} files created (Order: {} - Owner: {})",
+                        orderDataFiles.size(),
+                        orderId,
+                        owner);
             return jobInfo.getId();
         } finally {
             CorrelationIdUtils.clearCorrelationId();

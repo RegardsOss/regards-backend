@@ -2,6 +2,7 @@ package fr.cnes.regards.framework.module.rest.utils;
 
 /**
  * Utility class to send back to the front a boolean representing the validity of something
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 public final class Validity {

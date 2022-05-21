@@ -28,6 +28,7 @@ import java.util.Objects;
  * Mimic Spring Authentication object after OAuth2 converter/enhancer shenanigans.
  */
 public class Authentication {
+
     private final String project;
 
     private final String scope;
@@ -50,7 +51,12 @@ public class Authentication {
 
     private final String jti = "bearer";
 
-    public Authentication(String tenant, String email, String role, String serviceProviderName, String token, OffsetDateTime expirationDate) {
+    public Authentication(String tenant,
+                          String email,
+                          String role,
+                          String serviceProviderName,
+                          String token,
+                          OffsetDateTime expirationDate) {
         this.project = tenant;
         this.scope = tenant;
         this.role = role;
@@ -105,13 +111,10 @@ public class Authentication {
             return false;
         }
         Authentication that = (Authentication) o;
-        return Objects.equals(project, that.project)
-            && Objects.equals(scope, that.scope)
-            && Objects.equals(role, that.role)
-            && Objects.equals(sub, that.sub)
-            && Objects.equals(serviceProviderName, that.serviceProviderName)
-            && Objects.equals(accessToken, that.accessToken)
-            && Objects.equals(expiresIn, that.expiresIn);
+        return Objects.equals(project, that.project) && Objects.equals(scope, that.scope) && Objects.equals(role,
+                                                                                                            that.role)
+            && Objects.equals(sub, that.sub) && Objects.equals(serviceProviderName, that.serviceProviderName)
+            && Objects.equals(accessToken, that.accessToken) && Objects.equals(expiresIn, that.expiresIn);
     }
 
     @Override

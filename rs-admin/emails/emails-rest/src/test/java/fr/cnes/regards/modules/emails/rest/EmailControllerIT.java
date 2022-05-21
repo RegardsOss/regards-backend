@@ -18,16 +18,6 @@
  */
 package fr.cnes.regards.modules.emails.rest;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -35,9 +25,19 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.emails.dao.IEmailRepository;
 import fr.cnes.regards.modules.emails.domain.Email;
 import fr.cnes.regards.modules.emails.service.IEmailService;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Integration tests for the email module
+ *
  * @author xbrochar
  */
 @MultitenantTransactional
@@ -99,13 +99,17 @@ public class EmailControllerIT extends AbstractRegardsTransactionalIT {
     public void retrieveEmail() {
         assertTrue(emailService.exists(testEmail.getId()));
 
-        performDefaultGet("/emails/{mail_id}", customizer().expectStatusOk(), "Unable to retrieve email",
+        performDefaultGet("/emails/{mail_id}",
+                          customizer().expectStatusOk(),
+                          "Unable to retrieve email",
                           testEmail.getId());
 
         Long wrongId = 999L;
         assertFalse(emailService.exists(wrongId));
 
-        performDefaultGet("/emails/{mail_id}", customizer().expectStatusNotFound(), "Unable to retrieve email",
+        performDefaultGet("/emails/{mail_id}",
+                          customizer().expectStatusNotFound(),
+                          "Unable to retrieve email",
                           wrongId);
     }
 
@@ -126,7 +130,10 @@ public class EmailControllerIT extends AbstractRegardsTransactionalIT {
 
         Long wrongId = 999L;
         assertFalse(emailService.exists(wrongId));
-        performDefaultPut("/emails/{mail_id}", null, customizer().expectStatusNotFound(), "Unable to resend the email",
+        performDefaultPut("/emails/{mail_id}",
+                          null,
+                          customizer().expectStatusNotFound(),
+                          "Unable to resend the email",
                           wrongId);
     }
 
@@ -140,12 +147,15 @@ public class EmailControllerIT extends AbstractRegardsTransactionalIT {
     public void deleteEmail() {
         assertTrue(emailService.exists(testEmail.getId()));
 
-        performDefaultDelete("/emails/{mail_id}", customizer().expectStatusOk(), "Unable to delete the email",
+        performDefaultDelete("/emails/{mail_id}",
+                             customizer().expectStatusOk(),
+                             "Unable to delete the email",
                              testEmail.getId());
     }
 
     /**
      * Creates a {@link SimpleMailMessage} with some random values initialized.
+     *
      * @return The mail
      */
     private SimpleMailMessage createDummyMessage() {

@@ -14,6 +14,7 @@ import java.io.IOException;
 public class CollectionFeatureJsoniterDecoder implements EntityFeatureDecoder, NullSafeDecoderBuilder {
 
     private final Gson gson;
+
     private final AttributeModelPropertyTypeFinder propTypeFinder;
 
     public CollectionFeatureJsoniterDecoder(Gson gson, AttributeModelPropertyTypeFinder propTypeFinder) {
@@ -39,11 +40,9 @@ public class CollectionFeatureJsoniterDecoder implements EntityFeatureDecoder, N
     @Override
     public Object decode(JsonIterator iter) throws IOException {
         Any feature = iter.readAny();
-        CollectionFeature result = new CollectionFeature(
-            feature.as(UniformResourceName.class, "id"),
-            feature.toString("providerId"),
-            feature.toString("label")
-        );
+        CollectionFeature result = new CollectionFeature(feature.as(UniformResourceName.class, "id"),
+                                                         feature.toString("providerId"),
+                                                         feature.toString("label"));
         result.setModel(feature.toString("model"));
 
         readBasicFields(feature, result);

@@ -63,6 +63,7 @@ import java.util.stream.Collectors;
 
 /**
  * {@link IAccountService} implementation.
+ *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  * @author Christophe Mertz
@@ -80,10 +81,12 @@ public class AccountService implements IAccountService, InitializingBean {
      */
     @Value("${regards.accounts.password.regex}")
     private String passwordRegex;
+
     /**
      * Associated Pattern
      */
     private Pattern passwordRegexPattern;
+
     /**
      * Description of the regex to respect in natural language. Provided by property file. Parsed according to "\n" to transform it into a list
      */
@@ -107,11 +110,13 @@ public class AccountService implements IAccountService, InitializingBean {
      */
     @Value("${regards.accounts.root.user.login}")
     private String rootAdminUserLogin;
+
     /**
      * Root admin user password. Provided by property file.
      */
     @Value("${regards.accounts.root.user.password}")
     private String rootAdminUserPassword;
+
     /**
      * threshold of failed authentication above which an account should be locked. Provided by property file.
      */
@@ -119,13 +124,21 @@ public class AccountService implements IAccountService, InitializingBean {
     private Long thresholdFailedAuthentication;
 
     private final IAccountRepository accountRepository;
+
     private final ITenantResolver tenantResolver;
+
     private final IRuntimeTenantResolver runtimeTenantResolver;
+
     private final IEmailClient emailClient;
+
     private final ITemplateService templateService;
+
     private final IInstancePublisher instancePublisher;
+
     private final AccountSettingsService accountSettingsService;
+
     private final IExternalAuthenticationClient externalAuthenticationClient;
+
     private final IProjectService projectService;
 
     @Autowired
@@ -134,10 +147,15 @@ public class AccountService implements IAccountService, InitializingBean {
     @SuppressWarnings("unused")
     private Counter createdAccountCounter;
 
-    public AccountService(IAccountRepository accountRepository, ITenantResolver tenantResolver, IRuntimeTenantResolver runtimeTenantResolver, IEmailClient emailClient,
-            ITemplateService templateService, IInstancePublisher instancePublisher, AccountSettingsService accountSettingsService,
-            IExternalAuthenticationClient externalAuthenticationClient, IProjectService projectService
-    ) {
+    public AccountService(IAccountRepository accountRepository,
+                          ITenantResolver tenantResolver,
+                          IRuntimeTenantResolver runtimeTenantResolver,
+                          IEmailClient emailClient,
+                          ITemplateService templateService,
+                          IInstancePublisher instancePublisher,
+                          AccountSettingsService accountSettingsService,
+                          IExternalAuthenticationClient externalAuthenticationClient,
+                          IProjectService projectService) {
         this.accountRepository = accountRepository;
         this.tenantResolver = tenantResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;
@@ -153,7 +171,10 @@ public class AccountService implements IAccountService, InitializingBean {
     public void afterPropertiesSet() throws EntityInvalidException {
         passwordRegexPattern = Pattern.compile(this.passwordRegex);
         if (!this.existAccount(rootAdminUserLogin)) {
-            Account account = new Account(rootAdminUserLogin, rootAdminUserLogin, rootAdminUserLogin, rootAdminUserPassword);
+            Account account = new Account(rootAdminUserLogin,
+                                          rootAdminUserLogin,
+                                          rootAdminUserLogin,
+                                          rootAdminUserPassword);
             account.setStatus(AccountStatus.ACTIVE);
             account.setAuthenticationFailedCounter(0L);
             createAccount(account, null);
@@ -163,7 +184,8 @@ public class AccountService implements IAccountService, InitializingBean {
 
     @Override
     public Page<Account> retrieveAccountList(AccountSearchParameters parameters, Pageable pageable) {
-        return accountRepository.findAll(new AccountSpecificationsBuilder().withParameters(parameters).build(), pageable);
+        return accountRepository.findAll(new AccountSpecificationsBuilder().withParameters(parameters).build(),
+                                         pageable);
     }
 
     @Override
@@ -204,12 +226,14 @@ public class AccountService implements IAccountService, InitializingBean {
 
     @Override
     public Account retrieveAccount(Long pAccountId) throws EntityNotFoundException {
-        return accountRepository.findById(pAccountId).orElseThrow(() -> new EntityNotFoundException(pAccountId, Account.class));
+        return accountRepository.findById(pAccountId)
+                                .orElseThrow(() -> new EntityNotFoundException(pAccountId, Account.class));
     }
 
     @Override
     public Account retrieveAccountByEmail(String email) throws EntityNotFoundException {
-        return accountRepository.findOneByEmail(email).orElseThrow(() -> new EntityNotFoundException(email, Account.class));
+        return accountRepository.findOneByEmail(email)
+                                .orElseThrow(() -> new EntityNotFoundException(email, Account.class));
     }
 
     @Override
@@ -229,7 +253,8 @@ public class AccountService implements IAccountService, InitializingBean {
     }
 
     @Override
-    public boolean validatePassword(String email, String password, boolean checkAccountValidity) throws EntityNotFoundException {
+    public boolean validatePassword(String email, String password, boolean checkAccountValidity)
+        throws EntityNotFoundException {
 
         Optional<Account> toValidate = accountRepository.findOneByEmail(email);
 
@@ -271,7 +296,7 @@ public class AccountService implements IAccountService, InitializingBean {
     public void checkPassword(Account pAccount) throws EntityInvalidException {
         if (!pAccount.isExternal() && !validPassword(pAccount.getPassword())) {
             throw new EntityInvalidException(
-                    "The provided password doesn't match the configured pattern : " + passwordRegex);
+                "The provided password doesn't match the configured pattern : " + passwordRegex);
         }
     }
 
@@ -327,13 +352,13 @@ public class AccountService implements IAccountService, InitializingBean {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 FeignSecurityManager.asSystem();
-                PagedModel<EntityModel<ServiceProviderDto>> requestBody = externalAuthenticationClient.getServiceProviders().getBody();
+                PagedModel<EntityModel<ServiceProviderDto>> requestBody = externalAuthenticationClient.getServiceProviders()
+                                                                                                      .getBody();
                 if (requestBody != null) {
-                    origins.addAll(
-                            HateoasUtils.unwrapCollection(requestBody.getContent())
-                                    .stream()
-                                    .map(ServiceProviderDto::getName)
-                                    .collect(Collectors.toList()));
+                    origins.addAll(HateoasUtils.unwrapCollection(requestBody.getContent())
+                                               .stream()
+                                               .map(ServiceProviderDto::getName)
+                                               .collect(Collectors.toList()));
                 }
             } finally {
                 FeignSecurityManager.reset();
@@ -388,17 +413,19 @@ public class AccountService implements IAccountService, InitializingBean {
         LOG.info("Start checking accounts inactivity");
 
         Set<Account> toCheck = accountRepository.findAllByStatusNot(AccountStatus.INACTIVE)
-                .stream().filter(account -> !rootAdminUserLogin.equals(account.getEmail())).collect(Collectors.toSet());
+                                                .stream()
+                                                .filter(account -> !rootAdminUserLogin.equals(account.getEmail()))
+                                                .collect(Collectors.toSet());
 
         // check issues with the invalidity date
         if ((accountValidityDuration != null) && !accountValidityDuration.equals(0L)) {
             LocalDateTime now = LocalDateTime.now();
-            toCheck.stream()
-                    .filter(account -> account.getInvalidityDate().isBefore(now))
-                    .forEach(account -> {
-                        account.setStatus(AccountStatus.INACTIVE);
-                        LOG.info("Account {} set to {} because of its account validity date", account.getEmail(), AccountStatus.INACTIVE);
-                    });
+            toCheck.stream().filter(account -> account.getInvalidityDate().isBefore(now)).forEach(account -> {
+                account.setStatus(AccountStatus.INACTIVE);
+                LOG.info("Account {} set to {} because of its account validity date",
+                         account.getEmail(),
+                         AccountStatus.INACTIVE);
+            });
         }
 
         // check issues with the password
@@ -406,13 +433,14 @@ public class AccountService implements IAccountService, InitializingBean {
             LocalDateTime minValidityDate = LocalDateTime.now().minusDays(accountPasswordValidityDuration);
             // get all account that are not already locked, those already locked would not be re-locked anyway
             toCheck.stream()
-                    .filter(account -> !account.isExternal()
-                            && account.getPasswordUpdateDate() != null
-                            && account.getPasswordUpdateDate().isBefore(minValidityDate))
-                    .forEach(account -> {
-                        account.setStatus(AccountStatus.INACTIVE_PASSWORD);
-                        LOG.info("Account {} set to {} because of its password validity date", account.getEmail(), AccountStatus.INACTIVE_PASSWORD);
-                    });
+                   .filter(account -> !account.isExternal() && account.getPasswordUpdateDate() != null
+                       && account.getPasswordUpdateDate().isBefore(minValidityDate))
+                   .forEach(account -> {
+                       account.setStatus(AccountStatus.INACTIVE_PASSWORD);
+                       LOG.info("Account {} set to {} because of its password validity date",
+                                account.getEmail(),
+                                AccountStatus.INACTIVE_PASSWORD);
+                   });
         }
         accountRepository.saveAll(toCheck);
     }

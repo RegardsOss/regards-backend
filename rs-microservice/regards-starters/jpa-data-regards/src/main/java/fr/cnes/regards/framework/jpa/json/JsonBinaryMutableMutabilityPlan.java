@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.framework.jpa.json;
 
-import java.lang.reflect.Type;
-
 import org.hibernate.type.descriptor.java.MutableMutabilityPlan;
+
+import java.lang.reflect.Type;
 
 /**
  * @author Marc Sordi

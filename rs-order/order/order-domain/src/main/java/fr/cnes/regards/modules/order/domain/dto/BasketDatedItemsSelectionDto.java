@@ -92,16 +92,15 @@ public class BasketDatedItemsSelectionDto implements Comparable<BasketDatedItems
         dto.setDate(basketDatedItemsSelection.getDate());
         dto.setSelectionRequest(basketDatedItemsSelection.getSelectionRequest());
         dto.setObjectsCount(basketDatedItemsSelection.getObjectsCount());
-        dto.setFilesCount(
-            DataTypeSelection.ALL.getFileTypes().stream()
-                .mapToLong(ft -> basketDatedItemsSelection.getFileTypeCount(ft.name()))
-                .sum()
-        );
-        dto.setFilesSize(
-            DataTypeSelection.ALL.getFileTypes().stream()
-                .mapToLong(ft -> basketDatedItemsSelection.getFileTypeSize(ft.name()))
-                .sum());
-        dto.setQuota(basketDatedItemsSelection.getFileTypeCount(DataType.RAWDATA.name()+"_!ref"));
+        dto.setFilesCount(DataTypeSelection.ALL.getFileTypes()
+                                               .stream()
+                                               .mapToLong(ft -> basketDatedItemsSelection.getFileTypeCount(ft.name()))
+                                               .sum());
+        dto.setFilesSize(DataTypeSelection.ALL.getFileTypes()
+                                              .stream()
+                                              .mapToLong(ft -> basketDatedItemsSelection.getFileTypeSize(ft.name()))
+                                              .sum());
+        dto.setQuota(basketDatedItemsSelection.getFileTypeCount(DataType.RAWDATA.name() + "_!ref"));
         return dto;
     }
 

@@ -65,8 +65,11 @@ public class FeatureJobFailedEventHandler implements IHandler<JobEvent>, Applica
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    public FeatureJobFailedEventHandler(ISubscriber subscriber, IFeatureRequestService requestService, IJobInfoService jobService,
-            IFeatureRequestService featureRequestService, IRuntimeTenantResolver runtimeTenantResolver) {
+    public FeatureJobFailedEventHandler(ISubscriber subscriber,
+                                        IFeatureRequestService requestService,
+                                        IJobInfoService jobService,
+                                        IFeatureRequestService featureRequestService,
+                                        IRuntimeTenantResolver runtimeTenantResolver) {
         this.subscriber = subscriber;
         this.requestService = requestService;
         this.jobService = jobService;
@@ -90,7 +93,9 @@ public class FeatureJobFailedEventHandler implements IHandler<JobEvent>, Applica
                 }.getType();
                 List<Long> requestIds = job.getParametersAsMap().get(AbstractFeatureJob.IDS_PARAMETER).getValue(type);
                 Set<Long> ids = Sets.newHashSet(requestIds);
-                LOGGER.error("Job {} failed detected. Updating associated {} requests to ERROR status", job.getId().toString(), ids.size());
+                LOGGER.error("Job {} failed detected. Updating associated {} requests to ERROR status",
+                             job.getId().toString(),
+                             ids.size());
                 featureRequestService.updateRequestsStatus(ids, RequestState.ERROR);
             }
         }

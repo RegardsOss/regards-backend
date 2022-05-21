@@ -1,13 +1,12 @@
 package fr.cnes.regards.framework.utils.parser.builder;
 
+import fr.cnes.regards.framework.utils.parser.rule.IRule;
+import fr.cnes.regards.framework.utils.parser.rule.NotRule;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.core.builders.QueryTreeBuilder;
 import org.apache.lucene.queryparser.flexible.core.nodes.ModifierQueryNode;
 import org.apache.lucene.queryparser.flexible.core.nodes.ModifierQueryNode.Modifier;
 import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
-
-import fr.cnes.regards.framework.utils.parser.rule.IRule;
-import fr.cnes.regards.framework.utils.parser.rule.NotRule;
 
 public class ModifierQueryNodeBuilder implements IRuleBuilder {
 

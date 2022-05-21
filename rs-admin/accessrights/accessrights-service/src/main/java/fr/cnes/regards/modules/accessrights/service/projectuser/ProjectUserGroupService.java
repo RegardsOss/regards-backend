@@ -61,21 +61,22 @@ public class ProjectUserGroupService {
 
     private final Gson gson;
 
-    public ProjectUserGroupService(IProjectUserRepository projectUserRepository, IAccessGroupClient accessGroupClient,
-            Gson gson) {
+    public ProjectUserGroupService(IProjectUserRepository projectUserRepository,
+                                   IAccessGroupClient accessGroupClient,
+                                   Gson gson) {
         this.projectUserRepository = projectUserRepository;
         this.accessGroupClient = accessGroupClient;
         this.gson = gson;
     }
 
     public void validateAccessGroups(Set<String> accessGroups, boolean checkPublic)
-            throws EntityNotFoundException, EntityInvalidException {
+        throws EntityNotFoundException, EntityInvalidException {
         try {
             FeignSecurityManager.asSystem();
             for (String group : accessGroups) {
                 ResponseEntity<EntityModel<AccessGroup>> response = accessGroupClient.retrieveAccessGroup(group);
                 if (response == null || !response.getStatusCode().is2xxSuccessful()
-                        || HateoasUtils.unwrap(response.getBody()) == null) {
+                    || HateoasUtils.unwrap(response.getBody()) == null) {
                     throw new EntityNotFoundException(group, AccessGroup.class);
                 } else {
                     if (checkPublic && HateoasUtils.unwrap(response.getBody()).isPublic()) {
@@ -104,8 +105,8 @@ public class ProjectUserGroupService {
 
     public void removeGroup(String accessGroup) {
         removeGroup(accessGroup, (group, pageable) -> {
-            Specification<ProjectUser> specification = new ProjectUserSpecificationsBuilder().withParameters(
-                    new ProjectUserSearchParameters().setAccessGroup(group)).build();
+            Specification<ProjectUser> specification = new ProjectUserSpecificationsBuilder().withParameters(new ProjectUserSearchParameters().setAccessGroup(
+                group)).build();
             return projectUserRepository.findAll(specification, pageable);
         });
     }
@@ -128,7 +129,9 @@ public class ProjectUserGroupService {
                                                          pageable -> accessGroupClient.retrieveAccessGroupsList(true,
                                                                                                                 pageable.getPageNumber(),
                                                                                                                 pageable.getPageSize()))
-                    .stream().map(AccessGroup::getName).collect(Collectors.toSet());
+                                       .stream()
+                                       .map(AccessGroup::getName)
+                                       .collect(Collectors.toSet());
         } catch (HttpServerErrorException | HttpClientErrorException e) {
             LOG.error(e.getMessage(), e);
             ServerErrorResponse errorResponse = gson.fromJson(e.getResponseBodyAsString(), ServerErrorResponse.class);
@@ -141,7 +144,8 @@ public class ProjectUserGroupService {
 
     public void linkAccessGroups(String email, List<String> groups) throws EntityNotFoundException {
         ProjectUser projectUser = projectUserRepository.findOneByEmail(email)
-                .orElseThrow(() -> new EntityNotFoundException(email, ProjectUser.class));
+                                                       .orElseThrow(() -> new EntityNotFoundException(email,
+                                                                                                      ProjectUser.class));
         if (!CollectionUtils.isEmpty(groups)) {
             projectUser.getAccessGroups().addAll(groups);
         }

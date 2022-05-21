@@ -20,9 +20,11 @@ package fr.cnes.regards.modules.indexer.domain.criterion;
 
 /**
  * Field existence test criterion
+ *
  * @author oroussel
  */
 public class FieldExistsCriterion extends AbstractPropertyCriterion {
+
     public FieldExistsCriterion(String name) {
         super(name);
     }

@@ -14,39 +14,51 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.domain.parameters;
 
 import lombok.Value;
 import lombok.With;
-
 
 /**
  * This class defines an execution parameter: its name, type and description.
  *
  * @author gandrieu
  */
-@Value @With
+@Value
+@With
 public class ExecutionParameterDescriptor {
 
-    /** Name of the parameter. */
+    /**
+     * Name of the parameter.
+     */
     String name;
 
-    /** Which type of parameter value is expected. */
+    /**
+     * Which type of parameter value is expected.
+     */
     ExecutionParameterType type;
 
-    /** Short description of the parameter. */
+    /**
+     * Short description of the parameter.
+     */
     String desc;
 
-    /** True if the parameter can be ommitted. */
+    /**
+     * True if the parameter can be ommitted.
+     */
     boolean optional;
 
-    /** True if several values can be given for this parameter name */
+    /**
+     * True if several values can be given for this parameter name
+     */
     boolean repeatable;
 
-    /** True if the end-user must provide the value for this parameter,
-     *  meaning that the actual value has to be defined at the creation of the batch.
-     * (False if it can be inferred from the context of execution.) */
+    /**
+     * True if the end-user must provide the value for this parameter,
+     * meaning that the actual value has to be defined at the creation of the batch.
+     * (False if it can be inferred from the context of execution.)
+     */
     boolean userDefined;
 
 }

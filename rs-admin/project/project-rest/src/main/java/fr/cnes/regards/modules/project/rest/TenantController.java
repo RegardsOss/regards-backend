@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.project.rest;
 
-import java.util.Set;
-
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.project.service.ITenantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,12 +28,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.project.service.ITenantService;
+import java.util.Set;
 
 /**
  * Specific controller to retrieve tenants from other microservices
+ *
  * @author Marc Sordi
  */
 @RestController

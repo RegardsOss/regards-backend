@@ -18,14 +18,6 @@
  */
 package fr.cnes.regards.framework.amqp.test;
 
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.amqp.IPoller;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
@@ -35,9 +27,17 @@ import fr.cnes.regards.framework.amqp.test.event.PollableInfo;
 import fr.cnes.regards.framework.amqp.test.event.PollableMicroserviceInfo;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Common poller tests for {@link VirtualHostMode#SINGLE} and {@link VirtualHostMode#MULTI} modes
+ *
  * @author Marc Sordi
  */
 public abstract class AbstractPollerIT {

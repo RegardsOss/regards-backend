@@ -18,18 +18,16 @@
  */
 package fr.cnes.regards.modules.model.service.validation.validator.restriction;
 
-import org.springframework.validation.Errors;
-
 import fr.cnes.regards.modules.model.domain.attributes.restriction.EnumerationRestriction;
 import fr.cnes.regards.modules.model.dto.properties.StringArrayProperty;
 import fr.cnes.regards.modules.model.dto.properties.StringProperty;
 import fr.cnes.regards.modules.model.service.validation.validator.AbstractPropertyValidator;
+import org.springframework.validation.Errors;
 
 /**
  * Validate {@link StringProperty} or {@link StringArrayProperty} value with an {@link EnumerationRestriction}
  *
  * @author Marc Sordi
- *
  */
 public class EnumerationValidator extends AbstractPropertyValidator {
 

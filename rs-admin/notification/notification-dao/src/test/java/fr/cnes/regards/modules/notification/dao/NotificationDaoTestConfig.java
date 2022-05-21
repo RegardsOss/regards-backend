@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.notification.dao;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.ISubscriber;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.ISubscriber;
 
 /**
  * Configuration class for unit testing of plugin's DAO.
@@ -38,11 +37,9 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 public class NotificationDaoTestConfig {
 
     /**
-     *
      * Subscriber mock
      *
      * @return {@link ISubscriber}
-
      */
     @Bean
     public ISubscriber eventSubscriber() {
@@ -50,11 +47,9 @@ public class NotificationDaoTestConfig {
     }
 
     /**
-     *
      * Publisher mock
      *
      * @return {@link IPublisher}
-
      */
     @Bean
     public IPublisher eventPublisher() {

@@ -18,11 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain.step;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
@@ -31,14 +26,14 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
-import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
- *
  * Persist all generated entities in database : {@link SIPEntity} including {@link SIP} and {@link AIPEntity} including {@link AIP}(s)
  *
  * @author Marc SORDI
- *
  */
 public class InternalFinalStep extends AbstractIngestStep<List<AIP>, List<AIPEntity>> {
 
@@ -59,7 +54,8 @@ public class InternalFinalStep extends AbstractIngestStep<List<AIP>, List<AIPEnt
             error = e.get().getMessage();
         }
         handleRequestError(String.format("Persisting SIP and AIP from SIP \"%s\" fails. Cause : %s",
-                                         job.getCurrentEntity().getProviderId(), error));
+                                         job.getCurrentEntity().getProviderId(),
+                                         error));
     }
 
 }

@@ -39,7 +39,7 @@ public class PagedModelExclusionStrategy implements ExclusionStrategy {
     public boolean shouldSkipField(FieldAttributes pFieldAttributes) {
         List<String> ignoredAttributes = Lists.newArrayList("fallbackType", "fullType");
         final boolean isSkipped = ignoredAttributes.contains(pFieldAttributes.getName());
-        if(isSkipped) {
+        if (isSkipped) {
             LOGGER.debug("Skipping field {} in class {}.", pFieldAttributes.getName(), pFieldAttributes.getClass());
         }
         return isSkipped;

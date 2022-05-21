@@ -18,7 +18,7 @@
  */
 
 
- package fr.cnes.regards.modules.ingest.service;
+package fr.cnes.regards.modules.ingest.service;
 /*
  * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
@@ -42,46 +42,49 @@ import com.google.gson.Gson;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+
 /**
- *
  * Test deserialization of a json file for a sip
- * @author Iliana Ghazali
  *
+ * @author Iliana Ghazali
  */
-@TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=sip_deserialization_it", "eureka.client.enabled=false" },
-        locations = { "classpath:application-test.properties" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=sip_deserialization_it",
+    "eureka.client.enabled=false" }, locations = { "classpath:application-test.properties" })
 public class SIPDeserializationIT extends AbstractMultitenantServiceIT {
 
     @Autowired
     private Gson gson;
-    
+
     @Test
-    @Purpose("Test generation of a SIP from a file with the deserialization 'hack' used in InformationPackageMapTypeAdapter")
+    @Purpose(
+        "Test generation of a SIP from a file with the deserialization 'hack' used in InformationPackageMapTypeAdapter")
     public void testDeserializationHack() throws IOException {
         String filename = "sip_testDeserialization.json";
-        try (Reader json = new InputStreamReader(this.getClass().getResourceAsStream(filename), StandardCharsets.UTF_8)) {
+        try (Reader json = new InputStreamReader(this.getClass().getResourceAsStream(filename),
+                                                 StandardCharsets.UTF_8)) {
             SIP sip = gson.fromJson(json, SIP.class);
 
             // number from descriptiveInformation
             // should be returned as Long if it does not contains "."
-            Map<String, Object> cycle = (Map<String, Object>) sip.getProperties().getDescriptiveInformation()
-                    .get("cycle_range");
+            Map<String, Object> cycle = (Map<String, Object>) sip.getProperties()
+                                                                 .getDescriptiveInformation()
+                                                                 .get("cycle_range");
             Assert.assertEquals(Long.class, cycle.get("min_cycle").getClass());
             Assert.assertEquals(Long.class, cycle.get("max_cycle").getClass());
             // should be returned as Double if it contains "."
-            Map<String, Object> coordinates = (Map<String, Object>) sip.getProperties().getDescriptiveInformation()
-                    .get("coordinates");
+            Map<String, Object> coordinates = (Map<String, Object>) sip.getProperties()
+                                                                       .getDescriptiveInformation()
+                                                                       .get("coordinates");
             Assert.assertEquals(Double.class, coordinates.get("min_coordinates").getClass());
             Assert.assertEquals(Double.class, coordinates.get("max_coordinates").getClass());
 

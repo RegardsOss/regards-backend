@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.access.services.domain.aggregator;
 
-import java.util.Set;
-
-import org.springframework.util.Assert;
-
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
+import org.springframework.util.Assert;
+
+import java.util.Set;
 
 /**
  * DTO class representing either a {@link PluginConfigurationDto}, either a {@link UIPluginConfiguration}
@@ -48,6 +47,7 @@ public final class PluginServiceDto {
 
     /**
      * Constructor. It is private in order to force the caller to use one of the 'from' builder methods
+     *
      * @param configId
      * @param label
      * @param iconUrl
@@ -55,8 +55,12 @@ public final class PluginServiceDto {
      * @param entityTypes
      * @param type
      */
-    private PluginServiceDto(String configId, String label, String iconUrl, Set<ServiceScope> applicationModes,
-            Set<EntityType> entityTypes, PluginServiceType type) {
+    private PluginServiceDto(String configId,
+                             String label,
+                             String iconUrl,
+                             Set<ServiceScope> applicationModes,
+                             Set<EntityType> entityTypes,
+                             PluginServiceType type) {
         super();
         Assert.notNull(configId, "Plugin configuration is mandatory to create a PluginServiceDTO");
         this.configId = configId;
@@ -69,6 +73,7 @@ public final class PluginServiceDto {
 
     /**
      * Build a new instance from the given {@link PluginConfigurationDto}
+     *
      * @param pluginConfigurationDto
      * @return the new instance
      */
@@ -82,20 +87,27 @@ public final class PluginServiceDto {
             iconUrl = pluginConfigurationDto.getIconUrl().toString();
         }
 
-        return new PluginServiceDto(pluginConfigurationDto.getBusinessId(), pluginConfigurationDto.getLabel(), iconUrl,
-                appModes, entTypes, PluginServiceType.CATALOG);
+        return new PluginServiceDto(pluginConfigurationDto.getBusinessId(),
+                                    pluginConfigurationDto.getLabel(),
+                                    iconUrl,
+                                    appModes,
+                                    entTypes,
+                                    PluginServiceType.CATALOG);
     }
 
     /**
      * Build a new instance from the given {@link UIPluginConfiguration}
+     *
      * @param uiPluginConfiguration
      * @return the new instance
      */
     public static final PluginServiceDto fromUIPluginConfiguration(UIPluginConfiguration uiPluginConfiguration) {
-        return new PluginServiceDto(String.valueOf(uiPluginConfiguration.getId()), uiPluginConfiguration.getLabel(),
-                uiPluginConfiguration.getPluginDefinition().getIconUrl(),
-                uiPluginConfiguration.getPluginDefinition().getApplicationModes(),
-                uiPluginConfiguration.getPluginDefinition().getEntityTypes(), PluginServiceType.UI);
+        return new PluginServiceDto(String.valueOf(uiPluginConfiguration.getId()),
+                                    uiPluginConfiguration.getLabel(),
+                                    uiPluginConfiguration.getPluginDefinition().getIconUrl(),
+                                    uiPluginConfiguration.getPluginDefinition().getApplicationModes(),
+                                    uiPluginConfiguration.getPluginDefinition().getEntityTypes(),
+                                    PluginServiceType.UI);
     }
 
     /**

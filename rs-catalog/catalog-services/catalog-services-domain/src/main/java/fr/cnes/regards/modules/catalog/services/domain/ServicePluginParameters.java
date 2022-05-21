@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.modules.catalog.services.domain;
 
-import java.util.Map;
-
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.search.domain.SearchRequest;
+
+import java.util.Map;
 
 /**
  * Catalog service plugin parameters used to execute the plugin.
  *
  * @author Sébastien Binda
- *
  */
 public class ServicePluginParameters {
 
@@ -50,8 +49,9 @@ public class ServicePluginParameters {
         super();
     }
 
-    public ServicePluginParameters(EntityType entityType, SearchRequest searchRequest,
-            Map<String, String> dynamicParameters) {
+    public ServicePluginParameters(EntityType entityType,
+                                   SearchRequest searchRequest,
+                                   Map<String, String> dynamicParameters) {
         super();
         this.entityType = entityType;
         this.searchRequest = searchRequest;

@@ -18,10 +18,6 @@
  */
 package fr.cnes.regards.modules.search.service.engine;
 
-import java.util.Optional;
-
-import org.springframework.http.ResponseEntity;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
@@ -29,13 +25,15 @@ import fr.cnes.regards.modules.search.domain.SearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.IEntityLinkBuilder;
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
+import org.springframework.http.ResponseEntity;
+
+import java.util.Optional;
 
 /**
  * Search engine service contract<br/>
  * The service dispatches request to right search engine.
  *
  * @author Marc Sordi
- *
  */
 public interface ISearchEngineDispatcher {
 
@@ -46,10 +44,11 @@ public interface ISearchEngineDispatcher {
 
     /**
      * Retrieve a search engine plugin instance for the given dataset and engine type.
+     *
      * @throws ModuleException
      */
     ISearchEngine<?, ?, ?, ?> getSearchEngine(Optional<UniformResourceName> datasetUrn, String engineType)
-            throws ModuleException;
+        throws ModuleException;
 
     ICriterion computeComplexCriterion(SearchRequest searchRequest) throws ModuleException;
 

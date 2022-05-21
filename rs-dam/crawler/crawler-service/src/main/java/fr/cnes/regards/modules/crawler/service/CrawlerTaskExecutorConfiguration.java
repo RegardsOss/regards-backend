@@ -18,18 +18,16 @@
  */
 package fr.cnes.regards.modules.crawler.service;
 
-import java.util.concurrent.Executor;
-
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 
+import java.util.concurrent.Executor;
+
 /**
- *
  * @author Sébastien Binda
- *
  */
 @Configuration
 @Profile("!nocrawl")

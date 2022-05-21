@@ -1,8 +1,9 @@
 package fr.cnes.regards.modules.acquisition.service;
 
+import org.springframework.scheduling.support.CronSequenceGenerator;
+
 import java.time.OffsetDateTime;
 import java.util.Date;
-import org.springframework.scheduling.support.CronSequenceGenerator;
 
 /**
  * This class allows to check if the next date of the provided cron expression will occurs in the next minute
@@ -15,10 +16,12 @@ public class CronComparator {
      */
     public static final int CRON_REPETITION = 60000;
 
-    private CronComparator() {}
+    private CronComparator() {
+    }
 
     /**
      * Compare the provided cron expression and the current date
+     *
      * @param cronExpression the cron expression (with seconds)
      * @return true if the cron would occur in the next minute
      */
@@ -26,11 +29,11 @@ public class CronComparator {
         return CronComparator.shouldRun(cronExpression, OffsetDateTime.now().toEpochSecond() * 1000);
     }
 
-
     /**
      * Compare the provided cron expression and the provided date
+     *
      * @param cronExpression the cron expression (with seconds)
-     * @param currentDate the current date
+     * @param currentDate    the current date
      * @return true if the cron would occur in the next minute
      */
     public static boolean shouldRun(String cronExpression, Long currentDate) {
@@ -41,7 +44,7 @@ public class CronComparator {
 
     /**
      * @param currentDate current date timestamp in ms
-     * @param nextRun next run date timestamp in ms
+     * @param nextRun     next run date timestamp in ms
      * @return true if the cron would occur in the next minute
      */
     public static boolean shouldRun(Long currentDate, Long nextRun) {

@@ -19,13 +19,6 @@
 
 package fr.cnes.regards.modules.dam.service.datasources;
 
-import java.util.Set;
-
-import org.junit.After;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestPropertySource;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -37,13 +30,20 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.DBConnectionPluginConstants;
 import fr.cnes.regards.modules.dam.plugins.datasources.DefaultPostgreConnectionPlugin;
+import org.junit.After;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
+
+import java.util.Set;
 
 /**
  * Unit testing of {@link DBConnectionService}.
+ *
  * @author Christophe Mertz
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=connection_plugin_it" },
-        locations = { "classpath:dataaccess.properties" })
+    locations = { "classpath:dataaccess.properties" })
 public class DBConnectionServiceIT extends AbstractMultitenantServiceIT {
 
     /**

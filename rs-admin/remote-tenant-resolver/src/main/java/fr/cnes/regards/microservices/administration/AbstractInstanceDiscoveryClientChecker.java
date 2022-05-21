@@ -18,18 +18,18 @@
  */
 package fr.cnes.regards.microservices.administration;
 
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 
+import java.util.List;
+
 /**
  * Ensure a RS-ADMIN instance is available before storing or collecting multitenant information.
  *
  * @author Marc Sordi
- *
  */
 public abstract class AbstractInstanceDiscoveryClientChecker implements InitializingBean {
 

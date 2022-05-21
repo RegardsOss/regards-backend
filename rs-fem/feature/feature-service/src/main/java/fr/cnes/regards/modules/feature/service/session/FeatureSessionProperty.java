@@ -20,42 +20,53 @@ package fr.cnes.regards.modules.feature.service.session;
 
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
 
-
 public enum FeatureSessionProperty {
 
-    REFERENCING_REQUESTS("referencingRequests", StepPropertyStateEnum.SUCCESS, true, false),
-    DELETE_REQUESTS("deleteRequests", StepPropertyStateEnum.INFO),
-    UPDATE_REQUESTS("updateRequests", StepPropertyStateEnum.INFO),
-    NOTIFY_REQUESTS("notifyRequests", StepPropertyStateEnum.INFO),
+    REFERENCING_REQUESTS("referencingRequests", StepPropertyStateEnum.SUCCESS, true, false), DELETE_REQUESTS(
+        "deleteRequests",
+        StepPropertyStateEnum.INFO), UPDATE_REQUESTS("updateRequests", StepPropertyStateEnum.INFO), NOTIFY_REQUESTS(
+        "notifyRequests",
+        StepPropertyStateEnum.INFO),
 
-    REFERENCED_PRODUCTS("referencedProducts", StepPropertyStateEnum.SUCCESS, false, true),
-    DELETED_PRODUCTS("deletedProducts", StepPropertyStateEnum.INFO),
-    UPDATED_PRODUCTS("updatedProducts", StepPropertyStateEnum.INFO),
-    NOTIFY_PRODUCTS("notifyProducts", StepPropertyStateEnum.INFO),
+    REFERENCED_PRODUCTS("referencedProducts", StepPropertyStateEnum.SUCCESS, false, true), DELETED_PRODUCTS(
+        "deletedProducts",
+        StepPropertyStateEnum.INFO), UPDATED_PRODUCTS("updatedProducts", StepPropertyStateEnum.INFO), NOTIFY_PRODUCTS(
+        "notifyProducts",
+        StepPropertyStateEnum.INFO),
 
-    RUNNING_REFERENCING_REQUESTS("runningReferencingRequests", StepPropertyStateEnum.RUNNING),
-    RUNNING_DELETE_REQUESTS("runningDeleteRequests", StepPropertyStateEnum.RUNNING),
-    RUNNING_UPDATE_REQUESTS("runningUpdateRequests", StepPropertyStateEnum.RUNNING),
-    RUNNING_NOTIFY_REQUESTS("runningNotifyRequests", StepPropertyStateEnum.RUNNING),
+    RUNNING_REFERENCING_REQUESTS("runningReferencingRequests", StepPropertyStateEnum.RUNNING), RUNNING_DELETE_REQUESTS(
+        "runningDeleteRequests",
+        StepPropertyStateEnum.RUNNING), RUNNING_UPDATE_REQUESTS("runningUpdateRequests",
+                                                                StepPropertyStateEnum.RUNNING), RUNNING_NOTIFY_REQUESTS(
+        "runningNotifyRequests",
+        StepPropertyStateEnum.RUNNING),
 
-    DENIED_REFERENCING_REQUESTS("deniedReferencingRequests", StepPropertyStateEnum.ERROR),
-    DENIED_DELETE_REQUESTS("deniedDeleteRequests", StepPropertyStateEnum.ERROR),
-    DENIED_UPDATE_REQUESTS("deniedUpdateRequests", StepPropertyStateEnum.ERROR),
-    DENIED_NOTIFY_REQUESTS("deniedNotifyRequests", StepPropertyStateEnum.ERROR),
+    DENIED_REFERENCING_REQUESTS("deniedReferencingRequests", StepPropertyStateEnum.ERROR), DENIED_DELETE_REQUESTS(
+        "deniedDeleteRequests",
+        StepPropertyStateEnum.ERROR), DENIED_UPDATE_REQUESTS("deniedUpdateRequests",
+                                                             StepPropertyStateEnum.ERROR), DENIED_NOTIFY_REQUESTS(
+        "deniedNotifyRequests",
+        StepPropertyStateEnum.ERROR),
 
-    IN_ERROR_REFERENCING_REQUESTS("inErrorReferencingRequests", StepPropertyStateEnum.ERROR),
-    IN_ERROR_DELETE_REQUESTS("inErrorDeleteRequests", StepPropertyStateEnum.ERROR),
-    IN_ERROR_UPDATE_REQUESTS("inErrorUpdateRequests", StepPropertyStateEnum.ERROR),
-    IN_ERROR_NOTIFY_REQUESTS("inErrorNotifyRequests", StepPropertyStateEnum.ERROR),
+    IN_ERROR_REFERENCING_REQUESTS("inErrorReferencingRequests", StepPropertyStateEnum.ERROR), IN_ERROR_DELETE_REQUESTS(
+        "inErrorDeleteRequests",
+        StepPropertyStateEnum.ERROR), IN_ERROR_UPDATE_REQUESTS("inErrorUpdateRequests",
+                                                               StepPropertyStateEnum.ERROR), IN_ERROR_NOTIFY_REQUESTS(
+        "inErrorNotifyRequests",
+        StepPropertyStateEnum.ERROR),
 
-
-    RUNNING_DISSEMINATION_PRODUCTS("%s.pending", StepPropertyStateEnum.RUNNING, true, false),
-    DISSEMINATED_PRODUCTS("%s.done", StepPropertyStateEnum.INFO, false, true);
-
+    RUNNING_DISSEMINATION_PRODUCTS("%s.pending", StepPropertyStateEnum.RUNNING, true, false), DISSEMINATED_PRODUCTS(
+        "%s.done",
+        StepPropertyStateEnum.INFO,
+        false,
+        true);
 
     private final String name;
+
     private final StepPropertyStateEnum state;
+
     private boolean inputRelated;
+
     private boolean outputRelated;
 
     FeatureSessionProperty(String name, StepPropertyStateEnum state, boolean inputRelated, boolean outputRelated) {

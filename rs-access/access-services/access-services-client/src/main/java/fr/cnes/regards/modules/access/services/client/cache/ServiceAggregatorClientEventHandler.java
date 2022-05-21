@@ -18,9 +18,6 @@
  */
 package fr.cnes.regards.modules.access.services.client.cache;
 
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationListener;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -30,6 +27,8 @@ import fr.cnes.regards.modules.access.services.domain.event.UIPluginConfiguratio
 import fr.cnes.regards.modules.access.services.domain.event.UIPluginDefinitionEvent;
 import fr.cnes.regards.modules.catalog.services.domain.event.LinkPluginsDatasetsEvent;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 
 /**
  * Module-common handler for AMQP events.
@@ -72,8 +71,9 @@ public class ServiceAggregatorClientEventHandler implements ApplicationListener<
 
         @Override
         public void handle(TenantWrapper<PluginConfEvent> wrapper) {
-            if ((wrapper.getContent() != null)
-                    && wrapper.getContent().getPluginTypes().contains(IService.class.getName())) {
+            if ((wrapper.getContent() != null) && wrapper.getContent()
+                                                         .getPluginTypes()
+                                                         .contains(IService.class.getName())) {
                 keyGenerator.cleanCache();
             }
         }

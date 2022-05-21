@@ -69,15 +69,17 @@ public class QuotaManagerImplTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        doNothing()
-                .when(runtimeTenantResolver)
-                .forceTenant(anyString());
-        doReturn(TENANT)
-                .when(runtimeTenantResolver)
-                .getTenant();
+        doNothing().when(runtimeTenantResolver).forceTenant(anyString());
+        doReturn(TENANT).when(runtimeTenantResolver).getTenant();
 
-        quotaManager =
-                spy(new QuotaManagerImpl(gaugeExpirationTickingScheduler, gaugeSyncTickingScheduler, quotaRepository, tenantResolver, runtimeTenantResolver, publisher, env, quotaManager));
+        quotaManager = spy(new QuotaManagerImpl(gaugeExpirationTickingScheduler,
+                                                gaugeSyncTickingScheduler,
+                                                quotaRepository,
+                                                tenantResolver,
+                                                runtimeTenantResolver,
+                                                publisher,
+                                                env,
+                                                quotaManager));
 
         ReflectionTestUtils.setField(quotaManager, "self", quotaManager);
         quotaManager.setUserDiffsByTenant(new HashMap<>());//HashMap.empty());
@@ -106,14 +108,24 @@ public class QuotaManagerImplTest {
         long stubGauge = 0L;
         long stubCounter = 0L;
 
-        when(quotaRepository.upsertOrCombineDownloadRate(eq(instanceId), eq(email), eq(0L), any()))
-                .thenReturn(new UserDownloadRate(instanceId, TENANT, email, stubGauge, LocalDateTime.now().plusSeconds(30)));
-        when(quotaRepository.upsertOrCombineDownloadQuota(eq(instanceId), eq(email), eq(0L)))
-                .thenReturn(new UserDownloadQuota(instanceId, TENANT, email, stubCounter));
-        when(quotaRepository.fetchDownloadRatesSum(email))
-                .thenReturn(new UserRateAggregate(stubGauge));
-        when(quotaRepository.fetchDownloadQuotaSum(email))
-                .thenReturn(new UserQuotaAggregate(stubCounter));
+        when(quotaRepository.upsertOrCombineDownloadRate(eq(instanceId),
+                                                         eq(email),
+                                                         eq(0L),
+                                                         any())).thenReturn(new UserDownloadRate(instanceId,
+                                                                                                 TENANT,
+                                                                                                 email,
+                                                                                                 stubGauge,
+                                                                                                 LocalDateTime.now()
+                                                                                                              .plusSeconds(
+                                                                                                                  30)));
+        when(quotaRepository.upsertOrCombineDownloadQuota(eq(instanceId),
+                                                          eq(email),
+                                                          eq(0L))).thenReturn(new UserDownloadQuota(instanceId,
+                                                                                                    TENANT,
+                                                                                                    email,
+                                                                                                    stubCounter));
+        when(quotaRepository.fetchDownloadRatesSum(email)).thenReturn(new UserRateAggregate(stubGauge));
+        when(quotaRepository.fetchDownloadQuotaSum(email)).thenReturn(new UserQuotaAggregate(stubCounter));
 
         Tuple2<UserQuotaAggregate, UserRateAggregate> quotaAndRate = quotaManager.get(downloadQuota);
         QuotaManagerImpl.UserDiffs userDiffs = cache.getIfPresent(email);
@@ -133,9 +145,7 @@ public class QuotaManagerImplTest {
         DownloadQuotaLimits downloadQuota = new DownloadQuotaLimits(TENANT, email, quota, rate);
         quotaManager.setInstanceId(instanceId);
         Cache<String, QuotaManagerImpl.UserDiffs> cache = Caffeine.newBuilder().build();
-        cache.put(email, new QuotaManagerImpl.UserDiffs(
-            new UserRateAggregate(0L), 0L,
-            new UserQuotaAggregate( 0L), 0L));
+        cache.put(email, new QuotaManagerImpl.UserDiffs(new UserRateAggregate(0L), 0L, new UserQuotaAggregate(0L), 0L));
         quotaManager.setUserDiffsByTenant(new HashMap<String, Cache<String, QuotaManagerImpl.UserDiffs>>() {{
             put(TENANT, cache);
         }});
@@ -164,8 +174,7 @@ public class QuotaManagerImplTest {
 
         ThrowableAssert.ThrowingCallable throwing = () -> quotaManager.increment(downloadQuota);
 
-        assertThatThrownBy(throwing)
-            .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(throwing).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
@@ -177,11 +186,7 @@ public class QuotaManagerImplTest {
         DownloadQuotaLimits downloadQuota = new DownloadQuotaLimits(TENANT, email, quota, rate);
         quotaManager.setInstanceId(instanceId);
         Cache<String, QuotaManagerImpl.UserDiffs> cache = Caffeine.newBuilder().build();
-        cache.put(email,
-            new QuotaManagerImpl.UserDiffs(
-                new UserRateAggregate(0L), 0L,
-                new UserQuotaAggregate(0L), 0L)
-        );
+        cache.put(email, new QuotaManagerImpl.UserDiffs(new UserRateAggregate(0L), 0L, new UserQuotaAggregate(0L), 0L));
         quotaManager.setUserDiffsByTenant(new HashMap<String, Cache<String, QuotaManagerImpl.UserDiffs>>() {{
             put(TENANT, cache);
         }});
@@ -210,8 +215,7 @@ public class QuotaManagerImplTest {
 
         ThrowableAssert.ThrowingCallable throwing = () -> quotaManager.decrement(downloadQuota);
 
-        assertThatThrownBy(throwing)
-            .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(throwing).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
@@ -230,15 +234,11 @@ public class QuotaManagerImplTest {
         long quotaDiff = rand.nextInt(10_000);
         long rateDiff = rand.nextInt(10_000);
         Cache<String, QuotaManagerImpl.UserDiffs> cache = Caffeine.newBuilder().build();
-        cache.put(
-            email,
-            new QuotaManagerImpl.UserDiffs(
-                new UserRateAggregate(globalRate),
-                rateDiff,
-                new UserQuotaAggregate(globalQuota),
-                quotaDiff
-            )
-        );
+        cache.put(email,
+                  new QuotaManagerImpl.UserDiffs(new UserRateAggregate(globalRate),
+                                                 rateDiff,
+                                                 new UserQuotaAggregate(globalQuota),
+                                                 quotaDiff));
         quotaManager.setUserDiffsByTenant(new HashMap<String, Cache<String, QuotaManagerImpl.UserDiffs>>() {{
             put(TENANT, cache);
         }});
@@ -249,20 +249,15 @@ public class QuotaManagerImplTest {
         // if an incr happens during the sync
         doAnswer(a -> {
             // cause side effect on the current diffs to simulate their incr during a sync
-            cache.asMap().computeIfPresent(email, (q, d) ->
-                QuotaManagerImpl.UserDiffs.incrementQuotaAndRateDiffs(d)
-            );
+            cache.asMap().computeIfPresent(email, (q, d) -> QuotaManagerImpl.UserDiffs.incrementQuotaAndRateDiffs(d));
             return new HashMap<String, QuotaManagerImpl.UserDiffs>() {{
                 put(email,
-                    new QuotaManagerImpl.UserDiffs(
-                        new UserRateAggregate(globalRate + rateDiff),
-                        0L,
-                        new UserQuotaAggregate(globalQuota + quotaDiff),
-                        0L
-                    ));
+                    new QuotaManagerImpl.UserDiffs(new UserRateAggregate(globalRate + rateDiff),
+                                                   0L,
+                                                   new UserQuotaAggregate(globalQuota + quotaDiff),
+                                                   0L));
             }};
-        }).when(quotaManager)
-            .flushSyncAndRefreshQuotas(any());
+        }).when(quotaManager).flushSyncAndRefreshQuotas(any());
 
         // when
         // the sync runs
@@ -280,8 +275,8 @@ public class QuotaManagerImplTest {
         assertTrue(Option.of(quotaManager.getDiffsAccumulatorByTenant().get(TENANT).get(email)).isEmpty());
 
         // and flushSyncAndRefreshQuotas has been called with the correct quotaDiff and rateDiff to sync
-        ArgumentCaptor<Map<String, QuotaManagerImpl.DiffSync>> flushSyncAndRefreshArgumentCaptor =
-            ArgumentCaptor.forClass(Map.class);
+        ArgumentCaptor<Map<String, QuotaManagerImpl.DiffSync>> flushSyncAndRefreshArgumentCaptor = ArgumentCaptor.forClass(
+            Map.class);
         verify(quotaManager).flushSyncAndRefreshQuotas(flushSyncAndRefreshArgumentCaptor.capture());
         QuotaManagerImpl.DiffSync argument = flushSyncAndRefreshArgumentCaptor.getValue().get(email);
         assertEquals(rateDiff, argument.getRateDiff().longValue());
@@ -304,15 +299,11 @@ public class QuotaManagerImplTest {
         long quotaDiff = rand.nextInt(10_000);
         long rateDiff = rand.nextInt(10_000);
         Cache<String, QuotaManagerImpl.UserDiffs> cache = Caffeine.newBuilder().build();
-        cache.put(
-            email,
-            new QuotaManagerImpl.UserDiffs(
-                new UserRateAggregate(globalRate),
-                rateDiff,
-                new UserQuotaAggregate(globalQuota),
-                quotaDiff
-            )
-        );
+        cache.put(email,
+                  new QuotaManagerImpl.UserDiffs(new UserRateAggregate(globalRate),
+                                                 rateDiff,
+                                                 new UserQuotaAggregate(globalQuota),
+                                                 quotaDiff));
         quotaManager.setUserDiffsByTenant(new HashMap<String, Cache<String, QuotaManagerImpl.UserDiffs>>() {{
             put(TENANT, cache);
         }});
@@ -324,15 +315,11 @@ public class QuotaManagerImplTest {
         Throwable expected = new RuntimeException("expected");
         doAnswer(a -> {
             // cause side effect on the current diffs to simulate their incr during a sync
-            cache.asMap().computeIfPresent(email, (q, d) ->
-                QuotaManagerImpl.UserDiffs.incrementQuotaAndRateDiffs(d)
-            );
+            cache.asMap().computeIfPresent(email, (q, d) -> QuotaManagerImpl.UserDiffs.incrementQuotaAndRateDiffs(d));
 
             throw expected;
-        }).when(quotaManager)
-            .flushSyncAndRefreshQuotas(any());
-        assertThatThrownBy(() -> quotaManager.syncDiffs(TENANT))
-            .isEqualTo(expected);
+        }).when(quotaManager).flushSyncAndRefreshQuotas(any());
+        assertThatThrownBy(() -> quotaManager.syncDiffs(TENANT)).isEqualTo(expected);
 
         // assert that
         QuotaManagerImpl.UserDiffs userDiffs = cache.getIfPresent(email);
@@ -343,24 +330,18 @@ public class QuotaManagerImplTest {
         assertEquals(1L, userDiffs.getRateDiff().longValue());
         assertEquals(1L, userDiffs.getQuotaDiff().longValue());
         // the diffs accumulator has accumulated the diffs that wasn't synced
-        QuotaManagerImpl.DiffSync diffsAcc = quotaManager.getDiffsAccumulatorByTenant()
-            .get(TENANT)
-            .get(email);
+        QuotaManagerImpl.DiffSync diffsAcc = quotaManager.getDiffsAccumulatorByTenant().get(TENANT).get(email);
         assertEquals(rateDiff, diffsAcc.getRateDiff().longValue());
         assertEquals(quotaDiff, diffsAcc.getQuotaDiff().longValue());
 
         // when a second sync succeeds
         doReturn(new HashMap<String, QuotaManagerImpl.UserDiffs>() {{
             put(email,
-                new QuotaManagerImpl.UserDiffs(
-                    new UserRateAggregate(globalRate + rateDiff + 1L),
-                    0L,
-                    new UserQuotaAggregate(globalQuota + quotaDiff + 1L),
-                    0L
-                )
-            );
-        }}).when(quotaManager)
-            .flushSyncAndRefreshQuotas(any());
+                new QuotaManagerImpl.UserDiffs(new UserRateAggregate(globalRate + rateDiff + 1L),
+                                               0L,
+                                               new UserQuotaAggregate(globalQuota + quotaDiff + 1L),
+                                               0L));
+        }}).when(quotaManager).flushSyncAndRefreshQuotas(any());
         quotaManager.syncDiffs(TENANT);
 
         // then
@@ -375,8 +356,8 @@ public class QuotaManagerImplTest {
         assertTrue(Option.of(quotaManager.getDiffsAccumulatorByTenant().get(TENANT).get(email)).isEmpty());
 
         // and flushSyncAndRefreshQuotas has been called with the correct quotaDiff and rateDiff to sync
-        ArgumentCaptor<Map<String, QuotaManagerImpl.DiffSync>> flushSyncAndRefreshArgumentCaptor =
-            ArgumentCaptor.forClass(Map.class);
+        ArgumentCaptor<Map<String, QuotaManagerImpl.DiffSync>> flushSyncAndRefreshArgumentCaptor = ArgumentCaptor.forClass(
+            Map.class);
         verify(quotaManager, times(2)).flushSyncAndRefreshQuotas(flushSyncAndRefreshArgumentCaptor.capture());
         QuotaManagerImpl.DiffSync argument = flushSyncAndRefreshArgumentCaptor.getAllValues().get(1).get(email);
         assertEquals(1L + rateDiff, argument.getRateDiff().longValue());

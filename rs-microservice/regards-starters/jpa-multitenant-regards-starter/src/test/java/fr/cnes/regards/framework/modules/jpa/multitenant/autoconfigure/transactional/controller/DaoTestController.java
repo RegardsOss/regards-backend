@@ -22,28 +22,24 @@ package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transact
   Test controller for JWT and DAO Integration tests
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
+import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.pojo.User;
+import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.repository.IUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.CannotCreateTransactionException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.pojo.User;
-import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.repository.IUserRepository;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class DaoTestController
- *
+ * <p>
  * Test Rest controller to simulate access to DAO using scope (project) in authentication token. Used in Integraion
  * Tests
+ *
  * @author CS
  */
 @RestController
@@ -66,6 +62,7 @@ public class DaoTestController {
 
     /**
      * Retrieve all users from the project of the authenticated user.
+     *
      * @return List<Users>
      * @throws CannotCreateTransactionException Error accessing project database
      */

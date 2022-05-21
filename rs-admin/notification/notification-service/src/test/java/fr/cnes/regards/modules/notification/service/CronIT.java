@@ -231,10 +231,8 @@ public class CronIT {
     /**
      * Get next execution time of passed {@link CronTrigger} with passed start time
      *
-     * @param pTrigger
-     *            The cron trigger
-     * @param pPreviousExecutionTime
-     *            The start date
+     * @param pTrigger               The cron trigger
+     * @param pPreviousExecutionTime The start date
      * @return The next execution time
      */
     private Date getNextExecutionTime(final CronTrigger pTrigger, final Date pPreviousExecutionTime) {

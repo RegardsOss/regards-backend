@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service.accountunlock;
 
-import java.util.Optional;
-import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.instance.dao.accountunlock.IAccountUnlockTokenRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.AccountUnlockToken;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * {@link IAccountUnlockTokenService} implementation.
@@ -46,8 +45,7 @@ public class AccountUnlockTokenService implements IAccountUnlockTokenService {
     private final IAccountUnlockTokenRepository tokenRepository;
 
     /**
-     * @param pTokenRepository
-     *            the token repository
+     * @param pTokenRepository the token repository
      */
     public AccountUnlockTokenService(final IAccountUnlockTokenRepository pTokenRepository) {
         super();
@@ -57,7 +55,7 @@ public class AccountUnlockTokenService implements IAccountUnlockTokenService {
     @Override
     public AccountUnlockToken findByToken(final String pToken) throws EntityNotFoundException {
         return tokenRepository.findByToken(pToken)
-                .orElseThrow(() -> new EntityNotFoundException(pToken, AccountUnlockToken.class));
+                              .orElseThrow(() -> new EntityNotFoundException(pToken, AccountUnlockToken.class));
     }
 
     @Override

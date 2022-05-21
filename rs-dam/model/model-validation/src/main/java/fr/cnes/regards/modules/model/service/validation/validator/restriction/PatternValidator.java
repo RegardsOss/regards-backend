@@ -18,22 +18,20 @@
  */
 package fr.cnes.regards.modules.model.service.validation.validator.restriction;
 
-import java.util.regex.Pattern;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.validation.Errors;
-
 import fr.cnes.regards.modules.model.domain.attributes.restriction.PatternRestriction;
 import fr.cnes.regards.modules.model.dto.properties.StringArrayProperty;
 import fr.cnes.regards.modules.model.dto.properties.StringProperty;
 import fr.cnes.regards.modules.model.service.validation.validator.AbstractPropertyValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.validation.Errors;
+
+import java.util.regex.Pattern;
 
 /**
  * Validate {@link StringProperty} or {@link StringArrayProperty} value with a {@link PatternRestriction}
  *
  * @author Marc Sordi
- *
  */
 public class PatternValidator extends AbstractPropertyValidator {
 
@@ -84,8 +82,10 @@ public class PatternValidator extends AbstractPropertyValidator {
     }
 
     private void reject(Errors pErrors) {
-        pErrors.reject("error.value.not.conform.to.pattern", String
-                .format("Value of attribute %s is not conform to pattern %s.", attributeKey, restriction.getPattern()));
+        pErrors.reject("error.value.not.conform.to.pattern",
+                       String.format("Value of attribute %s is not conform to pattern %s.",
+                                     attributeKey,
+                                     restriction.getPattern()));
 
     }
 

@@ -56,21 +56,32 @@ public class StorageFileListenerService implements IStorageFileListener, IStorag
 
     private final ApplicationContext applicationContext;
 
-    public StorageFileListenerService(ApplicationContext applicationContext, StorageFileListenerService storageFileListenerService){
+    public StorageFileListenerService(ApplicationContext applicationContext,
+                                      StorageFileListenerService storageFileListenerService) {
         this.applicationContext = applicationContext;
         this.self = storageFileListenerService;
     }
 
     @Override
     public void onFileAvailable(List<FileReferenceEventDTO> available) {
-        Set<String> availableChecksums = available.stream().map(FileReferenceEventDTO::getChecksum).collect(Collectors.toSet());
-        subscribers.forEach(subscriber -> this.changeFilesStateWithRetry(availableChecksums, FileState.AVAILABLE, subscriber, 5));
+        Set<String> availableChecksums = available.stream()
+                                                  .map(FileReferenceEventDTO::getChecksum)
+                                                  .collect(Collectors.toSet());
+        subscribers.forEach(subscriber -> this.changeFilesStateWithRetry(availableChecksums,
+                                                                         FileState.AVAILABLE,
+                                                                         subscriber,
+                                                                         5));
     }
 
     @Override
     public void onFileNotAvailable(List<FileReferenceEventDTO> availabilityError) {
-        Set<String> inErrorChecksum = availabilityError.stream().map(FileReferenceEventDTO::getChecksum).collect(Collectors.toSet());
-        subscribers.forEach(subscriber -> this.changeFilesStateWithRetry(inErrorChecksum, FileState.ERROR, subscriber, 5));
+        Set<String> inErrorChecksum = availabilityError.stream()
+                                                       .map(FileReferenceEventDTO::getChecksum)
+                                                       .collect(Collectors.toSet());
+        subscribers.forEach(subscriber -> this.changeFilesStateWithRetry(inErrorChecksum,
+                                                                         FileState.ERROR,
+                                                                         subscriber,
+                                                                         5));
     }
 
     @Override
@@ -103,16 +114,21 @@ public class StorageFileListenerService implements IStorageFileListener, IStorag
         // Do nothing because message is of no importance for rs-order
     }
 
-    private void changeFilesStateWithRetry(Set<String> checksums, FileState state, StorageFilesJob jobSubscriber, int nbRetry) {
+    private void changeFilesStateWithRetry(Set<String> checksums,
+                                           FileState state,
+                                           StorageFilesJob jobSubscriber,
+                                           int nbRetry) {
         try {
             self.changeFilesState(checksums, state, jobSubscriber);
         } catch (ObjectOptimisticLockingFailureException e) {
             if (nbRetry > 0) {
-                LOGGER.trace("Another schedule has updated some of the order files handled by this method while it was running.", e);
+                LOGGER.trace(
+                    "Another schedule has updated some of the order files handled by this method while it was running.",
+                    e);
                 // we retry until it succeed because if it does not succeed on first time it is most likely because of
                 // another scheduled method that would then most likely happen at next invocation because execution delays are fixed
                 // Moreover, we cannot retry on the same content as it has to be reloaded from DB
-                this.changeFilesStateWithRetry(checksums, state, jobSubscriber, nbRetry-1);
+                this.changeFilesStateWithRetry(checksums, state, jobSubscriber, nbRetry - 1);
             } else {
                 throw e;
             }

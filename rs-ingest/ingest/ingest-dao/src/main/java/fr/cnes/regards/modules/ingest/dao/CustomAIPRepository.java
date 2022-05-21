@@ -19,17 +19,19 @@
 package fr.cnes.regards.modules.ingest.dao;
 
 import fr.cnes.regards.modules.ingest.domain.dto.NativeSelectQuery;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import org.springframework.stereotype.Repository;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TemporalType;
-import org.springframework.stereotype.Repository;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This class allows to fetch tags using native SQL
+ *
  * @author Léo Mieulet
  */
 @Repository
@@ -51,8 +53,7 @@ public class CustomAIPRepository implements ICustomAIPRepository {
         for (String paramKey : dateParams.keySet()) {
             q.setParameter(paramKey, dateParams.get(paramKey), TemporalType.TIMESTAMP);
         }
-        @SuppressWarnings("unchecked")
-        List<String> resultList = q.getResultList();
+        @SuppressWarnings("unchecked") List<String> resultList = q.getResultList();
         return resultList;
     }
 }

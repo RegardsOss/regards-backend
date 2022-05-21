@@ -18,15 +18,6 @@
  */
 package fr.cnes.regards.modules.crawler.test;
 
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
-
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.security.autoconfigure.MethodAuthorizationServiceAutoConfiguration;
 import fr.cnes.regards.framework.security.autoconfigure.MethodSecurityAutoConfiguration;
@@ -44,15 +35,18 @@ import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.client.IStorageSettingClient;
 import fr.cnes.regards.modules.toponyms.client.IToponymsClient;
+import org.mockito.Mockito;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.*;
 
 @Profile("!indexer-service")
 @Configuration
 @ComponentScan(basePackages = { "fr.cnes.regards.modules.crawler.service", "fr.cnes.regards.modules.indexer",
-        "fr.cnes.regards.modules.dam", "fr.cnes.regards.modules.model", "fr.cnes.regards.modules.search",
-        "fr.cnes.regards.framework.modules.plugins.service", "fr.cnes.regards.framework.utils.spring" })
+    "fr.cnes.regards.modules.dam", "fr.cnes.regards.modules.model", "fr.cnes.regards.modules.search",
+    "fr.cnes.regards.framework.modules.plugins.service", "fr.cnes.regards.framework.utils.spring" })
 @EnableAutoConfiguration(
-        exclude = { MethodAuthorizationServiceAutoConfiguration.class, MethodSecurityAutoConfiguration.class,
-                SecurityVoterAutoConfiguration.class, WebSecurityAutoConfiguration.class })
+    exclude = { MethodAuthorizationServiceAutoConfiguration.class, MethodSecurityAutoConfiguration.class,
+        SecurityVoterAutoConfiguration.class, WebSecurityAutoConfiguration.class })
 public class CrawlerConfiguration {
 
     @Bean

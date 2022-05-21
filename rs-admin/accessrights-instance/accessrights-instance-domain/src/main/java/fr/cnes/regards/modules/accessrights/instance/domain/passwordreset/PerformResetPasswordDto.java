@@ -53,8 +53,7 @@ public class PerformResetPasswordDto {
     }
 
     /**
-     * @param pToken
-     *            the token to set
+     * @param pToken the token to set
      */
     public void setToken(final String pToken) {
         token = pToken;
@@ -68,8 +67,7 @@ public class PerformResetPasswordDto {
     }
 
     /**
-     * @param pNewPassword
-     *            the newPassword to set
+     * @param pNewPassword the newPassword to set
      */
     public void setNewPassword(final String pNewPassword) {
         newPassword = pNewPassword;

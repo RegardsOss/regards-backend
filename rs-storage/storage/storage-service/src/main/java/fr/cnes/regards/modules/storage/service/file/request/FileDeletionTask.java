@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.modules.storage.dao.IFileDeletetionRequestRepository;
+import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
+import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskWithResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -30,16 +30,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.modules.storage.dao.IFileDeletetionRequestRepository;
-import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import net.javacrumbs.shedlock.core.LockingTaskExecutor.TaskWithResult;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- *
  * @author Sébastien Binda
- *
  */
 public class FileDeletionTask implements TaskWithResult<Collection<JobInfo>> {
 
@@ -57,9 +54,12 @@ public class FileDeletionTask implements TaskWithResult<Collection<JobInfo>> {
 
     private final FileDeletionRequestService deletionRequestService;
 
-    public FileDeletionTask(FileRequestStatus status, Collection<String> storages, int nbRequestsPerJob,
-            Collection<JobInfo> jobList, IFileDeletetionRequestRepository fileDeletionRequestRepo,
-            FileDeletionRequestService deletionRequestService) {
+    public FileDeletionTask(FileRequestStatus status,
+                            Collection<String> storages,
+                            int nbRequestsPerJob,
+                            Collection<JobInfo> jobList,
+                            IFileDeletetionRequestRepository fileDeletionRequestRepo,
+                            FileDeletionRequestService deletionRequestService) {
         super();
         this.status = status;
         this.storages = storages;
@@ -74,9 +74,9 @@ public class FileDeletionTask implements TaskWithResult<Collection<JobInfo>> {
         LOGGER.trace("[DELETION REQUESTS] Scheduling deletion jobs ...");
         long start = System.currentTimeMillis();
         Set<String> allStorages = fileDeletionRequestRepo.findStoragesByStatus(status);
-        Set<String> deletionToSchedule = (storages != null) && !storages.isEmpty()
-                ? allStorages.stream().filter(storages::contains).collect(Collectors.toSet())
-                : allStorages;
+        Set<String> deletionToSchedule = (storages != null) && !storages.isEmpty() ?
+            allStorages.stream().filter(storages::contains).collect(Collectors.toSet()) :
+            allStorages;
         int loop = 0;
         for (String storage : deletionToSchedule) {
             Page<FileDeletionRequest> deletionRequestPage;
@@ -85,18 +85,24 @@ public class FileDeletionTask implements TaskWithResult<Collection<JobInfo>> {
             // To do so, we order on id to ensure to not handle same requests multiple times.
             Pageable page = PageRequest.of(0, nbRequestsPerJob, Direction.ASC, "id");
             do {
-                deletionRequestPage = fileDeletionRequestRepo.findByStorageAndStatusAndIdGreaterThan(storage, status,
-                                                                                                     maxId, page);
+                deletionRequestPage = fileDeletionRequestRepo.findByStorageAndStatusAndIdGreaterThan(storage,
+                                                                                                     status,
+                                                                                                     maxId,
+                                                                                                     page);
                 if (deletionRequestPage.hasContent()) {
-                    maxId = deletionRequestPage.stream().max(Comparator.comparing(FileDeletionRequest::getId)).get()
-                            .getId();
-                    jobList.addAll(deletionRequestService.scheduleDeletionJobsByStorage(storage, deletionRequestPage,
-                     status));
+                    maxId = deletionRequestPage.stream()
+                                               .max(Comparator.comparing(FileDeletionRequest::getId))
+                                               .get()
+                                               .getId();
+                    jobList.addAll(deletionRequestService.scheduleDeletionJobsByStorage(storage,
+                                                                                        deletionRequestPage,
+                                                                                        status));
                 }
                 loop++;
             } while (deletionRequestPage.hasContent() && (loop < 10));
         }
-        LOGGER.debug("[DELETION REQUESTS] {} jobs scheduled in {} ms", jobList.size(),
+        LOGGER.debug("[DELETION REQUESTS] {} jobs scheduled in {} ms",
+                     jobList.size(),
                      System.currentTimeMillis() - start);
         return jobList;
     }

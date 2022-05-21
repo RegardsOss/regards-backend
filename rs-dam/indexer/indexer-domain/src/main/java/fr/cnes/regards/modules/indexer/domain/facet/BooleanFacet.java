@@ -18,16 +18,17 @@
  */
 package fr.cnes.regards.modules.indexer.domain.facet;
 
-import java.util.Map;
-
 import com.google.gson.annotations.JsonAdapter;
 import fr.cnes.regards.modules.indexer.domain.facet.adapters.gson.BooleanFacetSerializer;
+
+import java.util.Map;
 
 /**
  * @author oroussel
  */
 @JsonAdapter(value = BooleanFacetSerializer.class)
 public class BooleanFacet extends AbstractFacet<Map<Boolean, Long>> {
+
     /**
      * Facet values. Key is String value, value is occurrence count of the key
      */

@@ -1,33 +1,6 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.time.OffsetDateTime;
-import java.util.*;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.RunnableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-
+import com.google.common.collect.*;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -45,9 +18,31 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobWorkspaceExcep
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.RunnableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * IJObService implementation
+ *
  * @author oroussel
  */
 @Service
@@ -162,7 +157,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                         Thread.sleep(scanDelay);
                     } catch (InterruptedException e) {
                         LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
-                                + "of the end, pray for your soul", e);
+                                         + "of the end, pray for your soul", e);
                     }
                 }
                 // Find highest priority job to execute
@@ -183,7 +178,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
-                            + "of the end, pray for your soul", e);
+                                     + "of the end, pray for your soul", e);
                 }
             }
         }
@@ -269,8 +264,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                 return null;
             }
             // First, instantiate job
-            @SuppressWarnings("rawtypes")
-            IJob job = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
+            @SuppressWarnings("rawtypes") IJob job = (IJob) Class.forName(jobInfo.getClassName()).newInstance();
             beanFactory.autowireBean(job);
             job.setJobInfoId(jobInfo.getId());
             job.setParameters(jobInfo.getParametersAsMap());
@@ -306,7 +300,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
 
     public void cleanAndRestart() {
         List<Runnable> runables = threadPool.shutdownNow();
-        LOGGER.info("Waiting 60s max for {} jobs to be terminated...",runables.size());
+        LOGGER.info("Waiting 60s max for {} jobs to be terminated...", runables.size());
         try {
             threadPool.awaitTermination(60, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
@@ -338,6 +332,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
 
     /**
      * Ask for job abortion if current thread pool is responsible of job execution
+     *
      * @param jobId job id
      */
     private void abort(UUID jobId) {

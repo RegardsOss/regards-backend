@@ -23,6 +23,7 @@ import java.io.Serializable;
 /**
  * This object store REGARDS security principal<br/>
  * After request authentication, this object can be retrieved calling {@link JWTAuthentication#getPrincipal()}
+ *
  * @author msordi
  * @author Christophe Mertz
  */

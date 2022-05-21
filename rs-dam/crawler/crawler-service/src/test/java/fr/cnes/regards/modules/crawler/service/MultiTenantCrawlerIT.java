@@ -1,23 +1,6 @@
 package fr.cnes.regards.modules.crawler.service;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Optional;
-
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.EntityType;
@@ -31,6 +14,16 @@ import fr.cnes.regards.modules.model.dao.IModelRepository;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.gson.MultitenantFlattenedAttributeAdapterFactoryEventHandler;
 import fr.cnes.regards.modules.model.service.IModelService;
+import org.junit.*;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Optional;
 
 /**
  * Multitenant crawler test
@@ -78,8 +71,8 @@ public class MultiTenantCrawlerIT {
 
     @BeforeClass
     public static void toBeOrNotToBe() throws URISyntaxException {
-        Assume.assumeTrue(ClassLoader
-                .getSystemResource("multitenant_" + System.getProperty("user.name") + ".properties") != null);
+        Assume.assumeTrue(
+            ClassLoader.getSystemResource("multitenant_" + System.getProperty("user.name") + ".properties") != null);
     }
 
     @Before

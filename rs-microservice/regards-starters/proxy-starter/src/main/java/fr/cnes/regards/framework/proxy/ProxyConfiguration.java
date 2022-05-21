@@ -18,13 +18,7 @@
  */
 package fr.cnes.regards.framework.proxy;
 
-import java.util.List;
-
-import org.apache.http.HeaderElement;
-import org.apache.http.HeaderElementIterator;
-import org.apache.http.HttpException;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
+import org.apache.http.*;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
@@ -46,11 +40,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
+import java.util.List;
+
 /**
  * Creates a {@link HttpClient} with proxy configuration.
  *
  * @author sbinda
- *
  */
 @Configuration
 @ConditionalOnProperty("http.proxy.enabled")
@@ -96,25 +91,27 @@ public class ProxyConfiguration {
         PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
         connManager.setDefaultMaxPerRoute(10);
         connManager.setMaxTotal(20);
-        HttpClientBuilder httpClientBuilder = HttpClientBuilder.create().setConnectionManager(connManager)
-                .setKeepAliveStrategy((httpResponse, httpContext) -> {
-                    HeaderElementIterator it = new BasicHeaderElementIterator(httpResponse
-                                                                                      .headerIterator(HTTP.CONN_KEEP_ALIVE));
-                    while (it.hasNext()) {
-                        HeaderElement he = it.nextElement();
-                        String param = he.getName();
-                        String value = he.getValue();
-                        if (value != null && param.equalsIgnoreCase("timeout")) {
-                            return Long.parseLong(value) * 1000;
-                        }
-                    }
-                    return 5 * 1000;
-                });
+        HttpClientBuilder httpClientBuilder = HttpClientBuilder.create()
+                                                               .setConnectionManager(connManager)
+                                                               .setKeepAliveStrategy((httpResponse, httpContext) -> {
+                                                                   HeaderElementIterator it = new BasicHeaderElementIterator(
+                                                                       httpResponse.headerIterator(HTTP.CONN_KEEP_ALIVE));
+                                                                   while (it.hasNext()) {
+                                                                       HeaderElement he = it.nextElement();
+                                                                       String param = he.getName();
+                                                                       String value = he.getValue();
+                                                                       if (value != null && param.equalsIgnoreCase(
+                                                                           "timeout")) {
+                                                                           return Long.parseLong(value) * 1000;
+                                                                       }
+                                                                   }
+                                                                   return 5 * 1000;
+                                                               });
         if ((proxyHost != null) && !proxyHost.isEmpty()) {
             HttpClientBuilder builder = HttpClientBuilder.create();
             HttpHost proxy = new HttpHost(proxyHost, proxyPort);
-            if (((proxyLogin != null) && !proxyLogin.isEmpty()) && ((proxyPassword != null) && !proxyPassword
-                    .isEmpty())) {
+            if (((proxyLogin != null) && !proxyLogin.isEmpty()) && ((proxyPassword != null)
+                && !proxyPassword.isEmpty())) {
                 CredentialsProvider credsProvider = new BasicCredentialsProvider();
                 credsProvider.setCredentials(new AuthScope(proxy.getHostName(), proxy.getPort()),
                                              new UsernamePasswordCredentials(proxyLogin, proxyPassword));
@@ -124,8 +121,9 @@ public class ProxyConfiguration {
                 HttpRoutePlanner routePlannerHandlingNoProxy = new DefaultProxyRoutePlanner(proxy) {
 
                     @Override
-                    public HttpRoute determineRoute(final HttpHost host, final HttpRequest request,
-                            final HttpContext context) throws HttpException {
+                    public HttpRoute determineRoute(final HttpHost host,
+                                                    final HttpRequest request,
+                                                    final HttpContext context) throws HttpException {
                         String hostname = host.getHostName();
                         if (noProxy.contains(hostname)) {
                             // Return direct route

@@ -18,17 +18,16 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
+import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
-import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 
 /**
  * Feature collection representation based on GeoJson standard structure.
  *
  * @author Kevin Marchois
- *
  */
 public class FeatureDeletionCollection {
 
@@ -38,6 +37,7 @@ public class FeatureDeletionCollection {
 
     /**
      * Create a new {@link FeatureDeletionCollection} <br/>
+     *
      * @param urns collection of {@link FeatureUniformResourceName}
      * @return a {@link FeatureDeletionCollection}
      */

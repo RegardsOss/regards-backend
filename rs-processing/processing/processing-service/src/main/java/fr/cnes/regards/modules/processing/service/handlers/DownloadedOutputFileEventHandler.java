@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.service.handlers;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -35,7 +35,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class DownloadedOutputFileEventHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IHandler<DownloadedOutputFilesEvent> {
+    implements ApplicationListener<ApplicationReadyEvent>, IHandler<DownloadedOutputFilesEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DownloadedOutputFileEventHandler.class);
 
@@ -46,7 +46,8 @@ public class DownloadedOutputFileEventHandler
     private final IOutputFileService outFileService;
 
     public DownloadedOutputFileEventHandler(IOutputFileService outFileService,
-            IRuntimeTenantResolver runtimeTenantResolver, ISubscriber subscriber) {
+                                            IRuntimeTenantResolver runtimeTenantResolver,
+                                            ISubscriber subscriber) {
         this.outFileService = outFileService;
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.subscriber = subscriber;
@@ -64,7 +65,7 @@ public class DownloadedOutputFileEventHandler
         LOGGER.info("Downloaded outputfile event received: {}", message);
 
         outFileService.markDownloaded(message.getOutputFileUrls())
-                .subscribe(exec -> LOGGER.info("Output files marked as downloaded: {}", message),
-                           err -> LOGGER.error(err.getMessage(), err));
+                      .subscribe(exec -> LOGGER.info("Output files marked as downloaded: {}", message),
+                                 err -> LOGGER.error(err.getMessage(), err));
     }
 }

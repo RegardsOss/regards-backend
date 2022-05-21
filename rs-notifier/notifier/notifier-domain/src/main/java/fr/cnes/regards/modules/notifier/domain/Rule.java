@@ -39,9 +39,8 @@ import java.util.Set;
 public class Rule {
 
     @OneToMany
-    @JoinTable(name = "ta_rule_recipients",
-               joinColumns = @JoinColumn(name = "rule_id"),
-               inverseJoinColumns = @JoinColumn(name = "recipient_id"))
+    @JoinTable(name = "ta_rule_recipients", joinColumns = @JoinColumn(name = "rule_id"),
+        inverseJoinColumns = @JoinColumn(name = "recipient_id"))
     private final Set<PluginConfiguration> recipients = new HashSet<PluginConfiguration>();
 
     @Id

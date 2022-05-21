@@ -42,9 +42,16 @@ import org.springframework.validation.Validator;
 public class NotificationRegistrationServiceMock extends NotificationRegistrationService {
 
     public NotificationRegistrationServiceMock(INotificationRequestRepository notificationRequestRepository,
-            IPublisher publisher, Validator validator, INotificationClient notificationClient, RuleCache ruleCache,
-            NotificationRegistrationService notificationRegistrationService) {
-        super(notificationRequestRepository, publisher, validator, notificationClient, ruleCache,
+                                               IPublisher publisher,
+                                               Validator validator,
+                                               INotificationClient notificationClient,
+                                               RuleCache ruleCache,
+                                               NotificationRegistrationService notificationRegistrationService) {
+        super(notificationRequestRepository,
+              publisher,
+              validator,
+              notificationClient,
+              ruleCache,
               notificationRegistrationService);
     }
 

@@ -18,18 +18,7 @@
  */
 package fr.cnes.regards.modules.feature.documentation;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.springframework.restdocs.payload.FieldDescriptor;
-import org.springframework.restdocs.request.ParameterDescriptor;
-import org.springframework.restdocs.request.RequestDocumentation;
-import org.springframework.restdocs.snippet.Attributes;
-
 import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
@@ -38,11 +27,18 @@ import fr.cnes.regards.modules.feature.dto.SearchSelectionMode;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPagedModel;
+import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.restdocs.request.ParameterDescriptor;
+import org.springframework.restdocs.request.RequestDocumentation;
+import org.springframework.restdocs.snippet.Attributes;
+
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
- *
  * @author Sébastien Binda
- *
  */
 public class RequestsControllerDocumentationHelper {
 
@@ -85,18 +81,20 @@ public class RequestsControllerDocumentationHelper {
         fd.add(fields.withPath("filters.session", "Session of the request").type("String").optional());
         fd.add(fields.withPath("filters.providerId", "ProviderId of the associated feature").type("String").optional());
         fd.add(fields.withPath("filters.from", "Search for requests with registrationDate greather than this parameter")
-                .type("Date ISO-8601").optional());
+                     .type("Date ISO-8601")
+                     .optional());
         fd.add(fields.withPath("filters.to", "Search for requests with registrationDate lower than this parameter")
-                .type("Date ISO-8601").optional());
+                     .type("Date ISO-8601")
+                     .optional());
         fd.add(fields.withPath("filters.state", "State of the requests to search for").type("String").optional());
-        fd.add(fields
-                .withPath("requestIds",
-                          "Array of requests ids to search for or to exclude form search. Depends on requestIdSelectionMode.")
-                .type("String[]").optional());
-        fd.add(fields.withPath("requestIdSelectionMode", "requestIdSelectionMode",
+        fd.add(fields.withPath("requestIds",
+                               "Array of requests ids to search for or to exclude form search. Depends on requestIdSelectionMode.")
+                     .type("String[]")
+                     .optional());
+        fd.add(fields.withPath("requestIdSelectionMode",
+                               "requestIdSelectionMode",
                                "requestIds selection mode. Default value = " + SearchSelectionMode.INCLUDE,
-                               Arrays.toString(SearchSelectionMode.values()))
-                .type("String").optional());
+                               Arrays.toString(SearchSelectionMode.values())).type("String").optional());
         return fd;
     }
 
@@ -152,26 +150,31 @@ public class RequestsControllerDocumentationHelper {
         List<FieldDescriptor> fd = Lists.newArrayList();
         ConstrainedFields fields = new ConstrainedFields(RequestsPagedModel.class);
         fd.add(fields.withPath("metadata", "Pagination information"));
-        fd.add(fields
-                .withPath("info.nbErrors", "Total number of requests in ERROR state matching the search parameters")
-                .type("Integer"));
+        fd.add(fields.withPath("info.nbErrors",
+                               "Total number of requests in ERROR state matching the search parameters")
+                     .type("Integer"));
         fd.add(fields.withPath("content", "List of results requests"));
         fd.add(fields.withPath("content[].content", "Request"));
         fd.add(fields.withPath("content[].content.id", "Request unique identifier").type("Long"));
-        fd.add(fields.withPath("content[].content.urn", "Associated feature Uniform Resource Name").type("String")
-                .optional());
-        fd.add(fields.withPath("content[].content.providerId", "Associated feature provider identifier").type("String")
-                .optional());
-        fd.add(fields.withPath("content[].content.state", "state", "Associated feature provider identifier",
-                               Arrays.toString(RequestState.values()))
-                .type("String"));
+        fd.add(fields.withPath("content[].content.urn", "Associated feature Uniform Resource Name")
+                     .type("String")
+                     .optional());
+        fd.add(fields.withPath("content[].content.providerId", "Associated feature provider identifier")
+                     .type("String")
+                     .optional());
+        fd.add(fields.withPath("content[].content.state",
+                               "state",
+                               "Associated feature provider identifier",
+                               Arrays.toString(RequestState.values())).type("String"));
         fd.add(fields.withPath("content[].content.processing", "Does the request is processing ?").type("Boolean"));
-        fd.add(fields.withPath("content[].content.registrationDate", "registrationDate", "Request registration date",
-                               OffsetDateTime.now().toString())
-                .type("Date ISO-8601"));
-        fd.add(fields.withPath("content[].content.type", "type", "Request type",
-                               Arrays.toString(FeatureRequestTypeEnum.values()))
-                .type("String"));
+        fd.add(fields.withPath("content[].content.registrationDate",
+                               "registrationDate",
+                               "Request registration date",
+                               OffsetDateTime.now().toString()).type("Date ISO-8601"));
+        fd.add(fields.withPath("content[].content.type",
+                               "type",
+                               "Request type",
+                               Arrays.toString(FeatureRequestTypeEnum.values())).type("String"));
         fd.add(fields.withPath("content[].content.source", "Source of the request").type("String").optional());
         fd.add(fields.withPath("content[].content.session", "Session of the request").type("String").optional());
         fd.add(fields.withPath("content[].links", "Hateoas links fot he current request"));

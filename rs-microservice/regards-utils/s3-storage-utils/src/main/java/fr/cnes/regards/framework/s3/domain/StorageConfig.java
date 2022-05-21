@@ -30,12 +30,14 @@ public class StorageConfig {
     }
 
     private String normalizedRootPath() {
-        return Option.of(rootPath).filter(StringUtils::isNotBlank).map(s -> s.endsWith("/") ? s : s + "/")
-                .getOrElse("");
+        return Option.of(rootPath)
+                     .filter(StringUtils::isNotBlank)
+                     .map(s -> s.endsWith("/") ? s : s + "/")
+                     .getOrElse("");
     }
 
     public URL entryKeyUrl(String entryKey) {
         return Try.of(() -> new URL(String.format("%s/%s/%s", endpoint, bucket, entryKey)))
-                .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
+                  .getOrElseThrow((Function<Throwable, RuntimeException>) RuntimeException::new);
     }
 }

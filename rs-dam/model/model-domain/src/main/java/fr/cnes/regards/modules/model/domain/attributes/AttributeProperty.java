@@ -18,24 +18,16 @@
  */
 package fr.cnes.regards.modules.model.domain.attributes;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import fr.cnes.regards.framework.jpa.IIdentifiable;
+
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-import fr.cnes.regards.framework.jpa.IIdentifiable;
-
 /**
- *
  * Custom attribute property
  *
  * @author Marc Sordi
- *
  */
 @Entity
 @Table(name = "t_attribute_property")

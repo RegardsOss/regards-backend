@@ -18,22 +18,20 @@
  */
 package fr.cnes.regards.microservices.administration;
 
-import java.util.Set;
-
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.project.client.rest.ITenantClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.project.client.rest.ITenantClient;
+import java.util.Set;
 
 /**
- *
  * Class RemoteTenantResolver
- *
+ * <p>
  * Microservice remote tenant resolver. Retrieve tenants from the administration microservice.
  *
  * @author Sébastien Binda
@@ -57,8 +55,9 @@ public class RemoteTenantResolver extends AbstractInstanceDiscoveryClientChecker
      */
     private final ITenantClient tenantClient;
 
-    public RemoteTenantResolver(final DiscoveryClient pDiscoveryClient, ITenantClient tenantClient,
-            String microserviceName) {
+    public RemoteTenantResolver(final DiscoveryClient pDiscoveryClient,
+                                ITenantClient tenantClient,
+                                String microserviceName) {
         super(pDiscoveryClient);
         this.microserviceName = microserviceName;
         this.tenantClient = tenantClient;

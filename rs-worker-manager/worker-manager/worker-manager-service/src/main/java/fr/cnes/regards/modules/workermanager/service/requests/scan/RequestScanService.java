@@ -93,10 +93,14 @@ public class RequestScanService {
     @Value("${regards.workermanager.scan.page.size:" + DEFAULT_SCAN_PAGE_SIZE + "}")
     public int scanPageSize;
 
-    public RequestScanService(IJobInfoService jobInfoService, IAuthenticationResolver authResolver, 
-                              RequestService requestService, WorkerCacheService workerCacheService, 
-                              IWorkerConfigRepository workerConfigRepo, LockingTaskExecutors lockingTaskExecutors, 
-                              SessionService sessionService, RequestScanService requestScanService) {
+    public RequestScanService(IJobInfoService jobInfoService,
+                              IAuthenticationResolver authResolver,
+                              RequestService requestService,
+                              WorkerCacheService workerCacheService,
+                              IWorkerConfigRepository workerConfigRepo,
+                              LockingTaskExecutors lockingTaskExecutors,
+                              SessionService sessionService,
+                              RequestScanService requestScanService) {
         this.jobInfoService = jobInfoService;
         this.authResolver = authResolver;
         this.requestService = requestService;
@@ -121,17 +125,17 @@ public class RequestScanService {
             // And check if there is some requests waiting for available worker
             Optional<String> firstContentType = workerConfig.getContentTypes().stream().findFirst();
             if (firstContentType.isPresent() && workerCacheService.getWorkerTypeByContentType(firstContentType.get())
-                    .isPresent() && requestService.hasRequestsMatchingContentTypeAndNoWorkerAvailable(
-                    workerConfig.getContentTypes())) {
-                SearchRequestParameters filters = new SearchRequestParameters().withContentTypesIncluded(
-                        workerConfig.getContentTypes()).withStatusesIncluded(RequestStatus.NO_WORKER_AVAILABLE);
+                                                                  .isPresent()
+                && requestService.hasRequestsMatchingContentTypeAndNoWorkerAvailable(workerConfig.getContentTypes())) {
+                SearchRequestParameters filters = new SearchRequestParameters().withContentTypesIncluded(workerConfig.getContentTypes())
+                                                                               .withStatusesIncluded(RequestStatus.NO_WORKER_AVAILABLE);
                 scanUsingFilters(filters, RequestStatus.TO_DISPATCH, MAX_TASK_WAIT_DURING_SCHEDULE);
             }
         }
     }
 
     public void scanUsingFilters(SearchRequestParameters filters, RequestStatus newStatus, Long lockAtMostUntilSec)
-            throws Throwable {
+        throws Throwable {
         lockingTaskExecutors.executeWithLock(new RequestScanTask(this, filters, newStatus),
                                              new LockConfiguration(RequestScanService.REQUEST_SCAN_LOCK,
                                                                    Instant.now().plusSeconds(lockAtMostUntilSec)));
@@ -146,7 +150,7 @@ public class RequestScanService {
      * @return
      */
     public void updateRequestsToStatusAndScheduleJob(SearchRequestParameters filters, RequestStatus newStatus)
-            throws ModuleException {
+        throws ModuleException {
         LOGGER.debug("[REQUESTS SCAN] Start updating requests status ... ");
         long start = System.currentTimeMillis();
 
@@ -164,16 +168,21 @@ public class RequestScanService {
                 hasNext = false;
             }
         } while (hasNext);
-        LOGGER.info("{} requests updated to status [{}] and {} jobs have been scheduled in {} ms", totalProducts,
-                    newStatus, nbJob, System.currentTimeMillis() - start);
+        LOGGER.info("{} requests updated to status [{}] and {} jobs have been scheduled in {} ms",
+                    totalProducts,
+                    newStatus,
+                    nbJob,
+                    System.currentTimeMillis() - start);
     }
 
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
     public int updateOnePageOfRequestsToStatusAndScheduleJob(SearchRequestParameters filters, RequestStatus newStatus)
-            throws ModuleException {
+        throws ModuleException {
         Pageable pageable = PageRequest.of(0, scanPageSize);
         Page<Request> requests = requestService.searchRequests(filters, pageable);
-        SessionsRequestsInfo info = new SessionsRequestsInfo(requests.stream().map(Request::toDTO).collect(Collectors.toList()));
+        SessionsRequestsInfo info = new SessionsRequestsInfo(requests.stream()
+                                                                     .map(Request::toDTO)
+                                                                     .collect(Collectors.toList()));
         if (requests.getNumberOfElements() > 0) {
             scheduleJob(newStatus, requests);
             requestService.updateRequestsStatusTo(requests, newStatus);
@@ -206,7 +215,10 @@ public class RequestScanService {
                 throw new ModuleException(error);
         }
         // create job
-        return jobInfoService.createAsQueued(
-                new JobInfo(false, priority, jobParameters, authResolver.getUser(), className));
+        return jobInfoService.createAsQueued(new JobInfo(false,
+                                                         priority,
+                                                         jobParameters,
+                                                         authResolver.getUser(),
+                                                         className));
     }
 }

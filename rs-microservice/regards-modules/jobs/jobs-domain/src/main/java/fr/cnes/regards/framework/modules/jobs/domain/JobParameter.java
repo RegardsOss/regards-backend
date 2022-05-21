@@ -1,16 +1,16 @@
 package fr.cnes.regards.framework.modules.jobs.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-
-import org.hibernate.annotations.Type;
-
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
+import org.hibernate.annotations.Type;
+
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
 /**
  * Job parameter ie a name/value pair.
  * Value must not be a parametered type !!
+ *
  * @author oroussel
  */
 @Embeddable

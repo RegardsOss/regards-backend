@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.amqp.autoconfigure;
 
+import fr.cnes.regards.framework.amqp.AmqpHealthIndicator;
+import fr.cnes.regards.framework.amqp.IPublisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.amqp.RabbitHealthContributorAutoConfiguration;
 import org.springframework.boot.actuate.health.HealthIndicator;
@@ -27,16 +29,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.framework.amqp.AmqpHealthIndicator;
-import fr.cnes.regards.framework.amqp.IPublisher;
-
 /**
  * Adapted Rabbit Health indicator
  *
  * @author Marc SORDI
- *
+ * <p>
  * FIXME : WIP with spring boot admin
- *
  */
 @Configuration
 @ConditionalOnProperty(prefix = "regards.amqp", name = "enabled", matchIfMissing = true)

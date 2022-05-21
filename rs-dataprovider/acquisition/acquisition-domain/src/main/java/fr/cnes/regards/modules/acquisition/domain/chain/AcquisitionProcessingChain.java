@@ -46,30 +46,21 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- *
  * Define a product acquisition chain
  *
  * @author Marc Sordi
- *
  */
 @Entity
 @Table(name = "t_acq_processing_chain")
-@NamedEntityGraphs({
-        @NamedEntityGraph(name = "graph.acquisition.chain.complete",
-                attributeNodes = {
-                        @NamedAttributeNode(value = "fileInfos", subgraph = "subgraph.file.info"),
-                        @NamedAttributeNode(value = "lastProductAcquisitionJobInfo", subgraph = "graph.acquisition.chain.jobs"),
-                        @NamedAttributeNode(value = "validationPluginConf"),
-                        @NamedAttributeNode(value = "productPluginConf"),
-                        @NamedAttributeNode(value = "generateSipPluginConf"),
-                        @NamedAttributeNode(value = "postProcessSipPluginConf")},
-                subgraphs = {
-                        @NamedSubgraph(name = "subgraph.file.info", attributeNodes = {
-                                @NamedAttributeNode(value = "scanDirInfo"),
-                                @NamedAttributeNode(value = "scanPlugin")}),
-                        @NamedSubgraph(name = "graph.acquisition.chain.jobs", attributeNodes = {@NamedAttributeNode(value = "parameters")})
-                })
-})
+@NamedEntityGraphs({ @NamedEntityGraph(name = "graph.acquisition.chain.complete",
+    attributeNodes = { @NamedAttributeNode(value = "fileInfos", subgraph = "subgraph.file.info"),
+        @NamedAttributeNode(value = "lastProductAcquisitionJobInfo", subgraph = "graph.acquisition.chain.jobs"),
+        @NamedAttributeNode(value = "validationPluginConf"), @NamedAttributeNode(value = "productPluginConf"),
+        @NamedAttributeNode(value = "generateSipPluginConf"), @NamedAttributeNode(value = "postProcessSipPluginConf") },
+    subgraphs = { @NamedSubgraph(name = "subgraph.file.info",
+        attributeNodes = { @NamedAttributeNode(value = "scanDirInfo"), @NamedAttributeNode(value = "scanPlugin") }),
+        @NamedSubgraph(name = "graph.acquisition.chain.jobs",
+            attributeNodes = { @NamedAttributeNode(value = "parameters") }) }) })
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class AcquisitionProcessingChain {
 
@@ -120,7 +111,7 @@ public class AcquisitionProcessingChain {
      */
     @Column(name = "period")
     @Pattern(regexp = "0 .*",
-            message = "Invalid cron periodicity. You must start your periodicity with 0 (for 0 second) as the lowest definition is minutes. e.g: 0 * 18 * * *")
+        message = "Invalid cron periodicity. You must start your periodicity with 0 (for 0 second) as the lowest definition is minutes. e.g: 0 * 18 * * *")
     private String periodicity;
 
     /**
@@ -134,7 +125,7 @@ public class AcquisitionProcessingChain {
     @NotNull(message = "Storage metadata is required")
     @Column(columnDefinition = "jsonb")
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE,
-            value = "fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider") })
+        value = "fr.cnes.regards.modules.acquisition.domain.chain.StorageMetadataProvider") })
     private List<StorageMetadataProvider> storages;
 
     @Valid
@@ -396,8 +387,8 @@ public class AcquisitionProcessingChain {
             return false;
         }
         return getPostProcessSipPluginConf() != null ?
-                getPostProcessSipPluginConf().equals(that.getPostProcessSipPluginConf()) :
-                that.getPostProcessSipPluginConf() == null;
+            getPostProcessSipPluginConf().equals(that.getPostProcessSipPluginConf()) :
+            that.getPostProcessSipPluginConf() == null;
     }
 
     @Override

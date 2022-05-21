@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
  * Exception to be thrown when worskpace setting has failed due to IOException
+ *
  * @author oroussel
  */
 @SuppressWarnings("serial")

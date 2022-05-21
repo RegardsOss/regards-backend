@@ -33,7 +33,7 @@ import java.time.format.DateTimeParseException;
  * ISO 8601 date adapter
  * This TypeAdapter is used in method GsonAutoConfiguration#customizeBuilder.
  * The aim is to be able to read a local date time
-
+ *
  * @author Iliana Ghazali
  */
 public class LocalDateTimeAdapter extends TypeAdapter<LocalDateTime> {
@@ -42,7 +42,8 @@ public class LocalDateTimeAdapter extends TypeAdapter<LocalDateTime> {
      * ISO date time official support (UTC)
      */
     public static final DateTimeFormatter ISO_DATE_TIME_UTC = new DateTimeFormatterBuilder().parseCaseInsensitive()
-        .append(DateTimeFormatter.ISO_LOCAL_DATE_TIME).toFormatter();
+                                                                                            .append(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                                                                                            .toFormatter();
 
     /**
      * Writing date with UTC ISO 8601 format

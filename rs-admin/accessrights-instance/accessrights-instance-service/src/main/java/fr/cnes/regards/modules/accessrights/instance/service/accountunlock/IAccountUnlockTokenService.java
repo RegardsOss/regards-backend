@@ -32,19 +32,16 @@ public interface IAccountUnlockTokenService {
     /**
      * Retrieve the {@link AccountUnlockToken} of passed token string
      *
-     * @param pToken
-     *            the account
+     * @param pToken the account
      * @return the token
-     * @throws EntityNotFoundException
-     *             if no {@link AccountUnlockToken} with passed token could be found
+     * @throws EntityNotFoundException if no {@link AccountUnlockToken} with passed token could be found
      */
     AccountUnlockToken findByToken(final String pToken) throws EntityNotFoundException;
 
     /**
      * Create a {@link AccountUnlockToken} for the passed {@link Account}
      *
-     * @param pAccount
-     *            the account
+     * @param pAccount the account
      * @return generated token
      */
     String create(Account pAccount);
@@ -52,8 +49,7 @@ public interface IAccountUnlockTokenService {
     /**
      * Delete all {@link AccountUnlockToken}s for the passed {@link Account}
      *
-     * @param pAccount
-     *            the account
+     * @param pAccount the account
      */
     void deleteAllByAccount(Account pAccount);
 

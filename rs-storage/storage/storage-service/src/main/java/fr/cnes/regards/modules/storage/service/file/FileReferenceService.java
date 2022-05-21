@@ -83,15 +83,17 @@ public class FileReferenceService {
      * Creates a new {@link FileReference} with given parameters. this method does not handle physical files.
      * After success, an AMQP message {@link FileReferenceEvent} is sent with STORED state.
      *
-     * @param owners new file owners
+     * @param owners       new file owners
      * @param fileMetaInfo file information
-     * @param location file location
+     * @param location     file location
      */
-    public FileReference create(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo, FileLocation location,
-     boolean isReferenced) {
+    public FileReference create(Collection<String> owners,
+                                FileReferenceMetaInfo fileMetaInfo,
+                                FileLocation location,
+                                boolean isReferenced) {
         FileReference fileRef = new FileReference(owners, fileMetaInfo, location);
         // set referenced to true if the file is not stored physically
-        if(isReferenced) {
+        if (isReferenced) {
             fileRef.setReferenced(true);
         }
         fileRef = fileRefRepo.save(fileRef);
@@ -101,10 +103,11 @@ public class FileReferenceService {
     /**
      * Delete the given {@link FileReference} in database and send a AMQP {@link FileReferenceEvent} as FULLY_DELETED.
      * This method does not delete file physically.
-     *  @param fileRef {@link FileReference} to delete.
-     * @param groupId request business identifier
+     *
+     * @param fileRef      {@link FileReference} to delete.
+     * @param groupId      request business identifier
      * @param sessionOwner source of data
-     * @param session data management session
+     * @param session      data management session
      */
     public void delete(FileReference fileRef, String groupId, String sessionOwner, String session) {
         Assert.notNull(fileRef, "File reference to delete cannot be null");
@@ -114,7 +117,8 @@ public class FileReferenceService {
         requInfoService.deleteRequestInfoForFile(fileRef.getId());
         fileRefRepo.delete(fileRef);
         String message = String.format("File reference %s (checksum: %s) as been completly deleted for all owners.",
-                                       fileRef.getMetaInfo().getFileName(), fileRef.getMetaInfo().getChecksum());
+                                       fileRef.getMetaInfo().getFileName(),
+                                       fileRef.getMetaInfo().getChecksum());
         fileRefEventPublisher.deletionSuccess(fileRef, message, groupId);
 
         // Decrement the number of running requests to the session agent
@@ -125,6 +129,7 @@ public class FileReferenceService {
 
     /**
      * Remove given owner form the given fileReference.
+     *
      * @param fileReference
      * @param owner
      */
@@ -133,13 +138,15 @@ public class FileReferenceService {
         if (!fileRefRepo.isOwnedBy(fileReference.getId(), owner)) {
             message = String.format("File <%s (checksum: %s)> at %s does not to belongs to %s",
                                     fileReference.getMetaInfo().getFileName(),
-                                    fileReference.getMetaInfo().getChecksum(), fileReference.getLocation().toString(),
+                                    fileReference.getMetaInfo().getChecksum(),
+                                    fileReference.getLocation().toString(),
                                     owner);
         } else {
             fileRefRepo.removeOwner(fileReference.getId(), owner);
             message = String.format("File reference <%s (checksum: %s)> at %s does not belongs to %s anymore",
                                     fileReference.getMetaInfo().getFileName(),
-                                    fileReference.getMetaInfo().getChecksum(), fileReference.getLocation().toString(),
+                                    fileReference.getMetaInfo().getChecksum(),
+                                    fileReference.getLocation().toString(),
                                     owner);
         }
         LOGGER.trace(message);
@@ -148,6 +155,7 @@ public class FileReferenceService {
 
     /**
      * Search for all {@link FileReference}s associated to the given storage location.
+     *
      * @param storage
      * @param pageable
      * @return {@link FileReference}s
@@ -163,6 +171,7 @@ public class FileReferenceService {
 
     /**
      * Search for all {@link FileReference}s associated to the given storage location.
+     *
      * @param storage
      * @param pageable
      * @return {@link FileReference}s
@@ -182,6 +191,7 @@ public class FileReferenceService {
 
     /**
      * Search for all {@link FileReference}s with matching checksums on the given storage location.
+     *
      * @param storage
      * @param checksums
      * @return {@link FileReference}s
@@ -198,6 +208,7 @@ public class FileReferenceService {
 
     /**
      * Search for all {@link FileReference}s associated to the given checksums.
+     *
      * @param checksums
      * @return {@link FileReference}s
      */
@@ -208,6 +219,7 @@ public class FileReferenceService {
 
     /**
      * Search for all {@link FileReference}s associated to the given checksum.
+     *
      * @return {@link FileReference}s
      */
     @Transactional(readOnly = true)
@@ -217,6 +229,7 @@ public class FileReferenceService {
 
     /**
      * Search for all {@link FileReference}s.
+     *
      * @param pageable
      * @return {@link FileReference}s
      */
@@ -227,6 +240,7 @@ public class FileReferenceService {
 
     /**
      * Search for all {@link FileReference}s matching the given criterion.
+     *
      * @param spec criterion
      * @param page
      * @return {@link FileReference}s
@@ -238,6 +252,7 @@ public class FileReferenceService {
 
     /**
      * Update the given fileReference
+     *
      * @param updatedFile
      */
     public FileReference update(String checksum, String storage, FileReference updatedFile) {

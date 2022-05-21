@@ -9,11 +9,17 @@ import java.util.Set;
 public class AccessRightsEmailWrapper {
 
     private ProjectUser projectUser;
+
     private String subject;
+
     private String from;
+
     private Set<String> to;
+
     private String template;
+
     private Map<String, Object> data = new HashMap<>();
+
     private String defaultMessage;
 
     public ProjectUser getProjectUser() {

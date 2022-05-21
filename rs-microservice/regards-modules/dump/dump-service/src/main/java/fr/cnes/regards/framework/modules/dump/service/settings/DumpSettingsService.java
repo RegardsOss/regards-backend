@@ -42,20 +42,21 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-
 @Service
 @RegardsTransactional
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class DumpSettingsService extends AbstractSettingService implements IDumpSettingsService {
 
     private final ITenantResolver tenantsResolver;
+
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     private DumpSettingsService self;
 
-    protected DumpSettingsService(IDynamicTenantSettingService dynamicTenantSettingService, ITenantResolver tenantsResolver,
-                                  IRuntimeTenantResolver runtimeTenantResolver, DumpSettingsService dumpSettingsService
-    ) {
+    protected DumpSettingsService(IDynamicTenantSettingService dynamicTenantSettingService,
+                                  ITenantResolver tenantsResolver,
+                                  IRuntimeTenantResolver runtimeTenantResolver,
+                                  DumpSettingsService dumpSettingsService) {
         super(dynamicTenantSettingService);
         this.tenantsResolver = tenantsResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;

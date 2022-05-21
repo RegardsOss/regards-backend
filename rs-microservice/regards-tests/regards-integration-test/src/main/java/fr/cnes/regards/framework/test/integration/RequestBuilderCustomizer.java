@@ -45,6 +45,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 /**
  * Allow to customize the request done thanks to {@link MockMvc}.
  * Methods "performXX" are considered terminal and so applies coherence controls on the customizations.
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class RequestBuilderCustomizer {
@@ -128,70 +129,106 @@ public class RequestBuilderCustomizer {
     /**
      * Allows to perform GET request
      */
-    protected ResultActions performGet(MockMvc mvc, String urlTemplate, String authToken, String errorMsg,
-            Object... urlVariables) {
+    protected ResultActions performGet(MockMvc mvc,
+                                       String urlTemplate,
+                                       String authToken,
+                                       String errorMsg,
+                                       Object... urlVariables) {
         return performRequest(mvc, getRequestBuilder(authToken, HttpMethod.GET, urlTemplate, urlVariables), errorMsg);
     }
 
     /**
      * Allows to perform DELETE request
      */
-    protected ResultActions performDelete(MockMvc mvc, String urlTemplate, String authToken, String errorMsg,
-            Object... urlVariables) {
-        return performRequest(mvc, getRequestBuilder(authToken, HttpMethod.DELETE, urlTemplate, urlVariables),
+    protected ResultActions performDelete(MockMvc mvc,
+                                          String urlTemplate,
+                                          String authToken,
+                                          String errorMsg,
+                                          Object... urlVariables) {
+        return performRequest(mvc,
+                              getRequestBuilder(authToken, HttpMethod.DELETE, urlTemplate, urlVariables),
                               errorMsg);
     }
 
     /**
      * Allows to perform POSTn request
      */
-    protected ResultActions performPost(MockMvc mvc, String urlTemplate, String authToken, Object content,
-            String errorMsg, Object... urlVariables) {
-        return performRequest(mvc, getRequestBuilder(authToken, HttpMethod.POST, content, urlTemplate, urlVariables),
+    protected ResultActions performPost(MockMvc mvc,
+                                        String urlTemplate,
+                                        String authToken,
+                                        Object content,
+                                        String errorMsg,
+                                        Object... urlVariables) {
+        return performRequest(mvc,
+                              getRequestBuilder(authToken, HttpMethod.POST, content, urlTemplate, urlVariables),
                               errorMsg);
     }
 
     /**
      * Allows to perform Delete request with body
      */
-    protected ResultActions performDelete(MockMvc mvc, String urlTemplate, String authToken, Object content,
-            String errorMsg, Object... urlVariables) {
-        return performRequest(mvc, getRequestBuilder(authToken, HttpMethod.DELETE, content, urlTemplate, urlVariables),
+    protected ResultActions performDelete(MockMvc mvc,
+                                          String urlTemplate,
+                                          String authToken,
+                                          Object content,
+                                          String errorMsg,
+                                          Object... urlVariables) {
+        return performRequest(mvc,
+                              getRequestBuilder(authToken, HttpMethod.DELETE, content, urlTemplate, urlVariables),
                               errorMsg);
     }
 
     /**
      * Allows to perform PUT request
      */
-    protected ResultActions performPut(MockMvc mvc, String urlTemplate, String authToken, Object content,
-            String errorMsg, Object... urlVariables) {
-        return performRequest(mvc, getRequestBuilder(authToken, HttpMethod.PUT, content, urlTemplate, urlVariables),
+    protected ResultActions performPut(MockMvc mvc,
+                                       String urlTemplate,
+                                       String authToken,
+                                       Object content,
+                                       String errorMsg,
+                                       Object... urlVariables) {
+        return performRequest(mvc,
+                              getRequestBuilder(authToken, HttpMethod.PUT, content, urlTemplate, urlVariables),
                               errorMsg);
     }
 
     /**
      * Allows to perform PATCH request
      */
-    protected ResultActions performPatch(MockMvc mvc, String urlTemplate, String authToken, Object content,
-            String errorMsg, Object... urlVariables) {
-        return performRequest(mvc, getRequestBuilder(authToken, HttpMethod.PATCH, content, urlTemplate, urlVariables),
+    protected ResultActions performPatch(MockMvc mvc,
+                                         String urlTemplate,
+                                         String authToken,
+                                         Object content,
+                                         String errorMsg,
+                                         Object... urlVariables) {
+        return performRequest(mvc,
+                              getRequestBuilder(authToken, HttpMethod.PATCH, content, urlTemplate, urlVariables),
                               errorMsg);
     }
 
     /**
      * Allows to perform multipart request providing the multiple parts
      */
-    protected ResultActions performFileUpload(MockMvc mvc, String urlTemplate, String authToken,
-            List<MockMultipartFile> files, String errorMsg, Object... urlVariables) {
+    protected ResultActions performFileUpload(MockMvc mvc,
+                                              String urlTemplate,
+                                              String authToken,
+                                              List<MockMultipartFile> files,
+                                              String errorMsg,
+                                              Object... urlVariables) {
         return performRequest(mvc, getMultipartRequestBuilder(authToken, files, urlTemplate, urlVariables), errorMsg);
     }
 
     /**
      * Allows to perform multipart request providing the path of the file that should be uploaded
      */
-    protected ResultActions performFileUpload(MockMvc mvc, String urlTemplate, String authToken, Path filePath,
-            String errorMsg, Object... urlVariables) {
-        return performRequest(mvc, getMultipartRequestBuilder(authToken, filePath, urlTemplate, urlVariables),
+    protected ResultActions performFileUpload(MockMvc mvc,
+                                              String urlTemplate,
+                                              String authToken,
+                                              Path filePath,
+                                              String errorMsg,
+                                              Object... urlVariables) {
+        return performRequest(mvc,
+                              getMultipartRequestBuilder(authToken, filePath, urlTemplate, urlVariables),
                               errorMsg);
     }
 
@@ -199,8 +236,11 @@ public class RequestBuilderCustomizer {
      * @return {@link MockHttpServletRequestBuilder} customized with RequestBuilderCustomizer#headers or default ones if
      * none has been specified
      */
-    private MockHttpServletRequestBuilder getRequestBuilder(String authToken, HttpMethod method, Object content,
-            String urlTemplate, Object... urlVariables) {
+    private MockHttpServletRequestBuilder getRequestBuilder(String authToken,
+                                                            HttpMethod method,
+                                                            Object content,
+                                                            String urlTemplate,
+                                                            Object... urlVariables) {
         MockHttpServletRequestBuilder requestBuilder = getRequestBuilder(authToken, method, urlTemplate, urlVariables);
         String jsonContent = gson(content);
         requestBuilder.content(jsonContent);
@@ -211,10 +251,13 @@ public class RequestBuilderCustomizer {
      * @return {@link MockHttpServletRequestBuilder} customized with RequestBuilderCustomizer#headers or default ones if
      * none has been specified
      */
-    protected MockHttpServletRequestBuilder getRequestBuilder(String authToken, HttpMethod httpMethod,
-            String urlTemplate, Object... urlVars) {
+    protected MockHttpServletRequestBuilder getRequestBuilder(String authToken,
+                                                              HttpMethod httpMethod,
+                                                              String urlTemplate,
+                                                              Object... urlVars) {
         checkCustomizationCoherence(httpMethod);
-        MockHttpServletRequestBuilder requestBuilder = RestDocumentationRequestBuilders.request(httpMethod, urlTemplate,
+        MockHttpServletRequestBuilder requestBuilder = RestDocumentationRequestBuilders.request(httpMethod,
+                                                                                                urlTemplate,
                                                                                                 urlVars);
         addSecurityHeader(requestBuilder, authToken);
 
@@ -426,6 +469,7 @@ public class RequestBuilderCustomizer {
      * To document path parameters you better use {@link #documentPathParameters(List)} <br/>
      * To document request body you better use {@link #documentRequestBody(List)} <br/>
      * To document response body you better use {@link #documentResponseBody(List)} <br/>
+     *
      * @param snippet documentation snippet to be added.
      */
     public RequestBuilderCustomizer document(Snippet snippet) {
@@ -439,7 +483,8 @@ public class RequestBuilderCustomizer {
 
     public RequestBuilderCustomizer documentRequestParameters(ParameterDescriptor... descriptors) {
         Optional<Snippet> optionalExistingSnippet = docSnippets.stream()
-                .filter(docSnippet -> docSnippet instanceof RequestParametersSnippet).findFirst();
+                                                               .filter(docSnippet -> docSnippet instanceof RequestParametersSnippet)
+                                                               .findFirst();
         // Check if an existing request params exists
         if (optionalExistingSnippet.isPresent()) {
             throw new RuntimeException("You cannot call this method several time.");
@@ -456,7 +501,8 @@ public class RequestBuilderCustomizer {
 
     public RequestBuilderCustomizer documentRequestBody(FieldDescriptor... descriptors) {
         Optional<Snippet> optionalExistingSnippet = docSnippets.stream()
-                .filter(docSnippet -> docSnippet instanceof RequestFieldsSnippet).findFirst();
+                                                               .filter(docSnippet -> docSnippet instanceof RequestFieldsSnippet)
+                                                               .findFirst();
         // Check if an existing request params exists
         if (optionalExistingSnippet.isPresent()) {
             throw new RuntimeException("You cannot call this method several time.");
@@ -473,7 +519,8 @@ public class RequestBuilderCustomizer {
 
     public RequestBuilderCustomizer documentPathParameters(ParameterDescriptor... descriptors) {
         Optional<Snippet> optionalExistingSnippet = docSnippets.stream()
-                .filter(docSnippet -> docSnippet instanceof PathParametersSnippet).findFirst();
+                                                               .filter(docSnippet -> docSnippet instanceof PathParametersSnippet)
+                                                               .findFirst();
         // Check if an existing path params exists
         if (optionalExistingSnippet.isPresent()) {
             // Add to existing path params
@@ -492,7 +539,8 @@ public class RequestBuilderCustomizer {
 
     public RequestBuilderCustomizer documentResponseBody(FieldDescriptor... descriptors) {
         Optional<Snippet> optionalExistingSnippet = docSnippets.stream()
-                .filter(docSnippet -> docSnippet instanceof ResponseFieldsSnippet).findFirst();
+                                                               .filter(docSnippet -> docSnippet instanceof ResponseFieldsSnippet)
+                                                               .findFirst();
         // Check if an existing path params exists
         if (optionalExistingSnippet.isPresent()) {
             // Add to existing path params
@@ -519,12 +567,15 @@ public class RequestBuilderCustomizer {
             }
             if (!skipDocumentation) {
                 OperationRequestPreprocessor reqPreprocessor = preprocessRequest(prettyPrint(),
-                                                                                 removeHeaders("Authorization", "Host",
+                                                                                 removeHeaders("Authorization",
+                                                                                               "Host",
                                                                                                "Content-Length"));
                 OperationResponsePreprocessor respPreprocessor = preprocessResponse(prettyPrint(),
                                                                                     removeHeaders("Content-Length"));
-                request.andDo(MockMvcRestDocumentation.document("{ClassName}/{methodName}", reqPreprocessor,
-                                                                respPreprocessor, docSnippets.toArray(new Snippet[0])));
+                request.andDo(MockMvcRestDocumentation.document("{ClassName}/{methodName}",
+                                                                reqPreprocessor,
+                                                                respPreprocessor,
+                                                                docSnippets.toArray(new Snippet[0])));
             }
             return request;
         } catch (Exception e) { // NOSONAR
@@ -535,14 +586,17 @@ public class RequestBuilderCustomizer {
 
     /**
      * Build a multi-part request builder based on file {@link Path}
-     * @param authToken authorization token
-     * @param filePath {@link Path}
+     *
+     * @param authToken   authorization token
+     * @param filePath    {@link Path}
      * @param urlTemplate URL template
-     * @param urlVars URL vars
+     * @param urlVars     URL vars
      * @return {@link MockMultipartHttpServletRequestBuilder}
      */
-    protected MockMultipartHttpServletRequestBuilder getMultipartRequestBuilder(String authToken, Path filePath,
-            String urlTemplate, Object... urlVars) {
+    protected MockMultipartHttpServletRequestBuilder getMultipartRequestBuilder(String authToken,
+                                                                                Path filePath,
+                                                                                String urlTemplate,
+                                                                                Object... urlVars) {
 
         try {
             MockMultipartFile file = new MockMultipartFile("file", Files.newInputStream(filePath));
@@ -558,18 +612,23 @@ public class RequestBuilderCustomizer {
 
     /**
      * Build a multi-part request builder based on file {@link Path}
-     * @param authToken authorization token
-     * @param files {@link MockMultipartFile}s
+     *
+     * @param authToken   authorization token
+     * @param files       {@link MockMultipartFile}s
      * @param urlTemplate URL template
-     * @param urlVars URL vars
+     * @param urlVars     URL vars
      * @return {@link MockMultipartHttpServletRequestBuilder}
      */
     protected MockMultipartHttpServletRequestBuilder getMultipartRequestBuilder(String authToken,
-            List<MockMultipartFile> files, String urlTemplate, Object... urlVars) {
+                                                                                List<MockMultipartFile> files,
+                                                                                String urlTemplate,
+                                                                                Object... urlVars) {
         // we check with HttpMethod POST because fileUpload method generates a POST request.
         checkCustomizationCoherence(HttpMethod.POST);
 
-        MockMultipartHttpServletRequestBuilder multipartRequestBuilder = RestDocumentationRequestBuilders.multipart(urlTemplate, urlVars);
+        MockMultipartHttpServletRequestBuilder multipartRequestBuilder = RestDocumentationRequestBuilders.multipart(
+            urlTemplate,
+            urlVars);
         files.forEach(multipartRequestBuilder::file);
         addSecurityHeader(multipartRequestBuilder, authToken);
         multipartRequestBuilder.headers(getHeaders());
@@ -585,8 +644,8 @@ public class RequestBuilderCustomizer {
             case DELETE:
             case PUT:
                 if (!requestParamBuilder.getParameters().isEmpty()) {
-                    throw new IllegalStateException(
-                            String.format("Method %s cannot have request parameters", httpMethod));
+                    throw new IllegalStateException(String.format("Method %s cannot have request parameters",
+                                                                  httpMethod));
                 }
                 break;
             default:
@@ -603,6 +662,7 @@ public class RequestBuilderCustomizer {
 
     /**
      * Contains logic on which headers should be used for a request.
+     *
      * @return default headers if no header customization has been done. Customized headers otherwise.
      */
     protected HttpHeaders getHeaders() {

@@ -18,14 +18,14 @@
  */
 package fr.cnes.regards.framework.amqp.test.transactional;
 
+import fr.cnes.regards.framework.amqp.IPoller;
+import fr.cnes.regards.framework.amqp.event.IPollable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import fr.cnes.regards.framework.amqp.IPoller;
-import fr.cnes.regards.framework.amqp.event.IPollable;
-
 /**
  * A service that poll an event in a transaction enabling acknowledgement feature.
+ *
  * @author Marc Sordi
  */
 @Service

@@ -24,13 +24,11 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.storage.dao.entity.mapping.DomainEntityMapper;
-import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.repository.IDownloadQuotaRepository;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
 import fr.cnes.regards.modules.storage.service.file.download.DownloadQuotaService;
 import fr.cnes.regards.modules.storage.service.file.download.QuotaKey;
-import io.vavr.collection.HashMap;
 import io.vavr.collection.Stream;
 import org.junit.After;
 import org.junit.Before;
@@ -49,7 +47,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -76,6 +73,7 @@ public class DownloadQuotaControllerIT extends AbstractRegardsTransactionalIT {
     private DomainEntityMapper mapper;
 
     private final Random random = new Random();
+
     private Cache<QuotaKey, DownloadQuotaLimits> userLimitsCache;
 
     @Before
@@ -91,11 +89,9 @@ public class DownloadQuotaControllerIT extends AbstractRegardsTransactionalIT {
     public void getQuotaLimits_should_create_limits_for_parameterized_user_with_default_value_if_not_exist() {
         String userEmail = UUID.randomUUID().toString();
 
-        RequestBuilderCustomizer customizer =
-            customizer()
-                .expectStatusOk()
-                .expectValue("$.maxQuota", -1L)
-                .expectValue("$.rateLimit", -1L);
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                                                          .expectValue("$.maxQuota", -1L)
+                                                          .expectValue("$.rateLimit", -1L);
 
         performDefaultGet(PATH_USER_QUOTA, customizer, "Failed to get user quota limits", userEmail);
 
@@ -111,11 +107,9 @@ public class DownloadQuotaControllerIT extends AbstractRegardsTransactionalIT {
         long rateLimit = random.nextInt(Integer.MAX_VALUE);
         quotaRepository.save(new DownloadQuotaLimits(getDefaultTenant(), userEmail, maxQuota, rateLimit));
 
-        RequestBuilderCustomizer customizer =
-            customizer()
-                .expectStatusOk()
-                .expectValue("$.maxQuota", maxQuota)
-                .expectValue("$.rateLimit", rateLimit);
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                                                          .expectValue("$.maxQuota", maxQuota)
+                                                          .expectValue("$.rateLimit", rateLimit);
 
         performDefaultGet(PATH_USER_QUOTA, customizer, "Failed to get user quota limits", userEmail);
 
@@ -130,20 +124,16 @@ public class DownloadQuotaControllerIT extends AbstractRegardsTransactionalIT {
 
         long maxQuota = random.nextInt(Integer.MAX_VALUE);
         long rateLimit = random.nextInt(Integer.MAX_VALUE);
-        RequestBuilderCustomizer customizer =
-            customizer()
-                .expectStatusOk()
-                .expectValue("$.maxQuota", maxQuota)
-                .expectValue("$.rateLimit", rateLimit);
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                                                          .expectValue("$.maxQuota", maxQuota)
+                                                          .expectValue("$.rateLimit", rateLimit);
 
         DownloadQuotaLimitsDto dto = new DownloadQuotaLimitsDto(userEmail, maxQuota, rateLimit);
         performDefaultPut(PATH_USER_QUOTA, dto, customizer, "Failed to create user quota limits", userEmail);
 
-        customizer =
-            customizer()
-                .expectStatusOk()
-                .expectValue("$.maxQuota", maxQuota)
-                .expectValue("$.rateLimit", rateLimit);
+        customizer = customizer().expectStatusOk()
+                                 .expectValue("$.maxQuota", maxQuota)
+                                 .expectValue("$.rateLimit", rateLimit);
         performDefaultGet(PATH_USER_QUOTA, customizer, "Failed to get new user quota limits", userEmail);
 
         DownloadQuotaLimits cached = userLimitsCache.getIfPresent(QuotaKey.make(getDefaultTenant(), userEmail));
@@ -158,39 +148,31 @@ public class DownloadQuotaControllerIT extends AbstractRegardsTransactionalIT {
         // init
         long maxQuota = random.nextInt(Integer.MAX_VALUE);
         long rateLimit = random.nextInt(Integer.MAX_VALUE);
-        RequestBuilderCustomizer customizer =
-            customizer()
-                .expectStatusOk()
-                .expectValue("$.maxQuota", maxQuota)
-                .expectValue("$.rateLimit", rateLimit);
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                                                          .expectValue("$.maxQuota", maxQuota)
+                                                          .expectValue("$.rateLimit", rateLimit);
 
         DownloadQuotaLimitsDto dto = new DownloadQuotaLimitsDto(userEmail, maxQuota, rateLimit);
         performDefaultPut(PATH_USER_QUOTA, dto, customizer, "Failed to create user quota limits", userEmail);
 
-        customizer =
-            customizer()
-                .expectStatusOk()
-                .expectValue("$.maxQuota", maxQuota)
-                .expectValue("$.rateLimit", rateLimit);
+        customizer = customizer().expectStatusOk()
+                                 .expectValue("$.maxQuota", maxQuota)
+                                 .expectValue("$.rateLimit", rateLimit);
         performDefaultGet(PATH_USER_QUOTA, customizer, "Failed to get new user quota limits", userEmail);
 
         // update
         maxQuota = random.nextInt(Integer.MAX_VALUE);
         rateLimit = random.nextInt(Integer.MAX_VALUE);
-        customizer =
-            customizer()
-                .expectStatusOk()
-                .expectValue("$.maxQuota", maxQuota)
-                .expectValue("$.rateLimit", rateLimit);
+        customizer = customizer().expectStatusOk()
+                                 .expectValue("$.maxQuota", maxQuota)
+                                 .expectValue("$.rateLimit", rateLimit);
 
         dto = new DownloadQuotaLimitsDto(userEmail, maxQuota, rateLimit);
         performDefaultPut(PATH_USER_QUOTA, dto, customizer, "Failed to update user quota limits", userEmail);
 
-        customizer =
-            customizer()
-                .expectStatusOk()
-                .expectValue("$.maxQuota", maxQuota)
-                .expectValue("$.rateLimit", rateLimit);
+        customizer = customizer().expectStatusOk()
+                                 .expectValue("$.maxQuota", maxQuota)
+                                 .expectValue("$.rateLimit", rateLimit);
         performDefaultGet(PATH_USER_QUOTA, customizer, "Failed to get updated user quota limits", userEmail);
 
         DownloadQuotaLimits cached = userLimitsCache.getIfPresent(QuotaKey.make(getDefaultTenant(), userEmail));
@@ -202,11 +184,9 @@ public class DownloadQuotaControllerIT extends AbstractRegardsTransactionalIT {
     public void getQuotaLimits_should_create_limits_for_current_user_with_default_value_if_not_exist() {
         String userEmail = UUID.randomUUID().toString();
 
-        RequestBuilderCustomizer customizer =
-            customizer()
-                .expectStatusOk()
-                .expectValue("$.maxQuota", -1L)
-                .expectValue("$.rateLimit", -1L);
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                                                          .expectValue("$.maxQuota", -1L)
+                                                          .expectValue("$.rateLimit", -1L);
 
         String token = manageSecurity(getDefaultTenant(), PATH_QUOTA, RequestMethod.GET, userEmail, getDefaultRole());
         performGet(PATH_QUOTA, token, customizer, "Failed to get user quota limits");
@@ -223,11 +203,9 @@ public class DownloadQuotaControllerIT extends AbstractRegardsTransactionalIT {
         long rateLimit = random.nextInt(Integer.MAX_VALUE);
         quotaRepository.save(new DownloadQuotaLimits(getDefaultTenant(), userEmail, maxQuota, rateLimit));
 
-        RequestBuilderCustomizer customizer =
-            customizer()
-                .expectStatusOk()
-                .expectValue("$.maxQuota", maxQuota)
-                .expectValue("$.rateLimit", rateLimit);
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                                                          .expectValue("$.maxQuota", maxQuota)
+                                                          .expectValue("$.rateLimit", rateLimit);
 
         String token = manageSecurity(getDefaultTenant(), PATH_QUOTA, RequestMethod.GET, userEmail, getDefaultRole());
         performGet(PATH_QUOTA, token, customizer, "Failed to get user quota limits");
@@ -239,49 +217,53 @@ public class DownloadQuotaControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void getQuotaLimits_should_return_a_list_of_user_quota_limits() {
-        List<DownloadQuotaLimits> quotaLimits =
-            IntStream.range(0, 50)
-                .mapToObj(ignored -> UUID.randomUUID().toString())
-                .map(userEmail -> {
-                    long maxQuota = random.nextInt(Integer.MAX_VALUE);
-                    long rateLimit = random.nextInt(Integer.MAX_VALUE);
-                    return quotaRepository.save(new DownloadQuotaLimits(getDefaultTenant(), userEmail, maxQuota, rateLimit));
-                })
-                .collect(Collectors.toList());
+        List<DownloadQuotaLimits> quotaLimits = IntStream.range(0, 50)
+                                                         .mapToObj(ignored -> UUID.randomUUID().toString())
+                                                         .map(userEmail -> {
+                                                             long maxQuota = random.nextInt(Integer.MAX_VALUE);
+                                                             long rateLimit = random.nextInt(Integer.MAX_VALUE);
+                                                             return quotaRepository.save(new DownloadQuotaLimits(
+                                                                 getDefaultTenant(),
+                                                                 userEmail,
+                                                                 maxQuota,
+                                                                 rateLimit));
+                                                         })
+                                                         .collect(Collectors.toList());
 
-        RequestBuilderCustomizer customizer =
-            customizer()
-                .addParameter(USER_EMAIL_PARAM, quotaLimits.stream().map(DownloadQuotaLimits::getEmail).toArray(String[]::new))
-                .expectStatusOk();
+        RequestBuilderCustomizer customizer = customizer().addParameter(USER_EMAIL_PARAM,
+                                                                        quotaLimits.stream()
+                                                                                   .map(DownloadQuotaLimits::getEmail)
+                                                                                   .toArray(String[]::new))
+                                                          .expectStatusOk();
 
-        Stream.ofAll(quotaLimits)
-            .zipWithIndex()
-            .forEach(t -> {
-                customizer.expectValue(String.format("$.[%s].email", t._2), t._1.getEmail());
-                customizer.expectValue(String.format("$.[%s].maxQuota", t._2), t._1.getMaxQuota());
-                customizer.expectValue(String.format("$.[%s].rateLimit", t._2), t._1.getRateLimit());
-            });
+        Stream.ofAll(quotaLimits).zipWithIndex().forEach(t -> {
+            customizer.expectValue(String.format("$.[%s].email", t._2), t._1.getEmail());
+            customizer.expectValue(String.format("$.[%s].maxQuota", t._2), t._1.getMaxQuota());
+            customizer.expectValue(String.format("$.[%s].rateLimit", t._2), t._1.getRateLimit());
+        });
 
         performDefaultGet(PATH_QUOTA_LIST, customizer, "Failed to get user quota limits");
 
-//        DownloadQuotaLimits cached = userLimitsCache.getIfPresent(QuotaKey.make(getDefaultTenant(), userEmail));
-//        assertEquals(maxQuota, cached.getMaxQuota().longValue());
-//        assertEquals(rateLimit, cached.getRateLimit().longValue());
+        //        DownloadQuotaLimits cached = userLimitsCache.getIfPresent(QuotaKey.make(getDefaultTenant(), userEmail));
+        //        assertEquals(maxQuota, cached.getMaxQuota().longValue());
+        //        assertEquals(rateLimit, cached.getRateLimit().longValue());
     }
 
     @Test
     public void getCurrentQuotas_should_return_empty_quotas_and_create_default_limits_if_not_exist() {
         String userEmail = UUID.randomUUID().toString();
 
-        RequestBuilderCustomizer customizer =
-            customizer()
-                .expectStatusOk()
-                .expectValue("$.maxQuota", -1L)
-                .expectValue("$.rateLimit", -1L)
-                .expectValue("$.currentQuota", 0L)
-                .expectValue("$.currentRate", 0L);
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                                                          .expectValue("$.maxQuota", -1L)
+                                                          .expectValue("$.rateLimit", -1L)
+                                                          .expectValue("$.currentQuota", 0L)
+                                                          .expectValue("$.currentRate", 0L);
 
-        String token = manageSecurity(getDefaultTenant(), PATH_CURRENT_QUOTA, RequestMethod.GET, userEmail, getDefaultRole());
+        String token = manageSecurity(getDefaultTenant(),
+                                      PATH_CURRENT_QUOTA,
+                                      RequestMethod.GET,
+                                      userEmail,
+                                      getDefaultRole());
         performGet(PATH_CURRENT_QUOTA, token, customizer, "Failed to get current user quotas");
 
         DownloadQuotaLimits cached = userLimitsCache.getIfPresent(QuotaKey.make(getDefaultTenant(), userEmail));
@@ -296,15 +278,17 @@ public class DownloadQuotaControllerIT extends AbstractRegardsTransactionalIT {
         long rateLimit = random.nextInt(Integer.MAX_VALUE);
         quotaRepository.save(new DownloadQuotaLimits(getDefaultTenant(), userEmail, maxQuota, rateLimit));
 
-        RequestBuilderCustomizer customizer =
-            customizer()
-                .expectStatusOk()
-                .expectValue("$.maxQuota", maxQuota)
-                .expectValue("$.rateLimit", rateLimit)
-                .expectValue("$.currentQuota", 0L)
-                .expectValue("$.currentRate", 0L);
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                                                          .expectValue("$.maxQuota", maxQuota)
+                                                          .expectValue("$.rateLimit", rateLimit)
+                                                          .expectValue("$.currentQuota", 0L)
+                                                          .expectValue("$.currentRate", 0L);
 
-        String token = manageSecurity(getDefaultTenant(), PATH_CURRENT_QUOTA, RequestMethod.GET, userEmail, getDefaultRole());
+        String token = manageSecurity(getDefaultTenant(),
+                                      PATH_CURRENT_QUOTA,
+                                      RequestMethod.GET,
+                                      userEmail,
+                                      getDefaultRole());
         performGet(PATH_CURRENT_QUOTA, token, customizer, "Failed to get current user quotas");
 
         DownloadQuotaLimits cached = userLimitsCache.getIfPresent(QuotaKey.make(getDefaultTenant(), userEmail));
@@ -326,18 +310,29 @@ public class DownloadQuotaControllerIT extends AbstractRegardsTransactionalIT {
         long currentRateOnInstance2 = random.nextInt(Integer.MAX_VALUE);
         quotaRepository.upsertOrCombineDownloadQuota(instance1, userEmail, currentQuotaOnInstance1);
         quotaRepository.upsertOrCombineDownloadQuota(instance2, userEmail, currentQuotaOnInstance2);
-        quotaRepository.upsertOrCombineDownloadRate(instance1, userEmail, currentRateOnInstance1, LocalDateTime.now().plusSeconds(120));
-        quotaRepository.upsertOrCombineDownloadRate(instance2, userEmail, currentRateOnInstance2, LocalDateTime.now().plusSeconds(120));
+        quotaRepository.upsertOrCombineDownloadRate(instance1,
+                                                    userEmail,
+                                                    currentRateOnInstance1,
+                                                    LocalDateTime.now().plusSeconds(120));
+        quotaRepository.upsertOrCombineDownloadRate(instance2,
+                                                    userEmail,
+                                                    currentRateOnInstance2,
+                                                    LocalDateTime.now().plusSeconds(120));
 
-        RequestBuilderCustomizer customizer =
-            customizer()
-                .expectStatusOk()
-                .expectValue("$.maxQuota", maxQuota)
-                .expectValue("$.rateLimit", rateLimit)
-                .expectValue("$.currentQuota", currentQuotaOnInstance1 + currentQuotaOnInstance2)
-                .expectValue("$.currentRate", currentRateOnInstance1 + currentRateOnInstance2);
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                                                          .expectValue("$.maxQuota", maxQuota)
+                                                          .expectValue("$.rateLimit", rateLimit)
+                                                          .expectValue("$.currentQuota",
+                                                                       currentQuotaOnInstance1
+                                                                           + currentQuotaOnInstance2)
+                                                          .expectValue("$.currentRate",
+                                                                       currentRateOnInstance1 + currentRateOnInstance2);
 
-        String token = manageSecurity(getDefaultTenant(), PATH_CURRENT_QUOTA, RequestMethod.GET, userEmail, getDefaultRole());
+        String token = manageSecurity(getDefaultTenant(),
+                                      PATH_CURRENT_QUOTA,
+                                      RequestMethod.GET,
+                                      userEmail,
+                                      getDefaultRole());
         performGet(PATH_CURRENT_QUOTA, token, customizer, "Failed to get current user quotas");
 
         DownloadQuotaLimits cached = userLimitsCache.getIfPresent(QuotaKey.make(getDefaultTenant(), userEmail));

@@ -39,14 +39,14 @@ public class CacheableRolesClient {
 
     /**
      * Define the endpoint to determine if the provided ${@link Role} is inferior to the one brought by the current request
+     *
      * @param roleName that should be inferior
      * @return true when the current role should have access to something requiring at least the provided role
      * @throws EntityNotFoundException if some role does not exists
      */
     @Cacheable(cacheNames = RolesHierarchyKeyGenerator.CACHE_NAME,
         keyGenerator = RolesHierarchyKeyGenerator.KEY_GENERATOR, sync = true)
-    public ResponseEntity<Boolean> shouldAccessToResourceRequiring(String roleName)
-        throws EntityNotFoundException {
+    public ResponseEntity<Boolean> shouldAccessToResourceRequiring(String roleName) throws EntityNotFoundException {
         return rolesClient.shouldAccessToResourceRequiring(roleName);
     }
 

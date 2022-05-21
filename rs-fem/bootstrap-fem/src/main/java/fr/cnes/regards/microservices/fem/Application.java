@@ -18,19 +18,16 @@
  */
 package fr.cnes.regards.microservices.fem;
 
+import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
-
 /**
- *
  * Spring boot application : scans all core and contrib modules
  *
  * @author msordi
- *
  */
 // CHECKSTYLE:OFF
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })

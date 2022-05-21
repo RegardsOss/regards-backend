@@ -18,21 +18,19 @@
  */
 package fr.cnes.regards.microservices.dam;
 
-import java.util.Set;
-
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import org.junit.Assert;
 import org.junit.Test;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import java.util.Set;
 
 /**
  * Performance testing for plugin detection by introspection
  *
  * @author Marc Sordi
- *
  */
 public class PluginScannnerTest {
 

@@ -72,41 +72,56 @@ import static org.mockito.ArgumentMatchers.any;
 /**
  * @author Sébastien Binda
  */
-@ActiveProfiles(value = {"default", "test", "testAmqp"}, inheritProfiles = false)
+@ActiveProfiles(value = { "default", "test", "testAmqp" }, inheritProfiles = false)
 @ContextConfiguration(classes = ServiceConfiguration.class)
-@TestPropertySource(properties = {"spring.jpa.properties.hibernate.default_schema=order_test_it", "regards.amqp.enabled=true"})
+@TestPropertySource(
+    properties = { "spring.jpa.properties.hibernate.default_schema=order_test_it", "regards.amqp.enabled=true" })
 @DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 public class OrderServiceTestIT extends AbstractMultitenantServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderServiceTestIT.class);
 
     private static final String URL = "http://frontend.com";
-    private static final UniformResourceName OBJECT_IP_ID = UniformResourceName.fromString("URN:AIP:DATA:ORDER:00000000-0000-0002-0000-000000000002:V1");
+
+    private static final UniformResourceName OBJECT_IP_ID = UniformResourceName.fromString(
+        "URN:AIP:DATA:ORDER:00000000-0000-0002-0000-000000000002:V1");
 
     @Autowired
     private IOrderService orderService;
+
     @Autowired
     private IOrderDownloadService orderDownloadService;
+
     @Autowired
     private IOrderRepository orderRepository;
+
     @Autowired
     private IOrderDataFileRepository orderDataFileRepository;
+
     @Autowired
     private IFilesTasksRepository filesTasksRepository;
+
     @Autowired
     private IOrderDataFileService dataFileService;
+
     @Autowired
     private IBasketRepository basketRepository;
+
     @Autowired
     private IDatasetTaskRepository datasetTaskRepository;
+
     @Autowired
     private IJobInfoRepository jobInfoRepository;
+
     @Autowired
     private IAuthenticationResolver authenticationResolver;
+
     @Autowired
     private IProjectsClient projectsClient;
+
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
+
     @Autowired
     private StorageClientMock storageClientMock;
 
@@ -134,14 +149,16 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceIT {
 
         Project project = new Project();
         project.setHost("regardsHost");
-        Mockito.when(projectsClient.retrieveProject(Mockito.anyString())).thenReturn(new ResponseEntity<>(EntityModel.of(project), HttpStatus.OK));
+        Mockito.when(projectsClient.retrieveProject(Mockito.anyString()))
+               .thenReturn(new ResponseEntity<>(EntityModel.of(project), HttpStatus.OK));
 
         Role role = new Role();
         role.setName(DefaultRole.REGISTERED_USER.name());
         ProjectUser projectUser = new ProjectUser();
         projectUser.setRole(role);
         Mockito.when(projectUsersClient.isAdmin(any())).thenReturn(ResponseEntity.ok(false));
-        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(new ResponseEntity<>(EntityModel.of(projectUser), HttpStatus.OK));
+        Mockito.when(projectUsersClient.retrieveProjectUserByEmail(Mockito.anyString()))
+               .thenReturn(new ResponseEntity<>(EntityModel.of(projectUser), HttpStatus.OK));
         simulateApplicationReadyEvent();
         simulateApplicationStartedEvent();
     }
@@ -440,13 +457,15 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceIT {
         waitForStatus(order.getId(), OrderStatus.RUNNING);
         Mockito.when(authenticationResolver.getUser()).thenReturn(order.getOwner());
 
-        Assertions.assertThrows(CannotRestartOrderException.class, () -> orderService.restart(order.getId(), "restartWhenNotDone", URL));
+        Assertions.assertThrows(CannotRestartOrderException.class,
+                                () -> orderService.restart(order.getId(), "restartWhenNotDone", URL));
 
         Thread.sleep(1_500);
         orderService.pause(order.getId());
         waitForPausedStatus(order.getId());
 
-        Assertions.assertThrows(CannotRestartOrderException.class, () -> orderService.restart(order.getId(), "restartWhenNotDone", URL));
+        Assertions.assertThrows(CannotRestartOrderException.class,
+                                () -> orderService.restart(order.getId(), "restartWhenNotDone", URL));
 
         storageClientMock.setWaitMode(false);
         orderService.resume(order.getId());
@@ -469,7 +488,11 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceIT {
         Long orderId = order.getId();
         LOGGER.info("Order created");
         waitForStatus(orderId, OrderStatus.DONE);
-        assertEquals(creationTasksCount, filesTasksRepository.findAll().stream().filter(filesTask -> filesTask.getOrderId().equals(orderId)).count());
+        assertEquals(creationTasksCount,
+                     filesTasksRepository.findAll()
+                                         .stream()
+                                         .filter(filesTask -> filesTask.getOrderId().equals(orderId))
+                                         .count());
         checkCompletion(orderId, 100);
 
         // Set current FilesTask as downloaded to ensure new job will be processed after retry
@@ -483,10 +506,12 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceIT {
         });
         // Set one file in error and order as done with warning
         OrderDataFile ds1OrderDataFile = orderDataFileRepository.findAllByOrderId(orderId)
-                .stream()
-                .filter(orderDataFile -> orderDataFile.getIpId().equals(OBJECT_IP_ID))
-                .findFirst()
-                .get();
+                                                                .stream()
+                                                                .filter(orderDataFile -> orderDataFile.getIpId()
+                                                                                                      .equals(
+                                                                                                          OBJECT_IP_ID))
+                                                                .findFirst()
+                                                                .get();
         ds1OrderDataFile.setState(FileState.ERROR);
         orderDataFileRepository.save(ds1OrderDataFile);
         FilesTask oldFilesTask = filesTasksRepository.findDistinctByFilesContaining(ds1OrderDataFile);
@@ -508,7 +533,11 @@ public class OrderServiceTestIT extends AbstractMultitenantServiceIT {
         checkCompletion(orderId, expectedPostRetryCompletion);
 
         // Should get a new FilesTask for retried files
-        assertEquals(retryTasksCount, filesTasksRepository.findAll().stream().filter(filesTask -> filesTask.getOrderId().equals(orderId)).count());
+        assertEquals(retryTasksCount,
+                     filesTasksRepository.findAll()
+                                         .stream()
+                                         .filter(filesTask -> filesTask.getOrderId().equals(orderId))
+                                         .count());
         FilesTask newFilesTask = filesTasksRepository.findDistinctByFilesContaining(ds1OrderDataFile);
         assertNotEquals(oldFilesTask, newFilesTask);
 

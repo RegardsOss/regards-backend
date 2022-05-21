@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepExceptio
 
 /**
  * ProcessingStepException thrown by AIPGenerationStep
+ *
  * @author Sébastien Binda
  */
 @SuppressWarnings("serial")

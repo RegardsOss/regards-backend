@@ -18,25 +18,18 @@
  */
 package fr.cnes.regards.modules.feature.dto;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
-import org.springframework.lang.Nullable;
-
 import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.geojson.AbstractFeature;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
+import org.springframework.lang.Nullable;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.util.*;
 
 /**
  * GeoJson feature with dynamic properties based on data model definition<br/>
@@ -160,8 +153,12 @@ public class Feature extends AbstractFeature<Set<IProperty<?>>, String> {
         return true;
     }
 
-    public static Feature build(String id, String owner, @Nullable FeatureUniformResourceName urn, IGeometry geometry,
-            EntityType entityType, String model) {
+    public static Feature build(String id,
+                                String owner,
+                                @Nullable FeatureUniformResourceName urn,
+                                IGeometry geometry,
+                                EntityType entityType,
+                                String model) {
         Feature feature = new Feature();
         feature.setUrn(urn);
         feature.setEntityType(entityType);

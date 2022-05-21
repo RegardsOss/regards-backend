@@ -23,8 +23,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 /**
  * Class ApplicationTest
- *
+ * <p>
  * Spring Context test
+ *
  * @author Sébastien Binda
  */
 @SpringBootTest(classes = Application.class)

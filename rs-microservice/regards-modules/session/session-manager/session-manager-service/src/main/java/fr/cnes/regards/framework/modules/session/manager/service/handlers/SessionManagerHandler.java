@@ -34,7 +34,7 @@ import java.util.List;
  * @author Iliana Ghazali
  **/
 public class SessionManagerHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<SessionStepEvent> {
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<SessionStepEvent> {
 
     @Autowired
     private ISubscriber subscriber;
@@ -57,7 +57,8 @@ public class SessionManagerHandler
         LOGGER.trace("[SESSION STEP EVENT HANDLER] Handling {} SessionStepEvents...", messages.size());
         long start = System.currentTimeMillis();
         sessionManagerHandlerService.createSessionSteps(messages);
-        LOGGER.trace("[SESSION STEP EVENT HANDLER] {} SessionStepEvents handled in {} ms", messages.size(),
+        LOGGER.trace("[SESSION STEP EVENT HANDLER] {} SessionStepEvents handled in {} ms",
+                     messages.size(),
                      System.currentTimeMillis() - start);
     }
 }

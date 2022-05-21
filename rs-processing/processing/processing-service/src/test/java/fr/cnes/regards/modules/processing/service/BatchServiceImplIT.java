@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.service;
 
 import fr.cnes.regards.modules.processing.domain.PBatch;
@@ -35,26 +35,24 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
-@ContextConfiguration(
-        classes = { TestSpringConfiguration.class, AbstractProcessingServiceIT.Config.class }
-)
+@ContextConfiguration(classes = { TestSpringConfiguration.class, AbstractProcessingServiceIT.Config.class })
 public class BatchServiceImplIT extends AbstractProcessingServiceIT {
 
     @Test
     public void checkAndCreateBatch() {
         UUID processBusinessId = UUID.randomUUID();
 
-        PBatchRequest batchRequest = new PBatchRequest(
-            "bcid",
-            processBusinessId,
-                THE_TENANT,
-                THE_USER,
-                THE_ROLE,
-            HashMap.empty(),
-            HashMap.of("dataset1", new FileSetStatistics("dataset1", 5, 123456L))
-        );
+        PBatchRequest batchRequest = new PBatchRequest("bcid",
+                                                       processBusinessId,
+                                                       THE_TENANT,
+                                                       THE_USER,
+                                                       THE_ROLE,
+                                                       HashMap.empty(),
+                                                       HashMap.of("dataset1",
+                                                                  new FileSetStatistics("dataset1", 5, 123456L)));
 
-        PBatch batch = batchService.checkAndCreateBatch(new PUserAuth(THE_TENANT, THE_USER, THE_ROLE, THE_TOKEN), batchRequest).block();
+        PBatch batch = batchService.checkAndCreateBatch(new PUserAuth(THE_TENANT, THE_USER, THE_ROLE, THE_TOKEN),
+                                                        batchRequest).block();
 
         assertThat(batch.getCorrelationId()).isEqualTo(batchRequest.getCorrelationId());
 
@@ -69,27 +67,26 @@ public class BatchServiceImplIT extends AbstractProcessingServiceIT {
 
         UUID processBusinessId = UUID.randomUUID();
 
-        PBatchRequest batchRequest = new PBatchRequest(
-                "bcid",
-                processBusinessId,
-                THE_TENANT,
-                THE_USER,
-                THE_ROLE,
-                HashMap.empty(),
-                HashMap.of("dataset1", new FileSetStatistics("dataset1", 5, 123456L))
-        );
+        PBatchRequest batchRequest = new PBatchRequest("bcid",
+                                                       processBusinessId,
+                                                       THE_TENANT,
+                                                       THE_USER,
+                                                       THE_ROLE,
+                                                       HashMap.empty(),
+                                                       HashMap.of("dataset1",
+                                                                  new FileSetStatistics("dataset1", 5, 123456L)));
 
         AtomicReference<Throwable> throwableRef = new AtomicReference<>();
 
         batchService.checkAndCreateBatch(new PUserAuth(THE_TENANT, THE_USER, THE_ROLE, THE_TOKEN), batchRequest)
-            .subscribeOn(Schedulers.immediate())
-            .subscribe(
-                b -> fail("Should not return a value"),
-                e -> throwableRef.set(e));
+                    .subscribeOn(Schedulers.immediate())
+                    .subscribe(b -> fail("Should not return a value"), e -> throwableRef.set(e));
 
         assertThat(throwableRef.get()).isNotNull();
         assertThat(throwableRef.get()).isInstanceOf(ProcessConstraintViolationsException.class);
-        assertThat(((ProcessConstraintViolationsException)throwableRef.get()).getViolations()).anyMatch(v -> v.getMessage().equals("wrong for some reason"));
+        assertThat(((ProcessConstraintViolationsException) throwableRef.get()).getViolations()).anyMatch(v -> v.getMessage()
+                                                                                                               .equals(
+                                                                                                                   "wrong for some reason"));
 
         assertThat(batchEntityRepo.findAll().collectList().block()).isEmpty();
     }

@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.dam.dao.entities;
 
-import org.junit.Ignore;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorIT;
+import org.junit.Ignore;
 
 /**
  * Generate DDL with HBM2DDL
- * @author Marc Sordi
  *
+ * @author Marc Sordi
  */
 @Ignore
 public class EntitySQLGeneratorIT extends AbstractScriptGeneratorIT {

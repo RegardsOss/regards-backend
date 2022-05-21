@@ -37,7 +37,7 @@ import java.util.List;
  */
 @Component("clientRequestUpdateEventHandler")
 public class FileReferenceUpdateEventHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FileReferenceUpdateEvent> {
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<FileReferenceUpdateEvent> {
 
     @Autowired(required = false)
     private IStorageFileListener listener;
@@ -64,7 +64,8 @@ public class FileReferenceUpdateEventHandler
         LOGGER.debug("[STORAGE RESPONSES HANDLER] Handling {} FileReferenceUpdateEventHandler...", messages.size());
         long start = System.currentTimeMillis();
         handle(messages);
-        LOGGER.debug("[STORAGE RESPONSES HANDLER] {} FileReferenceUpdateEventHandler handled in {} ms", messages.size(),
+        LOGGER.debug("[STORAGE RESPONSES HANDLER] {} FileReferenceUpdateEventHandler handled in {} ms",
+                     messages.size(),
                      System.currentTimeMillis() - start);
     }
 

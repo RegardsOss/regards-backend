@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.access.services.client.cache;
 
+import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -28,15 +31,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-
 /**
  * SPRING Cache autoconfiguration class
  *
  * @author Sébastien Binda
- *
  */
 @Profile("!test")
 @Configuration
@@ -52,14 +50,14 @@ public class ServiceAggregatorCacheAutoConfiguration {
     @Bean(ServiceAggregatorKeyGenerator.KEY_GENERATOR)
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
     public IServiceAggregatorKeyGenerator serviceAggregatorKeyGenerator(IAuthenticationResolver oauthResolver,
-            IRuntimeTenantResolver resolver) {
+                                                                        IRuntimeTenantResolver resolver) {
         return new ServiceAggregatorKeyGenerator(oauthResolver, resolver);
     }
 
     @Bean
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
     public ServiceAggregatorClientEventHandler serviceAggregatorEventHandler(ISubscriber subscriber,
-            IServiceAggregatorKeyGenerator keyGen) {
+                                                                             IServiceAggregatorKeyGenerator keyGen) {
         return new ServiceAggregatorClientEventHandler(subscriber, keyGen);
     }
 

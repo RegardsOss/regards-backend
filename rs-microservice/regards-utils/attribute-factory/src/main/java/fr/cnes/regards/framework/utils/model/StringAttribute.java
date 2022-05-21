@@ -22,9 +22,8 @@ import fr.cnes.regards.framework.utils.metamodel.MetaAttribute;
 
 /**
  * Cette classe represente un attribut de type chaine de caracteres
- * 
- * @author Christophe Mertz
  *
+ * @author Christophe Mertz
  */
 public class StringAttribute extends Attribute {
 

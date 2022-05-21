@@ -23,9 +23,11 @@ import java.time.OffsetDateTime;
 /**
  * OffsetDateTime specialized AbstractMatchCriterion.<br/>
  * <b>Only MatchType.EQUALS is allowed with OffsetDateTime type
+ *
  * @author oroussel
  */
 public class DateMatchCriterion extends AbstractMatchCriterion<OffsetDateTime> {
+
     public DateMatchCriterion(String name, OffsetDateTime value) {
         super(name, MatchType.EQUALS, value);
 

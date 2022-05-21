@@ -18,15 +18,19 @@
  */
 package fr.cnes.regards.modules.ingest.domain;
 
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.util.HashMap;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.oais.InformationPackageProperties;
+import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.urn.DataType;
+import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
+import fr.cnes.regards.modules.ingest.dto.sip.SIP;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
+import fr.cnes.regards.modules.ingest.dto.sip.SIPReference;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,31 +44,19 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
-import fr.cnes.regards.framework.oais.InformationPackageProperties;
-import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.urn.DataType;
-import fr.cnes.regards.framework.urn.EntityType;
-import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
-import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
-import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
-import fr.cnes.regards.modules.ingest.dto.sip.SIPReference;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.util.HashMap;
 
 /**
- *
  * {@link SIP} and {@link SIPCollection} validation tests
  *
  * @author Marc Sordi
- *
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = ValidationAutoConfiguration.class)
 @TestPropertySource(
-        properties = { "regards.cipher.iv=1234567812345678", "regards.cipher.keyLocation=src/test/resources/testKey" })
+    properties = { "regards.cipher.iv=1234567812345678", "regards.cipher.keyLocation=src/test/resources/testKey" })
 public class SIPValidationIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPValidationIT.class);
@@ -180,8 +172,10 @@ public class SIPValidationIT {
         // Content information - data object
         sip.withDataObject(DataType.RAWDATA, Paths.get("sip.fits"), "abff1dffdfdf2sdsfsd");
         // Content information - data object representation information
-        sip.withSyntaxAndSemantic("FITS", "http://www.iana.org/assignments/media-types/application/fits",
-                                  MimeType.valueOf("application/fits"), "semanticDescription");
+        sip.withSyntaxAndSemantic("FITS",
+                                  "http://www.iana.org/assignments/media-types/application/fits",
+                                  MimeType.valueOf("application/fits"),
+                                  "semanticDescription");
         // Effectively add content information to the current SIP
         sip.registerContentInformation();
 
@@ -218,9 +212,11 @@ public class SIPValidationIT {
     @Test
     public void validateSIPCollection() {
 
-        SIPCollection collection = SIPCollection
-                .build(IngestMetadataDto.build("sessionOwner", "session", "ingestChain", Sets.newHashSet("cat 1"),
-                                               StorageMetadata.build("test")));
+        SIPCollection collection = SIPCollection.build(IngestMetadataDto.build("sessionOwner",
+                                                                               "session",
+                                                                               "ingestChain",
+                                                                               Sets.newHashSet("cat 1"),
+                                                                               StorageMetadata.build("test")));
 
         validator.validate(collection, errors);
         if (errors.hasErrors()) {

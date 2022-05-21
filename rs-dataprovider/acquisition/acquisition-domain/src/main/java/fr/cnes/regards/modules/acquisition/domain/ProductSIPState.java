@@ -22,7 +22,6 @@ import fr.cnes.regards.modules.ingest.domain.sip.ISipState;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 
 /**
- *
  * This SIP state defines the first steps states in DATA PROVIDER. Following states are inherited from INGEST.
  *
  * <pre>
@@ -40,7 +39,6 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
  * </pre>
  *
  * @author Marc Sordi
- *
  */
 public enum ProductSIPState implements ISipState {
 

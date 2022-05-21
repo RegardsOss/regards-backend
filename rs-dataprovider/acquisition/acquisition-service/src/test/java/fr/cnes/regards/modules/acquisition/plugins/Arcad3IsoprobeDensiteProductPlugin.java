@@ -18,21 +18,20 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins;
 
+import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+
 import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 
 /**
  * Compute DA_TC_ARCAD3_ISO_DENSITE product names
  *
  * @author Marc Sordi
- *
  */
 @Plugin(id = "Arcad3IsoprobeDensiteProductPlugin", version = "1.0.0-SNAPSHOT",
-        description = "Compute the product name from data and browse filenames", author = "REGARDS Team",
-        contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
+    description = "Compute the product name from data and browse filenames", author = "REGARDS Team",
+    contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class Arcad3IsoprobeDensiteProductPlugin implements IProductPlugin {
 
     private static final String BASE_PRODUCT_NAME = "ISO_DENS_";

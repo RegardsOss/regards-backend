@@ -31,8 +31,7 @@ public interface ILinkPluginsDatasetsService {
     /**
      * Retrieves a {@link LinkPluginsDatasets} from a dataset
      *
-     * @param pDatasetId
-     *            the given dataset id
+     * @param pDatasetId the given dataset id
      * @return the {@link LinkPluginsDatasets}
      */
     LinkPluginsDatasets retrieveLink(String pDatasetId);
@@ -40,13 +39,10 @@ public interface ILinkPluginsDatasetsService {
     /**
      * Update a {@link LinkPluginsDatasets}
      *
-     * @param pDatasetId
-     *            the dataset id
-     * @param pUpdatedLink
-     *            the {@link LinkPluginsDatasets} to update
+     * @param pDatasetId   the dataset id
+     * @param pUpdatedLink the {@link LinkPluginsDatasets} to update
      * @return the updated {@link LinkPluginsDatasets}
-     * @throws EntityInvalidException
-     *             if the given updated link is not on given dataset
+     * @throws EntityInvalidException if the given updated link is not on given dataset
      */
     LinkPluginsDatasets updateLink(String pDatasetId, LinkPluginsDatasets pUpdatedLink) throws EntityInvalidException;
 

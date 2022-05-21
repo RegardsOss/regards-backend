@@ -18,20 +18,18 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import java.util.Collection;
-
+import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
+import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import java.util.Collection;
 
 /**
  * JPA repository to access {@link OAISDeletionRequest}s
  *
  * @author Sébastien Binda
- *
  */
 public interface IOAISDeletionRequestRepository extends JpaRepository<OAISDeletionRequest, Long> {
 

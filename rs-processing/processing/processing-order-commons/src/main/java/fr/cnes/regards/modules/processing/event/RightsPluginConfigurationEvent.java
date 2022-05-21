@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 package fr.cnes.regards.modules.processing.event;
 
 import fr.cnes.regards.framework.amqp.event.Event;
@@ -37,7 +37,9 @@ public class RightsPluginConfigurationEvent implements ISubscribable {
     }
 
     Type type;
+
     ProcessPluginConfigurationRightsDTO before;
+
     ProcessPluginConfigurationRightsDTO after;
 
 }

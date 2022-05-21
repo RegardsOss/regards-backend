@@ -18,6 +18,5 @@
  */
 /**
  * @author Christophe Mertz
- *
  */
 package fr.cnes.regards.microservices.access;

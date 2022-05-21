@@ -22,66 +22,51 @@ public class DomainEntityMapperImpl implements DomainEntityMapper {
 
     @Override
     public UserDownloadQuotaEntity toEntity(UserDownloadQuota quota) {
-        return new UserDownloadQuotaEntity(
-            quota.getId(),
-            quota.getInstance(),
-            quota.getEmail(),
-            quota.getCounter()
-        );
+        return new UserDownloadQuotaEntity(quota.getId(), quota.getInstance(), quota.getEmail(), quota.getCounter());
     }
 
     @Override
     public UserDownloadQuota toDomain(UserDownloadQuotaEntity quota) {
-        return new UserDownloadQuota(
-            quota.getId(),
-            quota.getInstance(),
-            runtimeTenantResolver.getTenant(),
-            quota.getEmail(),
-            quota.getCounter()
-        );
+        return new UserDownloadQuota(quota.getId(),
+                                     quota.getInstance(),
+                                     runtimeTenantResolver.getTenant(),
+                                     quota.getEmail(),
+                                     quota.getCounter());
     }
 
     @Override
     public DownloadQuotaLimitsEntity toEntity(DownloadQuotaLimits limits) {
-        return new DownloadQuotaLimitsEntity(
-            limits.getId(),
-            limits.getEmail(),
-            limits.getMaxQuota(),
-            limits.getRateLimit()
-        );
+        return new DownloadQuotaLimitsEntity(limits.getId(),
+                                             limits.getEmail(),
+                                             limits.getMaxQuota(),
+                                             limits.getRateLimit());
     }
 
     @Override
     public DownloadQuotaLimits toDomain(DownloadQuotaLimitsEntity limits) {
-        return new DownloadQuotaLimits(
-            limits.getId(),
-            runtimeTenantResolver.getTenant(),
-            limits.getEmail(),
-            limits.getMaxQuota(),
-            limits.getRateLimit()
-        );
+        return new DownloadQuotaLimits(limits.getId(),
+                                       runtimeTenantResolver.getTenant(),
+                                       limits.getEmail(),
+                                       limits.getMaxQuota(),
+                                       limits.getRateLimit());
     }
 
     @Override
     public UserDownloadRateEntity toEntity(UserDownloadRate rate) {
-        return new UserDownloadRateEntity(
-            rate.getId(),
-            rate.getInstance(),
-            rate.getEmail(),
-            rate.getGauge(),
-            rate.getExpiry()
-        );
+        return new UserDownloadRateEntity(rate.getId(),
+                                          rate.getInstance(),
+                                          rate.getEmail(),
+                                          rate.getGauge(),
+                                          rate.getExpiry());
     }
 
     @Override
     public UserDownloadRate toDomain(UserDownloadRateEntity rate) {
-        return new UserDownloadRate(
-            rate.getId(),
-            rate.getInstance(),
-            runtimeTenantResolver.getTenant(),
-            rate.getEmail(),
-            rate.getGauge(),
-            rate.getExpiry()
-        );
+        return new UserDownloadRate(rate.getId(),
+                                    rate.getInstance(),
+                                    runtimeTenantResolver.getTenant(),
+                                    rate.getEmail(),
+                                    rate.getGauge(),
+                                    rate.getExpiry());
     }
 }

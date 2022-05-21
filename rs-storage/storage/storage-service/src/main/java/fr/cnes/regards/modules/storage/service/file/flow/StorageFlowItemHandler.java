@@ -43,7 +43,7 @@ import java.util.List;
  */
 @Component
 public class StorageFlowItemHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<StorageFlowItem> {
+    implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<StorageFlowItem> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StorageFlowItemHandler.class);
 
@@ -70,7 +70,8 @@ public class StorageFlowItemHandler
         LOGGER.debug("[STORAGE FLOW HANDLER] Bulk saving {} StorageFlowItem...", messages.size());
         long start = System.currentTimeMillis();
         fileStorageReqService.store(messages);
-        LOGGER.info("[STORAGE FLOW HANDLER] {} StorageFlowItem handled in {} ms", messages.size(),
+        LOGGER.info("[STORAGE FLOW HANDLER] {} StorageFlowItem handled in {} ms",
+                    messages.size(),
                     System.currentTimeMillis() - start);
     }
 

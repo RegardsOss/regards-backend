@@ -41,8 +41,8 @@ import java.util.Set;
 
 /**
  * Job implementation to notify {@link Recipient} according {@link Rule}
- * @author Kevin Marchois
  *
+ * @author Kevin Marchois
  */
 public class NotificationJob extends AbstractJob<Void> {
 
@@ -64,11 +64,15 @@ public class NotificationJob extends AbstractJob<Void> {
     private IPluginService pluginService;
 
     @Override
-    public void setParameters(Map<String, JobParameter> parameters) throws JobParameterMissingException, JobParameterInvalidException {
+    public void setParameters(Map<String, JobParameter> parameters)
+        throws JobParameterMissingException, JobParameterInvalidException {
 
         Type type = new TypeToken<Set<Long>>() {
+
         }.getType();
-        notificationRequests = notificationRequestRepo.findAllById(getValue(parameters, NOTIFICATION_REQUEST_IDS, type));
+        notificationRequests = notificationRequestRepo.findAllById(getValue(parameters,
+                                                                            NOTIFICATION_REQUEST_IDS,
+                                                                            type));
         recipient = pluginService.loadPluginConfiguration(getValue(parameters, RECIPIENT_BUSINESS_ID, String.class));
     }
 

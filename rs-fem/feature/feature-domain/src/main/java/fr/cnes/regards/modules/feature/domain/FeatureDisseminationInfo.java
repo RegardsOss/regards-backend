@@ -36,7 +36,8 @@ import java.time.OffsetDateTime;
 public class FeatureDisseminationInfo {
 
     @Id
-    @SequenceGenerator(name = "featureDisseminationInfoSequence", initialValue = 1, sequenceName = "seq_feature_dissemination_info")
+    @SequenceGenerator(name = "featureDisseminationInfoSequence", initialValue = 1,
+        sequenceName = "seq_feature_dissemination_info")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "featureDisseminationInfoSequence")
     protected Long id;
 

@@ -1,26 +1,19 @@
 package fr.cnes.regards.modules.emails.domain;
 
-import java.time.LocalDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.validation.constraints.NotEmpty;
-
+import fr.cnes.regards.framework.jpa.IIdentifiable;
+import fr.cnes.regards.framework.jpa.converters.StringArrayConverter;
 import org.hibernate.annotations.Type;
 import org.springframework.util.ObjectUtils;
 
-import fr.cnes.regards.framework.jpa.IIdentifiable;
-import fr.cnes.regards.framework.jpa.converters.StringArrayConverter;
+import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
+import java.time.LocalDateTime;
 
 /**
  * Models a simple mail message, including data such as the from, to, cc, subject, and text fields.
  * <p>
  * This is a just a simplified representation of SimpleMailMessage for data base storage.
+ *
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
  */
@@ -111,6 +104,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Get <code>bcc</code>
+     *
      * @return The array of bcc recipients' email address
      */
     public String[] getBcc() {
@@ -119,6 +113,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Get <code>cc</code>
+     *
      * @return The array of cc recipients' email address
      */
     public String[] getCc() {
@@ -127,6 +122,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Get <code>from</code>
+     *
      * @return The sender's email address
      */
     public String getFrom() {
@@ -140,6 +136,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Get <code>replyTo</code>
+     *
      * @return The email address of the replyTo recipient
      */
     public String getReplyTo() {
@@ -148,6 +145,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Get <code>sentDate</code>
+     *
      * @return The date when the email was sent
      */
     public LocalDateTime getSentDate() {
@@ -156,6 +154,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Get <code>subject</code>
+     *
      * @return The email's subject
      */
     public String getSubject() {
@@ -164,6 +163,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Get <code>text</code>
+     *
      * @return The email's body
      */
     public String getText() {
@@ -172,6 +172,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Get <code>to</code>
+     *
      * @return The array of recipients' email address
      */
     public String[] getTo() {
@@ -180,6 +181,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Set <code>bcc</code>
+     *
      * @param pBcc The array of bcc recipients' email address
      */
     public void setBcc(final String[] pBcc) {
@@ -188,6 +190,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Set <code>cc</code>
+     *
      * @param pCc The array of cc recipients' email address
      */
     public void setCc(final String[] pCc) {
@@ -196,6 +199,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Set <code>from</code>
+     *
      * @param pFrom The sender's email address
      */
     public void setFrom(final String pFrom) {
@@ -204,6 +208,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Set <code>id</code>
+     *
      * @param pId The email id
      */
     public void setId(final Long pId) {
@@ -212,6 +217,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Set <code>replyTo</code>
+     *
      * @param pReplyTo The email address of the replyTo recipient
      */
     public void setReplyTo(final String pReplyTo) {
@@ -220,6 +226,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Set <code>sentDate</code>
+     *
      * @param pSentDate The date when the email was sent
      */
     public void setSentDate(final LocalDateTime pSentDate) {
@@ -228,6 +235,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Set <code>subject</code>
+     *
      * @param pSubject The email's subject
      */
     public void setSubject(final String pSubject) {
@@ -236,6 +244,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Set <code>text</code>
+     *
      * @param pText The email's body
      */
     public void setText(final String pText) {
@@ -244,6 +253,7 @@ public class Email implements IIdentifiable<Long> {
 
     /**
      * Set <code>to</code>
+     *
      * @param pTo The array of recipients' email address
      */
     public void setTo(final String[] pTo) {
@@ -275,14 +285,13 @@ public class Email implements IIdentifiable<Long> {
             return false;
         }
         final Email otherMessage = (Email) pOther;
-        return (ObjectUtils.nullSafeEquals(this.from, otherMessage.from)
-                && ObjectUtils.nullSafeEquals(this.replyTo, otherMessage.replyTo)
-                && java.util.Arrays.equals(this.to, otherMessage.to)
-                && java.util.Arrays.equals(this.cc, otherMessage.cc)
-                && java.util.Arrays.equals(this.bcc, otherMessage.bcc)
-                && ObjectUtils.nullSafeEquals(this.sentDate, otherMessage.sentDate)
-                && ObjectUtils.nullSafeEquals(this.subject, otherMessage.subject)
-                && ObjectUtils.nullSafeEquals(this.text, otherMessage.text));
+        return (ObjectUtils.nullSafeEquals(this.from, otherMessage.from) && ObjectUtils.nullSafeEquals(this.replyTo,
+                                                                                                       otherMessage.replyTo)
+            && java.util.Arrays.equals(this.to, otherMessage.to) && java.util.Arrays.equals(this.cc, otherMessage.cc)
+            && java.util.Arrays.equals(this.bcc, otherMessage.bcc) && ObjectUtils.nullSafeEquals(this.sentDate,
+                                                                                                 otherMessage.sentDate)
+            && ObjectUtils.nullSafeEquals(this.subject, otherMessage.subject) && ObjectUtils.nullSafeEquals(this.text,
+                                                                                                            otherMessage.text));
     }
 
     @Override

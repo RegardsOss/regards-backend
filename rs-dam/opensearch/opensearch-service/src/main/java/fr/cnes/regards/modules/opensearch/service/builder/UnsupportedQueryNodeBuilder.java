@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.opensearch.service.builder;
 
+import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import org.apache.lucene.queryparser.flexible.core.QueryNodeException;
 import org.apache.lucene.queryparser.flexible.core.builders.QueryTreeBuilder;
 import org.apache.lucene.queryparser.flexible.core.messages.QueryParserMessages;
 import org.apache.lucene.queryparser.flexible.core.nodes.QueryNode;
 import org.apache.lucene.queryparser.flexible.messages.MessageImpl;
 import org.apache.lucene.queryparser.flexible.standard.parser.EscapeQuerySyntaxImpl;
-
-import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 
 /**
  * Set this generic builder in a {@link QueryTreeBuilder} constructor for disabling specific functionalities.
@@ -40,7 +39,8 @@ public class UnsupportedQueryNodeBuilder implements ICriterionQueryBuilder {
     @Override
     public ICriterion build(final QueryNode queryNode) throws QueryNodeException {
         throw new QueryNodeException(new MessageImpl(QueryParserMessages.LUCENE_QUERY_CONVERSION_ERROR,
-                queryNode.toQueryString(new EscapeQuerySyntaxImpl()), queryNode.getClass().getName()));
+                                                     queryNode.toQueryString(new EscapeQuerySyntaxImpl()),
+                                                     queryNode.getClass().getName()));
     }
 
 }

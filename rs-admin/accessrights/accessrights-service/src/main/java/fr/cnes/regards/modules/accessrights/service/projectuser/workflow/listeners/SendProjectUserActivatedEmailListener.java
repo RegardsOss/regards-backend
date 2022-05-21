@@ -46,12 +46,13 @@ public class SendProjectUserActivatedEmailListener implements ApplicationListene
     @Override
     public void onApplicationEvent(OnActiveEvent event) {
 
-        AccessRightsEmailWrapper wrapper = new AccessRightsEmailWrapper()
-                .setProjectUser(event.getProjectUser())
-                .setSubject("[REGARDS] User access enabled")
-                .setTo(Collections.singleton(event.getProjectUser().getEmail()))
-                .setTemplate(AccessRightsTemplateConfiguration.USER_ACTIVATED_TEMPLATE_NAME)
-                .setDefaultMessage("Your access has been enabled.");
+        AccessRightsEmailWrapper wrapper = new AccessRightsEmailWrapper().setProjectUser(event.getProjectUser())
+                                                                         .setSubject("[REGARDS] User access enabled")
+                                                                         .setTo(Collections.singleton(event.getProjectUser()
+                                                                                                           .getEmail()))
+                                                                         .setTemplate(AccessRightsTemplateConfiguration.USER_ACTIVATED_TEMPLATE_NAME)
+                                                                         .setDefaultMessage(
+                                                                             "Your access has been enabled.");
 
         accessRightsEmailService.sendEmail(wrapper);
     }

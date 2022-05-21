@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.modules.session.agent.domain.update;
 
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
+
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EnumType;
@@ -60,9 +61,12 @@ public class StepPropertyUpdateRequestInfo {
     @NotNull
     private boolean outputRelated;
 
-    public StepPropertyUpdateRequestInfo(@NotNull StepTypeEnum stepType, @NotNull StepPropertyStateEnum state,
-            @NotNull String property, @NotNull String value, @NotNull boolean inputRelated,
-            @NotNull boolean outputRelated) {
+    public StepPropertyUpdateRequestInfo(@NotNull StepTypeEnum stepType,
+                                         @NotNull StepPropertyStateEnum state,
+                                         @NotNull String property,
+                                         @NotNull String value,
+                                         @NotNull boolean inputRelated,
+                                         @NotNull boolean outputRelated) {
         this.stepType = stepType;
         this.state = state;
         this.property = property;
@@ -125,7 +129,7 @@ public class StepPropertyUpdateRequestInfo {
     @Override
     public String toString() {
         return "StepPropertyUpdateRequestInfo{" + "stepType=" + stepType + ", state=" + state + ", property='"
-                + property + '\'' + ", value='" + value + '\'' + ", inputRelated=" + inputRelated + ", outputRelated="
-                + outputRelated + '}';
+            + property + '\'' + ", value='" + value + '\'' + ", inputRelated=" + inputRelated + ", outputRelated="
+            + outputRelated + '}';
     }
 }

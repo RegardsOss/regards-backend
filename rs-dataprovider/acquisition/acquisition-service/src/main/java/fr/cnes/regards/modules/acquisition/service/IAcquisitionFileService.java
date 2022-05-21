@@ -18,29 +18,29 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Interface to handle {@link AcquisitionFile} entities
- * @author Sébastien Binda
  *
+ * @author Sébastien Binda
  */
 public interface IAcquisitionFileService {
 
     /**
      * Count number of {@link AcquisitionFile}s associated to the given {@link AcquisitionProcessingChain} and matching
      * the given states.
-     * @param chain {@link AcquisitionProcessingChain}
+     *
+     * @param chain  {@link AcquisitionProcessingChain}
      * @param states {@link AcquisitionFileState}s
      * @return number of matching {@link AcquisitionFile}s
      */
@@ -48,6 +48,7 @@ public interface IAcquisitionFileService {
 
     /**
      * Count number of {@link AcquisitionFile}s associated to the given {@link AcquisitionProcessingChain}
+     *
      * @param chain {@link AcquisitionProcessingChain}
      * @return number of matching {@link AcquisitionFile}s
      */
@@ -55,6 +56,7 @@ public interface IAcquisitionFileService {
 
     /**
      * Save or update given {@link AcquisitionFile}
+     *
      * @param file {@link AcquisitionFile}
      * @return saved or updated {@link AcquisitionFile}
      */
@@ -62,6 +64,7 @@ public interface IAcquisitionFileService {
 
     /**
      * Save or update given {@link AcquisitionFile}s
+     *
      * @param files {@link AcquisitionFile}s
      * @return
      */
@@ -69,15 +72,20 @@ public interface IAcquisitionFileService {
 
     /**
      * Search for {@link AcquisitionFile} entities matching parameters
-     * @param filePath {@link String}
-     * @param state {@link AcquisitionFileState}
+     *
+     * @param filePath  {@link String}
+     * @param state     {@link AcquisitionFileState}
      * @param productId {@link Long} identifier of {@link Product}
-     * @param chainId {@link Long} identifier of {@link AcquisitionProcessingChain}
-     * @param from {@link OffsetDateTime}
+     * @param chainId   {@link Long} identifier of {@link AcquisitionProcessingChain}
+     * @param from      {@link OffsetDateTime}
      * @param pageable
      * @return {@link AcquisitionFile}s
      */
-    Page<AcquisitionFile> search(String filePath, List<AcquisitionFileState> state, Long productId, Long chainId,
-            OffsetDateTime from, Pageable pageable);
+    Page<AcquisitionFile> search(String filePath,
+                                 List<AcquisitionFileState> state,
+                                 Long productId,
+                                 Long chainId,
+                                 OffsetDateTime from,
+                                 Pageable pageable);
 
 }

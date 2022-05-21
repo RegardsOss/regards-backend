@@ -44,6 +44,7 @@ import java.util.Set;
 
 /**
  * Integration tests for Roles REST Controller.
+ *
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
@@ -90,8 +91,12 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         // Init roles
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
         Set<ResourcesAccess> resourcesAccessPublic = new HashSet<>();
-        resourceAccessPublic = new ResourcesAccess("", "aMicroservice", "the public resource", "Controller",
-                RequestMethod.GET, DefaultRole.ADMIN);
+        resourceAccessPublic = new ResourcesAccess("",
+                                                   "aMicroservice",
+                                                   "the public resource",
+                                                   "Controller",
+                                                   RequestMethod.GET,
+                                                   DefaultRole.ADMIN);
         resourceAccessPublic = resourcesAccessRepository.save(resourceAccessPublic);
         resourcesAccessPublic.add(resourceAccessPublic);
         publicRole.setPermissions(resourcesAccessPublic);
@@ -102,11 +107,19 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         Role aNewRole = roleRepository.save(new Role(ROLE_TEST, publicRole));
 
         Set<ResourcesAccess> resourcesAccess = new HashSet<>();
-        ResourcesAccess aResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", "Controller",
-                RequestMethod.GET, DefaultRole.ADMIN);
+        ResourcesAccess aResourcesAccess = new ResourcesAccess("",
+                                                               "aMicroservice",
+                                                               "the resource",
+                                                               "Controller",
+                                                               RequestMethod.GET,
+                                                               DefaultRole.ADMIN);
         aResourcesAccess = resourcesAccessRepository.save(aResourcesAccess);
-        ResourcesAccess bResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", "Controller",
-                RequestMethod.DELETE, DefaultRole.ADMIN);
+        ResourcesAccess bResourcesAccess = new ResourcesAccess("",
+                                                               "aMicroservice",
+                                                               "the resource",
+                                                               "Controller",
+                                                               RequestMethod.DELETE,
+                                                               DefaultRole.ADMIN);
         bResourcesAccess = resourcesAccessRepository.save(bResourcesAccess);
 
         resourcesAccess.add(aResourcesAccess);
@@ -126,10 +139,14 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         }
         Role newRole = new Role(newRoleName, publicRole);
 
-        performDefaultPost(RoleController.TYPE_MAPPING, newRole, customizer().expectStatusCreated(),
+        performDefaultPost(RoleController.TYPE_MAPPING,
+                           newRole,
+                           customizer().expectStatusCreated(),
                            "TODO Error message");
 
-        performDefaultPost(RoleController.TYPE_MAPPING, newRole, customizer().expectStatusConflict(),
+        performDefaultPost(RoleController.TYPE_MAPPING,
+                           newRole,
+                           customizer().expectStatusConflict(),
                            "TODO Error message");
     }
 
@@ -137,12 +154,16 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the allows to retrieve a single role and handle fail cases.")
     public void retrieveRole() {
-        performDefaultGet(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, customizer().expectStatusOk(),
-                          "TODO Error message", DefaultRole.REGISTERED_USER);
+        performDefaultGet(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING,
+                          customizer().expectStatusOk(),
+                          "TODO Error message",
+                          DefaultRole.REGISTERED_USER);
 
         String wrongRoleName = "WRONG_ROLE";
         performDefaultGet(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING,
-                          customizer().expectStatusNotFound(), "TODO Error message", wrongRoleName);
+                          customizer().expectStatusNotFound(),
+                          "TODO Error message",
+                          wrongRoleName);
     }
 
     @Test
@@ -153,12 +174,18 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         roleTest.setName("newValue");
 
         // Regular case
-        performDefaultPut(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, roleTest,
-                          customizer().expectStatusOk(), "TODO Error message", roleTest.getName());
+        performDefaultPut(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING,
+                          roleTest,
+                          customizer().expectStatusOk(),
+                          "TODO Error message",
+                          roleTest.getName());
 
         // Fail case: ids differ
-        performDefaultPut(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, roleTest,
-                          customizer().expectStatusBadRequest(), "TODO Error message", 99L);
+        performDefaultPut(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING,
+                          roleTest,
+                          customizer().expectStatusBadRequest(),
+                          "TODO Error message",
+                          99L);
     }
 
     /**
@@ -171,7 +198,9 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         // Role public is native, we use this one
         long nRole = roleRepository.count();
         performDefaultDelete(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING,
-                             customizer().expectStatusForbidden(), "TODO Error message", publicRole.getName());
+                             customizer().expectStatusForbidden(),
+                             "TODO Error message",
+                             publicRole.getName());
 
         jwtService.injectToken(getDefaultTenant(), DefaultRole.PROJECT_ADMIN.toString(), "", "");
         Assert.assertEquals(nRole, roleRepository.count());
@@ -184,16 +213,19 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         Assert.assertEquals(7, roleRepository.count());
 
         // Use PROJECT ADMIN
-        String projectAdminJwt = manageSecurity(getDefaultTenant(), RoleResourceController.TYPE_MAPPING,
-                                                RequestMethod.GET, getDefaultUserEmail(),
+        String projectAdminJwt = manageSecurity(getDefaultTenant(),
+                                                RoleResourceController.TYPE_MAPPING,
+                                                RequestMethod.GET,
+                                                getDefaultUserEmail(),
                                                 DefaultRole.PROJECT_ADMIN.name());
-        performGet(RoleController.TYPE_MAPPING, projectAdminJwt,
+        performGet(RoleController.TYPE_MAPPING,
+                   projectAdminJwt,
                    customizer().expectStatusOk().expectToHaveSize("$.*.content.id", 6)
-                           // 6 = 5 roles and the added role TEST_ROLE has two permissions
-                           // Updated : Permissions are ignore in roles results requests to avoid lazy load.
-                           // expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.permissions", hasSize(6)));
-                           // 3 = 3 roles has a parent (public, project_admin, instance_admin has no parent)
-                           .expectToHaveSize("$.*.content.parentRole", 4),
+                               // 6 = 5 roles and the added role TEST_ROLE has two permissions
+                               // Updated : Permissions are ignore in roles results requests to avoid lazy load.
+                               // expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.permissions", hasSize(6)));
+                               // 3 = 3 roles has a parent (public, project_admin, instance_admin has no parent)
+                               .expectToHaveSize("$.*.content.parentRole", 4),
                    "TODO Error message");
     }
 
@@ -201,7 +233,8 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the microservice allow to retrieve all roles associated to a given resource.")
     public void retrieveRoleAsswoatedToAResourceAccess() {
         performDefaultGet(RoleController.TYPE_MAPPING + RoleController.ROLE_WITH_RESOURCE_MAPPING,
-                          customizer().expectStatusOk().expectToHaveSize("$.*.content.id", 1), "TODO Error message",
+                          customizer().expectStatusOk().expectToHaveSize("$.*.content.id", 1),
+                          "TODO Error message",
                           resourceAccessPublic.getId());
     }
 
@@ -214,8 +247,10 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     public void removeRole() throws JwtException {
         long nRole = roleRepository.count();
         // Create a non-native role
-        performDefaultDelete(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, customizer().expectStatusOk(),
-                             "TODO Error message", roleTest.getName());
+        performDefaultDelete(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING,
+                             customizer().expectStatusOk(),
+                             "TODO Error message",
+                             roleTest.getName());
 
         jwtService.injectToken(getDefaultTenant(), DefaultRole.PROJECT_ADMIN.toString(), "", "");
         Assert.assertEquals(nRole - 1, roleRepository.count());
@@ -225,7 +260,9 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to retrieve all resources accesses of a role.")
     public void retrieveRoleResourcesAccessList() {
-        performDefaultGet(RoleResourceController.TYPE_MAPPING, customizer().expectStatusOk(), "TODO Error message",
+        performDefaultGet(RoleResourceController.TYPE_MAPPING,
+                          customizer().expectStatusOk(),
+                          "TODO Error message",
                           roleTest.getName());
     }
 
@@ -243,23 +280,27 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(ROLE_TEST)));
     }
 
-
     @Ignore("This test does not work on CI platform but works well everywhere else")
     @Test
     public void testShouldAccessToResourceRequiring() {
         // Send the request with an user having role REGISTERED_USER
-        String userJwt = manageSecurity(getDefaultTenant(), RoleController.SHOULD_ACCESS_TO_RESOURCE,
-                RequestMethod.GET, getDefaultUserEmail(),
-                DefaultRole.REGISTERED_USER.name());
+        String userJwt = manageSecurity(getDefaultTenant(),
+                                        RoleController.SHOULD_ACCESS_TO_RESOURCE,
+                                        RequestMethod.GET,
+                                        getDefaultUserEmail(),
+                                        DefaultRole.REGISTERED_USER.name());
 
-        performGet(RoleController.TYPE_MAPPING + RoleController.SHOULD_ACCESS_TO_RESOURCE, userJwt,
-                customizer().expectStatusOk().expectToHaveToString("$", "true"),
-                "Failed to validate role hierarchie", DefaultRole.PUBLIC.toString());
+        performGet(RoleController.TYPE_MAPPING + RoleController.SHOULD_ACCESS_TO_RESOURCE,
+                   userJwt,
+                   customizer().expectStatusOk().expectToHaveToString("$", "true"),
+                   "Failed to validate role hierarchie",
+                   DefaultRole.PUBLIC.toString());
 
-
-        performGet(RoleController.TYPE_MAPPING + RoleController.SHOULD_ACCESS_TO_RESOURCE, userJwt,
-                customizer().expectStatusOk().expectToHaveToString("$", "false"),
-                "users is not above instance admin", DefaultRole.ADMIN.toString());
+        performGet(RoleController.TYPE_MAPPING + RoleController.SHOULD_ACCESS_TO_RESOURCE,
+                   userJwt,
+                   customizer().expectStatusOk().expectToHaveToString("$", "false"),
+                   "users is not above instance admin",
+                   DefaultRole.ADMIN.toString());
     }
 
 }

@@ -18,23 +18,7 @@
  */
 package fr.cnes.regards.modules.indexer.service;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.UUID;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.opengis.referencing.operation.TransformException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
@@ -47,6 +31,20 @@ import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.service.test.SearchConfiguration;
 import fr.cnes.regards.modules.model.domain.Model;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.opengis.referencing.operation.TransformException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.UUID;
 
 /**
  * @author oroussel
@@ -88,7 +86,13 @@ public class GeometryIT {
 
     private DataObject createDataObject(String label, IGeometry shape) {
         DataObject object = new DataObject(model, TENANT, label, label);
-        object.setIpId(new OaisUniformResourceName(OAISIdentifier.SIP, EntityType.DATA, TENANT, UUID.randomUUID(), 1, null, null));
+        object.setIpId(new OaisUniformResourceName(OAISIdentifier.SIP,
+                                                   EntityType.DATA,
+                                                   TENANT,
+                                                   UUID.randomUUID(),
+                                                   1,
+                                                   null,
+                                                   null));
         object.setNormalizedGeometry(GeoHelper.normalize(shape));
         object.setWgs84(GeoHelper.normalize(shape));
         return object;

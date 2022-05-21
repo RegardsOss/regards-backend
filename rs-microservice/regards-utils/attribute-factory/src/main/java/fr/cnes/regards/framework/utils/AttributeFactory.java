@@ -18,19 +18,17 @@
  */
 package fr.cnes.regards.framework.utils;
 
-import java.util.List;
-
+import fr.cnes.regards.framework.utils.metamodel.MetaAttribute;
 import fr.cnes.regards.framework.utils.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.utils.metamodel.MetaAttribute;
+import java.util.List;
 
 /**
- * Utility class to manage attribut's types 
- * 
- * @author Christophe Mertz
+ * Utility class to manage attribut's types
  *
+ * @author Christophe Mertz
  */
 public final class AttributeFactory {
 
@@ -48,20 +46,18 @@ public final class AttributeFactory {
 
     /**
      * Cette methode permet de creer un attribut a partir de son type, de son nom et de son identifiant.
-     * 
-     * @param type
-     *            Le type de l'attribute - enumere.
-     * @param label
-     *            Le libelle de l'attribute.
-     * @param compositeAttributeName
-     *            le nom de l'attribut compose dont fait partie l'attribut (null s'il ne fait partie d'aucun attribut
-     *            compose)
-     * @param blockId
-     *            l'identifiant du bloc de l'attribut compose de l'entite
+     *
+     * @param type                   Le type de l'attribute - enumere.
+     * @param label                  Le libelle de l'attribute.
+     * @param compositeAttributeName le nom de l'attribut compose dont fait partie l'attribut (null s'il ne fait partie d'aucun attribut
+     *                               compose)
+     * @param blockId                l'identifiant du bloc de l'attribut compose de l'entite
      * @return Un objet <code>Attribute</code> de type non standard.
      */
-    public static Attribute createAttribute(AttributeTypeEnum type, String label, String compositeAttributeName,
-            int blockId) {
+    public static Attribute createAttribute(AttributeTypeEnum type,
+                                            String label,
+                                            String compositeAttributeName,
+                                            int blockId) {
 
         Attribute attribute = null;
         // According to the type, create either a real, string, date or integer attribute
@@ -114,13 +110,10 @@ public final class AttributeFactory {
 
     /**
      * Cette methode permet de creer un attribut a partir de son type, de son nom et de son identifiant.
-     * 
-     * @param type
-     *            Le type de l'attribut.
-     * @param label
-     *            Le libelle de l'attribut.
-     * @param valueList
-     *            La liste de valeurs de l'attribut.
+     *
+     * @param type      Le type de l'attribut.
+     * @param label     Le libelle de l'attribut.
+     * @param valueList La liste de valeurs de l'attribut.
      * @return Un objet <code>Attribute</code> de type non standard.
      */
     public static Attribute createAttribute(AttributeTypeEnum type, String label, List<?> valueList) {
@@ -137,22 +130,20 @@ public final class AttributeFactory {
 
     /**
      * Cette methode permet de creer un attribut a partir de son type, de son nom et de son identifiant.
-     * 
-     * @param type
-     *            Le type de l'attribut.
-     * @param label
-     *            Le libelle de l'attribut.
-     * @param value
-     *            la valeur de l'attribut
-     * @param compositeAttributeName
-     *            le nom de l'attribut compose dont fait partie l'attribut (null s'il ne fait partie d'aucun attribut
-     *            compose)
-     * @param blockId
-     *            l'identifiant du bloc de l'attribut compose de l'entite
+     *
+     * @param type                   Le type de l'attribut.
+     * @param label                  Le libelle de l'attribut.
+     * @param value                  la valeur de l'attribut
+     * @param compositeAttributeName le nom de l'attribut compose dont fait partie l'attribut (null s'il ne fait partie d'aucun attribut
+     *                               compose)
+     * @param blockId                l'identifiant du bloc de l'attribut compose de l'entite
      * @return Un objet <code>Attribute</code> de type non standard.
      */
-    public static Attribute createAttribute(AttributeTypeEnum type, String label, Object value,
-            String compositeAttributeName, int blockId) {
+    public static Attribute createAttribute(AttributeTypeEnum type,
+                                            String label,
+                                            Object value,
+                                            String compositeAttributeName,
+                                            int blockId) {
 
         // According to the type, create either a real, string, date or integer attribute
         Attribute attribute = createAttribute(type, label, compositeAttributeName, blockId);

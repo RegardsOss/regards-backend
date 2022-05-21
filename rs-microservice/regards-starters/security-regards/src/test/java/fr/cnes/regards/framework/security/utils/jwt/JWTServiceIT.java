@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.framework.security.utils.jwt;
 
-import java.io.IOException;
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.Map;
-
+import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
+import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,11 +32,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.security.SignatureException;
+import java.io.IOException;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author msordi
@@ -64,6 +63,7 @@ public class JWTServiceIT {
 
     /**
      * Test JWT generation without group
+     *
      * @throws IOException
      */
     @Test
@@ -92,6 +92,7 @@ public class JWTServiceIT {
 
     /**
      * Test JWT generation and retrieve all claims
+     *
      * @throws IOException
      */
     @Test
@@ -127,8 +128,7 @@ public class JWTServiceIT {
 
     @Test
     public void generateUserSpecificToken() throws InterruptedException, InvalidJwtException {
-        @SuppressWarnings("serial")
-        Map<String, Object> addParams = new HashMap<String, Object>() {
+        @SuppressWarnings("serial") Map<String, Object> addParams = new HashMap<String, Object>() {
 
             {
                 put("toto", "titi");
@@ -137,8 +137,14 @@ public class JWTServiceIT {
 
         String secret = "pouet!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!";
 
-        String token = jwtService.generateToken(TENANT, LOGIN, EMAIL, ROLE,
-                                                OffsetDateTime.now().plus(3, ChronoUnit.DAYS), addParams, secret, true);
+        String token = jwtService.generateToken(TENANT,
+                                                LOGIN,
+                                                EMAIL,
+                                                ROLE,
+                                                OffsetDateTime.now().plus(3, ChronoUnit.DAYS),
+                                                addParams,
+                                                secret,
+                                                true);
 
         try {
             jwtService.parseToken(token, "teuop!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!");
@@ -148,8 +154,14 @@ public class JWTServiceIT {
         Claims claims = jwtService.parseToken(token, secret);
         Assert.assertNotNull(claims.get("toto"));
 
-        String expiredToken = jwtService.generateToken(TENANT, LOGIN, EMAIL, ROLE, OffsetDateTime.now(), addParams,
-                                                       secret, false);
+        String expiredToken = jwtService.generateToken(TENANT,
+                                                       LOGIN,
+                                                       EMAIL,
+                                                       ROLE,
+                                                       OffsetDateTime.now(),
+                                                       addParams,
+                                                       secret,
+                                                       false);
         Thread.sleep(1_000);
         try {
             claims = jwtService.parseToken(expiredToken, secret);

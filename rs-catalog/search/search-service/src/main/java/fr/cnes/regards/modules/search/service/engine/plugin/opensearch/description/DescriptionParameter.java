@@ -14,8 +14,10 @@ public class DescriptionParameter {
 
     private QueryableAttribute queryableAttribute;
 
-    public DescriptionParameter(String name, AttributeModel attributeModel, ParameterConfiguration configuration,
-            QueryableAttribute queryableAttribute) {
+    public DescriptionParameter(String name,
+                                AttributeModel attributeModel,
+                                ParameterConfiguration configuration,
+                                QueryableAttribute queryableAttribute) {
         super();
         this.name = name;
         this.attributeModel = attributeModel;

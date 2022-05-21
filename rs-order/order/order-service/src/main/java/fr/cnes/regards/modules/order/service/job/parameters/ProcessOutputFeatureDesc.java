@@ -30,7 +30,9 @@ import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
  */
 @lombok.Value
 public class ProcessOutputFeatureDesc {
+
     String label;
+
     String ipId;
 
     @Override

@@ -1,8 +1,7 @@
 package fr.cnes.regards.modules.model.service.event;
 
-import org.springframework.context.ApplicationEvent;
-
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
+import org.springframework.context.ApplicationEvent;
 
 /**
  * Event navigating inside the microservice instance to be notified when a new attribute is created on a fragment so we can handle this properly in IModelAttrAssocService.
@@ -15,6 +14,7 @@ public class NewFragmentAttributeEvent extends ApplicationEvent {
 
     /**
      * Constructor
+     *
      * @param attributeAdded
      */
     public NewFragmentAttributeEvent(AttributeModel attributeAdded) {

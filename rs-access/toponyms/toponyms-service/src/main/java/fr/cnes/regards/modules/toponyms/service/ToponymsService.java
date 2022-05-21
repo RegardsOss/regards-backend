@@ -31,15 +31,6 @@ import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotHandledExc
 import fr.cnes.regards.modules.toponyms.service.exceptions.GeometryNotProcessedException;
 import fr.cnes.regards.modules.toponyms.service.exceptions.MaxLimitPerDayException;
 import fr.cnes.regards.modules.toponyms.service.utils.ToponymsIGeometryHelper;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import org.geolatte.geom.Feature;
 import org.geolatte.geom.Geometry;
 import org.geolatte.geom.GeometryType;
@@ -49,14 +40,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Service to search {@link ToponymDTO}s from a postgis database
@@ -73,7 +70,6 @@ public class ToponymsService {
     @Autowired
     private ToponymsRepository repository;
 
-
     // --- DEFAULT PARAMETERS ---
 
     /**
@@ -84,6 +80,7 @@ public class ToponymsService {
 
     /**
      * Tolerance (unit: meter) to generate simplified geometry through  ST_Simplify Postgis function
+     *
      * @see "https://postgis.net/docs/ST_Simplify.html"
      */
     @Value("${regards.toponyms.geo.sampling.tolerance:0.1}")
@@ -112,10 +109,10 @@ public class ToponymsService {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(ToponymsService.class);
 
-
     /**
      * Retrieve {@link Page} of {@link ToponymDTO}s
-     * @param visible visibility of the toponym
+     *
+     * @param visible  visibility of the toponym
      * @param pageable
      * @return {@link ToponymDTO}s
      */
@@ -127,8 +124,12 @@ public class ToponymsService {
             page = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Direction.ASC, "label"));
         }
         Page<Toponym> toponymsPage = repository.findByVisible(visible, page);
-        return new PageImpl<ToponymDTO>(toponymsPage.getContent().stream().map(t ->
-                getToponymDTO(t, POINT_SAMPLING_FINDALL)).collect(Collectors.toList()), toponymsPage.getPageable(), toponymsPage.getTotalElements());
+        return new PageImpl<ToponymDTO>(toponymsPage.getContent()
+                                                    .stream()
+                                                    .map(t -> getToponymDTO(t, POINT_SAMPLING_FINDALL))
+                                                    .collect(Collectors.toList()),
+                                        toponymsPage.getPageable(),
+                                        toponymsPage.getTotalElements());
     }
 
     /**
@@ -139,7 +140,7 @@ public class ToponymsService {
      * @param simplified if the geometry has to be returned simplified, i.e, with a tolerance)
      * @return {@link ToponymDTO}
      */
-     public Optional<ToponymDTO> findOne(String businessId, boolean simplified) {
+    public Optional<ToponymDTO> findOne(String businessId, boolean simplified) {
         Optional<Toponym> toponym;
         // check if geometry should be returned simplified
         if (!simplified) {
@@ -168,7 +169,7 @@ public class ToponymsService {
      * @param partialLabel
      * @param locale
      * @param visible
-     * @param limit maximum number of results to retrieve
+     * @param limit        maximum number of results to retrieve
      * @return {@link ToponymDTO}s without geometry
      */
     public List<ToponymDTO> search(String partialLabel, String locale, boolean visible, int limit) {
@@ -176,18 +177,31 @@ public class ToponymsService {
         Assert.notNull("locale is mandatory for toponyls search by label", locale);
         Assert.notNull("partialLabel is  mandatory for toponyms search by label", partialLabel);
         if (locale.equals(ToponymLocaleEnum.FR.getLocale())) {
-            page = repository
-                    .findByLabelFrContainingIgnoreCaseAndVisible(partialLabel, visible,
-                            PageRequest.of(0, limit, Sort.by(Direction.ASC, "labelFr")));
+            page = repository.findByLabelFrContainingIgnoreCaseAndVisible(partialLabel,
+                                                                          visible,
+                                                                          PageRequest.of(0,
+                                                                                         limit,
+                                                                                         Sort.by(Direction.ASC,
+                                                                                                 "labelFr")));
         } else {
-            page = repository
-                    .findByLabelContainingIgnoreCaseAndVisible(partialLabel, visible,
-                            PageRequest.of(0, limit, Sort.by(Direction.ASC, "label")));
+            page = repository.findByLabelContainingIgnoreCaseAndVisible(partialLabel,
+                                                                        visible,
+                                                                        PageRequest.of(0,
+                                                                                       limit,
+                                                                                       Sort.by(Direction.ASC,
+                                                                                               "label")));
         }
-        return page
-                .getContent().stream().map(t -> ToponymDTO
-                        .build(t.getBusinessId(), t.getLabel(), t.getLabelFr(), null, t.getCopyright(),
-                                t.getDescription(), t.isVisible(), t.getToponymMetadata())).collect(Collectors.toList());
+        return page.getContent()
+                   .stream()
+                   .map(t -> ToponymDTO.build(t.getBusinessId(),
+                                              t.getLabel(),
+                                              t.getLabelFr(),
+                                              null,
+                                              t.getCopyright(),
+                                              t.getDescription(),
+                                              t.isVisible(),
+                                              t.getToponymMetadata()))
+                   .collect(Collectors.toList());
     }
 
     /**
@@ -201,19 +215,20 @@ public class ToponymsService {
      * @throws JsonProcessingException if a problem occurred during the parsing of the geometry
      */
     public ToponymDTO generateNotVisibleToponym(String featureString, String user, String project)
-            throws ModuleException {
+        throws ModuleException {
         // --- GEOMETRY PARSING ---
         Geometry<Position> geometry = parseGeometry(featureString);
         // check geometry is not already present in the database for this project
-        List<Toponym> toponymRetrieved = this.repository
-                .findByGeometryAndVisibleAndToponymMetadataProject(geometry.toString(), project);
+        List<Toponym> toponymRetrieved = this.repository.findByGeometryAndVisibleAndToponymMetadataProject(geometry.toString(),
+                                                                                                           project);
         if (!toponymRetrieved.isEmpty()) {
             // --- RETURN TOPONYM IF FOUND ---
             if (toponymRetrieved.size() > 1) {
-                String toponymAsString = toponymRetrieved.stream().map(Toponym::getBusinessId)
-                        .collect(Collectors.joining(" - ", "[", "]"));
+                String toponymAsString = toponymRetrieved.stream()
+                                                         .map(Toponym::getBusinessId)
+                                                         .collect(Collectors.joining(" - ", "[", "]"));
                 LOGGER.warn("The not visible toponym geometries should be unique per project. The following "
-                                    + "toponyms have the same geometry {}", toponymAsString);
+                                + "toponyms have the same geometry {}", toponymAsString);
             }
             // update expiration date
             Toponym toponym = toponymRetrieved.get(0);
@@ -223,24 +238,31 @@ public class ToponymsService {
             // --- CREATE TOPONYM ---
             // Count if user has reached the limit of toponyms to save per day
             OffsetDateTime startDayTime = OffsetDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT, ZoneOffset.UTC);
-            int nbCreations = this.repository
-                    .countByToponymMetadataAuthorAndToponymMetadataCreationDateBetween(user, startDayTime,
-                                                                                       OffsetDateTime.now());
+            int nbCreations = this.repository.countByToponymMetadataAuthorAndToponymMetadataCreationDateBetween(user,
+                                                                                                                startDayTime,
+                                                                                                                OffsetDateTime.now());
             if (nbCreations >= this.limitSave) {
                 throw new MaxLimitPerDayException(String.format(
-                        "User %s has reached the maximum number of toponyms to be saved in one day (max. %d).", user,
-                        this.limitSave));
+                    "User %s has reached the maximum number of toponyms to be saved in one day (max. %d).",
+                    user,
+                    this.limitSave));
             } else {
                 // define parameters
                 OffsetDateTime currentDateTime = OffsetDateTime.now();
-                String bid = String
-                        .format("Toponym_%s", OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+                String bid = String.format("Toponym_%s",
+                                           OffsetDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
                 ToponymMetadata metadata = new ToponymMetadata(currentDateTime,
-                                                               currentDateTime.plusDays(this.defaultExpiration), user,
+                                                               currentDateTime.plusDays(this.defaultExpiration),
+                                                               user,
                                                                project);
-                return getToponymDTO(
-                        this.repository.save(new Toponym(bid, bid, bid, geometry, null, null, false, metadata)),
-                        sampling);
+                return getToponymDTO(this.repository.save(new Toponym(bid,
+                                                                      bid,
+                                                                      bid,
+                                                                      geometry,
+                                                                      null,
+                                                                      null,
+                                                                      false,
+                                                                      metadata)), sampling);
             }
         }
     }
@@ -253,9 +275,14 @@ public class ToponymsService {
      * @return {@link ToponymDTO}
      */
     public ToponymDTO getToponymDTO(Toponym t, int samplingMax) {
-        return ToponymDTO.build(t.getBusinessId(), t.getLabel(), t.getLabelFr(),
+        return ToponymDTO.build(t.getBusinessId(),
+                                t.getLabel(),
+                                t.getLabelFr(),
                                 ToponymsIGeometryHelper.parseLatteGeometry(t.getGeometry(), samplingMax),
-                                t.getCopyright(), t.getDescription(), t.isVisible(), t.getToponymMetadata());
+                                t.getCopyright(),
+                                t.getDescription(),
+                                t.isVisible(),
+                                t.getToponymMetadata());
     }
 
     /**
@@ -263,7 +290,7 @@ public class ToponymsService {
      *
      * @param featureString the feature in string format
      * @return the geometry with {@link Geometry} format
-     * @throws ModuleException         if a problem occurred during the parsing of the geometry
+     * @throws ModuleException if a problem occurred during the parsing of the geometry
      */
     private Geometry<Position> parseGeometry(String featureString) throws ModuleException {
         // define mapper
@@ -282,8 +309,8 @@ public class ToponymsService {
             handleParseGeometryError(e.getCause());
         }
         // check geometry and type, refuse not handled geometry
-        if (!Objects.requireNonNull(geometryType).equals(GeometryType.POLYGON) && !geometryType
-                .equals(GeometryType.MULTIPOLYGON)) {
+        if (!Objects.requireNonNull(geometryType).equals(GeometryType.POLYGON)
+            && !geometryType.equals(GeometryType.MULTIPOLYGON)) {
             throw new GeometryNotHandledException(geometryType.toString());
         }
         return geometry;
@@ -291,14 +318,15 @@ public class ToponymsService {
 
     /**
      * Handle geometry parsing errors
+     *
      * @param cause of the error
      * @throws GeometryNotProcessedException exception for geometry not parsed
      */
     private void handleParseGeometryError(Throwable cause) throws GeometryNotProcessedException {
         // if geometry could not be read
         StringBuilder msg = new StringBuilder(
-                "The geometry could not be processed. The toponym will not be saved. Check the format "
-                        + "of the geojson feature. ");
+            "The geometry could not be processed. The toponym will not be saved. Check the format "
+                + "of the geojson feature. ");
         if (cause != null) {
             msg.append("Cause : ").append(cause.getMessage());
         }

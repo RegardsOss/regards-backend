@@ -48,6 +48,7 @@ public class AgentCleanSessionStepJobService {
         JobInfo jobInfo = new JobInfo(false, 0, null, null, AgentCleanSessionStepJob.class.getName());
         // create job
         jobInfoService.createAsQueued(jobInfo);
-        LOGGER.trace("[CLEAN SESSION STEP SCHEDULER] AgentSnapshotJob scheduled in {}", System.currentTimeMillis() - start);
+        LOGGER.trace("[CLEAN SESSION STEP SCHEDULER] AgentSnapshotJob scheduled in {}",
+                     System.currentTimeMillis() - start);
     }
 }

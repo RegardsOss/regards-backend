@@ -18,32 +18,29 @@
  */
 package fr.cnes.regards.modules.ingest.domain.request.update;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import javax.persistence.*;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
-import javax.validation.Valid;
-
-import org.hibernate.annotations.*;
-import org.hibernate.annotations.Parameter;
-
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
-import fr.cnes.regards.modules.ingest.domain.request.deletion.DeletionRequestStep;
-import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionPayload;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.*;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
+import javax.persistence.*;
+import javax.validation.Valid;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Keep info about an AIP update request
+ *
  * @author Léo Mieulet
  */
 @Entity(name = RequestTypeConstant.UPDATE_VALUE)
@@ -107,8 +104,9 @@ public class AIPUpdateRequest extends AbstractRequest {
         return AIPUpdateRequest.build(aip, AbstractAIPUpdateTask.build(updateTaskDto), pending);
     }
 
-    public static List<AIPUpdateRequest> build(AIPEntity aip, Collection<AbstractAIPUpdateTask> updateTasks,
-            boolean pending) {
+    public static List<AIPUpdateRequest> build(AIPEntity aip,
+                                               Collection<AbstractAIPUpdateTask> updateTasks,
+                                               boolean pending) {
         List<AIPUpdateRequest> result = new ArrayList<>();
         for (AbstractAIPUpdateTask updateTask : updateTasks) {
             AIPUpdateRequest updateRequest = new AIPUpdateRequest();
@@ -129,6 +127,5 @@ public class AIPUpdateRequest extends AbstractRequest {
         }
         return result;
     }
-
 
 }

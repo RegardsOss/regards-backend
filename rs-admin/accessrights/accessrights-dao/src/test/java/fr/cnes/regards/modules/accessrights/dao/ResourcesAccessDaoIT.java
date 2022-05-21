@@ -18,9 +18,13 @@
  */
 package fr.cnes.regards.modules.accessrights.dao;
 
-import java.util.List;
-import java.util.Set;
-
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
+import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
+import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
+import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,22 +35,15 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.transaction.BeforeTransaction;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
-import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
-import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
-import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import java.util.List;
+import java.util.Set;
 
 /**
- *
  * Class ResourcesAccessDaoIT
- *
+ * <p>
  * Test class for DAO entities ResourcesAccess
  *
  * @author Sébastien Binda
-
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { AccessRightsDaoTestConfiguration.class })
@@ -91,10 +88,7 @@ public class ResourcesAccessDaoIT {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
-     *
      * Initialize repository datas
-     *
-
      */
     @Before
     public void init() {
@@ -102,17 +96,33 @@ public class ResourcesAccessDaoIT {
         /*
          * Create 4 ResourcesAcces
          */
-        ResourcesAccess publicResource = new ResourcesAccess("Public resource", MS_NAME, PUBLIC_URL, CONTROLLER_NAME1,
-                RequestMethod.GET, DefaultRole.PUBLIC);
+        ResourcesAccess publicResource = new ResourcesAccess("Public resource",
+                                                             MS_NAME,
+                                                             PUBLIC_URL,
+                                                             CONTROLLER_NAME1,
+                                                             RequestMethod.GET,
+                                                             DefaultRole.PUBLIC);
 
-        ResourcesAccess userResource = new ResourcesAccess("User resource", MS_NAME, USER_URL, CONTROLLER_NAME1,
-                RequestMethod.GET, DefaultRole.REGISTERED_USER);
+        ResourcesAccess userResource = new ResourcesAccess("User resource",
+                                                           MS_NAME,
+                                                           USER_URL,
+                                                           CONTROLLER_NAME1,
+                                                           RequestMethod.GET,
+                                                           DefaultRole.REGISTERED_USER);
 
-        ResourcesAccess userResource2 = new ResourcesAccess("Public resource", MS_NAME, USER_URL2, CONTROLLER_NAME2,
-                RequestMethod.GET, DefaultRole.PUBLIC);
+        ResourcesAccess userResource2 = new ResourcesAccess("Public resource",
+                                                            MS_NAME,
+                                                            USER_URL2,
+                                                            CONTROLLER_NAME2,
+                                                            RequestMethod.GET,
+                                                            DefaultRole.PUBLIC);
 
-        ResourcesAccess adminResource = new ResourcesAccess("Admin resource", MS_NAME, ADMIN_URL, CONTROLLER_NAME1,
-                RequestMethod.GET, DefaultRole.PROJECT_ADMIN);
+        ResourcesAccess adminResource = new ResourcesAccess("Admin resource",
+                                                            MS_NAME,
+                                                            ADMIN_URL,
+                                                            CONTROLLER_NAME1,
+                                                            RequestMethod.GET,
+                                                            DefaultRole.PROJECT_ADMIN);
 
         publicResource = resourceAccessRepository.save(publicResource);
         userResource2 = resourceAccessRepository.save(userResource2);
@@ -155,18 +165,21 @@ public class ResourcesAccessDaoIT {
 
     @Test
     public void findManageableResources() {
-        List<ResourcesAccess> manageableResources = resourceAccessRepository
-                .findManageableResources(MS_NAME, CONTROLLER_NAME1, DefaultRole.PUBLIC.name());
+        List<ResourcesAccess> manageableResources = resourceAccessRepository.findManageableResources(MS_NAME,
+                                                                                                     CONTROLLER_NAME1,
+                                                                                                     DefaultRole.PUBLIC.name());
         Assert.assertNotNull(manageableResources);
         Assert.assertEquals(1, manageableResources.size());
         Assert.assertEquals(MS_NAME, manageableResources.get(0).getMicroservice());
 
-        manageableResources = resourceAccessRepository.findManageableResources(MS_NAME, CONTROLLER_NAME1,
+        manageableResources = resourceAccessRepository.findManageableResources(MS_NAME,
+                                                                               CONTROLLER_NAME1,
                                                                                DefaultRole.REGISTERED_USER.name());
         Assert.assertNotNull(manageableResources);
         Assert.assertEquals(2, manageableResources.size());
 
-        manageableResources = resourceAccessRepository.findManageableResources(MS_NAME, CONTROLLER_NAME1,
+        manageableResources = resourceAccessRepository.findManageableResources(MS_NAME,
+                                                                               CONTROLLER_NAME1,
                                                                                DefaultRole.ADMIN.name());
         Assert.assertNotNull(manageableResources);
         Assert.assertEquals(3, manageableResources.size());
@@ -178,8 +191,8 @@ public class ResourcesAccessDaoIT {
 
     @Test
     public void findManageableControllers() {
-        List<String> manageableControllers = resourceAccessRepository
-                .findManageableControllers(MS_NAME, DefaultRole.ADMIN.name());
+        List<String> manageableControllers = resourceAccessRepository.findManageableControllers(MS_NAME,
+                                                                                                DefaultRole.ADMIN.name());
         Assert.assertNotNull(manageableControllers);
         Assert.assertEquals(2, manageableControllers.size());
 
