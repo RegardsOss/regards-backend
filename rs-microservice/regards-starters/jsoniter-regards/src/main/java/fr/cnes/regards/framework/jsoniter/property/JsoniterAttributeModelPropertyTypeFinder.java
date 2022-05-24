@@ -152,9 +152,9 @@ public class JsoniterAttributeModelPropertyTypeFinder
             String tenant = pWrapper.getTenant();
             Fragment fragment = new Fragment();
             fragment.setName(amc.getFragmentName());
-            AttributeModel attributeModel = AttributeModelBuilder.build(amc.getAttributeName(),
-                                                                        amc.getPropertyType(),
-                                                                        null).fragment(fragment).get();
+            AttributeModel attributeModel = new AttributeModelBuilder(amc.getAttributeName(),
+                                                                      amc.getPropertyType(),
+                                                                      null).setFragment(fragment).build();
 
             attributes = attributes.merge(multimapOf(tenant, List.of(attributeModel)));
         }
@@ -170,9 +170,9 @@ public class JsoniterAttributeModelPropertyTypeFinder
             AttributeModelDeleted amd = pWrapper.getContent();
             Fragment fragment = new Fragment();
             fragment.setName(amd.getFragmentName());
-            AttributeModel attributeModel = AttributeModelBuilder.build(amd.getAttributeName(),
-                                                                        amd.getPropertyType(),
-                                                                        null).fragment(fragment).get();
+            AttributeModel attributeModel = new AttributeModelBuilder(amd.getAttributeName(),
+                                                                      amd.getPropertyType(),
+                                                                      null).setFragment(fragment).build();
 
             attributes = attributes.filterValues(am -> !am.equals(attributeModel));
         }

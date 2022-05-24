@@ -88,19 +88,16 @@ public class AttributeControllerTest {
     @Test
     public void getAttributeTest() {
         final List<AttributeModel> attributes = new ArrayList<>();
-        attributes.add(AttributeModelBuilder.build("NAME", PropertyType.STRING, "ForTests")
-                                            .withId(1L)
-                                            .defaultFragment()
-                                            .get());
-        attributes.add(AttributeModelBuilder.build("START_DATE", PropertyType.DATE_ISO8601, "ForTests")
-                                            .withId(2L)
-                                            .defaultFragment()
-                                            .get());
+        attributes.add(new AttributeModelBuilder("NAME", PropertyType.STRING, "ForTests").setId(1L)
+                                                                                         .setFragmentUsingDefault()
+                                                                                         .build());
+        attributes.add(new AttributeModelBuilder("START_DATE", PropertyType.DATE_ISO8601, "ForTests").setId(2L)
+                                                                                                     .setFragmentUsingDefault()
+                                                                                                     .build());
         // CHECKSTYLE:OFF
-        attributes.add(AttributeModelBuilder.build("STOP_DATE", PropertyType.DATE_ISO8601, "ForTests")
-                                            .withId(3L)
-                                            .defaultFragment()
-                                            .get());
+        attributes.add(new AttributeModelBuilder("STOP_DATE", PropertyType.DATE_ISO8601, "ForTests").setId(3L)
+                                                                                                    .setFragmentUsingDefault()
+                                                                                                    .build());
         // CHECKSTYLE:ON
         Mockito.when(attributeServiceMocked.getAttributes(null, null, null)).thenReturn(attributes);
         final ResponseEntity<List<EntityModel<AttributeModel>>> response = attributeController.getAttributes(null,

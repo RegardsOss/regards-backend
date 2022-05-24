@@ -190,7 +190,7 @@ public class ModelAttributeControllerIT extends AbstractRegardsIT {
     }
 
     private AttributeModel createAttribute(String pName) throws ModuleException {
-        final AttributeModel att = AttributeModelBuilder.build("att" + pName, PropertyType.STRING, "ForTests").get();
+        final AttributeModel att = new AttributeModelBuilder("att" + pName, PropertyType.STRING, "ForTests").build();
         return attributeModelService.addAttribute(att, false);
     }
 
@@ -594,12 +594,11 @@ public class ModelAttributeControllerIT extends AbstractRegardsIT {
         final Fragment frag = Fragment.buildFragment("testFrag", null);
         fragmentRepository.save(frag);
 
-        final AttributeModel att = AttributeModelBuilder.build("att" + name, PropertyType.STRING, "ForTests")
-                                                        .fragment(frag)
-                                                        .get();
-        final AttributeModel att2 = AttributeModelBuilder.build("att2" + name, PropertyType.STRING, "ForTests")
-                                                         .fragment(frag)
-                                                         .get();
+        final AttributeModel att = new AttributeModelBuilder("att" + name, PropertyType.STRING, "ForTests").setFragment(
+            frag).build();
+        final AttributeModel att2 = new AttributeModelBuilder("att2" + name,
+                                                              PropertyType.STRING,
+                                                              "ForTests").setFragment(frag).build();
         attributeModelService.addAttribute(att, false);
         attributeModelService.addAttribute(att2, false);
 
@@ -690,14 +689,13 @@ public class ModelAttributeControllerIT extends AbstractRegardsIT {
         final Fragment frag = Fragment.buildFragment(name, null);
         fragmentRepository.save(frag);
 
-        final AttributeModel att = AttributeModelBuilder.build("att" + name,
-                                                               PropertyType.STRING,
-                                                               "For Tests Label looooooooooooooooooooooooooooong")
-                                                        .fragment(frag)
-                                                        .get();
-        final AttributeModel att2 = AttributeModelBuilder.build("att2" + name, PropertyType.STRING, "ForTests")
-                                                         .fragment(frag)
-                                                         .get();
+        final AttributeModel att = new AttributeModelBuilder("att" + name,
+                                                             PropertyType.STRING,
+                                                             "For Tests Label looooooooooooooooooooooooooooong").setFragment(
+            frag).build();
+        final AttributeModel att2 = new AttributeModelBuilder("att2" + name,
+                                                              PropertyType.STRING,
+                                                              "ForTests").setFragment(frag).build();
         attributeModelService.addAttribute(att, false);
         attributeModelService.addAttribute(att2, false);
 

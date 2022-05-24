@@ -275,8 +275,9 @@ public class FragmentControllerIT extends AbstractRegardsTransactionalIT {
         fragmentRepository.save(Fragment.buildFragment("Geo", "Geographic information"));
         fragmentRepository.save(Fragment.buildFragment("Contact", "Contact card"));
 
-        final AttributeModel attModel = AttributeModelBuilder.build("VFIRST", PropertyType.BOOLEAN, "ForTests")
-                                                             .withoutRestriction();
+        final AttributeModel attModel = new AttributeModelBuilder("VFIRST",
+                                                                  PropertyType.BOOLEAN,
+                                                                  "ForTests").setNoRestriction().build();
         attributeModelService.addAttribute(attModel, false);
     }
 }

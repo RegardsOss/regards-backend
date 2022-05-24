@@ -46,9 +46,10 @@ public class CleanDatabaseIT extends AbstractModelIT {
 
     @Test
     public void deleteAttributeWithRestriction() {
-        final AttributeModel attModel = AttributeModelBuilder.build("withRestrictionAttribute",
-                                                                    PropertyType.STRING,
-                                                                    "ForTests").withPatternRestriction("MOCKPATTERN");
+        final AttributeModel attModel = new AttributeModelBuilder("withRestrictionAttribute",
+                                                                  PropertyType.STRING,
+                                                                  "ForTests").setPatternRestriction("MOCKPATTERN")
+                                                                             .build();
         final AttributeModel saved = saveAttribute(attModel);
         attModelRepository.delete(saved);
 
@@ -62,12 +63,14 @@ public class CleanDatabaseIT extends AbstractModelIT {
     @Test
     public void deleteAttributeWithNoRestriction() {
 
-        final AttributeModel attModel = AttributeModelBuilder.build("TO_DELETE", PropertyType.STRING, "ForTests")
-                                                             .withoutRestriction();
+        final AttributeModel attModel = new AttributeModelBuilder("TO_DELETE",
+                                                                  PropertyType.STRING,
+                                                                  "ForTests").setNoRestriction().build();
         final AttributeModel saved = saveAttribute(attModel);
 
-        final AttributeModel attModel2 = AttributeModelBuilder.build("TO_DELETE_TWO", PropertyType.STRING, "ForTests")
-                                                              .withoutRestriction();
+        final AttributeModel attModel2 = new AttributeModelBuilder("TO_DELETE_TWO",
+                                                                   PropertyType.STRING,
+                                                                   "ForTests").setNoRestriction().build();
         saveAttribute(attModel2);
 
         attModelRepository.delete(saved);

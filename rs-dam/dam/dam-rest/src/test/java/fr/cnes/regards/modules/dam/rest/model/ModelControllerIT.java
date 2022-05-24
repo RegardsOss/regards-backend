@@ -223,8 +223,9 @@ public class ModelControllerIT extends AbstractRegardsTransactionalIT {
         modelService.createModel(model);
 
         // Attribute #1 in default fragment
-        AttributeModel attMod = AttributeModelBuilder.build("att_string", PropertyType.STRING, "ForTests")
-                                                     .withoutRestriction();
+        AttributeModel attMod = new AttributeModelBuilder("att_string",
+                                                          PropertyType.STRING,
+                                                          "ForTests").setNoRestriction().build();
         attributeModelService.addAttribute(attMod, false);
 
         ModelAttrAssoc modAtt = new ModelAttrAssoc();
@@ -232,9 +233,9 @@ public class ModelControllerIT extends AbstractRegardsTransactionalIT {
         modelAttributeService.bindAttributeToModel(model.getName(), modAtt);
 
         // Attribute #2 in default fragment
-        attMod = AttributeModelBuilder.build("att_boolean", PropertyType.BOOLEAN, "ForTests")
-                                      .isAlterable()
-                                      .withoutRestriction();
+        attMod = new AttributeModelBuilder("att_boolean", PropertyType.BOOLEAN, "ForTests").setAlterable(true)
+                                                                                           .setNoRestriction()
+                                                                                           .build();
         attributeModelService.addAttribute(attMod, false);
 
         modAtt = new ModelAttrAssoc();
@@ -245,9 +246,11 @@ public class ModelControllerIT extends AbstractRegardsTransactionalIT {
         final Fragment geo = Fragment.buildFragment("GEO", "Geographic information");
 
         // Attribute #3 in geo fragment
-        attMod = AttributeModelBuilder.build("CRS", PropertyType.STRING, "ForTests")
-                                      .fragment(geo)
-                                      .withEnumerationRestriction("Earth", "Mars", "Venus");
+        attMod = new AttributeModelBuilder("CRS", PropertyType.STRING, "ForTests").setFragment(geo)
+                                                                                  .setEnumerationRestriction("Earth",
+                                                                                                             "Mars",
+                                                                                                             "Venus")
+                                                                                  .build();
         attributeModelService.addAttribute(attMod, false);
 
         modelAttributeService.bindNSAttributeToModel(model.getName(), attMod.getFragment());
@@ -256,9 +259,9 @@ public class ModelControllerIT extends AbstractRegardsTransactionalIT {
         final Fragment contact = Fragment.buildFragment("Contact", "Contact information");
 
         // Attribute #5 in contact fragment
-        attMod = AttributeModelBuilder.build("Phone", PropertyType.STRING, "ForTests")
-                                      .fragment(contact)
-                                      .withPatternRestriction("[0-9 ]{10}");
+        attMod = new AttributeModelBuilder("Phone", PropertyType.STRING, "ForTests").setFragment(contact)
+                                                                                    .setPatternRestriction("[0-9 ]{10}")
+                                                                                    .build();
         attributeModelService.addAttribute(attMod, false);
 
         modelAttributeService.bindNSAttributeToModel(model.getName(), attMod.getFragment());

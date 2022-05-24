@@ -70,28 +70,24 @@ public class SearchClientTestUtils {
 
     public static final Fragment TEST_FRAGMENT = Fragment.buildDefault();
 
-    public static final AttributeModel INTEGER_ATTRIBUTE_MODEL = AttributeModelBuilder.build(INTEGER_ATTRIBUTE_NAME,
-                                                                                             PropertyType.INTEGER,
-                                                                                             INTEGER_ATTRIBUTE_NAME)
-                                                                                      .fragment(TEST_FRAGMENT)
-                                                                                      .get();
+    public static final AttributeModel INTEGER_ATTRIBUTE_MODEL = new AttributeModelBuilder(INTEGER_ATTRIBUTE_NAME,
+                                                                                           PropertyType.INTEGER,
+                                                                                           INTEGER_ATTRIBUTE_NAME).setFragment(
+        TEST_FRAGMENT).build();
 
-    public static final AttributeModel STRING_ATTRIBUTE_MODEL = AttributeModelBuilder.build(STRING_ATTRIBUTE_NAME,
-                                                                                            PropertyType.STRING,
-                                                                                            STRING_ATTRIBUTE_NAME)
-                                                                                     .get();
+    public static final AttributeModel STRING_ATTRIBUTE_MODEL = new AttributeModelBuilder(STRING_ATTRIBUTE_NAME,
+                                                                                          PropertyType.STRING,
+                                                                                          STRING_ATTRIBUTE_NAME).build();
 
-    public static final AttributeModel DATE_ATTRIBUTE_MODEL = AttributeModelBuilder.build(DATE_ATTRIBUTE_NAME,
-                                                                                          PropertyType.DATE_ISO8601,
-                                                                                          DATE_ATTRIBUTE_NAME)
-                                                                                   .fragment(TEST_FRAGMENT)
-                                                                                   .get();
+    public static final AttributeModel DATE_ATTRIBUTE_MODEL = new AttributeModelBuilder(DATE_ATTRIBUTE_NAME,
+                                                                                        PropertyType.DATE_ISO8601,
+                                                                                        DATE_ATTRIBUTE_NAME).setFragment(
+        TEST_FRAGMENT).build();
 
-    public static final AttributeModel EXTRA_ATTRIBUTE_MODEL = AttributeModelBuilder.build(EXTRA_ATTRIBUTE_NAME,
-                                                                                           PropertyType.STRING,
-                                                                                           EXTRA_ATTRIBUTE_NAME)
-                                                                                    .fragment(TEST_FRAGMENT)
-                                                                                    .get();
+    public static final AttributeModel EXTRA_ATTRIBUTE_MODEL = new AttributeModelBuilder(EXTRA_ATTRIBUTE_NAME,
+                                                                                         PropertyType.STRING,
+                                                                                         EXTRA_ATTRIBUTE_NAME).setFragment(
+        TEST_FRAGMENT).build();
 
     public static final List<AttributeModel> LIST = Lists.newArrayList(INTEGER_ATTRIBUTE_MODEL,
                                                                        DATE_ATTRIBUTE_MODEL,

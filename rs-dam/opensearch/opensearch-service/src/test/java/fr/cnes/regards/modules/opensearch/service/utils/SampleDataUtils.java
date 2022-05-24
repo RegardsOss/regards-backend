@@ -72,35 +72,30 @@ public class SampleDataUtils {
     public static final Fragment TEST_FRAGMENT = Fragment.buildDefault();
 
     // Build some attribute models for all attribute types
-    public static final AttributeModel BOOLEAN_ATTRIBUTE_MODEL = AttributeModelBuilder.build(BOOLEAN_FIELD,
-                                                                                             PropertyType.BOOLEAN,
-                                                                                             "ForTests")
-                                                                                      .fragment(TEST_FRAGMENT)
-                                                                                      .get();
+    public static final AttributeModel BOOLEAN_ATTRIBUTE_MODEL = new AttributeModelBuilder(BOOLEAN_FIELD,
+                                                                                           PropertyType.BOOLEAN,
+                                                                                           "ForTests").setFragment(
+        TEST_FRAGMENT).build();
 
-    public static final AttributeModel INTEGER_ATTRIBUTE_MODEL = AttributeModelBuilder.build(INTEGER_FIELD,
-                                                                                             PropertyType.INTEGER,
-                                                                                             "ForTests")
-                                                                                      .fragment(TEST_FRAGMENT)
-                                                                                      .get();
+    public static final AttributeModel INTEGER_ATTRIBUTE_MODEL = new AttributeModelBuilder(INTEGER_FIELD,
+                                                                                           PropertyType.INTEGER,
+                                                                                           "ForTests").setFragment(
+        TEST_FRAGMENT).build();
 
-    public static final AttributeModel DOUBLE_ATTRIBUTE_MODEL = AttributeModelBuilder.build(DOUBLE_FIELD,
-                                                                                            PropertyType.DOUBLE,
-                                                                                            "ForTests")
-                                                                                     .fragment(TEST_FRAGMENT)
-                                                                                     .get();
+    public static final AttributeModel DOUBLE_ATTRIBUTE_MODEL = new AttributeModelBuilder(DOUBLE_FIELD,
+                                                                                          PropertyType.DOUBLE,
+                                                                                          "ForTests").setFragment(
+        TEST_FRAGMENT).build();
 
-    public static final AttributeModel LONG_ATTRIBUTE_MODEL = AttributeModelBuilder.build(LONG_FIELD,
-                                                                                          PropertyType.LONG,
-                                                                                          "ForTests")
-                                                                                   .fragment(TEST_FRAGMENT)
-                                                                                   .get();
+    public static final AttributeModel LONG_ATTRIBUTE_MODEL = new AttributeModelBuilder(LONG_FIELD,
+                                                                                        PropertyType.LONG,
+                                                                                        "ForTests").setFragment(
+        TEST_FRAGMENT).build();
 
-    public static final AttributeModel STRING_ATTRIBUTE_MODEL = AttributeModelBuilder.build(STRING_FIELD,
-                                                                                            PropertyType.STRING,
-                                                                                            "ForTests")
-                                                                                     .fragment(TEST_FRAGMENT)
-                                                                                     .get();
+    public static final AttributeModel STRING_ATTRIBUTE_MODEL = new AttributeModelBuilder(STRING_FIELD,
+                                                                                          PropertyType.STRING,
+                                                                                          "ForTests").setFragment(
+        TEST_FRAGMENT).build();
 
     /**
      * A query with double quotes and special characters
@@ -108,74 +103,65 @@ public class SampleDataUtils {
     public static final String UNESCAPED_QUERY_WITH_DOUBLE_QUOTES_AND_CHARS_TO_ESCAPE = STRING_ATTRIBUTE_MODEL.getJsonPath()
                                                                                         + ":\"texte avec:des caractères+spéciaux\"";
 
-    public static final AttributeModel STRING_ATTRIBUTE_MODEL_1 = AttributeModelBuilder.build(STRING_FIELD_1,
-                                                                                              PropertyType.STRING,
-                                                                                              "ForTests")
-                                                                                       .fragment(TEST_FRAGMENT)
-                                                                                       .get();
+    public static final AttributeModel STRING_ATTRIBUTE_MODEL_1 = new AttributeModelBuilder(STRING_FIELD_1,
+                                                                                            PropertyType.STRING,
+                                                                                            "ForTests").setFragment(
+        TEST_FRAGMENT).build();
 
-    public static final AttributeModel LOCAL_DATE_TIME_ATTRIBUTE_MODEL = AttributeModelBuilder.build(
-        LOCAL_DATE_TIME_FIELD,
-        PropertyType.DATE_ISO8601,
-        "ForTests").fragment(TEST_FRAGMENT).get();
+    public static final AttributeModel LOCAL_DATE_TIME_ATTRIBUTE_MODEL = new AttributeModelBuilder(LOCAL_DATE_TIME_FIELD,
+                                                                                                   PropertyType.DATE_ISO8601,
+                                                                                                   "ForTests").setFragment(
+        TEST_FRAGMENT).build();
 
-    public static final AttributeModel INTEGER_RANGE_ATTRIBUTE_MODEL = AttributeModelBuilder.build(INTEGER_RANGE_FIELD,
-                                                                                                   PropertyType.INTEGER_INTERVAL,
-                                                                                                   "ForTests")
-                                                                                            .fragment(TEST_FRAGMENT)
-                                                                                            .get();
+    public static final AttributeModel INTEGER_RANGE_ATTRIBUTE_MODEL = new AttributeModelBuilder(INTEGER_RANGE_FIELD,
+                                                                                                 PropertyType.INTEGER_INTERVAL,
+                                                                                                 "ForTests").setFragment(
+        TEST_FRAGMENT).build();
 
-    public static final AttributeModel DOUBLE_RANGE_ATTRIBUTE_MODEL = AttributeModelBuilder.build(DOUBLE_RANGE_FIELD,
-                                                                                                  PropertyType.DOUBLE_INTERVAL,
-                                                                                                  "ForTests")
-                                                                                           .fragment(TEST_FRAGMENT)
-                                                                                           .get();
+    public static final AttributeModel DOUBLE_RANGE_ATTRIBUTE_MODEL = new AttributeModelBuilder(DOUBLE_RANGE_FIELD,
+                                                                                                PropertyType.DOUBLE_INTERVAL,
+                                                                                                "ForTests").setFragment(
+        TEST_FRAGMENT).build();
 
-    public static final AttributeModel LONG_RANGE_ATTRIBUTE_MODEL = AttributeModelBuilder.build(LONG_RANGE_FIELD,
-                                                                                                PropertyType.LONG_INTERVAL,
-                                                                                                "ForTests")
-                                                                                         .fragment(TEST_FRAGMENT)
-                                                                                         .get();
+    public static final AttributeModel LONG_RANGE_ATTRIBUTE_MODEL = new AttributeModelBuilder(LONG_RANGE_FIELD,
+                                                                                              PropertyType.LONG_INTERVAL,
+                                                                                              "ForTests").setFragment(
+        TEST_FRAGMENT).build();
 
-    public static final AttributeModel LOCAL_DATE_TIME_RANGE_ATTRIBUTE_MODEL = AttributeModelBuilder.build(
+    public static final AttributeModel LOCAL_DATE_TIME_RANGE_ATTRIBUTE_MODEL = new AttributeModelBuilder(
         LOCAL_DATE_TIME_RANGE_FIELD,
         PropertyType.DATE_INTERVAL,
-        "ForTests").fragment(TEST_FRAGMENT).get();
+        "ForTests").setFragment(TEST_FRAGMENT).build();
 
-    public static final AttributeModel INTEGER_ARRAY_ATTRIBUTE_MODEL = AttributeModelBuilder.build(INTEGER_ARRAY_FIELD,
-                                                                                                   PropertyType.INTEGER_ARRAY,
-                                                                                                   "ForTests")
-                                                                                            .fragment(TEST_FRAGMENT)
-                                                                                            .get();
+    public static final AttributeModel INTEGER_ARRAY_ATTRIBUTE_MODEL = new AttributeModelBuilder(INTEGER_ARRAY_FIELD,
+                                                                                                 PropertyType.INTEGER_ARRAY,
+                                                                                                 "ForTests").setFragment(
+        TEST_FRAGMENT).build();
 
-    public static final AttributeModel DOUBLE_ARRAY_ATTRIBUTE_MODEL = AttributeModelBuilder.build(DOUBLE_ARRAY_FIELD,
-                                                                                                  PropertyType.DOUBLE_ARRAY,
-                                                                                                  "ForTests")
-                                                                                           .fragment(TEST_FRAGMENT)
-                                                                                           .get();
+    public static final AttributeModel DOUBLE_ARRAY_ATTRIBUTE_MODEL = new AttributeModelBuilder(DOUBLE_ARRAY_FIELD,
+                                                                                                PropertyType.DOUBLE_ARRAY,
+                                                                                                "ForTests").setFragment(
+        TEST_FRAGMENT).build();
 
-    public static final AttributeModel LONG_ARRAY_ATTRIBUTE_MODEL = AttributeModelBuilder.build(LONG_ARRAY_FIELD,
-                                                                                                PropertyType.LONG_ARRAY,
-                                                                                                "ForTests")
-                                                                                         .fragment(TEST_FRAGMENT)
-                                                                                         .get();
+    public static final AttributeModel LONG_ARRAY_ATTRIBUTE_MODEL = new AttributeModelBuilder(LONG_ARRAY_FIELD,
+                                                                                              PropertyType.LONG_ARRAY,
+                                                                                              "ForTests").setFragment(
+        TEST_FRAGMENT).build();
 
-    public static final AttributeModel STRING_ARRAY_ATTRIBUTE_MODEL = AttributeModelBuilder.build(STRING_ARRAY_FIELD,
-                                                                                                  PropertyType.STRING_ARRAY,
-                                                                                                  "ForTests")
-                                                                                           .fragment(TEST_FRAGMENT)
-                                                                                           .get();
+    public static final AttributeModel STRING_ARRAY_ATTRIBUTE_MODEL = new AttributeModelBuilder(STRING_ARRAY_FIELD,
+                                                                                                PropertyType.STRING_ARRAY,
+                                                                                                "ForTests").setFragment(
+        TEST_FRAGMENT).build();
 
-    public static final AttributeModel LOCAL_DATE_TIME_ARRAY_ATTRIBUTE_MODEL = AttributeModelBuilder.build(
+    public static final AttributeModel LOCAL_DATE_TIME_ARRAY_ATTRIBUTE_MODEL = new AttributeModelBuilder(
         LOCAL_DATE_TIME_ARRAY,
         PropertyType.DATE_ARRAY,
-        "ForTests").fragment(TEST_FRAGMENT).get();
+        "ForTests").setFragment(TEST_FRAGMENT).build();
 
-    public static final AttributeModel TAGS_ATTRIBUTE_MODEL = AttributeModelBuilder.build(TAGS_FIELD,
-                                                                                          PropertyType.STRING_ARRAY,
-                                                                                          "ForTests")
-                                                                                   .fragment(TEST_FRAGMENT)
-                                                                                   .get();
+    public static final AttributeModel TAGS_ATTRIBUTE_MODEL = new AttributeModelBuilder(TAGS_FIELD,
+                                                                                        PropertyType.STRING_ARRAY,
+                                                                                        "ForTests").setFragment(
+        TEST_FRAGMENT).build();
 
     /**
      * For mocking result of a call to {@link IAttributeModelService#getAttributes(null, null)}

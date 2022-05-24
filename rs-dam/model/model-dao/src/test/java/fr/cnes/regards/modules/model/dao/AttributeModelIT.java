@@ -50,9 +50,9 @@ public class AttributeModelIT extends AbstractModelIT {
         final String attName = "FAKE";
         final String description = "DESCRIPTION OF THE FAKE ATTRIBUTE";
 
-        final AttributeModel attModel = AttributeModelBuilder.build(attName, PropertyType.STRING, "ForTests")
-                                                             .description(description)
-                                                             .get();
+        final AttributeModel attModel = new AttributeModelBuilder(attName,
+                                                                  PropertyType.STRING,
+                                                                  "ForTests").setDescription(description).build();
         saveAttribute(attModel);
 
         // Try to retrieve attribute
@@ -75,14 +75,20 @@ public class AttributeModelIT extends AbstractModelIT {
         final String description = "All consistent geo attributes";
         final Fragment f = Fragment.buildFragment(name, description);
 
-        final AttributeModel attModel1 = AttributeModelBuilder.build("GEOMETRY", PropertyType.INTEGER, "ForTests")
-                                                              .fragment(f)
-                                                              .withoutRestriction();
+        final AttributeModel attModel1 = new AttributeModelBuilder("GEOMETRY",
+                                                                   PropertyType.INTEGER,
+                                                                   "ForTests").setFragment(f)
+                                                                              .setNoRestriction()
+                                                                              .build();
         saveAttribute(attModel1);
 
-        final AttributeModel attModel2 = AttributeModelBuilder.build("CRS", PropertyType.STRING, "ForTests")
-                                                              .fragment(f)
-                                                              .withEnumerationRestriction("EARTH", "ASTRO", "MARS");
+        final AttributeModel attModel2 = new AttributeModelBuilder("CRS",
+                                                                   PropertyType.STRING,
+                                                                   "ForTests").setFragment(f)
+                                                                              .setEnumerationRestriction("EARTH",
+                                                                                                         "ASTRO",
+                                                                                                         "MARS")
+                                                                              .build();
         saveAttribute(attModel2);
 
         final Iterable<AttributeModel> atts = attModelRepository.findAll();
@@ -96,8 +102,9 @@ public class AttributeModelIT extends AbstractModelIT {
 
     @Test
     public void deleteAttributeTest() {
-        final AttributeModel attModel = AttributeModelBuilder.build("TO_DELETE", PropertyType.STRING, "ForTests")
-                                                             .withoutRestriction();
+        final AttributeModel attModel = new AttributeModelBuilder("TO_DELETE",
+                                                                  PropertyType.STRING,
+                                                                  "ForTests").setNoRestriction().build();
         final AttributeModel saved = saveAttribute(attModel);
         attModelRepository.delete(saved);
     }

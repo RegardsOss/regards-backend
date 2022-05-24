@@ -53,9 +53,9 @@ public class ComputedAttributeValidatorTest {
     @Test(expected = ValidationException.class)
     public void testUnknownPlugin() {
         // initialize the association
-        ModelAttrAssoc invalidAssoc = new ModelAttrAssoc(AttributeModelBuilder.build("forTest",
-                                                                                     PropertyType.INTEGER,
-                                                                                     "ForTests").get(),
+        ModelAttrAssoc invalidAssoc = new ModelAttrAssoc(new AttributeModelBuilder("forTest",
+                                                                                   PropertyType.INTEGER,
+                                                                                   "ForTests").build(),
                                                          Model.build("testModel", "pDescription", EntityType.DATASET));
         // get a PluginConfiguration
         PluginMetaData metaData = new PluginMetaData();

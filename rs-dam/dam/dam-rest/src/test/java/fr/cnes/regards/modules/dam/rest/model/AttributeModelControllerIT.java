@@ -726,10 +726,9 @@ public class AttributeModelControllerIT extends AbstractRegardsTransactionalIT {
                                           Fragment pFragment,
                                           AbstractRestriction pRestriction) {
 
-        final AttributeModel attModel = AttributeModelBuilder.build(pName, pType, "ForTests")
-                                                             .description(pDescription)
-                                                             .fragment(pFragment)
-                                                             .get();
+        final AttributeModel attModel = new AttributeModelBuilder(pName, pType, "ForTests").setDescription(pDescription)
+                                                                                           .setFragment(pFragment)
+                                                                                           .build();
         attModel.setRestriction(pRestriction);
         return createAttribute(attModel);
     }
@@ -789,8 +788,10 @@ public class AttributeModelControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.expect(MockMvcResultMatchers.status().isOk());
 
         // Content
-        final AttributeModel attModel = AttributeModelBuilder.build(attName, PropertyType.STRING, "ForTests")
-                                                             .withEnumerationRestriction(acceptableValues);
+        final AttributeModel attModel = new AttributeModelBuilder(attName,
+                                                                  PropertyType.STRING,
+                                                                  "ForTests").setEnumerationRestriction(acceptableValues)
+                                                                             .build();
 
         performDefaultPost(AttributeModelController.TYPE_MAPPING,
                            attModel,
@@ -802,8 +803,10 @@ public class AttributeModelControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.expect(MockMvcResultMatchers.status().isConflict());
 
         // Same clone model ... replay
-        final AttributeModel conflictAttModel = AttributeModelBuilder.build(attName, PropertyType.STRING, "ForTests")
-                                                                     .withEnumerationRestriction(acceptableValues);
+        final AttributeModel conflictAttModel = new AttributeModelBuilder(attName,
+                                                                          PropertyType.STRING,
+                                                                          "ForTests").setEnumerationRestriction(
+            acceptableValues).build();
 
         performDefaultPost(AttributeModelController.TYPE_MAPPING,
                            conflictAttModel,
@@ -867,7 +870,7 @@ public class AttributeModelControllerIT extends AbstractRegardsTransactionalIT {
     public void updateAttributeModel() {
         final String name = "UPDATABLE";
         final PropertyType type = PropertyType.URL;
-        final AttributeModel attMod = AttributeModelBuilder.build(name, type, "ForTests").description("DESC").get();
+        final AttributeModel attMod = new AttributeModelBuilder(name, type, "ForTests").setDescription("DESC").build();
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer();
         requestBuilderCustomizer.expect(MockMvcResultMatchers.status().isOk());
@@ -923,9 +926,11 @@ public class AttributeModelControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Ignore
     public void removeRestriction() {
-        final AttributeModel attMod = AttributeModelBuilder.build("attModRestr", PropertyType.STRING, "ForTests")
-                                                           .description("desc")
-                                                           .withPatternRestriction("pattern");
+        final AttributeModel attMod = new AttributeModelBuilder("attModRestr",
+                                                                PropertyType.STRING,
+                                                                "ForTests").setDescription("desc")
+                                                                           .setPatternRestriction("pattern")
+                                                                           .build();
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer();
         requestBuilderCustomizer.expect(MockMvcResultMatchers.status().isOk());
@@ -957,8 +962,10 @@ public class AttributeModelControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public void createAndUpdateAttributeWithRestriction() {
-        AttributeModel attModel = AttributeModelBuilder.build("NB_OBJECTS", PropertyType.INTEGER, "ForTests")
-                                                       .withIntegerRangeRestriction(1, 3, false, false);
+        AttributeModel attModel = new AttributeModelBuilder("NB_OBJECTS",
+                                                            PropertyType.INTEGER,
+                                                            "ForTests").setIntegerRangeRestriction(1, 3, false, false)
+                                                                       .build();
         ResultActions resultActions = createAttribute(attModel);
 
         String json = payload(resultActions);
@@ -997,11 +1004,12 @@ public class AttributeModelControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public void createAndUpdateAttributeWithRestriction2() {
-        AttributeModel attModel = AttributeModelBuilder.build("NB_OBJECTS", PropertyType.LONG, "ForTests")
-                                                       .withLongRangeRestriction(Long.MIN_VALUE,
-                                                                                 Long.MAX_VALUE,
-                                                                                 false,
-                                                                                 false);
+        AttributeModel attModel = new AttributeModelBuilder("NB_OBJECTS",
+                                                            PropertyType.LONG,
+                                                            "ForTests").setLongRangeRestriction(Long.MIN_VALUE,
+                                                                                                Long.MAX_VALUE,
+                                                                                                false,
+                                                                                                false).build();
         ResultActions resultActions = createAttribute(attModel);
 
         String json = payload(resultActions);

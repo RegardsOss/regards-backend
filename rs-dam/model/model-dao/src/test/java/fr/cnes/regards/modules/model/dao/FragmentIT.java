@@ -47,9 +47,11 @@ public class FragmentIT extends AbstractModelIT {
 
         final Fragment fragment = Fragment.buildFragment("fragment1", "description fragment 1");
 
-        final AttributeModel attModel = AttributeModelBuilder.build("fragment_att1", PropertyType.STRING, "ForTests")
-                                                             .fragment(fragment)
-                                                             .withoutRestriction();
+        final AttributeModel attModel = new AttributeModelBuilder("fragment_att1",
+                                                                  PropertyType.STRING,
+                                                                  "ForTests").setFragment(fragment)
+                                                                             .setNoRestriction()
+                                                                             .build();
         saveAttribute(attModel);
 
         final Iterable<AttributeModel> attModels = attModelRepository.findByFragmentId(fragment.getId());

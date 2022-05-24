@@ -168,46 +168,41 @@ public class AttributeFinder implements IAttributeFinder, ApplicationListener<Ap
 
         // Unique identifier
         tenantMap.put(StaticProperties.FEATURE_ID,
-                      AttributeModelBuilder.build(StaticProperties.FEATURE_ID, PropertyType.STRING, null)
-                                           .isStatic()
-                                           .get());
+                      new AttributeModelBuilder(StaticProperties.FEATURE_ID, PropertyType.STRING, null).setStatic(true)
+                                                                                                       .build());
 
         // Virtual identifier
         tenantMap.put(StaticProperties.FEATURE_VIRTUAL_ID,
-                      AttributeModelBuilder.build(StaticProperties.FEATURE_VIRTUAL_ID, PropertyType.STRING, null)
-                                           .isStatic()
-                                           .isOptional()
-                                           .get());
+                      new AttributeModelBuilder(StaticProperties.FEATURE_VIRTUAL_ID,
+                                                PropertyType.STRING,
+                                                null).setStatic(true).setOptional(true).build());
 
         // Version
         tenantMap.put(StaticProperties.FEATURE_VERSION,
-                      AttributeModelBuilder.build(StaticProperties.FEATURE_VERSION, PropertyType.INTEGER, null)
-                                           .isStatic()
-                                           .get());
+                      new AttributeModelBuilder(StaticProperties.FEATURE_VERSION, PropertyType.INTEGER, null).setStatic(
+                          true).build());
 
         // Is last version
         tenantMap.put(StaticProperties.FEATURE_IS_LAST_VERSION,
-                      AttributeModelBuilder.build(StaticProperties.FEATURE_IS_LAST_VERSION, PropertyType.BOOLEAN, null)
-                                           .isStatic()
-                                           .get());
+                      new AttributeModelBuilder(StaticProperties.FEATURE_IS_LAST_VERSION,
+                                                PropertyType.BOOLEAN,
+                                                null).setStatic(true).build());
 
         // SIP identifier alias provider identifier
         tenantMap.put(StaticProperties.FEATURE_PROVIDER_ID,
-                      AttributeModelBuilder.build(StaticProperties.FEATURE_PROVIDER_ID, PropertyType.STRING, null)
-                                           .isStatic()
-                                           .get());
+                      new AttributeModelBuilder(StaticProperties.FEATURE_PROVIDER_ID,
+                                                PropertyType.STRING,
+                                                null).setStatic(true).build());
 
         // Required label for minimal display purpose
         tenantMap.put(StaticProperties.FEATURE_LABEL,
-                      AttributeModelBuilder.build(StaticProperties.FEATURE_LABEL, PropertyType.STRING, null)
-                                           .isStatic()
-                                           .get());
+                      new AttributeModelBuilder(StaticProperties.FEATURE_LABEL, PropertyType.STRING, null).setStatic(
+                          true).build());
 
         // Related model name
         tenantMap.put(StaticProperties.FEATURE_MODEL,
-                      AttributeModelBuilder.build(StaticProperties.FEATURE_MODEL, PropertyType.STRING, null)
-                                           .isStatic()
-                                           .get());
+                      new AttributeModelBuilder(StaticProperties.FEATURE_MODEL, PropertyType.STRING, null).setStatic(
+                          true).build());
 
         // // Geometry
         // tenantMap.put(StaticProperties.FEATURE_GEOMETRY, AttributeModelBuilder
@@ -215,20 +210,20 @@ public class AttributeFinder implements IAttributeFinder, ApplicationListener<Ap
 
         // Tags
         tenantMap.put(StaticProperties.FEATURE_TAGS,
-                      AttributeModelBuilder.build(StaticProperties.FEATURE_TAGS, PropertyType.STRING, null)
-                                           .isStatic()
-                                           .get());
+                      new AttributeModelBuilder(StaticProperties.FEATURE_TAGS,
+                                                PropertyType.STRING,
+                                                null).setStatic(true).build());
 
         tenantMap.put(StaticProperties.FEATURE_FILE_RAWDATA_FILENAME,
-                      AttributeModelBuilder.build(StaticProperties.FEATURE_FILE_RAWDATA_FILENAME_PROPERTY_PATH,
-                                                  PropertyType.STRING,
-                                                  null).isStatic().get());
+                      new AttributeModelBuilder(StaticProperties.FEATURE_FILE_RAWDATA_FILENAME_PROPERTY_PATH,
+                                                PropertyType.STRING,
+                                                null).setStatic(true).build());
 
         // Allows to filter on dataset model id when searching for dataobjects
         tenantMap.put(StaticProperties.DATASET_MODEL_NAMES,
-                      AttributeModelBuilder.build(StaticProperties.DATASET_MODEL_NAMES, PropertyType.STRING, null)
-                                           .isInternal()
-                                           .get());
+                      new AttributeModelBuilder(StaticProperties.DATASET_MODEL_NAMES,
+                                                PropertyType.STRING,
+                                                null).setInternal(true).build());
 
         // Register static properties by types
         tenantMap.values().forEach(attModel -> tenantTypeMap.put(attModel.getType(), attModel));

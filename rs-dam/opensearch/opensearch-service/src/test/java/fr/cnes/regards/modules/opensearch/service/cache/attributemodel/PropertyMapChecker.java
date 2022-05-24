@@ -86,9 +86,9 @@ public class PropertyMapChecker {
     @Test
     public void conflict() {
         // Define attributes
-        atts.add(AttributeModelBuilder.build(StaticProperties.FEATURE_TAGS,
-                                             PropertyType.BOOLEAN,
-                                             "Conflictual dynamic tags").get());
+        atts.add(new AttributeModelBuilder(StaticProperties.FEATURE_TAGS,
+                                           PropertyType.BOOLEAN,
+                                           "Conflictual dynamic tags").build());
 
         // Build and get map
         Map<String, AttributeModel> builtMap = getBuiltMap(atts);
@@ -99,8 +99,9 @@ public class PropertyMapChecker {
     public void baseProperty() {
         // Define attributes
         String startDate = "START_DATE";
-        AttributeModel startDateModel = AttributeModelBuilder.build(startDate, PropertyType.DATE_ISO8601, "Start date")
-                                                             .get();
+        AttributeModel startDateModel = new AttributeModelBuilder(startDate,
+                                                                  PropertyType.DATE_ISO8601,
+                                                                  "Start date").build();
         atts.add(startDateModel);
 
         // Build and get map
@@ -117,9 +118,11 @@ public class PropertyMapChecker {
         // Define attributes
         String startDate = "START_DATE";
         String fragment = "fragment";
-        AttributeModel startDateModel = AttributeModelBuilder.build(startDate, PropertyType.DATE_ISO8601, "Start date")
-                                                             .fragment(Fragment.buildFragment(fragment, "description"))
-                                                             .get();
+        AttributeModel startDateModel = new AttributeModelBuilder(startDate,
+                                                                  PropertyType.DATE_ISO8601,
+                                                                  "Start date").setFragment(Fragment.buildFragment(
+            fragment,
+            "description")).build();
         atts.add(startDateModel);
 
         // Build and get map
@@ -137,19 +140,20 @@ public class PropertyMapChecker {
         // Define attributes
         String startDate = "START_DATE";
         String fragment1 = "fragment1";
-        AttributeModel startDateModel = AttributeModelBuilder.build(startDate, PropertyType.DATE_ISO8601, "Start date")
-                                                             .fragment(Fragment.buildFragment(fragment1, "description"))
-                                                             .get();
+        AttributeModel startDateModel = new AttributeModelBuilder(startDate,
+                                                                  PropertyType.DATE_ISO8601,
+                                                                  "Start date").setFragment(Fragment.buildFragment(
+            fragment1,
+            "description")).build();
         atts.add(startDateModel);
 
         // Define conflictual attribute
         String fragment2 = "fragment2";
-        AttributeModel startDateModel2 = AttributeModelBuilder.build(startDate,
-                                                                     PropertyType.DATE_ISO8601,
-                                                                     "Start date 2")
-                                                              .fragment(Fragment.buildFragment(fragment2,
-                                                                                               "description"))
-                                                              .get();
+        AttributeModel startDateModel2 = new AttributeModelBuilder(startDate,
+                                                                   PropertyType.DATE_ISO8601,
+                                                                   "Start date 2").setFragment(Fragment.buildFragment(
+            fragment2,
+            "description")).build();
         atts.add(startDateModel2);
 
         // Build and get map

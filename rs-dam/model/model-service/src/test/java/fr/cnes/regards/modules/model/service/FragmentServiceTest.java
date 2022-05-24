@@ -185,7 +185,7 @@ public class FragmentServiceTest {
     public void deleteNonEmptyFragment() throws ModuleException {
         Long fragmentId = 1L;
         List<AttributeModel> attModels = new ArrayList<>();
-        attModels.add(AttributeModelBuilder.build("MOCK", PropertyType.STRING, "ForTests").withoutRestriction());
+        attModels.add(new AttributeModelBuilder("MOCK", PropertyType.STRING, "ForTests").setNoRestriction().build());
 
         Mockito.when(mockAttModelR.findByFragmentId(fragmentId)).thenReturn(attModels);
 
@@ -204,12 +204,13 @@ public class FragmentServiceTest {
         expected.setId(fragmentId);
 
         List<AttributeModel> attModels = new ArrayList<>();
-        attModels.add(AttributeModelBuilder.build("NAME", PropertyType.BOOLEAN, "ForTests").withoutRestriction());
-        attModels.add(AttributeModelBuilder.build("PROFILE", PropertyType.STRING, "ForTests")
-                                           .withEnumerationRestriction("public", "scientist", "user"));
-        attModels.add(AttributeModelBuilder.build("DATA", PropertyType.DOUBLE_ARRAY, "ForTests")
-                                           .description("physical data")
-                                           .withoutRestriction());
+        attModels.add(new AttributeModelBuilder("NAME", PropertyType.BOOLEAN, "ForTests").setNoRestriction().build());
+        attModels.add(new AttributeModelBuilder("PROFILE", PropertyType.STRING, "ForTests").setEnumerationRestriction(
+            "public",
+            "scientist",
+            "user").build());
+        attModels.add(new AttributeModelBuilder("DATA", PropertyType.DOUBLE_ARRAY, "ForTests").setDescription(
+            "physical data").setNoRestriction().build());
 
         Mockito.when(mockFragmentR.findById(fragmentId)).thenReturn(Optional.of(expected));
         Mockito.when(mockAttModelR.findByFragmentId(fragmentId)).thenReturn(attModels);

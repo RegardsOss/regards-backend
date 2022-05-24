@@ -30,75 +30,102 @@ import org.springframework.util.Assert;
  */
 public final class AttributeModelBuilder {
 
-    /**
-     * Current attribute model
-     */
-    private final AttributeModel attributeModel;
+    private final String name;
 
-    private AttributeModelBuilder(AttributeModel pAttributeModel) {
-        this.attributeModel = pAttributeModel;
-    }
+    private final PropertyType type;
+
+    private final String label;
+
+    private boolean isAlterable = false;
+
+    private boolean isOptional = false;
+
+    private Long id;
+
+    private String description;
+
+    private Fragment fragment;
+
+    private boolean isStatic = false;
+
+    private boolean isInternal = false;
+
+    private AbstractRestriction restriction;
 
     /**
      * Initialize the builder by instanciating a minimal attribute model
      *
-     * @param pName attribute name
-     * @param pType attribute type
+     * @param name  attribute name
+     * @param type  attribute type
      * @param label attribute label
-     * @return initialized builder
      */
-    public static AttributeModelBuilder build(String pName, PropertyType pType, String label) {
-        final AttributeModel am = new AttributeModel();
-        am.setName(pName);
-        am.setType(pType);
-        am.setAlterable(Boolean.FALSE);
-        am.setOptional(Boolean.FALSE);
+    public AttributeModelBuilder(String name, PropertyType type, String label) {
+        this.name = name;
+        this.type = type;
+        this.label = label;
+    }
+
+    /**
+     * Build an AttributeModel using the builder configuration
+     *
+     * @return the AttributeModel
+     */
+    public AttributeModel build() {
+        AttributeModel am = new AttributeModel();
+        am.setName(name);
+        am.setType(type);
         am.setLabel(label);
-        return new AttributeModelBuilder(am);
+        am.setAlterable(isAlterable);
+        am.setOptional(isOptional);
+        am.setId(id);
+        am.setDescription(description);
+        am.setFragment(fragment);
+        am.setDynamic(!isStatic);
+        am.setInternal(isInternal);
+        am.setRestriction(restriction);
+        return am;
     }
 
-    public AttributeModel get() {
-        return attributeModel;
-    }
-
-    public AttributeModelBuilder withId(Long pId) {
-        attributeModel.setId(pId);
+    public AttributeModelBuilder setId(Long id) {
+        this.id = id;
         return this;
     }
 
-    public AttributeModelBuilder description(String pDescription) {
-        attributeModel.setDescription(pDescription);
+    public AttributeModelBuilder setDescription(String description) {
+        this.description = description;
         return this;
     }
 
-    public AttributeModelBuilder isAlterable() {
-        attributeModel.setAlterable(Boolean.TRUE);
+    public AttributeModelBuilder setAlterable(boolean isAlterable) {
+        this.isAlterable = isAlterable;
         return this;
     }
 
-    public AttributeModelBuilder isOptional() {
-        attributeModel.setOptional(Boolean.TRUE);
+    public AttributeModelBuilder setOptional(boolean isOptional) {
+        this.isOptional = isOptional;
         return this;
     }
 
-    public AttributeModelBuilder fragment(Fragment pFragment) {
-        attributeModel.setFragment(pFragment);
+    public AttributeModelBuilder setFragment(Fragment fragment) {
+        this.fragment = fragment;
         return this;
     }
 
-    public AttributeModelBuilder defaultFragment() {
-        attributeModel.setFragment(Fragment.buildDefault());
+    public AttributeModelBuilder setFragmentUsingDefault() {
+        this.fragment = Fragment.buildDefault();
         return this;
     }
 
-    public AttributeModelBuilder isStatic() {
-        attributeModel.setDynamic(false);
+    public AttributeModelBuilder setStatic(boolean isStatic) {
+        this.isStatic = isStatic;
         return this;
     }
 
-    public AttributeModelBuilder isInternal() {
-        attributeModel.setDynamic(false);
-        attributeModel.setInternal(true);
+    public AttributeModelBuilder setInternal(boolean isInternal) {
+        this.isInternal = isInternal;
+        if (isInternal) {
+            this.isStatic = true;
+        }
         return this;
     }
 
@@ -107,43 +134,44 @@ public final class AttributeModelBuilder {
     public AttributeModelBuilder setRestriction(AbstractRestriction restriction) {
         Assert.notNull(restriction, "Restriction is required");
         if (!restriction.supports(this.type)) {
-            throw new IllegalArgumentException("Unsupported restriction "
-                                               + restriction.getType()
-                                               + " for attribute type "
-                                               + restriction.getType());
+            throw new IllegalArgumentException(
+                "Unsupported restriction " + restriction.getType() + " for attribute type " + restriction.getType());
         }
-        attributeModel.setRestriction(pRestriction);
-        return attributeModel;
+        this.restriction = restriction;
+        return this;
     }
 
-    public AttributeModel withEnumerationRestriction(String... pAcceptableValues) {
-        return withRestriction(RestrictionFactory.buildEnumerationRestriction(pAcceptableValues));
+    public AttributeModelBuilder setEnumerationRestriction(String... pAcceptableValues) {
+        return setRestriction(RestrictionFactory.buildEnumerationRestriction(pAcceptableValues));
     }
 
-    public AttributeModel withFloatRangeRestriction(Double pMin,
-                                                    Double pMax,
-                                                    boolean pMinExcluded,
-                                                    boolean pMaxExcluded) {
-        return withRestriction(RestrictionFactory.buildFloatRangeRestriction(pMin, pMax, pMinExcluded, pMaxExcluded));
+    public AttributeModelBuilder setFloatRangeRestriction(Double pMin,
+                                                          Double pMax,
+                                                          boolean pMinExcluded,
+                                                          boolean pMaxExcluded) {
+        return setRestriction(RestrictionFactory.buildFloatRangeRestriction(pMin, pMax, pMinExcluded, pMaxExcluded));
     }
 
-    public AttributeModel withIntegerRangeRestriction(Integer pMin,
-                                                      Integer pMax,
-                                                      boolean pMinExcluded,
-                                                      boolean pMaxExcluded) {
-        return withRestriction(RestrictionFactory.buildIntegerRangeRestriction(pMin, pMax, pMinExcluded, pMaxExcluded));
+    public AttributeModelBuilder setIntegerRangeRestriction(Integer pMin,
+                                                            Integer pMax,
+                                                            boolean pMinExcluded,
+                                                            boolean pMaxExcluded) {
+        return setRestriction(RestrictionFactory.buildIntegerRangeRestriction(pMin, pMax, pMinExcluded, pMaxExcluded));
     }
 
-    public AttributeModel withLongRangeRestriction(Long pMin, Long pMax, boolean pMinExcluded, boolean pMaxExcluded) {
-        return withRestriction(RestrictionFactory.buildLongRangeRestriction(pMin, pMax, pMinExcluded, pMaxExcluded));
+    public AttributeModelBuilder setLongRangeRestriction(Long pMin,
+                                                         Long pMax,
+                                                         boolean pMinExcluded,
+                                                         boolean pMaxExcluded) {
+        return setRestriction(RestrictionFactory.buildLongRangeRestriction(pMin, pMax, pMinExcluded, pMaxExcluded));
     }
 
-    public AttributeModel withoutRestriction() {
-        attributeModel.setRestriction(null);
-        return attributeModel;
+    public AttributeModelBuilder setNoRestriction() {
+        this.restriction = null;
+        return this;
     }
 
-    public AttributeModel withPatternRestriction(String pPattern) {
-        return withRestriction(RestrictionFactory.buildPatternRestriction(pPattern));
+    public AttributeModelBuilder setPatternRestriction(String pPattern) {
+        return setRestriction(RestrictionFactory.buildPatternRestriction(pPattern));
     }
 }

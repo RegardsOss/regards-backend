@@ -131,9 +131,9 @@ public class MultitenantFlattenedAttributeAdapterFactoryEventHandler
             String tenant = pWrapper.getTenant();
             Fragment fragment = new Fragment();
             fragment.setName(amc.getFragmentName());
-            AttributeModel attributeModel = AttributeModelBuilder.build(amc.getAttributeName(),
-                                                                        amc.getPropertyType(),
-                                                                        null).fragment(fragment).get();
+            AttributeModel attributeModel = new AttributeModelBuilder(amc.getAttributeName(),
+                                                                      amc.getPropertyType(),
+                                                                      null).setFragment(fragment).build();
 
             // Use factory algorithm
             factory.registerAttribute(tenant, attributeModel);
@@ -154,9 +154,9 @@ public class MultitenantFlattenedAttributeAdapterFactoryEventHandler
             String tenant = pWrapper.getTenant();
             Fragment fragment = new Fragment();
             fragment.setName(amd.getFragmentName());
-            AttributeModel attributeModel = AttributeModelBuilder.build(amd.getAttributeName(),
-                                                                        amd.getPropertyType(),
-                                                                        null).fragment(fragment).get();
+            AttributeModel attributeModel = new AttributeModelBuilder(amd.getAttributeName(),
+                                                                      amd.getPropertyType(),
+                                                                      null).setFragment(fragment).build();
 
             // Use factory algorithm
             factory.unregisterAttribute(tenant, attributeModel);

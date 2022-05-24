@@ -64,7 +64,7 @@ public class DeleteAttributeIT extends AbstractMultitenantServiceIT {
 
     @Before
     public void setup() throws ModuleException {
-        toBeDeleted = AttributeModelBuilder.build("TO_BE_DELETED", PropertyType.STRING, "del").get();
+        toBeDeleted = new AttributeModelBuilder("TO_BE_DELETED", PropertyType.STRING, "del").build();
         attModelService.createAttribute(toBeDeleted);
     }
 

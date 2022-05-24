@@ -53,7 +53,7 @@ public class ModelIT extends AbstractModelIT {
         final Model model = createModel("MISSION", "Scientist mission collection", EntityType.COLLECTION);
 
         // Create attribute
-        AttributeModel attModel = AttributeModelBuilder.build("NAME", PropertyType.STRING, "ForTests").get();
+        AttributeModel attModel = new AttributeModelBuilder("NAME", PropertyType.STRING, "ForTests").build();
         attModel = saveAttribute(attModel);
 
         // Create model attribute
