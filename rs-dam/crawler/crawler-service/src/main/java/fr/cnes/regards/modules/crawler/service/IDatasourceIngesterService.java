@@ -4,12 +4,11 @@ import fr.cnes.regards.framework.module.rest.exception.InactiveDatasourceExcepti
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.domain.IngestionResult;
+import fr.cnes.regards.modules.crawler.service.exception.FirstFindException;
 import fr.cnes.regards.modules.crawler.service.exception.NotFinishedException;
-import fr.cnes.regards.modules.dam.domain.datasources.plugins.DataSourceException;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author oroussel
@@ -21,10 +20,14 @@ public interface IDatasourceIngesterService {
      *
      * @param dsi datasource ingestion status object
      * @return a summary containing the count of DataObjects ingested from given datasource and the ingestion date
+     * @throws ModuleException             Can be thrown while getting datasource implementation
+     * @throws NotFinishedException        Some issue was encountered while reading all pages from datasource but at
+     *                                     least first read has been successfully done
+     * @throws FirstFindException          Some issue was encountered while reading datasource first page
+     * @throws InactiveDatasourceException Datasource is not active
      */
     Optional<IngestionResult> ingest(String dsi)
-        throws ModuleException, InterruptedException, ExecutionException, DataSourceException, NotFinishedException,
-        InactiveDatasourceException;
+        throws ModuleException, NotFinishedException, FirstFindException, InactiveDatasourceException;
 
     /**
      * Retrieve all {@link DatasourceIngestion}

@@ -1,12 +1,14 @@
 package fr.cnes.regards.modules.crawler.domain;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.Objects;
 
 /**
  * Datasource ingestion entity. Indicates the status of the last and current datsource ingestion.
@@ -74,11 +76,8 @@ public class DatasourceIngestion {
     @Column(name = "error_objects_count")
     private Integer inErrorObjectsCount;
 
-    /**
-     * Last NOT_FINISHED ingestion error page number
-     */
-    @Column(name = "error_page_nb")
-    private Integer errorPageNumber;
+    @Embedded
+    private CrawlingCursor cursor;
 
     /**
      * When status is ERROR, the exception stack trace
@@ -87,8 +86,7 @@ public class DatasourceIngestion {
     @Type(type = "text")
     private String stackTrace;
 
-    @SuppressWarnings("unused")
-    private DatasourceIngestion() {
+    public DatasourceIngestion() {
     }
 
     public DatasourceIngestion(String id) {
@@ -181,42 +179,27 @@ public class DatasourceIngestion {
         this.label = label;
     }
 
-    public Integer getErrorPageNumber() {
-        return errorPageNumber;
+    public CrawlingCursor getCursor() {
+        return cursor;
     }
 
-    public void setErrorPageNumber(Integer errorPageNumber) {
-        this.errorPageNumber = errorPageNumber;
+    public void setCursor(CrawlingCursor cursor) {
+        this.cursor = cursor;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        DatasourceIngestion that = (DatasourceIngestion) o;
+        return Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = (prime * result) + ((id == null) ? 0 : id.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        DatasourceIngestion other = (DatasourceIngestion) obj;
-        if (id == null) {
-            if (other.id != null) {
-                return false;
-            }
-        } else if (!id.equals(other.id)) {
-            return false;
-        }
-        return true;
+        return Objects.hash(id);
     }
 
     @Override
@@ -232,4 +215,12 @@ public class DatasourceIngestion {
                + "]";
     }
 
+    public void setLastEntityDate(OffsetDateTime lastEntityDate) {
+        // this last entity date becomes the previous last entity date of the next ingestion
+        if(cursor == null) {
+            cursor = new CrawlingCursor(lastEntityDate);
+        } else {
+            cursor.setPreviousLastEntityDate(lastEntityDate);
+        }
+    }
 }

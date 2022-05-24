@@ -19,15 +19,13 @@
 package fr.cnes.regards.modules.dam.rest.datasources;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.modules.dam.domain.datasources.plugins.DataSourceException;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDBConnectionPlugin;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDBDataSourcePlugin;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
 
-import java.sql.SQLException;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * For testing purpose
@@ -44,13 +42,12 @@ public class MockDatasourcePlugin implements IDBDataSourcePlugin {
     }
 
     @Override
-    public Page<DataObjectFeature> findAll(String tenant, Pageable pageable, OffsetDateTime date)
-        throws DataSourceException {
+    public List<DataObjectFeature> findAll(String tenant, CrawlingCursor cursor, OffsetDateTime from) {
         return null;
     }
 
     @Override
-    public IDBConnectionPlugin getDBConnection() throws SQLException {
+    public IDBConnectionPlugin getDBConnection() {
         return null;
     }
 

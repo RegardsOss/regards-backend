@@ -21,10 +21,10 @@ package fr.cnes.regards.modules.dam.domain.datasources.plugins;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 /**
  * Class IDataSourcePlugin
@@ -52,26 +52,15 @@ public interface IDataSourcePlugin {
     int getRefreshRate();
 
     /**
-     * Returns a {@link Page} of new entities meeting the paging restriction provided in the {@code Pageable} object.
+     * Returns a {@link List} of new entities meeting the paging restriction provided in the {@code Pageable} object.
      *
-     * @param tenant   tenant to build URN
-     * @param pageable the pagination information
-     * @param date     Allows to filter the new entities created after this date parameter (can be null)
+     * @param tenant tenant to build URN
+     * @param cursor indexation position information
+     * @param from   Allows to filter the new entities created after this date parameter (can be null)
      * @return a page of entities
-     * @throws DataSourceException
+     * @throws DataSourceException in case anything wrong happened
      */
-    Page<DataObjectFeature> findAll(String tenant, Pageable pageable, OffsetDateTime date) throws DataSourceException;
-
-    /**
-     * Returns a {@link Page} of entities meeting the paging restriction provided in the {@code Pageable} object.
-     *
-     * @param tenant   tenant to build URN
-     * @param pageable the pagination information
-     * @return a page of entities
-     * @throws DataSourceException
-     */
-    default Page<DataObjectFeature> findAll(String tenant, Pageable pageable) throws DataSourceException {
-        return this.findAll(tenant, pageable, null);
-    }
+    List<DataObjectFeature> findAll(String tenant, CrawlingCursor cursor, OffsetDateTime from)
+        throws DataSourceException;
 
 }

@@ -22,8 +22,8 @@ import fr.cnes.regards.framework.module.rest.exception.InactiveDatasourceExcepti
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
+import fr.cnes.regards.modules.crawler.service.exception.FirstFindException;
 import fr.cnes.regards.modules.crawler.service.exception.NotFinishedException;
-import fr.cnes.regards.modules.dam.domain.datasources.plugins.DataSourceException;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
@@ -37,8 +37,8 @@ public class IndexerServiceDataSourceDeleteIT extends AbstractIndexerServiceData
 
     @Test
     public void testDeleteByDatasource()
-        throws InactiveDatasourceException, ModuleException, InterruptedException, ExecutionException,
-        DataSourceException, NotFinishedException {
+        throws InactiveDatasourceException, ModuleException, InterruptedException, NotFinishedException,
+        FirstFindException {
         String tenant = runtimeTenantResolver.getTenant();
 
         // Creation
@@ -47,7 +47,7 @@ public class IndexerServiceDataSourceDeleteIT extends AbstractIndexerServiceData
         dsIngestionRepos.save(dsi);
 
         // Ingest datas
-        crawlerService.ingest(dsi.getId()).get();
+        crawlerService.ingest(dsi.getId()).orElseThrow();
 
         // Check ingested datas
         Long datasourceId = dataSourcePluginConf.getId();

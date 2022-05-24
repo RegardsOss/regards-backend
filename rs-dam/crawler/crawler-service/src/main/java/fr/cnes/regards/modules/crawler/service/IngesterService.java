@@ -20,14 +20,15 @@ package fr.cnes.regards.modules.crawler.service;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.module.rest.exception.InactiveDatasourceException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.domain.IngestionResult;
 import fr.cnes.regards.modules.crawler.service.event.DataSourceMessageEvent;
+import fr.cnes.regards.modules.crawler.service.exception.FirstFindException;
 import fr.cnes.regards.modules.crawler.service.exception.NotFinishedException;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDataSourcePlugin;
 import fr.cnes.regards.modules.model.gson.ModelJsonReadyEvent;
@@ -65,7 +66,7 @@ public class IngesterService implements IHandler<PluginConfEvent> {
      * An atomic boolean permitting to take into account a new data source creation or update while managing current ones
      * (or inverse)
      */
-    private static AtomicBoolean doItAgain = new AtomicBoolean(false);
+    private static final AtomicBoolean doItAgain = new AtomicBoolean(false);
 
     @Autowired
     private ITenantResolver tenantResolver;
@@ -102,14 +103,13 @@ public class IngesterService implements IHandler<PluginConfEvent> {
     }
 
     @Override
-    public void handle(TenantWrapper<PluginConfEvent> wrapper) {
+    public void handle(String tenant, PluginConfEvent event) {
         try {
-            runtimeTenantResolver.forceTenant(wrapper.getTenant());
+            runtimeTenantResolver.forceTenant(tenant);
             // If it concerns a data source, manage it
-            if (wrapper.getContent().getPluginTypes().contains(IDataSourcePlugin.class.getName())) {
-                if (!this.consumeOnlyMode) {
-                    this.manage();
-                }
+            if (event.getPluginTypes().contains(IDataSourcePlugin.class.getName()) && !this.consumeOnlyMode) {
+                this.manage();
+
             }
         } catch (RuntimeException t) {
             LOGGER.error("Cannot manage plugin conf event message", t);
@@ -148,25 +148,12 @@ public class IngesterService implements IHandler<PluginConfEvent> {
                             String dsId = dsIngestionOpt.get();
                             atLeastOneIngestionDone = true;
                             try {
-                                Optional<IngestionResult> summary = datasourceIngester.ingest(dsId);
-                                if (summary.isPresent()) {
-                                    dsIngestionService.updateIngesterResult(dsId, summary.get());
-                                }
-                            } catch (InactiveDatasourceException ide) {
-                                LOGGER.error(ide.getMessage(), ide);
-                                dsIngestionService.setInactive(dsId, ide.getMessage());
-                            } catch (NotFinishedException nfe) {
-                                LOGGER.error(nfe.getMessage(), nfe);
-                                dsIngestionService.setNotFinished(dsId, nfe);
+                                Optional<IngestionResult> summary = ingest(dsId);
+                                summary.ifPresent(ingestionResult -> dsIngestionService.updateIngesterResult(dsId,
+                                                                                                             ingestionResult));
                             } catch (Exception e) {
                                 // Catch all other possible exceptions to set ingestion to error status
-                                LOGGER.error(e.getMessage(), e);
-                                try (StringWriter sw = new StringWriter()) {
-                                    e.printStackTrace(new PrintWriter(sw));
-                                    dsIngestionService.setError(dsId, sw.toString());
-                                } catch (IOException e1) {
-                                    LOGGER.error(e.getMessage(), e);
-                                }
+                                setDatasourceIngestInError(dsId, e);
                             }
                         }
                     }
@@ -179,6 +166,33 @@ public class IngesterService implements IHandler<PluginConfEvent> {
             managing.set(false);
         }
         LOGGER.info("...IngesterService.manage() ended.");
+    }
+
+    private Optional<IngestionResult> ingest(String dsId) {
+        Optional<IngestionResult> summary = Optional.empty();
+        try {
+            summary = datasourceIngester.ingest(dsId);
+        } catch (InactiveDatasourceException ide) {
+            LOGGER.error(ide.getMessage(), ide);
+            dsIngestionService.setInactive(dsId, ide.getMessage());
+        } catch (ModuleException | FirstFindException e) {
+            // ModuleException can only be thrown before we start reading the datasource so it's simply an error
+            setDatasourceIngestInError(dsId, e);
+        } catch (NotFinishedException nfe) {
+            LOGGER.error(nfe.getMessage(), nfe);
+            dsIngestionService.setNotFinished(dsId, nfe);
+        }
+        return summary;
+    }
+
+    private void setDatasourceIngestInError(String dsId, Exception e) {
+        LOGGER.error(e.getMessage(), e);
+        try (StringWriter sw = new StringWriter()) {
+            e.printStackTrace(new PrintWriter(sw));
+            dsIngestionService.setError(dsId, sw.toString());
+        } catch (IOException e1) {
+            LOGGER.error(e.getMessage(), e);
+        }
     }
 
     /**

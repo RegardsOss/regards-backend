@@ -9,17 +9,23 @@ import java.time.OffsetDateTime;
  */
 public class IngestionResult {
 
+    private final OffsetDateTime lastEntityDate;
+
     private OffsetDateTime date;
 
-    private int savedObjectsCount = 0;
+    private final int savedObjectsCount;
 
-    private int inErrorObjectsCount = 0;
+    private final int inErrorObjectsCount;
 
-    public IngestionResult(OffsetDateTime date, int saveObjectsCount, int inErrorObjectsCount) {
+    public IngestionResult(OffsetDateTime date,
+                           int saveObjectsCount,
+                           int inErrorObjectsCount,
+                           OffsetDateTime lastEntityDate) {
         super();
         this.date = date;
         this.savedObjectsCount = saveObjectsCount;
         this.inErrorObjectsCount = inErrorObjectsCount;
+        this.lastEntityDate = lastEntityDate;
     }
 
     public OffsetDateTime getDate() {
@@ -36,5 +42,9 @@ public class IngestionResult {
 
     public int getInErrorObjectsCount() {
         return inErrorObjectsCount;
+    }
+
+    public OffsetDateTime getLastEntityDate() {
+        return lastEntityDate;
     }
 }

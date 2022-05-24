@@ -18,12 +18,18 @@
  */
 package fr.cnes.regards.modules.indexer.dao;
 
+import java.io.Serial;
+import java.io.Serializable;
+
 /**
  * Object permitting to know what IEsRepository.saveBulk() method has really done.
  *
  * @author sbinda
  */
-public class BulkSaveLightResult {
+public class BulkSaveLightResult implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 8648391036878877723L;
 
     private int savedDocsCount = 0;
 
@@ -31,14 +37,6 @@ public class BulkSaveLightResult {
 
     public BulkSaveLightResult() {
         super();
-    }
-
-    public void addSavedDocId() {
-        savedDocsCount++;
-    }
-
-    public void addInErrorDoc(String docId, Exception e) {
-        inErrorDocsCount++;
     }
 
     public int getSavedDocsCount() {

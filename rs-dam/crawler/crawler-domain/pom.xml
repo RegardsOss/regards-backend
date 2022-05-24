@@ -56,5 +56,9 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-commons-regards</artifactId>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.dam</groupId>
+            <artifactId>dam-domain</artifactId>
+        </dependency>
+    </dependencies>
 </project>

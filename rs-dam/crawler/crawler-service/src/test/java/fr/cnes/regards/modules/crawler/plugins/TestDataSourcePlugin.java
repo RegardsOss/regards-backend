@@ -8,11 +8,9 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.DataSourceException;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDataSourcePlugin;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
+import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
 import fr.cnes.regards.modules.model.domain.Model;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -50,11 +48,11 @@ public class TestDataSourcePlugin implements IDataSourcePlugin {
     }
 
     @Override
-    public Page<DataObjectFeature> findAll(String tenant, Pageable pageable, OffsetDateTime date)
+    public List<DataObjectFeature> findAll(String tenant, CrawlingCursor cursor, OffsetDateTime from)
         throws DataSourceException {
         File file = Paths.get("src", "test", "resources", "validation", "json", "validationData.json").toFile();
         List<DataObjectFeature> content;
-        TypeToken<List<DataObjectFeature>> typeToken = new TypeToken<List<DataObjectFeature>>() {
+        TypeToken<List<DataObjectFeature>> typeToken = new TypeToken<>() {
 
         };
         try {
@@ -62,6 +60,6 @@ public class TestDataSourcePlugin implements IDataSourcePlugin {
         } catch (FileNotFoundException e) {
             throw new DataSourceException("Could not find the file for validation data 1", e);
         }
-        return new PageImpl<>(content, pageable, content.size());
+        return content;
     }
 }

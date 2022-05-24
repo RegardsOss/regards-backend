@@ -19,9 +19,9 @@
 package fr.cnes.regards.modules.crawler.service;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.InactiveDatasourceException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
@@ -34,9 +34,10 @@ import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.domain.IngestionResult;
 import fr.cnes.regards.modules.crawler.domain.IngestionStatus;
 import fr.cnes.regards.modules.crawler.service.exception.NotFinishedException;
-import fr.cnes.regards.modules.dam.domain.datasources.plugins.DataSourceException;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDataSourcePlugin;
+import fr.cnes.regards.modules.indexer.dao.BulkSaveLightResult;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
+import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import org.slf4j.Logger;
@@ -104,7 +105,7 @@ public class DatasourceIngestionService {
         List<PluginConfiguration> pluginConfs = pluginService.getPluginConfigurationsByType(IDataSourcePlugin.class)
                                                              .stream()
                                                              .filter(PluginConfiguration::isActive)
-                                                             .collect(Collectors.toList());
+                                                             .toList();
 
         // Add DatasourceIngestion for unmanaged datasource with immediate next planned ingestion date
         pluginConfs.stream()
@@ -119,7 +120,7 @@ public class DatasourceIngestionService {
         dsIngestionsMap.keySet()
                        .stream()
                        .filter(id -> !pluginService.exists(id))
-                       .peek(id -> this.planDatasourceDataObjectsDeletion(currentTenant, id))
+                       .map(id -> this.planDatasourceDataObjectsDeletion(currentTenant, id))
                        .forEach(dsIngestionRepos::deleteById);
         // For previously ingested datasources, compute next planned ingestion date
         pluginConfs.forEach(pluginConf -> {
@@ -154,16 +155,8 @@ public class DatasourceIngestionService {
 
     /**
      * Launch ingestion associated to the given {@link DatasourceIngestion}
-     *
-     * @param dsIngestionId
-     * @param summary
-     * @throws NotFinishedException
-     * @throws DataSourceException
-     * @throws ModuleException
-     * @throws InactiveDatasourceException
      */
-    public void updateIngesterResult(String dsIngestionId, IngestionResult summary)
-        throws NotFinishedException, DataSourceException, InactiveDatasourceException, ModuleException {
+    public void updateIngesterResult(String dsIngestionId, IngestionResult summary) {
         Optional<DatasourceIngestion> oDsIngestion = dsIngestionRepos.findById(dsIngestionId);
         if (oDsIngestion.isPresent()) {
             DatasourceIngestion dsIngestion = oDsIngestion.get();
@@ -178,6 +171,10 @@ public class DatasourceIngestionService {
             dsIngestion.setLastIngestDate(summary.getDate());
             // To avoid redoing an ingestion in this "do...while" (must be at next call to manage)
             dsIngestion.setNextPlannedIngestDate(null);
+            // To avoid redoing an ingestion from beginning in case where plugin are date optimized
+            if(summary.getLastEntityDate() != null) {
+                dsIngestion.setLastEntityDate(summary.getLastEntityDate());
+            }
             // Save ingestion status
             sendNotificationSummary(dsIngestionRepos.save(dsIngestion));
         } else {
@@ -217,20 +214,30 @@ public class DatasourceIngestionService {
     }
 
     public void setNotFinished(String dsIngestionId, NotFinishedException notFinishedException) {
+        CrawlingCursor errorCursor = notFinishedException.getErrorCursor();
+        BulkSaveLightResult partialSaveResult = notFinishedException.getSaveResult();
+        Throwable notFinishedCause = notFinishedException.getCause();
+        setNotFinished(dsIngestionId, errorCursor, partialSaveResult, notFinishedCause);
+    }
+
+    private void setNotFinished(String dsIngestionId,
+                                CrawlingCursor errorCursor,
+                                BulkSaveLightResult partialSaveResult,
+                                Throwable notFinishedCause) {
         Optional<DatasourceIngestion> oDsIngestion = dsIngestionRepos.findById(dsIngestionId);
         if (oDsIngestion.isPresent()) {
             DatasourceIngestion dsIngestion = oDsIngestion.get();
             dsIngestion.setStatus(IngestionStatus.NOT_FINISHED);
-            dsIngestion.setErrorPageNumber(notFinishedException.getPageNumber());
+            dsIngestion.setCursor(errorCursor);
             // and log stack trace into database
             StringWriter sw = new StringWriter();
-            notFinishedException.getCause().printStackTrace(new PrintWriter(sw));
+            notFinishedCause.printStackTrace(new PrintWriter(sw));
             String stackTrace = dsIngestion.getStackTrace() == null ?
                 sw.toString() :
-                dsIngestion.getStackTrace() + "\n" + sw.toString();
+                dsIngestion.getStackTrace() + "\n" + sw;
             dsIngestion.setStackTrace(stackTrace);
-            dsIngestion.setSavedObjectsCount(notFinishedException.getSaveResult().getSavedDocsCount());
-            dsIngestion.setInErrorObjectsCount(notFinishedException.getSaveResult().getInErrorDocsCount());
+            dsIngestion.setSavedObjectsCount(partialSaveResult.getSavedDocsCount());
+            dsIngestion.setInErrorObjectsCount(partialSaveResult.getInErrorDocsCount());
             dsIngestion.setNextPlannedIngestDate(null);
             sendNotificationSummary(dsIngestionRepos.save(dsIngestion));
         } else {
@@ -238,23 +245,19 @@ public class DatasourceIngestionService {
         }
     }
 
-    public Optional<DatasourceIngestion> addMessageToStackTrace(String dsId, String newMessage) {
+    public void addMessageToStackTrace(String dsId, String newMessage) {
         Optional<DatasourceIngestion> dsiOpt = dsIngestionRepos.findById(dsId);
         if (dsiOpt.isPresent()) {
             DatasourceIngestion dsi = dsiOpt.get();
             dsi.setStackTrace(dsi.getStackTrace() == null ? newMessage : dsi.getStackTrace() + "\n" + newMessage);
-            return Optional.of(dsIngestionRepos.save(dsi));
+            dsIngestionRepos.save(dsi);
         }
-        return Optional.empty();
     }
 
     /**
      * Create a task to launch datasource data objects deletion later (use a thread pool of size 1)
-     *
-     * @param tenant
-     * @param dataSourceId
      */
-    private void planDatasourceDataObjectsDeletion(String tenant, String dataSourceId) {
+    private String planDatasourceDataObjectsDeletion(String tenant, String dataSourceId) {
         threadPoolExecutor.submit(() -> {
             try {
                 LOGGER.info("Removing all data objects associated to data source {}...", dataSourceId);
@@ -267,13 +270,15 @@ public class DatasourceIngestionService {
                 LOGGER.error("...Cannot remove data objects associated to data source", e);
             }
         });
+        return dataSourceId;
     }
 
     /**
      * Compute next ingestion planned date if needed in its own transaction to prevent making
      * updateAndCleanTenantDatasourceIngestions failing and rollbacking its transaction
      *
-     * @throws NotAvailablePluginConfigurationException
+     * @throws NotAvailablePluginConfigurationException from {@link fr.cnes.regards.framework.modules.plugins.service.PluginService#getPlugin(String, IPluginParam...)}
+     * @throws ModuleException                          from {@link fr.cnes.regards.framework.modules.plugins.service.PluginService#getPlugin(String, IPluginParam...)}
      */
     private void updatePlannedDate(DatasourceIngestion dsIngestion)
         throws ModuleException, NotAvailablePluginConfigurationException {
@@ -281,25 +286,28 @@ public class DatasourceIngestionService {
         // Take into account ONLY data source with null nextPlannedIngestDate
         if (dsIngestion.getNextPlannedIngestDate() == null) {
             switch (dsIngestion.getStatus()) {
-                case ERROR: // last ingest in error, do not launch as soon as possible, if it is the only ingestion, user
+                case ERROR, NOT_FINISHED -> {
+                    // ERROR: last ingest in error, do not launch as soon as possible, if it is the only ingestion, user
                     // may not have time to see the error
-                case NOT_FINISHED: // last ingest hasn't finished because of Datasource or Elasticsearch, no need no
+                    // NOT_FINISHED: last ingest hasn't finished because of Datasource or Elasticsearch, no need to
                     // relaunch now, it will probably fails again
                     OffsetDateTime nextPlannedIngestDate = OffsetDateTime.now()
                                                                          .withOffsetSameInstant(ZoneOffset.UTC)
                                                                          .plus(refreshRate, ChronoUnit.SECONDS);
                     dsIngestion.setNextPlannedIngestDate(nextPlannedIngestDate);
                     dsIngestionRepos.save(dsIngestion);
-                    break;
-                case FINISHED: // last ingest + refreshRate
-                case FINISHED_WITH_WARNINGS: // last ingest + refreshRate
+                }
+                case FINISHED, FINISHED_WITH_WARNINGS -> { // last ingest + refreshRate
                     dsIngestion.setNextPlannedIngestDate(dsIngestion.getLastIngestDate()
                                                                     .plus(refreshRate, ChronoUnit.SECONDS));
                     dsIngestionRepos.save(dsIngestion);
-                    break;
-                case STARTED: // Already in progress
-                case NEW: // dsIngestion just been created with a next planned date as now() ie launch as soon as possible
-                default:
+                }
+                // STARTED: Already in progress
+                // NEW: dsIngestion just been created with a next planned date as now() ie launch as soon as possible
+                case STARTED, NEW -> {
+                }
+                default -> {
+                }
             }
         }
     }
@@ -316,42 +324,30 @@ public class DatasourceIngestionService {
                                                             MAX_NOTIFICATION_LENGTH)) + " ... [truncated]";
             }
             switch (dsIngestion.getStatus()) {
-                case ERROR:
-                    notifClient.notify(String.format("Indexation error. Cause : %s", stackTrace),
-                                       title,
-                                       NotificationLevel.ERROR,
-                                       DefaultRole.PROJECT_ADMIN);
-                    break;
-                case FINISHED_WITH_WARNINGS:
-                    notifClient.notify(String.format("Indexation ends with %s new indexed objects and %s errors.",
-                                                     dsIngestion.getSavedObjectsCount(),
-                                                     dsIngestion.getInErrorObjectsCount()),
-                                       title,
-                                       NotificationLevel.WARNING,
-                                       DefaultRole.PROJECT_ADMIN);
-                    break;
-                case NOT_FINISHED:
-                    notifClient.notify(String.format(
-                                           "Indexation ends with %s new indexed objects and %s errors but is not completely terminated.\n"
-                                           + "Something went wrong concerning datasource or Elasticsearch.\nAssociated datasets "
-                                           + "haven't been updated, ingestion may be manualy re-scheduled\nto be laucnhed as "
-                                           + "soon as possible or will continue at its planned date",
-                                           dsIngestion.getSavedObjectsCount(),
-                                           dsIngestion.getInErrorObjectsCount()),
-                                       title,
-                                       NotificationLevel.WARNING,
-                                       DefaultRole.PROJECT_ADMIN);
-                    break;
-                default:
-                    notifClient.notify(String.format("Indexation finished. %s new objects indexed. %s objects in error.",
-                                                     dsIngestion.getSavedObjectsCount(),
-                                                     dsIngestion.getInErrorObjectsCount()),
-                                       title,
-                                       NotificationLevel.INFO,
-                                       DefaultRole.PROJECT_ADMIN);
-                    break;
+                case ERROR -> notifClient.notify(String.format("Indexation error. Cause : %s", stackTrace),
+                                                 title,
+                                                 NotificationLevel.ERROR,
+                                                 DefaultRole.PROJECT_ADMIN);
+                case FINISHED_WITH_WARNINGS -> notifClient.notify(String.format(
+                    "Indexation ends with %s new indexed objects and %s errors.",
+                    dsIngestion.getSavedObjectsCount(),
+                    dsIngestion.getInErrorObjectsCount()), title, NotificationLevel.WARNING, DefaultRole.PROJECT_ADMIN);
+                case NOT_FINISHED -> notifClient.notify(String.format("""
+                                                                          Indexation ends with %s new indexed objects and %s errors but is not completely terminated.
+                                                                                     Something went wrong concerning datasource or Elasticsearch.
+                                                                          Associated datasets haven't been updated, ingestion may be manually re-scheduled
+                                                                          to be launched as soon as possible or will continue at its planned date
+                                                                          """,
+                                                                      dsIngestion.getSavedObjectsCount(),
+                                                                      dsIngestion.getInErrorObjectsCount()),
+                                                        title,
+                                                        NotificationLevel.WARNING,
+                                                        DefaultRole.PROJECT_ADMIN);
+                default -> notifClient.notify(String.format(
+                    "Indexation finished. %s new objects indexed. %s objects in error.",
+                    dsIngestion.getSavedObjectsCount(),
+                    dsIngestion.getInErrorObjectsCount()), title, NotificationLevel.INFO, DefaultRole.PROJECT_ADMIN);
             }
         }
     }
-
 }

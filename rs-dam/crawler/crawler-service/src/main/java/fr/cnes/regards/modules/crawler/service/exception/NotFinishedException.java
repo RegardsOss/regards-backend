@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.crawler.service.exception;
 
 import fr.cnes.regards.modules.indexer.dao.BulkSaveLightResult;
+import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
 
 /**
  * Exception used to manage a problem with datasource plugin or Elasticsearch during an ingestion by permitting
@@ -30,19 +31,19 @@ public class NotFinishedException extends Exception {
 
     private final BulkSaveLightResult saveResult;
 
-    private final int pageNumber;
+    private final CrawlingCursor errorCursor;
 
-    public NotFinishedException(Throwable cause, BulkSaveLightResult saveResult, int pageNumber) {
+    public NotFinishedException(Throwable cause, BulkSaveLightResult saveResult, CrawlingCursor errorCursor) {
         super(cause);
         this.saveResult = saveResult;
-        this.pageNumber = pageNumber;
+        this.errorCursor = errorCursor;
     }
 
     public BulkSaveLightResult getSaveResult() {
         return saveResult;
     }
 
-    public int getPageNumber() {
-        return pageNumber;
+    public CrawlingCursor getErrorCursor() {
+        return errorCursor;
     }
 }
