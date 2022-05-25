@@ -42,12 +42,10 @@ public class SetAdapter<E> extends TypeAdapter<Set<E>> {
     public static final TypeAdapterFactory FACTORY = new TypeAdapterFactory() {
 
         @Override
-        public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-            Class<T> rawType = (Class<T>) type.getRawType();
-            if (rawType != Set.class || !(type instanceof ParameterizedType)) {
+        public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> typeToken) {
+            if (typeToken.getRawType() != Set.class || !(typeToken.getType() instanceof final ParameterizedType parameterizedType)) {
                 return null;
             }
-            final ParameterizedType parameterizedType = (ParameterizedType) type.getType();
             final Type actualType = parameterizedType.getActualTypeArguments()[0];
             final TypeAdapter<?> adapter = gson.getAdapter(TypeToken.get(actualType));
             return new SetAdapter(adapter);
