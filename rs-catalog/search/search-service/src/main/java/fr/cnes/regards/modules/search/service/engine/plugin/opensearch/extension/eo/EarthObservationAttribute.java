@@ -28,6 +28,8 @@ import java.util.Optional;
 public enum EarthObservationAttribute {
     PRODUCT_TYPE("productType"),
 
+    CREATION_DATE("creationDate"),
+
     DOI("doi"),
 
     PLATFORM("platform"),

@@ -65,7 +65,8 @@ public class GeoJsonEarthObservationPropertiesBuilder {
                                EarthObservationAttribute.PARENT_IDENTIFIER,
                                EarthObservationAttribute.DOI,
                                EarthObservationAttribute.PRODUCTION_STATUS,
-                               EarthObservationAttribute.AVAILABILITY_TIME);
+                               EarthObservationAttribute.AVAILABILITY_TIME,
+                               EarthObservationAttribute.CREATION_DATE);
     }
 
     /**
