@@ -137,7 +137,7 @@ public abstract class AbstractRegardsServiceIT {
      * <b>Warning : subscribers may manipulate tenant so call this method before all others.</b>
      */
     protected void simulateApplicationReadyEvent() {
-        springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class), null, null));
+        springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class), null, null, null));
     }
 
     /**
@@ -145,7 +145,7 @@ public abstract class AbstractRegardsServiceIT {
      * <b>Warning : subscribers may manipulate tenant so call this method before all others.</b>
      */
     protected void simulateApplicationStartedEvent() {
-        springPublisher.publishEvent(new ApplicationStartedEvent(Mockito.mock(SpringApplication.class), null, null));
+        springPublisher.publishEvent(new ApplicationStartedEvent(Mockito.mock(SpringApplication.class), null, null, null));
     }
 
     /**

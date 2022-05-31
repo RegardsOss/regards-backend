@@ -90,7 +90,7 @@ public class JobServiceIT {
             subscriber.subscribeTo(JobEvent.class, jobHandler);
             subscriptionsDone = true;
         }
-        springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class), null, null));
+        springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class), null, null, null));
     }
 
     @Test

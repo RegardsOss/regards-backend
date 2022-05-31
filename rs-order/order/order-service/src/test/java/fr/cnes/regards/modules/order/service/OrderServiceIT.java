@@ -177,7 +177,7 @@ public class OrderServiceIT {
     public void init() {
         clean();
 
-        eventPublisher.publishEvent(new ApplicationStartedEvent(Mockito.mock(SpringApplication.class), null, null));
+        eventPublisher.publishEvent(new ApplicationStartedEvent(Mockito.mock(SpringApplication.class), null, null, null));
 
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
         Project project = new Project();

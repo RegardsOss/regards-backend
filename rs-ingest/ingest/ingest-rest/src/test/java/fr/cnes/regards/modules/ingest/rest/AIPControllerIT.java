@@ -125,7 +125,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         ingestServiceTest.init();
 
         // resend the event of AppReady to reinit default data
-        springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class), null, null));
+        springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class), null, null, null));
     }
 
     public void createAIP(String providerId,
