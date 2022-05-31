@@ -2,6 +2,7 @@ package fr.cnes.regards.framework.jsoniter;
 
 import com.google.gson.Gson;
 import com.jsoniter.JsonIterator;
+import com.jsoniter.spi.JsoniterSpi;
 import fr.cnes.regards.modules.dam.domain.entities.Collection;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
@@ -28,6 +29,7 @@ public class IIndexableJsoniterParserTest {
 
     @BeforeClass
     public static void setupJsoniter() {
+        JsoniterSpi.setCurrentConfig(new IIndexableJsoniterConfig());
         jsoniterDecoderRegisterer = new JsoniterDecoderRegisterer(name -> {
             switch (name) {
                 case "Code":
