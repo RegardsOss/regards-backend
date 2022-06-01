@@ -122,7 +122,21 @@ public class StepPropertyInfo {
 
     @Override
     public String toString() {
-        return "StepPropertyInfo{" + "stepType=" + stepType + ", state=" + state + ", property='" + property + '\''
-            + ", value='" + value + '\'' + ", inputRelated=" + inputRelated + ", outputRelated=" + outputRelated + '}';
+        return "StepPropertyInfo{"
+               + "stepType="
+               + stepType
+               + ", state="
+               + state
+               + ", property='"
+               + property
+               + '\''
+               + ", value='"
+               + value
+               + '\''
+               + ", inputRelated="
+               + inputRelated
+               + ", outputRelated="
+               + outputRelated
+               + '}';
     }
 }

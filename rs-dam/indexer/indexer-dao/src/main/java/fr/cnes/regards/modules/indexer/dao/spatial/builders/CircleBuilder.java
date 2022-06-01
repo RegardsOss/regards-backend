@@ -104,8 +104,9 @@ public class CircleBuilder extends ShapeBuilder<Circle, org.elasticsearch.geomet
             return true;
         } else if (obj != null && this.getClass() == obj.getClass()) {
             CircleBuilder other = (CircleBuilder) obj;
-            return Objects.equals(this.center, other.center) && Objects.equals(this.radius, other.radius)
-                && Objects.equals(this.unit.ordinal(), other.unit.ordinal());
+            return Objects.equals(this.center, other.center)
+                   && Objects.equals(this.radius, other.radius)
+                   && Objects.equals(this.unit.ordinal(), other.unit.ordinal());
         } else {
             return false;
         }

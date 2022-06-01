@@ -119,8 +119,11 @@ public class BoundaryBoxCriterion implements ICriterion {
             return false;
         }
         BoundaryBoxCriterion crit = (BoundaryBoxCriterion) o;
-        return (crit.getMinX() == this.getMinX()) && (crit.getMinY() == this.getMinY()) && (crit.getMaxX()
-            == this.getMaxX()) && (crit.getMaxY() == this.getMaxY());
+        return (crit.getMinX() == this.getMinX())
+               && (crit.getMinY() == this.getMinY())
+               && (crit.getMaxX()
+                   == this.getMaxX())
+               && (crit.getMaxY() == this.getMaxY());
     }
 
 }

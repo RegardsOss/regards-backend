@@ -165,8 +165,21 @@ public class DynamicTenantSetting {
 
     @Override
     public String toString() {
-        return "DynamicTenantSetting{" + "name='" + name + '\'' + ", description='" + description + '\'' + ", "
-            + "value='" + value + '\'' + ", defaultValue='" + defaultValue + '\'' + '}';
+        return "DynamicTenantSetting{"
+               + "name='"
+               + name
+               + '\''
+               + ", description='"
+               + description
+               + '\''
+               + ", "
+               + "value='"
+               + value
+               + '\''
+               + ", defaultValue='"
+               + defaultValue
+               + '\''
+               + '}';
     }
 
 }

@@ -54,8 +54,9 @@ public class DoubleRangeValidator extends AbstractPropertyValidator {
 
     @Override
     public boolean supports(Class<?> clazz) {
-        return clazz == DoubleProperty.class || clazz == DoubleArrayProperty.class
-            || clazz == DoubleIntervalProperty.class;
+        return clazz == DoubleProperty.class
+               || clazz == DoubleArrayProperty.class
+               || clazz == DoubleIntervalProperty.class;
     }
 
     @Override

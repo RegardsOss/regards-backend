@@ -11,7 +11,7 @@ public class DefaultAcceptanceModeSettingCustomizer implements IDynamicTenantSet
     @Override
     public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
         return isProperValue(dynamicTenantSetting.getDefaultValue()) && (dynamicTenantSetting.getValue() == null
-            || isProperValue(dynamicTenantSetting.getValue()));
+                                                                         || isProperValue(dynamicTenantSetting.getValue()));
     }
 
     @Override

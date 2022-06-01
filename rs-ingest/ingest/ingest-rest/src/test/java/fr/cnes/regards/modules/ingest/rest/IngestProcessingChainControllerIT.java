@@ -98,11 +98,11 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
                                                                                                   .description(
                                                                                                       "Ingestion processing name")));
 
-        ResultActions resultActions = performDefaultGet(
-            IngestProcessingChainController.TYPE_MAPPING + IngestProcessingChainController.EXPORT_PATH,
-            requestBuilderCustomizer,
-            "Default processing chain should be exported",
-            IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
+        ResultActions resultActions = performDefaultGet(IngestProcessingChainController.TYPE_MAPPING
+                                                        + IngestProcessingChainController.EXPORT_PATH,
+                                                        requestBuilderCustomizer,
+                                                        "Default processing chain should be exported",
+                                                        IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL);
         assertMediaType(resultActions, MediaType.APPLICATION_JSON);
         String chain = payload(resultActions);
         Assert.assertNotNull(chain);
@@ -116,11 +116,11 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
         documentFileRequestParameters(requestBuilderCustomizer);
 
-        performDefaultFileUpload(
-            IngestProcessingChainController.TYPE_MAPPING + IngestProcessingChainController.IMPORT_PATH,
-            filePath,
-            requestBuilderCustomizer,
-            "Should be able to import valid test processing chain");
+        performDefaultFileUpload(IngestProcessingChainController.TYPE_MAPPING
+                                 + IngestProcessingChainController.IMPORT_PATH,
+                                 filePath,
+                                 requestBuilderCustomizer,
+                                 "Should be able to import valid test processing chain");
     }
 
     private void documentFileRequestParameters(RequestBuilderCustomizer requestBuilderCustomizer) {
@@ -245,11 +245,11 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
 
         // Define expectations
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
-        performDefaultFileUpload(
-            IngestProcessingChainController.TYPE_MAPPING + IngestProcessingChainController.IMPORT_PATH,
-            filePath,
-            requestBuilderCustomizer,
-            "Should be able to import valid test processing chain");
+        performDefaultFileUpload(IngestProcessingChainController.TYPE_MAPPING
+                                 + IngestProcessingChainController.IMPORT_PATH,
+                                 filePath,
+                                 requestBuilderCustomizer,
+                                 "Should be able to import valid test processing chain");
 
         RequestBuilderCustomizer getCustomizer = customizer().expectStatusOk();
         getCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation.parameterWithName(

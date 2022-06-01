@@ -101,8 +101,10 @@ public class SearchRequest {
     public boolean hasSearchParameters() {
         if ((searchParameters != null) && !searchParameters.isEmpty()) {
             for (Entry<String, List<String>> param : searchParameters.entrySet()) {
-                if (!FACET_PARAMETER.equals(param.getKey()) && !SORT_PARAMETER.equals(param.getKey()) && (
-                    param.getValue() != null) && !param.getValue().isEmpty()) {
+                if (!FACET_PARAMETER.equals(param.getKey())
+                    && !SORT_PARAMETER.equals(param.getKey())
+                    && (param.getValue() != null)
+                    && !param.getValue().isEmpty()) {
                     for (String value : param.getValue()) {
                         if ((value != null) && !value.isEmpty()) {
                             return true;

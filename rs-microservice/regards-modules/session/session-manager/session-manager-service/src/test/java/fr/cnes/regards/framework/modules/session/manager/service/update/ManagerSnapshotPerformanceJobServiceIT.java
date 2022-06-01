@@ -82,7 +82,7 @@ public class ManagerSnapshotPerformanceJobServiceIT extends AbstractManagerServi
         long start = System.currentTimeMillis();
         long timeout = 200000L;
         LOGGER.info("Launching performance test to create Sessions and Sources Aggregations from {} SessionSteps from "
-                        + "{} different sources", nbSessionSteps, nbSessionSteps);
+                    + "{} different sources", nbSessionSteps, nbSessionSteps);
         managerSnapshotJobService.scheduleJob();
 
         // wait for job to be in success state
@@ -92,7 +92,7 @@ public class ManagerSnapshotPerformanceJobServiceIT extends AbstractManagerServi
                          new JobStatus[] { JobStatus.SUCCEEDED });
         LOGGER.info(
             "Performance test handled in {}ms to create Sessions and Sources Aggregations from {} SessionSteps from {} different "
-                + "sources",
+            + "sources",
             System.currentTimeMillis() - start,
             nbSessionSteps,
             nbSessionSteps);

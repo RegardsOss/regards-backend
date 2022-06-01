@@ -229,7 +229,7 @@ public class AgentSnapshotService {
             previousValue = "0";
         }
         if (type.equals(StepPropertyEventTypeEnum.INC) && (NumberUtils.isCreatable(previousValue)
-            && NumberUtils.isCreatable(value))) {
+                                                           && NumberUtils.isCreatable(value))) {
             // increment parameters (in/out, state, property)
             calculateDifferences(sessionStep,
                                  stepPropertyUpdateRequestInfo,
@@ -238,7 +238,7 @@ public class AgentSnapshotService {
                                  NumberUtils.toLong(value));
 
         } else if (type.equals(StepPropertyEventTypeEnum.DEC) && (NumberUtils.isCreatable(previousValue)
-            && NumberUtils.isCreatable(value))) {
+                                                                  && NumberUtils.isCreatable(value))) {
             // decrement parameters (in/out, state, property)
             calculateDifferences(sessionStep,
                                  stepPropertyUpdateRequestInfo,

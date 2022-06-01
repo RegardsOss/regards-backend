@@ -88,8 +88,9 @@ public class ExecutionContext {
         return params.get(type)
                      .map(o -> (T) o)
                      .map(Mono::just)
-                     .getOrElse(() -> Mono.error(new MissingExecutionContextParameterException(
-                         "Param for type '" + type.getSimpleName() + "' not found")));
+                     .getOrElse(() -> Mono.error(new MissingExecutionContextParameterException("Param for type '"
+                                                                                               + type.getSimpleName()
+                                                                                               + "' not found")));
     }
 
     @SuppressWarnings("serial")

@@ -104,8 +104,9 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
          */
         List<Coordinate> points = lineString.coordinates;
         if (points.size() < 4) {
-            throw new IllegalArgumentException(
-                "invalid number of points in LinearRing (found [" + points.size() + "] - must be >= 4)");
+            throw new IllegalArgumentException("invalid number of points in LinearRing (found ["
+                                               + points.size()
+                                               + "] - must be >= 4)");
         }
 
         if (points.get(0).equals(points.get(points.size() - 1)) == false) {
@@ -180,7 +181,7 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
                 }
                 if (linearRing.coordinates.get(i - 1).x == linearRing.coordinates.get(i + 1).x
                     && linearRing.coordinates.get(i - 1).y > linearRing.coordinates.get(i).y
-                    != linearRing.coordinates.get(i + 1).y > linearRing.coordinates.get(i).y) {
+                       != linearRing.coordinates.get(i + 1).y > linearRing.coordinates.get(i).y) {
                     // coplanar
                     continue;
                 }
@@ -227,8 +228,8 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
     @Override
     public int numDimensions() {
         if (shell == null) {
-            throw new IllegalStateException(
-                "unable to get number of dimensions, " + "Polygon has not yet been initialized");
+            throw new IllegalStateException("unable to get number of dimensions, "
+                                            + "Polygon has not yet been initialized");
         }
         return shell.numDimensions();
     }
@@ -359,12 +360,19 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
         // First and last coordinates must be equal
         if (coordinates[0].equals(coordinates[coordinates.length - 1]) == false) {
             if (Double.isNaN(partitionPoint[2])) {
-                throw new InvalidShapeException(
-                    "Self-intersection at or near point [" + partitionPoint[0] + "," + partitionPoint[1] + "]");
+                throw new InvalidShapeException("Self-intersection at or near point ["
+                                                + partitionPoint[0]
+                                                + ","
+                                                + partitionPoint[1]
+                                                + "]");
             } else {
-                throw new InvalidShapeException(
-                    "Self-intersection at or near point [" + partitionPoint[0] + "," + partitionPoint[1] + ","
-                        + partitionPoint[2] + "]");
+                throw new InvalidShapeException("Self-intersection at or near point ["
+                                                + partitionPoint[0]
+                                                + ","
+                                                + partitionPoint[1]
+                                                + ","
+                                                + partitionPoint[2]
+                                                + "]");
             }
         }
         return coordinates;
@@ -534,8 +542,10 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
             //    existing edge along the dateline - this is necessary due to a logic change in
             //    ShapeBuilder.intersection that computes dateline edges as valid intersect points
             //    in support of OGC standards
-            if (e1.intersect != Edge.MAX_COORDINATE && e2.intersect != Edge.MAX_COORDINATE &&
-                (e1.next.next.coordinate.equals3D(e2.coordinate) && Math.abs(e1.next.coordinate.x) == DATELINE
+            if (e1.intersect != Edge.MAX_COORDINATE
+                && e2.intersect != Edge.MAX_COORDINATE
+                && (e1.next.next.coordinate.equals3D(e2.coordinate)
+                    && Math.abs(e1.next.coordinate.x) == DATELINE
                     && Math.abs(e2.coordinate.x) == DATELINE) == false) {
                 connect(e1, e2);
             }
@@ -691,8 +701,9 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
                 edges[edgeOffset + i - 1].next = edges[edgeOffset + i] = new Edge(points[pointOffset + i], null);
                 edges[edgeOffset + i - 1].component = component;
             } else {
-                throw new InvalidShapeException(
-                    "Provided shape has duplicate consecutive coordinates at: " + points[pointOffset + i]);
+                throw new InvalidShapeException("Provided shape has duplicate consecutive coordinates at: " + points[
+                    pointOffset
+                    + i]);
             }
         }
 

@@ -48,7 +48,7 @@ public class CachePathSettingCustomizer implements IDynamicTenantSettingCustomiz
                     isValid = true;
                 } else {
                     LOGGER.error("Tenant cache path {} cannot be used by the application because of rights! "
-                                     + "Ensure execution user can read and write in the directory.", path);
+                                 + "Ensure execution user can read and write in the directory.", path);
                 }
             } catch (IOException e) {
                 LOGGER.error(String.format("Tenant cache path %s is invalid!", path), e);

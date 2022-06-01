@@ -321,8 +321,8 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
                .thenReturn(new ResponseEntity<>(EntityModel.of(account), HttpStatus.OK));
 
         // Endpoint
-        String endpoint =
-            RegistrationController.REQUEST_MAPPING_ROOT + RegistrationController.ACTIVE_ACCESS_RELATIVE_PATH;
+        String endpoint = RegistrationController.REQUEST_MAPPING_ROOT
+                          + RegistrationController.ACTIVE_ACCESS_RELATIVE_PATH;
 
         performDefaultPut(endpoint, null, customizer().expectStatusOk(), ERROR_MESSAGE, projectUser.getId());
     }
@@ -343,8 +343,8 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         projectUserRepository.save(projectUser);
 
         // Endpoint
-        String endpoint =
-            RegistrationController.REQUEST_MAPPING_ROOT + RegistrationController.INACTIVE_ACCESS_RELATIVE_PATH;
+        String endpoint = RegistrationController.REQUEST_MAPPING_ROOT
+                          + RegistrationController.INACTIVE_ACCESS_RELATIVE_PATH;
 
         performDefaultPut(endpoint, null, customizer().expectStatusOk(), ERROR_MESSAGE, projectUser.getId());
     }

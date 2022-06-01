@@ -154,8 +154,9 @@ public class MockStorageResponsesHelper {
     private Set<RequestResultInfoDTO> toStorageRequestInfoResponse(FeatureUpdateRequest featureRequest,
                                                                    boolean success) {
         Set<RequestResultInfoDTO> requestsInfo = Sets.newHashSet();
-        List<StorageMetadata> storages =
-            featureRequest.getMetadata() != null ? featureRequest.getMetadata().getStorages() : new ArrayList<>();
+        List<StorageMetadata> storages = featureRequest.getMetadata() != null ?
+            featureRequest.getMetadata().getStorages() :
+            new ArrayList<>();
         featureRequest.getFeature().getFiles().forEach(file -> {
             requestsInfo.addAll(toInfo(file, featureRequest, storages, success));
         });

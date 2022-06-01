@@ -154,8 +154,14 @@ public class LogEvent implements ISubscribable {
 
     @Override
     public String toString() {
-        return "LogEvent : [" + date + "] microservice=" + getMicroservice() + ", user=" + getUserName() + ", msg="
-            + getMsg();
+        return "LogEvent : ["
+               + date
+               + "] microservice="
+               + getMicroservice()
+               + ", user="
+               + getUserName()
+               + ", msg="
+               + getMsg();
     }
 
 }

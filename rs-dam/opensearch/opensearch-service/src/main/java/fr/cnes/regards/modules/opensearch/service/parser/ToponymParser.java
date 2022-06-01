@@ -99,8 +99,8 @@ public class ToponymParser implements IParser {
 
         // Manage request error
         if (!response.getStatusCode().is2xxSuccessful()) {
-            throw new DataSourceException(
-                "Error while calling Toponym client (HTTP STATUS : " + response.getStatusCode());
+            throw new DataSourceException("Error while calling Toponym client (HTTP STATUS : "
+                                          + response.getStatusCode());
         }
 
         // check if toponym was found in the toponym server, if not throw exception

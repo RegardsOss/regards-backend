@@ -83,7 +83,7 @@ public class OAISDeletionJob extends AbstractJob<Void> {
         // filter out requests with notification step (in case of retry)
         Set<AbstractRequest> notificationRetryRequests = requests.stream()
                                                                  .filter(req -> req.getStep()
-                                                                     == DeletionRequestStep.REMOTE_NOTIFICATION_ERROR)
+                                                                                == DeletionRequestStep.REMOTE_NOTIFICATION_ERROR)
                                                                  .collect(Collectors.toSet());
         if (!notificationRetryRequests.isEmpty()) {
             // remove notifications from requests to process and send them again

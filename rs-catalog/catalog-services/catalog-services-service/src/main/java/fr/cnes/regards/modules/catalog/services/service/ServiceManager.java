@@ -73,9 +73,9 @@ public class ServiceManager implements IServiceManager {
      * Returns <code>true</code> if passed <code>pServiceScope</code> is <code>null</code>.
      */
     private static final Function<List<ServiceScope>, Predicate<PluginConfiguration>> IS_APPLICABLE_ON = serviceScope -> configuration ->
-        (serviceScope == null) || Arrays.asList(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(configuration)
-                                                                                     .applicationModes())
-                                        .containsAll(serviceScope);
+        (serviceScope == null)
+        || Arrays.asList(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(configuration).applicationModes())
+                 .containsAll(serviceScope);
 
     /**
      * The service managing plugins
@@ -140,8 +140,10 @@ public class ServiceManager implements IServiceManager {
         final PluginConfiguration conf = pluginService.getPluginConfiguration(pluginConfigurationBusinessId);
         // is it a Service configuration?
         if (!conf.getInterfaceNames().contains(IService.class.getName())) {
-            throw new EntityInvalidException(
-                pluginConfigurationBusinessId + " is not a " + IService.class.getName() + " plugin configuration");
+            throw new EntityInvalidException(pluginConfigurationBusinessId
+                                             + " is not a "
+                                             + IService.class.getName()
+                                             + " plugin configuration");
         }
         // is it a service applyable to this dataset?
         // TODO : Check if the current service is applicable for the given entities (throught the dataset associated)

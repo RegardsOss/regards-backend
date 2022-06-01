@@ -201,8 +201,11 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
                                                   ONLINE_CONF_LABEL,
                                                   Optional.empty(),
                                                   groupId,
-                                                  Optional.of("File " + fileName + " (checksum: " + checksum
-                                                                  + ") not handled by storage job. Storage job failed cause : For input string: \"Killed\""),
+                                                  Optional.of("File "
+                                                              + fileName
+                                                              + " (checksum: "
+                                                              + checksum
+                                                              + ") not handled by storage job. Storage job failed cause : For input string: \"Killed\""),
                                                   Optional.of(oldRequestStatus),
                                                   SESSION_OWNER,
                                                   SESSION);

@@ -315,11 +315,9 @@ public class DatasetControllerIT extends AbstractRegardsIT {
         expectations = customizer();
         expectations.expect(MockMvcResultMatchers.status().isOk());
         expectations.expect(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(5)));
-        performDefaultPost(
-            DatasetController.TYPE_MAPPING + DatasetController.DATASET_DATA_ATTRIBUTES_PATH + queryParams,
-            body,
-            expectations,
-            "failed to fetch the data attributes");
+        performDefaultPost(DatasetController.TYPE_MAPPING
+                           + DatasetController.DATASET_DATA_ATTRIBUTES_PATH
+                           + queryParams, body, expectations, "failed to fetch the data attributes");
     }
 
     @Test
@@ -363,17 +361,19 @@ public class DatasetControllerIT extends AbstractRegardsIT {
         expectations.expect(MockMvcResultMatchers.jsonPath("$.validity", Matchers.equalTo(true)));
 
         DatasetController.Query query = new DatasetController.Query("properties.FILE_SIZE:10%20AND%20tags:abc");
-        performDefaultPost(
-            DatasetController.TYPE_MAPPING + DatasetController.DATA_SUB_SETTING_VALIDATION + "?dataModelName="
-                + dataModel.getName(), query, expectations, "Could not validate that subsetting clause");
+        performDefaultPost(DatasetController.TYPE_MAPPING
+                           + DatasetController.DATA_SUB_SETTING_VALIDATION
+                           + "?dataModelName="
+                           + dataModel.getName(), query, expectations, "Could not validate that subsetting clause");
 
         query = new DatasetController.Query("properties.DO_NOT_EXIST:10");
         expectations = customizer();
         expectations.expect(MockMvcResultMatchers.status().isOk());
         expectations.expect(MockMvcResultMatchers.jsonPath("$.validity", Matchers.equalTo(false)));
-        performDefaultPost(
-            DatasetController.TYPE_MAPPING + DatasetController.DATA_SUB_SETTING_VALIDATION + "?dataModelName="
-                + dataModel.getName(), query, expectations, "Could validate that subsetting clause");
+        performDefaultPost(DatasetController.TYPE_MAPPING
+                           + DatasetController.DATA_SUB_SETTING_VALIDATION
+                           + "?dataModelName="
+                           + dataModel.getName(), query, expectations, "Could validate that subsetting clause");
     }
 
     /**

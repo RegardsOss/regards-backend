@@ -264,25 +264,25 @@ public class AccessRightService implements IAccessRightService {
         switch (accessRight.getAccessLevel()) {
             case FULL_ACCESS:
                 LOGGER.info("{}Dataset {} access right has been modified."
-                                + " Users from group {} has access to this dataset metadata and its data metadata."
-                                + " Access to physical data is: {}",
+                            + " Users from group {} has access to this dataset metadata and its data metadata."
+                            + " Access to physical data is: {}",
                             LogConstants.SECURITY_MARKER,
                             accessRight.getConstrained().getLabel(),
                             accessRight.getAccessGroup().getName(),
                             accessRight.getDataAccessLevel());
                 break;
             case RESTRICTED_ACCESS:
-                LOGGER.info(
-                    "{}Dataset {} access right has been modified." + " Users from group {} has access to this dataset."
-                        + " This means they can only see its metadata and no information about its data.",
-                    LogConstants.SECURITY_MARKER,
-                    accessRight.getConstrained().getLabel(),
-                    accessRight.getAccessGroup().getName());
+                LOGGER.info("{}Dataset {} access right has been modified."
+                            + " Users from group {} has access to this dataset."
+                            + " This means they can only see its metadata and no information about its data.",
+                            LogConstants.SECURITY_MARKER,
+                            accessRight.getConstrained().getLabel(),
+                            accessRight.getAccessGroup().getName());
                 break;
             case CUSTOM_ACCESS:
                 LOGGER.info("{}Dataset {} access right has been modified."
-                                + " Users from group {} has access to this dataset metadata"
-                                + " and its data access is decided by the plugin {}.",
+                            + " Users from group {} has access to this dataset metadata"
+                            + " and its data access is decided by the plugin {}.",
                             LogConstants.SECURITY_MARKER,
                             accessRight.getConstrained().getLabel(),
                             accessRight.getAccessGroup().getName(),
@@ -290,7 +290,7 @@ public class AccessRightService implements IAccessRightService {
                 break;
             case NO_ACCESS:
                 LOGGER.info("{}Dataset {} access right has been modified."
-                                + " Users from group {} has no access to this dataset metadata and its data.",
+                            + " Users from group {} has no access to this dataset metadata and its data.",
                             LogConstants.SECURITY_MARKER,
                             accessRight.getConstrained().getLabel(),
                             accessRight.getAccessGroup().getName());
@@ -429,7 +429,7 @@ public class AccessRightService implements IAccessRightService {
                 }
             } catch (ModuleException | NotAvailablePluginConfigurationException e) {
                 LOGGER.error(String.format("updateDynamicAccessRights - Error getting plugin %d for accessRight %d of "
-                                               + "dataset %s and group %s. Does plugin exist anymore ?",
+                                           + "dataset %s and group %s. Does plugin exist anymore ?",
                                            ar.getDataAccessPlugin().getId(),
                                            ar.getId(),
                                            ar.getDataset().getLabel(),

@@ -91,7 +91,8 @@ public class CompressionFacade {
 
         CompressManager manager = strategy.doCompress();
 
-        if (!strategy.isRunInThread() && manager.getCompressedFile() != null
+        if (!strategy.isRunInThread()
+            && manager.getCompressedFile() != null
             && manager.getCompressedFile().length() == 0) {
             throw new CompressionException("Error compressing files");
         }

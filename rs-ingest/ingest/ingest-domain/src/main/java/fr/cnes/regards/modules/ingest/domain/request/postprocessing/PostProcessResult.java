@@ -80,7 +80,13 @@ public class PostProcessResult {
 
     @Override
     public String toString() {
-        return "PostProcessResult{" + "errors=" + errors + ", successes=" + successes + ", interrupted=" + interrupted
-            + '}';
+        return "PostProcessResult{"
+               + "errors="
+               + errors
+               + ", successes="
+               + successes
+               + ", interrupted="
+               + interrupted
+               + '}';
     }
 }

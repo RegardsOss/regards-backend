@@ -41,28 +41,44 @@ public interface IRightsPluginConfigurationRepository extends JpaRepository<Righ
 
     Option<RightsPluginConfiguration> findByPluginConfiguration(PluginConfiguration pluginConfigurationId);
 
-    @Query(value = " SELECT " + " DISTINCT ON (sub.id) " + "        sub.id," + "        sub.plugin_configuration_id, "
-        + "        sub.process_business_id, " + "        sub.user_role, " + "        sub.datasets, "
-        + "        sub.is_linked_to_all_datasets " + " FROM ( "
-        + "         SELECT rpc.*, unnest(array_append(rpc.datasets, '')) AS x "
-        + "         FROM t_rights_plugin_configuration AS rpc " + " ) AS sub " + " WHERE sub.x = CAST(:dataset AS TEXT)"
-        + "    OR sub.is_linked_to_all_datasets = TRUE" + " ORDER BY sub.id ", nativeQuery = true)
+    @Query(value = " SELECT "
+                   + " DISTINCT ON (sub.id) "
+                   + "        sub.id,"
+                   + "        sub.plugin_configuration_id, "
+                   + "        sub.process_business_id, "
+                   + "        sub.user_role, "
+                   + "        sub.datasets, "
+                   + "        sub.is_linked_to_all_datasets "
+                   + " FROM ( "
+                   + "         SELECT rpc.*, unnest(array_append(rpc.datasets, '')) AS x "
+                   + "         FROM t_rights_plugin_configuration AS rpc "
+                   + " ) AS sub "
+                   + " WHERE sub.x = CAST(:dataset AS TEXT)"
+                   + "    OR sub.is_linked_to_all_datasets = TRUE"
+                   + " ORDER BY sub.id ", nativeQuery = true)
     List<RightsPluginConfiguration> findByReferencedDataset(@Param("dataset") String dataset);
 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
-    @Query(value = " UPDATE t_rights_plugin_configuration AS rpc " + " SET datasets = "
-        + "     CASE WHEN rpc.process_business_id IN (:processBusinessIds) THEN "
-        + "         CASE WHEN array_position(rpc.datasets, :dataset) IS NULL "
-        + "         THEN array_append(rpc.datasets, :dataset) " + "         ELSE rpc.datasets " + "         END "
-        + "     ELSE " + "         CASE WHEN array_position(rpc.datasets, :dataset) IS NULL "
-        + "         THEN rpc.datasets " + "         ELSE array_remove(rpc.datasets, :dataset) " + "         END "
-        + "     END ", nativeQuery = true)
+    @Query(value = " UPDATE t_rights_plugin_configuration AS rpc "
+                   + " SET datasets = "
+                   + "     CASE WHEN rpc.process_business_id IN (:processBusinessIds) THEN "
+                   + "         CASE WHEN array_position(rpc.datasets, :dataset) IS NULL "
+                   + "         THEN array_append(rpc.datasets, :dataset) "
+                   + "         ELSE rpc.datasets "
+                   + "         END "
+                   + "     ELSE "
+                   + "         CASE WHEN array_position(rpc.datasets, :dataset) IS NULL "
+                   + "         THEN rpc.datasets "
+                   + "         ELSE array_remove(rpc.datasets, :dataset) "
+                   + "         END "
+                   + "     END ", nativeQuery = true)
     void updateAllAddDatasetOnlyForIds(@Param("processBusinessIds") List<UUID> processBusinessIds,
                                        @Param("dataset") String dataset);
 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
-    @Query(value = " UPDATE t_rights_plugin_configuration AS rpc " + " SET user_role = :userRole "
-        + " WHERE rpc.process_business_id = :processBusinessId ", nativeQuery = true)
+    @Query(value = " UPDATE t_rights_plugin_configuration AS rpc "
+                   + " SET user_role = :userRole "
+                   + " WHERE rpc.process_business_id = :processBusinessId ", nativeQuery = true)
     void updateRoleToForProcessBusinessId(@Param("userRole") String userRole,
                                           @Param("processBusinessId") UUID processBusinessId);
 }

@@ -47,7 +47,7 @@ public interface ISessionManagerRepository extends JpaRepository<Session, Long>,
     void deleteBySourceAndName(String source, String session);
 
     @Query(value = "select distinct name from t_session_manager where lower(name) like lower(?1) ORDER BY name LIMIT "
-        + "?2", nativeQuery = true)
+                   + "?2", nativeQuery = true)
     Set<String> internalFindAllSessionsNames(String name, int nbResults);
 
     @Query(value = "select distinct name from t_session_manager ORDER BY name LIMIT ?1", nativeQuery = true)

@@ -43,9 +43,15 @@ public class V1_7_0__ProjectUserMigration extends BaseJavaMigration {
 
     private static final String SELECT_USERS = "SELECT " + EMAIL_COLUMN + " FROM t_project_user";
 
-    private static final String UPDATE_USERS =
-        "UPDATE t_project_user SET " + FIRSTNAME_COLUMN + "=?, " + NAME_COLUMN + "=?, " + CREATION_DATE_COLUMN
-            + "=? WHERE " + EMAIL_COLUMN + "=?";
+    private static final String UPDATE_USERS = "UPDATE t_project_user SET "
+                                               + FIRSTNAME_COLUMN
+                                               + "=?, "
+                                               + NAME_COLUMN
+                                               + "=?, "
+                                               + CREATION_DATE_COLUMN
+                                               + "=? WHERE "
+                                               + EMAIL_COLUMN
+                                               + "=?";
 
     private final IAccountsClient accountsClient;
 

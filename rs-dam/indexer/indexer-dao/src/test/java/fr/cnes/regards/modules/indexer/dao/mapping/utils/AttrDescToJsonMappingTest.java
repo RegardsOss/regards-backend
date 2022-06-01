@@ -33,8 +33,9 @@ public class AttrDescToJsonMappingTest {
         JsonObject jsonObject = AttrDescToJsonMapping.nestedPropertiesStructure("high.medium.low", innermost);
 
         String json = jsonObject.toString();
-        assertThat(json).isEqualTo(
-            "{\"properties\":{\"high\":{\"properties\":{\"medium\":{\"properties\":{\"low\":" + innerStr + "}}}}}}");
+        assertThat(json).isEqualTo("{\"properties\":{\"high\":{\"properties\":{\"medium\":{\"properties\":{\"low\":"
+                                   + innerStr
+                                   + "}}}}}}");
     }
 
     @Test
@@ -54,9 +55,9 @@ public class AttrDescToJsonMappingTest {
         String json = mapping.toString();
         assertThat(json).isEqualTo(
             "{\"properties\":{\"some\":{\"properties\":{\"nested\":{\"properties\":{\"prop\":{\"properties\":{"
-                + "\"lowerBound\":{\"type\":\"date\",\"format\":\"date_optional_time\"},"
-                + "\"upperBound\":{\"type\":\"date\",\"format\":\"date_optional_time\"},"
-                + "\"gte\":{\"type\":\"alias\",\"path\":\"some.nested.prop.lowerBound\"},"
-                + "\"lte\":{\"type\":\"alias\",\"path\":\"some.nested.prop.upperBound\"}}}}}}}}}");
+            + "\"lowerBound\":{\"type\":\"date\",\"format\":\"date_optional_time\"},"
+            + "\"upperBound\":{\"type\":\"date\",\"format\":\"date_optional_time\"},"
+            + "\"gte\":{\"type\":\"alias\",\"path\":\"some.nested.prop.lowerBound\"},"
+            + "\"lte\":{\"type\":\"alias\",\"path\":\"some.nested.prop.upperBound\"}}}}}}}}}");
     }
 }

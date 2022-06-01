@@ -41,9 +41,11 @@ import java.util.Set;
         @Index(name = "idx_feature_request_urn", columnList = "urn"),
         @Index(name = "idx_feature_request_type", columnList = AbstractFeatureRequest.REQUEST_TYPE_COLUMN),
         @Index(name = "idx_feature_request_state", columnList = AbstractRequest.COLUMN_STATE),
-        @Index(name = "idx_feature_step_registration_priority",
-            columnList = AbstractRequest.COLUMN_STEP + "," + AbstractRequest.COLUMN_REGISTRATION_DATE + ","
-                + AbstractRequest.COLUMN_PRIORITY),
+        @Index(name = "idx_feature_step_registration_priority", columnList = AbstractRequest.COLUMN_STEP
+                                                                             + ","
+                                                                             + AbstractRequest.COLUMN_REGISTRATION_DATE
+                                                                             + ","
+                                                                             + AbstractRequest.COLUMN_PRIORITY),
         @Index(name = "idx_feature_request_group_id", columnList = AbstractFeatureRequest.GROUP_ID) })
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = AbstractFeatureRequest.REQUEST_TYPE_COLUMN)

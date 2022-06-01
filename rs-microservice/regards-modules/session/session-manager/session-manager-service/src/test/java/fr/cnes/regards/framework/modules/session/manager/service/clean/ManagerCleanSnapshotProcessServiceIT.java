@@ -76,13 +76,13 @@ public class ManagerCleanSnapshotProcessServiceIT extends AbstractManagerService
                           snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(1)));
         Assert.assertTrue("Snapshot process should have been present. It is linked to a step request. ",
                           snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(2)));
-        Assert.assertTrue(
-            "Snapshot process should not be present. It is not yet expired (cf. " + "limitStoreSnapshotProcess).",
-            snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(3)));
+        Assert.assertTrue("Snapshot process should not be present. It is not yet expired (cf. "
+                          + "limitStoreSnapshotProcess).",
+                          snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(3)));
 
         // SNAPSHOT linked to SOURCE_5, SOURCE_6 should be removed
         Assert.assertFalse("Snapshot process should not be present. It is not linked to any step requests and it is "
-                               + "older than the maximum snapshot process storage date.",
+                           + "older than the maximum snapshot process storage date.",
                            snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(4)));
         Assert.assertFalse("Snapshot process should not be present. It is not linked to any step requests.",
                            snapshotProcessesRetrieved.contains(snapshotProcessCreated.get(5)));

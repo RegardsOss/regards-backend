@@ -70,11 +70,11 @@ public class RoleService implements IRoleService, InitializingBean {
      */
     private static final String NATIVE_ROLE_NOT_REMOVABLE = "Modifications on native roles are forbidden";
 
-    public static final String ROLE_GAINED_ACCESS =
-        LogConstants.SECURITY_MARKER + "Role {} has been granted access to these resources: {}";
+    public static final String ROLE_GAINED_ACCESS = LogConstants.SECURITY_MARKER
+                                                    + "Role {} has been granted access to these resources: {}";
 
-    public static final String ROLE_LOST_ACCESS =
-        LogConstants.SECURITY_MARKER + "Role {} does not have access to the these resources anymore: {}";
+    public static final String ROLE_LOST_ACCESS = LogConstants.SECURITY_MARKER
+                                                  + "Role {} does not have access to the these resources anymore: {}";
 
     /**
      * CRUD repository managing {@link Role}s. Autowired by Spring.
@@ -231,8 +231,8 @@ public class RoleService implements IRoleService, InitializingBean {
         } else {
             // Retrieve parent native role of the given parent role.
             if (!parentRole.getParentRole().isNative()) {
-                throw new EntityException(
-                    "There is no native parent associated to the given parent role " + parentRole.getName());
+                throw new EntityException("There is no native parent associated to the given parent role "
+                                          + parentRole.getName());
             }
 
             newCreatedRole = new Role(role.getName(), parentRole.getParentRole());
@@ -271,10 +271,10 @@ public class RoleService implements IRoleService, InitializingBean {
         }
         Role beforeUpdate = roleRepository.findByName(roleName)
                                           .orElseThrow(() -> new EntityNotFoundException(roleName, Role.class));
-        if (beforeUpdate.isNative() && (
-            ((beforeUpdate.getParentRole() == null) && (updatedRole.getParentRole() != null)) || (!Objects.equal(
-                beforeUpdate.getParentRole(),
-                updatedRole.getParentRole())))) {
+        if (beforeUpdate.isNative() && (((beforeUpdate.getParentRole() == null) && (updatedRole.getParentRole()
+                                                                                    != null)) || (!Objects.equal(
+            beforeUpdate.getParentRole(),
+            updatedRole.getParentRole())))) {
             throw new EntityOperationForbiddenException(roleName, Role.class, "Native role parent cannot be changed");
         }
         Role updated = updatedRole;
@@ -377,7 +377,8 @@ public class RoleService implements IRoleService, InitializingBean {
         }
 
         // System role always granted
-        if (RoleAuthority.isSysRole(securityRole) || RoleAuthority.isInstanceAdminRole(securityRole)
+        if (RoleAuthority.isSysRole(securityRole)
+            || RoleAuthority.isInstanceAdminRole(securityRole)
             || RoleAuthority.isProjectAdminRole(securityRole)) {
             LOGGER.debug("Priviledged call granted");
             return;
@@ -423,7 +424,8 @@ public class RoleService implements IRoleService, InitializingBean {
         }
 
         // System role always granted
-        if (RoleAuthority.isSysRole(securityRole) || RoleAuthority.isInstanceAdminRole(securityRole)
+        if (RoleAuthority.isSysRole(securityRole)
+            || RoleAuthority.isInstanceAdminRole(securityRole)
             || RoleAuthority.isProjectAdminRole(securityRole)) {
             LOGGER.debug("Priviledged call granted");
             return;
@@ -869,7 +871,8 @@ public class RoleService implements IRoleService, InitializingBean {
         // To simplify client interraction we returned the actual role of the user even if this role is not borowable.
         // The regards frontend use this role to calculate user ihm rights based on his role.
         if (!roleNamesAllowedToBorrow.contains(originalRole.getName()) && ((originalRole.getParentRole() == null)
-            || !roleNamesAllowedToBorrow.contains(originalRole.getParentRole().getName()))) {
+                                                                           || !roleNamesAllowedToBorrow.contains(
+            originalRole.getParentRole().getName()))) {
             return Sets.newHashSet(originalRole);
         }
         // get ascendants of the original Role

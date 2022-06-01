@@ -87,47 +87,49 @@ public class SimpleShellProcessPlugin extends AbstractBaseForecastedStorageAware
         description = "The script must be executable and reachable by rs-processing.")
     protected String shellScriptName;
 
-    @PluginParameter(name = "envVariables", label = "Environment variables to give to the shell script",
-        description = "List of environment variables needed by the shell script."
-            + " Format as KEY=VALUE separated by '&', for instance:" + " KEY1=value1&KEY2=value2 ", optional = true)
+    @PluginParameter(name = "envVariables", label = "Environment variables to give to the shell script", description =
+        "List of environment variables needed by the shell script."
+        + " Format as KEY=VALUE separated by '&', for instance:"
+        + " KEY1=value1&KEY2=value2 ", optional = true)
     protected String envVariables;
 
-    @PluginParameter(name = "requiredDataTypes", label = "Comma-separated list of required DataTypes",
-        description = "This parameter allows to change the feature files sent as input for executions. "
-            + "By default, only RAWDATA are sent, but changing this parameter to 'RAWDATA,THUMBNAIL,AIP' "
-            + "for instance would provide RAWDATA, THUMBNAIL and AIP files.", optional = true, defaultValue = "RAWDATA")
+    @PluginParameter(name = "requiredDataTypes", label = "Comma-separated list of required DataTypes", description =
+        "This parameter allows to change the feature files sent as input for executions. "
+        + "By default, only RAWDATA are sent, but changing this parameter to 'RAWDATA,THUMBNAIL,AIP' "
+        + "for instance would provide RAWDATA, THUMBNAIL and AIP files.", optional = true, defaultValue = "RAWDATA")
     protected String requiredDataTypes = "RAWDATA";
 
-    @PluginParameter(name = "scope", label = "Scope",
-        description = "This parameter defines how many executions are launched per suborder."
-            + " The possible values are: SUBORDER, FEATURE."
-            + " If the value is SUBORDER, there is only one execution per suborder,"
-            + " allowing to group several features in the same execution, and the corresponding script must"
-            + " be able to deal with several features."
-            + " If the value is FEATURE, there is one execution per feature in the suborder,"
-            + " allowing to isolate each feature in its own execution context and the corresponding script"
-            + " deals with only one feature.", optional = true, defaultValue = "SUBORDER")
+    @PluginParameter(name = "scope", label = "Scope", description =
+        "This parameter defines how many executions are launched per suborder."
+        + " The possible values are: SUBORDER, FEATURE."
+        + " If the value is SUBORDER, there is only one execution per suborder,"
+        + " allowing to group several features in the same execution, and the corresponding script must"
+        + " be able to deal with several features."
+        + " If the value is FEATURE, there is one execution per feature in the suborder,"
+        + " allowing to isolate each feature in its own execution context and the corresponding script"
+        + " deals with only one feature.", optional = true, defaultValue = "SUBORDER")
     protected String scope = Scope.SUBORDER.toString();
 
-    @PluginParameter(name = "cardinality", label = "Cardinality of output files",
-        description = "This parameter defines how many output files are created by the script."
-            + " The possible values are: ONE_PER_EXECUTION, ONE_PER_FEATURE, ONE_PER_INPUT_FILE."
-            + " If the value is ONE_PER_EXECUTION, the corresponding script must" + " produce only one output file. "
-            + " If the value is ONE_PER_FEATURE, the corresponding script"
-            + " must produce one output file for each feature present in the input. "
-            + " If the value is ONE_PER_INPUT_FILE, the corresponding script"
-            + " must produce one output file for each file present in the input. ", optional = true,
+    @PluginParameter(name = "cardinality", label = "Cardinality of output files", description =
+        "This parameter defines how many output files are created by the script."
+        + " The possible values are: ONE_PER_EXECUTION, ONE_PER_FEATURE, ONE_PER_INPUT_FILE."
+        + " If the value is ONE_PER_EXECUTION, the corresponding script must"
+        + " produce only one output file. "
+        + " If the value is ONE_PER_FEATURE, the corresponding script"
+        + " must produce one output file for each feature present in the input. "
+        + " If the value is ONE_PER_INPUT_FILE, the corresponding script"
+        + " must produce one output file for each file present in the input. ", optional = true,
         defaultValue = "ONE_PER_FEATURE")
     protected String cardinality = Cardinality.ONE_PER_FEATURE.toString();
 
     @PluginParameter(name = "maxFilesInInput", label = "Maximum number of features in input for one execution",
         description = "This parameter allows to limit the number of features given as input."
-            + " Must be positive or null. Set to 0 for no limit.", optional = true, defaultValue = "0")
+                      + " Must be positive or null. Set to 0 for no limit.", optional = true, defaultValue = "0")
     protected long maxFeaturesInInput = 0;
 
     @PluginParameter(name = "forbidSplitInSubOrders", label = "Forbid an order to be split into multiple orders.",
         description = "Keep the consistency of an processing by forbidding the split of the order into multiple "
-            + "suborders. The ordered products will be processed in the same batch.", optional = true,
+                      + "suborders. The ordered products will be processed in the same batch.", optional = true,
         defaultValue = "false")
     protected boolean forbidSplitInSuborders = false;
 

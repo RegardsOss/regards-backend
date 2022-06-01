@@ -362,8 +362,24 @@ public class JobInfo {
 
     @Override
     public String toString() {
-        return "JobInfo{" + "id=" + id + ", priority=" + priority + ", expirationDate=" + expirationDate + ", owner='"
-            + owner + '\'' + ", className='" + className + '\'' + ", status=" + status + ", tenant='" + tenant + '\''
-            + '}';
+        return "JobInfo{"
+               + "id="
+               + id
+               + ", priority="
+               + priority
+               + ", expirationDate="
+               + expirationDate
+               + ", owner='"
+               + owner
+               + '\''
+               + ", className='"
+               + className
+               + '\''
+               + ", status="
+               + status
+               + ", tenant='"
+               + tenant
+               + '\''
+               + '}';
     }
 }

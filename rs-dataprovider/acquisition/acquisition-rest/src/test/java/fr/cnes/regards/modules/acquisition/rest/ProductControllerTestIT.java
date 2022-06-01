@@ -135,7 +135,7 @@ public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
                                                              .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                                                                                    .value(
                                                                                        "Optional. Multiple values allowed. Allowed values : "
-                                                                                           + joiner.toString()));
+                                                                                       + joiner.toString()));
 
         joiner = new StringJoiner(", ");
         for (ProductSIPState state : ProductSIPState.values()) {
@@ -149,7 +149,7 @@ public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
                                                                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                                                                                       .value(
                                                                                           "Optional. Multiple values allowed. Allowed values : "
-                                                                                              + joiner.toString()));
+                                                                                          + joiner.toString()));
 
         ParameterDescriptor paramProductId = RequestDocumentation.parameterWithName(ProductController.REQUEST_PARAM_PRODUCT_NAME)
                                                                  .optional()

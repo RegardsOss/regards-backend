@@ -255,8 +255,8 @@ public class AttributeModelController implements IResourceController<AttributeMo
     @Override
     public EntityModel<AttributeModel> toResource(final AttributeModel attributeModel, final Object... extras) {
         EntityModel<AttributeModel> resource = resourceService.toResource(attributeModel);
-        boolean addLinks =
-            (extras == null) || (extras.length == 0) || ((extras[0] instanceof Boolean) && !(Boolean) extras[0]);
+        boolean addLinks = (extras == null) || (extras.length == 0) || ((extras[0] instanceof Boolean)
+                                                                        && !(Boolean) extras[0]);
         if (addLinks) {
             resourceService.addLink(resource,
                                     this.getClass(),

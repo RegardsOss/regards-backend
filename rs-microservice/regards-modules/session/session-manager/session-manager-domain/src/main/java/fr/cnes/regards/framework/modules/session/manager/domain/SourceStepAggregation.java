@@ -111,7 +111,17 @@ public class SourceStepAggregation {
 
     @Override
     public String toString() {
-        return "SourceStepAggregation{" + "id=" + id + ", type=" + type + ", totalIn=" + totalIn + ", totalOut="
-            + totalOut + ", state=" + state + '}';
+        return "SourceStepAggregation{"
+               + "id="
+               + id
+               + ", type="
+               + type
+               + ", totalIn="
+               + totalIn
+               + ", totalOut="
+               + totalOut
+               + ", state="
+               + state
+               + '}';
     }
 }

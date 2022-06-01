@@ -282,8 +282,9 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
                                                .exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='fin' and @value='{time:end}']")
                                                .exists());
-        customizer.expect(MockMvcResultMatchers.xpath(
-            atomUrl + "/Parameter[@name='geometry' and @value='{geo:geometry}']").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl
+                                                      + "/Parameter[@name='geometry' and @value='{geo:geometry}']")
+                                               .exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='box' and @value='{geo:box}']")
                                                .exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='lon' and @value='{geo:lon}']")
@@ -292,28 +293,32 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
                                                .exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='radius' and @value='{geo:radius}']")
                                                .exists());
-        customizer.expect(MockMvcResultMatchers.xpath(
-            atomUrl + String.format("/Parameter[@name='%s' and @value='{%s}']",
-                                    DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE_NAME,
-                                    DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE)).exists());
-        customizer.expect(MockMvcResultMatchers.xpath(
-            atomUrl + String.format("/Parameter[@name='%s' and @value='{%s}']",
-                                    DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT_NAME,
-                                    DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT)).exists());
-        customizer.expect(MockMvcResultMatchers.xpath(
-            atomUrl + String.format("/Parameter[@name='%s' and @value='{%s}']",
-                                    UpdatedParser.UPDATED_PARAMETER,
-                                    UpdatedParser.UPDATED_PARAMETER)).exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl
+                                                      + String.format("/Parameter[@name='%s' and @value='{%s}']",
+                                                                      DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE_NAME,
+                                                                      DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE))
+                                               .exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl
+                                                      + String.format("/Parameter[@name='%s' and @value='{%s}']",
+                                                                      DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT_NAME,
+                                                                      DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT))
+                                               .exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl
+                                                      + String.format("/Parameter[@name='%s' and @value='{%s}']",
+                                                                      UpdatedParser.UPDATED_PARAMETER,
+                                                                      UpdatedParser.UPDATED_PARAMETER)).exists());
 
         // Check options
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='planet' and count(Option)=12]")
                                                .exists());
 
         // Check double boundaries
-        customizer.expect(MockMvcResultMatchers.xpath(
-            atomUrl + "/Parameter[@name='sun_distance' and @minInclusive='7000000.0']").exists());
-        customizer.expect(MockMvcResultMatchers.xpath(
-            atomUrl + "/Parameter[@name='sun_distance' and @maxInclusive='4.48943598E9']").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl
+                                                      + "/Parameter[@name='sun_distance' and @minInclusive='7000000.0']")
+                                               .exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl
+                                                      + "/Parameter[@name='sun_distance' and @maxInclusive='4.48943598E9']")
+                                               .exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "[count(Parameter)=22]").exists());
 
         // Check date boundaries
@@ -349,13 +354,13 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
 
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         customizer.headers().setAccept(Collections.singletonList(MediaType.APPLICATION_XML));
-        performDefaultGet(
-            SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA,
-            customizer,
-            "open search description error",
-            ENGINE_TYPE,
-            solarSystem.getIpId().toString(),
-            OpenSearchEngine.EXTRA_DESCRIPTION);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING
+                          + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA,
+                          customizer,
+                          "open search description error",
+                          ENGINE_TYPE,
+                          solarSystem.getIpId().toString(),
+                          OpenSearchEngine.EXTRA_DESCRIPTION);
     }
 
     @Test

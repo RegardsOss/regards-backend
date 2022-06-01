@@ -64,9 +64,15 @@ public class ServiceAggregatorKeyGenerator implements IServiceAggregatorKeyGener
      */
     @Override
     public Object generate(Object target, Method method, Object... params) {
-        String key =
-            KEY_GENERATOR + "_" + method.getName() + "_" + tenantResolver.getTenant() + "_" + authResolver.getRole()
-                + "_" + StringUtils.arrayToDelimitedString(params, "_");
+        String key = KEY_GENERATOR
+                     + "_"
+                     + method.getName()
+                     + "_"
+                     + tenantResolver.getTenant()
+                     + "_"
+                     + authResolver.getRole()
+                     + "_"
+                     + StringUtils.arrayToDelimitedString(params, "_");
         LOGGER.debug("Generated key {} for cache {} ", key, CACHE_NAME);
         return key;
     }

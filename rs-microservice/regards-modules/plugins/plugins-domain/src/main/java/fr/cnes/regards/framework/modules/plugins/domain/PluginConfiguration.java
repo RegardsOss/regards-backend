@@ -311,8 +311,9 @@ public class PluginConfiguration implements IIdentifiable<Long> {
                                                  p.getName(),
                                                  p.toString()));
 
-        LOGGER.info(
-            "  ---> number of no dynamic parameters : " + getParameters().stream().filter(p -> !p.isDynamic()).count());
+        LOGGER.info("  ---> number of no dynamic parameters : " + getParameters().stream()
+                                                                                 .filter(p -> !p.isDynamic())
+                                                                                 .count());
         getParameters().stream()
                        .filter(p -> !p.isDynamic())
                        .forEach(p -> LOGGER.info("  ---> parameter : {}-def val: {}", p.getName(), p.toString()));
@@ -420,8 +421,21 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     @Override
     public String toString() {
-        return "PluginConfiguration [id=" + id + ", business id=" + businessId + ", pluginId=" + pluginId + ", label="
-            + label + ", version=" + version + ", priorityOrder=" + priorityOrder + ", active=" + active + "]";
+        return "PluginConfiguration [id="
+               + id
+               + ", business id="
+               + businessId
+               + ", pluginId="
+               + pluginId
+               + ", label="
+               + label
+               + ", version="
+               + version
+               + ", priorityOrder="
+               + priorityOrder
+               + ", active="
+               + active
+               + "]";
     }
 
     @Override

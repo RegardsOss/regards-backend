@@ -210,7 +210,7 @@ public class AIPNotificationService implements IAIPNotificationService {
     public void handleNotificationError(Set<AbstractRequest> errorRequests) {
         // for each type of request set the change the state and the step of the request to ERROR
         String errorMsg = "An error occurred while notifying the request result to notifier. "
-            + "Please check issues reported on notifier.";
+                          + "Please check issues reported on notifier.";
         for (AbstractRequest abstractRequest : errorRequests) {
             // INGEST REQUESTS
             if (abstractRequest instanceof IngestRequest) {

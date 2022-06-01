@@ -70,8 +70,11 @@ public class DefaultTestConfiguration {
         private Boolean lock = Boolean.TRUE;
 
         public void handle(TenantWrapper<LogEvent> pWrapper) {
-            LOGGER.debug(
-                "a new event received : [" + pWrapper.getTenant() + "] - <" + pWrapper.getContent().getMsg() + ">");
+            LOGGER.debug("a new event received : ["
+                         + pWrapper.getTenant()
+                         + "] - <"
+                         + pWrapper.getContent().getMsg()
+                         + ">");
             receiverLogEvent.addLogEvent(pWrapper);
         }
 

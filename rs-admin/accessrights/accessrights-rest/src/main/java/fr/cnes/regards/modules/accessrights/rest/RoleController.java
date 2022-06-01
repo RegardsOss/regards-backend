@@ -258,7 +258,7 @@ public class RoleController implements IResourceController<Role> {
                 }
             }
             if (!(RoleAuthority.isProjectAdminRole(role.getName())
-                || RoleAuthority.isInstanceAdminRole(role.getName()))) {
+                  || RoleAuthority.isInstanceAdminRole(role.getName()))) {
 
                 //we add the link to manage a role resources accesses except for PROJECT_ADMIN and INSTANCE_ADMIN
                 resourceService.addLink(resource,

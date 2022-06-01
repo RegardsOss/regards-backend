@@ -194,8 +194,10 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
                                     aip,
                                     dataFile.getChecksum());
                         dataFile.setDownloadError(
-                            "Cannot retrieve data file from storage, feign downloadFile method returns " + (
-                                response == null ? "null" : response.toString()));
+                            "Cannot retrieve data file from storage, feign downloadFile method returns " + (response
+                                                                                                            == null ?
+                                "null" :
+                                response.toString()));
                     } else { // Download ok
                         try (InputStream is = response.body().asInputStream()) {
                             readInputStreamAndAddToZip(downloadErrorFiles, zos, dataFiles, i, dataFile, aip, is);
@@ -330,8 +332,8 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
     @Override
     public void downloadOrderMetalink(Long orderId, OutputStream os) {
         Order order = orderRepository.findSimpleById(orderId);
-        String tokenRequestParam =
-            IOrderService.ORDER_TOKEN + "=" + orderHelperService.generateToken4PublicEndpoint(order);
+        String tokenRequestParam = IOrderService.ORDER_TOKEN + "=" + orderHelperService.generateToken4PublicEndpoint(
+            order);
         String scopeRequestParam = IOrderService.SCOPE + "=" + runtimeTenantResolver.getTenant();
 
         List<OrderDataFile> files = dataFileService.findAll(orderId);

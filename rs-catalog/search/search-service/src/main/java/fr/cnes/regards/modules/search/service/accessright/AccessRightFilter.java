@@ -84,7 +84,8 @@ public class AccessRightFilter implements IAccessRightFilter {
         Assert.notNull(role, "Unknown request user role!");
 
         // For default ROLE, avoid feign request
-        if (role.equals(DefaultRole.ADMIN.toString()) || role.equals(DefaultRole.PROJECT_ADMIN.toString())
+        if (role.equals(DefaultRole.ADMIN.toString())
+            || role.equals(DefaultRole.PROJECT_ADMIN.toString())
             || role.equals(DefaultRole.INSTANCE_ADMIN.toString())) {
             return true;
         }

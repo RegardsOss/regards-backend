@@ -46,16 +46,22 @@ public class TestUtils {
         String lastDate = OffsetDateTimeAdapter.format(zipCollection.get(validNbFiles - 1).getCreationDate());
         String validSubZipName = firstDate + "_" + lastDate + "(_[0-9]+)?\\.zip$";
         if (!zipName.matches(validSubZipName)) {
-            return "The name of the created subzip \"" + zipName + "\" does not match the expected format : "
-                + validSubZipName;
+            return "The name of the created subzip \""
+                   + zipName
+                   + "\" does not match the expected format : "
+                   + validSubZipName;
         }
 
         // Verify number of created files in zip
         List<String> fileNames = readZipEntryNames(parentZip);
         int createdNbFiles = fileNames.size();
         if (validNbFiles != createdNbFiles) {
-            return "The number of json files in zip \"" + zipName + " is unexpected, " + createdNbFiles
-                + " were created instead of " + validNbFiles;
+            return "The number of json files in zip \""
+                   + zipName
+                   + " is unexpected, "
+                   + createdNbFiles
+                   + " were created instead of "
+                   + validNbFiles;
         }
 
         // Verify created paths
@@ -65,8 +71,10 @@ public class TestUtils {
         DateTimeFormatter pathFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
         while (indexFile < validNbFiles) {
             validObjectDump = zipCollection.get(indexFile);
-            validPath =
-                validObjectDump.getCreationDate().format(pathFormatter) + "/" + validObjectDump.getJsonName() + ".json";
+            validPath = validObjectDump.getCreationDate().format(pathFormatter)
+                        + "/"
+                        + validObjectDump.getJsonName()
+                        + ".json";
             createdPath = fileNames.get(indexFile);
             if (!validPath.equals(createdPath)) {
                 return "Expected path \"" + validPath + "\", found path \"" + createdPath + "\" instead";

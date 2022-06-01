@@ -55,10 +55,11 @@ public interface IAIPUpdateRequestRepository extends JpaRepository<AIPUpdateRequ
      * @param state
      * @return a list of AIPUpdateRequest with corresponding AIP loaded
      */
-    @Query(
-        value = "SELECT DISTINCT ON (t_request.aip_id) * FROM t_request  inner join t_aip on t_request.aip_id=t_aip.id "
-            + "WHERE t_request.aip_id IN (:ids) AND t_request.state = :state AND t_request.dtype = '"
-            + RequestTypeConstant.UPDATE_VALUE + "'", nativeQuery = true)
+    @Query(value =
+        "SELECT DISTINCT ON (t_request.aip_id) * FROM t_request  inner join t_aip on t_request.aip_id=t_aip.id "
+        + "WHERE t_request.aip_id IN (:ids) AND t_request.state = :state AND t_request.dtype = '"
+        + RequestTypeConstant.UPDATE_VALUE
+        + "'", nativeQuery = true)
     List<AIPUpdateRequest> findAllAipDistinctByAipIdInAndState(@Param("ids") List<Long> aipIds,
                                                                @Param("state") String state);
 }

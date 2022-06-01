@@ -194,8 +194,8 @@ public class ProcessPluginConfigService implements IProcessPluginConfigService {
         return rightsPluginConfigRepo.findByPluginConfigurationBusinessId(processBusinessId.toString())
                                      .getOrElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                                                                                        "Rights for plugin with UUID "
-                                                                                           + processBusinessId
-                                                                                           + " not found"));
+                                                                                       + processBusinessId
+                                                                                       + " not found"));
     }
 
     @SuppressWarnings("serial")

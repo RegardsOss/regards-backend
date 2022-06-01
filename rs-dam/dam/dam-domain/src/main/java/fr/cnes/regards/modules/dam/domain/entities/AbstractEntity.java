@@ -414,9 +414,23 @@ public abstract class AbstractEntity<F extends EntityFeature> implements IIndexa
 
     @Override
     public String toString() {
-        return "AbstractEntity [lastUpdate=" + lastUpdate + ", creationDate=" + creationDate + ", id=" + id + ", ipId="
-            + getIpId() + ", providerId=" + getProviderId() + ", label=" + getLabel() + ", attributes="
-            + getProperties() + ", model=" + model + "]";
+        return "AbstractEntity [lastUpdate="
+               + lastUpdate
+               + ", creationDate="
+               + creationDate
+               + ", id="
+               + id
+               + ", ipId="
+               + getIpId()
+               + ", providerId="
+               + getProviderId()
+               + ", label="
+               + getLabel()
+               + ", attributes="
+               + getProperties()
+               + ", model="
+               + model
+               + "]";
     }
 
     public F getFeature() {

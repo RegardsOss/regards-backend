@@ -19,6 +19,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableAsync
 @EnableScheduling
 public class JobTestConfiguration {
+
     @Bean
     public JobTestCleaner jobTestCleaner() {
         return new JobTestCleaner();

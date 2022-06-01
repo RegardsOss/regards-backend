@@ -91,8 +91,12 @@ public final class DataSourceHelper {
 
         final DriverManagerDataSource dmDataSource = new DriverManagerDataSource();
         dmDataSource.setDriverClassName(EMBEDDED_HSQL_DRIVER_CLASS);
-        dmDataSource.setUrl(EMBEDDED_HSQL_URL + pEmbeddedPath + DataSourceHelper.EMBEDDED_URL_SEPARATOR + pTenant
-                                + DataSourceHelper.EMBEDDED_URL_SEPARATOR + DataSourceHelper.EMBEDDED_URL_BASE_NAME);
+        dmDataSource.setUrl(EMBEDDED_HSQL_URL
+                            + pEmbeddedPath
+                            + DataSourceHelper.EMBEDDED_URL_SEPARATOR
+                            + pTenant
+                            + DataSourceHelper.EMBEDDED_URL_SEPARATOR
+                            + DataSourceHelper.EMBEDDED_URL_BASE_NAME);
 
         LOGGER.info("\n{}\nCreating an EMBEDDED datasource for tenant {} with path {}\n{}",
                     HR,

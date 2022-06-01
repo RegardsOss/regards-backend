@@ -267,7 +267,7 @@ public class GeoHelper {
      */
     public static boolean containsPolygonOrBboxCriterion(ICriterion criterion) {
         PredicateCriterionVisitor visitor = new PredicateCriterionVisitor(crit -> (crit instanceof PolygonCriterion)
-            || (crit instanceof BoundaryBoxCriterion));
+                                                                                  || (crit instanceof BoundaryBoxCriterion));
         return criterion.accept(visitor);
     }
 
@@ -737,7 +737,7 @@ public class GeoHelper {
                 double medianLatitude = rightBorderLat == leftBorderLat ?
                     rightBorderLat :
                     ((leftBorderLon * (rightBorderLat - leftBorderLat)) / ((leftBorderLon + MAX_CHEATED_LONGITUDE)
-                        - rightBorderLon)) + leftBorderLat;
+                                                                           - rightBorderLon)) + leftBorderLat;
                 rightCutPoint[1] = leftCutPoint[1] = medianLatitude;
             } else { // Cut meridian is dateline => max longitude is 180
                 rightCutPoint[0] = 180.0;
@@ -746,7 +746,8 @@ public class GeoHelper {
                 double medianLatitude = rightBorderLat == leftBorderLat ?
                     rightBorderLat :
                     (((180.0 - leftBorderLon) * (rightBorderLat - leftBorderLat)) / ((180.0 - leftBorderLon)
-                        + rightBorderLon + 180.0)) + leftBorderLat;
+                                                                                     + rightBorderLon
+                                                                                     + 180.0)) + leftBorderLat;
                 rightCutPoint[1] = leftCutPoint[1] = medianLatitude;
             }
 
@@ -799,8 +800,9 @@ public class GeoHelper {
         for (int i = startIdx; i < lineString.length; i++) {
             // Take the "eastmost" max (except if it is at index 0 which means it is already the rightest, think as
             // cycle array)
-            if ((lineString[i][1] > 0.0) && ((lineString[i][0] > lineString[idxMaxLon][0]) || (
-                (lineString[i][0] == lineString[idxMaxLon][0]) && (i != 0)))) {
+            if ((lineString[i][1] > 0.0) && ((lineString[i][0] > lineString[idxMaxLon][0]) || ((lineString[i][0]
+                                                                                                == lineString[idxMaxLon][0])
+                                                                                               && (i != 0)))) {
                 idxMaxLon = i;
             }
         }
@@ -1118,14 +1120,12 @@ public class GeoHelper {
             for (Position position : positions) {
                 if (lastPosition != null) {
                     boolean found = createIntermediatePositions(lastPosition, position).stream()
-                                                                                       .anyMatch(p ->
-                                                                                                     GeoHelper.getDistance(
-                                                                                                         point[0],
-                                                                                                         point[1],
-                                                                                                         p.getLongitude(),
-                                                                                                         p.getLatitude(),
-                                                                                                         crs)
-                                                                                                         < distance);
+                                                                                       .anyMatch(p -> GeoHelper.getDistance(
+                                                                                           point[0],
+                                                                                           point[1],
+                                                                                           p.getLongitude(),
+                                                                                           p.getLatitude(),
+                                                                                           crs) < distance);
                     if (found) {
                         return found;
                     }

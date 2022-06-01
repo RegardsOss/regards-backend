@@ -137,7 +137,7 @@ public class FeatureFilesService {
             newLocations = fileToUpdate.getLocations()
                                        .stream()
                                        .filter(l -> l.getStorage() != null
-                                           || !CollectionUtils.isEmpty(storageLocations))
+                                                    || !CollectionUtils.isEmpty(storageLocations))
                                        .collect(Collectors.toSet());
             feature.getFeature().getFiles().add(fileToUpdate);
         }

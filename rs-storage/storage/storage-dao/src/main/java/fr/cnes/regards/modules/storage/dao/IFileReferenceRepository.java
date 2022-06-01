@@ -56,12 +56,12 @@ public interface IFileReferenceRepository
 
     @Query(
         "select fr.location.storage as storage, sum(fr.metaInfo.fileSize) as usedSize, count(*) as numberOfFileReference, max(fr.id) as lastFileReferenceId"
-            + " from FileReference fr group by storage")
+        + " from FileReference fr group by storage")
     Collection<StorageMonitoringAggregation> getTotalFileSizeAggregation();
 
     @Query(
         "select fr.location.storage as storage, sum(fr.metaInfo.fileSize) as usedSize, count(*) as numberOfFileReference, max(fr.id) as lastFileReferenceId"
-            + " from FileReference fr where fr.id > :id group by fr.location.storage")
+        + " from FileReference fr where fr.id > :id group by fr.location.storage")
     Collection<StorageMonitoringAggregation> getTotalFileSizeAggregation(@Param("id") Long fromFileReferenceId);
 
     Long countByLocationStorage(String storage);

@@ -139,8 +139,9 @@ public class MultitenantJobIT {
                     LOGGER.info("FAILED for " + wrapper.getContent().getJobId());
                     break;
                 default:
-                    throw new IllegalArgumentException(type + " is not an handled type of JobEvent for this test: "
-                                                           + JobServiceIT.class.getSimpleName());
+                    throw new IllegalArgumentException(type
+                                                       + " is not an handled type of JobEvent for this test: "
+                                                       + JobServiceIT.class.getSimpleName());
             }
         }
     }

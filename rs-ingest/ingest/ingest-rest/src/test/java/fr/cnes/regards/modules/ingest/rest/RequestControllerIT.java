@@ -164,9 +164,9 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
                                                           .value(JSON_STRING_TYPE))
                                     .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                                                           .value("Optional. Multiple values allowed. Allowed values : "
-                                                                     + Arrays.stream(VersioningMode.values())
-                                                                             .map(mode -> mode.toString())
-                                                                             .collect(Collectors.joining(", ")))));
+                                                                 + Arrays.stream(VersioningMode.values())
+                                                                         .map(mode -> mode.toString())
+                                                                         .collect(Collectors.joining(", ")))));
         return params;
     }
 
@@ -221,7 +221,7 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
                                                           .value(JSON_STRING_TYPE))
                                     .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                                                           .value("Optional. Multiple values allowed. Allowed values : "
-                                                                     + queryTypeValues.toString())));
+                                                                 + queryTypeValues.toString())));
 
         params.add(constrainedFields.withPath("state", "state", "State")
                                     .type(JSON_STRING_TYPE)
@@ -230,7 +230,7 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
                                                           .value(JSON_STRING_TYPE))
                                     .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                                                           .value("Optional. Multiple values allowed. Allowed values : "
-                                                                     + stateValues.toString())));
+                                                                 + stateValues.toString())));
 
         params.add(constrainedFields.withPath("stateExcluded", "stateExcluded", "State excluded (ignored)")
                                     .type(JSON_STRING_TYPE)
@@ -239,7 +239,7 @@ public class RequestControllerIT extends AbstractRegardsTransactionalIT {
                                                           .value(JSON_STRING_TYPE))
                                     .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                                                           .value("Optional. Multiple values allowed. Allowed values : "
-                                                                     + stateValues.toString())));
+                                                                 + stateValues.toString())));
 
         params.add(constrainedFields.withPath("creationDate.from", "from", "ISO Date time filtering on creation date")
                                     .optional()

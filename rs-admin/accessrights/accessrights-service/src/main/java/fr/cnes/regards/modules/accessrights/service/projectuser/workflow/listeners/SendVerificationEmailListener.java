@@ -129,7 +129,7 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
                                                                          .setData(data)
                                                                          .setDefaultMessage(
                                                                              "Please click on the following link to confirm your registration: "
-                                                                                 + data.get("confirmationUrl"));
+                                                                             + data.get("confirmationUrl"));
 
         accessRightsEmailService.sendEmail(wrapper);
     }

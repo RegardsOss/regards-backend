@@ -945,11 +945,12 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
             projects.put(tenant, project);
             FeignSecurityManager.reset();
         }
-        String proxyfiedUrl =
-            project.getHost() + urlPrefix + "/" + encode4Uri("rs-catalog") + CATALOG_DOWNLOAD_PATH.replace("{aip_id}",
-                                                                                                           uniformResourceName.toString())
-                                                                                                  .replace("{checksum}",
-                                                                                                           checksum);
+        String proxyfiedUrl = project.getHost()
+                              + urlPrefix
+                              + "/"
+                              + encode4Uri("rs-catalog")
+                              + CATALOG_DOWNLOAD_PATH.replace("{aip_id}", uniformResourceName.toString())
+                                                     .replace("{checksum}", checksum);
         if (locallyStored) {
             proxyfiedUrl += "/dam";
         }

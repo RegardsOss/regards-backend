@@ -363,8 +363,8 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
                              .collect(Collectors.toList());
 
         // we will set all priority to low for the (properties.getMaxBulkSize() / 2) last event
-        for (int i = properties.getMaxBulkSize();
-             i < (properties.getMaxBulkSize() + (properties.getMaxBulkSize() / 2)); i++) {
+        for (int i = properties.getMaxBulkSize(); i < (properties.getMaxBulkSize() + (properties.getMaxBulkSize()
+                                                                                      / 2)); i++) {
             updateEvents.get(i).getMetadata().setPriority(PriorityLevel.HIGH);
         }
 

@@ -55,8 +55,9 @@ public class UniformResourceName {
     /**
      * URN pattern
      */
-    public static final String URN_PATTERN =
-        "URN:[^:]+:[^:]+:[^:]+:[^:]+:(V\\d{1,3}|" + LAST_VALUE + ")(,\\d+)?(:REV.+)?";
+    public static final String URN_PATTERN = "URN:[^:]+:[^:]+:[^:]+:[^:]+:(V\\d{1,3}|"
+                                             + LAST_VALUE
+                                             + ")(,\\d+)?(:REV.+)?";
 
     /**
      * Version prefix
@@ -420,10 +421,14 @@ public class UniformResourceName {
             return false;
         }
         UniformResourceName that = (UniformResourceName) o;
-        return last == that.last && Objects.equals(identifier, that.identifier) && entityType == that.entityType
-            && Objects.equals(tenant, that.tenant) && Objects.equals(entityId, that.entityId) && Objects.equals(version,
-                                                                                                                that.version)
-            && Objects.equals(order, that.order) && Objects.equals(revision, that.revision);
+        return last == that.last
+               && Objects.equals(identifier, that.identifier)
+               && entityType == that.entityType
+               && Objects.equals(tenant, that.tenant)
+               && Objects.equals(entityId, that.entityId)
+               && Objects.equals(version, that.version)
+               && Objects.equals(order, that.order)
+               && Objects.equals(revision, that.revision);
     }
 
     @Override

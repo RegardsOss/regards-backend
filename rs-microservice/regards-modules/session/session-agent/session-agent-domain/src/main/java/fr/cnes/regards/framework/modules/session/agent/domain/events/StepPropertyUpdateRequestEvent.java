@@ -79,7 +79,13 @@ public class StepPropertyUpdateRequestEvent implements ISubscribable {
 
     @Override
     public String toString() {
-        return "StepPropertyUpdateRequestEvent{" + "date=" + date + ", type=" + type + ", stepProperty=" + stepProperty
-            + '}';
+        return "StepPropertyUpdateRequestEvent{"
+               + "date="
+               + date
+               + ", type="
+               + type
+               + ", stepProperty="
+               + stepProperty
+               + '}';
     }
 }

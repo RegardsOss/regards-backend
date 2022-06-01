@@ -41,7 +41,7 @@ public class FeatureDisseminationInfos {
         Set<FeatureUpdateDisseminationRequest> statusRequests = requestsByDisseminationType.compute(request.getUpdateType(),
                                                                                                     (status, requests) ->
                                                                                                         requests
-                                                                                                            == null ?
+                                                                                                        == null ?
                                                                                                             Sets.newHashSet() :
                                                                                                             requests);
 

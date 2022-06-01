@@ -175,10 +175,10 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         AuthenticationStatus status = checkUserStatus(response.getEmail(), scope);
 
         // If authentication is granted and user does not exist and plugin is not the regards internal authentication.
-        if (Boolean.TRUE.equals(response.isAccessGranted()) && (status.equals(AuthenticationStatus.USER_UNKNOWN)
-            || status.equals(AuthenticationStatus.ACCOUNT_UNKNOWN)) && !response.getPluginClassName()
-                                                                                .equals(defaultAuthenticationPlugin.getClass()
-                                                                                                                   .getName())) {
+        if (Boolean.TRUE.equals(response.isAccessGranted())
+            && (status.equals(AuthenticationStatus.USER_UNKNOWN)
+                || status.equals(AuthenticationStatus.ACCOUNT_UNKNOWN))
+            && !response.getPluginClassName().equals(defaultAuthenticationPlugin.getClass().getName())) {
             this.createExternalProjectUser(response.getEmail(), response.getServiceProviderName());
             status = checkUserStatus(response.getEmail(), scope);
         }
@@ -318,8 +318,10 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
             // Check for project user status if the tenant to access is not instance and the user logged is not instance
             // root user.
-            if (status.equals(AuthenticationStatus.ACCESS_GRANTED) && (tenant != null)
-                && !runTimeTenantResolver.isInstance() && !userEmail.equals(staticRootLogin)) {
+            if (status.equals(AuthenticationStatus.ACCESS_GRANTED)
+                && (tenant != null)
+                && !runTimeTenantResolver.isInstance()
+                && !userEmail.equals(staticRootLogin)) {
                 // Retrieve user projectUser
                 try {
                     FeignSecurityManager.asSystem();

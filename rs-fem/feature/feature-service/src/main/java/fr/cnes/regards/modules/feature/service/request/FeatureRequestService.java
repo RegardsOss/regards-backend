@@ -238,7 +238,7 @@ public class FeatureRequestService implements IFeatureRequestService {
         featureCreationService.handleSuccessfulCreation(creationRequests);
         featureUpdateService.doOnSuccess(updateRequests);
         LOGGER.debug("------------->>> {} features updated from {} storage responses "
-                         + "associated to {} creation requests and {} update requests in {} ms",
+                     + "associated to {} creation requests and {} update requests in {} ms",
                      updatedFeatures.size(),
                      requestsInfo.size(),
                      creationRequests.size(),

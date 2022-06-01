@@ -184,8 +184,21 @@ public class Module {
 
     @Override
     public String toString() {
-        return "Module [id=" + id + ", type=" + type + ", description=" + description + ", applicationId="
-            + applicationId + ", container=" + container + ", conf=" + conf + ", active=" + active + "]";
+        return "Module [id="
+               + id
+               + ", type="
+               + type
+               + ", description="
+               + description
+               + ", applicationId="
+               + applicationId
+               + ", container="
+               + container
+               + ", conf="
+               + conf
+               + ", active="
+               + active
+               + "]";
     }
 
 }

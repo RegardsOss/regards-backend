@@ -402,40 +402,49 @@ public class SwhOpenSearchControllerIT extends AbstractEngineIT {
         customizer.addParameter("token", "public_token");
         String atomUrl = "OpenSearchDescription/Url[@type='" + MediaType.APPLICATION_ATOM_XML_VALUE + "']";
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "[count(Parameter)=65]").exists());
-        customizer.expect(MockMvcResultMatchers.xpath(
-                                                   atomUrl + "/Parameter[@name='illuminationAzimuthAngle' and @value='{eo:illuminationAzimuthAngle}']")
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl
+                                                      + "/Parameter[@name='illuminationAzimuthAngle' and @value='{eo:illuminationAzimuthAngle}']")
                                                .exists());
-        customizer.expect(MockMvcResultMatchers.xpath(
-            atomUrl + "/Parameter[@name='Platform' and @value='{eo:platform}']").exists());
-        customizer.expect(MockMvcResultMatchers.xpath(
-            atomUrl + "/Parameter[@name='Instrument' and @value='{eo:instrument}']").exists());
-        customizer.expect(MockMvcResultMatchers.xpath(
-            atomUrl + "/Parameter[@name='CloudCover' and @value='{eo:cloudCover}']").exists());
-        customizer.expect(MockMvcResultMatchers.xpath(
-                                                   atomUrl + "/Parameter[@name='illuminationElevationAngle' and @value='{eo:illuminationElevationAngle}']")
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl
+                                                      + "/Parameter[@name='Platform' and @value='{eo:platform}']")
                                                .exists());
-        customizer.expect(MockMvcResultMatchers.xpath(
-            atomUrl + "/Parameter[@name='ProcessingDate' and @value='{eo:processingDate}']").exists());
-        customizer.expect(MockMvcResultMatchers.xpath(
-            atomUrl + "/Parameter[@name='acquisitionStation' and @value='{eo:acquisitionStation}']").exists());
-        customizer.expect(MockMvcResultMatchers.xpath(
-            atomUrl + "/Parameter[@name='SensorCode' and @value='{eo:sensorType}']").exists());
-        customizer.expect(MockMvcResultMatchers.xpath(
-            atomUrl + "/Parameter[@name='SwathIdentifier' and @value='{eo:swathIdentifier}']").exists());
-        customizer.expect(MockMvcResultMatchers.xpath(
-            atomUrl + "/Parameter[@name='minimumIncidenceAngle' and @value='{eo:minimumIncidenceAngle}']").exists());
-        customizer.expect(MockMvcResultMatchers.xpath(
-            atomUrl + "/Parameter[@name='ProcessingLevel' and @value='{eo:processingLevel}']").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl
+                                                      + "/Parameter[@name='Instrument' and @value='{eo:instrument}']")
+                                               .exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl
+                                                      + "/Parameter[@name='CloudCover' and @value='{eo:cloudCover}']")
+                                               .exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl
+                                                      + "/Parameter[@name='illuminationElevationAngle' and @value='{eo:illuminationElevationAngle}']")
+                                               .exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl
+                                                      + "/Parameter[@name='ProcessingDate' and @value='{eo:processingDate}']")
+                                               .exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl
+                                                      + "/Parameter[@name='acquisitionStation' and @value='{eo:acquisitionStation}']")
+                                               .exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl
+                                                      + "/Parameter[@name='SensorCode' and @value='{eo:sensorType}']")
+                                               .exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl
+                                                      + "/Parameter[@name='SwathIdentifier' and @value='{eo:swathIdentifier}']")
+                                               .exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl
+                                                      + "/Parameter[@name='minimumIncidenceAngle' and @value='{eo:minimumIncidenceAngle}']")
+                                               .exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl
+                                                      + "/Parameter[@name='ProcessingLevel' and @value='{eo:processingLevel}']")
+                                               .exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='updated' and @value='{updated}']")
                                                .exists());
         long startTime = System.currentTimeMillis();
-        performDefaultGet(
-            SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA,
-            customizer,
-            "open search description error",
-            ENGINE_TYPE,
-            swhDataset.getIpId().toString(),
-            OpenSearchEngine.EXTRA_DESCRIPTION);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING
+                          + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA,
+                          customizer,
+                          "open search description error",
+                          ENGINE_TYPE,
+                          swhDataset.getIpId().toString(),
+                          OpenSearchEngine.EXTRA_DESCRIPTION);
         logDuration(startTime);
     }
 

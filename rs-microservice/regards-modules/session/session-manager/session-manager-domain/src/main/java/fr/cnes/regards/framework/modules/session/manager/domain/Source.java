@@ -136,7 +136,18 @@ public class Source {
 
     @Override
     public String toString() {
-        return "Source{" + "name='" + name + '\'' + ", nbSessions=" + nbSessions + ", steps=" + steps
-            + ", lastUpdateDate=" + lastUpdateDate + ", managerState=" + managerState + '}';
+        return "Source{"
+               + "name='"
+               + name
+               + '\''
+               + ", nbSessions="
+               + nbSessions
+               + ", steps="
+               + steps
+               + ", lastUpdateDate="
+               + lastUpdateDate
+               + ", managerState="
+               + managerState
+               + '}';
     }
 }

@@ -42,8 +42,9 @@ public class LineStringBuilder
     public LineStringBuilder(List<Coordinate> coordinates) {
         super(coordinates);
         if (coordinates.size() < 2) {
-            throw new IllegalArgumentException(
-                "invalid number of points in LineString (found [" + coordinates.size() + "] - must be >= 2)");
+            throw new IllegalArgumentException("invalid number of points in LineString (found ["
+                                               + coordinates.size()
+                                               + "] - must be >= 2)");
         }
     }
 
@@ -67,8 +68,8 @@ public class LineStringBuilder
     @Override
     public int numDimensions() {
         if (coordinates == null || coordinates.isEmpty()) {
-            throw new IllegalStateException(
-                "unable to get number of dimensions, " + "LineString has not yet been initialized");
+            throw new IllegalStateException("unable to get number of dimensions, "
+                                            + "LineString has not yet been initialized");
         }
         return Double.isNaN(coordinates.get(0).z) ? 2 : 3;
     }

@@ -133,8 +133,9 @@ public class RegardsExtension extends AbstractExtension {
     }
 
     private boolean isRegardsExtensionAttribute(ParameterConfiguration configuration) {
-        return (configuration == null) || (configuration.getNamespace() == null)
-            || REGARDS_NS.equals(configuration.getNamespace());
+        return (configuration == null)
+               || (configuration.getNamespace() == null)
+               || REGARDS_NS.equals(configuration.getNamespace());
     }
 
 }

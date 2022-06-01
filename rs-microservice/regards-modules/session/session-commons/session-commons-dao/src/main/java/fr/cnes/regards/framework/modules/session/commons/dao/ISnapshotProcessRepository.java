@@ -41,6 +41,6 @@ public interface ISnapshotProcessRepository extends JpaRepository<SnapshotProces
 
     @Modifying
     @Query("DELETE FROM SnapshotProcess p where p.source NOT IN (SELECT s.source FROM SessionStep s) "
-        + "AND (p.lastUpdateDate IS NULL OR p.lastUpdateDate <= ?1)")
+           + "AND (p.lastUpdateDate IS NULL OR p.lastUpdateDate <= ?1)")
     int deleteUnusedProcess(OffsetDateTime limitDate);
 }

@@ -194,7 +194,7 @@ public class DownloadQuotaExceededReporter implements IQuotaExceededReporter<Dow
                                                                                                                  return t.map2(
                                                                                                                      c ->
                                                                                                                          c
-                                                                                                                             + 1);
+                                                                                                                         + 1);
                                                                                                              })._2);
     }
 }

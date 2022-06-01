@@ -122,9 +122,14 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
         // Scan all sql scripts without considering modules (into resources/scripts, there are one dir per module)
         Collection<LoadableResource> sqlScripts = scanner.getResources("", SQL_MIGRATION_SUFFIX);
         // Manage resource (ie SQL scripts) pattern (^scripts/(.*)/.*\\.sql)
-        Pattern scriptPattern = Pattern.compile(
-            "^" + SCRIPT_LOCATION_PATH + File.separator + "(.*)" + File.separator + ".*\\" + SQL_MIGRATION_SUFFIX
-                + "$");
+        Pattern scriptPattern = Pattern.compile("^"
+                                                + SCRIPT_LOCATION_PATH
+                                                + File.separator
+                                                + "(.*)"
+                                                + File.separator
+                                                + ".*\\"
+                                                + SQL_MIGRATION_SUFFIX
+                                                + "$");
         // Retrieve all modules (scripts are into <module> dir)
         Set<String> modules = new HashSet<>();
         for (Resource script : sqlScripts) {
@@ -244,8 +249,11 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
 
         Properties properties = new Properties();
 
-        try (InputStream input = classLoader.getResourceAsStream(
-            SCRIPT_LOCATION_PATH + File.separator + module + File.separator + "dbmodule.properties")) {
+        try (InputStream input = classLoader.getResourceAsStream(SCRIPT_LOCATION_PATH
+                                                                 + File.separator
+                                                                 + module
+                                                                 + File.separator
+                                                                 + "dbmodule.properties")) {
             if (input == null) {
                 LOGGER.info("No module property found for module \"{}\"", module);
             } else {

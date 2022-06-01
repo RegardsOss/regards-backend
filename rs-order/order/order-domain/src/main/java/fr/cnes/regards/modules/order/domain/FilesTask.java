@@ -119,12 +119,14 @@ public class FilesTask extends LeafTask {
      */
     public void computeWaitingForUser() {
         Set<OrderDataFile> notInErrorFiles = files.stream()
-                                                  .filter(f -> (f.getState() != FileState.ERROR) && (f.getState()
-                                                      != FileState.DOWNLOAD_ERROR) && (f.getState()
-                                                      != FileState.PROCESSING_ERROR))
+                                                  .filter(f -> (f.getState() != FileState.ERROR)
+                                                               && (f.getState()
+                                                                   != FileState.DOWNLOAD_ERROR)
+                                                               && (f.getState() != FileState.PROCESSING_ERROR))
                                                   .collect(Collectors.toSet());
         // Not in error nor download_error files are all available
-        this.waitingForUser =
-            !notInErrorFiles.isEmpty() && notInErrorFiles.stream().allMatch(f -> f.getState() == FileState.AVAILABLE);
+        this.waitingForUser = !notInErrorFiles.isEmpty() && notInErrorFiles.stream()
+                                                                           .allMatch(f -> f.getState()
+                                                                                          == FileState.AVAILABLE);
     }
 }

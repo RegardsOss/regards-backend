@@ -365,8 +365,9 @@ public class StorageLocationController implements IResourceController<StorageLoc
                                     MethodParamFactory.build(Boolean.class));
             return resource;
         }
-        StorageType type =
-            location.getConfiguration() != null ? location.getConfiguration().getStorageType() : StorageType.OFFLINE;
+        StorageType type = location.getConfiguration() != null ?
+            location.getConfiguration().getStorageType() :
+            StorageType.OFFLINE;
         if (type != StorageType.OFFLINE) {
             if (!location.getConfiguration().getPriority().equals(StorageLocationConfiguration.HIGHEST_PRIORITY)) {
                 resourceService.addLink(resource,

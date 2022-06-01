@@ -198,8 +198,9 @@ public class OrderRetryService implements IOrderRetryService {
                                      int subOrderDuration,
                                      int priority,
                                      String role) {
-        if (!bucket.isEmpty() && (last || bucket.size() >= MAX_BUCKET_FILE_COUNT
-            || suborderSizeCounter.storageBucketTooBig(bucket))) {
+        if (!bucket.isEmpty() && (last
+                                  || bucket.size() >= MAX_BUCKET_FILE_COUNT
+                                  || suborderSizeCounter.storageBucketTooBig(bucket))) {
             UUID jobInfoId = self.createStorageSubOrder(datasetTask,
                                                         bucket,
                                                         orderId,
@@ -219,8 +220,9 @@ public class OrderRetryService implements IOrderRetryService {
                                       OrderCounts counts,
                                       long orderId,
                                       String owner) {
-        if (!bucket.isEmpty() && (last || bucket.size() >= MAX_BUCKET_FILE_COUNT
-            || suborderSizeCounter.externalBucketTooBig(bucket))) {
+        if (!bucket.isEmpty() && (last
+                                  || bucket.size() >= MAX_BUCKET_FILE_COUNT
+                                  || suborderSizeCounter.externalBucketTooBig(bucket))) {
             self.createExternalSubOrder(datasetTask, bucket, orderId, owner);
             counts.incrSubOrderCount();
             bucket.clear();

@@ -41,8 +41,8 @@ public class OpenSearchMediaType {
     /**
      * A String equivalent of {@link MediaType#APPLICATION_JSON_UTF8}.
      */
-    public static final String APPLICATION_OPENSEARCH_DESC_VALUE_UTF8_VALUE =
-        APPLICATION_OPENSEARCH_DESC_VALUE + ";charset=UTF-8";
+    public static final String APPLICATION_OPENSEARCH_DESC_VALUE_UTF8_VALUE = APPLICATION_OPENSEARCH_DESC_VALUE
+                                                                              + ";charset=UTF-8";
 
     static {
         APPLICATION_OPENSEARCH_DESC = MediaType.valueOf(APPLICATION_OPENSEARCH_DESC_VALUE);

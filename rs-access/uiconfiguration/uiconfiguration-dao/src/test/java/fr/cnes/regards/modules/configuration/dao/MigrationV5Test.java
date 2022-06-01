@@ -144,9 +144,9 @@ public class MigrationV5Test {
     public static void writeConfFile(String outputFolder, String conf, int fileIndex, boolean backup)
         throws IOException {
         // A - Build file name: .../module_{index}{_backup?}.json
-        String outputFile =
-            outputFolder + (outputFolder.endsWith("/") ? "" : "/") + "module_" + fileIndex + (backup ? "_backup" : "")
-                + ".json";
+        String outputFile = outputFolder + (outputFolder.endsWith("/") ? "" : "/") + "module_" + fileIndex + (backup ?
+            "_backup" :
+            "") + ".json";
         Files.write(Paths.get(outputFile), conf.getBytes());
     }
 
@@ -171,8 +171,8 @@ public class MigrationV5Test {
 
     public static void writeToSQL(String outputFolder, List<Map<String, Object>> modules) throws IOException {
         String sqlInsertionScript = "DELETE FROM accessproject.t_ui_module;\n"
-            + "INSERT INTO accessproject.t_ui_module(id,type,description,container,active,applicationid,home,customiconurl,icontype,title,conf)\n"
-            + "VALUES\n";
+                                    + "INSERT INTO accessproject.t_ui_module(id,type,description,container,active,applicationid,home,customiconurl,icontype,title,conf)\n"
+                                    + "VALUES\n";
         List<String> insertedModules = new ArrayList<>(modules.size());
         for (Map<String, Object> module : modules) {
             Map<String, Object> moduleContent = (Map<String, Object>) module.get("content");

@@ -33,7 +33,7 @@ public class LogUtils {
         int orderIdLastChar = batchCorrelationId.indexOf("_");
 
         // Set log correlation id
-        CorrelationIdUtils.setCorrelationId(
-            ORDER_ID_LOG_KEY + batchCorrelationId.substring(orderIdFirstChar, orderIdLastChar));
+        CorrelationIdUtils.setCorrelationId(ORDER_ID_LOG_KEY + batchCorrelationId.substring(orderIdFirstChar,
+                                                                                            orderIdLastChar));
     }
 }

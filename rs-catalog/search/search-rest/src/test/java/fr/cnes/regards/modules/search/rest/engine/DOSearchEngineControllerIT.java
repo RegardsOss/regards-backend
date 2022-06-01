@@ -61,8 +61,8 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
 
     private static final String ACCESS_GROUP = "GRANTED";
 
-    private static final String PATH =
-        SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING;
+    private static final String PATH = SearchEngineMappings.TYPE_MAPPING
+                                       + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING;
 
     @Autowired
     protected IAccessGroupClient accessGroupClient;

@@ -231,7 +231,7 @@ public final class DaoUtils {
                             inRelationClass = (Class<?>) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
                         }
                     } else if (field.isAnnotationPresent(ManyToOne.class)
-                        || field.isAnnotationPresent(OneToOne.class)) {
+                               || field.isAnnotationPresent(OneToOne.class)) {
                         inRelationClass = field.getType();
                     }
                     // Adding found class if not already present into classes (to avoid infinite recursion)

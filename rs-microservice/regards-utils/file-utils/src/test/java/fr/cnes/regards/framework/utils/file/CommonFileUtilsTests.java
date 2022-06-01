@@ -66,10 +66,11 @@ public class CommonFileUtilsTests {
         Files.createDirectories(dirWithFile);
         Files.createFile(alreadyExistingFile);
         String availableFileName = CommonFileUtils.getAvailableFileName(dirWithFile, fileName);
-        Assert.assertEquals(
-            fileName + " already exist so next available file name for " + fileName + " should be " + expectedFileName,
-            expectedFileName,
-            availableFileName);
+        Assert.assertEquals(fileName
+                            + " already exist so next available file name for "
+                            + fileName
+                            + " should be "
+                            + expectedFileName, expectedFileName, availableFileName);
         //clean dir for next test run
         Files.walkFileTree(dirWithFile, new SimpleFileVisitor<Path>() {
 

@@ -275,40 +275,54 @@ public class ModelAttributeControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer();
         requestBuilderCustomizer.expect(MockMvcResultMatchers.status().isOk());
 
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-                                                                 "$.[?(@.content.attribute.name == \'" + att.getName() + "\')].content.attribute.id")
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att.getName()
+                                                                       + "\')].content.attribute.id")
                                                              .value(att.getId().intValue()));
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-                                                                 "$.[?(@.content.attribute.name == \'" + att.getName() + "\')].content.attribute.name")
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att.getName()
+                                                                       + "\')].content.attribute.name")
                                                              .value(att.getName()));
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-                                                                 "$.[?(@.content.attribute.name == \'" + att.getName() + "\')].content.attribute.type")
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att.getName()
+                                                                       + "\')].content.attribute.type")
                                                              .value(att.getType().toString()));
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-                                                                 "$.[?(@.content.attribute.name == \'" + att.getName() + "\')].content.model.id")
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att.getName()
+                                                                       + "\')].content.model.id")
                                                              .value(mod.getId().intValue()));
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-            "$.[?(@.content.attribute.name == \'" + att.getName() + "\')].content.model.name").value(mod.getName()));
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-                                                                 "$.[?(@.content.attribute.name == \'" + att.getName() + "\')].content.model.type")
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att.getName()
+                                                                       + "\')].content.model.name")
+                                                             .value(mod.getName()));
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att.getName()
+                                                                       + "\')].content.model.type")
                                                              .value(mod.getType().toString()));
 
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-                                                                 "$.[?(@.content.attribute.name == \'" + att2.getName() + "\')].content.attribute.id")
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att2.getName()
+                                                                       + "\')].content.attribute.id")
                                                              .value(att2.getId().intValue()));
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-                                                                 "$.[?(@.content.attribute.name == \'" + att2.getName() + "\')].content.attribute.name")
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att2.getName()
+                                                                       + "\')].content.attribute.name")
                                                              .value(att2.getName()));
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-                                                                 "$.[?(@.content.attribute.name == \'" + att2.getName() + "\')].content.attribute.type")
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att2.getName()
+                                                                       + "\')].content.attribute.type")
                                                              .value(att2.getType().toString()));
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-                                                                 "$.[?(@.content.attribute.name == \'" + att2.getName() + "\')].content.model.id")
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att2.getName()
+                                                                       + "\')].content.model.id")
                                                              .value(mod.getId().intValue()));
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-            "$.[?(@.content.attribute.name == \'" + att2.getName() + "\')].content.model.name").value(mod.getName()));
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-                                                                 "$.[?(@.content.attribute.name == \'" + att2.getName() + "\')].content.model.type")
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att2.getName()
+                                                                       + "\')].content.model.name")
+                                                             .value(mod.getName()));
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att2.getName()
+                                                                       + "\')].content.model.type")
                                                              .value(mod.getType().toString()));
 
         requestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation.parameterWithName(
@@ -412,8 +426,10 @@ public class ModelAttributeControllerIT extends AbstractRegardsIT {
                                                                        Matchers.hasSize(shouldBeCollections.size())));
         requestBuilderCustomizer.expect(MockMvcResultMatchers.content().json(gson(shouldBeCollections), false));
 
-        performDefaultGet(ModelAttrAssocController.BASE_MAPPING + ModelAttrAssocController.ASSOCS_MAPPING + "?type="
-                              + EntityType.COLLECTION,
+        performDefaultGet(ModelAttrAssocController.BASE_MAPPING
+                          + ModelAttrAssocController.ASSOCS_MAPPING
+                          + "?type="
+                          + EntityType.COLLECTION,
                           requestBuilderCustomizer,
                           "Should return model attribute association");
 
@@ -423,8 +439,10 @@ public class ModelAttributeControllerIT extends AbstractRegardsIT {
         requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(shouldBeData.size())));
         requestBuilderCustomizer.expect(MockMvcResultMatchers.content().json(gson(shouldBeData), false));
 
-        performDefaultGet(ModelAttrAssocController.BASE_MAPPING + ModelAttrAssocController.ASSOCS_MAPPING + "?type="
-                              + EntityType.DATA, requestBuilderCustomizer, "Should return model attribute association");
+        performDefaultGet(ModelAttrAssocController.BASE_MAPPING
+                          + ModelAttrAssocController.ASSOCS_MAPPING
+                          + "?type="
+                          + EntityType.DATA, requestBuilderCustomizer, "Should return model attribute association");
 
         requestBuilderCustomizer = customizer();
         requestBuilderCustomizer.expect(MockMvcResultMatchers.status().isOk());
@@ -445,13 +463,13 @@ public class ModelAttributeControllerIT extends AbstractRegardsIT {
                                                                                                                        RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                                                                                                                    .value(
                                                                                                                        "Available values: "
-                                                                                                                           + Arrays.stream(
-                                                                                                                                       EntityType.values())
-                                                                                                                                   .map(
-                                                                                                                                       type -> type.name())
-                                                                                                                                   .collect(
-                                                                                                                                       Collectors.joining(
-                                                                                                                                           ", "))))
+                                                                                                                       + Arrays.stream(
+                                                                                                                                   EntityType.values())
+                                                                                                                               .map(
+                                                                                                                                   type -> type.name())
+                                                                                                                               .collect(
+                                                                                                                                   Collectors.joining(
+                                                                                                                                       ", "))))
                                                                                                      .optional()));
 
         performDefaultGet(ModelAttrAssocController.BASE_MAPPING + ModelAttrAssocController.ASSOCS_MAPPING,
@@ -554,12 +572,13 @@ public class ModelAttributeControllerIT extends AbstractRegardsIT {
                                                                                                                         .value(
                                                                                                                             JSON_NUMBER_TYPE))));
 
-        performDefaultDelete(
-            ModelAttrAssocController.BASE_MAPPING + ModelAttrAssocController.TYPE_MAPPING + ATTRIBUTE_ID,
-            requestBuilderCustomizer,
-            "Model should be deleted",
-            mod.getName(),
-            modAtt.getId());
+        performDefaultDelete(ModelAttrAssocController.BASE_MAPPING
+                             + ModelAttrAssocController.TYPE_MAPPING
+                             + ATTRIBUTE_ID,
+                             requestBuilderCustomizer,
+                             "Model should be deleted",
+                             mod.getName(),
+                             modAtt.getId());
     }
 
     /**
@@ -587,40 +606,54 @@ public class ModelAttributeControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer();
         requestBuilderCustomizer.expect(MockMvcResultMatchers.status().isOk());
 
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-                                                                 "$.[?(@.content.attribute.name == \'" + att.getName() + "\')].content.attribute.id")
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att.getName()
+                                                                       + "\')].content.attribute.id")
                                                              .value(att.getId().intValue()));
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-                                                                 "$.[?(@.content.attribute.name == \'" + att.getName() + "\')].content.attribute.name")
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att.getName()
+                                                                       + "\')].content.attribute.name")
                                                              .value(att.getName()));
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-                                                                 "$.[?(@.content.attribute.name == \'" + att.getName() + "\')].content.attribute.type")
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att.getName()
+                                                                       + "\')].content.attribute.type")
                                                              .value(att.getType().toString()));
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-                                                                 "$.[?(@.content.attribute.name == \'" + att.getName() + "\')].content.model.id")
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att.getName()
+                                                                       + "\')].content.model.id")
                                                              .value(mod.getId().intValue()));
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-            "$.[?(@.content.attribute.name == \'" + att.getName() + "\')].content.model.name").value(mod.getName()));
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-                                                                 "$.[?(@.content.attribute.name == \'" + att.getName() + "\')].content.model.type")
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att.getName()
+                                                                       + "\')].content.model.name")
+                                                             .value(mod.getName()));
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att.getName()
+                                                                       + "\')].content.model.type")
                                                              .value(mod.getType().toString()));
 
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-                                                                 "$.[?(@.content.attribute.name == \'" + att2.getName() + "\')].content.attribute.id")
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att2.getName()
+                                                                       + "\')].content.attribute.id")
                                                              .value(att2.getId().intValue()));
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-                                                                 "$.[?(@.content.attribute.name == \'" + att2.getName() + "\')].content.attribute.name")
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att2.getName()
+                                                                       + "\')].content.attribute.name")
                                                              .value(att2.getName()));
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-                                                                 "$.[?(@.content.attribute.name == \'" + att2.getName() + "\')].content.attribute.type")
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att2.getName()
+                                                                       + "\')].content.attribute.type")
                                                              .value(att2.getType().toString()));
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-                                                                 "$.[?(@.content.attribute.name == \'" + att2.getName() + "\')].content.model.id")
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att2.getName()
+                                                                       + "\')].content.model.id")
                                                              .value(mod.getId().intValue()));
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-            "$.[?(@.content.attribute.name == \'" + att2.getName() + "\')].content.model.name").value(mod.getName()));
-        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath(
-                                                                 "$.[?(@.content.attribute.name == \'" + att2.getName() + "\')].content.model.type")
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att2.getName()
+                                                                       + "\')].content.model.name")
+                                                             .value(mod.getName()));
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[?(@.content.attribute.name == \'"
+                                                                       + att2.getName()
+                                                                       + "\')].content.model.type")
                                                              .value(mod.getType().toString()));
 
         requestBuilderCustomizer.document(PayloadDocumentation.requestFields(FragmentControllerIT.documentBody(false,
@@ -635,8 +668,9 @@ public class ModelAttributeControllerIT extends AbstractRegardsIT {
                                                                                                                         .value(
                                                                                                                             JSON_STRING_TYPE))));
 
-        performDefaultPost(ModelAttrAssocController.BASE_MAPPING + ModelAttrAssocController.TYPE_MAPPING
-                               + ModelAttrAssocController.FRAGMENT_BIND_MAPPING,
+        performDefaultPost(ModelAttrAssocController.BASE_MAPPING
+                           + ModelAttrAssocController.TYPE_MAPPING
+                           + ModelAttrAssocController.FRAGMENT_BIND_MAPPING,
                            frag,
                            requestBuilderCustomizer,
                            "Should bind fragment",
@@ -691,8 +725,9 @@ public class ModelAttributeControllerIT extends AbstractRegardsIT {
                                                                                                                         .value(
                                                                                                                             JSON_NUMBER_TYPE))));
 
-        performDefaultDelete(ModelAttrAssocController.BASE_MAPPING + ModelAttrAssocController.TYPE_MAPPING
-                                 + ModelAttrAssocController.FRAGMENT_UNBIND_MAPPING,
+        performDefaultDelete(ModelAttrAssocController.BASE_MAPPING
+                             + ModelAttrAssocController.TYPE_MAPPING
+                             + ModelAttrAssocController.FRAGMENT_UNBIND_MAPPING,
                              requestBuilderCustomizer,
                              "Fragment's attributes should be deleted",
                              mod.getName(),

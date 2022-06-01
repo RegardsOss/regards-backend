@@ -64,8 +64,14 @@ public class RolesHierarchyKeyGenerator implements IRolesHierarchyKeyGenerator, 
      */
     @Override
     public Object generate(Object target, Method method, Object... params) {
-        String key = "RolesHierarchyKeyGenerator_" + method.getName() + "_" + tenantResolver.getTenant() + "_"
-            + authResolver.getRole() + "_" + StringUtils.arrayToDelimitedString(params, "_");
+        String key = "RolesHierarchyKeyGenerator_"
+                     + method.getName()
+                     + "_"
+                     + tenantResolver.getTenant()
+                     + "_"
+                     + authResolver.getRole()
+                     + "_"
+                     + StringUtils.arrayToDelimitedString(params, "_");
         LOGGER.debug("Generated key {} for cache {} ", key, CACHE_NAME);
         return key;
     }

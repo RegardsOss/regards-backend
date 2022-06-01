@@ -123,7 +123,7 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
     @Test
     public void testGetOnePlugin() {
         performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT
-                              + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION,
+                          + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION,
                           customizer().expectStatusOk(),
                           "Error getting one plugin",
                           plugin.getId());
@@ -137,13 +137,13 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
     @Test
     public void testDeleteOnePlugin() {
         performDefaultDelete(UIPluginDefinitionController.REQUEST_MAPPING_ROOT
-                                 + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION,
+                             + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION,
                              customizer().expectStatusOk(),
                              "Error deleting one theme",
                              plugin.getId());
 
         performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT
-                              + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION,
+                          + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION,
                           customizer().expectStatusNotFound(),
                           "Error retrieving plugin",
                           plugin.getId());
@@ -179,7 +179,7 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
     public void testUpdatePlugin() {
         plugin.setSourcePath("plugins/new/bundle.js");
         performDefaultPut(UIPluginDefinitionController.REQUEST_MAPPING_ROOT
-                              + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION,
+                          + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION,
                           plugin,
                           customizer().expectStatusOk(),
                           "Error saving new theme",

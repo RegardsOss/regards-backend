@@ -780,16 +780,16 @@ public class EsQueryTest {
 
         now = System.currentTimeMillis();
         repository.search(searchKey, PageRequest.of(49, 1000, sort), crit).getContent();
-        System.out.println(
-            "page n + m (m > 1) with (m - n) * page size < 10 000 : " + (System.currentTimeMillis() - now) + " ms");
+        System.out.println("page n + m (m > 1) with (m - n) * page size < 10 000 : " + (System.currentTimeMillis()
+                                                                                        - now) + " ms");
 
         now = System.currentTimeMillis();
         repository.search(searchKey,
                           PageRequest.of(65, 1000, sort),
                           crit,
                           Collections.singletonMap("properties.text", FacetType.STRING)).getContent();
-        System.out.println(
-            "page n + m (m > 1) with (m - n) * page size >= 10 000 : " + (System.currentTimeMillis() - now) + " ms");
+        System.out.println("page n + m (m > 1) with (m - n) * page size >= 10 000 : " + (System.currentTimeMillis()
+                                                                                         - now) + " ms");
 
         now = System.currentTimeMillis();
         repository.search(searchKey, PageRequest.of(0, 10000, sort), crit).getContent();

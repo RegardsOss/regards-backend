@@ -132,8 +132,8 @@ public class GeoCriterionWithCircleVisitorTest {
                                  secondCircleCriterion.getCoordinates(),
                                  0.000001);
 
-        Assert.assertTrue(
-            EsHelper.toMeters(firstCircleCriterion.getRadius()) < EsHelper.toMeters(secondCircleCriterion.getRadius()));
+        Assert.assertTrue(EsHelper.toMeters(firstCircleCriterion.getRadius())
+                          < EsHelper.toMeters(secondCircleCriterion.getRadius()));
     }
 
     @Test(expected = IllegalArgumentException.class)

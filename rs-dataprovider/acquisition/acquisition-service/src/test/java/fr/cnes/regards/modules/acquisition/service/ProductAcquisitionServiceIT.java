@@ -345,11 +345,10 @@ public class ProductAcquisitionServiceIT extends AbstractMultitenantServiceIT {
         Assert.assertTrue(scheduled == nbFiles);
 
         Assert.assertTrue(fileService.countByChain(processingChain) == nbFiles);
-        Assert.assertTrue(
-            fileService.countByChainAndStateIn(processingChain, Arrays.asList(AcquisitionFileState.ACQUIRED))
-                == nbFiles);
-        Assert.assertTrue(
-            fileService.countByChainAndStateIn(processingChain, Arrays.asList(AcquisitionFileState.ERROR)) == 0);
+        Assert.assertTrue(fileService.countByChainAndStateIn(processingChain,
+                                                             Arrays.asList(AcquisitionFileState.ACQUIRED)) == nbFiles);
+        Assert.assertTrue(fileService.countByChainAndStateIn(processingChain, Arrays.asList(AcquisitionFileState.ERROR))
+                          == 0);
 
         Page<AcquisitionProcessingChainMonitor> monitor = processingService.buildAcquisitionProcessingChainSummaries(
             null,
@@ -395,8 +394,9 @@ public class ProductAcquisitionServiceIT extends AbstractMultitenantServiceIT {
             // We ignore all others types of events
             if (event instanceof StepPropertyUpdateRequestEvent) {
                 StepPropertyUpdateRequestEvent monitoringEvent = (StepPropertyUpdateRequestEvent) event;
-                String key = monitoringEvent.getStepProperty().getStepPropertyInfo().getProperty() + "_"
-                    + monitoringEvent.getType().toString();
+                String key = monitoringEvent.getStepProperty().getStepPropertyInfo().getProperty()
+                             + "_"
+                             + monitoringEvent.getType().toString();
                 if (callByProperty.containsKey(key)) {
                     callByProperty.put(key, callByProperty.get(key) + 1);
                 } else {
@@ -404,18 +404,21 @@ public class ProductAcquisitionServiceIT extends AbstractMultitenantServiceIT {
                 }
             }
         }
-        Integer incCompleted = callByProperty.get(
-            SessionProductPropertyEnum.PROPERTY_COMPLETED.getName() + "_" + StepPropertyEventTypeEnum.INC);
+        Integer incCompleted = callByProperty.get(SessionProductPropertyEnum.PROPERTY_COMPLETED.getName()
+                                                  + "_"
+                                                  + StepPropertyEventTypeEnum.INC);
         Assert.assertNotNull(incCompleted);
         Assert.assertEquals(nbFiles, incCompleted.intValue());
 
-        Integer decCompleted = callByProperty.get(
-            SessionProductPropertyEnum.PROPERTY_COMPLETED.getName() + "_" + StepPropertyEventTypeEnum.DEC);
+        Integer decCompleted = callByProperty.get(SessionProductPropertyEnum.PROPERTY_COMPLETED.getName()
+                                                  + "_"
+                                                  + StepPropertyEventTypeEnum.DEC);
         Assert.assertNotNull(decCompleted);
         Assert.assertEquals(nbFiles, decCompleted.intValue());
 
-        Integer incGenerated = callByProperty.get(
-            SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName() + "_" + StepPropertyEventTypeEnum.INC);
+        Integer incGenerated = callByProperty.get(SessionProductPropertyEnum.PROPERTY_GENERATED_PRODUCTS.getName()
+                                                  + "_"
+                                                  + StepPropertyEventTypeEnum.INC);
         Assert.assertNotNull(incGenerated);
         Assert.assertEquals(nbFiles, incGenerated.intValue());
     }

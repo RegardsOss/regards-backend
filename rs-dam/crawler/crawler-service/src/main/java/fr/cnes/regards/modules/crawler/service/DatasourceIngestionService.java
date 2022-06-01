@@ -205,8 +205,9 @@ public class DatasourceIngestionService {
             // Set Status to Error... (and status date)
             dsIngestion.setStatus(IngestionStatus.ERROR);
             // and log stack trace into database
-            String stackTrace =
-                dsIngestion.getStackTrace() == null ? cause : dsIngestion.getStackTrace() + "\n" + cause;
+            String stackTrace = dsIngestion.getStackTrace() == null ?
+                cause :
+                dsIngestion.getStackTrace() + "\n" + cause;
             dsIngestion.setStackTrace(stackTrace);
             dsIngestion.setNextPlannedIngestDate(null);
             sendNotificationSummary(dsIngestionRepos.save(dsIngestion));
@@ -332,9 +333,9 @@ public class DatasourceIngestionService {
                 case NOT_FINISHED:
                     notifClient.notify(String.format(
                                            "Indexation ends with %s new indexed objects and %s errors but is not completely terminated.\n"
-                                               + "Something went wrong concerning datasource or Elasticsearch.\nAssociated datasets "
-                                               + "haven't been updated, ingestion may be manualy re-scheduled\nto be laucnhed as "
-                                               + "soon as possible or will continue at its planned date",
+                                           + "Something went wrong concerning datasource or Elasticsearch.\nAssociated datasets "
+                                           + "haven't been updated, ingestion may be manualy re-scheduled\nto be laucnhed as "
+                                           + "soon as possible or will continue at its planned date",
                                            dsIngestion.getSavedObjectsCount(),
                                            dsIngestion.getInErrorObjectsCount()),
                                        title,

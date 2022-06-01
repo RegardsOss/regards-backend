@@ -44,8 +44,8 @@ public class HasValidParentValidator implements ConstraintValidator<HasValidPare
         }
         String roleName = pRole.getName();
         boolean shouldHaveParentRole = !(roleName.equals(DefaultRole.PUBLIC.toString())
-            || roleName.equals(DefaultRole.INSTANCE_ADMIN.toString())
-            || roleName.equals(DefaultRole.PROJECT_ADMIN.toString()));
+                                         || roleName.equals(DefaultRole.INSTANCE_ADMIN.toString())
+                                         || roleName.equals(DefaultRole.PROJECT_ADMIN.toString()));
         if (shouldHaveParentRole) {
             Role parentRole = pRole.getParentRole();
             if ((parentRole == null) || !parentRole.isNative()) {

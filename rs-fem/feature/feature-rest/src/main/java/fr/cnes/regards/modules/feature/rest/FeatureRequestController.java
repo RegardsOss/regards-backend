@@ -91,7 +91,7 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
 
     @Operation(summary = "Delete feature requests by selection", description =
         "Delete feature requests by selection. Synchronous process, so the number of request handled is limited. "
-            + "Information about number of requests handled is returned in the response.")
+        + "Information about number of requests handled is returned in the response.")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Delete feature requests by selection") })
     @RequestMapping(method = RequestMethod.DELETE, path = DELETE_TYPE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Delete feature request by selection", role = DefaultRole.EXPLOIT)
@@ -103,7 +103,7 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
 
     @Operation(summary = "Retry feature requests by selection", description =
         "Retry feature requests by selection. Synchronous process, so the number of request handled is limited. "
-            + "Information about number of requests handled is returned in the response.\")")
+        + "Information about number of requests handled is returned in the response.\")")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Retry feature requests by selection") })
     @RequestMapping(method = RequestMethod.POST, path = RETRY_TYPE_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Retry feature requests", role = DefaultRole.EXPLOIT)

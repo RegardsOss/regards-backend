@@ -168,7 +168,8 @@ public class ProductService implements IProductService {
         } else {
             List<ContentInformation> productCIList = product.getSip().getProperties().getContentInformations();
             for (ContentInformation productCI : productCIList) {
-                if ((productCI.getDataObject() != null) && (productCI.getDataObject().getLocations() != null)
+                if ((productCI.getDataObject() != null)
+                    && (productCI.getDataObject().getLocations() != null)
                     && !productCI.getDataObject().getLocations().isEmpty()) {
                     for (OAISDataObjectLocation location : productCI.getDataObject().getLocations()) {
                         if (productCI.getDataObject().getFileSize() != null) {
@@ -484,7 +485,7 @@ public class ProductService implements IProductService {
                 for (AcquisitionFile af : productNewValidFiles) {
                     af.setState(AcquisitionFileState.INVALID);
                     af.setError(String.format("This file should generate a product(name: %s) which has been created "
-                                                  + "by another chain %s. So it is invalid.",
+                                              + "by another chain %s. So it is invalid.",
                                               productName,
                                               currentProduct.getProcessingChain().getLabel()));
                     sessionNotifier.notifyFileInvalid(session, processingChain.getLabel(), 1);
@@ -506,9 +507,10 @@ public class ProductService implements IProductService {
             fulfillProduct(productNewValidFiles, currentProduct);
 
             // Store for scheduling
-            if ((currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED) && (
-                (currentProduct.getState() == ProductState.COMPLETED) || (currentProduct.getState()
-                    == ProductState.FINISHED))) {
+            if ((currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED) && ((currentProduct.getState()
+                                                                                     == ProductState.COMPLETED) || (
+                                                                                        currentProduct.getState()
+                                                                                        == ProductState.FINISHED))) {
                 LOGGER.trace("Product {} is candidate for SIP generation", currentProduct.getProductName());
                 productsToSchedule.add(currentProduct);
             }
@@ -858,9 +860,10 @@ public class ProductService implements IProductService {
         for (Product currentProduct : page.getContent()) {
             computeProductState(currentProduct);
             // Store for scheduling
-            if ((currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED) && (
-                (currentProduct.getState() == ProductState.COMPLETED) || (currentProduct.getState()
-                    == ProductState.FINISHED))) {
+            if ((currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED) && ((currentProduct.getState()
+                                                                                     == ProductState.COMPLETED) || (
+                                                                                        currentProduct.getState()
+                                                                                        == ProductState.FINISHED))) {
                 LOGGER.trace("Product {} is candidate for SIP generation", currentProduct.getProductName());
                 productsToSchedule.add(currentProduct);
             }

@@ -140,10 +140,8 @@ public class MultiTenancyDaoIT {
         // Check results
         Iterable<User> list = userRepository.findAll();
         list.forEach(results::add);
-        Assert.assertEquals(
-            "Error, there must be 2 elements in the database associated to the tenant test1 not " + results.size(),
-            2,
-            results.size());
+        Assert.assertEquals("Error, there must be 2 elements in the database associated to the tenant test1 not "
+                            + results.size(), 2, results.size());
 
         // Set tenant to project 2
         runtimeTenantResolver.forceTenant(TENANT_TEST_2);
@@ -152,10 +150,9 @@ public class MultiTenancyDaoIT {
         list = userRepository.findAll();
         results.clear();
         list.forEach(results::add);
-        Assert.assertEquals(
-            "Error, there must be no element in the database associated to the tenant test2 (" + results.size() + ")",
-            0,
-            results.size());
+        Assert.assertEquals("Error, there must be no element in the database associated to the tenant test2 ("
+                            + results.size()
+                            + ")", 0, results.size());
 
         newUser = userRepository.save(newUser);
         LOG.info("id=" + newUser.getId());
@@ -164,10 +161,8 @@ public class MultiTenancyDaoIT {
         list = userRepository.findAll();
         results.clear();
         list.forEach(results::add);
-        Assert.assertEquals(
-            "Error, there must be 1 elements in the database associated to the tenant test2 + not " + results.size(),
-            1,
-            results.size());
+        Assert.assertEquals("Error, there must be 1 elements in the database associated to the tenant test2 + not "
+                            + results.size(), 1, results.size());
 
         // Set tenant to an non existing project
         runtimeTenantResolver.forceTenant(TENANT_INVALID);

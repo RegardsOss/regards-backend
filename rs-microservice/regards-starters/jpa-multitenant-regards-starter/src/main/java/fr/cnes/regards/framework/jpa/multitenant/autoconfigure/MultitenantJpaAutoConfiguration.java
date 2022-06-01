@@ -160,7 +160,7 @@ public class MultitenantJpaAutoConfiguration {
         // Use the first dataSource configuration to init the entityManagerFactory
         if (dataSources.isEmpty()) {
             throw new ApplicationContextException("No datasource defined. JPA is not able to start."
-                                                      + " You should define a datasource in the application.properties of the current microservice");
+                                                  + " You should define a datasource in the application.properties of the current microservice");
         }
         final DataSource defaultDataSource = dataSources.values().iterator().next();
 

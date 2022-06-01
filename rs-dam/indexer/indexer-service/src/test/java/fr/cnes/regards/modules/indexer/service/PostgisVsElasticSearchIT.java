@@ -172,8 +172,11 @@ public class PostgisVsElasticSearchIT {
                         i = (i + 1) % BULK_SIZES.length;
                         bulkSize = BULK_SIZES[i];
                         count += dos.size();
-                        System.out.println(
-                            "Saved " + count + "(" + ((System.currentTimeMillis() - start) / 1000) + ") s");
+                        System.out.println("Saved "
+                                           + count
+                                           + "("
+                                           + ((System.currentTimeMillis() - start) / 1000)
+                                           + ") s");
                         dos.clear();
                     }
                 }
@@ -205,7 +208,7 @@ public class PostgisVsElasticSearchIT {
             // + "ST_SetSRID(ST_Point(-144.0, -78.0),
             // 949900)::geography, 50000) AND id <= 100000;"
             "SELECT id FROM s1_geo WHERE ST_Distance(geometry::geography, "
-                + "ST_SetSRID(ST_Point(-144.0, -78.0)::geography, 949900), true) <= 50000 AND id <= 100000")) {
+            + "ST_SetSRID(ST_Point(-144.0, -78.0)::geography, 949900), true) <= 50000 AND id <= 100000")) {
             for (ResultSet rset = pstmt.executeQuery(); rset.next(); ) {
                 postgisIds.add(rset.getInt(1));
             }
@@ -265,8 +268,8 @@ public class PostgisVsElasticSearchIT {
         // With Postgis
         try (PreparedStatement pstmt = ctx.prepareStatement(
             "SELECT id FROM s1_geo WHERE ST_Intersects(geometry::geography, "
-                + "ST_Polygon(ST_GeomFromText('LINESTRING(-146.0 -78.0, -146.0 -77.0, -148.0 -77.0, "
-                + "-148.0 -78.0, -146.0 -78.0)'), 949900)::geography) AND id <= 100000")) {
+            + "ST_Polygon(ST_GeomFromText('LINESTRING(-146.0 -78.0, -146.0 -77.0, -148.0 -77.0, "
+            + "-148.0 -78.0, -146.0 -78.0)'), 949900)::geography) AND id <= 100000")) {
             for (ResultSet rset = pstmt.executeQuery(); rset.next(); ) {
                 postgisIds.add(rset.getInt(1));
             }

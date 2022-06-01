@@ -509,7 +509,7 @@ public class EsRepositoryIT {
         try {
             repository.saveBulk("bulktest", list);
             Assert.fail("saveBulk should have thrown an IllegalArgumentException (last item does not provide id nor "
-                            + "type ");
+                        + "type ");
         } catch (IllegalArgumentException e) {
         }
 

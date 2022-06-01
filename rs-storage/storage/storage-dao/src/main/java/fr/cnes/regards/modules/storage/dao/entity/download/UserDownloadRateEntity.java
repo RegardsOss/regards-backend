@@ -108,9 +108,12 @@ public class UserDownloadRateEntity {
             return false;
         }
         UserDownloadRateEntity that = (UserDownloadRateEntity) o;
-        return Objects.equals(id, that.id) && Objects.equals(instance, that.instance) && Objects.equals(email,
-                                                                                                        that.email)
-            && Objects.equals(gauge, that.gauge) && Objects.equals(expiry, that.expiry);
+        return Objects.equals(id, that.id)
+               && Objects.equals(instance, that.instance)
+               && Objects.equals(email,
+                                 that.email)
+               && Objects.equals(gauge, that.gauge)
+               && Objects.equals(expiry, that.expiry);
     }
 
     @Override

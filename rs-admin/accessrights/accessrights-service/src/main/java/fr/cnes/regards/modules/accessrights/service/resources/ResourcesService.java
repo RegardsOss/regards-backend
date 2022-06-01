@@ -189,7 +189,8 @@ public class ResourcesService implements IResourcesService {
     public List<ResourcesAccess> retrieveMicroserviceControllerEndpoints(String microserviceName,
                                                                          String controllerName,
                                                                          String roleName) {
-        if (RoleAuthority.isInstanceAdminRole(roleName) || RoleAuthority.isProjectAdminRole(roleName)
+        if (RoleAuthority.isInstanceAdminRole(roleName)
+            || RoleAuthority.isProjectAdminRole(roleName)
             || RoleAuthority.isSysRole(roleName)) {
             // No restriction for virtual role
             return resourceAccessRepo.findByMicroserviceAndControllerSimpleNameAndDefaultRoleNotOrderByResource(
@@ -202,7 +203,8 @@ public class ResourcesService implements IResourcesService {
 
     @Override
     public List<String> retrieveMicroserviceControllers(String microserviceName, String roleName) {
-        if (RoleAuthority.isInstanceAdminRole(roleName) || RoleAuthority.isProjectAdminRole(roleName)
+        if (RoleAuthority.isInstanceAdminRole(roleName)
+            || RoleAuthority.isProjectAdminRole(roleName)
             || RoleAuthority.isSysRole(roleName)) {
             // No restriction for virtual role
             return resourceAccessRepo.findAllControllersByMicroservice(microserviceName);

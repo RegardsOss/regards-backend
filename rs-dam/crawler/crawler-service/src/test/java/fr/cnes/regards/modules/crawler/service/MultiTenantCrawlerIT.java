@@ -71,8 +71,9 @@ public class MultiTenantCrawlerIT {
 
     @BeforeClass
     public static void toBeOrNotToBe() throws URISyntaxException {
-        Assume.assumeTrue(
-            ClassLoader.getSystemResource("multitenant_" + System.getProperty("user.name") + ".properties") != null);
+        Assume.assumeTrue(ClassLoader.getSystemResource("multitenant_"
+                                                        + System.getProperty("user.name")
+                                                        + ".properties") != null);
     }
 
     @Before

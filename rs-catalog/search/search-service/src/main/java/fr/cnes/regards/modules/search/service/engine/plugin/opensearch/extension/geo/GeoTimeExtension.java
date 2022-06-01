@@ -309,9 +309,9 @@ public class GeoTimeExtension extends AbstractExtension {
     protected boolean supportsSearchParameter(SearchParameter parameter) {
         boolean supports = parameter.getName().equals(GEO_PARAMETER) || parameter.getName().equals(BOX_PARAMETER);
         supports |= parameter.getName().equals(LON_PARAMETER) || parameter.getName().equals(LAT_PARAMETER);
-        supports |=
-            parameter.getName().equals(RADIUS_PARAMETER) || ((parameter.getConfiguration() != null) && TIME_NS.equals(
-                parameter.getConfiguration().getNamespace()));
+        supports |= parameter.getName().equals(RADIUS_PARAMETER) || ((parameter.getConfiguration() != null)
+                                                                     && TIME_NS.equals(parameter.getConfiguration()
+                                                                                                .getNamespace()));
         return supports;
     }
 
@@ -322,12 +322,12 @@ public class GeoTimeExtension extends AbstractExtension {
         GmlTimeModuleImpl gmlMod = new GmlTimeModuleImpl();
         ParameterConfiguration timeStartParameterConf = paramConfigurations.stream()
                                                                            .filter(c -> TIME_NS.equals(c.getNamespace())
-                                                                               && TIME_START_PARAMETER.equals(c.getName()))
+                                                                                        && TIME_START_PARAMETER.equals(c.getName()))
                                                                            .findFirst()
                                                                            .orElse(null);
         ParameterConfiguration timeEndParameterConf = paramConfigurations.stream()
                                                                          .filter(c -> TIME_NS.equals(c.getNamespace())
-                                                                             && TIME_END_PARAMETER.equals(c.getName()))
+                                                                                      && TIME_END_PARAMETER.equals(c.getName()))
                                                                          .findFirst()
                                                                          .orElse(null);
         if ((timeStartParameterConf != null) && (timeEndParameterConf != null)) {
@@ -337,7 +337,9 @@ public class GeoTimeExtension extends AbstractExtension {
                                                            .replace(StaticProperties.FEATURE_PROPERTIES + ".", "");
             IProperty<?> startDate = entity.getProperty(startDateJsonPath);
             IProperty<?> stopDate = entity.getProperty(endDateJsonPath);
-            if ((startDate != null) && (startDate.getValue() instanceof OffsetDateTime) && (stopDate != null)
+            if ((startDate != null)
+                && (startDate.getValue() instanceof OffsetDateTime)
+                && (stopDate != null)
                 && (stopDate.getValue() instanceof OffsetDateTime)) {
                 gmlMod.setStartDate(IProperty.toDateValue(startDate.getValue()));
                 gmlMod.setStopDate(IProperty.toDateValue(stopDate.getValue()));

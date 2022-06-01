@@ -224,8 +224,7 @@ public class ManagerCleanServiceIT extends AbstractManagerServiceUtilsIT {
 
         // CHECK SOURCE 2 was correctly deleted
         Optional<Source> source2Opt = this.sourceRepo.findByName(SOURCE_2);
-        Assert.assertFalse(String.format(
-                               "Source \"%s\" should have been deleted because there is no session is " + "related", SOURCE_2),
-                           source2Opt.isPresent());
+        Assert.assertFalse(String.format("Source \"%s\" should have been deleted because there is no session is "
+                                         + "related", SOURCE_2), source2Opt.isPresent());
     }
 }

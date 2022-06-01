@@ -87,9 +87,11 @@ public class ManagerSnapshotScheduler extends AbstractTaskScheduler {
      * Schedule {@link ManagerSnapshotJob} every 30s to generate sessions and sources from session steps
      */
     @Scheduled(initialDelayString = "${regards.session.management.snapshot.process.scheduler.bulk.initial.delay:"
-        + DEFAULT_INITIAL_DELAY + "}",
-        fixedDelayString = "${regards.session.management.snapshot.process.scheduler.bulk.delay:"
-            + DEFAULT_SCHEDULING_DELAY + "}")
+                                    + DEFAULT_INITIAL_DELAY
+                                    + "}", fixedDelayString =
+        "${regards.session.management.snapshot.process.scheduler.bulk.delay:"
+        + DEFAULT_SCHEDULING_DELAY
+        + "}")
     public void scheduleManagerSnapshot() {
         scheduleJob();
     }
@@ -108,9 +110,10 @@ public class ManagerSnapshotScheduler extends AbstractTaskScheduler {
                                                           JobStatus.PENDING,
                                                           JobStatus.RUNNING) == 0) {
                     lockingTaskExecutors.executeWithLock(snapshotProcessTask,
-                                                         new LockConfiguration(
-                                                             microserviceName + "_session-manager-snapshot",
-                                                             Instant.now().plusSeconds(MAX_TASK_DELAY)));
+                                                         new LockConfiguration(microserviceName
+                                                                               + "_session-manager-snapshot",
+                                                                               Instant.now()
+                                                                                      .plusSeconds(MAX_TASK_DELAY)));
                 } else {
                     LOGGER.warn("{} could not be executed because a ManagerCleanJob is currently running",
                                 MANAGER_SNAPSHOT_PROCESS_TITLE);

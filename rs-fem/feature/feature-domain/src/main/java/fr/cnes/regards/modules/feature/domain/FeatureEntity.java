@@ -69,7 +69,7 @@ public class FeatureEntity extends AbstractFeatureEntity {
     public void updateDisseminationPending() {
         setDisseminationPending(this.disseminationsInfo.stream()
                                                        .anyMatch(disseminationInfo -> disseminationInfo.getAckDate()
-                                                           == null));
+                                                                                      == null));
     }
 
 }

@@ -77,9 +77,12 @@ public class UserDownloadQuota {
             return false;
         }
         UserDownloadQuota that = (UserDownloadQuota) o;
-        return Objects.equals(id, that.id) && Objects.equals(instance, that.instance) && Objects.equals(tenant,
-                                                                                                        that.tenant)
-            && Objects.equals(email, that.email) && Objects.equals(counter, that.counter);
+        return Objects.equals(id, that.id)
+               && Objects.equals(instance, that.instance)
+               && Objects.equals(tenant,
+                                 that.tenant)
+               && Objects.equals(email, that.email)
+               && Objects.equals(counter, that.counter);
     }
 
     @Override

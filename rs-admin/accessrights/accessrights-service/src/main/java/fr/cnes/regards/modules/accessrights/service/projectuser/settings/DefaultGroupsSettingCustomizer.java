@@ -13,7 +13,7 @@ public class DefaultGroupsSettingCustomizer implements IDynamicTenantSettingCust
     @Override
     public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
         return isProperValue(dynamicTenantSetting.getDefaultValue()) && (dynamicTenantSetting.getValue() == null
-            || isProperValue(dynamicTenantSetting.getValue()));
+                                                                         || isProperValue(dynamicTenantSetting.getValue()));
     }
 
     @Override

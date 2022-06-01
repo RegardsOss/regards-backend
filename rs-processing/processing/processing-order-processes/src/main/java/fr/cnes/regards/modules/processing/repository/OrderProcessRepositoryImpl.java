@@ -89,8 +89,8 @@ public class OrderProcessRepositoryImpl implements IPProcessRepository {
         tenantResolver.forceTenant(tenant);
         Mono<PProcess> process = rightsPluginConfigRepo.findByPluginConfigurationBusinessId(processId.toString())
                                                        .map(Mono::just)
-                                                       .getOrElse(() -> Mono.error(new RuntimeException(
-                                                           "Unfound " + processId)))
+                                                       .getOrElse(() -> Mono.error(new RuntimeException("Unfound "
+                                                                                                        + processId)))
                                                        .flatMap(rights -> buildPProcess(tenant,
                                                                                         rights,
                                                                                         HashMap.empty()));
@@ -105,8 +105,8 @@ public class OrderProcessRepositoryImpl implements IPProcessRepository {
         tenantResolver.forceTenant(tenant);
         Mono<PProcess> process = rightsPluginConfigRepo.findByPluginConfigurationBusinessId(processId.toString())
                                                        .map(Mono::just)
-                                                       .getOrElse(() -> Mono.error(new RuntimeException(
-                                                           "Unfound " + processId)))
+                                                       .getOrElse(() -> Mono.error(new RuntimeException("Unfound "
+                                                                                                        + processId)))
                                                        .flatMap(rights -> buildPProcess(tenant,
                                                                                         rights,
                                                                                         batch.getUserSuppliedParameters()

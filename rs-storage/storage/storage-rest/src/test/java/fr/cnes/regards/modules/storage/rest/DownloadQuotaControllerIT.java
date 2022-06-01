@@ -324,7 +324,7 @@ public class DownloadQuotaControllerIT extends AbstractRegardsTransactionalIT {
                                                           .expectValue("$.rateLimit", rateLimit)
                                                           .expectValue("$.currentQuota",
                                                                        currentQuotaOnInstance1
-                                                                           + currentQuotaOnInstance2)
+                                                                       + currentQuotaOnInstance2)
                                                           .expectValue("$.currentRate",
                                                                        currentRateOnInstance1 + currentRateOnInstance2);
 

@@ -128,8 +128,21 @@ public class StepPropertyUpdateRequestInfo {
 
     @Override
     public String toString() {
-        return "StepPropertyUpdateRequestInfo{" + "stepType=" + stepType + ", state=" + state + ", property='"
-            + property + '\'' + ", value='" + value + '\'' + ", inputRelated=" + inputRelated + ", outputRelated="
-            + outputRelated + '}';
+        return "StepPropertyUpdateRequestInfo{"
+               + "stepType="
+               + stepType
+               + ", state="
+               + state
+               + ", property='"
+               + property
+               + '\''
+               + ", value='"
+               + value
+               + '\''
+               + ", inputRelated="
+               + inputRelated
+               + ", outputRelated="
+               + outputRelated
+               + '}';
     }
 }

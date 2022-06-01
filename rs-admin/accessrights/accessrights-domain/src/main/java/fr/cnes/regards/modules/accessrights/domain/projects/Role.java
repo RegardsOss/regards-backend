@@ -279,8 +279,17 @@ public class Role implements IIdentifiable<Long> {
 
     @Override
     public String toString() {
-        return "Role [id=" + id + ", name=" + name + ", parentRole=" + parentRole + ", isDefault=" + isDefault
-            + ", isNative=" + isNative + "]";
+        return "Role [id="
+               + id
+               + ", name="
+               + name
+               + ", parentRole="
+               + parentRole
+               + ", isDefault="
+               + isDefault
+               + ", isNative="
+               + isNative
+               + "]";
     }
 
 }

@@ -245,7 +245,7 @@ public class SessionNotifier {
 
         } else {
             LOGGER.debug("Session has not been decremented of {} items because either sessionOwner({}) or session({}) "
-                             + "is null or empty", nbItems, source, session);
+                         + "is null or empty", nbItems, source, session);
         }
     }
 

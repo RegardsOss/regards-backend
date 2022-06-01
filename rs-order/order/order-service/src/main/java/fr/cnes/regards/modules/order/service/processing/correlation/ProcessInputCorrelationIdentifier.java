@@ -68,9 +68,10 @@ public class ProcessInputCorrelationIdentifier {
     }
 
     public String repr() {
-        return String.format("file:/%s", batchSuborderIdentifier.repr()) + (featureIpId.map(urn -> "/" + urn)
-                                                                                       .getOrElse(""))
-            + (fileName.map(f -> "/" + f).getOrElse(""));
+        return String.format("file:/%s", batchSuborderIdentifier.repr())
+               + (featureIpId.map(urn -> "/" + urn)
+                             .getOrElse(""))
+               + (fileName.map(f -> "/" + f).getOrElse(""));
     }
 
     private static final Pattern PATTERN = Pattern.compile(

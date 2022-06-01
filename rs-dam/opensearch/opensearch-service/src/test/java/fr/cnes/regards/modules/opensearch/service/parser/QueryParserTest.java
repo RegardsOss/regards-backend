@@ -577,8 +577,10 @@ public class QueryParserTest {
                                                                             .optionalStart()
                                                                             .appendOffset("+HH:MM", "Z")
                                                                             .toFormatter();
-        final String term =
-            field + ": \"" + ISO_DATE_TIME_UTC.format(lowerValue.withOffsetSameInstant(ZoneOffset.UTC)) + "\"";
+        final String term = field
+                            + ": \""
+                            + ISO_DATE_TIME_UTC.format(lowerValue.withOffsetSameInstant(ZoneOffset.UTC))
+                            + "\"";
         final ICriterion criterion = parser.parse(QUERY_PREFIX + URLEncoder.encode(term, "UTF-8"));
 
         Assert.assertNotNull(criterion);
@@ -816,8 +818,15 @@ public class QueryParserTest {
 
         final String key = SampleDataUtils.STRING_ATTRIBUTE_MODEL.getJsonPath();
         final String val = "harrypotter";
-        final ICriterion criterion = parser.parse(
-            QUERY_PREFIX + URLEncoder.encode("!(" + key + ":" + val + " OR " + key + ":" + val + ")", "UTF-8"));
+        final ICriterion criterion = parser.parse(QUERY_PREFIX + URLEncoder.encode("!("
+                                                                                   + key
+                                                                                   + ":"
+                                                                                   + val
+                                                                                   + " OR "
+                                                                                   + key
+                                                                                   + ":"
+                                                                                   + val
+                                                                                   + ")", "UTF-8"));
         Assert.assertNotNull(criterion);
         Assert.assertTrue(criterion instanceof NotCriterion);
     }

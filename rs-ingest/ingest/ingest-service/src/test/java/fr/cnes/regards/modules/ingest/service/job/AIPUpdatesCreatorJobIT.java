@@ -202,9 +202,8 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
         Pageable pageRequest = PageRequest.of(0, 200);
         Awaitility.await().atMost(Durations.TEN_SECONDS).until(() -> {
             runtimeTenantResolver.forceTenant(getDefaultTenant());
-            return
-                aipUpdateRequestRepository.findAllByState(InternalRequestState.BLOCKED, pageRequest).getTotalElements()
-                    >= nbSipConcerned * nbTasksPerSip;
+            return aipUpdateRequestRepository.findAllByState(InternalRequestState.BLOCKED, pageRequest)
+                                             .getTotalElements() >= nbSipConcerned * nbTasksPerSip;
         });
         Page<AIPUpdateRequest> blocked = aipUpdateRequestRepository.findAllByState(InternalRequestState.BLOCKED,
                                                                                    pageRequest);

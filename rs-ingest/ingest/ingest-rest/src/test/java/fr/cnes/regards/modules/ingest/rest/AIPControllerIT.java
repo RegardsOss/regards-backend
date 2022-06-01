@@ -125,7 +125,10 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         ingestServiceTest.init();
 
         // resend the event of AppReady to reinit default data
-        springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class), null, null, null));
+        springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class),
+                                                               null,
+                                                               null,
+                                                               null));
     }
 
     public void createAIP(String providerId,
@@ -478,7 +481,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                                                           .value(JSON_STRING_TYPE))
                                     .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                                                           .value("Optional. Multiple values allowed. Allowed values : "
-                                                                     + aipJoiner.toString())));
+                                                                 + aipJoiner.toString())));
 
         params.add(constrainedFields.withPath(rootPath + AIPController.REQUEST_PARAM_FROM,
                                               AIPController.REQUEST_PARAM_FROM,
@@ -599,7 +602,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                                                           .value(JSON_STRING_TYPE))
                                     .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                                                           .value("Optional. Allowed values : "
-                                                                     + selectionModeJoiner.toString())));
+                                                                 + selectionModeJoiner.toString())));
 
         return params;
     }

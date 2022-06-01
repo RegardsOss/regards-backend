@@ -700,8 +700,9 @@ public class EsRepository implements IEsRepository {
 
     @Override
     public long deleteByQuery(String index, ICriterion criterion) {
-        try (NStringEntity entity = new NStringEntity(
-            "{ \"query\":" + criterion.accept(CRITERION_VISITOR).toString() + "}", ContentType.APPLICATION_JSON)) {
+        try (NStringEntity entity = new NStringEntity("{ \"query\":"
+                                                      + criterion.accept(CRITERION_VISITOR).toString()
+                                                      + "}", ContentType.APPLICATION_JSON)) {
             Request request = new Request("POST", "/" + index.toLowerCase() + "/_delete_by_query");
             request.setEntity(entity);
             Response response = client.getLowLevelClient().performRequest(request);
@@ -843,8 +844,9 @@ public class EsRepository implements IEsRepository {
                                 }
                                 String msg =
                                     "The here under geometry have not been accepted by ElasticSearch:\n{\"type\": \"FeatureCollection\",\"features\": [{\"type\": \"Feature\","
-                                        + "\"properties\":{},\"geometry\": {\"type\": \"Polygon\",\"coordinates\": [["
-                                        + polygonWGS84.getCoordinates().getExteriorRing().toString() + "]]}}]}";
+                                    + "\"properties\":{},\"geometry\": {\"type\": \"Polygon\",\"coordinates\": [["
+                                    + polygonWGS84.getCoordinates().getExteriorRing().toString()
+                                    + "]]}}]}";
                                 errorBuffer.append(msg);
                             } else if (wgs84 instanceof MultiPolygon) {
                                 MultiPolygon multiPolygonWGS84 = (MultiPolygon) wgs84;
@@ -853,11 +855,12 @@ public class EsRepository implements IEsRepository {
                                 }
                                 String msg =
                                     "The here under geometry have not been accepted by ElasticSearch:\n{\"type\": \"FeatureCollection\",\"features\": [{\"type\": \"Feature\","
-                                        + "\"properties\":{},\"geometry\": {\"type\": \"MultiPolygon\",\"coordinates\": [["
-                                        + multiPolygonWGS84.getCoordinates()
-                                                           .stream()
-                                                           .map(p -> p.getExteriorRing().toString())
-                                                           .collect(Collectors.joining("], [", "[", "]")) + "]]}}]}";
+                                    + "\"properties\":{},\"geometry\": {\"type\": \"MultiPolygon\",\"coordinates\": [["
+                                    + multiPolygonWGS84.getCoordinates()
+                                                       .stream()
+                                                       .map(p -> p.getExteriorRing().toString())
+                                                       .collect(Collectors.joining("], [", "[", "]"))
+                                    + "]]}}]}";
                                 errorBuffer.append(msg);
                             }
                         }
@@ -1010,10 +1013,9 @@ public class EsRepository implements IEsRepository {
                 if (searchKey.getCrs() == Crs.ASTRO) {
                     CircleCriterion initialCircleCriterion = GeoHelper.findCircleCriterion(crit);
                     // Radius MUST NOT HAVE A UNIT
-                    initialCircleCriterion.setRadius(
-                        FastMath.toRadians(Double.parseDouble(initialCircleCriterion.getRadius()))
+                    initialCircleCriterion.setRadius(FastMath.toRadians(Double.parseDouble(initialCircleCriterion.getRadius()))
 
-                            * AUTHALIC_SPHERE_RADIUS);
+                                                     * AUTHALIC_SPHERE_RADIUS);
                 }
                 return searchWithCircleCriterionInProjectedCrs(searchKey, pageRequest, facetsMap, criterion);
             }
@@ -1317,7 +1319,7 @@ public class EsRepository implements IEsRepository {
                 // Then check if a closer one exists (advance is done by MAX_RESULT_WINDOW steps so we must take this
                 // into account)
                 searchPageNumber = (int) ((pageRequest.getOffset() - (pageRequest.getOffset() % MAX_RESULT_WINDOW))
-                    / MAX_RESULT_WINDOW);
+                                          / MAX_RESULT_WINDOW);
                 while (searchPageNumber > 0) {
                     searchReminderPageRequest = PageRequest.of(searchPageNumber, MAX_RESULT_WINDOW);
                     reminder = new SearchAfterReminder(crit, searchKey, sort, searchReminderPageRequest);
@@ -2108,22 +2110,25 @@ public class EsRepository implements IEsRepository {
                 discSummary.addDocumentsCount(bucket.getDocCount());
                 Aggregations discAggs = bucket.getAggregations();
                 for (String fileType : fileTypes) {
-                    ValueCount refValueCount = ((Filter) discAggs.get(
-                        fileType + REF_FILES_COUNT_SUFFIX)).getAggregations().get(fileType + REF_FILES_COUNT_SUFFIX);
+                    ValueCount refValueCount = ((Filter) discAggs.get(fileType
+                                                                      + REF_FILES_COUNT_SUFFIX)).getAggregations()
+                                                                                                .get(fileType
+                                                                                                     + REF_FILES_COUNT_SUFFIX);
                     Sum refSum = ((Filter) discAggs.get(fileType + REF_FILES_SIZE_SUFFIX)).getAggregations()
                                                                                           .get(fileType
-                                                                                                   + REF_FILES_SIZE_SUFFIX);
+                                                                                               + REF_FILES_SIZE_SUFFIX);
 
                     FilesSummary refFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType + REF_SUFFIX);
                     refFilesSummary.addFilesCount(refValueCount.getValue());
                     refFilesSummary.addFilesSize((long) refSum.getValue());
 
-                    ValueCount notRefValueCount = ((Filter) discAggs.get(
-                        fileType + NOT_REF_FILES_COUNT_SUFFIX)).getAggregations()
-                                                               .get(fileType + NOT_REF_FILES_COUNT_SUFFIX);
+                    ValueCount notRefValueCount = ((Filter) discAggs.get(fileType
+                                                                         + NOT_REF_FILES_COUNT_SUFFIX)).getAggregations()
+                                                                                                       .get(fileType
+                                                                                                            + NOT_REF_FILES_COUNT_SUFFIX);
                     Sum notRefSum = ((Filter) discAggs.get(fileType + NOT_REF_FILES_SIZE_SUFFIX)).getAggregations()
                                                                                                  .get(fileType
-                                                                                                          + NOT_REF_FILES_SIZE_SUFFIX);
+                                                                                                      + NOT_REF_FILES_SIZE_SUFFIX);
 
                     FilesSummary notRefFilesSummary = discSummary.getFileTypesSummaryMap()
                                                                  .get(fileType + NOT_REF_SUFFIX);
@@ -2275,10 +2280,12 @@ public class EsRepository implements IEsRepository {
             Aggregations aggs = response.getAggregations();
             for (String fileType : fileTypes) {
                 // ref
-                Cardinality refCardinality = ((Filter) aggs.get(
-                    TOTAL_PREFIX + fileType + REF_FILES_COUNT_SUFFIX)).getAggregations()
-                                                                      .get(TOTAL_PREFIX + fileType
-                                                                               + REF_FILES_COUNT_SUFFIX);
+                Cardinality refCardinality = ((Filter) aggs.get(TOTAL_PREFIX
+                                                                + fileType
+                                                                + REF_FILES_COUNT_SUFFIX)).getAggregations()
+                                                                                          .get(TOTAL_PREFIX
+                                                                                               + fileType
+                                                                                               + REF_FILES_COUNT_SUFFIX);
                 summary.getFileTypesSummaryMap().compute(fileType + REF_SUFFIX, (k, fs) -> {
                     if (fs == null) {
                         return new FilesSummary(refCardinality.getValue(), 0);
@@ -2287,10 +2294,12 @@ public class EsRepository implements IEsRepository {
                 });
 
                 // !ref
-                Cardinality notRefCardinality = ((Filter) aggs.get(
-                    TOTAL_PREFIX + fileType + NOT_REF_FILES_COUNT_SUFFIX)).getAggregations()
-                                                                          .get(TOTAL_PREFIX + fileType
-                                                                                   + NOT_REF_FILES_COUNT_SUFFIX);
+                Cardinality notRefCardinality = ((Filter) aggs.get(TOTAL_PREFIX
+                                                                   + fileType
+                                                                   + NOT_REF_FILES_COUNT_SUFFIX)).getAggregations()
+                                                                                                 .get(TOTAL_PREFIX
+                                                                                                      + fileType
+                                                                                                      + NOT_REF_FILES_COUNT_SUFFIX);
                 summary.getFileTypesSummaryMap().compute(fileType + NOT_REF_SUFFIX, (k, fs) -> {
                     if (fs == null) {
                         return new FilesSummary(notRefCardinality.getValue(), 0);
@@ -2330,11 +2339,14 @@ public class EsRepository implements IEsRepository {
                 discSummary.addDocumentsCount(bucket.getDocCount());
                 Aggregations discAggs = bucket.getAggregations();
                 for (String fileType : fileTypes) {
-                    Cardinality refCardinality = ((Filter) discAggs.get(
-                        fileType + REF_FILES_COUNT_SUFFIX)).getAggregations().get(fileType + REF_FILES_COUNT_SUFFIX);
-                    Cardinality notRefCardinality = ((Filter) discAggs.get(
-                        fileType + NOT_REF_FILES_COUNT_SUFFIX)).getAggregations()
-                                                               .get(fileType + NOT_REF_FILES_COUNT_SUFFIX);
+                    Cardinality refCardinality = ((Filter) discAggs.get(fileType
+                                                                        + REF_FILES_COUNT_SUFFIX)).getAggregations()
+                                                                                                  .get(fileType
+                                                                                                       + REF_FILES_COUNT_SUFFIX);
+                    Cardinality notRefCardinality = ((Filter) discAggs.get(fileType
+                                                                           + NOT_REF_FILES_COUNT_SUFFIX)).getAggregations()
+                                                                                                         .get(fileType
+                                                                                                              + NOT_REF_FILES_COUNT_SUFFIX);
 
                     FilesSummary refFilesSummary = discSummary.getFileTypesSummaryMap().get(fileType + REF_SUFFIX);
                     refFilesSummary.addFilesCount(refCardinality.getValue());

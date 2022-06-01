@@ -108,7 +108,14 @@ public class SnapshotProcess {
 
     @Override
     public String toString() {
-        return "SnapshotProcess{" + "source='" + source + '\'' + ", lastUpdateDate=" + lastUpdateDate + ", jobId="
-            + jobId + '}';
+        return "SnapshotProcess{"
+               + "source='"
+               + source
+               + '\''
+               + ", lastUpdateDate="
+               + lastUpdateDate
+               + ", jobId="
+               + jobId
+               + '}';
     }
 }

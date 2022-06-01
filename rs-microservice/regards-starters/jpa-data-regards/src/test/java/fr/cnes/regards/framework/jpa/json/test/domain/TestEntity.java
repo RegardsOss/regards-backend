@@ -85,8 +85,9 @@ public class TestEntity {
 
     @Override
     public boolean equals(Object pOther) {
-        return (pOther instanceof TestEntity) && ((TestEntity) pOther).id.equals(id)
-            && ((TestEntity) pOther).jsonbEntity.equals(jsonbEntity);
+        return (pOther instanceof TestEntity)
+               && ((TestEntity) pOther).id.equals(id)
+               && ((TestEntity) pOther).jsonbEntity.equals(jsonbEntity);
     }
 
     @Override

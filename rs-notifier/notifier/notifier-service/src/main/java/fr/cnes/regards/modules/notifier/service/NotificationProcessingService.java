@@ -213,8 +213,9 @@ public class NotificationProcessingService {
                 //    In this case we should not change state, so that the matching process takes place.
                 //  - if we are not in state GRANTED, it means it has not yet been retried.
                 //    In this case we have nothing to do, since the retry will take place (or not) later.
-                if (request.getRecipientsToSchedule().isEmpty() && (request.getRulesToMatch().isEmpty() || (
-                    request.getState() != NotificationState.GRANTED))) {
+                if (request.getRecipientsToSchedule().isEmpty() && (request.getRulesToMatch().isEmpty()
+                                                                    || (request.getState()
+                                                                        != NotificationState.GRANTED))) {
                     request.setState(NotificationState.SCHEDULED);
                 }
                 toScheduleId.add(request.getId());

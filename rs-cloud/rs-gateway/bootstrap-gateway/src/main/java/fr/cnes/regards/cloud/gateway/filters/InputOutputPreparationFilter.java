@@ -124,7 +124,7 @@ public class InputOutputPreparationFilter implements GlobalFilter {
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(LOG_PREFIX
-                             + "Scheme: {}, Remote host: {}, Remote addr: {}, Remote port: {}, Remote user: {}, Header names: {}",
+                         + "Scheme: {}, Remote host: {}, Remote addr: {}, Remote port: {}, Remote user: {}, Header names: {}",
                          correlationId,
                          requestURI.getScheme(),
                          remoteHost,

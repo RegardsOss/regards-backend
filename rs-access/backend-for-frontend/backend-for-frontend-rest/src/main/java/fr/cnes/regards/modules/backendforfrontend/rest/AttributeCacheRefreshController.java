@@ -36,7 +36,8 @@ public class AttributeCacheRefreshController {
     private IPublisher publisher;
 
     @DeleteMapping
-    @ResourceAccess(description = "Allows to manually refresh model attribute caches (mainly for serialization issues)", role = DefaultRole.ADMIN)
+    @ResourceAccess(description = "Allows to manually refresh model attribute caches (mainly for serialization issues)",
+        role = DefaultRole.ADMIN)
     public void refreshAttributeCache() {
         publisher.publish(new AttributeCacheRefreshEvent());
     }

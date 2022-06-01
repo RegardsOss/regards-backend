@@ -119,7 +119,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         Set<AbstractRequest> notificationRetryRequests;
         notificationRetryRequests = requests.stream()
                                             .filter(req -> req.getStep()
-                                                == AIPUpdateRequestStep.REMOTE_NOTIFICATION_ERROR)
+                                                           == AIPUpdateRequestStep.REMOTE_NOTIFICATION_ERROR)
                                             .collect(Collectors.toSet());
         if (!notificationRetryRequests.isEmpty()) {
             // remove notifications from requests to process and send them again
@@ -197,9 +197,9 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         List<AIPUpdateRequest> succeedRequestsToDelete = requestByAIP.values()
                                                                      .stream()
                                                                      .filter(request -> (request.getState()
-                                                                         != InternalRequestState.ERROR) && (
-                                                                         request.getState()
-                                                                             != InternalRequestState.ABORTED))
+                                                                                         != InternalRequestState.ERROR)
+                                                                                        && (request.getState()
+                                                                                            != InternalRequestState.ABORTED))
                                                                      .collect(Collectors.toList());
 
         // If notifications are active, send them to notifier
@@ -218,8 +218,9 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         List<AIPUpdateRequest> errorRequests = requestByAIP.values()
                                                            .stream()
                                                            .filter(request -> (request.getState()
-                                                               == InternalRequestState.ERROR) || (request.getState()
-                                                               == InternalRequestState.ABORTED))
+                                                                               == InternalRequestState.ERROR) || (
+                                                                                  request.getState()
+                                                                                  == InternalRequestState.ABORTED))
                                                            .collect(Collectors.toList());
         aipUpdateRequestRepository.saveAll(errorRequests);
 

@@ -81,9 +81,11 @@ public class ManagerCleanSnapshotProcessScheduler extends AbstractTaskScheduler 
      * Clean snapshot process every month
      */
     @Scheduled(initialDelayString = "${regards.session.agent.clean.snapshot.process.scheduler.bulk.initial.delay:"
-        + DEFAULT_INITIAL_DELAY + "}",
-        fixedDelayString = "${regards.session.agent.clean.snapshot.process.scheduler.bulk.delay:"
-            + DEFAULT_SCHEDULING_DELAY + "}")
+                                    + DEFAULT_INITIAL_DELAY
+                                    + "}", fixedDelayString =
+        "${regards.session.agent.clean.snapshot.process.scheduler.bulk.delay:"
+        + DEFAULT_SCHEDULING_DELAY
+        + "}")
     protected void scheduleCleanSnapshotProcess() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {

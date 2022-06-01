@@ -50,10 +50,10 @@ public class SessionFeatureDisseminationInfos {
 
         FeatureDisseminationInfos featureDisseminationInfos = infosPerSessionAndRecipient.compute(getKey(featureEntity,
                                                                                                          request),
-                                                                                                  (sessionKey, ri) ->
-                                                                                                      ri == null ?
-                                                                                                          new FeatureDisseminationInfos() :
-                                                                                                          ri);
+                                                                                                  (sessionKey, ri) -> ri
+                                                                                                                      == null ?
+                                                                                                      new FeatureDisseminationInfos() :
+                                                                                                      ri);
 
         featureDisseminationInfos.addRequest(request);
     }

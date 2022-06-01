@@ -75,7 +75,8 @@ public class ComputedAttributeValidator implements ConstraintValidator<ComputedA
                 return false;
             }
             // If computed attribute, check that computation plugin mechanism is correct
-            if ((modelAttrAssoc.getMode() == ComputationMode.COMPUTED) && (computationConf != null)
+            if ((modelAttrAssoc.getMode() == ComputationMode.COMPUTED)
+                && (computationConf != null)
                 && computationConf.getInterfaceNames().contains(IComputedAttribute.class.getName())) {
 
                 try {
@@ -93,10 +94,12 @@ public class ComputedAttributeValidator implements ConstraintValidator<ComputedA
                     }
                     return ok;
                 } catch (ClassNotFoundException e) {
-                    LOG.error("ModelAttrAssoc of id: " + modelAttrAssoc.getId()
-                                  + " cannot be validated because we couldn't find annotation"
-                                  + ComputationPlugin.class.getName() + " on the associated plugin to check the "
-                                  + "coherence of its return type.");
+                    LOG.error("ModelAttrAssoc of id: "
+                              + modelAttrAssoc.getId()
+                              + " cannot be validated because we couldn't find annotation"
+                              + ComputationPlugin.class.getName()
+                              + " on the associated plugin to check the "
+                              + "coherence of its return type.");
                     throw new RsRuntimeException(e);
                 }
             }

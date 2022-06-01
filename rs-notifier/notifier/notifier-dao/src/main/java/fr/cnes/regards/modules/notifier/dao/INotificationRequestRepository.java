@@ -104,9 +104,11 @@ public interface INotificationRequestRepository extends JpaRepository<Notificati
      * @param pageable pagination information
      * @return completed requests
      */
-    @Query(
-        "select nr from NotificationRequest nr " + "where nr.state in :state " + "and nr.recipientsScheduled is empty "
-            + "and nr.recipientsToSchedule is empty " + "and nr.rulesToMatch is empty")
+    @Query("select nr from NotificationRequest nr "
+           + "where nr.state in :state "
+           + "and nr.recipientsScheduled is empty "
+           + "and nr.recipientsToSchedule is empty "
+           + "and nr.rulesToMatch is empty")
     Page<NotificationRequest> findCompletedRequests(@Param("state") NotificationState[] state, Pageable pageable);
 
     @EntityGraph(

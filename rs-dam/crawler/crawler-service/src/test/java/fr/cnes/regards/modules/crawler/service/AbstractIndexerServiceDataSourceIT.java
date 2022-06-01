@@ -261,8 +261,14 @@ public abstract class AbstractIndexerServiceDataSourceIT {
         Awaitility.await().atMost(timeout, unit).until(() -> {
             runtimeTenantResolver.forceTenant(tenant);
             Dataset entity = searchService.get(entityId);
-            return entity != null && entity.getProperties() != null && !entity.getProperties().isEmpty()
-                && entity.getProperties().stream().filter(p -> p.getName().equals(propertyName)).findAny().isPresent();
+            return entity != null
+                   && entity.getProperties() != null
+                   && !entity.getProperties().isEmpty()
+                   && entity.getProperties()
+                            .stream()
+                            .filter(p -> p.getName().equals(propertyName))
+                            .findAny()
+                            .isPresent();
         });
     }
 

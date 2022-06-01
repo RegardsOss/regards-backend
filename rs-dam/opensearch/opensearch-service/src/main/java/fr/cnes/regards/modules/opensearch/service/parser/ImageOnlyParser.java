@@ -39,14 +39,18 @@ public class ImageOnlyParser implements IParser {
         if (parameters.containsKey(IMAGE_ONLY_PARAM)) {
             // add a criterion only if asked
             return Boolean.parseBoolean(parameters.getFirst(IMAGE_ONLY_PARAM)) ?
-                ICriterion.or(ICriterion.attributeExists(
-                                  StaticProperties.FEATURE_FILES_PATH + "." + DataType.THUMBNAIL),
-                              ICriterion.attributeExists(
-                                  StaticProperties.FEATURE_FILES_PATH + "." + DataType.QUICKLOOK_HD),
-                              ICriterion.attributeExists(
-                                  StaticProperties.FEATURE_FILES_PATH + "." + DataType.QUICKLOOK_MD),
-                              ICriterion.attributeExists(
-                                  StaticProperties.FEATURE_FILES_PATH + "." + DataType.QUICKLOOK_SD)) :
+                ICriterion.or(ICriterion.attributeExists(StaticProperties.FEATURE_FILES_PATH
+                                                         + "."
+                                                         + DataType.THUMBNAIL),
+                              ICriterion.attributeExists(StaticProperties.FEATURE_FILES_PATH
+                                                         + "."
+                                                         + DataType.QUICKLOOK_HD),
+                              ICriterion.attributeExists(StaticProperties.FEATURE_FILES_PATH
+                                                         + "."
+                                                         + DataType.QUICKLOOK_MD),
+                              ICriterion.attributeExists(StaticProperties.FEATURE_FILES_PATH
+                                                         + "."
+                                                         + DataType.QUICKLOOK_SD)) :
                 null;
         } else {
             // if it is not set no criterion to add

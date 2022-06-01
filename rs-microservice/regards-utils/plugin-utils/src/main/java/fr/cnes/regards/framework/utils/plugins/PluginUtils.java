@@ -439,7 +439,8 @@ public final class PluginUtils {
         for (PluginParamDescriptor plgParamMeta : pluginParametersFromMeta) {
             IPluginParam parameterFromConf = conf.getParameter(plgParamMeta.getName());
             if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable() && (parameterFromConf == null) && (
-                plgParamMeta.getDefaultValue() == null)) {
+                plgParamMeta.getDefaultValue()
+                == null)) {
                 validationErrors.add(String.format("Plugin Parameter %s is missing.", plgParamMeta.getName()));
             }
         }

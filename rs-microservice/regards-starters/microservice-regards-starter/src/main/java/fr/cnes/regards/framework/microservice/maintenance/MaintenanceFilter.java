@@ -67,9 +67,10 @@ public class MaintenanceFilter extends OncePerRequestFilter {
             pFilterChain.doFilter(pRequest, pResponse);
         } else {
             // Only authorize to disable maintenance mode
-            if (!((pRequest.getRequestURI() != null) && pRequest.getRequestURI()
-                                                                .contains(MaintenanceController.MAINTENANCE_URL)
-                && pRequest.getRequestURI().contains(MaintenanceController.DISABLE))
+            if (!((pRequest.getRequestURI() != null)
+                  && pRequest.getRequestURI()
+                             .contains(MaintenanceController.MAINTENANCE_URL)
+                  && pRequest.getRequestURI().contains(MaintenanceController.DISABLE))
                 && MaintenanceManager.getMaintenance(resolver.getTenant())) {
 
                 String message = String.format("Tenant %s in maintenance!", resolver.getTenant());

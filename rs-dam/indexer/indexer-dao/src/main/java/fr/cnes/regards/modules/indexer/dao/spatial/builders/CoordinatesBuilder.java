@@ -49,7 +49,7 @@ public class CoordinatesBuilder {
             2 :
             3)) {
             throw new ElasticsearchException("unable to add coordinate to CoordinateBuilder: "
-                                                 + "coordinate dimensions do not match. Expected [{}] but found [{}]",
+                                             + "coordinate dimensions do not match. Expected [{}] but found [{}]",
                                              expectedDims,
                                              actualDims);
 

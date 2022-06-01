@@ -126,7 +126,7 @@ public class ExecutionEventNotifierImpl implements IExecutionEventNotifier {
                                   .onErrorMap(mustWrap(),
                                               t -> new PersistOutputFilesException(exec,
                                                                                    "Persisting output file failed: "
-                                                                                       + t.getMessage(),
+                                                                                   + t.getMessage(),
                                                                                    t));
         }
     }

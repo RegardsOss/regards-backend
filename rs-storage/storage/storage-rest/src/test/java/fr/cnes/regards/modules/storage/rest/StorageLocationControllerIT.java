@@ -255,23 +255,29 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
     @Test
     public void retryErrors() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-        performDefaultGet(
-            StorageLocationController.BASE_PATH + StorageLocationController.ID_PATH + StorageLocationController.FILES
-                + StorageLocationController.RETRY,
-            requestBuilderCustomizer,
-            "Expect ok status.",
-            TARGET_STORAGE,
-            FileRequestType.STORAGE.toString());
+        performDefaultGet(StorageLocationController.BASE_PATH
+                          + StorageLocationController.ID_PATH
+                          + StorageLocationController.FILES
+                          + StorageLocationController.RETRY,
+                          requestBuilderCustomizer,
+                          "Expect ok status.",
+                          TARGET_STORAGE,
+                          FileRequestType.STORAGE.toString());
     }
 
     @Test
     public void copyFiles() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-        performDefaultPost(
-            StorageLocationController.BASE_PATH + StorageLocationController.FILES + StorageLocationController.COPY,
-            CopyFilesParametersDTO.build("somewhere", "/dir/one", "somewhere-else", null, Sets.newHashSet()),
-            requestBuilderCustomizer,
-            "Expect ok status.");
+        performDefaultPost(StorageLocationController.BASE_PATH
+                           + StorageLocationController.FILES
+                           + StorageLocationController.COPY,
+                           CopyFilesParametersDTO.build("somewhere",
+                                                        "/dir/one",
+                                                        "somewhere-else",
+                                                        null,
+                                                        Sets.newHashSet()),
+                           requestBuilderCustomizer,
+                           "Expect ok status.");
     }
 
     @Test
@@ -286,11 +292,12 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
     @Test
     public void deleteFiles() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-        performDefaultDelete(
-            StorageLocationController.BASE_PATH + StorageLocationController.ID_PATH + StorageLocationController.FILES,
-            requestBuilderCustomizer,
-            "Expect ok status.",
-            TARGET_STORAGE);
+        performDefaultDelete(StorageLocationController.BASE_PATH
+                             + StorageLocationController.ID_PATH
+                             + StorageLocationController.FILES,
+                             requestBuilderCustomizer,
+                             "Expect ok status.",
+                             TARGET_STORAGE);
     }
 
     @Test

@@ -144,8 +144,9 @@ public class AttributeModelControllerIT extends AbstractRegardsTransactionalIT {
                                                    "Attribute type",
                                                    "Available values: " + Arrays.stream(PropertyType.values())
                                                                                 .map(type -> type.name())
-                                                                                .reduce((first, second) -> first + ", "
-                                                                                    + second)
+                                                                                .reduce((first, second) -> first
+                                                                                                           + ", "
+                                                                                                           + second)
                                                                                 .get()));
         descriptors.add(constrainedFields.withPath(prefixPath + "unit",
                                                    "unit",
@@ -499,13 +500,13 @@ public class AttributeModelControllerIT extends AbstractRegardsTransactionalIT {
                                                                                                                             RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                                                                                                                         .value(
                                                                                                                             "Available values: "
-                                                                                                                                + Arrays.stream(
-                                                                                                                                            EntityType.values())
-                                                                                                                                        .map(
-                                                                                                                                            type -> type.name())
-                                                                                                                                        .collect(
-                                                                                                                                            Collectors.joining(
-                                                                                                                                                ", "))))));
+                                                                                                                            + Arrays.stream(
+                                                                                                                                        EntityType.values())
+                                                                                                                                    .map(
+                                                                                                                                        type -> type.name())
+                                                                                                                                    .collect(
+                                                                                                                                        Collectors.joining(
+                                                                                                                                            ", "))))));
 
         performDefaultGet(AttributeModelController.TYPE_MAPPING + AttributeModelController.ENTITY_TYPE_MAPPING,
                           requestBuilderCustomizer,
@@ -663,13 +664,13 @@ public class AttributeModelControllerIT extends AbstractRegardsTransactionalIT {
                                                                                                                        RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                                                                                                                    .value(
                                                                                                                        "Available values: "
-                                                                                                                           + Arrays.stream(
-                                                                                                                                       PropertyType.values())
-                                                                                                                                   .map(
-                                                                                                                                       type -> type.name())
-                                                                                                                                   .collect(
-                                                                                                                                       Collectors.joining(
-                                                                                                                                           ", "))))
+                                                                                                                       + Arrays.stream(
+                                                                                                                                   PropertyType.values())
+                                                                                                                               .map(
+                                                                                                                                   type -> type.name())
+                                                                                                                               .collect(
+                                                                                                                                   Collectors.joining(
+                                                                                                                                       ", "))))
                                                                                                      .optional()));
 
         performDefaultGet(AttributeModelController.TYPE_MAPPING,
@@ -844,13 +845,13 @@ public class AttributeModelControllerIT extends AbstractRegardsTransactionalIT {
                                                                                                                        RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                                                                                                                    .value(
                                                                                                                        "Available values: "
-                                                                                                                           + Arrays.stream(
-                                                                                                                                       PropertyType.values())
-                                                                                                                                   .map(
-                                                                                                                                       type -> type.name())
-                                                                                                                                   .collect(
-                                                                                                                                       Collectors.joining(
-                                                                                                                                           ", "))))));
+                                                                                                                       + Arrays.stream(
+                                                                                                                                   PropertyType.values())
+                                                                                                                               .map(
+                                                                                                                                   type -> type.name())
+                                                                                                                               .collect(
+                                                                                                                                   Collectors.joining(
+                                                                                                                                       ", "))))));
 
         performDefaultGet(AttributeModelController.TYPE_MAPPING + RESTRICTION_MAPPING,
                           requestBuilderCustomizer,

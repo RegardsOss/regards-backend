@@ -452,8 +452,11 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         SearchEngineConfiguration seConfOSdataset = new SearchEngineConfiguration();
         seConfOSdataset.setConfiguration(openSearchPluginConf);
         seConfOSdataset.setLabel("Opensearch conf for one dataset");
-        seConfOSdataset.setDatasetUrn(
-            "URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:" + UUID.randomUUID() + ":V1");
+        seConfOSdataset.setDatasetUrn("URN:AIP:"
+                                      + EntityType.DATASET.toString()
+                                      + ":PROJECT:"
+                                      + UUID.randomUUID()
+                                      + ":V1");
         searchEngineService.createConf(seConfOSdataset);
     }
 
@@ -670,7 +673,12 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         planet.addProperty(IProperty.buildObject("TimePeriod",
                                                  IProperty.buildDate(START_DATE, startDateValue),
                                                  IProperty.buildDate(STOP_DATE, stopDateValue)));
-        DataFile file = DataFile.build(DataType.RAWDATA, name+".txt","http://toto/toto.txt", MediaType.APPLICATION_OCTET_STREAM, true, false);
+        DataFile file = DataFile.build(DataType.RAWDATA,
+                                       name + ".txt",
+                                       "http://toto/toto.txt",
+                                       MediaType.APPLICATION_OCTET_STREAM,
+                                       true,
+                                       false);
         planet.getFeature().getFiles().put(DataType.RAWDATA, file);
         return planet;
     }
@@ -716,8 +724,9 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         entity.setCreationDate(OffsetDateTime.now());
         entity.setLastUpdate(OffsetDateTime.now());
         if (astroObjects.containsKey(label)) {
-            throw new UnsupportedOperationException(
-                "Label \"" + label + "\" for astronomical object already exists! Please change it and relaunch test!");
+            throw new UnsupportedOperationException("Label \""
+                                                    + label
+                                                    + "\" for astronomical object already exists! Please change it and relaunch test!");
         }
         astroObjects.put(label, entity);
         return (T) entity;

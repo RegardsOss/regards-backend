@@ -76,9 +76,12 @@ public class UserCurrentQuotas {
             return false;
         }
         UserCurrentQuotas that = (UserCurrentQuotas) o;
-        return Objects.equals(email, that.email) && Objects.equals(maxQuota, that.maxQuota) && Objects.equals(rateLimit,
-                                                                                                              that.rateLimit)
-            && Objects.equals(currentQuota, that.currentQuota) && Objects.equals(currentRate, that.currentRate);
+        return Objects.equals(email, that.email)
+               && Objects.equals(maxQuota, that.maxQuota)
+               && Objects.equals(rateLimit,
+                                 that.rateLimit)
+               && Objects.equals(currentQuota, that.currentQuota)
+               && Objects.equals(currentRate, that.currentRate);
     }
 
     @Override

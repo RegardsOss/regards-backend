@@ -54,8 +54,9 @@ public class IntegerRangeValidator extends AbstractPropertyValidator {
 
     @Override
     public boolean supports(Class<?> clazz) {
-        return clazz == IntegerProperty.class || clazz == IntegerArrayProperty.class
-            || clazz == IntegerIntervalProperty.class;
+        return clazz == IntegerProperty.class
+               || clazz == IntegerArrayProperty.class
+               || clazz == IntegerIntervalProperty.class;
     }
 
     @Override

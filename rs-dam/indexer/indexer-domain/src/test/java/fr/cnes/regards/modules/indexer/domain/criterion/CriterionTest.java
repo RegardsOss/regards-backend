@@ -43,13 +43,13 @@ public class CriterionTest {
     @Test
     public void test1() throws IOException {
         final String RESULT = "(attributes.text CONTAINS \"testContains\") AND (attributes.text ENDS_WITH "
-            + "\"testEndsWith\") AND (attributes.text STARTS_WITH \"testStartsWith\") AND (attributes.text "
-            + "EQUALS \"testEquals\") AND ((attributes.number1 ∈ { x / x > 10 }) AND (attributes.number1 ∈ "
-            + "{ x / x < 20 }) AND (attributes.number3 ∈ { x / x ≥ 0, x ≤ 100 }) AND (attributes.number2 ∈ "
-            + "{ x / x ≥ 10.0 }) AND (attributes.number2 ∈ { x / x ≤ 20.0 }) AND (attributes.number4 ∈ "
-            + "{ x / x ≥ 0.0, x ≤ 100.0 }) AND (NOT (attributes.number1 == 500)) AND "
-            + "(NOT (attributes.number4 ∈ { x / x ≥ 999.0, x ≤ 1001.0 })) AND "
-            + "(attributes.number3 ∈ { x / x ≥ 3.141582653589793, x ≤ 3.141602653589793 }))";
+                              + "\"testEndsWith\") AND (attributes.text STARTS_WITH \"testStartsWith\") AND (attributes.text "
+                              + "EQUALS \"testEquals\") AND ((attributes.number1 ∈ { x / x > 10 }) AND (attributes.number1 ∈ "
+                              + "{ x / x < 20 }) AND (attributes.number3 ∈ { x / x ≥ 0, x ≤ 100 }) AND (attributes.number2 ∈ "
+                              + "{ x / x ≥ 10.0 }) AND (attributes.number2 ∈ { x / x ≤ 20.0 }) AND (attributes.number4 ∈ "
+                              + "{ x / x ≥ 0.0, x ≤ 100.0 }) AND (NOT (attributes.number1 == 500)) AND "
+                              + "(NOT (attributes.number4 ∈ { x / x ≥ 999.0, x ≤ 1001.0 })) AND "
+                              + "(attributes.number3 ∈ { x / x ≥ 3.141582653589793, x ≤ 3.141602653589793 }))";
         // textAtt contains "testContains"
         ICriterion containsCrit = ICriterion.contains("attributes.text", "testContains", StringMatchType.KEYWORD);
         // textAtt ends with "testEndsWith"
@@ -89,7 +89,7 @@ public class CriterionTest {
     @Test
     public void test2() throws IOException {
         final String RESULT = "(ALL) OR (attributes.alwaysTrue IS TRUE) OR (attributes.alwaysFalse IS FALSE) OR "
-            + "(attributes.creationDate ∈ { x / { x ≥ 2017-01-01T00:00:00Z, x ≤ 2017-12-31T23:59:59Z })";
+                              + "(attributes.creationDate ∈ { x / { x ≥ 2017-01-01T00:00:00Z, x ≤ 2017-12-31T23:59:59Z })";
 
         ICriterion rootCrit = ICriterion.or(ICriterion.all(),
                                             ICriterion.isTrue("attributes.alwaysTrue"),
@@ -118,8 +118,8 @@ public class CriterionTest {
     @Test
     public void test3() throws IOException {
         final String RESULT = "(att.creationDate ∈ { x / { x > 2010-01-01T00:00:00Z }) OR (att.updateDate ∈ "
-            + "{ x / { x ≥ 2010-01-01T00:00:00Z }) OR (att.deleteDate ∈ { x / { x < 2018-01-01T00:00:00Z })"
-            + " OR (att.deleteDate ∈ { x / { x ≤ 2017-12-31T23:59:59Z })";
+                              + "{ x / { x ≥ 2010-01-01T00:00:00Z }) OR (att.deleteDate ∈ { x / { x < 2018-01-01T00:00:00Z })"
+                              + " OR (att.deleteDate ∈ { x / { x ≤ 2017-12-31T23:59:59Z })";
         ICriterion rootCrit = ICriterion.or(ICriterion.gt("att.creationDate",
                                                           OffsetDateTime.of(2010, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)),
                                             ICriterion.ge("att.updateDate",
@@ -143,8 +143,8 @@ public class CriterionTest {
     @Test
     public void test4() throws IOException {
         final String RESULT = "((att.id == 1) OR (att.id == 2) OR (att.id == 3) OR (att.id == 4) OR (att.id == 5)) "
-            + "OR (att.ints == 3) OR (att.doubles ∈ { x / x ≥ 3.141582653589793, x ≤ 3.141602653589793 }) OR "
-            + "(att.dates ∈ { x / { x ≥ 2010-01-01T00:00:00Z, x ≤ 2020-01-01T00:00:00Z })";
+                              + "OR (att.ints == 3) OR (att.doubles ∈ { x / x ≥ 3.141582653589793, x ≤ 3.141602653589793 }) OR "
+                              + "(att.dates ∈ { x / { x ≥ 2010-01-01T00:00:00Z, x ≤ 2020-01-01T00:00:00Z })";
         ICriterion rootCrit = ICriterion.or(Lists.newArrayList(ICriterion.in("att.id", 1, 2, 3, 4, 5),
                                                                ICriterion.contains("att.ints", 3),
                                                                ICriterion.contains("att.doubles", Math.PI, 1e-5),
@@ -172,8 +172,8 @@ public class CriterionTest {
 
     @Test
     public void test5() throws IOException {
-        final String RESULT =
-            "(att.text IN (\"toto\", \"titi\", \"tutu\")) OR " + "(att.text IN (\"toto tutu\", \"titi tata\"))";
+        final String RESULT = "(att.text IN (\"toto\", \"titi\", \"tutu\")) OR "
+                              + "(att.text IN (\"toto tutu\", \"titi tata\"))";
         ICriterion rootCrit = ICriterion.or(ICriterion.in("att.text", StringMatchType.KEYWORD, "toto", "titi", "tutu"),
                                             ICriterion.in("att.text",
                                                           StringMatchType.KEYWORD,
@@ -187,8 +187,8 @@ public class CriterionTest {
     @Test
     public void test6() throws IOException {
         final String RESULT = "((att.intRange.lowerBound ∈ { x / x ≤ 12 }) AND (att.intRange.upperBound ∈ "
-            + "{ x / x ≥ 12 })) OR ((att.dateRange.lowerBound ∈ { x / { x ≤ 2020-01-01T00:00:00Z }) AND "
-            + "(att.dateRange.upperBound ∈ { x / { x ≥ 2010-01-01T00:00:00Z }))";
+                              + "{ x / x ≥ 12 })) OR ((att.dateRange.lowerBound ∈ { x / { x ≤ 2020-01-01T00:00:00Z }) AND "
+                              + "(att.dateRange.upperBound ∈ { x / { x ≥ 2010-01-01T00:00:00Z }))";
         ICriterion rootCrit = ICriterion.or(ICriterion.into("att.intRange", 12),
                                             ICriterion.intersects("att.dateRange",
                                                                   OffsetDateTime.of(2010,

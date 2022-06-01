@@ -418,8 +418,11 @@ public class OrderControllerIT extends AbstractRegardsIT {
         basketRepository.save(b);
 
         // required mock on search: return the 2 entities
-        EntityFeature feat1 = new DataObjectFeature(UniformResourceName.fromString(
-            "URN:AIP:DATA:" + getDefaultTenant() + ":" + UUID.randomUUID() + ":V1"), "Feature1", "Feature 1");
+        EntityFeature feat1 = new DataObjectFeature(UniformResourceName.fromString("URN:AIP:DATA:"
+                                                                                   + getDefaultTenant()
+                                                                                   + ":"
+                                                                                   + UUID.randomUUID()
+                                                                                   + ":V1"), "Feature1", "Feature 1");
         Multimap<DataType, DataFile> fileMultimapF1 = ArrayListMultimap.create();
         DataFile feat1File1 = new DataFile();
         feat1File1.setOnline(true);
@@ -433,8 +436,11 @@ public class OrderControllerIT extends AbstractRegardsIT {
         feat1File1.setDataType(DataType.RAWDATA);
         fileMultimapF1.put(DataType.RAWDATA, feat1File1);
 
-        EntityFeature feat2 = new DataObjectFeature(UniformResourceName.fromString(
-            "URN:AIP:DATA:" + getDefaultTenant() + ":" + UUID.randomUUID() + ":V3"), "Feature2", "Feature 2");
+        EntityFeature feat2 = new DataObjectFeature(UniformResourceName.fromString("URN:AIP:DATA:"
+                                                                                   + getDefaultTenant()
+                                                                                   + ":"
+                                                                                   + UUID.randomUUID()
+                                                                                   + ":V3"), "Feature2", "Feature 2");
         Multimap<DataType, DataFile> fileMultimapF2 = ArrayListMultimap.create();
         DataFile feat2File2 = new DataFile();
         feat2File2.setOnline(true);

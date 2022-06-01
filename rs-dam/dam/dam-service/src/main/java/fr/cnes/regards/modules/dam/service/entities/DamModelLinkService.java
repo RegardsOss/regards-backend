@@ -58,8 +58,9 @@ public class DamModelLinkService implements IModelLinkService {
                                        .map(Model::getId)
                                        .collect(Collectors.toSet());
 
-        return !datasetRepository.isLinkedToEntities(modelIds) && !collectionRepository.isLinkedToEntities(modelIds)
-            && !datasetRepository.isLinkedToDatasetsAsDataModel(modelNames);
+        return !datasetRepository.isLinkedToEntities(modelIds)
+               && !collectionRepository.isLinkedToEntities(modelIds)
+               && !datasetRepository.isLinkedToDatasetsAsDataModel(modelNames);
     }
 
 }

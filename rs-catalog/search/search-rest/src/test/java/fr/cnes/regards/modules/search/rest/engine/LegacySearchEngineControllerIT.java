@@ -176,16 +176,16 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     public void searchDataset() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         addCommontMatchers(customizer);
-        performDefaultGet(
-            SearchEngineMappings.TYPE_MAPPING_FOR_LEGACY + "/datasets/" + solarSystem.getIpId().toString(),
-            customizer,
-            "Search dataset error",
-            ENGINE_TYPE);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING_FOR_LEGACY + "/datasets/" + solarSystem.getIpId()
+                                                                                                   .toString(),
+                          customizer,
+                          "Search dataset error",
+                          ENGINE_TYPE);
     }
 
     @Test
     @Purpose("Test if the sorting is properly done on datasets returned by the ES search when there is no search "
-        + "criteria")
+             + "criteria")
     public void searchDataobjectsReturnDatasetsWithoutSearchCriterion() {
         // Sort on STRING
         RequestBuilderCustomizer customizerOnString1 = customizer().expectStatusOk();
@@ -310,21 +310,28 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
         customizer.addParameter(SEARCH_TERMS_QUERY, StaticProperties.FEATURE_FILE_RAWDATA_FILENAME + ":(Mercury.txt)");
         addCommontMatchers(customizer);
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
-                customizer, "Search all error", ENGINE_TYPE);
+                          customizer,
+                          "Search all error",
+                          ENGINE_TYPE);
 
         customizer = customizer().expectStatusOk();
         customizer.expectValue("$.metadata.totalElements", 12);
         customizer.addParameter(SEARCH_TERMS_QUERY, StaticProperties.FEATURE_FILE_RAWDATA_FILENAME + ":(*.txt)");
         addCommontMatchers(customizer);
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
-                customizer, "Search all error", ENGINE_TYPE);
+                          customizer,
+                          "Search all error",
+                          ENGINE_TYPE);
 
         customizer = customizer().expectStatusOk();
         customizer.expectValue("$.metadata.totalElements", 0);
-        customizer.addParameter(SEARCH_TERMS_QUERY, StaticProperties.FEATURE_FILE_RAWDATA_FILENAME + ":(Mercury.unknown)");
+        customizer.addParameter(SEARCH_TERMS_QUERY,
+                                StaticProperties.FEATURE_FILE_RAWDATA_FILENAME + ":(Mercury.unknown)");
         addCommontMatchers(customizer);
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
-                customizer, "Search all error", ENGINE_TYPE);
+                          customizer,
+                          "Search all error",
+                          ENGINE_TYPE);
     }
 
     @Test
@@ -460,13 +467,13 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
         Assert.assertNotNull(solarSystem);
 
         customizer.addParameter("maxCount", "10");
-        performDefaultGet(
-            SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_PROPERTY_VALUES,
-            customizer,
-            "Search all error",
-            ENGINE_TYPE,
-            solarSystem.getIpId().toString(),
-            StaticProperties.FEATURE_PROPERTIES + "." + PLANET);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING
+                          + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_PROPERTY_VALUES,
+                          customizer,
+                          "Search all error",
+                          ENGINE_TYPE,
+                          solarSystem.getIpId().toString(),
+                          StaticProperties.FEATURE_PROPERTIES + "." + PLANET);
     }
 
     @Test
@@ -514,11 +521,11 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
         addCommontMatchers(customizer);
         customizer.expectValue("$.content.length()", 1);
         addSearchTermQuery(customizer, STAR_SYSTEM, protect(SOLAR_SYSTEM));
-        ResultActions result = performDefaultGet(
-            SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATASETS_MAPPING,
-            customizer,
-            "Search all error",
-            ENGINE_TYPE);
+        ResultActions result = performDefaultGet(SearchEngineMappings.TYPE_MAPPING
+                                                 + SearchEngineMappings.SEARCH_DATASETS_MAPPING,
+                                                 customizer,
+                                                 "Search all error",
+                                                 ENGINE_TYPE);
 
         String datasetUrn = JsonPath.read(payload(result), "$.content[0].content.id");
 
@@ -553,8 +560,9 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     }
 
     private String fullTextMatching(String property) {
-        return property + IFeatureCriterion.STRING_MATCH_TYPE_SEPARATOR
-            + StringMatchType.FULL_TEXT_SEARCH.getMatchTypeValue();
+        return property
+               + IFeatureCriterion.STRING_MATCH_TYPE_SEPARATOR
+               + StringMatchType.FULL_TEXT_SEARCH.getMatchTypeValue();
     }
 
     private String keywordMatching(String property) {

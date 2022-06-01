@@ -83,9 +83,11 @@ public class AgentCleanSessionStepScheduler extends AbstractTaskScheduler {
      * Bulk save queued items every second.
      */
     @Scheduled(initialDelayString = "${regards.session.agent.clean.session.step.scheduler.bulk.initial.delay:"
-        + DEFAULT_INITIAL_DELAY + "}",
-        fixedDelayString = "${regards.session.agent.clean.session.step.scheduler.bulk.delay:" + DEFAULT_SCHEDULING_DELAY
-            + "}")
+                                    + DEFAULT_INITIAL_DELAY
+                                    + "}", fixedDelayString =
+        "${regards.session.agent.clean.session.step.scheduler.bulk.delay:"
+        + DEFAULT_SCHEDULING_DELAY
+        + "}")
     protected void scheduleCleanSessionStep() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {

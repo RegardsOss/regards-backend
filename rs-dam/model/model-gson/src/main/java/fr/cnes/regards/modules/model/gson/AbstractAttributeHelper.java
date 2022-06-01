@@ -73,7 +73,7 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         List<AttributeModel> jsonSchemaAttributes = Lists.newArrayList();
         attributes.stream()
                   .filter(a -> (a.getType() == PropertyType.JSON) && a.hasRestriction() && (a.getRestriction().getType()
-                      == RestrictionType.JSON_SCHEMA))
+                                                                                            == RestrictionType.JSON_SCHEMA))
                   .forEach(a -> jsonSchemaAttributes.addAll(fromJsonSchema(a.getJsonPropertyPath(),
                                                                            ((JsonSchemaRestriction) a.getRestriction()).getJsonSchema())));
         attributes.addAll(jsonSchemaAttributes);

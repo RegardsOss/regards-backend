@@ -59,13 +59,13 @@ public interface IFeatureUpdateRequestRepository extends IAbstractFeatureRequest
      * @return list of {@link ILightFeatureUpdateRequest}
      */
     @Query("select request.providerId as providerId, request.urn as urn, request.id as id, request.groupId as groupId,"
-        + " request.errors as errors, request.requestOwner as requestOwner, request.state as state, request.priority as priority,"
-        + " request.step as step, request.registrationDate as registrationDate, request.requestDate as requestDate,"
-        + " request.requestId as requestId from FeatureUpdateRequest request where request.urn not in ("
-        + " select scheduledRequest.urn from FeatureUpdateRequest scheduledRequest"
-        + " where scheduledRequest.step in ('LOCAL_SCHEDULED','REMOTE_STORAGE_REQUESTED','REMOTE_NOTIFICATION_REQUESTED') ) "
-        + " and request.urn not in (select urn from FeatureCreationRequest)"
-        + " and request.step = :step and request.registrationDate <= :delay and request.requestDate <= :now order by request.priority, request.requestDate ")
+           + " request.errors as errors, request.requestOwner as requestOwner, request.state as state, request.priority as priority,"
+           + " request.step as step, request.registrationDate as registrationDate, request.requestDate as requestDate,"
+           + " request.requestId as requestId from FeatureUpdateRequest request where request.urn not in ("
+           + " select scheduledRequest.urn from FeatureUpdateRequest scheduledRequest"
+           + " where scheduledRequest.step in ('LOCAL_SCHEDULED','REMOTE_STORAGE_REQUESTED','REMOTE_NOTIFICATION_REQUESTED') ) "
+           + " and request.urn not in (select urn from FeatureCreationRequest)"
+           + " and request.step = :step and request.registrationDate <= :delay and request.requestDate <= :now order by request.priority, request.requestDate ")
     Page<ILightFeatureUpdateRequest> findRequestsToSchedule(@Param("step") FeatureRequestStep step,
                                                             @Param("now") OffsetDateTime now,
                                                             Pageable page,

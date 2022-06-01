@@ -109,15 +109,15 @@ public class AccessSearchControllerIT extends AbstractRegardsIT {
     public void searchDataobjectsReturnDatasets() {
         // Define customizer
         RequestBuilderCustomizer customizer = customizer().expectStatusOk()
-                                                          .expectToHaveSize(
-                                                              JSON_PATH_ROOT + ".content[0].content.services", 0)
-                                                          .expectToHaveSize(
-                                                              JSON_PATH_ROOT + ".content[1].content.services", 2)
+                                                          .expectToHaveSize(JSON_PATH_ROOT
+                                                                            + ".content[0].content.services", 0)
+                                                          .expectToHaveSize(JSON_PATH_ROOT
+                                                                            + ".content[1].content.services", 2)
                                                           .expectValue(JSON_PATH_ROOT
-                                                                           + ".content[1].content.services[0].content.label",
+                                                                       + ".content[1].content.services[0].content.label",
                                                                        "conf0")
                                                           .expectValue(JSON_PATH_ROOT
-                                                                           + ".content[1].content.services[1].content.label",
+                                                                       + ".content[1].content.services[1].content.label",
                                                                        "uiPluginConfiguration2")
                                                           .addParameter("q",
                                                                         BackendForFrontendTestUtils.OPENSEARCH_QUERY);

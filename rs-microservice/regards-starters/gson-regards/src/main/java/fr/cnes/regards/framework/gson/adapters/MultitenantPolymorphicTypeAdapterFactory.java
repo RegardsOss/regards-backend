@@ -183,7 +183,8 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
         Map<String, Class<?>> tenantDiscriminatorToSubtype = getTenantDiscriminatorToSubtype(tenant);
         // Check if map not already contains value with a different mapping
         if (tenantDiscriminatorToSubtype.containsKey(discriminatorFieldValue) && (type
-            != tenantDiscriminatorToSubtype.get(discriminatorFieldValue))) {
+                                                                                  != tenantDiscriminatorToSubtype.get(
+            discriminatorFieldValue))) {
 
             final String errorMessage = String.format("Discriminator field value %s must be unique",
                                                       discriminatorFieldValue);

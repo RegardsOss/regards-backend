@@ -282,8 +282,8 @@ public class CdppProductAcquisitionServiceIT extends DataproviderMultitenantServ
         } catch (ConditionTimeoutException e) {
             Assert.fail(String.format(
                 "Unexpected number of step events created for session %s : expected %d steps instead of %d.%n"
-                    + "Check the workflow through events collected in t_step_property_update_request. %n"
-                    + "Cause : %s",
+                + "Check the workflow through events collected in t_step_property_update_request. %n"
+                + "Cause : %s",
                 session,
                 nbSteps,
                 nbStepsCreated.get(),

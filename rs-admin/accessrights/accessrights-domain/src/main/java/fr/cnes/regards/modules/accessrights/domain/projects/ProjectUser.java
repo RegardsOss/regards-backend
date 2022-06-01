@@ -319,8 +319,19 @@ public class ProjectUser implements IIdentifiable<Long> {
 
     @Override
     public String toString() {
-        return "ProjectUser [id=" + id + ", email=" + email + ", lastConnection=" + lastConnection + ", lastUpdate="
-            + lastUpdate + ", status=" + status + ", licenseAccepted=" + licenseAccepted + "]";
+        return "ProjectUser [id="
+               + id
+               + ", email="
+               + email
+               + ", lastConnection="
+               + lastConnection
+               + ", lastUpdate="
+               + lastUpdate
+               + ", status="
+               + status
+               + ", licenseAccepted="
+               + licenseAccepted
+               + "]";
     }
 
 }

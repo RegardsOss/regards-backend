@@ -355,12 +355,15 @@ public class RabbitBatchMessageListener implements ChannelAwareBatchMessageListe
                     arrayClass.add(argument.getClass().toString());
                 }
             }
-            throw new ListenerExecutionFailedException(
-                "Fail to invoke target method '" + HANDLE_METHOD_NAME + "' with argument type = ["
-                    + StringUtils.collectionToCommaDelimitedString(arrayClass) + "], value = ["
-                    + ObjectUtils.nullSafeToString(arguments) + "]",
-                ex,
-                originalMessages.toArray(new Message[originalMessages.size()]));
+            throw new ListenerExecutionFailedException("Fail to invoke target method '"
+                                                       + HANDLE_METHOD_NAME
+                                                       + "' with argument type = ["
+                                                       + StringUtils.collectionToCommaDelimitedString(arrayClass)
+                                                       + "], value = ["
+                                                       + ObjectUtils.nullSafeToString(arguments)
+                                                       + "]",
+                                                       ex,
+                                                       originalMessages.toArray(new Message[originalMessages.size()]));
         } finally {
             runtimeTenantResolver.clearTenant();
         }

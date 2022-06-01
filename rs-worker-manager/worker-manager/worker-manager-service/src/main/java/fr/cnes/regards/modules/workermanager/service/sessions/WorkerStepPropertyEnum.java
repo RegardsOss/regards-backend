@@ -99,7 +99,7 @@ public enum WorkerStepPropertyEnum {
     public static Optional<WorkerStepPropertyEnum> parse(RequestStatus status) {
         Optional<WorkerStepPropertyEnum> oStep = Arrays.stream(WorkerStepPropertyEnum.values())
                                                        .filter(step -> step.getRequestStatus() != null
-                                                           && status == step.getRequestStatus())
+                                                                       && status == step.getRequestStatus())
                                                        .findFirst();
         return oStep;
     }

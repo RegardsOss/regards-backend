@@ -60,7 +60,7 @@ public class ExecutionResultEventSender implements IExecutionResultEventSender {
                                   errorWithContextMono(PExecution.class,
                                                        (exec, t) -> new SendExecutionResultException(exec,
                                                                                                      "Sending execution result failed: "
-                                                                                                         + message,
+                                                                                                     + message,
                                                                                                      t)));
     }
 

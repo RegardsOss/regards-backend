@@ -58,12 +58,16 @@ public class DemoSimulatedAsyncProcess {
                 Thread.sleep(2000L);
                 if (profile.equals(FORCE_FAILURE)) {
                     publisher.publish(new StepEvent(ctx.getExec().getId(),
-                                                    new ExecutionEvent.FinalEvent(PStep.failure(
-                                                        "failure for profile " + profile + "..."), List.empty())));
+                                                    new ExecutionEvent.FinalEvent(PStep.failure("failure for profile "
+                                                                                                + profile
+                                                                                                + "..."),
+                                                                                  List.empty())));
                 } else {
                     publisher.publish(new StepEvent(ctx.getExec().getId(),
-                                                    new ExecutionEvent.FinalEvent(PStep.success(
-                                                        "success for profile " + profile + "..."), List.empty())));
+                                                    new ExecutionEvent.FinalEvent(PStep.success("success for profile "
+                                                                                                + profile
+                                                                                                + "..."),
+                                                                                  List.empty())));
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

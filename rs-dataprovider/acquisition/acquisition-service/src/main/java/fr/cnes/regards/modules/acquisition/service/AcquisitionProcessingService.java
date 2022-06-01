@@ -408,7 +408,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     private void checkProcessingChainMode(AcquisitionProcessingChain processingChain) throws ModuleException {
 
         if (AcquisitionProcessingChainMode.AUTO.equals(processingChain.getMode()) && (processingChain.getPeriodicity()
-            == null)) {
+                                                                                      == null)) {
             throw new EntityInvalidException("Missing periodicity for automatic acquisition processing chain");
         }
 
@@ -683,14 +683,18 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     @Override
     public boolean canBeStarted(AcquisitionProcessingChainMonitor chainMonitor) {
         AcquisitionProcessingChain chain = chainMonitor.getChain();
-        return AcquisitionProcessingChainMode.MANUAL.equals(chain.getMode()) && !chain.isLocked() && chain.isActive()
-            && CollectionUtils.isEmpty(chainMonitor.getExecutionBlockers());
+        return AcquisitionProcessingChainMode.MANUAL.equals(chain.getMode())
+               && !chain.isLocked()
+               && chain.isActive()
+               && CollectionUtils.isEmpty(chainMonitor.getExecutionBlockers());
     }
 
     @Override
     public boolean canBeStarted(AcquisitionProcessingChain chain) {
-        return AcquisitionProcessingChainMode.MANUAL.equals(chain.getMode()) && !chain.isLocked() && chain.isActive()
-            && !hasExecutionBlockers(chain, false);
+        return AcquisitionProcessingChainMode.MANUAL.equals(chain.getMode())
+               && !chain.isLocked()
+               && chain.isActive()
+               && !hasExecutionBlockers(chain, false);
     }
 
     /**
@@ -858,7 +862,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         } while (response.hasNext() && !Thread.currentThread().isInterrupted());
         // Update scanDirInfo last update date with the most recent file registered.
         if ((lmd != null) && ((scanDir.getLastModificationDate() == null)
-            || lmd.isAfter(scanDir.getLastModificationDate()))) {
+                              || lmd.isAfter(scanDir.getLastModificationDate()))) {
             scanDir.setLastModificationDate(lmd);
             scanDirInfoRepository.save(scanDir);
         }
@@ -923,7 +927,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             // truncate to microseconds because postgres timestamp has a resolution of 1 microsecond
             lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(filePath).toInstant(), ZoneOffset.UTC)
                                 .truncatedTo(ChronoUnit.MICROS);
-            if (scanningDate.isPresent() && (lmd.isBefore(scanningDate.get()) || lmd.isEqual(scanningDate.get()))
+            if (scanningDate.isPresent()
+                && (lmd.isBefore(scanningDate.get()) || lmd.isEqual(scanningDate.get()))
                 && acqFileRepository.existsByFilePathInAndFileInfo(filePath, info)) {
                 return false;
             } else {
@@ -991,8 +996,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                     inProgressFile.setState(AcquisitionFileState.VALID);
                     validFiles.add(inProgressFile);
                 } else {
-                    String errorMessage =
-                        "File not valid according to plugin " + validationPlugin.getClass().getSimpleName();
+                    String errorMessage = "File not valid according to plugin " + validationPlugin.getClass()
+                                                                                                  .getSimpleName();
                     LOGGER.error(errorMessage);
                     inProgressFile.setState(AcquisitionFileState.INVALID);
                     inProgressFile.setError(errorMessage);
@@ -1060,7 +1065,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     @Override
     public void restartInterruptedJobs(AcquisitionProcessingChain processingChain) throws ModuleException {
         while (!Thread.currentThread().isInterrupted()
-            && productService.restartInterruptedJobsByPage(processingChain)) {
+               && productService.restartInterruptedJobsByPage(processingChain)) {
             // Works as long as there is at least one page left
         }
     }
@@ -1129,11 +1134,11 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     private AcquisitionProcessingChainMonitor buildAcquisitionProcessingChainMonitor(AcquisitionProcessingChain chain) {
         AcquisitionProcessingChainMonitor monitor = new AcquisitionProcessingChainMonitor(chain,
                                                                                           isDeletionPending(chain));
-        boolean isProductAcquisitionJobActive =
-            chain.getLastProductAcquisitionJobInfo() != null && !chain.getLastProductAcquisitionJobInfo()
-                                                                      .getStatus()
-                                                                      .getStatus()
-                                                                      .isFinished();
+        boolean isProductAcquisitionJobActive = chain.getLastProductAcquisitionJobInfo() != null
+                                                && !chain.getLastProductAcquisitionJobInfo()
+                                                         .getStatus()
+                                                         .getStatus()
+                                                         .isFinished();
         monitor.setActive(isProductAcquisitionJobActive,
                           productService.countSIPGenerationJobInfoByProcessingChainAndSipStateIn(chain,
                                                                                                  ProductSIPState.SCHEDULED));

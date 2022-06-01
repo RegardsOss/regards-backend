@@ -163,8 +163,9 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
     @ExceptionHandler(InvalidConnectionException.class)
     public ResponseEntity<ServerErrorResponse> connectionException(final InvalidConnectionException exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                             .body(new ServerErrorResponse(
-                                 exception.getMessage() + CAUSE + exception.getCause().getMessage(), exception));
+                             .body(new ServerErrorResponse(exception.getMessage() + CAUSE + exception.getCause()
+                                                                                                     .getMessage(),
+                                                           exception));
     }
 
     // ***************************************************************************************************************

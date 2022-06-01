@@ -10,8 +10,9 @@ public class IndexNumberOfShardsSettingCustomizer implements IDynamicTenantSetti
 
     @Override
     public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
-        return dynamicTenantSetting.getDefaultValue() != null && isProperValue(dynamicTenantSetting.getDefaultValue())
-            && (dynamicTenantSetting.getValue() == null || isProperValue(dynamicTenantSetting.getValue()));
+        return dynamicTenantSetting.getDefaultValue() != null
+               && isProperValue(dynamicTenantSetting.getDefaultValue())
+               && (dynamicTenantSetting.getValue() == null || isProperValue(dynamicTenantSetting.getValue()));
     }
 
     @Override

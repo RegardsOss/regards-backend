@@ -94,8 +94,9 @@ public class JsonConverter {
 
     private <T> Stream<T> iteratorToStream(Iterator<T> iterator) {
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator,
-                                                                        Spliterator.DISTINCT | Spliterator.IMMUTABLE
-                                                                            | Spliterator.NONNULL), false);
+                                                                        Spliterator.DISTINCT
+                                                                        | Spliterator.IMMUTABLE
+                                                                        | Spliterator.NONNULL), false);
     }
 
     public FineOrNot tryIt(CheckedSupplier<XContentBuilder, IOException> fn) {

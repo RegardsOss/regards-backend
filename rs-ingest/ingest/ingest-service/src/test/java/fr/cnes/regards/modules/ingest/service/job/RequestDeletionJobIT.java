@@ -116,8 +116,9 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceIT {
         SIPEntity sip4 = new SIPEntity();
 
         sip4.setSip(SIP.build(EntityType.DATA, "SIP_001").withDescriptiveInformation("version", "2"));
-        sip4.setSipId(OaisUniformResourceName.fromString(
-            "URN:SIP:COLLECTION:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
+        sip4.setSipId(OaisUniformResourceName.fromString("URN:SIP:COLLECTION:DEFAULT:"
+                                                         + UUID.randomUUID().toString()
+                                                         + ":V1"));
         sip4.setProviderId("SIP_003");
         sip4.setCreationDate(OffsetDateTime.now().minusHours(6));
         sip4.setLastUpdate(OffsetDateTime.now().minusHours(6));

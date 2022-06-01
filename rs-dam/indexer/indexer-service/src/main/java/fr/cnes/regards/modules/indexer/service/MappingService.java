@@ -35,22 +35,23 @@ public class MappingService implements IMappingService {
             for (ModelAttrAssoc modelAttribute : modelAttributes) {
                 AttributeModel attribute = modelAttribute.getAttribute();
                 // If attribute is JSON type, then generate virtual attributes from given jsonSchema to create mapping.
-                if ((attribute.getType() == PropertyType.JSON) && (
-                    RestrictionType.JSON_SCHEMA.equals(attribute.getRestrictionType())
+                if ((attribute.getType() == PropertyType.JSON)
+                    && (RestrictionType.JSON_SCHEMA.equals(attribute.getRestrictionType())
                         && attribute.getEsMapping() == null)) {
                     JsonSchemaRestriction restriction = (JsonSchemaRestriction) attribute.getRestriction();
                     AbstractAttributeHelper.fromJsonSchema(attribute.getJsonPropertyPath(), restriction.getJsonSchema())
-                                           .forEach(a -> mappings.add(new AttributeDescription(
-                                               "feature." + a.getJsonPath(),
-                                               a.getType(),
-                                               a.hasRestriction() ?
-                                                   a.getRestrictionType() :
-                                                   RestrictionType.NO_RESTRICTION,
-                                               a.getProperties()
-                                                .stream()
-                                                .collect(Collectors.toMap(AttributeProperty::getKey,
-                                                                          AttributeProperty::getValue)),
-                                               a.getEsMapping())));
+                                           .forEach(a -> mappings.add(new AttributeDescription("feature."
+                                                                                               + a.getJsonPath(),
+                                                                                               a.getType(),
+                                                                                               a.hasRestriction() ?
+                                                                                                   a.getRestrictionType() :
+                                                                                                   RestrictionType.NO_RESTRICTION,
+                                                                                               a.getProperties()
+                                                                                                .stream()
+                                                                                                .collect(Collectors.toMap(
+                                                                                                    AttributeProperty::getKey,
+                                                                                                    AttributeProperty::getValue)),
+                                                                                               a.getEsMapping())));
                 } else {
                     Map<String, String> descriptionProperties = attribute.getProperties()
                                                                          .stream()

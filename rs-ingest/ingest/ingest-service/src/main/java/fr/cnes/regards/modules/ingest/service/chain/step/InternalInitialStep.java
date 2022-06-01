@@ -73,9 +73,8 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
 
         // Is SIP already ingested?
         if (sipService.isAlreadyIngested(checksum)) {
-            throw throwProcessingStepException(String.format(
-                "The SIP \"%s\" already exists and there is no difference " + "between this one and the stored one.",
-                sip.getId()));
+            throw throwProcessingStepException(String.format("The SIP \"%s\" already exists and there is no difference "
+                                                             + "between this one and the stored one.", sip.getId()));
         }
 
         // Manage version
@@ -89,7 +88,7 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
                     ingestRequestService.ignore(request);
                     throw new ProcessingStepException(String.format(
                         "Sip %s is not generated because this is not the first version "
-                            + "and versioning mode ask to ignore this one.",
+                        + "and versioning mode ask to ignore this one.",
                         sip.getId()));
                 }
                 break;
@@ -99,7 +98,7 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
                     ingestRequestService.waitVersioningMode(request);
                     throw new ProcessingStepException(String.format(
                         "Sip %s is not generated because this is not the first version "
-                            + "and versioning mode ask for manual decision.",
+                        + "and versioning mode ask for manual decision.",
                         sip.getId()));
                 }
                 break;
@@ -125,7 +124,7 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
     @Override
     protected void doAfterError(IngestRequest request, Optional<Exception> e) {
         if ((request.getState() != InternalRequestState.WAITING_VERSIONING_MODE) && (request.getState()
-            != InternalRequestState.IGNORED)) {
+                                                                                     != InternalRequestState.IGNORED)) {
             String error = "unknown cause";
             if (e.isPresent()) {
                 error = e.get().getMessage();

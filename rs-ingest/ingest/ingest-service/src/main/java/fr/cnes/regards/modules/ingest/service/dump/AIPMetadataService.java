@@ -148,7 +148,7 @@ public class AIPMetadataService implements IAIPMetadataService {
                                                      .map(ObjectDump::getJsonName)
                                                      .collect(Collectors.joining(", ",
                                                                                  "Some AIPs to dump had the same generated names "
-                                                                                     + "(providerId-version.json) should be unique: ",
+                                                                                 + "(providerId-version.json) should be unique: ",
                                                                                  ". Please edit your AIPs so there is no duplicates."));
             handleError(metadataRequest, errorMessage);
             throw new DuplicateUniqueNameException(errorMessage);

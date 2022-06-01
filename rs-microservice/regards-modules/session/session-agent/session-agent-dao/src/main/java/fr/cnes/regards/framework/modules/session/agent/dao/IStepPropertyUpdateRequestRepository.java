@@ -59,7 +59,7 @@ public interface IStepPropertyUpdateRequestRepository extends JpaRepository<Step
 
     @Modifying
     @Query("DELETE FROM SnapshotProcess p where p.source NOT IN (SELECT s.source FROM StepPropertyUpdateRequest s) "
-        + "AND (p.lastUpdateDate IS NULL OR p.lastUpdateDate <= ?1)")
+           + "AND (p.lastUpdateDate IS NULL OR p.lastUpdateDate <= ?1)")
     int deleteUnusedProcess(OffsetDateTime limitDate);
 
 }

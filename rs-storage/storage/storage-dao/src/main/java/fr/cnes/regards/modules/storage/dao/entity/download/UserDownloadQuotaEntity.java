@@ -113,9 +113,11 @@ public class UserDownloadQuotaEntity {
             return false;
         }
         UserDownloadQuotaEntity that = (UserDownloadQuotaEntity) o;
-        return Objects.equals(id, that.id) && Objects.equals(instance, that.instance) && Objects.equals(email,
-                                                                                                        that.email)
-            && Objects.equals(counter, that.counter);
+        return Objects.equals(id, that.id)
+               && Objects.equals(instance, that.instance)
+               && Objects.equals(email,
+                                 that.email)
+               && Objects.equals(counter, that.counter);
     }
 
     @Override

@@ -702,10 +702,8 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
                                                                         .filter(event -> event instanceof StepPropertyUpdateRequestEvent)
                                                                         .map(event -> (StepPropertyUpdateRequestEvent) event)
                                                                         .collect(Collectors.toList());
-        Assert.assertEquals(
-            "Unexpected number of step events created. Check the workflow of " + "StepPropertyUpdateRequestEvent sent.",
-            2,
-            stepEvents.size());
+        Assert.assertEquals("Unexpected number of step events created. Check the workflow of "
+                            + "StepPropertyUpdateRequestEvent sent.", 2, stepEvents.size());
         checkStepEvent(stepEvents.get(0),
                        SessionNotifierPropertyEnum.PROPERTY_AIP_INDEXED.getName(),
                        "3",
@@ -732,10 +730,8 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
                                    .filter(event -> event instanceof StepPropertyUpdateRequestEvent)
                                    .map(event -> (StepPropertyUpdateRequestEvent) event)
                                    .collect(Collectors.toList());
-        Assert.assertEquals(
-            "Unexpected number of step events created. Check the workflow of " + "StepPropertyUpdateRequestEvent sent.",
-            1,
-            stepEvents.size());
+        Assert.assertEquals("Unexpected number of step events created. Check the workflow of "
+                            + "StepPropertyUpdateRequestEvent sent.", 1, stepEvents.size());
         checkStepEvent(stepEvents.get(0),
                        SessionNotifierPropertyEnum.PROPERTY_AIP_INDEXED.getName(),
                        "1",
@@ -771,7 +767,7 @@ public class EntityIndexerServiceIT extends AbstractRegardsIT {
         List<List<StepPropertyUpdateRequestEvent>> stepEvents = argumentCaptor2.getAllValues()
                                                                                .stream()
                                                                                .filter(eventList -> !eventList.isEmpty()
-                                                                                   && eventList.get(0) instanceof StepPropertyUpdateRequestEvent)
+                                                                                                    && eventList.get(0) instanceof StepPropertyUpdateRequestEvent)
                                                                                .map(eventList -> (List<StepPropertyUpdateRequestEvent>) eventList)
                                                                                .collect(Collectors.toList());
         Assert.assertTrue("Step list should contains one event. Check if stepEventList was correctly sent",

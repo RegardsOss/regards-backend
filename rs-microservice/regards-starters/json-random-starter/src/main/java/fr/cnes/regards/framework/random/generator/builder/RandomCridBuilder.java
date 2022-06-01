@@ -55,8 +55,9 @@ public class RandomCridBuilder implements RandomGeneratorBuilder<RandomCridBuild
             String firstPool = "DPTVX";
             String secondPool = "GIO";
 
-            return generateCharFromPool(firstPool) + generateCharFromPool(secondPool)
-                + RandomStringUtils.randomAlphanumeric(2).toUpperCase(Locale.ROOT);
+            return generateCharFromPool(firstPool)
+                   + generateCharFromPool(secondPool)
+                   + RandomStringUtils.randomAlphanumeric(2).toUpperCase(Locale.ROOT);
         }
 
         /**

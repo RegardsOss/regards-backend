@@ -28,8 +28,9 @@ import java.util.List;
 @Repository
 public interface IBasketDatasetSelectionRepository extends JpaRepository<BasketDatasetSelection, Long> {
 
-    @Query(value = "SELECT BDS.*" + " FROM t_basket_dataset AS BDS"
-        + " WHERE process_dataset_desc->>'processBusinessId' = :processBusinessId", nativeQuery = true)
+    @Query(value = "SELECT BDS.*"
+                   + " FROM t_basket_dataset AS BDS"
+                   + " WHERE process_dataset_desc->>'processBusinessId' = :processBusinessId", nativeQuery = true)
     List<BasketDatasetSelection> findByProcessBusinessId(@Param("processBusinessId") String processBusinessId);
 
 }

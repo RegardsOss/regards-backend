@@ -68,8 +68,9 @@ public class AccessRightEvent implements ISubscribable {
         this.accessGroupName = accessRight.getAccessGroup().getName();
         this.accessLevel = accessRight.getAccessLevel();
         this.dataAccessLevel = accessRight.getDataAccessLevel();
-        this.dataAccessPluginLabel =
-            accessRight.getDataAccessPlugin() == null ? null : accessRight.getDataAccessPlugin().getLabel();
+        this.dataAccessPluginLabel = accessRight.getDataAccessPlugin() == null ?
+            null :
+            accessRight.getDataAccessPlugin().getLabel();
         this.eventType = eventType;
         this.roleToNotify = roleToNotify;
     }

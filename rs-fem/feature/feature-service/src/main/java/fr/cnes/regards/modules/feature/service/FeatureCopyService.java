@@ -278,8 +278,9 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
 
     @Override
     public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
-        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null) && (
-            selection.getFilters().getState() != RequestState.ERROR))) {
+        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null) && (selection.getFilters()
+                                                                                                          .getState()
+                                                                                                 != RequestState.ERROR))) {
             return RequestsInfo.build(0L);
         } else {
             selection.getFilters().withState(RequestState.ERROR);

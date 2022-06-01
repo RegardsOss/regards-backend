@@ -141,9 +141,11 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
     public static void calculateImageDimension(FileStorageRequest fileRefRequest) {
         try {
             if (((fileRefRequest.getMetaInfo().getHeight() == null) || (fileRefRequest.getMetaInfo().getWidth()
-                == null)) && fileRefRequest.getMetaInfo()
-                                           .getMimeType()
-                                           .isCompatibleWith(MediaType.valueOf("image/*"))) {
+                                                                        == null)) && fileRefRequest.getMetaInfo()
+                                                                                                   .getMimeType()
+                                                                                                   .isCompatibleWith(
+                                                                                                       MediaType.valueOf(
+                                                                                                           "image/*"))) {
                 URL localUrl = new URL(fileRefRequest.getOriginUrl());
                 if (localUrl.getProtocol().equals("file")) {
                     Path filePath = Paths.get(localUrl.toURI().getPath());

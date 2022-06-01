@@ -79,14 +79,17 @@ public class DataSourceControllerIT extends AbstractRegardsTransactionalIT {
 
     private final static String JSON_PATH_LABEL = "$.content.label";
 
-    private final static String JSON_PATH_FROM_CLAUSE =
-        "$.content.parameters.[?(@.name == '" + DataSourcePluginConstants.FROM_CLAUSE + "')].value";
+    private final static String JSON_PATH_FROM_CLAUSE = "$.content.parameters.[?(@.name == '"
+                                                        + DataSourcePluginConstants.FROM_CLAUSE
+                                                        + "')].value";
 
-    private final static String JSON_PATH_TABLE_NAME =
-        "$.content.parameters.[?(@.name == '" + DataSourcePluginConstants.TABLE_PARAM + "')].value";
+    private final static String JSON_PATH_TABLE_NAME = "$.content.parameters.[?(@.name == '"
+                                                       + DataSourcePluginConstants.TABLE_PARAM
+                                                       + "')].value";
 
-    private final static String PLUGIN_CONNECTION_PARAM_PATH =
-        "parameters.[?(@.name == '" + DataSourcePluginConstants.CONNECTION_PARAM + "')].value";
+    private final static String PLUGIN_CONNECTION_PARAM_PATH = "parameters.[?(@.name == '"
+                                                               + DataSourcePluginConstants.CONNECTION_PARAM
+                                                               + "')].value";
 
     private final static String JSON_PATH_PLUGIN_CONNECTION = "$.content." + PLUGIN_CONNECTION_PARAM_PATH;
 

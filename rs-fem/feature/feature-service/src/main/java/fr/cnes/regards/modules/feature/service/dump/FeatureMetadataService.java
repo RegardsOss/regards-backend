@@ -160,7 +160,7 @@ public class FeatureMetadataService implements IFeatureMetadataService {
                                                      .map(ObjectDump::getJsonName)
                                                      .collect(Collectors.joining(", ",
                                                                                  "Some features to dump had the same generated names "
-                                                                                     + "(providerId-version.json) should be unique: ",
+                                                                                 + "(providerId-version.json) should be unique: ",
                                                                                  ". Please edit your features so there is no duplicates."));
             handleError(metadataRequest, errorMessage);
             throw new DuplicateUniqueNameException(errorMessage);
@@ -179,8 +179,9 @@ public class FeatureMetadataService implements IFeatureMetadataService {
     private List<ObjectDump> convertFeatureToObjectDump(Collection<FeatureEntity> featureEntities) {
         return featureEntities.stream()
                               .map(featureEntity -> new ObjectDump(featureEntity.getCreationDate(),
-                                                                   featureEntity.getProviderId() + "-"
-                                                                       + featureEntity.getVersion(),
+                                                                   featureEntity.getProviderId()
+                                                                   + "-"
+                                                                   + featureEntity.getVersion(),
                                                                    featureEntity.getFeature(),
                                                                    featureEntity.getId().toString()))
                               .collect(Collectors.toList());
@@ -215,8 +216,9 @@ public class FeatureMetadataService implements IFeatureMetadataService {
 
     @Override
     public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
-        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null) && (
-            selection.getFilters().getState() != RequestState.ERROR))) {
+        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null) && (selection.getFilters()
+                                                                                                          .getState()
+                                                                                                 != RequestState.ERROR))) {
             return RequestsInfo.build(0L);
         } else {
             selection.getFilters().withState(RequestState.ERROR);
@@ -233,8 +235,9 @@ public class FeatureMetadataService implements IFeatureMetadataService {
         long nbHandled = 0;
         long total = 0;
         String message;
-        if ((selection.getFilters() != null) && (selection.getFilters().getState() != null) && (
-            selection.getFilters().getState() != RequestState.ERROR)) {
+        if ((selection.getFilters() != null) && (selection.getFilters().getState() != null) && (selection.getFilters()
+                                                                                                         .getState()
+                                                                                                != RequestState.ERROR)) {
             message = String.format("Requests in state %s are not deletable", selection.getFilters().getState());
         } else {
             boolean stop = false;
@@ -270,8 +273,9 @@ public class FeatureMetadataService implements IFeatureMetadataService {
         String message;
         Pageable page = PageRequest.of(0, MAX_ENTITY_PER_PAGE);
         Page<FeatureSaveMetadataRequest> requestsPage;
-        if ((selection.getFilters() != null) && (selection.getFilters().getState() != null) && (
-            selection.getFilters().getState() != RequestState.ERROR)) {
+        if ((selection.getFilters() != null) && (selection.getFilters().getState() != null) && (selection.getFilters()
+                                                                                                         .getState()
+                                                                                                != RequestState.ERROR)) {
             message = String.format("Requests in state %s are not retryable", selection.getFilters().getState());
         } else {
             boolean stop = false;

@@ -280,7 +280,8 @@ public class IngestService implements IIngestService {
      */
     private void checkSipStorageLocations(SIP sip, IngestMetadata ingestMetadata, Errors errors) {
         Assert.notNull(errors, "Errors should not be null");
-        if (((sip != null) & (sip.getProperties() != null)) && (sip.getProperties().getContentInformations() != null)
+        if (((sip != null) & (sip.getProperties() != null))
+            && (sip.getProperties().getContentInformations() != null)
             && (ingestMetadata != null)) {
             Set<DataType> handleTypes = Sets.newHashSet();
             ingestMetadata.getStorages().stream().map(StorageMetadata::getTargetTypes).forEach(t -> {
@@ -305,7 +306,8 @@ public class IngestService implements IIngestService {
                 }
                 // add check on quicklook or thumbnail to assert that if they are to be referenced, height and width have been set
                 if ((regardsDataType == DataType.QUICKLOOK_HD) || (regardsDataType == DataType.QUICKLOOK_MD) || (
-                    regardsDataType == DataType.QUICKLOOK_SD) || (regardsDataType == DataType.THUMBNAIL)) {
+                    regardsDataType
+                    == DataType.QUICKLOOK_SD) || (regardsDataType == DataType.THUMBNAIL)) {
                     for (OAISDataObjectLocation location : dobj.getLocations()) {
                         if (!Strings.isNullOrEmpty(location.getStorage()) && ((height == null) || (width == null))) {
                             errors.reject("REFERENCED_IMAGE_WITHOUT_DIMENSION",

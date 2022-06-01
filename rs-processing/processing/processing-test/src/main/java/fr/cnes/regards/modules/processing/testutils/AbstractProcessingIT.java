@@ -205,8 +205,12 @@ public abstract class AbstractProcessingIT implements InitializingBean {
                               try {
                                   LOGGER.info("################## Creating DB {}", dbName);
                                   Statement statement = connection.createStatement();
-                                  int resultA = statement.executeUpdate(
-                                      "DROP DATABASE IF EXISTS " + dbName + "; " + "CREATE DATABASE " + dbName + ";");
+                                  int resultA = statement.executeUpdate("DROP DATABASE IF EXISTS "
+                                                                        + dbName
+                                                                        + "; "
+                                                                        + "CREATE DATABASE "
+                                                                        + dbName
+                                                                        + ";");
                                   statement.close();
                                   LOGGER.info("################## Created DB {}: {}", dbName, resultA);
                               } catch (Exception e) {
@@ -255,22 +259,34 @@ public abstract class AbstractProcessingIT implements InitializingBean {
 
                                   "spring.jpa.properties.hibernate.default_schema=" + R2DBCDB_NAME,
 
-                                  "regards.jpa.multitenant.tenants[0].url=jdbc:postgresql://" + pgHost + ":" + pgPort
-                                      + "/" + DEFAULT_PROJECT_TENANT,
+                                  "regards.jpa.multitenant.tenants[0].url=jdbc:postgresql://"
+                                  + pgHost
+                                  + ":"
+                                  + pgPort
+                                  + "/"
+                                  + DEFAULT_PROJECT_TENANT,
                                   "regards.jpa.multitenant.tenants[0].tenant=" + DEFAULT_PROJECT_TENANT,
                                   "regards.jpa.multitenant.tenants[0].driverClassName=org.postgresql.Driver",
                                   "regards.jpa.multitenant.tenants[0].userName=" + PGSQL_USER,
                                   "regards.jpa.multitenant.tenants[0].password=" + PGSQL_SECRET,
 
-                                  "regards.jpa.multitenant.tenants[1].url=jdbc:postgresql://" + pgHost + ":" + pgPort
-                                      + "/" + TENANT_PROJECTA,
+                                  "regards.jpa.multitenant.tenants[1].url=jdbc:postgresql://"
+                                  + pgHost
+                                  + ":"
+                                  + pgPort
+                                  + "/"
+                                  + TENANT_PROJECTA,
                                   "regards.jpa.multitenant.tenants[1].tenant=" + TENANT_PROJECTA,
                                   "regards.jpa.multitenant.tenants[1].driverClassName=org.postgresql.Driver",
                                   "regards.jpa.multitenant.tenants[1].userName=" + PGSQL_USER,
                                   "regards.jpa.multitenant.tenants[1].password=" + PGSQL_SECRET,
 
-                                  "regards.jpa.multitenant.tenants[2].url=jdbc:postgresql://" + pgHost + ":" + pgPort
-                                      + "/" + TENANT_PROJECTB,
+                                  "regards.jpa.multitenant.tenants[2].url=jdbc:postgresql://"
+                                  + pgHost
+                                  + ":"
+                                  + pgPort
+                                  + "/"
+                                  + TENANT_PROJECTB,
                                   "regards.jpa.multitenant.tenants[2].tenant=" + TENANT_PROJECTB,
                                   "regards.jpa.multitenant.tenants[2].driverClassName=org.postgresql.Driver",
                                   "regards.jpa.multitenant.tenants[2].userName=" + PGSQL_USER,

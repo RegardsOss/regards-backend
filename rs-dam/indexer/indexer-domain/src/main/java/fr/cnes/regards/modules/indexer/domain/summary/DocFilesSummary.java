@@ -55,7 +55,15 @@ public class DocFilesSummary extends AbstractDocSummary {
 
     @Override
     public String toString() {
-        return "DocFilesSummary{" + "subSummariesMap=" + subSummariesMap + ", documentsCount=" + documentsCount
-            + ", filesCount=" + filesCount + ", filesSize=" + filesSize + '}';
+        return "DocFilesSummary{"
+               + "subSummariesMap="
+               + subSummariesMap
+               + ", documentsCount="
+               + documentsCount
+               + ", filesCount="
+               + filesCount
+               + ", filesSize="
+               + filesSize
+               + '}';
     }
 }

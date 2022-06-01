@@ -120,7 +120,10 @@ public abstract class AbstractMultitenantServiceIT extends AbstractDaoIT {
      */
     protected void simulateApplicationReadyEvent() {
         String tenant = runtimeTenantResolver.getTenant();
-        springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class), null, null, null));
+        springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class),
+                                                               null,
+                                                               null,
+                                                               null));
         if (tenant != null) {
             runtimeTenantResolver.forceTenant(tenant);
         }
@@ -132,7 +135,10 @@ public abstract class AbstractMultitenantServiceIT extends AbstractDaoIT {
      */
     protected void simulateApplicationStartedEvent() {
         String tenant = runtimeTenantResolver.getTenant();
-        springPublisher.publishEvent(new ApplicationStartedEvent(Mockito.mock(SpringApplication.class), null, null, null));
+        springPublisher.publishEvent(new ApplicationStartedEvent(Mockito.mock(SpringApplication.class),
+                                                                 null,
+                                                                 null,
+                                                                 null));
         if (tenant != null) {
             runtimeTenantResolver.forceTenant(tenant);
         }

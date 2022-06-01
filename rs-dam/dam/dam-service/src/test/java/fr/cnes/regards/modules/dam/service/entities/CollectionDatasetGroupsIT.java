@@ -407,8 +407,8 @@ public class CollectionDatasetGroupsIT extends AbstractMultitenantServiceIT {
     @Requirement("REGARDS_DSL_DAM_COL_040")
     @Purpose(
         "Le système doit permettre d’associer/dissocier des collections à la collection courante lors de la mise à jour."
-            + "Le système doit permettre de mettre à jour les valeurs d’une collection via son IP_ID et d’archiver ces "
-            + "modifications dans son AIP au niveau du composant « Archival storage » si ce composant est déployé.")
+        + "Le système doit permettre de mettre à jour les valeurs d’une collection via son IP_ID et d’archiver ces "
+        + "modifications dans son AIP au niveau du composant « Archival storage » si ce composant est déployé.")
     @Requirement("REGARDS_DSL_DAM_COL_210")
     @Test
     public void testUpdate() throws ModuleException, IOException {

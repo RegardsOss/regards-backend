@@ -319,9 +319,11 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
             case URL:
                 return buildUrl(name, toURLValue(value));
             default:
-                throw new IllegalArgumentException(
-                    attributeType + " is not a handled value of " + PropertyType.class.getName() + " in "
-                        + IProperty.class.getName());
+                throw new IllegalArgumentException(attributeType
+                                                   + " is not a handled value of "
+                                                   + PropertyType.class.getName()
+                                                   + " in "
+                                                   + IProperty.class.getName());
         }
     }
 
@@ -357,10 +359,12 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
 
         switch (attributeType) {
             case DATE_INTERVAL:
-                OffsetDateTime lowerDateTime =
-                    lowerBound == null ? null : OffsetDateTimeAdapter.parse((String) lowerBound);
-                OffsetDateTime upperDateTime =
-                    upperBound == null ? null : OffsetDateTimeAdapter.parse((String) upperBound);
+                OffsetDateTime lowerDateTime = lowerBound == null ?
+                    null :
+                    OffsetDateTimeAdapter.parse((String) lowerBound);
+                OffsetDateTime upperDateTime = upperBound == null ?
+                    null :
+                    OffsetDateTimeAdapter.parse((String) upperBound);
                 return (T) buildDateInterval(name, buildRange(lowerDateTime, upperDateTime));
             case DOUBLE_INTERVAL:
                 Double lowerDouble = lowerBound == null ? null : ((Number) lowerBound).doubleValue();
@@ -375,9 +379,11 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 Long upperLong = upperBound == null ? null : ((Number) upperBound).longValue();
                 return (T) buildLongInterval(name, buildRange(lowerLong, upperLong));
             default:
-                throw new IllegalArgumentException(
-                    attributeType + " is not a handled value of " + PropertyType.class.getName() + " in "
-                        + IProperty.class.getName());
+                throw new IllegalArgumentException(attributeType
+                                                   + " is not a handled value of "
+                                                   + PropertyType.class.getName()
+                                                   + " in "
+                                                   + IProperty.class.getName());
         }
     }
 
@@ -450,9 +456,11 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 ((JsonProperty) property).updateValue((JsonElement) value);
                 break;
             default:
-                throw new IllegalArgumentException(
-                    property.getType() + " is not a handled value of " + PropertyType.class.getName() + " in "
-                        + IProperty.class.getName());
+                throw new IllegalArgumentException(property.getType()
+                                                   + " is not a handled value of "
+                                                   + PropertyType.class.getName()
+                                                   + " in "
+                                                   + IProperty.class.getName());
         }
         return property;
     }
@@ -510,9 +518,11 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
             case URL:
                 return (T) buildUrl(name);
             default:
-                throw new IllegalArgumentException(
-                    attributeType + " is not a handled value of " + PropertyType.class.getName() + " in "
-                        + IProperty.class.getName());
+                throw new IllegalArgumentException(attributeType
+                                                   + " is not a handled value of "
+                                                   + PropertyType.class.getName()
+                                                   + " in "
+                                                   + IProperty.class.getName());
         }
     }
 

@@ -109,7 +109,7 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
                                                                                       .plusSeconds(MAX_TASK_DELAY)));
                 } else {
                     LOGGER.warn("[MANAGER CLEAN SESSION SCHEDULER] - {} could not be executed because "
-                                    + "AgentSnapshotJobs did not finished on time. Waited for {}ms.",
+                                + "AgentSnapshotJobs did not finished on time. Waited for {}ms.",
                                 CLEAN_SESSION_TITLE,
                                 System.currentTimeMillis() - startTime);
                 }
@@ -150,13 +150,13 @@ public class ManagerCleanScheduler extends AbstractTaskScheduler {
             // wait 45s if jobs are currently running
             if (count != 0L) {
                 LOGGER.info("[MANAGER CLEAN SESSION SCHEDULER] Waiting for ManagerSnapshotJobs ending to start "
-                                + "ManagerCleanJob ... Current number of {} in running, pending or queued "
-                                + "states {}.", ManagerSnapshotJob.class.getName(), count);
+                            + "ManagerCleanJob ... Current number of {} in running, pending or queued "
+                            + "states {}.", ManagerSnapshotJob.class.getName(), count);
                 try {
                     Thread.sleep(sleepDuration);
                 } catch (InterruptedException e) {
                     LOGGER.warn("[MANAGER CLEAN SESSION SCHEDULER] - the thread was interrupted while waiting for "
-                                    + "ManagerSnapshotJob ending", e);
+                                + "ManagerSnapshotJob ending", e);
                     // Restore interrupted state
                     Thread.currentThread().interrupt();
                 }

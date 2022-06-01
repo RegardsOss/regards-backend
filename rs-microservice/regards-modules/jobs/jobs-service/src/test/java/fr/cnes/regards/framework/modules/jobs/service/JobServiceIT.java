@@ -102,7 +102,10 @@ public class JobServiceIT {
             subscriber.subscribeTo(JobEvent.class, jobHandler);
             subscriptionsDone = true;
         }
-        springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class), null, null, null));
+        springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class),
+                                                               null,
+                                                               null,
+                                                               null));
     }
 
     @After
@@ -176,8 +179,11 @@ public class JobServiceIT {
     @Test
     public void testPendingTrigger() {
         OffsetDateTime triggerDate = OffsetDateTime.now();
-        JobInfo jobToBeTriggered = jobInfoService.createPendingTriggerJob(jobServiceJobCreator.createWaitJob(1L, 1, 10), triggerDate);
-        JobInfo jobNotToBeTriggered = jobInfoService.createPendingTriggerJob(jobServiceJobCreator.createWaitJob(1L, 1, 10),
+        JobInfo jobToBeTriggered = jobInfoService.createPendingTriggerJob(jobServiceJobCreator.createWaitJob(1L, 1, 10),
+                                                                          triggerDate);
+        JobInfo jobNotToBeTriggered = jobInfoService.createPendingTriggerJob(jobServiceJobCreator.createWaitJob(1L,
+                                                                                                                1,
+                                                                                                                10),
                                                                              triggerDate.plusDays(1));
         jobInfoTaskScheduler.triggerPendingJobs();
         // check the status of jobToBeTriggered has changed to QUEUED or TO_BE_RUN (triggerPendingJobs changes the
@@ -189,7 +195,7 @@ public class JobServiceIT {
         Assert.assertTrue("jobNotToBeTriggered should be present", jobNotToBeTriggeredNotUpdated.isPresent());
         Assert.assertTrue("Unexpected jobToBeTriggered status",
                           jobToBeTriggeredUpdated.get().getStatus().getStatus().equals(JobStatus.QUEUED)
-                              || jobToBeTriggeredUpdated.get().getStatus().getStatus().equals(JobStatus.TO_BE_RUN));
+                          || jobToBeTriggeredUpdated.get().getStatus().getStatus().equals(JobStatus.TO_BE_RUN));
         Assert.assertEquals("Unexpected jobNotToBeTriggered status",
                             JobStatus.PENDING,
                             jobNotToBeTriggeredNotUpdated.get().getStatus().getStatus());
@@ -213,7 +219,10 @@ public class JobServiceIT {
         LOGGER.info(results.toString());
         int lastPriority = -1;
         for (JobInfo job : results) {
-            LOGGER.info("Job {} start date at {} with priority {}", job.getId(), job.getStatus().getStartDate(), job.getPriority());
+            LOGGER.info("Job {} start date at {} with priority {}",
+                        job.getId(),
+                        job.getStatus().getStartDate(),
+                        job.getPriority());
             if (lastPriority != -1) {
                 Assert.assertTrue("The jobs were not launched by top priority", job.getPriority() <= lastPriority);
             }
@@ -237,6 +246,7 @@ public class JobServiceIT {
     }
 
     private class JobHandler implements IHandler<JobEvent> {
+
         @Override
         public void handle(String tenant, JobEvent jobEvent) {
             JobEventType type = jobEvent.getJobEventType();
@@ -259,8 +269,9 @@ public class JobServiceIT {
                     LOGGER.info("FAILED for " + jobEvent.getJobId());
                     break;
                 default:
-                    throw new IllegalArgumentException(type + " is not an handled type of JobEvent for this test: "
-                                                           + JobServiceIT.class.getSimpleName());
+                    throw new IllegalArgumentException(type
+                                                       + " is not an handled type of JobEvent for this test: "
+                                                       + JobServiceIT.class.getSimpleName());
             }
         }
     }

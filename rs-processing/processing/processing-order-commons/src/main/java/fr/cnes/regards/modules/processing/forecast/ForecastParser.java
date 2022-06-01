@@ -86,13 +86,13 @@ public class ForecastParser implements IResultSizeForecast.Parser, IRunningDurat
 
     public static final String SIZE_DESCRIPTION =
         "In order to decide before launching a batch execution whether it will overflow the"
-            + " size quota, we need to have an even imprecise forecast of how much space the execution"
-            + " will occupy. This is a string whose pattern is an optional '*', a number, a letter."
-            + " The letter is the unit: 'b' for byte, 'k' for kilobytes, 'm' for megabytes, 'g' for gigabytes."
-            + " If the value starts with '*', it will be a multiplier per megabyte of input data."
-            + " For instance: '1g' means the result expected size is 1 gigabyte, no matter the input size."
-            + " Whereas '*2.5' means that for every megabyte in input, there will be 2.5 megabytes of"
-            + " data in the output.";
+        + " size quota, we need to have an even imprecise forecast of how much space the execution"
+        + " will occupy. This is a string whose pattern is an optional '*', a number, a letter."
+        + " The letter is the unit: 'b' for byte, 'k' for kilobytes, 'm' for megabytes, 'g' for gigabytes."
+        + " If the value starts with '*', it will be a multiplier per megabyte of input data."
+        + " For instance: '1g' means the result expected size is 1 gigabyte, no matter the input size."
+        + " Whereas '*2.5' means that for every megabyte in input, there will be 2.5 megabytes of"
+        + " data in the output.";
 
     private static final Pattern SIZE_FORECAST_REGEXP = Pattern.compile(
         "^(?:(?<mult>\\*(?<mnum>\\d+(?:\\.\\d*)?))|(?<abs>(?<anum>\\d+(?:\\.\\d*)?)(?<unit>[bkmg])))$");
@@ -122,11 +122,11 @@ public class ForecastParser implements IResultSizeForecast.Parser, IRunningDurat
 
     public static final String DURATION_DESCRIPTION =
         "In order to detect executions which have silently stopped working, we need an even"
-            + " imprecise estimation of the duration the execution will take. The processing module will"
-            + " take this duration, and multiply by a constant configurable value in order to define"
-            + " a timeout. Examples: '10s' for 10 seconds, '5min' for 5 minutes, '4h' for 4 hours,"
-            + " '2d' for 2 days ; '10s/m' for 10 seconds per megabyte of input data ; '4h/g' for 4 hours"
-            + " per gigabyte of input data.";
+        + " imprecise estimation of the duration the execution will take. The processing module will"
+        + " take this duration, and multiply by a constant configurable value in order to define"
+        + " a timeout. Examples: '10s' for 10 seconds, '5min' for 5 minutes, '4h' for 4 hours,"
+        + " '2d' for 2 days ; '10s/m' for 10 seconds per megabyte of input data ; '4h/g' for 4 hours"
+        + " per gigabyte of input data.";
 
     private static final Pattern DURATION_FORECAST_REGEXP = Pattern.compile(
         "^(?<num>\\d+(?:\\.\\d*)?)(?<tunit>s|min|h|d)(?<persize>/[bkmg])?$");

@@ -111,10 +111,14 @@ public class Authentication {
             return false;
         }
         Authentication that = (Authentication) o;
-        return Objects.equals(project, that.project) && Objects.equals(scope, that.scope) && Objects.equals(role,
-                                                                                                            that.role)
-            && Objects.equals(sub, that.sub) && Objects.equals(serviceProviderName, that.serviceProviderName)
-            && Objects.equals(accessToken, that.accessToken) && Objects.equals(expiresIn, that.expiresIn);
+        return Objects.equals(project, that.project)
+               && Objects.equals(scope, that.scope)
+               && Objects.equals(role,
+                                 that.role)
+               && Objects.equals(sub, that.sub)
+               && Objects.equals(serviceProviderName, that.serviceProviderName)
+               && Objects.equals(accessToken, that.accessToken)
+               && Objects.equals(expiresIn, that.expiresIn);
     }
 
     @Override

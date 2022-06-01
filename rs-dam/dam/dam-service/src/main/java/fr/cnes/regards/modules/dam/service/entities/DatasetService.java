@@ -196,8 +196,8 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
         if (!subsettingCriterion.equals(ICriterion.all())) {
             SubsettingCoherenceVisitor criterionVisitor = getSubsettingCoherenceVisitor();
             if (!subsettingCriterion.accept(criterionVisitor)) {
-                throw new EntityInvalidException(
-                    "Given subsettingCriterion cannot be accepted for the Dataset : " + dataset.getLabel());
+                throw new EntityInvalidException("Given subsettingCriterion cannot be accepted for the Dataset : "
+                                                 + dataset.getLabel());
             }
         }
         return dataset;

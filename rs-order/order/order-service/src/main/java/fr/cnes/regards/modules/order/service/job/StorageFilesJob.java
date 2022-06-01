@@ -113,8 +113,8 @@ public class StorageFilesJob extends AbstractJob<Void> {
             if (paramIsIncompatible) {
                 throw new JobParameterInvalidException(
                     "Please use ProcessJobInfoJobParameter, FilesJobParameter, SubOrderAvailabilityPeriodJobParameter, UserJobParameter and "
-                        + "UserRoleJobParameter in place of JobParameter (these "
-                        + "classes are here to facilitate your life so please use them.");
+                    + "UserRoleJobParameter in place of JobParameter (these "
+                    + "classes are here to facilitate your life so please use them.");
             }
             if (FilesJobParameter.isCompatible(param)) {
                 Long[] fileIds = param.getValue();

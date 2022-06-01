@@ -163,7 +163,7 @@ public interface IJob<R> extends Runnable {
         if (parameter == null) {
             handleMissingParameter(parameterName);
         } else if (parameter.getValue()
-            == null) { // NOSONAR : an exception is thrown when calling handleMissingParameter
+                   == null) { // NOSONAR : an exception is thrown when calling handleMissingParameter
             handleInvalidParameter(parameterName, "Null value");
         } else {
             return type == null ? parameter.getValue() : parameter.getValue(type);

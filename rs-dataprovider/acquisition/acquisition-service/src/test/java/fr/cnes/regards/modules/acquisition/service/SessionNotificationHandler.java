@@ -74,13 +74,13 @@ public class SessionNotificationHandler
                                  String property,
                                  StepPropertyEventTypeEnum type) {
         return events.stream()
-                     .filter(e -> e.getStepProperty().getSource().equals(source) && e.getStepProperty()
-                                                                                     .getSession()
-                                                                                     .equals(session)
-                         && e.getStepProperty().getStepId().equals(step) && e.getStepProperty()
-                                                                             .getStepPropertyInfo()
-                                                                             .getProperty()
-                                                                             .equals(property) && e.getType() == type)
+                     .filter(e -> e.getStepProperty().getSource().equals(source)
+                                  && e.getStepProperty()
+                                      .getSession()
+                                      .equals(session)
+                                  && e.getStepProperty().getStepId().equals(step)
+                                  && e.getStepProperty().getStepPropertyInfo().getProperty().equals(property)
+                                  && e.getType() == type)
                      .map(event -> Long.parseLong(event.getStepProperty().getStepPropertyInfo().getValue()))
                      .reduce(0L, Long::sum);
     }

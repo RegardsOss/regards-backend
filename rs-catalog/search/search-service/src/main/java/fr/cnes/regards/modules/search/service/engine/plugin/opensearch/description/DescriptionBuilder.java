@@ -561,8 +561,8 @@ public class DescriptionBuilder {
                     // Do not handle JSON Attributes as simple attributes
                     break;
                 default:
-                    throw new IllegalArgumentException(
-                        attr.getType() + " is not handled for open search descriptor generation");
+                    throw new IllegalArgumentException(attr.getType()
+                                                       + " is not handled for open search descriptor generation");
             }
             sj.add(result.toString());
         }

@@ -103,7 +103,7 @@ public class InstanceNotificationService implements IInstanceNotificationService
 
         // check the notification type and send it immediately if FATAL or ERROR
         if ((notification.getLevel() == NotificationLevel.FATAL) || (notification.getLevel()
-            == NotificationLevel.ERROR)) {
+                                                                     == NotificationLevel.ERROR)) {
             applicationEventPublisher.publishEvent(new NotificationToSendEvent(notification));
         }
 

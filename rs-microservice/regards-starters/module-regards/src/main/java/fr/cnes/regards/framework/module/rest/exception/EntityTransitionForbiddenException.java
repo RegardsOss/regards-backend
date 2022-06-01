@@ -33,8 +33,10 @@ public class EntityTransitionForbiddenException extends EntityOperationForbidden
                                                   final String transition) {
         super(entityIdentifier,
               entityClass,
-              "The transition " + transition + " called on this state-managed entity is illegal for its current state "
-                  + state);
+              "The transition "
+              + transition
+              + " called on this state-managed entity is illegal for its current state "
+              + state);
     }
 
 }

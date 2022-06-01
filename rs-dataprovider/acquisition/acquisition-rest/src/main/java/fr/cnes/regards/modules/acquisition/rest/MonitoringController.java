@@ -87,7 +87,8 @@ public class MonitoringController implements IResourceController<AcquisitionProc
 
         EntityModel<AcquisitionProcessingChainMonitor> resource = resourceService.toResource(element);
 
-        if ((element != null) && (element.getChain() != null)
+        if ((element != null)
+            && (element.getChain() != null)
             && !processingService.isDeletionPending(element.getChain())) {
             MethodParam<Long> idParam = MethodParamFactory.build(Long.class, element.getChain().getId());
             Class<AcquisitionProcessingChainController> clazz = AcquisitionProcessingChainController.class;

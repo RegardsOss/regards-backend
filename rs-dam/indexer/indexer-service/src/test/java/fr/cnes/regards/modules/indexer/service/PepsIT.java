@@ -126,9 +126,9 @@ public class PepsIT {
             page++;
             URL pepsRequestURL = new URL(String.format(
                 "https://peps.cnes.fr/resto/api/collections/S1/search.json?box=%s"
-                    + "&instrument=SAR-C+SAR&lang=fr&maxRecords=500&page=%d&platform=S1A&polarisation=HH"
-                    + "&processingLevel=LEVEL1&productType=GRD&q="
-                    + "&startDate=%sT00:00:00&completionDate=%sT00:00:00",
+                + "&instrument=SAR-C+SAR&lang=fr&maxRecords=500&page=%d&platform=S1A&polarisation=HH"
+                + "&processingLevel=LEVEL1&productType=GRD&q="
+                + "&startDate=%sT00:00:00&completionDate=%sT00:00:00",
                 bbox,
                 page,
                 startDate,
@@ -329,7 +329,7 @@ public class PepsIT {
         // most polygons from Peps have an area betwwen 1e10 and 1e11
         // A polygon with an area > 1e12 means there is a problem (polygon crossing dateline)
         checkResults(o -> (GeoGeometry.area(GeoUtil.toArray(o.getNormalizedGeometry())) > 1.e12)
-                         || !GeoGeometry.overlap(GeoUtil.toArray(o.getNormalizedGeometry()), bboxPolygon),
+                          || !GeoGeometry.overlap(GeoUtil.toArray(o.getNormalizedGeometry()), bboxPolygon),
                      objectsFromEs,
                      objectsFromPeps);
     }
@@ -338,10 +338,11 @@ public class PepsIT {
                               double[][] bbox2Polygon,
                               List<DataObject> objectsFromEs,
                               List<DataObject> objectsFromPeps) {
-        checkResults(o -> (GeoGeometry.area(GeoUtil.toArray(o.getNormalizedGeometry())) > 1.e12) || (
-            !GeoGeometry.overlap(GeoUtil.toArray(o.getNormalizedGeometry()), bbox1Polygon) && !GeoGeometry.overlap(
-                GeoUtil.toArray(o.getNormalizedGeometry()),
-                bbox2Polygon)), objectsFromEs, objectsFromPeps);
+        checkResults(o -> (GeoGeometry.area(GeoUtil.toArray(o.getNormalizedGeometry())) > 1.e12)
+                          || (!GeoGeometry.overlap(GeoUtil.toArray(o.getNormalizedGeometry()), bbox1Polygon)
+                              && !GeoGeometry.overlap(GeoUtil.toArray(o.getNormalizedGeometry()), bbox2Polygon)),
+                     objectsFromEs,
+                     objectsFromPeps);
     }
 
     private void checkResults(Predicate<DataObject> intersectPredicate,

@@ -159,7 +159,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
     @Test
     @Purpose(
         "Check that if files to store in a given feature are not all of the same store mode (reference or storage),"
-            + "the request is denied")
+        + "the request is denied")
     public void testFeatureCreationStorageModeFails() {
         // Init creation request
         List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true, false);
@@ -582,12 +582,13 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
     @Test
     public void testFeaturePriority() {
 
-        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(
-            properties.getMaxBulkSize() + (properties.getMaxBulkSize() / 2), true, false);
+        List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(properties.getMaxBulkSize() + (
+            properties.getMaxBulkSize()
+            / 2), true, false);
 
         // we will set all priority to normal except for the (properties.getMaxBulkSize() / 2) last events
-        for (int i = properties.getMaxBulkSize();
-             i < (properties.getMaxBulkSize() + (properties.getMaxBulkSize() / 2)); i++) {
+        for (int i = properties.getMaxBulkSize(); i < (properties.getMaxBulkSize() + (properties.getMaxBulkSize()
+                                                                                      / 2)); i++) {
             events.get(i).getMetadata().setPriority(PriorityLevel.HIGH);
         }
 
@@ -601,7 +602,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         List<FeatureCreationRequest> scheduled = featureCreationRequestRepo.findAll()
                                                                            .stream()
                                                                            .filter(r -> r.getStep()
-                                                                               != FeatureRequestStep.LOCAL_DELAYED)
+                                                                                        != FeatureRequestStep.LOCAL_DELAYED)
                                                                            .collect(Collectors.toList());
         Assert.assertEquals(properties.getMaxBulkSize().intValue(), scheduled.size());
 

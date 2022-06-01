@@ -300,8 +300,8 @@ public abstract class ShapeBuilder<T extends Shape, G extends org.elasticsearch.
             if (next != null) {
                 // self-loop throws an invalid shape
                 if (this.coordinate.equals(next.coordinate)) {
-                    throw new InvalidShapeException(
-                        "Provided shape has duplicate consecutive coordinates at: " + this.coordinate);
+                    throw new InvalidShapeException("Provided shape has duplicate consecutive coordinates at: "
+                                                    + this.coordinate);
                 }
                 this.next = next;
             }

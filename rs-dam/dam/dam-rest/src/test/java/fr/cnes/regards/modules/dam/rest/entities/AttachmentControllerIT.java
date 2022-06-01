@@ -70,8 +70,9 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final Path ATTACHMENT_FOLDER = Paths.get("src", "test", "resources", "attachments");
 
-    private static final String PDF_CONTENT_TYPE =
-        MediaType.APPLICATION_PDF_VALUE + " ;charset=" + StandardCharsets.UTF_8;
+    private static final String PDF_CONTENT_TYPE = MediaType.APPLICATION_PDF_VALUE
+                                                   + " ;charset="
+                                                   + StandardCharsets.UTF_8;
 
     private static final String HTML_CONTENT_TYPE = MediaType.TEXT_HTML_VALUE + " ;charset=" + StandardCharsets.UTF_8;
 
@@ -123,8 +124,9 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
 
         RequestBuilderCustomizer customizer = customizer().expectStatusOk()
                                                           .expect(MockMvcResultMatchers.jsonPath(
-                                                              "$.content.feature.files." + DataType.DESCRIPTION
-                                                                  + ".length()",
+                                                              "$.content.feature.files."
+                                                              + DataType.DESCRIPTION
+                                                              + ".length()",
                                                               Matchers.equalTo(2)));
 
         List<MockMultipartFile> files = new ArrayList<>();
@@ -144,8 +146,9 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
 
         RequestBuilderCustomizer customizer = customizer().expectStatusOk()
                                                           .expect(MockMvcResultMatchers.jsonPath(
-                                                              "$.content.feature.files." + DataType.DESCRIPTION
-                                                                  + ".length()",
+                                                              "$.content.feature.files."
+                                                              + DataType.DESCRIPTION
+                                                              + ".length()",
                                                               Matchers.equalTo(1)));
 
         List<MockMultipartFile> files = new ArrayList<>();
@@ -171,8 +174,9 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
 
         RequestBuilderCustomizer customizer = customizer().expectStatusOk()
                                                           .expect(MockMvcResultMatchers.jsonPath(
-                                                              "$.content.feature.files." + DataType.DESCRIPTION
-                                                                  + ".length()",
+                                                              "$.content.feature.files."
+                                                              + DataType.DESCRIPTION
+                                                              + ".length()",
                                                               Matchers.equalTo(1)));
 
         List<MockMultipartFile> files = new ArrayList<>();
@@ -185,13 +189,13 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
 
         files.add(getMultipartFileRefs(ref));
 
-        ResultActions result = performDefaultFileUpload(
-            AttachmentController.TYPE_MAPPING + AttachmentController.ATTACHMENTS_MAPPING,
-            files,
-            customizer,
-            "Attachment error",
-            collection.getIpId().toString(),
-            DataType.DESCRIPTION);
+        ResultActions result = performDefaultFileUpload(AttachmentController.TYPE_MAPPING
+                                                        + AttachmentController.ATTACHMENTS_MAPPING,
+                                                        files,
+                                                        customizer,
+                                                        "Attachment error",
+                                                        collection.getIpId().toString(),
+                                                        DataType.DESCRIPTION);
 
         String json = payload(result);
         String checksum = JsonPath.read(json, "$.content.feature.files." + DataType.DESCRIPTION + "[0].checksum");
@@ -223,8 +227,9 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
 
         RequestBuilderCustomizer customizer = customizer().expectStatusOk()
                                                           .expect(MockMvcResultMatchers.jsonPath(
-                                                              "$.content.feature.files." + DataType.DESCRIPTION
-                                                                  + ".length()",
+                                                              "$.content.feature.files."
+                                                              + DataType.DESCRIPTION
+                                                              + ".length()",
                                                               Matchers.equalTo(2)));
 
         List<MockMultipartFile> files = new ArrayList<>();
@@ -285,8 +290,9 @@ public class AttachmentControllerIT extends AbstractRegardsTransactionalIT {
         // Upload document
         RequestBuilderCustomizer customizer = customizer().expectStatusOk()
                                                           .expect(MockMvcResultMatchers.jsonPath(
-                                                              "$.content.feature.files." + DataType.DOCUMENT
-                                                                  + ".length()",
+                                                              "$.content.feature.files."
+                                                              + DataType.DOCUMENT
+                                                              + ".length()",
                                                               Matchers.equalTo(1)));
 
         List<MockMultipartFile> files = new ArrayList<>();

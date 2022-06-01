@@ -173,7 +173,8 @@ public class PluginService implements IPluginService, InitializingBean {
 
         StringBuilder msg = new StringBuilder("Cannot save plugin configuration");
         PluginConfiguration pluginConfInDb = repos.findCompleteByBusinessId(plgConf.getBusinessId());
-        if ((pluginConfInDb != null) && !Objects.equals(pluginConfInDb.getId(), plgConf.getId())
+        if ((pluginConfInDb != null)
+            && !Objects.equals(pluginConfInDb.getId(), plgConf.getId())
             && pluginConfInDb.getBusinessId().equals(plgConf.getBusinessId())) {
             msg.append(String.format(". A plugin configuration with same businessId (%s) already exists.",
                                      plgConf.getBusinessId()));
@@ -274,7 +275,8 @@ public class PluginService implements IPluginService, InitializingBean {
                 // First disable all other active configurations
                 List<PluginConfiguration> confs = repos.findAll();
                 for (PluginConfiguration conf : confs) {
-                    if (!conf.getId().equals(plgConf.getId()) && conf.isActive()
+                    if (!conf.getId().equals(plgConf.getId())
+                        && conf.isActive()
                         && !Collections.disjoint(conf.getInterfaceNames(), uniqueActiveConfInterfaces)) {
                         conf.setIsActive(false);
                         LOGGER.info(
@@ -418,8 +420,9 @@ public class PluginService implements IPluginService, InitializingBean {
             // First desable all other active configurations
             List<PluginConfiguration> confs = repos.findAll();
             for (PluginConfiguration conf : confs) {
-                if ((conf.getId().longValue() != plugin.getId().longValue()) && conf.getInterfaceNames()
-                                                                                    .contains(pluginType.getName())
+                if ((conf.getId().longValue() != plugin.getId().longValue())
+                    && conf.getInterfaceNames()
+                           .contains(pluginType.getName())
                     && conf.isActive()) {
                     conf.setIsActive(false);
                     updatePluginConfiguration(conf);
@@ -642,8 +645,8 @@ public class PluginService implements IPluginService, InitializingBean {
         if (pluginMetadata == null) {
             LOGGER.debug("No plugin metadata found for plugin configuration id {}", pluginConf.getPluginId());
             logPluginServiceState("instanciatePluginAndCache");
-            throw new PluginMetadataNotFoundRuntimeException(
-                "Metadata not found for plugin configuration identifier " + pluginConf.getPluginId());
+            throw new PluginMetadataNotFoundRuntimeException("Metadata not found for plugin configuration identifier "
+                                                             + pluginConf.getPluginId());
         }
 
         if (!Objects.equals(pluginMetadata.getVersion(), pluginConf.getVersion())) {

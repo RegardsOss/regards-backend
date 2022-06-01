@@ -275,11 +275,12 @@ public class ModelControllerIT extends AbstractRegardsTransactionalIT {
                                                                                                                         .value(
                                                                                                                             JSON_STRING_TYPE))));
 
-        final ResultActions resultActions = performDefaultGet(
-            ModelController.TYPE_MAPPING + ModelController.MODEL_MAPPING + "/export",
-            requestBuilderCustomizer,
-            "Should return result",
-            model.getName());
+        final ResultActions resultActions = performDefaultGet(ModelController.TYPE_MAPPING
+                                                              + ModelController.MODEL_MAPPING
+                                                              + "/export",
+                                                              requestBuilderCustomizer,
+                                                              "Should return result",
+                                                              model.getName());
 
         assertMediaType(resultActions, MediaType.APPLICATION_XML);
         Assert.assertNotNull(payload(resultActions));

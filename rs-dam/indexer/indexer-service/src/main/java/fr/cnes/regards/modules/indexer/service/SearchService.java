@@ -109,9 +109,8 @@ public class SearchService implements ISearchService {
         SearchKey<S, String[]> tagSearchKey = new SearchKey<>(searchKey.getSearchTypeMap(), String[].class);
         addProjectInfos(tagSearchKey);
         // Predicate to filter each tag : it must be a valid URN and this URN must concern wanted result type
-        Predicate<String> askedTypePredicate = tag -> OaisUniformResourceName.isValidUrn(tag) && (
-            Searches.TYPE_MAP.get(OaisUniformResourceName.fromString(tag).getEntityType())
-                == searchKey.getResultClass());
+        Predicate<String> askedTypePredicate = tag -> OaisUniformResourceName.isValidUrn(tag) && (Searches.TYPE_MAP.get(
+            OaisUniformResourceName.fromString(tag).getEntityType()) == searchKey.getResultClass());
         // Create a new search key to search elements based on the result class of the joinedSearchKey
         SearchKey<T, T> outputSearchKey = new SearchKey<>(Collections.singletonMap(Searches.TYPE_MAP.inverse()
                                                                                                     .get(searchKey.getResultClass())
@@ -172,9 +171,12 @@ public class SearchService implements ISearchService {
         // Adjust criterion to search for external data (=> internal is false and all at least one searched file type
         // has an uri starting with http or https
         ICriterion filterUriCrit = ICriterion.or(Arrays.stream(fileTypes)
-                                                       .map(fileType -> ICriterion.regexp(
-                                                           StaticProperties.FEATURE_FILES_PATH + "." + fileType
-                                                               + ".uri", "https?://.*", StringMatchType.KEYWORD))
+                                                       .map(fileType -> ICriterion.regexp(StaticProperties.FEATURE_FILES_PATH
+                                                                                          + "."
+                                                                                          + fileType
+                                                                                          + ".uri",
+                                                                                          "https?://.*",
+                                                                                          StringMatchType.KEYWORD))
                                                        .collect(Collectors.toList()));
         ICriterion externalCrit = ICriterion.and(criterion.copy(), ICriterion.eq("internal", false), filterUriCrit);
         repository.computeExternalDataFilesSummary(searchKey,

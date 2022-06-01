@@ -233,9 +233,30 @@ public class SessionStep {
 
     @Override
     public String toString() {
-        return "SessionStep{" + "stepId='" + stepId + '\'' + ", source='" + source + '\'' + ", session='" + session
-            + '\'' + ", type=" + type + ", inputRelated=" + inputRelated + ", outputRelated=" + outputRelated
-            + ", state=" + state + ", properties=" + properties + ", lastUpdateDate=" + lastUpdateDate
-            + ", registrationDate=" + registrationDate + '}';
+        return "SessionStep{"
+               + "stepId='"
+               + stepId
+               + '\''
+               + ", source='"
+               + source
+               + '\''
+               + ", session='"
+               + session
+               + '\''
+               + ", type="
+               + type
+               + ", inputRelated="
+               + inputRelated
+               + ", outputRelated="
+               + outputRelated
+               + ", state="
+               + state
+               + ", properties="
+               + properties
+               + ", lastUpdateDate="
+               + lastUpdateDate
+               + ", registrationDate="
+               + registrationDate
+               + '}';
     }
 }

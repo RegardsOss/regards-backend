@@ -35,8 +35,9 @@ public class MigrationV1_2_0Test {
     public void testUpdate(String moduleType, Function<Map<String, Object>, Map<String, Object>> updater)
         throws IOException {
         String filePath = getClass().getClassLoader()
-                                    .getResource("fr.cnes.regards.modules.configuration.dao/1_1_to_1_2/" + moduleType
-                                                     + ".conf.json")
+                                    .getResource("fr.cnes.regards.modules.configuration.dao/1_1_to_1_2/"
+                                                 + moduleType
+                                                 + ".conf.json")
                                     .getPath();
         String oldConfiguration = new String(Files.readAllBytes(Paths.get(filePath)));
         String newConfiguration = V1_2_0__update_modules_conf.withParsedMap(oldConfiguration, updater);

@@ -140,8 +140,8 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
             if (filesTask.getFiles()
                          .stream()
                          .allMatch(f -> (f.getState() == FileState.DOWNLOADED) || (f.getState() == FileState.ERROR) || (
-                             f.getState() == FileState.DOWNLOAD_ERROR) || (f.getState()
-                             == FileState.PROCESSING_ERROR))) {
+                             f.getState()
+                             == FileState.DOWNLOAD_ERROR) || (f.getState() == FileState.PROCESSING_ERROR))) {
                 filesTask.setEnded(true);
                 LOGGER.trace("File task {} on order {} has ended (no more file to download)",
                              filesTask.getId(),
@@ -182,8 +182,8 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
             if (filesTask.getFiles()
                          .stream()
                          .allMatch(f -> (f.getState() == FileState.DOWNLOADED) || (f.getState() == FileState.ERROR) || (
-                             f.getState() == FileState.DOWNLOAD_ERROR) || (f.getState()
-                             == FileState.PROCESSING_ERROR))) {
+                             f.getState()
+                             == FileState.DOWNLOAD_ERROR) || (f.getState() == FileState.PROCESSING_ERROR))) {
                 filesTask.setEnded(true);
             }
             // Save order id for later
@@ -314,9 +314,11 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
                         dataFile.setState(FileState.DOWNLOADED);
                         processingEventSender.sendDownloadedFilesNotification(Collections.singleton(dataFile));
                     } else {
-                        String message =
-                            "Cannot completely retrieve data file from storage, only " + stream.getStreamReadCount()
-                                + "/" + dataFile.getFilesize() + " bytes";
+                        String message = "Cannot completely retrieve data file from storage, only "
+                                         + stream.getStreamReadCount()
+                                         + "/"
+                                         + dataFile.getFilesize()
+                                         + " bytes";
                         dataFile.setState(FileState.DOWNLOAD_ERROR);
                         dataFile.setDownloadError(message);
                         LOGGER.error(message);
@@ -391,8 +393,8 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
             long treatedSize = treatedSizeMap.getOrDefault(order.getId(), 0L);
             int previousPercentCompleted = order.getPercentCompleted();
             order.setPercentCompleted((int) Math.floorDiv(100L * treatedSize, totalSize));
-            long errorCount =
-                errorCountMap.getOrDefault(order.getId(), 0L) + processErrorCountMap.getOrDefault(order.getId(), 0L);
+            long errorCount = errorCountMap.getOrDefault(order.getId(), 0L)
+                              + processErrorCountMap.getOrDefault(order.getId(), 0L);
             order.setFilesInErrorCount((int) errorCount);
             long availableCount = availableCountMap.getOrDefault(order.getId(), 0L);
             int previousAvailableFilesCount = order.getAvailableFilesCount();
@@ -401,7 +403,7 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
                 order.setAvailableFilesCount((int) availableCount);
             }
             LOGGER.debug("Update order {} | AvailableFilesCount from {} to {} | state {} | is waiting for user {} "
-                             + "| PercentCompleted from {} to {}",
+                         + "| PercentCompleted from {} to {}",
                          order.getId(),
                          previousAvailableFilesCount,
                          order.getAvailableFilesCount(),

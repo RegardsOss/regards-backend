@@ -221,8 +221,15 @@ public class DatasourceIngestion {
 
     @Override
     public String toString() {
-        return "DatasourceIngestion [id=" + id + ", lastIngestDate=" + lastIngestDate + ", status=" + status
-            + ", statusDate=" + statusDate + "]";
+        return "DatasourceIngestion [id="
+               + id
+               + ", lastIngestDate="
+               + lastIngestDate
+               + ", status="
+               + status
+               + ", statusDate="
+               + statusDate
+               + "]";
     }
 
 }

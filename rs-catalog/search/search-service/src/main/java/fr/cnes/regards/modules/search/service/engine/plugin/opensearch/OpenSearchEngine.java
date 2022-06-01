@@ -338,7 +338,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
             try {
                 // Ignore special query parameter (q, scope, token...) or empty values
                 if (validQueryParam(queryParam.getKey()) && ((queryParam.getValue().size() > 1)
-                    || !Strings.isNullOrEmpty(queryParam.getValue().get(0)))) {
+                                                             || !Strings.isNullOrEmpty(queryParam.getValue().get(0)))) {
                     Pair<AttributeModel, ParameterConfiguration> attributeConf = getParameterAttribute(queryParam.getKey());
                     searchParameters.add(new SearchParameter(queryParam.getKey(),
                                                              attributeConf.getLeft(),

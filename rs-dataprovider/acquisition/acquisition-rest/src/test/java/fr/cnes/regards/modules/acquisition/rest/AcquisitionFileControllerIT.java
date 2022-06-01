@@ -134,7 +134,7 @@ public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT 
                                                              .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                                                                                    .value(
                                                                                        "Optional. Multiple values allowed. Allowed values : "
-                                                                                           + joiner.toString()));
+                                                                                       + joiner.toString()));
 
         ParameterDescriptor paramProductId = RequestDocumentation.parameterWithName(AcquisitionFileController.REQUEST_PARAM_PRODUCT_ID)
                                                                  .optional()

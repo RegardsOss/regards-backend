@@ -77,7 +77,7 @@ public class MaintenanceExceptionManager {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                              .body(new ServerErrorResponse(String.format(
                                  "An unexpected error occurred, please consult the microservice log for more information. "
-                                     + "Cause: %s, message: %s",
+                                 + "Cause: %s, message: %s",
                                  throwable.getClass().getSimpleName(),
                                  throwable.getMessage()), throwable));
     }

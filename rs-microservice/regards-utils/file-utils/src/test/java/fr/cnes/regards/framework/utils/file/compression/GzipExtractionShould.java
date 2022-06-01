@@ -129,8 +129,10 @@ public class GzipExtractionShould {
 
         assertThat(thrown) //
                            .isInstanceOf(CompressionException.class) //
-                           .hasMessage("Extension of \"" + A_GZIP_ARCHIVE_WITH_BAD_EXTENSION + "\" isn't valid."
-                                           + " Valid extensions are : .gz, .gzip");
+                           .hasMessage("Extension of \""
+                                       + A_GZIP_ARCHIVE_WITH_BAD_EXTENSION
+                                       + "\" isn't valid."
+                                       + " Valid extensions are : .gz, .gzip");
     }
 
     @Test

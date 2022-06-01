@@ -132,8 +132,8 @@ public class PluginParamDescriptor {
         Assert.hasText(name, "One of the plugin parameter does not have a valid name attribute within its annotation.");
         ppt.setName(name);
 
-        String errorMsg =
-            "The plugin parameter with name \"%s\" does not have a valid attribute \"%s\" within its " + "annotation";
+        String errorMsg = "The plugin parameter with name \"%s\" does not have a valid attribute \"%s\" within its "
+                          + "annotation";
         Assert.hasText(label, String.format(errorMsg, name, "label"));
         ppt.setLabel(label);
         ppt.setDescription(description);

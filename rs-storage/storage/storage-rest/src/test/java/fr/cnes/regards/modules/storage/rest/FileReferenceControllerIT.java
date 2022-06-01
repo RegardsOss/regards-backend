@@ -417,7 +417,7 @@ public class FileReferenceControllerIT extends AbstractRegardsTransactionalIT im
                                                                               // retry until we finally get the result we expect (200 download successful)
                                                                               .retryWhen(Retry.indefinitely()
                                                                                               .filter(t -> t
-                                                                                                  == unexpectedResultEx))
+                                                                                                           == unexpectedResultEx))
                                                                               // use the dedicated thread pool
                                                                               .subscribeOn(Schedulers.newParallel(
                                                                                   "hammer",

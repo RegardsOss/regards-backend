@@ -44,7 +44,7 @@ public interface ISourceManagerRepository extends JpaRepository<Source, Long>, J
     void deleteByName(String source);
 
     @Query(value = "select distinct name from t_source_manager where lower(name) like lower(?1) ORDER BY name LIMIT "
-        + "?2", nativeQuery = true)
+                   + "?2", nativeQuery = true)
     Set<String> internalFindAllSourcesNames(String name, int nbResults);
 
     @Query(value = "select distinct name from t_source_manager ORDER BY name LIMIT ?1", nativeQuery = true)

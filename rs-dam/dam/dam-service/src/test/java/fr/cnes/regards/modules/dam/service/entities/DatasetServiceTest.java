@@ -192,7 +192,9 @@ public class DatasetServiceTest {
                                                                           .getFragment()
                                                                           .getName()
                                                                           .equals(Fragment.getDefaultName())
-                                                              && ma.getAttribute().getName().equals("att_string"))
+                                                                        && ma.getAttribute()
+                                                                             .getName()
+                                                                             .equals("att_string"))
                                                           .findAny()
                                                           .get();
         attString = attStringModelAtt.getAttribute();
@@ -205,7 +207,9 @@ public class DatasetServiceTest {
                                                                            .getFragment()
                                                                            .getName()
                                                                            .equals(Fragment.getDefaultName())
-                                                               && ma.getAttribute().getName().equals("att_boolean"))
+                                                                         && ma.getAttribute()
+                                                                              .getName()
+                                                                              .equals("att_boolean"))
                                                            .findAny()
                                                            .get();
         attBoolean = attBooleanModelAtt.getAttribute();
@@ -257,15 +261,15 @@ public class DatasetServiceTest {
                                                       "testContains",
                                                       StringMatchType.KEYWORD);
         // textAtt ends with "testEndsWith"
-        ICriterion endsWithCrit = ICriterion.endsWith(
-            "attributes." + GEO_CRS.getFragment().getName() + "." + GEO_CRS.getName(),
-            "testEndsWith",
-            StringMatchType.KEYWORD);
+        ICriterion endsWithCrit = ICriterion.endsWith("attributes."
+                                                      + GEO_CRS.getFragment().getName()
+                                                      + "."
+                                                      + GEO_CRS.getName(), "testEndsWith", StringMatchType.KEYWORD);
         // textAtt strictly equals "testEquals"
-        ICriterion equalsCrit = ICriterion.eq(
-            "attributes." + Contact_Phone.getFragment().getName() + "." + Contact_Phone.getName(),
-            "testEquals",
-            StringMatchType.KEYWORD);
+        ICriterion equalsCrit = ICriterion.eq("attributes."
+                                              + Contact_Phone.getFragment().getName()
+                                              + "."
+                                              + Contact_Phone.getName(), "testEquals", StringMatchType.KEYWORD);
 
         ICriterion booleanCrit = new BooleanMatchCriterion("attributes." + attBoolean.getName(), true);
 

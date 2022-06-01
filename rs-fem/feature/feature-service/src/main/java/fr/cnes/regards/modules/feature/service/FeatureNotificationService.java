@@ -319,8 +319,9 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
 
     @Override
     public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
-        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null) && (
-            selection.getFilters().getState() != RequestState.ERROR))) {
+        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null) && (selection.getFilters()
+                                                                                                          .getState()
+                                                                                                 != RequestState.ERROR))) {
             return RequestsInfo.build(0L);
         } else {
             selection.getFilters().withState(RequestState.ERROR);
@@ -393,7 +394,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
         // Only notify session for requests not already in error state.
         Set<FeatureUniformResourceName> newErrorRequestsFeatureUrn = requests.stream()
                                                                              .filter(r -> r.getState()
-                                                                                 != RequestState.ERROR)
+                                                                                          != RequestState.ERROR)
                                                                              .map(FeatureNotificationRequest::getUrn)
                                                                              .collect(Collectors.toSet());
         Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(

@@ -69,7 +69,7 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
     @Modifying
     @Query(
         "update JobInfo j set j.status.percentCompleted = :completion, j.status.estimatedCompletion = :estimationCompletionDate, "
-            + "j.lastCompletionUpdate = :updateCompletionDate where j.id = :id and j.status.status = 'RUNNING'")
+        + "j.lastCompletionUpdate = :updateCompletionDate where j.id = :id and j.status.status = 'RUNNING'")
     void updateCompletion(@Param("completion") int percentCompleted,
                           @Param("estimationCompletionDate") OffsetDateTime estimatedCompletion,
                           @Param("id") UUID id,

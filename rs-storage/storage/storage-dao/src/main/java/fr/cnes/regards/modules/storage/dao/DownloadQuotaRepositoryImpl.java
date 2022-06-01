@@ -109,13 +109,17 @@ public class DownloadQuotaRepositoryImpl implements IDownloadQuotaRepository {
     @Override
     public UserDownloadQuota upsertOrCombineDownloadQuota(String instanceId, String email, Long diff) {
         // rather than implementing sync issues in code, we use DB to manage sync conflict as it is the only truth source (INSERT ... ON CONFLICT ... DO UPDATE)
-        entityManager.createNativeQuery(
-                         "INSERT INTO {h-schema}t_user_download_quota_counter AS c " + " (id, instance_id, email, counter) "
-                             + " VALUES (nextval('{h-schema}seq_download_quota_counter'), :instance, :email, :counter) " +
-                             // FIXME:Right now nextval increment by 50 each time. Check if we can update existing sequence in flyway sql to change increment from 50 to 1.
-                             " ON CONFLICT (instance_id, email) " + " DO UPDATE " + " SET counter  = c.counter + EXCLUDED.counter " +
-                             // c.counter is value in DB right now, EXCLUDED.counter is value we wanted to set
-                             " RETURNING *", UserDownloadQuotaEntity.class)
+        entityManager.createNativeQuery("INSERT INTO {h-schema}t_user_download_quota_counter AS c "
+                                        + " (id, instance_id, email, counter) "
+                                        + " VALUES (nextval('{h-schema}seq_download_quota_counter'), :instance, :email, :counter) "
+                                        +
+                                        // FIXME:Right now nextval increment by 50 each time. Check if we can update existing sequence in flyway sql to change increment from 50 to 1.
+                                        " ON CONFLICT (instance_id, email) "
+                                        + " DO UPDATE "
+                                        + " SET counter  = c.counter + EXCLUDED.counter "
+                                        +
+                                        // c.counter is value in DB right now, EXCLUDED.counter is value we wanted to set
+                                        " RETURNING *", UserDownloadQuotaEntity.class)
                      .setParameter(INSTANCE, instanceId)
                      .setParameter(EMAIL, email)
                      .setParameter(COUNTER, diff)
@@ -123,8 +127,9 @@ public class DownloadQuotaRepositoryImpl implements IDownloadQuotaRepository {
 
         // RETURNING(from previous query) returns only id so we have to query the actual value
         UserDownloadQuotaEntity entity = (UserDownloadQuotaEntity) entityManager.createNativeQuery(
-                                                                                    "SELECT * FROM {h-schema}t_user_download_quota_counter " + " WHERE instance_id  = :instance "
-                                                                                        + "   AND email        = :email",
+                                                                                    "SELECT * FROM {h-schema}t_user_download_quota_counter "
+                                                                                    + " WHERE instance_id  = :instance "
+                                                                                    + "   AND email        = :email",
                                                                                     UserDownloadQuotaEntity.class)
                                                                                 .setParameter(INSTANCE, instanceId)
                                                                                 .setParameter(EMAIL, email)
@@ -139,13 +144,18 @@ public class DownloadQuotaRepositoryImpl implements IDownloadQuotaRepository {
                                                         Long diff,
                                                         LocalDateTime expiry) {
         // rather than implementing sync issues in code, we use DB to manage sync conflict as it is the only truth source (INSERT ... ON CONFLICT ... DO UPDATE)
-        entityManager.createNativeQuery(
-                         "INSERT INTO {h-schema}t_user_download_rate_gauge AS r " + " (id, instance_id, email, gauge, expiry) "
-                             + " VALUES (nextval('{h-schema}seq_download_rate_gauge'), :instance, :email, :gauge, :expiry) " +
-                             // FIXME:Right now nextval increment by 50 each time. Check if we can update existing sequence in flyway sql to change increment from 50 to 1.
-                             " ON CONFLICT (instance_id, email) " + " DO UPDATE " + " SET gauge  = r.gauge + EXCLUDED.gauge " +
-                             // r.gauge is value in DB right now, EXCLUDED.gauge is value we wanted to set
-                             "   , expiry = EXCLUDED.expiry " + " RETURNING *", UserDownloadRateEntity.class)
+        entityManager.createNativeQuery("INSERT INTO {h-schema}t_user_download_rate_gauge AS r "
+                                        + " (id, instance_id, email, gauge, expiry) "
+                                        + " VALUES (nextval('{h-schema}seq_download_rate_gauge'), :instance, :email, :gauge, :expiry) "
+                                        +
+                                        // FIXME:Right now nextval increment by 50 each time. Check if we can update existing sequence in flyway sql to change increment from 50 to 1.
+                                        " ON CONFLICT (instance_id, email) "
+                                        + " DO UPDATE "
+                                        + " SET gauge  = r.gauge + EXCLUDED.gauge "
+                                        +
+                                        // r.gauge is value in DB right now, EXCLUDED.gauge is value we wanted to set
+                                        "   , expiry = EXCLUDED.expiry "
+                                        + " RETURNING *", UserDownloadRateEntity.class)
                      .setParameter(INSTANCE, instanceId)
                      .setParameter(EMAIL, email)
                      .setParameter(GAUGE, diff)
@@ -154,8 +164,9 @@ public class DownloadQuotaRepositoryImpl implements IDownloadQuotaRepository {
 
         // RETURNING(from previous query) returns only id so we have to query the actual value
         UserDownloadRateEntity entity = (UserDownloadRateEntity) entityManager.createNativeQuery(
-                                                                                  "SELECT * FROM {h-schema}t_user_download_rate_gauge " + " WHERE instance_id  = :instance "
-                                                                                      + "   AND email        = :email",
+                                                                                  "SELECT * FROM {h-schema}t_user_download_rate_gauge "
+                                                                                  + " WHERE instance_id  = :instance "
+                                                                                  + "   AND email        = :email",
                                                                                   UserDownloadRateEntity.class)
                                                                               .setParameter(INSTANCE, instanceId)
                                                                               .setParameter(EMAIL, email)

@@ -243,7 +243,7 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
                     FeignSecurityManager.asSystem();
                     ResponseEntity<EntityModel<Dataset>> response = datasetClient.retrieveDataset(conf.getDatasetUrn());
                     if ((response != null) && (response.getBody() != null) && (response.getBody().getContent()
-                        != null)) {
+                                                                               != null)) {
                         conf.setDataset(response.getBody().getContent());
                         // Add new retrieved dataset into cached ones
                         cachedDatasets.add(response.getBody().getContent());

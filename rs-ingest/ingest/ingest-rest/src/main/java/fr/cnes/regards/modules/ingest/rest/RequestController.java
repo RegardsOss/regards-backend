@@ -161,7 +161,7 @@ public class RequestController implements IResourceController<RequestDto> {
         EntityModel<RequestDto> resource = resourceService.toResource(element);
 
         if ((InternalRequestState.ERROR == element.getState()) || (element.getState()
-            == InternalRequestState.ABORTED)) {
+                                                                   == InternalRequestState.ABORTED)) {
             resourceService.addLink(resource,
                                     this.getClass(),
                                     "retryRequests",

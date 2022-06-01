@@ -79,8 +79,9 @@ public class LongRangeRestriction extends AbstractRestriction {
 
     @Override
     public Boolean supports(PropertyType pPropertyType) {
-        return PropertyType.LONG.equals(pPropertyType) || PropertyType.LONG_ARRAY.equals(pPropertyType)
-            || PropertyType.LONG_INTERVAL.equals(pPropertyType);
+        return PropertyType.LONG.equals(pPropertyType)
+               || PropertyType.LONG_ARRAY.equals(pPropertyType)
+               || PropertyType.LONG_INTERVAL.equals(pPropertyType);
     }
 
     public Long getMin() {

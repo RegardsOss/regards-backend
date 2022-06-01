@@ -90,8 +90,8 @@ public final class SearchEngineMappings {
 
     public static final String SEARCH_COLLECTIONS_MAPPING_EXTRA = SEARCH_COLLECTIONS_MAPPING + EXTRA_MAPPING;
 
-    public static final String SEARCH_COLLECTIONS_PROPERTY_VALUES =
-        SEARCH_COLLECTIONS_MAPPING + PROPERTY_VALUES_MAPPING;
+    public static final String SEARCH_COLLECTIONS_PROPERTY_VALUES = SEARCH_COLLECTIONS_MAPPING
+                                                                    + PROPERTY_VALUES_MAPPING;
 
     public static final String GET_COLLECTION_MAPPING = COLLECTIONS_MAPPING + URN_MAPPING;
 
@@ -117,11 +117,11 @@ public final class SearchEngineMappings {
 
     public static final String SEARCH_DATAOBJECTS_MAPPING_EXTRA = SEARCH_DATAOBJECTS_MAPPING + EXTRA_MAPPING;
 
-    public static final String SEARCH_DATAOBJECTS_PROPERTY_VALUES =
-        SEARCH_DATAOBJECTS_MAPPING + PROPERTY_VALUES_MAPPING;
+    public static final String SEARCH_DATAOBJECTS_PROPERTY_VALUES = SEARCH_DATAOBJECTS_MAPPING
+                                                                    + PROPERTY_VALUES_MAPPING;
 
-    public static final String SEARCH_DATAOBJECTS_PROPERTIES_BOUNDS =
-        SEARCH_DATAOBJECTS_MAPPING + PROPERTIES_BOUNDS_MAPPING;
+    public static final String SEARCH_DATAOBJECTS_PROPERTIES_BOUNDS = SEARCH_DATAOBJECTS_MAPPING
+                                                                      + PROPERTIES_BOUNDS_MAPPING;
 
     public static final String SEARCH_DATAOBJECTS_ATTRIBUTES = SEARCH_DATAOBJECTS_MAPPING + ATTRIBUTES_MAPPING;
 
@@ -133,11 +133,11 @@ public final class SearchEngineMappings {
 
     public static final String SEARCH_DATASET_DATAOBJECTS_MAPPING = DATASET_DATAOBJECTS_MAPPING + SEARCH_MAPPING;
 
-    public static final String SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA =
-        SEARCH_DATASET_DATAOBJECTS_MAPPING + EXTRA_MAPPING;
+    public static final String SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA = SEARCH_DATASET_DATAOBJECTS_MAPPING
+                                                                          + EXTRA_MAPPING;
 
-    public static final String SEARCH_DATASET_DATAOBJECTS_PROPERTY_VALUES =
-        SEARCH_DATASET_DATAOBJECTS_MAPPING + PROPERTY_VALUES_MAPPING;
+    public static final String SEARCH_DATASET_DATAOBJECTS_PROPERTY_VALUES = SEARCH_DATASET_DATAOBJECTS_MAPPING
+                                                                            + PROPERTY_VALUES_MAPPING;
 
     // Fallback to {@link #GET_DATAOBJECT_MAPPING} for single data object retrieval
 

@@ -68,8 +68,9 @@ public class JsonbEntity {
 
     @Override
     public boolean equals(Object pOther) {
-        return (pOther instanceof JsonbEntity) && ((JsonbEntity) pOther).name.equals(name)
-            && ((JsonbEntity) pOther).content.equals(content);
+        return (pOther instanceof JsonbEntity)
+               && ((JsonbEntity) pOther).name.equals(name)
+               && ((JsonbEntity) pOther).content.equals(content);
     }
 
 }

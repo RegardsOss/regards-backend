@@ -178,8 +178,23 @@ public class Session {
 
     @Override
     public String toString() {
-        return "Session{" + "id=" + id + ", name='" + name + '\'' + ", source='" + source + '\'' + ", creationDate="
-            + creationDate + ", lastUpdateDate=" + lastUpdateDate + ", steps=" + steps + ", managerState="
-            + managerState + '}';
+        return "Session{"
+               + "id="
+               + id
+               + ", name='"
+               + name
+               + '\''
+               + ", source='"
+               + source
+               + '\''
+               + ", creationDate="
+               + creationDate
+               + ", lastUpdateDate="
+               + lastUpdateDate
+               + ", steps="
+               + steps
+               + ", managerState="
+               + managerState
+               + '}';
     }
 }

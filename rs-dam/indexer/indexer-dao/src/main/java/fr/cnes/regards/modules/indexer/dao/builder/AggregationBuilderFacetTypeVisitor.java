@@ -85,8 +85,8 @@ public class AggregationBuilderFacetTypeVisitor implements IFacetTypeVisitor<Agg
     @Override
     public AggregationBuilder visitDateFacet(Object... args) {
         String attributeName = (String) args[0]; // Development error if ClassCast or null array
-        PercentilesAggregationBuilder percentsAggsBuilder = AggregationBuilders.percentiles(
-            attributeName + DATE_FACET_SUFFIX);
+        PercentilesAggregationBuilder percentsAggsBuilder = AggregationBuilders.percentiles(attributeName
+                                                                                            + DATE_FACET_SUFFIX);
         percentsAggsBuilder.field(attributeName);
         percentsAggsBuilder.percentiles(10., 20., 30., 40., 50., 60., 70., 80., 90.);
         return percentsAggsBuilder;
@@ -95,8 +95,8 @@ public class AggregationBuilderFacetTypeVisitor implements IFacetTypeVisitor<Agg
     @Override
     public AggregationBuilder visitNumericFacet(Object... args) {
         String attributeName = (String) args[0]; // Development error if ClassCast or null array
-        PercentilesAggregationBuilder percentsAggsBuilder = AggregationBuilders.percentiles(
-            attributeName + NUMERIC_FACET_SUFFIX);
+        PercentilesAggregationBuilder percentsAggsBuilder = AggregationBuilders.percentiles(attributeName
+                                                                                            + NUMERIC_FACET_SUFFIX);
         percentsAggsBuilder.field(attributeName);
         percentsAggsBuilder.percentiles(0.0, 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.0);
         return percentsAggsBuilder;

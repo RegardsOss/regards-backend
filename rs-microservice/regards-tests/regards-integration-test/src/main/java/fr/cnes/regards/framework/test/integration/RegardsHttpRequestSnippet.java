@@ -34,7 +34,7 @@ public class RegardsHttpRequestSnippet extends HttpRequestSnippet {
                                                .get(RestDocumentationGenerator.ATTRIBUTE_NAME_URL_TEMPLATE);
         Assert.notNull(urlTemplate,
                        "urlTemplate not found. If you are using MockMvc did "
-                           + "you use RestDocumentationRequestBuilders to build the request?");
+                       + "you use RestDocumentationRequestBuilders to build the request?");
         model.put(URL_TEMPLATE, urlTemplate);
     }
 

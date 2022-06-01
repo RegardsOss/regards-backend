@@ -42,9 +42,9 @@ public interface IFeatureUpdateDisseminationRequestRepository
      * are not concerned by an existing {@link FeatureUpdateRequest} request (except request in error)
      */
     @Query(value = "select fud from FeatureUpdateDisseminationRequest fud where fud.urn not in ("
-        + "select distinct ur.urn from FeatureUpdateRequest ur where not (ur.state = 'ERROR')) and fud.creationDate <= :now order by fud.creationDate",
+                   + "select distinct ur.urn from FeatureUpdateRequest ur where not (ur.state = 'ERROR')) and fud.creationDate <= :now order by fud.creationDate",
         countQuery = "select count(fud.id) from FeatureUpdateDisseminationRequest fud where fud.urn not in ("
-            + "select distinct ur.urn from FeatureUpdateRequest ur where not (ur.state = 'ERROR')) and fud.creationDate <= :now")
+                     + "select distinct ur.urn from FeatureUpdateRequest ur where not (ur.state = 'ERROR')) and fud.creationDate <= :now")
     Page<FeatureUpdateDisseminationRequest> getFeatureUpdateDisseminationRequestsProcessable(
         @Param("now") OffsetDateTime now, Pageable pageable);
 }

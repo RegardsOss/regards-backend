@@ -86,8 +86,8 @@ public class LicenseService implements ILicenseService {
         // TODO public user and instance admin special cases
         // should be handled in ProjectUserService.
         // ProjectUserService should create special instances of ProjectUser for theses cases.
-        boolean isLicenseAccepted =
-            noLicense(licenceLink) || (!isPublicUser() && (isInstanceAdmin() || isLicenseAcceptedByUser()));
+        boolean isLicenseAccepted = noLicense(licenceLink) || (!isPublicUser() && (isInstanceAdmin()
+                                                                                   || isLicenseAcceptedByUser()));
 
         return new LicenseDTO(isLicenseAccepted, licenceLink);
     }

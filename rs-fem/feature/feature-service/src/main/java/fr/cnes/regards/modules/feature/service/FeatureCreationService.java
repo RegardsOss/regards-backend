@@ -252,8 +252,9 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
 
         // Validate provided URN
         if (urn != null) {
-            if (existingRequestUrns.contains(urn) || grantedRequests.stream()
-                                                                    .anyMatch(request -> request.getUrn().equals(urn))
+            if (existingRequestUrns.contains(urn)
+                || grantedRequests.stream()
+                                  .anyMatch(request -> request.getUrn().equals(urn))
                 || newUpdateRequests.stream().anyMatch(request -> request.getFeature().getUrn().equals(urn))) {
                 errors.rejectValue("urn",
                                    "feature.request.urn.already.exists.error.message",
@@ -665,8 +666,9 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
 
     @Override
     public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
-        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null) && (
-            selection.getFilters().getState() != RequestState.ERROR))) {
+        if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null) && (selection.getFilters()
+                                                                                                          .getState()
+                                                                                                 != RequestState.ERROR))) {
             return RequestsInfo.build(0L);
         } else {
             selection.getFilters().withState(RequestState.ERROR);

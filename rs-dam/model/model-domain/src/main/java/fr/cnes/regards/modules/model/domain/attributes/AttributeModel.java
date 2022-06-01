@@ -580,8 +580,20 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
 
     @Override
     public String toString() {
-        return "AttributeModel{" + "id=" + id + ", name='" + name + '\'' + ", type=" + type + ", fragment=" + fragment
-            + ", jsonPath='" + jsonPath + '\'' + '}';
+        return "AttributeModel{"
+               + "id="
+               + id
+               + ", name='"
+               + name
+               + '\''
+               + ", type="
+               + type
+               + ", fragment="
+               + fragment
+               + ", jsonPath='"
+               + jsonPath
+               + '\''
+               + '}';
     }
 
     /**

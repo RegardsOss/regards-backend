@@ -137,8 +137,9 @@ public class EarthObservationExtension extends AbstractExtension {
      * @return true when the configuration is related to this plugin
      */
     private boolean isEOConfiguration(ParameterConfiguration conf) {
-        return conf != null && EO_NAMESPACE.equals(conf.getNamespace())
-            && (EarthObservationAttribute.exists(conf.getName()));
+        return conf != null
+               && EO_NAMESPACE.equals(conf.getNamespace())
+               && (EarthObservationAttribute.exists(conf.getName()));
     }
 
     @Override

@@ -44,7 +44,7 @@ public class UserOrderParameters {
         }
         UserOrderParameters that = (UserOrderParameters) o;
         return subOrderDuration == that.subOrderDuration
-            && delayBeforeEmailNotification == that.delayBeforeEmailNotification;
+               && delayBeforeEmailNotification == that.delayBeforeEmailNotification;
     }
 
     @Override
@@ -54,8 +54,12 @@ public class UserOrderParameters {
 
     @Override
     public String toString() {
-        return "UserOrderParameters{" + "subOrderDuration=" + subOrderDuration + ", delayBeforeEmailNotification="
-            + delayBeforeEmailNotification + '}';
+        return "UserOrderParameters{"
+               + "subOrderDuration="
+               + subOrderDuration
+               + ", delayBeforeEmailNotification="
+               + delayBeforeEmailNotification
+               + '}';
     }
 
 }

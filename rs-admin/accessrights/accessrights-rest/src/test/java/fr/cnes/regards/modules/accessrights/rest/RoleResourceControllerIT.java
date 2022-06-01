@@ -141,7 +141,7 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
         // Delete resource with PROJECT ADMIN
         String projectAdminJwt = manageSecurity(getDefaultTenant(),
                                                 RoleResourceController.TYPE_MAPPING
-                                                    + RoleResourceController.SINGLE_RESOURCE_MAPPING,
+                                                + RoleResourceController.SINGLE_RESOURCE_MAPPING,
                                                 RequestMethod.DELETE,
                                                 getDefaultUserEmail(),
                                                 DefaultRole.PROJECT_ADMIN.name());
@@ -189,7 +189,7 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
         // Delete resource with PROJECT ADMIN
         String projectAdminJwt = manageSecurity(getDefaultTenant(),
                                                 RoleResourceController.TYPE_MAPPING
-                                                    + RoleResourceController.SINGLE_RESOURCE_MAPPING,
+                                                + RoleResourceController.SINGLE_RESOURCE_MAPPING,
                                                 RequestMethod.DELETE,
                                                 getDefaultUserEmail(),
                                                 DefaultRole.PROJECT_ADMIN.name());
@@ -244,7 +244,7 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
         // Delete resource with PROJECT ADMIN
         String projectAdminJwt = manageSecurity(getDefaultTenant(),
                                                 RoleResourceController.TYPE_MAPPING
-                                                    + RoleResourceController.SINGLE_RESOURCE_MAPPING,
+                                                + RoleResourceController.SINGLE_RESOURCE_MAPPING,
                                                 RequestMethod.DELETE,
                                                 getDefaultUserEmail(),
                                                 DefaultRole.PROJECT_ADMIN.name());

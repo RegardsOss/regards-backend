@@ -46,8 +46,10 @@ public interface IFeatureDeletionRequestRepository extends IAbstractFeatureReque
     Set<FeatureDeletionRequest> findByStepIn(@Param("steps") Collection<FeatureRequestStep> steps,
                                              @Param("now") OffsetDateTime offsetDateTime);
 
-    @Query("select fdr from FeatureDeletionRequest fdr  " + "where fdr.step = :step " + "and fdr.requestDate <= :now "
-        + "and fdr.urn not in (select urn from FeatureCreationRequest)")
+    @Query("select fdr from FeatureDeletionRequest fdr  "
+           + "where fdr.step = :step "
+           + "and fdr.requestDate <= :now "
+           + "and fdr.urn not in (select urn from FeatureCreationRequest)")
     Page<FeatureDeletionRequest> findRequestsToSchedule(@Param("step") FeatureRequestStep step,
                                                         @Param("now") OffsetDateTime now,
                                                         Pageable page);

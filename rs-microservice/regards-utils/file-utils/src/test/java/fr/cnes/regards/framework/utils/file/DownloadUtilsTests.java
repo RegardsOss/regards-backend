@@ -22,7 +22,7 @@ import java.util.Set;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Ignore("those tests are ignored for now because it would need a lot of work to make all of them work all the time and"
-    + " they just are tests of java")
+        + " they just are tests of java")
 public class DownloadUtilsTests {
 
     /**

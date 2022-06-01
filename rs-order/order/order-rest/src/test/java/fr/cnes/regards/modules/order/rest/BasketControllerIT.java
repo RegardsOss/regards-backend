@@ -403,13 +403,13 @@ public class BasketControllerIT extends AbstractRegardsIT {
                                     .getSelectionRequest()
                                     .getSelectionDate();
 
-        performDefaultDelete(
-            BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_ITEMS_SELECTION_DATE,
-            customizer().expectStatusOk(),
-            "error",
-            basket.getDatasetSelections().first().getId(),
-            OffsetDateTimeAdapter.format(date),
-            Charset.defaultCharset().toString());
+        performDefaultDelete(BasketController.ORDER_BASKET
+                             + BasketController.DATASET_DATASET_SELECTION_ID_ITEMS_SELECTION_DATE,
+                             customizer().expectStatusOk(),
+                             "error",
+                             basket.getDatasetSelections().first().getId(),
+                             OffsetDateTimeAdapter.format(date),
+                             Charset.defaultCharset().toString());
     }
 
     @Test

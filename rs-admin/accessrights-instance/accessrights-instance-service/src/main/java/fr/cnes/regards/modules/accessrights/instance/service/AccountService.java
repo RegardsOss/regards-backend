@@ -295,8 +295,8 @@ public class AccountService implements IAccountService, InitializingBean {
     @Override
     public void checkPassword(Account pAccount) throws EntityInvalidException {
         if (!pAccount.isExternal() && !validPassword(pAccount.getPassword())) {
-            throw new EntityInvalidException(
-                "The provided password doesn't match the configured pattern : " + passwordRegex);
+            throw new EntityInvalidException("The provided password doesn't match the configured pattern : "
+                                             + passwordRegex);
         }
     }
 
@@ -433,8 +433,9 @@ public class AccountService implements IAccountService, InitializingBean {
             LocalDateTime minValidityDate = LocalDateTime.now().minusDays(accountPasswordValidityDuration);
             // get all account that are not already locked, those already locked would not be re-locked anyway
             toCheck.stream()
-                   .filter(account -> !account.isExternal() && account.getPasswordUpdateDate() != null
-                       && account.getPasswordUpdateDate().isBefore(minValidityDate))
+                   .filter(account -> !account.isExternal()
+                                      && account.getPasswordUpdateDate() != null
+                                      && account.getPasswordUpdateDate().isBefore(minValidityDate))
                    .forEach(account -> {
                        account.setStatus(AccountStatus.INACTIVE_PASSWORD);
                        LOG.info("Account {} set to {} because of its password validity date",

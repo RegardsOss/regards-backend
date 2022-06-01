@@ -30,8 +30,8 @@ import java.util.UUID;
  */
 public abstract class AbstractTaskScheduler {
 
-    protected static final String INSTANCE_RANDOM_ID =
-        "------------------------------> " + UUID.randomUUID().toString();
+    protected static final String INSTANCE_RANDOM_ID = "------------------------------> " + UUID.randomUUID()
+                                                                                                .toString();
 
     @Value("${spring.application.name}")
     private String applicationName;

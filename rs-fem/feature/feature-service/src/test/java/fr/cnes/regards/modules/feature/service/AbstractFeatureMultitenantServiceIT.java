@@ -790,7 +790,7 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
                                                                                                               sessionStep.getLastUpdateDate(),
                                                                                                               start.truncatedTo(
                                                                                                                   ChronoUnit.MICROS)).size()
-                                                    == 0;
+                                                       == 0;
                                             })
                                             .orElse(false);
             });
@@ -810,18 +810,18 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
                                                                                                         stepProperty.getSource()
                                                                                                                     .equals(
                                                                                                                         source)
-                                                                                                            && stepProperty.getSession()
-                                                                                                                           .equals(
-                                                                                                                               session)
-                                                                                                            && stepProperty.getStepId()
-                                                                                                                           .equals(
-                                                                                                                               stepId)
-                                                                                                            && stepProperty.getCreationDate()
-                                                                                                                           .isAfter(
-                                                                                                                               creationDateBegin)
-                                                                                                            && stepProperty.getCreationDate()
-                                                                                                                           .isBefore(
-                                                                                                                               creationDateEnd))
+                                                                                                        && stepProperty.getSession()
+                                                                                                                       .equals(
+                                                                                                                           session)
+                                                                                                        && stepProperty.getStepId()
+                                                                                                                       .equals(
+                                                                                                                           stepId)
+                                                                                                        && stepProperty.getCreationDate()
+                                                                                                                       .isAfter(
+                                                                                                                           creationDateBegin)
+                                                                                                        && stepProperty.getCreationDate()
+                                                                                                                       .isBefore(
+                                                                                                                           creationDateEnd))
                                                                                             .toList();
         LOGGER.info("""
                         Step properties found for source "{}", session "{}", stepId "{}", creationDate between "{}" and "{}" :

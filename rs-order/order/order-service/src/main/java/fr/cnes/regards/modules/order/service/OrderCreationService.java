@@ -184,7 +184,7 @@ public class OrderCreationService implements IOrderCreationService {
             // In case order contains only external files, percent completion can be set to 100%, else completion is
             // computed when files are available (even if some external files exist, this case will not (often) occur
             if (!hasProcessing && (orderCounts.getInternalFilesCount() == 0) && (orderCounts.getExternalFilesCount()
-                > 0)) {
+                                                                                 > 0)) {
                 // Because external files haven't size set (files.size isn't allowed to be mapped on DatasourcePlugins
                 // other than AipDatasourcePlugin which manage only internal files), these will not be taken into
                 // account by {@see OrderService#updateCurrentOrdersComputedValues}
@@ -334,8 +334,8 @@ public class OrderCreationService implements IOrderCreationService {
 
     private void sendOrderCreationEmail(Order order) {
         // Generate token
-        String tokenRequestParam =
-            IOrderService.ORDER_TOKEN + "=" + orderHelperService.generateToken4PublicEndpoint(order);
+        String tokenRequestParam = IOrderService.ORDER_TOKEN + "=" + orderHelperService.generateToken4PublicEndpoint(
+            order);
 
         FeignSecurityManager.asSystem();
         try {
@@ -351,8 +351,11 @@ public class OrderCreationService implements IOrderCreationService {
             dataMap.put("project", runtimeTenantResolver.getTenant());
             dataMap.put("order_label", order.getId().toString());
             dataMap.put("metalink_download_url",
-                        urlStart + "/user/orders/metalink/download?" + tokenRequestParam + "&scope="
-                            + runtimeTenantResolver.getTenant());
+                        urlStart
+                        + "/user/orders/metalink/download?"
+                        + tokenRequestParam
+                        + "&scope="
+                        + runtimeTenantResolver.getTenant());
             dataMap.put("regards_downloader_url", "https://github.com/RegardsOss/RegardsDownloader/releases");
             dataMap.put("orders_url", host + order.getFrontendUrl());
 

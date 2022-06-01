@@ -448,7 +448,7 @@ public class ModelService implements IModelService, IModelAttrAssocService {
                     if (!Objects.equals(param.getValue(), curValue)) {
                         String msg = String.format(
                             "Computation plugin %s whith businessId %s is inconsistent with existing one: "
-                                + "plugin parameter %s with value %s differs from existing value (%s)",
+                            + "plugin parameter %s with value %s differs from existing value (%s)",
                             plgConf.getLabel(),
                             plgConf.getBusinessId(),
                             param.getName(),
@@ -460,7 +460,7 @@ public class ModelService implements IModelService, IModelAttrAssocService {
                 } else { // Plugin parameter not found
                     String msg = String.format(
                         "Computation plugin  %s with businessId %s is inconsistent with existing one: "
-                            + "no plugin parameter %s found",
+                        + "no plugin parameter %s found",
                         plgConf.getLabel(),
                         plgConf.getBusinessId(),
                         param.getName());
@@ -523,9 +523,11 @@ public class ModelService implements IModelService, IModelAttrAssocService {
                     modelAtt.setComputationConf(eventualyCreateComputationConfiguration(modelAtt.getComputationConf()));
                     break;
                 default:
-                    throw new IllegalArgumentException(
-                        modelAtt.getMode() + " is not a handled value of " + ComputationMode.class.getName() + " in "
-                            + getClass().getName());
+                    throw new IllegalArgumentException(modelAtt.getMode()
+                                                       + " is not a handled value of "
+                                                       + ComputationMode.class.getName()
+                                                       + " in "
+                                                       + getClass().getName());
             }
             // we have to check if it already exists because of logic to add modelAttrAssocs when we are adding a new
             // attribute to a fragment

@@ -67,7 +67,9 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
         try {
             FeignSecurityManager.asSystem();
             ResponseEntity<EntityModel<Account>> response = accountsClient.retrieveAccounByEmail(pEmail);
-            if ((response != null) && (response.getBody() != null) && (response.getBody().getContent() != null)
+            if ((response != null)
+                && (response.getBody() != null)
+                && (response.getBody().getContent() != null)
                 && !response.getBody().getContent().isExternal()) {
                 validateResponse = accountsClient.validatePassword(pEmail, pPassword);
             } else {

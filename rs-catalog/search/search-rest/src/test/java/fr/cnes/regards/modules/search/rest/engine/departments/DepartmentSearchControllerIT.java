@@ -242,13 +242,13 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
         customizer.addParameter("token", "public_token");
 
         long startTime = System.currentTimeMillis();
-        performDefaultGet(
-            SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA,
-            customizer,
-            "open search description error",
-            ENGINE_TYPE,
-            france.getIpId().toString(),
-            OpenSearchEngine.EXTRA_DESCRIPTION);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING
+                          + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA,
+                          customizer,
+                          "open search description error",
+                          ENGINE_TYPE,
+                          france.getIpId().toString(),
+                          OpenSearchEngine.EXTRA_DESCRIPTION);
         logDuration(startTime);
     }
 

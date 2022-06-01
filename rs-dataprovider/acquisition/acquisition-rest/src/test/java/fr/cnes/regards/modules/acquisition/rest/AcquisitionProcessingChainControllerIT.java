@@ -232,11 +232,11 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
                                                                                                               JSON_STRING_TYPE))
                                                                                     .description(
                                                                                         "Acquisition chain identifier")));
-        performDefaultGet(
-            AcquisitionProcessingChainController.TYPE_PATH + AcquisitionProcessingChainController.CHAIN_PATH,
-            customizer,
-            "Chain should be retrieved",
-            chainId);
+        performDefaultGet(AcquisitionProcessingChainController.TYPE_PATH
+                          + AcquisitionProcessingChainController.CHAIN_PATH,
+                          customizer,
+                          "Chain should be retrieved",
+                          chainId);
     }
 
     @Test
@@ -289,12 +289,12 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
                                                                                     .description(
                                                                                         "Acquisition chain identifier")));
 
-        performDefaultPut(
-            AcquisitionProcessingChainController.TYPE_PATH + AcquisitionProcessingChainController.CHAIN_PATH,
-            loadedChain,
-            customizer,
-            "Chain should be updated",
-            loadedChain.getId());
+        performDefaultPut(AcquisitionProcessingChainController.TYPE_PATH
+                          + AcquisitionProcessingChainController.CHAIN_PATH,
+                          loadedChain,
+                          customizer,
+                          "Chain should be updated",
+                          loadedChain.getId());
 
         // Load new scan plugin configuration
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -339,12 +339,12 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
                                                                                     .description(
                                                                                         "Acquisition chain identifier")));
 
-        performDefaultPatch(
-            AcquisitionProcessingChainController.TYPE_PATH + AcquisitionProcessingChainController.CHAIN_PATH,
-            updatePayload,
-            customizer,
-            "Chain should be patched",
-            chainId);
+        performDefaultPatch(AcquisitionProcessingChainController.TYPE_PATH
+                            + AcquisitionProcessingChainController.CHAIN_PATH,
+                            updatePayload,
+                            customizer,
+                            "Chain should be patched",
+                            chainId);
 
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         AcquisitionProcessingChain loadedChain = processingService.getChain(Long.valueOf(chainId));
@@ -407,12 +407,12 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         loadedChain.getFileInfos().iterator().next().setScanPlugin(scanPlugin);
 
         customizer = customizer().expectStatusOk();
-        performDefaultPut(
-            AcquisitionProcessingChainController.TYPE_PATH + AcquisitionProcessingChainController.CHAIN_PATH,
-            loadedChain,
-            customizer,
-            "Chain should be updated",
-            loadedChain.getId());
+        performDefaultPut(AcquisitionProcessingChainController.TYPE_PATH
+                          + AcquisitionProcessingChainController.CHAIN_PATH,
+                          loadedChain,
+                          customizer,
+                          "Chain should be updated",
+                          loadedChain.getId());
 
         // Load new scan plugin configuration
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -421,11 +421,11 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
 
         // Delete active chain
         customizer = customizer().expectStatusForbidden();
-        performDefaultDelete(
-            AcquisitionProcessingChainController.TYPE_PATH + AcquisitionProcessingChainController.CHAIN_PATH,
-            customizer,
-            "Chain should be removed",
-            chainId.longValue());
+        performDefaultDelete(AcquisitionProcessingChainController.TYPE_PATH
+                             + AcquisitionProcessingChainController.CHAIN_PATH,
+                             customizer,
+                             "Chain should be removed",
+                             chainId.longValue());
 
         // Change to inactive
         customizer = customizer().expectStatusOk();
@@ -445,20 +445,20 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
                                                                                                               "Chain must be disabled."))));
 
         loadedChain.setActive(Boolean.FALSE);
-        performDefaultPut(
-            AcquisitionProcessingChainController.TYPE_PATH + AcquisitionProcessingChainController.CHAIN_PATH,
-            loadedChain,
-            customizer,
-            "Chain should be updated",
-            loadedChain.getId());
+        performDefaultPut(AcquisitionProcessingChainController.TYPE_PATH
+                          + AcquisitionProcessingChainController.CHAIN_PATH,
+                          loadedChain,
+                          customizer,
+                          "Chain should be updated",
+                          loadedChain.getId());
 
         // Delete inactive chain
         customizer = customizer().expectStatusNoContent();
-        performDefaultDelete(
-            AcquisitionProcessingChainController.TYPE_PATH + AcquisitionProcessingChainController.CHAIN_PATH,
-            customizer,
-            "Chain should be removed",
-            chainId.longValue());
+        performDefaultDelete(AcquisitionProcessingChainController.TYPE_PATH
+                             + AcquisitionProcessingChainController.CHAIN_PATH,
+                             customizer,
+                             "Chain should be removed",
+                             chainId.longValue());
     }
 
     @Test

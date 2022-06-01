@@ -80,8 +80,9 @@ public class FileRequestsControllerIT extends AbstractRegardsTransactionalIT {
                                                         "source1",
                                                         "session1");
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk().expectIsEmpty("$.content");
-        performDefaultGet(FileRequestsController.REQUESTS_PATH + FileRequestsController.STORAGE_PATH
-                              + FileRequestsController.TYPE_PATH,
+        performDefaultGet(FileRequestsController.REQUESTS_PATH
+                          + FileRequestsController.STORAGE_PATH
+                          + FileRequestsController.TYPE_PATH,
                           requestBuilderCustomizer,
                           "Expect ok status.",
                           storage,
@@ -91,8 +92,9 @@ public class FileRequestsControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer = customizer().expectStatusOk()
                                                .expectValue("$.content[0].content.type",
                                                             FileRequestType.STORAGE.toString());
-        performDefaultGet(FileRequestsController.REQUESTS_PATH + FileRequestsController.STORAGE_PATH
-                              + FileRequestsController.TYPE_PATH,
+        performDefaultGet(FileRequestsController.REQUESTS_PATH
+                          + FileRequestsController.STORAGE_PATH
+                          + FileRequestsController.TYPE_PATH,
                           requestBuilderCustomizer,
                           "Expect ok status.",
                           storage,

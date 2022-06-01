@@ -90,9 +90,14 @@ public class SamplePlugin implements ISamplePlugin {
      */
     @PluginInit
     private void aInit() {
-        LOGGER.info(
-            "Init method call : " + this.getClass().getName() + "suffixe:" + suffix + "|active:" + isActive + "|coeff:"
-                + coef);
+        LOGGER.info("Init method call : "
+                    + this.getClass().getName()
+                    + "suffixe:"
+                    + suffix
+                    + "|active:"
+                    + isActive
+                    + "|coeff:"
+                    + coef);
     }
 
 }

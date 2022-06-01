@@ -150,8 +150,19 @@ public class UIPluginConfiguration {
 
     @Override
     public String toString() {
-        return "UIPluginConfiguration [id=" + id + ", pluginDefinition=" + pluginDefinition + ", active=" + active
-            + ", label=" + label + ", linkedToAllEntities=" + linkedToAllEntities + ", conf=" + conf + "]";
+        return "UIPluginConfiguration [id="
+               + id
+               + ", pluginDefinition="
+               + pluginDefinition
+               + ", active="
+               + active
+               + ", label="
+               + label
+               + ", linkedToAllEntities="
+               + linkedToAllEntities
+               + ", conf="
+               + conf
+               + "]";
     }
 
 }

@@ -122,8 +122,15 @@ public final class Table {
 
     @Override
     public String toString() {
-        return "[TABLE :" + name + "]" + " : " + toString("schema", schema) + " : " + toString("catalog", catalog)
-            + " : " + (pKey != null ? "pKey=" + pKey : "");
+        return "[TABLE :"
+               + name
+               + "]"
+               + " : "
+               + toString("schema", schema)
+               + " : "
+               + toString("catalog", catalog)
+               + " : "
+               + (pKey != null ? "pKey=" + pKey : "");
     }
 
 }

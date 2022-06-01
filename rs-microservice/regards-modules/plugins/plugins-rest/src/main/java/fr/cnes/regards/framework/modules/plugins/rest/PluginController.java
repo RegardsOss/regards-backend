@@ -89,8 +89,10 @@ public class PluginController implements IResourceController<PluginConfiguration
     /**
      * REST mapping resource : /plugins/{pluginId}/config/{configId}
      */
-    public static final String PLUGINS_PLUGINID_CONFIGID =
-        PLUGINS_PLUGINID_CONFIGS + "/{" + REQUEST_PARAM_BUSINESS_ID + "}";
+    public static final String PLUGINS_PLUGINID_CONFIGID = PLUGINS_PLUGINID_CONFIGS
+                                                           + "/{"
+                                                           + REQUEST_PARAM_BUSINESS_ID
+                                                           + "}";
 
     /**
      * REST mapping resource : /plugins/configs/{configId}
@@ -318,8 +320,11 @@ public class PluginController implements IResourceController<PluginConfiguration
         @Valid @RequestBody PluginConfiguration pluginConf) throws ModuleException {
 
         if (!pluginId.equals(pluginConf.getPluginId())) {
-            LOGGER.error("The plugin configuration is incoherent with the requests param : plugin id= <" + pluginId
-                             + ">- config id= <" + configBusinessId + ">");
+            LOGGER.error("The plugin configuration is incoherent with the requests param : plugin id= <"
+                         + pluginId
+                         + ">- config id= <"
+                         + configBusinessId
+                         + ">");
             throw new EntityNotFoundException(pluginId, PluginConfiguration.class);
         }
 

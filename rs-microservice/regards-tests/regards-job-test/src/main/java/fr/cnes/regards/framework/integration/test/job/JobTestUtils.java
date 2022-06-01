@@ -100,7 +100,7 @@ public class JobTestUtils {
                 runtimeTenantResolver.forceTenant(tenant);
                 JobInfo jobInfoUpd = jobInfoService.retrieveJob(jobInfo.getId());
                 return jobInfoUpd.getStatus().getStatus() == JobStatus.SUCCEEDED
-                    || jobInfoUpd.getStatus().getStatus() == JobStatus.FAILED;
+                       || jobInfoUpd.getStatus().getStatus() == JobStatus.FAILED;
             });
             jobsInfoUpdated.add(jobInfoService.retrieveJob(jobInfo.getId()));
         }

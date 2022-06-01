@@ -58,8 +58,9 @@ public final class GsonUtil {
         try {
             return gson.fromJson(json, type);
         } catch (JsonSyntaxException e) {
-            throw new IllegalArgumentException(
-                "The given string value: " + json + " cannot be transformed to Json object", e);
+            throw new IllegalArgumentException("The given string value: "
+                                               + json
+                                               + " cannot be transformed to Json object", e);
         }
     }
 

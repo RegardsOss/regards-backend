@@ -47,8 +47,9 @@ public @interface ComputedAttribute {
      */
     String CLASS_NAME = "fr.cnes.regards.modules.dam.domain.models.validation.ComputedAttribute";
 
-    String TEMPLATE_START = "Validation annotation @" + CLASS_NAME
-        + " validating ModelAttrAssoc (attribute %s): mode is COMPUTED but associated PluginConfiguration %s ";
+    String TEMPLATE_START = "Validation annotation @"
+                            + CLASS_NAME
+                            + " validating ModelAttrAssoc (attribute %s): mode is COMPUTED but associated PluginConfiguration %s ";
 
     String DEFAULT_TEMPLATE = TEMPLATE_START + "is null or not implementing IComputedAttribute";
 

@@ -162,7 +162,7 @@ public class StorageLocationConfigurationService {
             StorageLocationConfiguration actual = oActual.get();
             StorageLocationConfiguration other = storageLocConfRepo.findOneByStorageTypeAndPriority(actual.getStorageType(),
                                                                                                     actual.getPriority()
-                                                                                                        - 1);
+                                                                                                    - 1);
             // is there someone which has a greater priority?
             if (other != null) {
                 Long actualPriority = actual.getPriority();
@@ -192,7 +192,7 @@ public class StorageLocationConfigurationService {
             StorageLocationConfiguration actual = oActual.get();
             StorageLocationConfiguration other = storageLocConfRepo.findOneByStorageTypeAndPriority(actual.getStorageType(),
                                                                                                     actual.getPriority()
-                                                                                                        + 1);
+                                                                                                    + 1);
             // is there someone which has a lower priority?
             if (other != null) {
                 Long actualPriority = actual.getPriority();
@@ -256,7 +256,7 @@ public class StorageLocationConfigurationService {
                     pluginService.updatePluginConfiguration(updated.getPluginConfiguration());
                 } else {
                     throw new EntityInvalidException("Storage location plugin cannot be updated! "
-                                                         + "If you made a mistake you have to delete the old one and create a new one.");
+                                                     + "If you made a mistake you have to delete the old one and create a new one.");
                 }
             }
         } else if (updated.getPluginConfiguration() != null) {
@@ -319,7 +319,7 @@ public class StorageLocationConfigurationService {
             } catch (NotAvailablePluginConfigurationException e) {
                 LOGGER.debug(String.format(
                     "StorageLocationConfiguration %s is considered not allowing physical file delete because "
-                        + "underlying PluginConfiguration is not available",
+                    + "underlying PluginConfiguration is not available",
                     conf.getName()), e);
                 return false;
             }

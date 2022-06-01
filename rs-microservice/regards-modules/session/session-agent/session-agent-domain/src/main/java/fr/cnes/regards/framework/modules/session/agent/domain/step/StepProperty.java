@@ -87,7 +87,18 @@ public class StepProperty {
 
     @Override
     public String toString() {
-        return "StepProperty{" + "stepId='" + stepId + '\'' + ", source='" + source + '\'' + ", session='" + session
-            + '\'' + ", stepPropertyInfo=" + stepPropertyInfo + '}';
+        return "StepProperty{"
+               + "stepId='"
+               + stepId
+               + '\''
+               + ", source='"
+               + source
+               + '\''
+               + ", session='"
+               + session
+               + '\''
+               + ", stepPropertyInfo="
+               + stepPropertyInfo
+               + '}';
     }
 }

@@ -100,7 +100,7 @@ public class SessionNotifier {
             sessionAgentClient.decrement(step);
         } else {
             LOGGER.debug("Session has not been notified of {} features because either sessionOwner({}) or session"
-                             + "({}) is null or empty", value, sessionOwner, session);
+                         + "({}) is null or empty", value, sessionOwner, session);
 
         }
     }

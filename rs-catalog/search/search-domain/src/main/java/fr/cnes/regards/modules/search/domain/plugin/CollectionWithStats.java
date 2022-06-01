@@ -72,7 +72,10 @@ public final class CollectionWithStats {
     }
 
     public String toString() {
-        return "CollectionWithStats(collection=" + this.getCollection() + ", aggregationList="
-            + this.getAggregationList() + ")";
+        return "CollectionWithStats(collection="
+               + this.getCollection()
+               + ", aggregationList="
+               + this.getAggregationList()
+               + ")";
     }
 }

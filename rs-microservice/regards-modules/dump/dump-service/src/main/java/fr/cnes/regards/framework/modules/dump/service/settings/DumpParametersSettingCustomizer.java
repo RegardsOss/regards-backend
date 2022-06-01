@@ -41,8 +41,8 @@ public class DumpParametersSettingCustomizer implements IDynamicTenantSettingCus
 
     private boolean isProperValue(Object value) {
         return value instanceof DumpParameters
-            && CronSequenceGenerator.isValidExpression(((DumpParameters) value).getCronTrigger())
-            && isValidPath(((DumpParameters) value).getDumpLocation());
+               && CronSequenceGenerator.isValidExpression(((DumpParameters) value).getCronTrigger())
+               && isValidPath(((DumpParameters) value).getDumpLocation());
     }
 
     private boolean isValidPath(String location) {

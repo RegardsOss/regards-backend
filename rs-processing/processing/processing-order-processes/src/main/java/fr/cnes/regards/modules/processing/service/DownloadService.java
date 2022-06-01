@@ -132,8 +132,9 @@ public class DownloadService implements IDownloadService {
                                   errorWithContextMono(PExecution.class,
                                                        (exec, t) -> new InternalDownloadException(exec,
                                                                                                   "Failed to download internal "
-                                                                                                      + checksum
-                                                                                                      + " into " + dest,
+                                                                                                  + checksum
+                                                                                                  + " into "
+                                                                                                  + dest,
                                                                                                   t)));
     }
 

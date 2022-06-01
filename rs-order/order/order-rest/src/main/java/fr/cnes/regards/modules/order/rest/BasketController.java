@@ -59,8 +59,8 @@ public class BasketController implements IResourceController<BasketDto> {
 
     public static final String DATASET_DATASET_SELECTION_ID = "/dataset/{datasetSelectionId}";
 
-    public static final String DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS =
-        DATASET_DATASET_SELECTION_ID + "/updateProcessing";
+    public static final String DATASET_DATASET_SELECTION_ID_UPDATE_PROCESS = DATASET_DATASET_SELECTION_ID
+                                                                             + "/updateProcessing";
 
     public static final String DATASET_DATASET_SELECTION_ID_ITEMS_SELECTION_DATE = "/dataset/{datasetSelectionId}/{itemsSelectionDate}";
 

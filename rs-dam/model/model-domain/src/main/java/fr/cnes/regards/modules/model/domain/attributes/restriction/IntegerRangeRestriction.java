@@ -79,8 +79,9 @@ public class IntegerRangeRestriction extends AbstractRestriction {
 
     @Override
     public Boolean supports(PropertyType pPropertyType) {
-        return PropertyType.INTEGER.equals(pPropertyType) || PropertyType.INTEGER_ARRAY.equals(pPropertyType)
-            || PropertyType.INTEGER_INTERVAL.equals(pPropertyType);
+        return PropertyType.INTEGER.equals(pPropertyType)
+               || PropertyType.INTEGER_ARRAY.equals(pPropertyType)
+               || PropertyType.INTEGER_INTERVAL.equals(pPropertyType);
     }
 
     public Integer getMin() {

@@ -262,7 +262,15 @@ public class ModelAttrAssoc implements Comparable<ModelAttrAssoc>, IIdentifiable
 
     @Override
     public String toString() {
-        return "ModelAttrAssoc{" + "id=" + id + ", attribute=" + attribute + ", computationConf=" + computationConf
-            + ", model=" + model + '}';
+        return "ModelAttrAssoc{"
+               + "id="
+               + id
+               + ", attribute="
+               + attribute
+               + ", computationConf="
+               + computationConf
+               + ", model="
+               + model
+               + '}';
     }
 }

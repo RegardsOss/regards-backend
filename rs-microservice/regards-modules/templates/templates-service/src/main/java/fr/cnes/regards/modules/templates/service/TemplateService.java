@@ -205,8 +205,9 @@ public class TemplateService implements ITemplateService {
             configuration.getTemplate(template.getName()).process(dataModel, out);
             return out.toString();
         } catch (IOException e) {
-            LOG.error("Unable to process the data into the template of code " + template.getName()
-                          + ". Falling back to the not templated content.", e);
+            LOG.error("Unable to process the data into the template of code "
+                      + template.getName()
+                      + ". Falling back to the not templated content.", e);
             throw new RsRuntimeException(e);
         }
     }

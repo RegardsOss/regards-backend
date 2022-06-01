@@ -170,9 +170,28 @@ public class StepPropertyUpdateRequest {
 
     @Override
     public String toString() {
-        return "StepPropertyUpdateRequest{" + "id=" + id + ", stepId='" + stepId + '\'' + ", source='" + source + '\''
-            + ", session='" + session + '\'' + ", creationDate=" + creationDate + ", type=" + type
-            + ", stepPropertyUpdateRequestInfo=" + stepPropertyUpdateRequestInfo + ", sessionStep=" + sessionStep
-            + ", registrationDate=" + registrationDate + '}';
+        return "StepPropertyUpdateRequest{"
+               + "id="
+               + id
+               + ", stepId='"
+               + stepId
+               + '\''
+               + ", source='"
+               + source
+               + '\''
+               + ", session='"
+               + session
+               + '\''
+               + ", creationDate="
+               + creationDate
+               + ", type="
+               + type
+               + ", stepPropertyUpdateRequestInfo="
+               + stepPropertyUpdateRequestInfo
+               + ", sessionStep="
+               + sessionStep
+               + ", registrationDate="
+               + registrationDate
+               + '}';
     }
 }

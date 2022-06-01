@@ -291,8 +291,8 @@ public class BasketService implements IBasketService {
                 }
                 if (numberOfElementsToCheck > processInfo.getSizeLimit().getLimit()) {
                     throw new TooManyItemsSelectedInBasketException(String.format("The number of selected \"%s\" in "
-                                                                                      + "the basket [%d] exceeds the maximum number of \"%s\" allowed [%d]. Please, decrease the "
-                                                                                      + "number of selected items or contact the administrator for more information.",
+                                                                                  + "the basket [%d] exceeds the maximum number of \"%s\" allowed [%d]. Please, decrease the "
+                                                                                  + "number of selected items or contact the administrator for more information.",
                                                                                   sizeLimit.getType(),
                                                                                   numberOfElementsToCheck,
                                                                                   sizeLimit.getType(),

@@ -398,7 +398,7 @@ public class OpenIdConnectPlugin implements IServiceProviderPlugin<OpenIdAuthent
         if ((proxyHost != null) && !proxyHost.isEmpty()) {
             HttpHost proxy = new HttpHost(proxyHost, proxyPort);
             if (((proxyLogin != null) && !proxyLogin.isEmpty()) && ((proxyPassword != null)
-                && !proxyPassword.isEmpty())) {
+                                                                    && !proxyPassword.isEmpty())) {
                 CredentialsProvider credsProvider = new BasicCredentialsProvider();
                 credsProvider.setCredentials(new AuthScope(proxy.getHostName(), proxy.getPort()),
                                              new UsernamePasswordCredentials(proxyLogin, proxyPassword));

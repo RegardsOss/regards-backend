@@ -89,8 +89,8 @@ public interface ISearchEngine<R, E, T, V extends Collection<?>> {
      * </ol>
      */
     default ResponseEntity<E> extra(SearchContext context, IEntityLinkBuilder linkBuilder) throws ModuleException {
-        throw new UnsupportedOperationException(
-            "Additional path handling not implemented for engine " + context.getEngineType());
+        throw new UnsupportedOperationException("Additional path handling not implemented for engine "
+                                                + context.getEngineType());
     }
 
     /**
@@ -136,8 +136,8 @@ public interface ISearchEngine<R, E, T, V extends Collection<?>> {
      * </ol>
      */
     default ResponseEntity<V> getPropertyValues(SearchContext context) throws ModuleException {
-        throw new UnsupportedOperationException(
-            "Retrieving property values not implemented for engine " + context.getEngineType());
+        throw new UnsupportedOperationException("Retrieving property values not implemented for engine "
+                                                + context.getEngineType());
     }
 
     /**
@@ -153,8 +153,8 @@ public interface ISearchEngine<R, E, T, V extends Collection<?>> {
      * </ol>
      */
     default ResponseEntity<DocFilesSummary> getSummary(SearchContext context) throws ModuleException {
-        throw new UnsupportedOperationException(
-            "Computing file summary not implemented for engine " + context.getEngineType());
+        throw new UnsupportedOperationException("Computing file summary not implemented for engine "
+                                                + context.getEngineType());
     }
 
     /**
@@ -172,7 +172,7 @@ public interface ISearchEngine<R, E, T, V extends Collection<?>> {
      */
     default ResponseEntity<List<EntityModel<? extends PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
         throws ModuleException {
-        throw new UnsupportedOperationException(
-            "Bound calculation not implemented for engine " + context.getEngineType());
+        throw new UnsupportedOperationException("Bound calculation not implemented for engine "
+                                                + context.getEngineType());
     }
 }

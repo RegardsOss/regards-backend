@@ -166,10 +166,10 @@ public class FileReferenceRequestService {
                                                                                                    .getMetaInfo()
                                                                                                    .getChecksum()
                                                                                                    .equals(file.getChecksum())
-                                                                                         && r.getFileReference()
-                                                                                             .getLocation()
-                                                                                             .getStorage()
-                                                                                             .equals(file.getStorage()))
+                                                                                                  && r.getFileReference()
+                                                                                                      .getLocation()
+                                                                                                      .getStorage()
+                                                                                                      .equals(file.getStorage()))
                                                                                      .findFirst();
             try {
                 FileReference fileRef = reference(file, oFileRef, oFileDeletionReq, Sets.newHashSet(groupId), true);
@@ -339,7 +339,7 @@ public class FileReferenceRequestService {
             }
             if (!fileReference.getMetaInfo().equals(request.buildMetaInfo())) {
                 LOGGER.debug("Existing referenced file meta information differs "
-                                 + "from new reference meta information. Previous ones are maintained");
+                             + "from new reference meta information. Previous ones are maintained");
             }
             String message = String.format(
                 "New owner <%s> added to existing referenced file <%s> at <%s> (checksum: %s) ",

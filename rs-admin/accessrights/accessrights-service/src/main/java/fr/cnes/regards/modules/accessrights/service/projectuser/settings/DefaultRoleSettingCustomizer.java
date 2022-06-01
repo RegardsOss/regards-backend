@@ -17,8 +17,9 @@ public class DefaultRoleSettingCustomizer implements IDynamicTenantSettingCustom
 
     @Override
     public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
-        return roleService.existByName(dynamicTenantSetting.getDefaultValue()) && (
-            dynamicTenantSetting.getValue() == null || roleService.existByName(dynamicTenantSetting.getValue()));
+        return roleService.existByName(dynamicTenantSetting.getDefaultValue()) && (dynamicTenantSetting.getValue()
+                                                                                   == null || roleService.existByName(
+            dynamicTenantSetting.getValue()));
     }
 
     @Override

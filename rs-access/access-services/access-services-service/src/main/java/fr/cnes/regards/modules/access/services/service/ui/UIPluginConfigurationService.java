@@ -74,9 +74,8 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
      * Returns <code>true</code> if passed <code>pApplicationMode</code> is <code>null</code>.
      */
     private static final Function<List<ServiceScope>, Predicate<UIPluginConfiguration>> IS_APPLICABLE_ON = pApplicationModes -> pConfiguration ->
-        (pApplicationModes == null) || pConfiguration.getPluginDefinition()
-                                                     .getApplicationModes()
-                                                     .containsAll(pApplicationModes);
+        (pApplicationModes == null)
+        || pConfiguration.getPluginDefinition().getApplicationModes().containsAll(pApplicationModes);
 
     private final IUIPluginDefinitionRepository pluginRepository;
 

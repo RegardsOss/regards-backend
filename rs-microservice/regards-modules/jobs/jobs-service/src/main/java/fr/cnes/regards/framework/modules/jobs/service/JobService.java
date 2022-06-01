@@ -157,7 +157,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                         Thread.sleep(scanDelay);
                     } catch (InterruptedException e) {
                         LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
-                                         + "of the end, pray for your soul", e);
+                                     + "of the end, pray for your soul", e);
                     }
                 }
                 // Find highest priority job to execute
@@ -178,7 +178,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
-                                     + "of the end, pray for your soul", e);
+                                 + "of the end, pray for your soul", e);
                 }
             }
         }

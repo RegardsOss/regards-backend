@@ -75,7 +75,8 @@ public class ProjectUserGroupService {
             FeignSecurityManager.asSystem();
             for (String group : accessGroups) {
                 ResponseEntity<EntityModel<AccessGroup>> response = accessGroupClient.retrieveAccessGroup(group);
-                if (response == null || !response.getStatusCode().is2xxSuccessful()
+                if (response == null
+                    || !response.getStatusCode().is2xxSuccessful()
                     || HateoasUtils.unwrap(response.getBody()) == null) {
                     throw new EntityNotFoundException(group, AccessGroup.class);
                 } else {

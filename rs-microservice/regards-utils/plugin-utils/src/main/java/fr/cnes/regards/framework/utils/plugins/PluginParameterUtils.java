@@ -597,7 +597,7 @@ public final class PluginParameterUtils {
         String parameterName = getFieldName(field, paramAnnotation);
 
         if (field.getType().isInterface() && !(PluginParamType.COLLECTION.equals(paramType)
-            || PluginParamType.MAP.equals(paramType))) {
+                                               || PluginParamType.MAP.equals(paramType))) {
             throw new PluginUtilsRuntimeException(String.format(
                 "Invalid plugin parameter of non instanciable interface %s",
                 field.getType().getName()));

@@ -78,8 +78,9 @@ public class DoubleRangeRestriction extends AbstractRestriction {
 
     @Override
     public Boolean supports(PropertyType pPropertyType) {
-        return PropertyType.DOUBLE.equals(pPropertyType) || PropertyType.DOUBLE_ARRAY.equals(pPropertyType)
-            || PropertyType.DOUBLE_INTERVAL.equals(pPropertyType);
+        return PropertyType.DOUBLE.equals(pPropertyType)
+               || PropertyType.DOUBLE_ARRAY.equals(pPropertyType)
+               || PropertyType.DOUBLE_INTERVAL.equals(pPropertyType);
     }
 
     public Double getMin() {

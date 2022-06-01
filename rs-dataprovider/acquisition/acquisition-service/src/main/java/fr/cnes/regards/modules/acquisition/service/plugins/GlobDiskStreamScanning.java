@@ -90,8 +90,9 @@ public class GlobDiskStreamScanning implements IFluxScanPlugin {
             FileSystem fs = dirPath.getFileSystem();
             final PathMatcher matcher = fs.getPathMatcher("glob:" + glob);
             Predicate<Path> filter = entry -> {
-                boolean match =
-                    Files.isReadable(entry) && Files.isRegularFile(entry) && matcher.matches(entry.getFileName());
+                boolean match = Files.isReadable(entry)
+                                && Files.isRegularFile(entry)
+                                && matcher.matches(entry.getFileName());
                 if (match && lastModificationDate.isPresent()) {
                     OffsetDateTime lmd;
                     try {

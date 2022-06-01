@@ -157,8 +157,11 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
         ComplexSearchRequest request = new ComplexSearchRequest(Lists.newArrayList(DataType.values()));
         request.getRequests()
                .add(createSearchRequest(LegacySearchEngine.PLUGIN_ID,
-                                        "URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:" + UUID.randomUUID()
-                                            + ":V2",
+                                        "URN:AIP:"
+                                        + EntityType.DATASET.toString()
+                                        + ":PROJECT:"
+                                        + UUID.randomUUID()
+                                        + ":V2",
                                         "q",
                                         String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT))));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();

@@ -256,7 +256,7 @@ public abstract class AbstractManagerServiceUtilsIT extends AbstractMultitenantS
 
         if (count != processSize) {
             Assert.fail("Snapshot processes were not updated correctly. Check in the snapshot that the "
-                            + "lastUpdateDate is not null and jobId is null");
+                        + "lastUpdateDate is not null and jobId is null");
         }
 
     }

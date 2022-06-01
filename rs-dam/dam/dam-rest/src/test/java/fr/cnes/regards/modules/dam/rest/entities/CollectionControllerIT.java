@@ -76,7 +76,7 @@ public class CollectionControllerIT extends AbstractCollectionControllerIT {
 
     @Requirement("REGARDS_DSL_DAM_COL_210")
     @Purpose("Le système doit permettre de mettre à jour les valeurs d’une collection via son IP_ID et d’archiver ces "
-        + "modifications dans son AIP au niveau du composant « Archival storage » si ce composant est déployé.")
+             + "modifications dans son AIP au niveau du composant « Archival storage » si ce composant est déployé.")
     @Test
     public void testUpdateCollection() {
         Collection collectionClone = new Collection(collection1.getModel(), "", "COL1", "collection1clone");

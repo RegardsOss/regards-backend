@@ -171,7 +171,8 @@ public class ModuleManagerController {
                 }
                 Set<ModuleImportReport> modulesInError = importReports.stream()
                                                                       .filter(mir -> mir.isOnlyErrors()
-                                                                          || !mir.getImportErrors().isEmpty())
+                                                                                     || !mir.getImportErrors()
+                                                                                            .isEmpty())
                                                                       .collect(Collectors.toSet());
                 // if there is no error at all
                 if (modulesInError.isEmpty()) {

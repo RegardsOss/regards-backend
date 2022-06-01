@@ -253,7 +253,7 @@ public class EmailServiceIT {
     @Requirement("REGARDS_DSL_ADM_ADM_440")
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system allows to re-send an email and check that the system allows to retrieve the list "
-        + "of sent emails..")
+             + "of sent emails..")
     public void resendEmail() throws MessagingException, ModuleException {
         // Create dummy email with random subject and content and add a recipient
         final String[] recipients = new String[] { "recipient@test.com" };

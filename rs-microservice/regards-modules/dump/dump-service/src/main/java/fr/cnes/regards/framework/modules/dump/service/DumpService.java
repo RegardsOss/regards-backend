@@ -163,8 +163,11 @@ public class DumpService {
             ZipEntry zipEntry;
 
             // Create dump
-            String dumpName =
-                "dump_json_" + this.microservice + "_" + OffsetDateTimeAdapter.format(reqDumpDate) + ".zip";
+            String dumpName = "dump_json_"
+                              + this.microservice
+                              + "_"
+                              + OffsetDateTimeAdapter.format(reqDumpDate)
+                              + ".zip";
             Files.createDirectories(dumpLocation);
 
             try (ZipOutputStream dumpZip = new ZipOutputStream(new FileOutputStream(dumpLocation.resolve(dumpName)

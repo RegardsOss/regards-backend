@@ -27,8 +27,9 @@ public @interface HandledMessageDigestAlgorithm {
     /**
      * @return error message key
      */
-    String message() default "{Validation annotation @" + CLASS_NAME
-        + " validating %s: it is not an handled algorithm for checksum computation";
+    String message() default "{Validation annotation @"
+                             + CLASS_NAME
+                             + " validating %s: it is not an handled algorithm for checksum computation";
 
     /**
      * @return validation groups

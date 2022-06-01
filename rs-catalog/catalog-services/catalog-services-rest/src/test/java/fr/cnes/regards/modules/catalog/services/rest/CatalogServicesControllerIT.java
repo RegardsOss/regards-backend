@@ -244,12 +244,12 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         requestBuilderCustomizer.addHeaders(getHeadersToApply());
-        ResultActions resultActions = performDefaultPost(
-            CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-            parameters,
-            requestBuilderCustomizer,
-            "there should not be any error",
-            conf.getBusinessId());
+        ResultActions resultActions = performDefaultPost(CatalogServicesController.PATH_SERVICES
+                                                         + CatalogServicesController.PATH_SERVICE_NAME,
+                                                         parameters,
+                                                         requestBuilderCustomizer,
+                                                         "there should not be any error",
+                                                         conf.getBusinessId());
         validateTestPluginResponse(resultActions, new File("src/test/resources/result.json"));
     }
 
@@ -308,12 +308,12 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
                                                                                            null),
                                                                          dynamicParameters);
         requestBuilderCustomizer.addHeaders(getHeadersToApply());
-        ResultActions resultActions = performDefaultPost(
-            CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-            parameters,
-            requestBuilderCustomizer,
-            "there should not be any error",
-            conf.getBusinessId());
+        ResultActions resultActions = performDefaultPost(CatalogServicesController.PATH_SERVICES
+                                                         + CatalogServicesController.PATH_SERVICE_NAME,
+                                                         parameters,
+                                                         requestBuilderCustomizer,
+                                                         "there should not be any error",
+                                                         conf.getBusinessId());
         validateTestPluginResponse(resultActions, new File("src/test/resources/result_empty.json"));
     }
 
@@ -335,12 +335,12 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         requestBuilderCustomizer.expect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
         requestBuilderCustomizer.addHeaders(getHeadersToApply());
-        ResultActions resultActions = performDefaultPost(
-            CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-            parameters,
-            requestBuilderCustomizer,
-            "there should not be any error",
-            samplePlgConf.getBusinessId());
+        ResultActions resultActions = performDefaultPost(CatalogServicesController.PATH_SERVICES
+                                                         + CatalogServicesController.PATH_SERVICE_NAME,
+                                                         parameters,
+                                                         requestBuilderCustomizer,
+                                                         "there should not be any error",
+                                                         samplePlgConf.getBusinessId());
         validateTestPluginResponse(resultActions, new File("src/test/resources/samplePluginResult.json"));
     }
 
@@ -364,12 +364,12 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
                                                                                                      .contentType(
                                                                                                          MediaType.APPLICATION_XML));
         requestBuilderCustomizer.addHeaders(getHeadersToApply());
-        ResultActions resultActions = performDefaultPost(
-            CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-            parameters,
-            requestBuilderCustomizer,
-            "there should not be any error",
-            samplePlgConf.getBusinessId());
+        ResultActions resultActions = performDefaultPost(CatalogServicesController.PATH_SERVICES
+                                                         + CatalogServicesController.PATH_SERVICE_NAME,
+                                                         parameters,
+                                                         requestBuilderCustomizer,
+                                                         "there should not be any error",
+                                                         samplePlgConf.getBusinessId());
         validateTestPluginResponse(resultActions, new File("src/test/resources/samplePluginResult.xml"));
     }
 
@@ -393,12 +393,12 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
                                                                                                      .contentType(
                                                                                                          MediaType.IMAGE_PNG));
         requestBuilderCustomizer.addHeaders(getHeadersToApply());
-        ResultActions resultActions = performDefaultPost(
-            CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-            parameters,
-            requestBuilderCustomizer,
-            "there should not be any error",
-            samplePlgConf.getBusinessId());
+        ResultActions resultActions = performDefaultPost(CatalogServicesController.PATH_SERVICES
+                                                         + CatalogServicesController.PATH_SERVICE_NAME,
+                                                         parameters,
+                                                         requestBuilderCustomizer,
+                                                         "there should not be any error",
+                                                         samplePlgConf.getBusinessId());
         validateTestPluginResponse(resultActions, new File("src/test/resources/LogoCnes.png"));
     }
 
@@ -422,12 +422,12 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
                                                                                                      .contentType(
                                                                                                          MediaType.APPLICATION_OCTET_STREAM));
         requestBuilderCustomizer.addHeaders(getHeadersToApply());
-        ResultActions resultActions = performDefaultPost(
-            CatalogServicesController.PATH_SERVICES + CatalogServicesController.PATH_SERVICE_NAME,
-            parameters,
-            requestBuilderCustomizer,
-            "there should not be any error",
-            samplePlgConf.getBusinessId());
+        ResultActions resultActions = performDefaultPost(CatalogServicesController.PATH_SERVICES
+                                                         + CatalogServicesController.PATH_SERVICE_NAME,
+                                                         parameters,
+                                                         requestBuilderCustomizer,
+                                                         "there should not be any error",
+                                                         samplePlgConf.getBusinessId());
         validateTestPluginResponse(resultActions, new File("src/test/resources/result.other"));
     }
 

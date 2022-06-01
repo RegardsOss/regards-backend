@@ -84,8 +84,9 @@ public class ProcessPluginConfigController implements IResourceController<Proces
             filteredRightsPluginConfigs = allRightsPluginConfigs.stream()
                                                                 .filter(dto -> dto.getPluginConfiguration()
                                                                                   .getLabel()
-                                                                                  .matches(
-                                                                                      "^.*" + processNameLike + ".*$"))
+                                                                                  .matches("^.*"
+                                                                                           + processNameLike
+                                                                                           + ".*$"))
                                                                 .filter(dto -> authoritiesProvider.shouldAccessToResourceRequiring(
                                                                     dto.getRights().getRole()))
                                                                 .collect(Collectors.toSet());

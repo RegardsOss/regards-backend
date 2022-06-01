@@ -219,8 +219,10 @@ public class AttributeFinder implements IAttributeFinder, ApplicationListener<Ap
                                            .isStatic()
                                            .get());
 
-        tenantMap.put(StaticProperties.FEATURE_FILE_RAWDATA_FILENAME, AttributeModelBuilder
-                .build(StaticProperties.FEATURE_FILE_RAWDATA_FILENAME_PROPERTY_PATH, PropertyType.STRING, null).isStatic().get());
+        tenantMap.put(StaticProperties.FEATURE_FILE_RAWDATA_FILENAME,
+                      AttributeModelBuilder.build(StaticProperties.FEATURE_FILE_RAWDATA_FILENAME_PROPERTY_PATH,
+                                                  PropertyType.STRING,
+                                                  null).isStatic().get());
 
         // Allows to filter on dataset model id when searching for dataobjects
         tenantMap.put(StaticProperties.DATASET_MODEL_NAMES,

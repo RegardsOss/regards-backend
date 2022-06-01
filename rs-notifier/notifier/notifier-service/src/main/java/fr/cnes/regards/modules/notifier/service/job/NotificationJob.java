@@ -80,14 +80,26 @@ public class NotificationJob extends AbstractJob<Void> {
     public void run() {
         logger.info("[{}] Notification job starts", jobInfoId);
         long start = System.currentTimeMillis();
-        Pair<Integer, Integer> processResult = notificationProcessingService.processRequests(notificationRequests, recipient);
-        logger.info("[{}]{}{} Notifications sent to <{} - {} - {}> in {} ms, {} notifications failed", jobInfoId, INFO_TAB,
-                    processResult.getFirst(), recipient.getBusinessId(), recipient.getPluginId(), recipient.getLabel(),
-                System.currentTimeMillis() - start, processResult.getSecond());
+        Pair<Integer, Integer> processResult = notificationProcessingService.processRequests(notificationRequests,
+                                                                                             recipient);
+        logger.info("[{}]{}{} Notifications sent to <{} - {} - {}> in {} ms, {} notifications failed",
+                    jobInfoId,
+                    INFO_TAB,
+                    processResult.getFirst(),
+                    recipient.getBusinessId(),
+                    recipient.getPluginId(),
+                    recipient.getLabel(),
+                    System.currentTimeMillis() - start,
+                    processResult.getSecond());
         // if there are exception we throw an exception to stop the job in error
         if (!processResult.getSecond().equals(0)) {
-            throw new RsRuntimeException(String.format("Some notifications (%s) failed for the Job %s for recipient <%s - %s - %s>",
-                    processResult.getSecond(), jobInfoId, recipient.getBusinessId(), recipient.getPluginId(), recipient.getLabel()));
+            throw new RsRuntimeException(String.format(
+                "Some notifications (%s) failed for the Job %s for recipient <%s - %s - %s>",
+                processResult.getSecond(),
+                jobInfoId,
+                recipient.getBusinessId(),
+                recipient.getPluginId(),
+                recipient.getLabel()));
         }
     }
 

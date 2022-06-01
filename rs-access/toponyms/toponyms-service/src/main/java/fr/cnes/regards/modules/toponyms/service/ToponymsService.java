@@ -228,7 +228,7 @@ public class ToponymsService {
                                                          .map(Toponym::getBusinessId)
                                                          .collect(Collectors.joining(" - ", "[", "]"));
                 LOGGER.warn("The not visible toponym geometries should be unique per project. The following "
-                                + "toponyms have the same geometry {}", toponymAsString);
+                            + "toponyms have the same geometry {}", toponymAsString);
             }
             // update expiration date
             Toponym toponym = toponymRetrieved.get(0);
@@ -326,7 +326,7 @@ public class ToponymsService {
         // if geometry could not be read
         StringBuilder msg = new StringBuilder(
             "The geometry could not be processed. The toponym will not be saved. Check the format "
-                + "of the geojson feature. ");
+            + "of the geojson feature. ");
         if (cause != null) {
             msg.append("Cause : ").append(cause.getMessage());
         }

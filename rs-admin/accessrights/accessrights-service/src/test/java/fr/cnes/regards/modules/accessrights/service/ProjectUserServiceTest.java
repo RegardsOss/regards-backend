@@ -588,7 +588,7 @@ public class ProjectUserServiceTest {
     @Test(expected = EntityOperationForbiddenException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_260")
     @Purpose("Check that the system fail when trying to retrieve "
-        + "a user's permissions using a role not hierarchically inferior.")
+             + "a user's permissions using a role not hierarchically inferior.")
     public void retrieveProjectUserAccessRightsBorrowedRoleNotInferior() throws EntityException {
         // Define borrowed role
         String borrowedRoleName = DefaultRole.INSTANCE_ADMIN.toString();

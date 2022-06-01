@@ -66,14 +66,23 @@ public class SearchEngineDispatcherIT extends AbstractRegardsTransactionalIT {
     @Autowired
     protected IEntityLinkBuilder linkBuilder;
 
-    private static final String DATASET1_URN =
-        "URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:" + UUID.randomUUID() + ":V1";
+    private static final String DATASET1_URN = "URN:AIP:"
+                                               + EntityType.DATASET.toString()
+                                               + ":PROJECT:"
+                                               + UUID.randomUUID()
+                                               + ":V1";
 
-    private static final String DATASET2_URN =
-        "URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:" + UUID.randomUUID() + ":V2";
+    private static final String DATASET2_URN = "URN:AIP:"
+                                               + EntityType.DATASET.toString()
+                                               + ":PROJECT:"
+                                               + UUID.randomUUID()
+                                               + ":V2";
 
-    private static final String DATASET3_URN =
-        "URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:" + UUID.randomUUID() + ":V3";
+    private static final String DATASET3_URN = "URN:AIP:"
+                                               + EntityType.DATASET.toString()
+                                               + ":PROJECT:"
+                                               + UUID.randomUUID()
+                                               + ":V3";
 
     @Before
     public void init() throws ModuleException {

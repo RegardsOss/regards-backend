@@ -53,12 +53,12 @@ public interface IFeatureCreationRequestRepository extends IAbstractFeatureReque
      * @return a list of {@link ILightFeatureCreationRequest}
      */
     @Query("select request.requestOwner as requestOwner, request.state as state, request.priority as priority,"
-        + " request.step as step, request.registrationDate as registrationDate, request.requestDate as requestDate,"
-        + " request.requestId as requestId, request.providerId as providerId, request.metadata as metadata,"
-        + " request.id as id, request.errors as errors, request.groupId as groupId"
-        + " from FeatureCreationRequest request where request.providerId not in ("
-        + " select scheduledRequest.providerId from FeatureCreationRequest scheduledRequest"
-        + " where scheduledRequest.step = 'LOCAL_SCHEDULED') and request.step = :step and request.requestDate <= :now")
+           + " request.step as step, request.registrationDate as registrationDate, request.requestDate as requestDate,"
+           + " request.requestId as requestId, request.providerId as providerId, request.metadata as metadata,"
+           + " request.id as id, request.errors as errors, request.groupId as groupId"
+           + " from FeatureCreationRequest request where request.providerId not in ("
+           + " select scheduledRequest.providerId from FeatureCreationRequest scheduledRequest"
+           + " where scheduledRequest.step = 'LOCAL_SCHEDULED') and request.step = :step and request.requestDate <= :now")
     Page<ILightFeatureCreationRequest> findRequestsToSchedule(@Param("step") FeatureRequestStep step,
                                                               @Param("now") OffsetDateTime now,
                                                               Pageable page);

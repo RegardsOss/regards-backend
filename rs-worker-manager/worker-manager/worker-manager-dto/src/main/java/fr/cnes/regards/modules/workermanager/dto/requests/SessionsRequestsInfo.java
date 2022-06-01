@@ -59,10 +59,10 @@ public class SessionsRequestsInfo {
 
     public Set<RequestDTO> addRequest(RequestDTO request) {
         Map<RequestStatus, Set<RequestDTO>> requestsByStatuses = infosPerSession.compute(getKey(request),
-                                                                                         (sessionKey, ri) ->
-                                                                                             ri == null ?
-                                                                                                 new RequestsInfo() :
-                                                                                                 ri).getRequests();
+                                                                                         (sessionKey, ri) -> ri
+                                                                                                             == null ?
+                                                                                             new RequestsInfo() :
+                                                                                             ri).getRequests();
         Set<RequestDTO> statusRequests = requestsByStatuses.compute(request.getStatus(),
                                                                     (status, requests) -> requests == null ?
                                                                         Sets.newHashSet() :

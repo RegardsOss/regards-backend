@@ -99,9 +99,9 @@ public class OpenSearchServiceIT extends AbstractRegardsTransactionalIT {
         // so our request is interpreted as "nothing & imageOnly"
         // so AndCrit(EmptyCrit, OrCrit(FieldExistsCrits))
         crit = ((AndCriterion) crit).getCriterions().get(0);
-        Assert.assertTrue("When parsing a query with " + ImageOnlyParser.IMAGE_ONLY_PARAM
-                              + " GET parameter, we should have a criterion that is an OR",
-                          crit instanceof OrCriterion);
+        Assert.assertTrue("When parsing a query with "
+                          + ImageOnlyParser.IMAGE_ONLY_PARAM
+                          + " GET parameter, we should have a criterion that is an OR", crit instanceof OrCriterion);
         OrCriterion orCrit = (OrCriterion) crit;
         Assert.assertEquals("There should be 4 elements to this or criterion(one for each image type",
                             4L,

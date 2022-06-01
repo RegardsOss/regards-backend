@@ -123,7 +123,7 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
 
         // Try validating properties according to data model
         if ((feature.getModel() != null) && (feature.getProperties()
-            != null)) { // If model is null, error already detected before!
+                                             != null)) { // If model is null, error already detected before!
             errors.addAllErrors(validate(feature.getModel(), feature, mode, objectName));
         }
 
@@ -157,7 +157,7 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
             }
             if (numberOfFilesToStore > 0 && numberOfFilesToReference > 0) {
                 String message = String.format("Feature creation can not handle both store and reference files. "
-                                                   + "Feature contains %s files to store and %s files to reference",
+                                               + "Feature contains %s files to store and %s files to reference",
                                                numberOfFilesToStore,
                                                numberOfFilesToReference);
                 errors.rejectValue(FILES_FIELD, FILES_STORAGE_ERROR_CODE, message);

@@ -119,11 +119,16 @@ public class DumpServiceIT extends AbstractRegardsServiceTransactionalIT {
         // check name of dump zip
         File dump = listDump[0];
         String dumpName = dump.getName();
-        String zipNameRegex =
-            "^dump_json_" + this.microservice + "_" + OffsetDateTimeAdapter.format(creationDate) + "\\.zip$";
-        Assert.assertFalse("The name of the created zip \"" + dumpName
-                               + "\" is incorrect and should match the following pattern : dump_json_microservice_dumpdate ("
-                               + zipNameRegex + ")", !dumpName.matches(zipNameRegex));
+        String zipNameRegex = "^dump_json_"
+                              + this.microservice
+                              + "_"
+                              + OffsetDateTimeAdapter.format(creationDate)
+                              + "\\.zip$";
+        Assert.assertFalse("The name of the created zip \""
+                           + dumpName
+                           + "\" is incorrect and should match the following pattern : dump_json_microservice_dumpdate ("
+                           + zipNameRegex
+                           + ")", !dumpName.matches(zipNameRegex));
 
         // check the number of zip entries in dumpZip
         List<String> listZipNames = TestUtils.readZipEntryNames(dump);

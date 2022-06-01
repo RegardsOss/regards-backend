@@ -267,12 +267,12 @@ public class StorageLocationService {
             Optional<StorageLocation> oStorage = storageLocationRepo.findByName(agg.getStorage());
             StorageLocation storage = oStorage.orElse(new StorageLocation(agg.getStorage()));
             storage.setLastUpdateDate(monitoringDate);
-            storage.setTotalSizeOfReferencedFilesInKo(
-                storage.getTotalSizeOfReferencedFilesInKo() + (agg.getUsedSize() / 1024));
+            storage.setTotalSizeOfReferencedFilesInKo(storage.getTotalSizeOfReferencedFilesInKo() + (agg.getUsedSize()
+                                                                                                     / 1024));
             storage.setNumberOfReferencedFiles(storage.getNumberOfReferencedFiles() + agg.getNumberOfFileReference());
 
-            if ((storageMonitoring.getLastFileReferenceIdMonitored() == null) || (
-                storageMonitoring.getLastFileReferenceIdMonitored() < agg.getLastFileReferenceId())) {
+            if ((storageMonitoring.getLastFileReferenceIdMonitored() == null)
+                || (storageMonitoring.getLastFileReferenceIdMonitored() < agg.getLastFileReferenceId())) {
                 storageMonitoring.setLastFileReferenceIdMonitored(agg.getLastFileReferenceId());
             }
             storageLocationRepo.save(storage);
@@ -280,10 +280,10 @@ public class StorageLocationService {
             // Check for occupation ratio limit reached
             Optional<StorageLocationConfiguration> conf = pLocationConfService.search(agg.getStorage());
             if (conf.isPresent() && (conf.get().getAllocatedSizeInKo() != null) && (conf.get().getAllocatedSizeInKo()
-                > 0L)) {
-                Double ratio =
-                    (Double.valueOf(storage.getTotalSizeOfReferencedFilesInKo()) / (conf.get().getAllocatedSizeInKo()))
-                        * 100;
+                                                                                    > 0L)) {
+                Double ratio = (Double.valueOf(storage.getTotalSizeOfReferencedFilesInKo()) / (conf.get()
+                                                                                                   .getAllocatedSizeInKo()))
+                               * 100;
                 if (ratio >= criticalThreshold) {
                     String message = String.format(
                         "Storage location %s has reach its disk usage critical threshold. %nActual occupation: %.2f%%, critical threshold: %s%%",
@@ -298,7 +298,7 @@ public class StorageLocationService {
                     MaintenanceManager.setMaintenance(runtimeTenantResolver.getTenant());
                 } else if (ratio >= threshold) {
                     String message = String.format("Storage location %s has reach its "
-                                                       + "disk usage threshold. %nActual occupation: %.2f%%, threshold: %s%%",
+                                                   + "disk usage threshold. %nActual occupation: %.2f%%, threshold: %s%%",
                                                    storage.getName(),
                                                    ratio,
                                                    criticalThreshold);

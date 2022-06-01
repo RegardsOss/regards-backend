@@ -200,6 +200,6 @@ public class SampleDataUtils {
     /**
      * A query with double quotes and special characters
      */
-    public static final String UNESCAPED_QUERY_WITH_DOUBLE_QUOTES_AND_CHARS_TO_ESCAPE =
-        STRING_ATTRIBUTE_MODEL.getJsonPath() + ":\"texte avec:des caractères+spéciaux\"";
+    public static final String UNESCAPED_QUERY_WITH_DOUBLE_QUOTES_AND_CHARS_TO_ESCAPE = STRING_ATTRIBUTE_MODEL.getJsonPath()
+                                                                                        + ":\"texte avec:des caractères+spéciaux\"";
 }

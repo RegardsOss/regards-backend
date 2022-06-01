@@ -493,9 +493,9 @@ public class FileDeletionRequestService {
                                                            .filter(f -> f.getLocation()
                                                                          .getStorage()
                                                                          .equals(request.getStorage())
-                                                               && f.getMetaInfo()
-                                                                   .getChecksum()
-                                                                   .equals(request.getChecksum()))
+                                                                        && f.getMetaInfo()
+                                                                            .getChecksum()
+                                                                            .equals(request.getChecksum()))
                                                            .findFirst();
             if (oFileRef.isPresent()) {
                 FileReference fileRef = oFileRef.get();

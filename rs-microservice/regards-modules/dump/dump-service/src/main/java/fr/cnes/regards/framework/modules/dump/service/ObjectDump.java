@@ -70,8 +70,18 @@ public class ObjectDump implements Comparable<ObjectDump> {
 
     @Override
     public String toString() {
-        return "ObjectDump{" + "creationDate=" + creationDate + ", jsonContent=" + jsonContent + ", jsonName='"
-            + jsonName + '\'' + ", aipId='" + dumpId + '\'' + '}';
+        return "ObjectDump{"
+               + "creationDate="
+               + creationDate
+               + ", jsonContent="
+               + jsonContent
+               + ", jsonName='"
+               + jsonName
+               + '\''
+               + ", aipId='"
+               + dumpId
+               + '\''
+               + '}';
     }
 
     @Override
@@ -83,8 +93,9 @@ public class ObjectDump implements Comparable<ObjectDump> {
             return false;
         }
         ObjectDump objectDump = (ObjectDump) o;
-        return this.creationDate.equals(objectDump.creationDate) && this.jsonName.equals(objectDump.jsonName)
-            && this.dumpId.equals(dumpId);
+        return this.creationDate.equals(objectDump.creationDate)
+               && this.jsonName.equals(objectDump.jsonName)
+               && this.dumpId.equals(dumpId);
     }
 
     @Override

@@ -320,10 +320,12 @@ public class EntityIndexerService implements IEntityIndexerService {
             need = true;
         }
 
-        Map<String, DataObjectGroup> curentMetadata =
-            curDataset.getMetadata() != null ? curDataset.getMetadata().getDataObjectsGroupsMap() : null;
-        Map<String, DataObjectGroup> newMetadata =
-            newDataset.getMetadata() != null ? newDataset.getMetadata().getDataObjectsGroupsMap() : null;
+        Map<String, DataObjectGroup> curentMetadata = curDataset.getMetadata() != null ?
+            curDataset.getMetadata().getDataObjectsGroupsMap() :
+            null;
+        Map<String, DataObjectGroup> newMetadata = newDataset.getMetadata() != null ?
+            newDataset.getMetadata().getDataObjectsGroupsMap() :
+            null;
         if (curentMetadata != null) {
             need = need || !curentMetadata.equals(newMetadata);
         } else {
@@ -767,7 +769,8 @@ public class EntityIndexerService implements IEntityIndexerService {
                 Optional<IProperty<?>> candidate = dataset.getProperties()
                                                           .stream()
                                                           .filter(attr -> (attr instanceof ObjectProperty)
-                                                              && attr.getName().equals(attrInFragment.getName()))
+                                                                          && attr.getName()
+                                                                                 .equals(attrInFragment.getName()))
                                                           .findFirst();
                 if (candidate.isPresent()) {
                     Set<IProperty<?>> properties = ((ObjectProperty) candidate.get()).getValue();
