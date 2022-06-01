@@ -167,6 +167,10 @@ public class DownloadQuotaExceededReporterTest {
         String err = "Oh noes!";
         int errorsProducedOnFirstRound = RAND.nextInt(1000) + 1;
         CountDownLatch latch = new CountDownLatch(errorsProducedOnFirstRound);
+        // test is random, but we need at least one quota error by user, otherwise this test fails
+        for (int i = 0; i < clients; i++) {
+            quotaReporter.report(() -> err, makeInLoopEmail(email, i), TENANT);
+        }
         for (int i = 0; i < errorsProducedOnFirstRound; i++) {
             CompletableFuture.runAsync(() -> {
                 quotaReporter.report(() -> err, makeInLoopEmail(email, RAND.nextInt(clients)), TENANT);
