@@ -61,16 +61,16 @@ public class WaiterJob extends AbstractJob<Void> {
         try {
             for (int i = 0; i < waitPeriodCount; i++) {
                 if (Thread.currentThread().isInterrupted()) {
-                    System.out.println("INTERRUPTED in loop");
+                    System.out.println("WaiterJob - INTERRUPTED in loop");
                     break;
                 }
-                System.out.println("START WAITING...");
+                System.out.println("WaiterJob - START WAITING...");
                 Thread.sleep(waitPeriod);
                 advanceCompletion();
-                System.out.println("... END WAITING");
+                System.out.println("WaiterJob - ... END WAITING");
             }
         } catch (InterruptedException e) {
-            System.out.println("INTERRUPTED in sleep");
+            System.out.println("WaiterJob - INTERRUPTED in sleep");
         }
     }
 }

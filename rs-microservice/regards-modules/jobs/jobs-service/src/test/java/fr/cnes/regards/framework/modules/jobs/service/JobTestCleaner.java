@@ -16,13 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.integration.test.job;
+package fr.cnes.regards.framework.modules.jobs.service;
 
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.awaitility.Awaitility;
 import org.slf4j.Logger;
@@ -36,6 +34,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * Another copy of JobTestCleaner as we cannot use the official test utils without making circular dependency
+ *
  * @author Léo Mieulet
  */
 @Component
