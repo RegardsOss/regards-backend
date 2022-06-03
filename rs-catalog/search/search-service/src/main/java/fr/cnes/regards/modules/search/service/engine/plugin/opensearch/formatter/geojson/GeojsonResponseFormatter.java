@@ -127,7 +127,8 @@ public class GeojsonResponseFormatter extends AbstractResponseFormatter<Feature,
 
     @Override
     protected void addFeatureServices(DataFile firstRawData) {
-        feature.addProperty("services", GeojsonFeatureServiceDownloadBuilder.buildGeojsonServices(firstRawData));
+        feature.addProperty("services", GeojsonFeatureServiceDownloadBuilder.
+                buildGeojsonServices(firstRawData, this.scope));
     }
 
     @Override

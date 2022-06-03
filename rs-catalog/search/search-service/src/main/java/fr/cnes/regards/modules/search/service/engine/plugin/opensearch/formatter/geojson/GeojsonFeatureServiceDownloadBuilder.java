@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.geojson;
 
 import fr.cnes.regards.modules.indexer.domain.DataFile;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.DataFileHrefBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,15 +32,15 @@ public final class GeojsonFeatureServiceDownloadBuilder {
     private GeojsonFeatureServiceDownloadBuilder() {
     }
 
-    public static Map<String, Map<String, Object>> buildGeojsonServices(DataFile firstRawData) {
+    public static Map<String, Map<String, Object>> buildGeojsonServices(DataFile firstRawData, String scope) {
         Map<String, Map<String, Object>> services = new HashMap();
-        services.put("download", getDownloadService(firstRawData));
+        services.put("download", getDownloadService(firstRawData, scope));
         return services;
     }
 
-    private static Map<String, Object> getDownloadService(DataFile firstRawData) {
+    private static Map<String, Object> getDownloadService(DataFile firstRawData, String scope) {
         Map<String, Object> downloadService = new HashMap();
-        downloadService.put("url", firstRawData.getUri());
+        downloadService.put("url", DataFileHrefBuilder.getDataFileHref(firstRawData, scope));
         downloadService.put("mimeType", firstRawData.getMimeType());
         downloadService.put("size", firstRawData.getFilesize());
         downloadService.put("checksum", firstRawData.getChecksum());
