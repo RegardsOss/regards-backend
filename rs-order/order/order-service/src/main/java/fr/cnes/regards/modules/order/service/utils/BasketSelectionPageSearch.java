@@ -18,8 +18,11 @@
  */
 package fr.cnes.regards.modules.order.service.utils;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
+import fr.cnes.regards.modules.order.exception.CatalogSearchException;
+import fr.cnes.regards.modules.order.exception.CatalogSearchRuntimeException;
 import fr.cnes.regards.modules.order.service.BasketService;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedModel;
@@ -49,13 +52,17 @@ public class BasketSelectionPageSearch {
     @Autowired
     private IComplexSearchClient searchClient;
 
-    public List<EntityFeature> searchDataObjects(BasketDatasetSelection dsSel, int page) {
-        ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> pagedResourcesResponseEntity = searchClient.searchDataObjects(
-            BasketService.buildSearchRequest(dsSel, page, MAX_PAGE_SIZE));
-        // It is mandatory to check NOW, at creation instant of order from basket, if data object files are still downloadable
-        Collection<EntityModel<EntityFeature>> objects = pagedResourcesResponseEntity.getBody().getContent();
-        // If a lot of objects, parallelisation is very useful, if not we don't really care
-        return objects.parallelStream().map(EntityModel::getContent).collect(Collectors.toList());
+    public List<EntityFeature> searchDataObjects(BasketDatasetSelection dsSel, int page) throws CatalogSearchException {
+        try {
+            ResponseEntity<FacettedPagedModel<EntityModel<EntityFeature>>> pagedResourcesResponseEntity = searchClient.searchDataObjects(
+                BasketService.buildSearchRequest(dsSel, page, MAX_PAGE_SIZE));
+            // It is mandatory to check NOW, at creation instant of order from basket, if data object files are still downloadable
+            Collection<EntityModel<EntityFeature>> objects = pagedResourcesResponseEntity.getBody().getContent();
+            // If a lot of objects, parallelisation is very useful, if not we don't really care
+            return objects.parallelStream().map(EntityModel::getContent).collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new CatalogSearchException("Error trying to search data objects from catalog.", e);
+        }
     }
 
     public Iterable<List<EntityFeature>> pagedSearchDataObjects(BasketDatasetSelection dsSel) {
@@ -73,9 +80,13 @@ public class BasketSelectionPageSearch {
             @Override
             public List<EntityFeature> next() {
                 ++page;
-                List<EntityFeature> entityFeatures = searchDataObjects(dsSel, page);
-                lastSearchYieldedEmpty = entityFeatures.isEmpty();
-                return entityFeatures;
+                try {
+                    List<EntityFeature> entityFeatures = searchDataObjects(dsSel, page);
+                    lastSearchYieldedEmpty = entityFeatures.isEmpty();
+                    return entityFeatures;
+                } catch (ModuleException e) {
+                    throw new CatalogSearchRuntimeException(e);
+                }
             }
         };
     }

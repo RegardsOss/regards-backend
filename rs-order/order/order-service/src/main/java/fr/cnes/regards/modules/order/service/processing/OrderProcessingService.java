@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.exception.TooManyItemsSelectedInBasketException;
 import fr.cnes.regards.modules.order.domain.process.ProcessDatasetDescription;
+import fr.cnes.regards.modules.order.exception.CatalogSearchException;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.order.service.IOrderJobService;
 import fr.cnes.regards.modules.order.service.job.BasketDatasetSelectionDescriptor;
@@ -152,6 +153,7 @@ public class OrderProcessingService implements IOrderProcessingService {
                 AtomicLong suborderCount = new AtomicLong(1);
                 OrderCounts result = basketSelectionPageSearch.fluxSearchDataObjects(dsSel)
                         .groupBy(feature -> hasAtLeastOneRequiredFileInStorage(feature, requiredDatatypes))
+                        .doOnError(CatalogSearchException.class, error -> Mono.error(new ModuleException(error)))
                         .flatMap(featureGroup -> discriminateBetweenSomeInStorageOrOnlyExternal(
                                         order, dsSel,
                                         tenant, user, userRole,

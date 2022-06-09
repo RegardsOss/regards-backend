@@ -34,6 +34,7 @@ import fr.cnes.regards.modules.order.domain.*;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
+import fr.cnes.regards.modules.order.exception.CatalogSearchException;
 import fr.cnes.regards.modules.order.service.processing.IOrderProcessingService;
 import fr.cnes.regards.modules.order.service.utils.BasketSelectionPageSearch;
 import fr.cnes.regards.modules.order.service.utils.OrderCounts;
@@ -225,7 +226,7 @@ public class OrderCreationService implements IOrderCreationService {
                                                int priority,
                                                OrderCounts orderCounts,
                                                BasketDatasetSelection dsSel,
-                                               int subOrderDuration) {
+                                               int subOrderDuration) throws CatalogSearchException {
 
         DatasetTask dsTask = DatasetTask.fromBasketSelection(dsSel, DataTypeSelection.ALL.getFileTypes());
 
@@ -235,7 +236,10 @@ public class OrderCreationService implements IOrderCreationService {
         Set<OrderDataFile> externalBucketFiles = new HashSet<>();
 
         // Execute opensearch request
-        for (List<EntityFeature> features : basketSelectionPageSearch.pagedSearchDataObjects(dsSel)) {
+        List<EntityFeature> features;
+        int page = 0;
+        do {
+            features = basketSelectionPageSearch.searchDataObjects(dsSel, page);
             // For each DataObject
             for (EntityFeature feature : features) {
                 dispatchFeatureFilesInBuckets(order, feature, storageBucketFiles, externalBucketFiles);
@@ -261,7 +265,8 @@ public class OrderCreationService implements IOrderCreationService {
                     externalBucketFiles.clear();
                 }
             }
-        }
+            page++;
+        } while (!features.isEmpty());
         // Manage remaining files on each type of buckets
         if (!storageBucketFiles.isEmpty()) {
             orderCounts.addToInternalFilesCount(storageBucketFiles.size());
