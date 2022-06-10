@@ -91,7 +91,7 @@ public class Subscriber extends AbstractSubscriber implements ISubscriber {
     @Override
     public void removeTenant(String tenant) {
         if (listeners != null) {
-            for (Map.Entry<Class<?>, Map<String, SimpleMessageListenerContainer>> entry : listeners.entrySet()) {
+            for (Map.Entry<String, Map<String, SimpleMessageListenerContainer>> entry : listeners.entrySet()) {
                 SimpleMessageListenerContainer container = entry.getValue().remove(tenant);
                 if (container != null) {
                     container.stop();

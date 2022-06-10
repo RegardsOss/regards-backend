@@ -85,11 +85,11 @@ public class SingleVhostSubscriber extends AbstractSubscriber implements ISubscr
     @Override
     public void removeTenant(String tenant) {
         if (listeners != null) {
-            for (Map.Entry<Class<?>, Map<String, SimpleMessageListenerContainer>> entry : listeners.entrySet()) {
+            for (Map.Entry<String, Map<String, SimpleMessageListenerContainer>> entry : listeners.entrySet()) {
 
-                Class<?> handlerClass = entry.getKey();
-                Class<?> eventType = handledEvents.get(handlerClass);
-                //                IHandler<? extends ISubscribable> handler = handlerInstances.get(handlerClass);
+                String handlerClassName = entry.getKey();
+                Class<?> eventType = handledEvents.get(handlerClassName);
+                //                IHandler<? extends ISubscribable> handler = handlerInstances.get(handlerClassName);
                 WorkerMode workerMode = EventUtils.getWorkerMode(eventType);
                 Target target = EventUtils.getTargetRestriction(eventType);
 

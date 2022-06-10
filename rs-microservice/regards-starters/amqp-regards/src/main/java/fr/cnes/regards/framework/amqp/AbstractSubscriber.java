@@ -80,22 +80,22 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     /**
      * Reference to running listeners per handlers and virtual hosts
      */
-    protected final Map<Class<?>, Map<String, SimpleMessageListenerContainer>> listeners;
+    protected final Map<String, Map<String, SimpleMessageListenerContainer>> listeners;
 
     /**
      * Reference to events managed by handlers
      */
-    protected final Map<Class<?>, Class<?>> handledEvents;
+    protected final Map<String, Class<?>> handledEvents;
 
     /**
      * Reference to custom exchange/queue configuration as Pair<QueueName,ExchangeName> by handler
      */
-    protected final Map<Class<?>, Pair<Optional<String>, Optional<String>>> handledQueueExchangeNames;
+    protected final Map<String, Pair<Optional<String>, Optional<String>>> handledQueueExchangeNames;
 
     /**
      * Reference to instances of handlers
      */
-    protected final Map<Class<?>, IHandler<? extends ISubscribable>> handlerInstances;
+    protected final Map<String, IHandler<? extends ISubscribable>> handlerInstances;
 
     /**
      * bean handling the conversion using either Jackson or Gson
@@ -140,7 +140,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
     @Override
     public void unsubscribeFromAll(boolean fast) {
-        for (Map.Entry<Class<?>, Class<?>> handleEvent : handledEvents.entrySet()) {
+        for (Map.Entry<String, Class<?>> handleEvent : handledEvents.entrySet()) {
             // Retrieve handler managing event to unsubscribe
             unsubscribe(handleEvent.getKey(), fast);
         }
@@ -149,17 +149,17 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
     @Override
     public <T extends ISubscribable> void unsubscribeFrom(Class<T> eventType, boolean fast) {
-        for (Map.Entry<Class<?>, Class<?>> handleEvent : handledEvents.entrySet()) {
+        for (Map.Entry<String, Class<?>> handleEvent : handledEvents.entrySet()) {
             if (handleEvent.getValue().equals(eventType)) {
                 unsubscribe(handleEvent.getKey(), fast);
             }
         }
     }
 
-    private void unsubscribe(Class<?> handlerClass, boolean fast) {
-        LOGGER.info("AMQP Subscriber : Unsubscribe from {}", handlerClass.getName());
+    private void unsubscribe(String handlerClassName, boolean fast) {
+        LOGGER.info("AMQP Subscriber : Unsubscribe from {}", handlerClassName);
         // Retrieve listeners for current handler
-        Map<String, SimpleMessageListenerContainer> tenantContainers = listeners.remove(handlerClass);
+        Map<String, SimpleMessageListenerContainer> tenantContainers = listeners.remove(handlerClassName);
         // In case unsubscribeFrom has been called too late
         if (tenantContainers != null) {
             // Stop listeners
@@ -171,7 +171,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                 container.stop();
             }
         }
-        LOGGER.info("END AMQP Subscriber : Unsubscribe from {}", handlerClass.getName());
+        LOGGER.info("END AMQP Subscriber : Unsubscribe from {}", handlerClassName);
     }
 
     @Override
@@ -327,12 +327,12 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
         Map<String, SimpleMessageListenerContainer> vhostsContainers = new ConcurrentHashMap<>();
 
-        if (!listeners.containsKey(handler.getClass())) {
-            listeners.put(handler.getClass(), vhostsContainers);
-            handledEvents.put(handler.getClass(), channel.getEventType());
-            handlerInstances.put(handler.getClass(), handler);
-            handledQueueExchangeNames.put(handler.getClass(),
-                                          Pair.of(channel.getQueueName(), channel.getExchangeName()));
+        String handlerClassName = handler.getClass().getName();
+        if (!listeners.containsKey(handlerClassName)) {
+            listeners.put(handlerClassName, vhostsContainers);
+            handledEvents.put(handlerClassName, channel.getEventType());
+            handlerInstances.put(handlerClassName, handler);
+            handledQueueExchangeNames.put(handlerClassName, Pair.of(channel.getQueueName(), channel.getExchangeName()));
         }
 
         Multimap<String, Queue> vhostQueues = ArrayListMultimap.create();
@@ -406,9 +406,14 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                                    final Class<?> eventType) {
 
         // Prevent redundant listener
-        Map<String, SimpleMessageListenerContainer> vhostsContainers = listeners.get(handler.getClass());
+        String handlerClassName = handler.getClass().getName();
+        Map<String, SimpleMessageListenerContainer> vhostsContainers = listeners.get(handlerClassName);
         // Virtual host already registered, just add queues to current container
         if (vhostsContainers.containsKey(virtualHost)) {
+            LOGGER.warn("Handler {} that handles {} events already defined for virtual host {}",
+                        handlerClassName,
+                        eventType.getName(),
+                        virtualHost);
             // Add missing queues errorHandler
             SimpleMessageListenerContainer container = vhostsContainers.get(virtualHost);
             String[] existingQueues = container.getQueueNames();
@@ -479,8 +484,8 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      * @param tenant new tenant to manage
      */
     protected void addTenantListeners(String tenant) {
-        for (Map.Entry<Class<?>, Map<String, SimpleMessageListenerContainer>> entry : listeners.entrySet()) {
-            Class<?> handlerClass = entry.getKey();
+        for (Map.Entry<String, Map<String, SimpleMessageListenerContainer>> entry : listeners.entrySet()) {
+            String handlerClass = entry.getKey();
             Class<?> eventType = handledEvents.get(handlerClass);
             IHandler<? extends ISubscribable> handler = handlerInstances.get(handlerClass);
             Pair<Optional<String>, Optional<String>> queueExchangeName = handledQueueExchangeNames.get(handlerClass);
@@ -490,8 +495,8 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             AmqpChannel channel = AmqpChannel.build(eventType)
                                              .forHandler(handler)
                                              .autoDelete(EventUtils.isAutoDeleteQueue(eventType));
-            queueExchangeName.getLeft().ifPresent(name -> channel.queue(name));
-            queueExchangeName.getRight().ifPresent(name -> channel.exchange(name));
+            queueExchangeName.getLeft().ifPresent(channel::queue);
+            queueExchangeName.getRight().ifPresent(channel::exchange);
 
             // Declare AMQP elements
             Queue queue = declareElements(virtualHost, tenant, channel, false);
@@ -509,8 +514,9 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      * @return all listeners by virtual host or <code>null</code>
      */
     public Map<String, SimpleMessageListenerContainer> getListeners(IHandler<? extends ISubscribable> handler) {
-        if (listeners.containsKey(handler.getClass())) {
-            return listeners.get(handler.getClass());
+        String handlerClassName = handler.getClass().getName();
+        if (listeners.containsKey(handlerClassName)) {
+            return listeners.get(handlerClassName);
         }
         return null;
     }
