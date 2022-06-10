@@ -160,9 +160,9 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
         String resultAsString = payload(resultActions);
 
         Integer valPluginId = JsonPath.read(resultAsString, "$.content.validationPlugin.id");
-        ingestProcessingChain.getValidationPlugin().setId(new Long(valPluginId));
+        ingestProcessingChain.getValidationPlugin().setId(Long.valueOf(valPluginId));
         Integer genPluginId = JsonPath.read(resultAsString, "$.content.generationPlugin.id");
-        ingestProcessingChain.getGenerationPlugin().setId(new Long(genPluginId));
+        ingestProcessingChain.getGenerationPlugin().setId(Long.valueOf(genPluginId));
 
         RequestBuilderCustomizer putRequestBuilderCustomizer = customizer().expectStatusOk();
         putRequestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);

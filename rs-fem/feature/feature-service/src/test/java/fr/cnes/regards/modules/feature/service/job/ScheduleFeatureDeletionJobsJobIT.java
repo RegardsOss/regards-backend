@@ -75,7 +75,7 @@ public class ScheduleFeatureDeletionJobsJobIT extends AbstractFeatureMultitenant
         // No job should be scheduled
         Assert.assertEquals(
             "No PublishFeatureDeletionEventsJob should be scheduled as the feature selection should be empty",
-            new Long(0L),
+            Long.valueOf(0L),
             jobInfoService.retrieveJobsCount(PublishFeatureDeletionEventsJob.class.getName()));
         Thread.sleep(1_000);
         Assert.assertEquals("No deletion request event should be sent", 0, listener.getNumberOfRequests());
@@ -88,7 +88,7 @@ public class ScheduleFeatureDeletionJobsJobIT extends AbstractFeatureMultitenant
         }
         // As the number of features to handle is 100 and each job should handle 30 features, there should be 4 jobs scheduled
         Assert.assertEquals("There should be 100/regards.feature.deletion.notification.job.size jobs scheduled ",
-                            new Long(4L),
+                            Long.valueOf(4L),
                             jobInfoService.retrieveJobsCount(PublishFeatureDeletionEventsJob.class.getName(),
                                                              JobStatus.TO_BE_RUN,
                                                              JobStatus.QUEUED,

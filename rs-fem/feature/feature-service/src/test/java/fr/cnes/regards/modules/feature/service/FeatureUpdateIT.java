@@ -446,7 +446,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
                                                                                      PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
-        Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
+        Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         // Notify them
         List<FeatureUniformResourceName> urns = this.featureRepo.findAll()
@@ -460,14 +460,14 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
-        Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
+        Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.UPDATE,
                                                      FeatureRequestsSelectionDTO.build().withState(RequestState.ERROR),
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
-        Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
+        Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.UPDATE,
                                                      FeatureRequestsSelectionDTO.build()
@@ -477,7 +477,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(0, results.getContent().size());
         Assert.assertEquals(0, results.getTotalElements());
-        Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
+        Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
 
         results = this.featureRequestService.findAll(FeatureRequestTypeEnum.UPDATE,
                                                      FeatureRequestsSelectionDTO.build()
@@ -487,7 +487,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
                                                      PageRequest.of(0, 100));
         Assert.assertEquals(nbValid, results.getContent().size());
         Assert.assertEquals(nbValid, results.getTotalElements());
-        Assert.assertEquals(new Long(0), results.getInfo().getNbErrors());
+        Assert.assertEquals(Long.valueOf(0), results.getInfo().getNbErrors());
     }
 
     @Test

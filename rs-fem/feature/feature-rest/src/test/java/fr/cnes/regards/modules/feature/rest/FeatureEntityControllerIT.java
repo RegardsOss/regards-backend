@@ -204,7 +204,7 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
                            FeaturesSelectionDTO.build(),
                            requestBuilderCustomizer,
                            "Error during feature notification request");
-        Assert.assertEquals(new Long(1),
+        Assert.assertEquals(Long.valueOf(1),
                             jobInfoService.retrieveJobsCount(PublishFeatureNotificationJob.class.getName(),
                                                              JobStatus.QUEUED,
                                                              JobStatus.TO_BE_RUN,
@@ -222,7 +222,7 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
                              FeaturesSelectionDTO.build(),
                              requestBuilderCustomizer,
                              "Error during feature deltion request");
-        Assert.assertEquals(new Long(1),
+        Assert.assertEquals(Long.valueOf(1),
                             jobInfoService.retrieveJobsCount(ScheduleFeatureDeletionJobsJob.class.getName(),
                                                              JobStatus.QUEUED,
                                                              JobStatus.TO_BE_RUN,

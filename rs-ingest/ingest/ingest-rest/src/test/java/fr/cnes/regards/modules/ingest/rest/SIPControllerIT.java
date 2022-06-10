@@ -333,7 +333,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                            Paths.get(fileName).getFileName().toString(),
                            "MD5",
                            "b463726cfbb52d47e432bedf08edbec3",
-                           new Long(12345));
+                           Long.valueOf(12345));
         sip.withSyntax("FITS(FlexibleImageTransport)",
                        "http://www.iana.org/assignments/media-types/application/fits",
                        MediaType.valueOf("application/fits"));
