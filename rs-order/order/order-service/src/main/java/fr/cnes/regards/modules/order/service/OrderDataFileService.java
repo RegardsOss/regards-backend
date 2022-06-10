@@ -68,6 +68,8 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderDataFileService.class);
 
+    private final Set<String> noProxyHosts = Sets.newHashSet();
+
     private IOrderDataFileRepository orderDataFileRepository;
 
     private IOrderJobService orderJobService;
@@ -95,8 +97,6 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
 
     private Proxy proxy;
 
-    private final Set<String> noProxyHosts = Sets.newHashSet();
-
     public OrderDataFileService(IOrderDataFileRepository orderDataFileRepository,
                                 IOrderJobService orderJobService,
                                 IOrderDataFileService orderDataFileService,
@@ -113,6 +113,13 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
         this.storageClient = storageClient;
         this.authResolver = authResolver;
         this.processingEventSender = processingEventSender;
+    }
+
+    private static MediaType asMediaType(MimeType mimeType) {
+        if (mimeType instanceof MediaType mediaType) {
+            return mediaType;
+        }
+        return new MediaType(mimeType.getType(), mimeType.getSubtype(), mimeType.getParameters());
     }
 
     @Override
@@ -392,7 +399,11 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
             long totalSize = totalSizeMap.get(order.getId());
             long treatedSize = treatedSizeMap.getOrDefault(order.getId(), 0L);
             int previousPercentCompleted = order.getPercentCompleted();
-            order.setPercentCompleted((int) Math.floorDiv(100L * treatedSize, totalSize));
+            if (totalSize > 0) {
+                order.setPercentCompleted((int) Math.floorDiv(100L * treatedSize, totalSize));
+            } else {
+                order.setPercentCompleted(100);
+            }
             long errorCount = errorCountMap.getOrDefault(order.getId(), 0L)
                               + processErrorCountMap.getOrDefault(order.getId(), 0L);
             order.setFilesInErrorCount((int) errorCount);
@@ -442,12 +453,5 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
     @Override
     public boolean hasDownloadErrors(Long orderId) {
         return orderDataFileRepository.countByOrderIdAndStateIn(orderId, FileState.DOWNLOAD_ERROR) > 0L;
-    }
-
-    private static MediaType asMediaType(MimeType mimeType) {
-        if (mimeType instanceof MediaType) {
-            return (MediaType) mimeType;
-        }
-        return new MediaType(mimeType.getType(), mimeType.getSubtype(), mimeType.getParameters());
     }
 }
