@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.integration.test.job.JobTestCleaner;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -38,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.List;
@@ -48,6 +50,7 @@ import java.util.List;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(locations = { "classpath:application-test.properties" })
+@ContextConfiguration(classes = { AgentServiceUtilsConfiguration.class })
 public abstract class AbstractAgentServiceUtilsIT extends AbstractMultitenantServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAgentServiceUtilsIT.class);
@@ -98,6 +101,9 @@ public abstract class AbstractAgentServiceUtilsIT extends AbstractMultitenantSer
 
     @Autowired
     protected ISnapshotProcessRepository snapshotProcessRepo;
+
+    @Autowired
+    private JobTestCleaner jobTestCleaner;
 
     /**
      * Parameters
@@ -153,6 +159,7 @@ public abstract class AbstractAgentServiceUtilsIT extends AbstractMultitenantSer
     // -------------
     @After
     public void after() throws Exception {
+        jobTestCleaner.cleanJob();
         doAfter();
     }
 
@@ -186,6 +193,7 @@ public abstract class AbstractAgentServiceUtilsIT extends AbstractMultitenantSer
         do {
             count = this.stepPropertyRepo.count();
             now = System.currentTimeMillis();
+            LOGGER.info("{} / {} step properties", count, nbEvents);
             if (count != nbEvents) {
                 Thread.sleep(5000L);
             }
@@ -219,6 +227,7 @@ public abstract class AbstractAgentServiceUtilsIT extends AbstractMultitenantSer
         LOGGER.info("Waiting for jobs to be in success state ...");
         do {
             count = jobInfoService.retrieveJobsCount(jobName, JobStatus.SUCCEEDED);
+            LOGGER.info("{} / {} jobs SUCCEEDED ({})", count, nbJobs, jobName);
             now = System.currentTimeMillis();
             if (count != nbJobs) {
                 Thread.sleep(5000L);

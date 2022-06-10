@@ -3,6 +3,8 @@ package fr.cnes.regards.framework.modules.jobs.service;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 
+import java.util.UUID;
+import java.util.concurrent.Future;
 import java.util.concurrent.RunnableFuture;
 
 /**
@@ -20,7 +22,7 @@ public interface IJobService {
      * This method is called asynchronously and never ends.
      * It listen for jobs to be executed on all tenants
      */
-    void manage();
+    Future<Void> manage();
 
     /**
      * Scheduled method to update all current running jobs completions values into database

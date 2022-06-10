@@ -8,6 +8,9 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * Job initializer.
  * This component is used to launch job service as a daemon.
@@ -23,9 +26,38 @@ public class JobInitializer {
     @Autowired
     private IJobService jobService;
 
+    /**
+     * During tests, {@link ApplicationReadyEvent} is received several times by this listener.
+     * Avoid re-running initialization as it is not re-entering.
+     */
+    private static AtomicReference<Future<Void>> jobManager = new AtomicReference<>();
+
     @EventListener
     public void onApplicationEvent(ApplicationReadyEvent event) {
+        // Ensure only one daemon is running at the same time
+        jobManager.getAndUpdate(this::createOrReplaceJobManager);
+    }
+
+    /**
+     * Designed to be used during test, kills the job manager task that pulls runnable jobs
+     */
+    public void killJobManager() {
+        jobManager.getAndUpdate(this::killJobManager);
+    }
+
+    private Future<Void> killJobManager(Future<Void> existingJobManagerFuture) {
+        LOGGER.info("[JOB INITIALIZER] Killing job manager.");
+        if (existingJobManagerFuture != null) {
+            existingJobManagerFuture.cancel(true);
+        }
+        return null;
+    }
+
+    private Future<Void> createOrReplaceJobManager(Future<Void> existingJobManagerFuture) {
         LOGGER.info("[JOB INITIALIZER] Start job manager.");
-        jobService.manage();
+        if (existingJobManagerFuture != null) {
+            existingJobManagerFuture.cancel(true);
+        }
+        return jobService.manage();
     }
 }

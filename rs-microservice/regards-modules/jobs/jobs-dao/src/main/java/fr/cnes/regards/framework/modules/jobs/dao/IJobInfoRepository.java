@@ -23,14 +23,12 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.Lock;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import javax.persistence.LockModeType;
+import javax.persistence.QueryHint;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -45,6 +43,12 @@ import java.util.UUID;
 public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
 
     /**
+     * "The lock acquisition request skips the already locked rows.
+     * It uses a SELECT …​ FOR UPDATE SKIP LOCKED in PostgreSQL 9.5
+     */
+    String UPGRADE_SKIPLOCKED = "-2";
+
+    /**
      * @param status the {@link JobStatus} to used for the request
      * @return a list of {@link JobInfo}
      */
@@ -52,6 +56,7 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
 
     // Do not use entity graph it makes max computation into memory
     @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value = UPGRADE_SKIPLOCKED)})
     JobInfo findFirstByStatusStatusOrderByPriorityDesc(JobStatus status);
 
     default JobInfo findHighestPriorityQueued() {

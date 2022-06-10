@@ -28,6 +28,7 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -35,10 +36,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.RunnableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * IJObService implementation
@@ -55,7 +53,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
     /**
      * A BiMap between job id (UUID) and Job (Runnable, in fact RunnableFuture&lt;Void>)
      */
-    private final BiMap<JobInfo, RunnableFuture<Void>> jobsMap = Maps.synchronizedBiMap(HashBiMap.create());
+    private static final BiMap<JobInfo, RunnableFuture<Void>> jobsMap = Maps.synchronizedBiMap(HashBiMap.create());
 
     /**
      * A set containing ids of Jobs asked to be stopped whereas they haven't still be launched
@@ -136,7 +134,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
     @Override
     @EventListener
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(StopJobEvent.class, new StopJobHandler());
+        subscriber.subscribeTo(StopJobEvent.class, new StopJobHandler(this, runtimeTenantResolver));
     }
 
     /**
@@ -145,43 +143,52 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
      */
     @Override
     @Async
-    public void manage() {
+    public Future<Void> manage() {
         // To avoid starvation, loop on each tenant before executing jobs
         while (canManage) {
             boolean noJobAtAll = true;
-            for (String tenant : tenantResolver.getAllActiveTenants()) {
-                runtimeTenantResolver.forceTenant(tenant);
-                // Wait for availability of pool if it is overbooked
-                while (threadPool.getActiveCount() >= threadPool.getMaximumPoolSize()) {
-                    try {
-                        Thread.sleep(scanDelay);
-                    } catch (InterruptedException e) {
-                        LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
-                                     + "of the end, pray for your soul", e);
+            try {
+                if (!threadPool.isShutdown()) {
+                    for (String tenant : tenantResolver.getAllActiveTenants()) {
+                        runtimeTenantResolver.forceTenant(tenant);
+                        // Wait for availability of pool if it is overbooked
+                        while (threadPool.getActiveCount() >= threadPool.getMaximumPoolSize()) {
+                            Thread.sleep(scanDelay);
+                        }
+                        // Find highest priority job to execute
+                        JobInfo jobInfo = jobInfoService.findHighestPriorityQueuedJobAndSetAsToBeRun();
+                        if (jobInfo != null) {
+                            LOGGER.debug("Job found {}", jobInfo.getId());
+                            noJobAtAll = false;
+                            jobInfo.setTenant(tenant);
+                            this.execute(jobInfo);
+                        } else {
+                            LOGGER.debug("No job to run yet");
+                        }
                     }
                 }
-                // Find highest priority job to execute
-                try {
-                    JobInfo jobInfo = jobInfoService.findHighestPriorityQueuedJobAndSetAsToBeRun();
-                    if (jobInfo != null) {
-                        noJobAtAll = false;
-                        jobInfo.setTenant(tenant);
-                        this.execute(jobInfo);
-                    }
-                } catch (RuntimeException e) {
-                    LOGGER.warn("Database access problem, skipping and will try later...", e);
-                }
-            }
-            if (noJobAtAll) {
-                // No job to execute on any tenants, take a rest
-                try {
+                if (noJobAtAll) {
+                    // No job to execute on any tenants, take a rest
                     Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
+                }
+            } catch (InterruptedException e) {
+                LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
                                  + "of the end, pray for your soul", e);
+                break;
+            } catch (Exception e) {
+                LOGGER.warn("Unexpected error occurred on service poller, ignoring error.", e);
+                try {
+                    // Wait a little bit before trying again
+                    Thread.sleep(1000);
+                } catch (InterruptedException ie) {
+                    LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
+                                     + "of the end, pray for your soul", ie);
+                    break;
                 }
             }
         }
+        LOGGER.warn("Job service puller just died");
+        return new AsyncResult<>(null);
     }
 
     /**
@@ -344,13 +351,17 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                 case RUNNING:
                     // Check if current microservice is running this job
                     if (jobsMap.containsKey(jobInfo)) {
+                        LOGGER.info("Aborting running job {}", jobId);
                         RunnableFuture<Void> task = jobsMap.get(jobInfo);
                         task.cancel(true);
+                    } else {
+                        LOGGER.debug("Event received to abort the running job {}, but this job is not running on this instance", jobId);
                     }
                     break;
                 case PENDING: // even a PENDING Job must be set at ABORTED status to avoid a third party service to
                     // set it at QUEUED
                 case QUEUED:
+                    // TODO add a lock service
                     // Update to ABORTED status (this avoids this job to be taken into account)
                     jobInfo.updateStatus(JobStatus.ABORTED);
                     jobInfoService.save(jobInfo);
@@ -366,13 +377,14 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
         }
     }
 
-    private class StopJobHandler implements IHandler<StopJobEvent> {
+    private record StopJobHandler(JobService jobService, IRuntimeTenantResolver runtimeTenantResolver)
+        implements IHandler<StopJobEvent> {
 
         @Override
         public void handle(TenantWrapper<StopJobEvent> wrapper) {
             if (wrapper.getContent() != null) {
                 runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                JobService.this.abort(wrapper.getContent().getJobId());
+                jobService.abort(wrapper.getContent().getJobId());
             }
         }
     }

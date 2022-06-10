@@ -26,7 +26,10 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
@@ -126,8 +129,10 @@ public class XmlReportTest {
     public void testXlsx() {
         String filename = "requirements.xlsx";
         try {
-            XlsxHelper.write(Paths.get("target", filename), reqs_, "dam");
-        } catch (ReportException e) {
+            Path requirementFile = Paths.get("target", filename);
+            Files.deleteIfExists(requirementFile);
+            XlsxHelper.write(requirementFile, reqs_, "dam");
+        } catch (ReportException | IOException e) {
             Assert.fail();
         }
     }

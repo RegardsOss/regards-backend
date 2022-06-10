@@ -22,16 +22,18 @@ import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import org.awaitility.Awaitility;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Another copy of JobTestCleaner as we cannot use the official test utils without making circular dependency
@@ -55,32 +57,24 @@ public class JobTestCleaner {
     @Autowired
     private IJobService jobService;
 
+    @Autowired
+    private ApplicationEventPublisher springPublisher;
+
     /**
      * This methods will suspend all running jobs in the ThreadPool
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void cleanJob() {
         abortQueuedJobs();
-        killRunningJobs();
         // Clean and restart the job scheduler
         jobService.cleanAndRestart();
     }
 
-    /**
-     * Stop every RUNNING job
-     */
-    private void killRunningJobs() {
-        // Kill, as a gentlemen, all running Job.
-        List<JobInfo> jobToKills = jobInfoRepository.findAllByStatusStatus(JobStatus.RUNNING);
-        for (JobInfo jobToKill : jobToKills) {
-            LOGGER.info("Stopping one job of type {}", jobToKill.getClassName());
-            jobInfoService.stopJob(jobToKill.getId());
-        }
-        String currentTenant = runtimeTenantResolver.getTenant();
-        Awaitility.await().atMost(1, TimeUnit.MINUTES).until(() -> {
-            runtimeTenantResolver.forceTenant(currentTenant);
-            return jobInfoRepository.countByStatusStatusIn(JobStatus.RUNNING) == 0;
-        });
+    public void startJobManager() {
+        springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class),
+                                                               null,
+                                                               null,
+                                                               null));
     }
 
     /**

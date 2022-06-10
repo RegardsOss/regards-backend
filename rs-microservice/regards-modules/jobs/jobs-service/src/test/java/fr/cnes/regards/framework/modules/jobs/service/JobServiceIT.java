@@ -1,5 +1,6 @@
 package fr.cnes.regards.framework.modules.jobs.service;
 
+import com.google.common.collect.BiMap;
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -15,22 +16,21 @@ import fr.cnes.regards.framework.modules.jobs.task.JobInfoTaskScheduler;
 import fr.cnes.regards.framework.modules.jobs.test.JobTestConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.util.JUnitLogRule;
+import org.assertj.core.util.Lists;
 import org.awaitility.Awaitility;
 import org.junit.*;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -46,15 +46,20 @@ public class JobServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JobServiceIT.class);
 
-    private static Set<UUID> runnings = Collections.synchronizedSet(new HashSet<>());
+    private static final Set<UUID> runnings = Collections.synchronizedSet(new HashSet<>());
 
-    private static Set<UUID> succeededs = Collections.synchronizedSet(new HashSet<>());
+    private static final Set<UUID> succeededs = Collections.synchronizedSet(new HashSet<>());
 
-    private static Set<UUID> aborteds = Collections.synchronizedSet(new HashSet<>());
+    private static final Set<UUID> aborteds = Collections.synchronizedSet(new HashSet<>());
 
-    private static Set<UUID> faileds = Collections.synchronizedSet(new HashSet<>());
+    private static final Set<UUID> faileds = Collections.synchronizedSet(new HashSet<>());
 
     private final JobHandler jobHandler = new JobHandler();
+
+    @Autowired
+    private IJobService jobService;
+
+    private BiMap<JobInfo, RunnableFuture<Void>> jobsMap;
 
     @Autowired
     private IJobInfoService jobInfoService;
@@ -88,9 +93,6 @@ public class JobServiceIT {
     @Autowired
     private Gson gson;
 
-    @Autowired
-    private ApplicationEventPublisher springPublisher;
-
     @Before
     public void setUp() {
         GsonUtil.setGson(gson);
@@ -102,10 +104,9 @@ public class JobServiceIT {
             subscriber.subscribeTo(JobEvent.class, jobHandler);
             subscriptionsDone = true;
         }
-        springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class),
-                                                               null,
-                                                               null,
-                                                               null));
+
+        jobsMap = (BiMap<JobInfo, RunnableFuture<Void>>) ReflectionTestUtils.getField(jobService, "jobsMap");
+        jobTestCleaner.startJobManager();
     }
 
     @After
@@ -117,24 +118,29 @@ public class JobServiceIT {
     public void testSucceeded() {
         JobInfo waitJobInfo = jobServiceJobCreator.createWaitJob(500L, 1, 10);
         waitJobInfo = jobInfoService.createAsQueued(waitJobInfo);
+        UUID jobInfoId = waitJobInfo.getId();
 
         // Wait for job to terminate
         Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
             tenantResolver.forceTenant(TENANT);
-            return jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED).size() == 1;
+            return jobInfoRepos.countByStatusStatusIn(JobStatus.SUCCEEDED) == 1 && succeededs.contains(jobInfoId);
         });
-        Assert.assertTrue(runnings.contains(waitJobInfo.getId()));
-        Assert.assertTrue(succeededs.contains(waitJobInfo.getId()));
+        Assert.assertTrue(runnings.contains(jobInfoId));
+        Assert.assertTrue(succeededs.contains(jobInfoId));
     }
 
     @Test
-    public void testAbortion() {
-        JobInfo waitJobInfo = jobServiceJobCreator.createWaitJob(1000L, 3, 10);
+    public void testAbortion() throws InterruptedException {
+        JobInfo waitJobInfo = jobServiceJobCreator.createWaitJob(1000L, 300, 10);
         jobInfoService.createAsQueued(waitJobInfo);
         UUID jobInfoId = waitJobInfo.getId();
 
-        jobInfoService.stopJob(jobInfoId);
+        // TODO: This is not safe to stop a job while it's starting (see beforeExecute and afterExecute)
+        // Wait jobs running in thread pool
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> jobsMap.containsKey(waitJobInfo));
+
         LOGGER.info("ASK for " + jobInfoId + " TO BE STOPPED");
+        jobInfoService.stopJob(jobInfoId);
         Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> aborteds.contains(jobInfoId));
 
         Assert.assertFalse(succeededs.contains(jobInfoId));
@@ -147,7 +153,14 @@ public class JobServiceIT {
         jobInfoService.createAsQueued(waitJobInfo);
         UUID jobInfoId = waitJobInfo.getId();
 
+        // Wait jobs running in thread pool
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> jobsMap.containsKey(waitJobInfo));
+
         Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> runnings.contains(jobInfoId));
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
+            tenantResolver.forceTenant(TENANT);
+            return jobInfoRepos.countByStatusStatusIn(JobStatus.RUNNING) == 1;
+        });
         LOGGER.info("ASK for " + jobInfoId + " TO BE STOPPED");
         jobInfoService.stopJob(jobInfoId);
 
@@ -164,16 +177,17 @@ public class JobServiceIT {
         failedJobInfo.setClassName(FailedAfter1sJob.class.getName());
         failedJobInfo = jobInfoService.createAsQueued(failedJobInfo);
 
-        LOGGER.info("Failed job : {}", failedJobInfo.getId());
+        UUID failedJobId = failedJobInfo.getId();
+        LOGGER.info("Failed job : {}", failedJobId);
         // Wait for job to terminate
         Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
             tenantResolver.forceTenant(TENANT);
-            return jobInfoRepos.findAllByStatusStatus(JobStatus.FAILED).size() == 1;
+            return jobInfoRepos.findAllByStatusStatus(JobStatus.FAILED).size() == 1 && faileds.contains(failedJobId);
         });
 
-        Assert.assertTrue(runnings.contains(failedJobInfo.getId()));
-        Assert.assertFalse(succeededs.contains(failedJobInfo.getId()));
-        Assert.assertTrue(faileds.contains(failedJobInfo.getId()));
+        Assert.assertTrue(runnings.contains(failedJobId));
+        Assert.assertFalse(succeededs.contains(failedJobId));
+        Assert.assertTrue(faileds.contains(failedJobId));
     }
 
     @Test
@@ -193,41 +207,15 @@ public class JobServiceIT {
         Optional<JobInfo> jobNotToBeTriggeredNotUpdated = jobInfoRepos.findById(jobNotToBeTriggered.getId());
         Assert.assertTrue("jobToBeTriggered should be present", jobToBeTriggeredUpdated.isPresent());
         Assert.assertTrue("jobNotToBeTriggered should be present", jobNotToBeTriggeredNotUpdated.isPresent());
+        Collection<JobStatus> jobStatusesValid = Lists.newArrayList(JobStatus.QUEUED,
+                                                                    JobStatus.TO_BE_RUN,
+                                                                    JobStatus.RUNNING,
+                                                                    JobStatus.SUCCEEDED);
         Assert.assertTrue("Unexpected jobToBeTriggered status",
-                          jobToBeTriggeredUpdated.get().getStatus().getStatus().equals(JobStatus.QUEUED)
-                          || jobToBeTriggeredUpdated.get().getStatus().getStatus().equals(JobStatus.TO_BE_RUN));
+                          jobStatusesValid.contains(jobToBeTriggeredUpdated.get().getStatus().getStatus()));
         Assert.assertEquals("Unexpected jobNotToBeTriggered status",
                             JobStatus.PENDING,
                             jobNotToBeTriggeredNotUpdated.get().getStatus().getStatus());
-    }
-
-    @Test
-    public void testPool() {
-        // Create 6 waitJob
-        JobInfo[] jobInfos = jobServiceJobCreator.runWaitJobs();
-
-        // Wait to be sure jobs are treated by pool
-        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
-            tenantResolver.forceTenant(TENANT);
-            // Only poolSize jobs should be runnings
-            return jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED).size() == jobInfos.length;
-        });
-        // Retrieve all jobs
-        List<JobInfo> results = new ArrayList<>(jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED));
-        // sort by startDate to make sure the top priority jobs were executed first
-        results.sort(Comparator.comparing(j -> j.getStatus().getStartDate()));
-        LOGGER.info(results.toString());
-        int lastPriority = -1;
-        for (JobInfo job : results) {
-            LOGGER.info("Job {} start date at {} with priority {}",
-                        job.getId(),
-                        job.getStatus().getStartDate(),
-                        job.getPriority());
-            if (lastPriority != -1) {
-                Assert.assertTrue("The jobs were not launched by top priority", job.getPriority() <= lastPriority);
-            }
-            lastPriority = job.getPriority();
-        }
     }
 
     @Test
@@ -241,7 +229,7 @@ public class JobServiceIT {
         // Wait for job to terminate
         Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
             tenantResolver.forceTenant(TENANT);
-            return jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED).size() == 1;
+            return jobInfoRepos.countByStatusStatusIn(JobStatus.SUCCEEDED) == 1;
         });
     }
 

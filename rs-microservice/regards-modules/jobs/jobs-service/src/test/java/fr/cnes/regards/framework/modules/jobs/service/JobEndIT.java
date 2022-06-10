@@ -6,15 +6,12 @@ import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.*;
 import fr.cnes.regards.framework.modules.jobs.test.JobTestConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import fr.cnes.regards.framework.test.util.JUnitLogRule;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -27,7 +24,6 @@ import java.util.Map;
  * @author oroussel
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = TestApplication.class)
 @ContextConfiguration(classes = { JobTestConfiguration.class })
 public class JobEndIT {
 
@@ -48,17 +44,25 @@ public class JobEndIT {
     @Autowired
     private Gson gson;
 
+    @Rule
+    public JUnitLogRule rule = new JUnitLogRule();
+
+    @Autowired
+    private JobTestCleaner jobTestCleaner;
+
     @Before
     public void setUp() {
         GsonUtil.setGson(gson);
 
         tenantResolver.forceTenant(TENANT);
+        jobTestCleaner.startJobManager();
     }
 
     @After
     public void tearDown() {
         tenantResolver.forceTenant(TENANT);
         jobInfoRepos.deleteAll();
+        jobTestCleaner.cleanJob();
     }
 
     @Test
