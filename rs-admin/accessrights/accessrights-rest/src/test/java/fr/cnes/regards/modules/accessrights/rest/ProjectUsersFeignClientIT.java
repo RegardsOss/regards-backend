@@ -22,14 +22,13 @@ import com.google.gson.Gson;
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.QuotaHelperService;
@@ -43,6 +42,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
@@ -103,14 +103,16 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     /**
      * Check that the accounts Feign Client can retrieve all accounts.
      */
-    @Ignore
     @Test
     public void retrieveProjectUserListFromFeignClient() {
-        final ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response = client.retrieveProjectUserList(null,
+        final ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response = client.retrieveProjectUserList(new ProjectUserSearchParameters(),
                                                                                                              PageRequest.of(
                                                                                                                  0,
-                                                                                                                 10));
-        Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
+                                                                                                                 10,
+                                                                                                                 Sort.by(
+                                                                                                                     "id",
+                                                                                                                     "email")));
+        Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     /**
@@ -120,7 +122,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     public void retrieveAccessRequestListFromFeignClient() {
         final ResponseEntity<PagedModel<EntityModel<ProjectUser>>> response = client.retrieveAccessRequestList(
             PageRequest.of(0, 10));
-        Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
+        Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     /**
@@ -129,7 +131,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     @Test
     public void retrieveProjectUserByEmailFromFeignClient() {
         final ResponseEntity<EntityModel<ProjectUser>> response = client.retrieveProjectUserByEmail("unkown@regards.de");
-        Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
+        Assert.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     /**
@@ -139,7 +141,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     @Test
     public void retrieveProjectUserFromFeignClient() {
         final ResponseEntity<EntityModel<ProjectUser>> response = client.retrieveProjectUser(1L);
-        Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
+        Assert.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     /**
@@ -148,15 +150,11 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     @Test
     public void removeProjectUserFromFeignClient() {
         final ResponseEntity<Void> response = client.removeProjectUser(150L);
-        Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
+        Assert.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     /**
      * Check that the accounts Feign Client can retrieve all accounts.
-     *
-     * @throws EntityException
-     * @throws EntityInvalidException
-     * @throws EntityAlreadyExistsException
      */
     @Test
     @Ignore
@@ -175,8 +173,8 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
 
         projectUserService.createProjectUser(accessRequest);
         final ResponseEntity<Boolean> response = client.isAdmin("test@c-s.fr");
-        Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
-        Assert.assertTrue(response.getBody());
+        Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assert.assertEquals(Boolean.TRUE, response.getBody());
     }
 
     @Override

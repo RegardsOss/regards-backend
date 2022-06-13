@@ -34,6 +34,7 @@ import io.github.resilience4j.feign.Resilience4jFeign;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -92,9 +93,9 @@ public class FeignClientConfiguration {
     @Bean
     public Encoder getEncoder(@Autowired(required = false) Gson pGson) {
         if (pGson != null) {
-            return new GsonEncoder(pGson);
+            return new PageableSpringEncoder(new GsonEncoder(pGson));
         }
-        return new GsonEncoder();
+        return new PageableSpringEncoder(new GsonEncoder());
     }
 
     /**

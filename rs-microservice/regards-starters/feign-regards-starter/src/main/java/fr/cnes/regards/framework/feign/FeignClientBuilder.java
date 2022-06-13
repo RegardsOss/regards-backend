@@ -25,6 +25,7 @@ import feign.gson.GsonEncoder;
 import feign.jaxb.JAXBContextFactory;
 import feign.jaxb.JAXBDecoder;
 import feign.jaxb.JAXBEncoder;
+import org.springframework.cloud.openfeign.support.PageableSpringEncoder;
 import org.springframework.cloud.openfeign.support.PageableSpringQueryMapEncoder;
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 
@@ -50,7 +51,7 @@ public final class FeignClientBuilder {
     public static <T> T build(final Target<T> pTarget) {
         return Feign.builder() // Feign customization
                     .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 600000, TimeUnit.MILLISECONDS, false))
-                    .encoder(new GsonEncoder())
+                    .encoder(new PageableSpringEncoder(new GsonEncoder()))
                     .decoder(new ResponseEntityDecoder(new GsonDecoder()))
                     .queryMapEncoder(new PageableSpringQueryMapEncoder())
                     .errorDecoder(new ClientErrorDecoder())
@@ -68,7 +69,7 @@ public final class FeignClientBuilder {
     public static <T> T build(final Target<T> pTarget, Gson gson) {
         return Feign.builder() // Feign customization
                     .options(new Request.Options(5000, TimeUnit.MILLISECONDS, 600000, TimeUnit.MILLISECONDS, false))
-                    .encoder(new GsonEncoder(gson))
+                    .encoder(new PageableSpringEncoder(new GsonEncoder(gson)))
                     .decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
                     .queryMapEncoder(new PageableSpringQueryMapEncoder())
                     .errorDecoder(new ClientErrorDecoder())

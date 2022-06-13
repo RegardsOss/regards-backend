@@ -37,7 +37,6 @@ import fr.cnes.regards.modules.feature.dto.PriorityLevel;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.job.PublishFeatureNotificationJob;
 import fr.cnes.regards.modules.feature.service.job.ScheduleFeatureDeletionJobsJob;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -57,17 +56,23 @@ import java.util.stream.Collectors;
 @MultitenantTransactional
 public class FeatureService implements IFeatureService {
 
-    @Autowired
-    private IFeatureSimpleEntityRepository featureSimpleEntityRepository;
+    private final IFeatureSimpleEntityRepository featureSimpleEntityRepository;
 
-    @Autowired
-    private IFeatureEntityWithDisseminationRepository featureWithDisseminationRepo;
+    private final IFeatureEntityWithDisseminationRepository featureWithDisseminationRepo;
 
-    @Autowired
-    private IAuthenticationResolver authResolver;
+    private final IAuthenticationResolver authResolver;
 
-    @Autowired
-    private IJobInfoService jobInfoService;
+    private final IJobInfoService jobInfoService;
+
+    public FeatureService(IFeatureSimpleEntityRepository featureSimpleEntityRepository,
+                          IFeatureEntityWithDisseminationRepository featureWithDisseminationRepo,
+                          IAuthenticationResolver authResolver,
+                          IJobInfoService jobInfoService) {
+        this.featureSimpleEntityRepository = featureSimpleEntityRepository;
+        this.featureWithDisseminationRepo = featureWithDisseminationRepo;
+        this.authResolver = authResolver;
+        this.jobInfoService = jobInfoService;
+    }
 
     @Override
     public Page<FeatureEntityDto> findAll(FeaturesSelectionDTO selection, Pageable page) {
@@ -79,11 +84,12 @@ public class FeatureService implements IFeatureService {
             page), page);
         List<FeatureEntity> entities = featureWithDisseminationRepo.findByUrnIn(simpleEntities.stream()
                                                                                               .map(FeatureSimpleEntity::getUrn)
-                                                                                              .collect(Collectors.toSet()));
+                                                                                              .collect(Collectors.toSet()),
+                                                                                simpleEntities.getSort());
         List<FeatureEntityDto> elements = entities.stream()
                                                   .map(entity -> initDataObjectFeature(entity,
                                                                                        selection.getFilters().isFull()))
-                                                  .collect(Collectors.toList());
+                                                  .toList();
         return new PageImpl<>(elements, page, simpleEntities.getTotalElements());
     }
 

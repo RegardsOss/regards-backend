@@ -25,6 +25,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -66,8 +67,6 @@ public class FeatureEntityDto {
     public static FeatureEntityDto build(String source,
                                          String session,
                                          Feature feature,
-                                         FeatureUniformResourceName previousVersionUrn,
-                                         String model,
                                          String providerId,
                                          Integer version,
                                          OffsetDateTime lastUpdate) {
@@ -159,5 +158,47 @@ public class FeatureEntityDto {
 
     public void setDisseminationsInfo(Set<FeatureDisseminationInfoDto> disseminationsInfo) {
         this.disseminationsInfo = disseminationsInfo;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        FeatureEntityDto that = (FeatureEntityDto) o;
+
+        if (disseminationPending != that.disseminationPending)
+            return false;
+        if (!id.equals(that.id))
+            return false;
+        if (!urn.equals(that.urn))
+            return false;
+        if (!source.equals(that.source))
+            return false;
+        if (!session.equals(that.session))
+            return false;
+        if (!providerId.equals(that.providerId))
+            return false;
+        if (!version.equals(that.version))
+            return false;
+        if (!Objects.equals(feature, that.feature))
+            return false;
+        return Objects.equals(disseminationsInfo, that.disseminationsInfo);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id.hashCode();
+        result = 31 * result + urn.hashCode();
+        result = 31 * result + source.hashCode();
+        result = 31 * result + session.hashCode();
+        result = 31 * result + providerId.hashCode();
+        result = 31 * result + version.hashCode();
+        result = 31 * result + (feature != null ? feature.hashCode() : 0);
+        result = 31 * result + (disseminationPending ? 1 : 0);
+        result = 31 * result + (disseminationsInfo != null ? disseminationsInfo.hashCode() : 0);
+        return result;
     }
 }

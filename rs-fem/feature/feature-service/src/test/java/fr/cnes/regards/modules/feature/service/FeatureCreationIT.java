@@ -191,7 +191,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
 
     @Test
     @Purpose("Check feature creation with files to store with storage microservice")
-    public void testCreationRequestWithFileToStore() throws InterruptedException {
+    public void testCreationRequestWithFileToStore() {
         // Init creation request
         List<FeatureCreationRequestEvent> events = super.initFeatureCreationRequestEvent(1, true, false);
         // Remove files to add a custom one
@@ -223,17 +223,16 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         FeatureEntity feature = featureRepo.findAll().get(0);
         // Check feature in db is valid and contains not stored information about file location
         Assert.assertEquals(1L, feature.getFeature().getFiles().size());
-        Assert.assertEquals(1L, feature.getFeature().getFiles().get(0).getLocations().stream().count());
-        Assert.assertNull(feature.getFeature()
-                                 .getFiles()
-                                 .get(0)
-                                 .getLocations()
-                                 .stream()
-                                 .findFirst()
-                                 .get()
-                                 .getStorage());
-        Assert.assertEquals(location.getUrl(),
-                            feature.getFeature().getFiles().get(0).getLocations().stream().findFirst().get().getUrl());
+        Assert.assertEquals(1L, feature.getFeature().getFiles().get(0).getLocations().size());
+        FeatureFileLocation firstFeatureFirstFileLocation = feature.getFeature()
+                                                                   .getFiles()
+                                                                   .get(0)
+                                                                   .getLocations()
+                                                                   .stream()
+                                                                   .findFirst()
+                                                                   .orElseThrow();
+        Assert.assertNull(firstFeatureFirstFileLocation.getStorage());
+        Assert.assertEquals(location.getUrl(), firstFeatureFirstFileLocation.getUrl());
 
         // Simulate an update request on the newly created (but not terminated) feature
         List<FeatureUpdateRequestEvent> updates = prepareUpdateRequests(Lists.newArrayList(feature.getUrn()));
@@ -243,32 +242,26 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
 
         // Update request cannot be scheduled as a creation request is still pending
         // Wait for delay before requests can be scheduled.
-        Thread.sleep((properties.getDelayBeforeProcessing() + 1) * 1000);
+        long now = System.currentTimeMillis();
+        long waitTime = (properties.getDelayBeforeProcessing() + 1) * 1000L;
+        Awaitility.await().until(() -> System.currentTimeMillis() - now >= waitTime);
         Assert.assertEquals(0L, this.featureUpdateService.scheduleRequests());
 
         // Simulate result from storage
         mockStorageHelper.mockFeatureUpdateStorageSuccess();
         feature = featureRepo.findAll().get(0);
+        firstFeatureFirstFileLocation = feature.getFeature()
+                                               .getFiles()
+                                               .get(0)
+                                               .getLocations()
+                                               .stream()
+                                               .findFirst()
+                                               .orElseThrow();
         // Check feature file location has been updated to add the storage location and to change url
         Assert.assertEquals(1L, feature.getFeature().getFiles().size());
-        Assert.assertEquals(1L, feature.getFeature().getFiles().get(0).getLocations().stream().count());
-        Assert.assertNotNull(feature.getFeature()
-                                    .getFiles()
-                                    .get(0)
-                                    .getLocations()
-                                    .stream()
-                                    .findFirst()
-                                    .get()
-                                    .getStorage());
-        Assert.assertNotEquals(location.getUrl(),
-                               feature.getFeature()
-                                      .getFiles()
-                                      .get(0)
-                                      .getLocations()
-                                      .stream()
-                                      .findFirst()
-                                      .get()
-                                      .getUrl());
+        Assert.assertEquals(1L, feature.getFeature().getFiles().get(0).getLocations().size());
+        Assert.assertNotNull(firstFeatureFirstFileLocation.getStorage());
+        Assert.assertNotEquals(location.getUrl(), firstFeatureFirstFileLocation.getUrl());
 
         FeatureCreationRequest request = featureCreationRequestRepo.findAll().get(0);
         Assert.assertNotNull(request);
@@ -453,7 +446,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         List<List<NotificationRequestEvent>> value = recordsCaptor.getAllValues()
                                                                   .stream()
                                                                   .filter(list -> list.get(0) instanceof NotificationRequestEvent)
-                                                                  .collect(Collectors.toList());
+                                                                  .toList();
         assertEquals(1, value.size());
         assertEquals(properties.getMaxBulkSize().intValue(), value.get(0).size());
 
@@ -603,7 +596,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
                                                                            .stream()
                                                                            .filter(r -> r.getStep()
                                                                                         != FeatureRequestStep.LOCAL_DELAYED)
-                                                                           .collect(Collectors.toList());
+                                                                           .toList();
         Assert.assertEquals(properties.getMaxBulkSize().intValue(), scheduled.size());
 
         int highPriorityNumber = 0;
@@ -626,9 +619,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
     @Test
     public void testCreationWithURN() {
         // Given
-        FeatureCreationRequestEvent featureCreationRequestEvent = createFeatureCreationRequestEvent("ùlajzlke",
-                                                                                                    1,
-                                                                                                    false);
+        FeatureCreationRequestEvent featureCreationRequestEvent = createFeatureCreationRequestEvent(1, false);
         // When
         RequestInfo<String> requestInfo = featureCreationService.registerRequests(Collections.singletonList(
             featureCreationRequestEvent));
@@ -642,12 +633,12 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
     @Test
     public void testCreationWithExistingURN() {
         // Given
-        FeatureCreationRequestEvent event1 = createFeatureCreationRequestEvent("ùlajzlke", 1, false);
+        FeatureCreationRequestEvent event1 = createFeatureCreationRequestEvent(1, false);
         featureCreationService.registerRequests(Collections.singletonList(event1));
         featureCreationService.scheduleRequests();
         waitForFeatures(1);
         // When
-        FeatureCreationRequestEvent event2 = createFeatureCreationRequestEvent("ùlajzlke", 1, false);
+        FeatureCreationRequestEvent event2 = createFeatureCreationRequestEvent(1, false);
         event2.setRequestId("request2");
         event2.getFeature().setUrn(event1.getFeature().getUrn());
         RequestInfo<String> requestInfo = featureCreationService.registerRequests(Collections.singletonList(event2));
@@ -661,7 +652,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
     @Test
     public void testCreationWithExistingURNAndUpdateMode() {
         // Given
-        FeatureCreationRequestEvent event1 = createFeatureCreationRequestEvent("ùlajzlke", 1, false);
+        FeatureCreationRequestEvent event1 = createFeatureCreationRequestEvent(1, false);
         featureCreationService.registerRequests(Collections.singletonList(event1));
         featureCreationService.scheduleRequests();
         waitForFeatures(1);
@@ -669,7 +660,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         mockNotificationSuccess();
         waitRequest(featureCreationRequestRepo, 0, 20_000);
         // When
-        FeatureCreationRequestEvent event2 = createFeatureCreationRequestEvent("ùlajzlke", 1, true);
+        FeatureCreationRequestEvent event2 = createFeatureCreationRequestEvent(1, true);
         event2.setRequestId("request2");
         event2.getFeature().setUrn(event1.getFeature().getUrn());
         RequestInfo<String> requestInfo = featureCreationService.registerRequests(Collections.singletonList(event2));
@@ -681,14 +672,14 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
     @Test
     public void testCreationWithURNAndBadVersion() {
         // Given
-        FeatureCreationRequestEvent event2_1 = createFeatureCreationRequestEvent("ùlajzlke", 2, false);
+        FeatureCreationRequestEvent event2_1 = createFeatureCreationRequestEvent(2, false);
         event2_1.setRequestId("event2_1");
         featureCreationService.registerRequests(Collections.singletonList(event2_1));
         featureCreationService.scheduleRequests();
         waitForFeatures(1);
 
         // When
-        FeatureCreationRequestEvent event1 = createFeatureCreationRequestEvent("ùlajzlke", 1, false);
+        FeatureCreationRequestEvent event1 = createFeatureCreationRequestEvent(1, false);
         event1.setRequestId("event1");
         RequestInfo<String> requestInfo = featureCreationService.registerRequests(Collections.singletonList(event1));
         featureCreationService.scheduleRequests();
@@ -698,7 +689,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         waitForFeatures(1);
 
         // When
-        FeatureCreationRequestEvent event2_2 = createFeatureCreationRequestEvent("ùlajzlke", 2, false);
+        FeatureCreationRequestEvent event2_2 = createFeatureCreationRequestEvent(2, false);
         event2_2.setRequestId("event2_2");
         requestInfo = featureCreationService.registerRequests(Collections.singletonList(event2_2));
         featureCreationService.scheduleRequests();
@@ -708,9 +699,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         waitForFeatures(1);
     }
 
-    private FeatureCreationRequestEvent createFeatureCreationRequestEvent(String tenant,
-                                                                          int version,
-                                                                          boolean updateIfExists) {
+    private FeatureCreationRequestEvent createFeatureCreationRequestEvent(int version, boolean updateIfExists) {
         FeatureCreationRequestEvent featureCreationRequestEvent = initFeatureCreationRequestEvent(1,
                                                                                                   false,
                                                                                                   updateIfExists).get(0);
@@ -718,7 +707,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
         UUID uuid = UUID.nameUUIDFromBytes(feature.getId().getBytes());
         FeatureUniformResourceName urn = FeatureUniformResourceName.build(FeatureIdentifier.FEATURE,
                                                                           feature.getEntityType(),
-                                                                          tenant,
+                                                                          "ùlajzlke",
                                                                           uuid,
                                                                           version);
         feature.setUrn(urn);

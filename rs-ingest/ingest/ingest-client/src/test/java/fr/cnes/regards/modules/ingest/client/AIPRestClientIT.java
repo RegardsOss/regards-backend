@@ -33,6 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
@@ -64,7 +65,7 @@ public class AIPRestClientIT extends AbstractRegardsWebIT {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Before
-    public void init() throws IOException, ModuleException {
+    public void init() {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         client = FeignClientBuilder.build(new TokenClientProvider<>(IAIPRestClient.class,
                                                                     "http://" + serverAddress + ":" + getPort(),
@@ -79,7 +80,9 @@ public class AIPRestClientIT extends AbstractRegardsWebIT {
                                                                                                             .withState(
                                                                                                                 AIPState.STORED),
                                                                                         0,
-                                                                                        100);
+                                                                                        100,
+                                                                                        Sort.unsorted());
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
     }
+
 }

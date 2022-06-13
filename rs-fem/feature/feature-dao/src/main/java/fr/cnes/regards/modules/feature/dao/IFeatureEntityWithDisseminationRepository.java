@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.feature.dao;
 
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -37,13 +38,17 @@ import java.util.Set;
 public interface IFeatureEntityWithDisseminationRepository
     extends JpaRepository<FeatureEntity, Long>, JpaSpecificationExecutor<FeatureEntity> {
 
+
+    default List<FeatureEntity> findByUrnIn(Set<FeatureUniformResourceName> urn) {
+        return findByUrnIn(urn, Sort.unsorted());
+    }
+
     @EntityGraph(attributePaths = { "disseminationsInfo" }, type = EntityGraph.EntityGraphType.LOAD)
-    List<FeatureEntity> findByUrnIn(Set<FeatureUniformResourceName> urn);
+    List<FeatureEntity> findByUrnIn(Set<FeatureUniformResourceName> urn, Sort sort);
 
     @EntityGraph(attributePaths = { "disseminationsInfo" }, type = EntityGraph.EntityGraphType.LOAD)
     FeatureEntity findByUrn(FeatureUniformResourceName urn);
 
     @EntityGraph(attributePaths = { "disseminationsInfo" }, type = EntityGraph.EntityGraphType.LOAD)
     List<FeatureEntity> findAll();
-
 }
