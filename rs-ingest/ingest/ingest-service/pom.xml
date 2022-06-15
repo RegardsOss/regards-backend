@@ -130,5 +130,10 @@
 			<artifactId>ingest-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.test</groupId>
+            <artifactId>regards-job-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>

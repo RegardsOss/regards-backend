@@ -57,7 +57,7 @@ import java.util.concurrent.TimeUnit;
     properties = { "spring.jpa.properties.hibernate.default_schema=update_scanner_job", "regards.amqp.enabled=true",
         "regards.ingest.aip.update.bulk.delay=100000000", "eureka.client.enabled=false",
         "regards.ingest.request.schedule.delay=100000000" }, locations = { "classpath:application-test.properties" })
-@ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
+@ActiveProfiles(value = { "testAmqp", "StorageClientMock", "noscheduler" })
 public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
 
     @SuppressWarnings("unused")
@@ -197,17 +197,18 @@ public class AIPUpdatesCreatorJobIT extends IngestMultitenantServiceIT {
         long nbInitialTasks = 6;
         long nbSipConcerned = 2;
         long nbTasksPerSip = 5;
-        waitForTaskCreated((nbSipConcerned * nbTasksPerSip) + nbInitialTasks, 10_000);
+        long expectedRequests = nbSipConcerned * nbTasksPerSip;
+        waitForTaskCreated(expectedRequests + nbInitialTasks, 10_000);
 
         Pageable pageRequest = PageRequest.of(0, 200);
         Awaitility.await().atMost(Durations.TEN_SECONDS).until(() -> {
             runtimeTenantResolver.forceTenant(getDefaultTenant());
             return aipUpdateRequestRepository.findAllByState(InternalRequestState.BLOCKED, pageRequest)
-                                             .getTotalElements() >= nbSipConcerned * nbTasksPerSip;
+                                             .getTotalElements() >= expectedRequests;
         });
         Page<AIPUpdateRequest> blocked = aipUpdateRequestRepository.findAllByState(InternalRequestState.BLOCKED,
                                                                                    pageRequest);
-        Assert.assertEquals(nbSipConcerned * nbTasksPerSip, blocked.getTotalElements());
+        Assert.assertEquals(expectedRequests, blocked.getTotalElements());
     }
 
     private void generateFakeRunningTasks() {

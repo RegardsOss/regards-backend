@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import com.google.common.collect.Lists;
+import fr.cnes.regards.framework.integration.test.job.JobTestCleaner;
 import org.mockito.Mockito;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -48,6 +49,11 @@ public class TestConfiguration {
         Mockito.when(client.getInstances(Mockito.anyString())).thenReturn(response);
         return client;
 
+    }
+
+    @Bean
+    public JobTestCleaner getJobTestCleaner() {
+        return new JobTestCleaner();
     }
 
 }

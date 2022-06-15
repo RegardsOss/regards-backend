@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.integration.test.job.JobTestCleaner;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -132,12 +133,15 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
     @Autowired
     protected IJobService jobService;
 
+    @Autowired
+    private JobTestCleaner jobTestCleaner;
+
     @Before
     public void init() throws Exception {
         LOGGER.info("-------------> Test initialization !!!");
         // clear AMQP queues and repositories
-        jobService.cleanAndRestart();
         ingestServiceTest.init();
+        jobService.cleanAndRestart();
 
         // simulate application started and ready
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -160,6 +164,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
 
     @After
     public void after() throws Exception {
+        jobTestCleaner.cleanJob();
         // override this method to custom action performed after
         doAfter();
     }
