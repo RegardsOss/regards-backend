@@ -111,7 +111,7 @@ public class AIPUpdateRequestService {
         // Create the list of AIP id (and not aipId!)
         List<Long> runningAIPIds = runningRequests.stream().map(wr -> wr.getAip().getId()).collect(Collectors.toList());
         for (AIPEntity aip : aips) {
-            // Create the request as pending if there is already a running request
+            // Create the request as BLOCKED if there is already a running request
             boolean isPending = runningAIPIds.contains(aip.getId());
             List<AIPUpdateRequest> generatedRequests = AIPUpdateRequest.build(aip, updateTasks, isPending);
             for (AIPUpdateRequest request : generatedRequests) {

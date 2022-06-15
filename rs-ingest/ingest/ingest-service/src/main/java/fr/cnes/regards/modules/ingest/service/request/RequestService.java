@@ -354,6 +354,7 @@ public class RequestService implements IRequestService {
     @Override
     public int scheduleRequests(List<AbstractRequest> requests) {
         int nbRequestScheduled = 0;
+        int nbRequestBlocked = 0;
         // Store request state (can be scheduled right now ?) by session
         Table<String, String, InternalRequestState> history = HashBasedTable.create();
 
@@ -377,8 +378,12 @@ public class RequestService implements IRequestService {
                 }
                 nbRequestScheduled++;
             } else {
+                nbRequestBlocked++;
                 abstractRequestRepository.save(request);
             }
+        }
+        if (nbRequestBlocked > 0) {
+            LOGGER.info("{} requests saved in BLOCKED state", nbRequestBlocked);
         }
         return nbRequestScheduled;
     }

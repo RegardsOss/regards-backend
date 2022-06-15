@@ -54,7 +54,7 @@ import java.util.Optional;
 @ActiveProfiles(value = { "testAmqp", "StorageClientMock" })
 public class IngestPostProcessingJobIT extends IngestMultitenantServiceIT {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdatesCreatorJobIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IngestPostProcessingJobIT.class);
 
     @Autowired
     private IAIPPostProcessRequestRepository aipPostProcessRepo;
