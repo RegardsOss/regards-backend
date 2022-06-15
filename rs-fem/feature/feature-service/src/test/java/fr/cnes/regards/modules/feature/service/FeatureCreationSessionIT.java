@@ -63,7 +63,7 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceI
         waitCreationRequestDeletion(0, 20000);
 
         // Compute Session step
-        computeSessionStep(requestCount * 4);
+        computeSessionStep(requestCount * 4, 1);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
@@ -96,7 +96,7 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceI
         waitCreationRequestDeletion(0, 20000);
 
         // Compute Session step
-        computeSessionStep(requestCount * 4);
+        computeSessionStep(requestCount * 4, 1);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
@@ -140,7 +140,7 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceI
         // for each product 4 events : 1request + 1 requestRunning + 1 referencedProduct  -1 requestRunning
         // for storage error : 1 inErrorReferencingRequest
         // For retry : +1requestRunning -1 inErrorReferencingRequest -1requestRunning
-        computeSessionStep((requestCount * 4) + 1 + 3);
+        computeSessionStep((requestCount * 4) + 1 + 3, 1);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
@@ -181,7 +181,7 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceI
         // for each product 4 events : 1request + 1 requestRunning + 1 referencedProduct  -1 requestRunning
         // for storage error : 1 inErrorReferencingRequest
         // for in error delete request : -1 request -1inErrorReferencingRequest
-        computeSessionStep((requestCount * 4) + 1 + 2);
+        computeSessionStep((requestCount * 4) + 1 + 2, 1);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
@@ -221,7 +221,7 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceI
         waitCreationRequestDeletion(0, 20000);
 
         // Compute Session step
-        computeSessionStep(8);
+        computeSessionStep(8, 1);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
@@ -258,7 +258,7 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceI
         waitCreationRequestDeletion(0, 20000);
 
         // Compute Session step
-        computeSessionStep(7);
+        computeSessionStep(7, 1);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
@@ -306,7 +306,7 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceI
         // Compute Session step
         // for each product : 1request + 1 requestRunning + 1 referencedProduct + 1 requestRunning
         // for storage error : 1 inErrorReferencingRequest
-        computeSessionStep((requestCount * 4) + 1);
+        computeSessionStep((requestCount * 4) + 1, 1);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
@@ -340,7 +340,7 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceI
         waitForStep(featureCreationRequestRepo, FeatureRequestStep.REMOTE_NOTIFICATION_ERROR, 1, 10_000);
 
         // Compute Session step
-        computeSessionStep(5);
+        computeSessionStep(5, 1);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();

@@ -98,7 +98,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 /**
  * @author Marc SORDI
@@ -604,7 +603,7 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
 
         if (!prepareFeatureWithFiles) {
             // remove files inside features
-            events.stream().forEach(event -> event.getFeature().setFiles(null));
+            events.forEach(event -> event.getFeature().setFiles(null));
         }
 
         this.featureCreationService.registerRequests(events);
@@ -616,22 +615,13 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
             this.featureCreationService.scheduleRequests();
         }
 
-        int cpt = 0;
-        long featureNumberInDatabase;
-        do {
-            featureNumberInDatabase = featureRepo.findBySessionOwnerAndSession(source, session, Pageable.unpaged())
-                                                 .getTotalElements();
-            TimeUnit.MILLISECONDS.sleep(1000);
-            cpt++;
-        } while ((cpt < 100) && (featureNumberInDatabase != featureToCreateNumber));
-
-        assertEquals(featureToCreateNumber,
-                     featureRepo.findBySessionOwnerAndSession(source, session, Pageable.unpaged()).getTotalElements());
-
-        // in that case all features hasn't been saved
-        if (cpt == 100) {
-            fail("Doesn't have all features at the end of time");
-        }
+        Awaitility.await().atMost(100, TimeUnit.SECONDS).pollInterval(300, TimeUnit.MILLISECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            long createdFeatures = featureRepo.findBySessionOwnerAndSession(source, session, Pageable.unpaged())
+                                              .getTotalElements();
+            LOGGER.info("{} / {} created features", createdFeatures, featureToCreateNumber);
+            return createdFeatures == featureToCreateNumber;
+        });
 
         if (prepareFeatureWithFiles) {
             mockStorageHelper.mockFeatureCreationStorageSuccess();
@@ -749,8 +739,9 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
         featureSettingsNotificationService.setActiveNotification(value);
     }
 
-    protected void computeSessionStep(int nbStepsRequired) throws InterruptedException {
-        computeSessionStep(nbStepsRequired, owner, session);
+    protected void computeSessionStep(int nbStepsRequired, int nbSnapshotProcessesRequired)
+        throws InterruptedException {
+        computeSessionStep(nbStepsRequired, nbSnapshotProcessesRequired, owner, session);
     }
 
     private boolean expectSteps(int nbStepsRequired) {
@@ -758,14 +749,24 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
         return stepPropertyUpdateRequestRepository.findAll().size() == nbStepsRequired;
     }
 
-    protected void computeSessionStep(int nbStepsRequired, String source, String session) throws InterruptedException {
+    protected void computeSessionStep(int nbStepsRequired,
+                                      int nbSnapshotProcessesRequired,
+                                      String source,
+                                      String session) throws InterruptedException {
         OffsetDateTime start = OffsetDateTime.now(ZoneOffset.UTC);
         OffsetDateTime end = OffsetDateTime.now(ZoneOffset.UTC).plusSeconds(120);
         if (nbStepsRequired > 0) {
             try {
-                Awaitility.await().atMost(Durations.ONE_MINUTE).with().until(() -> this.expectSteps(nbStepsRequired));
+                Awaitility.await().atMost(Durations.ONE_MINUTE).until(() -> this.expectSteps(nbStepsRequired));
             } catch (ConditionTimeoutException e) {
                 Assert.assertEquals(nbStepsRequired, stepPropertyUpdateRequestRepository.findAll().size());
+            }
+            try {
+                Awaitility.await()
+                          .atMost(Durations.ONE_MINUTE)
+                          .until(() -> this.expectSnapshotProcess(nbSnapshotProcessesRequired));
+            } catch (ConditionTimeoutException e) {
+                Assert.assertEquals(nbSnapshotProcessesRequired, snapshotProcessRepository.findAll().size());
             }
         }
         agentSnapshotJobService.scheduleJob();
@@ -798,6 +799,11 @@ public abstract class AbstractFeatureMultitenantServiceIT extends AbstractMultit
             Assert.fail("The step properties were not processed in the expected amount of time");
         }
 
+    }
+
+    private boolean expectSnapshotProcess(int nbSnapshotProcessesRequired) {
+        this.runtimeTenantResolver.forceTenant(getDefaultTenant());
+        return snapshotProcessRepository.findAll().size() == nbSnapshotProcessesRequired;
     }
 
     private List<StepPropertyUpdateRequest> findAllStepPropertiesBySourceSessionStepIdCreationDate(String source,

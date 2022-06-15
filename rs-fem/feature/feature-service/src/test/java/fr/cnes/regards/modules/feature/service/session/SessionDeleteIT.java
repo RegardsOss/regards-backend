@@ -84,8 +84,8 @@ public class SessionDeleteIT extends AbstractFeatureMultitenantServiceIT {
                                                        .getTotalElements());
         // Creation : 8 products *4steps (request+running+referenced+running)
         // Deletion : 4 products *5steps (deleteRequest+running+deleted+referenced+running)
-        computeSessionStep((8 * 4) + (4 * 5), SOURCE1, SESSION1);
-        computeSessionStep(0, SOURCE1, SESSION2);
+        computeSessionStep((8 * 4) + (4 * 5), 2, SOURCE1, SESSION1);
+        computeSessionStep(0, 0, SOURCE1, SESSION2);
         SessionStep sessionStep = getSessionStep(SOURCE1, SESSION1);
         checkKey(0, "referencedProducts", sessionStep.getProperties());
         checkKey(2, "deletedProducts", sessionStep.getProperties());
@@ -138,8 +138,8 @@ public class SessionDeleteIT extends AbstractFeatureMultitenantServiceIT {
                                                        .getTotalElements());
         // Creation : 8 products * 4 events (request+running+referenced+running)
         // Deletion : 2 products * 5 events (request+running+deleted+referenced+running)
-        computeSessionStep((8 * 4) + (2 * 5), SOURCE1, SESSION1);
-        computeSessionStep(0, SOURCE1, SESSION2);
+        computeSessionStep((8 * 4) + (2 * 5), 2, SOURCE1, SESSION1);
+        computeSessionStep(0, 0, SOURCE1, SESSION2);
         SessionStep sessionStep = getSessionStep(SOURCE1, SESSION1);
         checkKey(0, "referencedProducts", sessionStep.getProperties());
         checkKey(2, "deletedProducts", sessionStep.getProperties());

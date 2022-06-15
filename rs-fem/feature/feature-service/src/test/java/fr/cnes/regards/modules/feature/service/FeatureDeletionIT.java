@@ -386,7 +386,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         waitRequest(featureDeletionRequestRepo, 0, 20000);
 
         // Compute Session step
-        computeSessionStep(13);
+        computeSessionStep(13, 1);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
@@ -428,7 +428,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         waitRequest(featureDeletionRequestRepo, 0, 20000);
 
         // Compute Session step
-        computeSessionStep(12);
+        computeSessionStep(12, 1);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
@@ -507,7 +507,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
 
     private void checkOneDeletion() throws InterruptedException {
         // Compute Session step
-        computeSessionStep(9);
+        computeSessionStep(9, 1);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
@@ -547,7 +547,7 @@ public class FeatureDeletionIT extends AbstractFeatureMultitenantServiceIT {
         waitForSate(featureDeletionRequestRepo, RequestState.ERROR, 1, 20);
 
         // Compute Session step
-        computeSessionStep(10);
+        computeSessionStep(10, 1);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();

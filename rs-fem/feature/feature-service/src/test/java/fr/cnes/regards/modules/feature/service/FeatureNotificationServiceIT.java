@@ -325,7 +325,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         waitRequest(notificationRequestRepo, 0, 20000);
 
         // Compute Session step
-        computeSessionStep(8);
+        computeSessionStep(8, 1);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
@@ -365,7 +365,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         waitRequest(notificationRequestRepo, 0, 20000);
 
         // Compute Session step
-        computeSessionStep(12);
+        computeSessionStep(12, 1);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
@@ -406,7 +406,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         waitRequest(notificationRequestRepo, 0, 20000);
 
         // Compute Session step
-        computeSessionStep(10);
+        computeSessionStep(10, 1);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
@@ -447,7 +447,7 @@ public class FeatureNotificationServiceIT extends AbstractFeatureMultitenantServ
         waitForSate(notificationRequestRepo, RequestState.ERROR, 1, 20);
 
         // Compute Session step
-        computeSessionStep(8);
+        computeSessionStep(8, 1);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();

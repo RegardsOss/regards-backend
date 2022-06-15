@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.feature.service;
 
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
@@ -29,6 +31,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.feature.dao.IFeatureUpdateRequestRepository;
+import fr.cnes.regards.modules.feature.domain.AbstractFeatureEntity;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.FeatureDeletionRequest;
 import fr.cnes.regards.modules.feature.domain.request.FeatureRequestTypeEnum;
@@ -43,9 +46,11 @@ import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestsPage;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureIdentifier;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.feature.service.job.FeatureUpdateJob;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import org.assertj.core.util.Lists;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -62,12 +67,16 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author kevin
@@ -95,6 +104,9 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
 
     @Captor
     private ArgumentCaptor<List<NotificationRequestEvent>> recordsCaptor;
+
+    @Autowired
+    private IJobInfoRepository jobInfoRepository;
 
     private boolean isToNotify;
 
@@ -355,12 +367,11 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
                                                                            false);
 
         // create update requests
-        List<FeatureUpdateRequestEvent> updateEvents = new ArrayList<>();
-        updateEvents = events.stream()
-                             .map(event -> FeatureUpdateRequestEvent.build("test",
-                                                                           event.getMetadata(),
-                                                                           event.getFeature()))
-                             .collect(Collectors.toList());
+        List<FeatureUpdateRequestEvent> updateEvents = events.stream()
+                                                             .map(event -> FeatureUpdateRequestEvent.build("test",
+                                                                                                           event.getMetadata(),
+                                                                                                           event.getFeature()))
+                                                             .collect(Collectors.toList());
 
         // we will set all priority to low for the (properties.getMaxBulkSize() / 2) last event
         for (int i = properties.getMaxBulkSize(); i < (properties.getMaxBulkSize() + (properties.getMaxBulkSize()
@@ -387,20 +398,22 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         Thread.sleep((this.properties.getDelayBeforeProcessing() * 1000) + 1000);
         this.featureUpdateService.scheduleRequests();
 
+        int nbMinimalExpectedRequests = properties.getMaxBulkSize() / 2;
         // in case notification are active, mock their successes
         if (this.isToNotify) {
             // wait until request are in state LOCAL_TO_BE_NOTIFIED
-            int cpt = 0;
-            while ((cpt < 10) && (featureUpdateRequestRepository.findByStepAndRequestDateLessThanEqual(
-                FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
-                OffsetDateTime.now().plusDays(1),
-                PageRequest.of(0, properties.getMaxBulkSize())).getSize() < (properties.getMaxBulkSize() / 2))) {
-                Thread.sleep(1000);
-                cpt++;
-            }
-            if (cpt == 10) {
-                fail("Update request where not handled in less than 10_000 ms");
-            }
+
+            Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+                runtimeTenantResolver.forceTenant(getDefaultTenant());
+                int nbFeatureUpdateRequest = featureUpdateRequestRepository.findByStepAndRequestDateLessThanEqual(
+                    FeatureRequestStep.LOCAL_TO_BE_NOTIFIED,
+                    OffsetDateTime.now().plusDays(1),
+                    PageRequest.of(0, properties.getMaxBulkSize())).getSize();
+                LOGGER.info("{} update feature requests - expecting at least {}",
+                            nbFeatureUpdateRequest,
+                            nbMinimalExpectedRequests);
+                return nbFeatureUpdateRequest > nbMinimalExpectedRequests;
+            });
             mockNotificationSuccess();
         }
 
@@ -410,10 +423,16 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
             PageRequest.of(0, properties.getMaxBulkSize()),
             OffsetDateTime.now()).getContent();
         // half of scheduled should be with priority HIGH
-        assertEquals(properties.getMaxBulkSize().intValue() / 2, scheduled.size());
-        // check that remaining FeatureUpdateRequest all their their priority not to high
+        assertEquals(nbMinimalExpectedRequests, scheduled.size());
+        // check that remaining FeatureUpdateRequests doesn't have high priority
         assertFalse(scheduled.stream().anyMatch(request -> PriorityLevel.HIGH.equals(request.getPriority())));
 
+        // Stop the test with the job running, which helps the test engine to kill it safely
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+            runtimeTenantResolver.forceTenant(getDefaultTenant());
+            return jobInfoRepository.countByClassNameAndStatusStatusIn(FeatureUpdateJob.class.getName(),
+                                                                       JobStatus.RUNNING) > 0;
+        });
     }
 
     @Test
@@ -432,7 +451,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         // Notify them
         List<FeatureUniformResourceName> urns = this.featureRepo.findAll()
                                                                 .stream()
-                                                                .map(f -> f.getUrn())
+                                                                .map(AbstractFeatureEntity::getUrn)
                                                                 .collect(Collectors.toList());
         this.featureUpdateService.registerRequests(prepareUpdateRequests(urns));
 
@@ -480,7 +499,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         // Notify them
         List<FeatureUniformResourceName> urns = this.featureRepo.findAll()
                                                                 .stream()
-                                                                .map(f -> f.getUrn())
+                                                                .map(AbstractFeatureEntity::getUrn)
                                                                 .collect(Collectors.toList());
         RequestInfo<FeatureUniformResourceName> results = this.featureUpdateService.registerRequests(
             prepareUpdateRequests(urns));
@@ -651,7 +670,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         waitRequest(featureUpdateRequestRepo, 0, 20000);
 
         // Compute Session step
-        computeSessionStep(12);
+        computeSessionStep(12, 1);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
@@ -691,7 +710,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         waitRequest(featureUpdateRequestRepo, 0, 20000);
 
         // Compute Session step
-        computeSessionStep(11);
+        computeSessionStep(11, 1);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
@@ -726,7 +745,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
     private void checkOneUpdate(int requestCount) throws InterruptedException {
 
         // Compute Session step
-        computeSessionStep((requestCount + 1) * 4);
+        computeSessionStep((requestCount + 1) * 4, 1);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
@@ -773,7 +792,7 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         waitForStep(featureUpdateRequestRepository, FeatureRequestStep.REMOTE_NOTIFICATION_ERROR, 1, 10_000);
 
         // Compute Session step
-        computeSessionStep(9);
+        computeSessionStep(9, 1);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
