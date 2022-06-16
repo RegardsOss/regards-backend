@@ -62,17 +62,17 @@ public class FragmentServiceTest {
     /**
      * Class logger
      */
-    private static Logger LOGGER = LoggerFactory.getLogger(FragmentServiceTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FragmentServiceTest.class);
 
     /**
      * Test fragment name
      */
-    private static String TEST_FRAG_NAME = "FRAG";
+    private static final String TEST_FRAG_NAME = "FRAG";
 
     /**
      * Test fragment name
      */
-    private static String TEST_FRAG_DESC = "Test fragment";
+    private static final String TEST_FRAG_DESC = "Test fragment";
 
     /**
      * Fragment repository

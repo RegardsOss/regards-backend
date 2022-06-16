@@ -104,13 +104,13 @@ public final class AttributeModelBuilder {
 
     // Restriction
 
-    public <T extends AbstractRestriction> AttributeModel withRestriction(T pRestriction) {
-        Assert.notNull(pRestriction, "Restriction is required");
-        if (!pRestriction.supports(attributeModel.getType())) {
+    public AttributeModelBuilder setRestriction(AbstractRestriction restriction) {
+        Assert.notNull(restriction, "Restriction is required");
+        if (!restriction.supports(this.type)) {
             throw new IllegalArgumentException("Unsupported restriction "
-                                               + pRestriction.getType()
+                                               + restriction.getType()
                                                + " for attribute type "
-                                               + attributeModel.getType());
+                                               + restriction.getType());
         }
         attributeModel.setRestriction(pRestriction);
         return attributeModel;

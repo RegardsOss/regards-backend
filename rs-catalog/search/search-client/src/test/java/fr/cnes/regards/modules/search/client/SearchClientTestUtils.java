@@ -97,6 +97,9 @@ public class SearchClientTestUtils {
                                                                        DATE_ATTRIBUTE_MODEL,
                                                                        EXTRA_ATTRIBUTE_MODEL);
 
+    public static final ResponseEntity<List<EntityModel<AttributeModel>>> ATTRIBUTE_MODEL_CLIENT_RESPONSE = ResponseEntity.ok(
+        HateoasUtils.wrapList(LIST));
+
     /**
      * A dummy list of facets
      */
@@ -109,9 +112,6 @@ public class SearchClientTestUtils {
      * The dummy list of facets as array
      */
     public static final String[] FACETS_AS_ARRAY = FACETS.toArray(new String[FACETS.size()]);
-
-    public static final ResponseEntity<List<EntityModel<AttributeModel>>> ATTRIBUTE_MODEL_CLIENT_RESPONSE = ResponseEntity.ok(
-        HateoasUtils.wrapList(LIST));
 
     /**
      * A dummy access group name
@@ -141,19 +141,19 @@ public class SearchClientTestUtils {
      */
     public static final AccessGroup ACCESS_GROUP_1 = new AccessGroup(ACCESS_GROUP_NAME_1);
 
-    public static final AccessGroup ACCESS_GROUP_2 = new AccessGroup(ACCESS_GROUP_NAME_2);
-
     public static final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> USER_CLIENT_RESPONSE = ResponseEntity.ok(
         HateoasUtils.wrapToPagedResources(Lists.newArrayList(ACCESS_GROUP_0, ACCESS_GROUP_1)));
+
+    public static final AccessGroup ACCESS_GROUP_2 = new AccessGroup(ACCESS_GROUP_NAME_2);
+
+    public static final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> USER_CLIENT_OTHER_RESPONSE = ResponseEntity.ok(
+        HateoasUtils.wrapToPagedResources(Lists.newArrayList(ACCESS_GROUP_2)));
 
     public static final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> PUBLIC_USER_CLIENT_RESPONSE = ResponseEntity.ok(
         HateoasUtils.wrapToPagedResources(Lists.newArrayList()));
 
     public static final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> USER_CLIENT_EMPTY_RESPONSE = ResponseEntity.ok(
         HateoasUtils.wrapToPagedResources(Lists.newArrayList()));
-
-    public static final ResponseEntity<PagedModel<EntityModel<AccessGroup>>> USER_CLIENT_OTHER_RESPONSE = ResponseEntity.ok(
-        HateoasUtils.wrapToPagedResources(Lists.newArrayList(ACCESS_GROUP_2)));
 
     /**
      * Sample response from the {@link IProjectUsersClient} isAdmin: false

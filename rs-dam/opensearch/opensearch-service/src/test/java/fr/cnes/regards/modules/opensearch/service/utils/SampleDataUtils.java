@@ -102,6 +102,12 @@ public class SampleDataUtils {
                                                                                      .fragment(TEST_FRAGMENT)
                                                                                      .get();
 
+    /**
+     * A query with double quotes and special characters
+     */
+    public static final String UNESCAPED_QUERY_WITH_DOUBLE_QUOTES_AND_CHARS_TO_ESCAPE = STRING_ATTRIBUTE_MODEL.getJsonPath()
+                                                                                        + ":\"texte avec:des caractères+spéciaux\"";
+
     public static final AttributeModel STRING_ATTRIBUTE_MODEL_1 = AttributeModelBuilder.build(STRING_FIELD_1,
                                                                                               PropertyType.STRING,
                                                                                               "ForTests")
@@ -196,10 +202,4 @@ public class SampleDataUtils {
      * A query like the ones the REGARDS frontend is likely to use
      */
     public static final String SMALL_REAL_LIFE_QUERY = "tags:plop AND tags:(A\\:A OR B\\:B OR C\\:C)";
-
-    /**
-     * A query with double quotes and special characters
-     */
-    public static final String UNESCAPED_QUERY_WITH_DOUBLE_QUOTES_AND_CHARS_TO_ESCAPE = STRING_ATTRIBUTE_MODEL.getJsonPath()
-                                                                                        + ":\"texte avec:des caractères+spéciaux\"";
 }

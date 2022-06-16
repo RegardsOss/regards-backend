@@ -116,6 +116,14 @@ public class SampleDataUtils {
                                                                                       .fragment(TEST_FRAGMENT)
                                                                                       .get();
 
+    /**
+     * A query with a term "groups"
+     */
+    public static final String QUERY_WITH_GROUPS = INTEGER_ATTRIBUTE_MODEL.getJsonPath()
+                                                   + ":(2 AND 3) OR "
+                                                   + Terms.GROUPS
+                                                   + ":admin";
+
     public static final AttributeModel DOUBLE_ATTRIBUTE_MODEL = AttributeModelBuilder.build(DOUBLE_FIELD,
                                                                                             PropertyType.DOUBLE,
                                                                                             DOUBLE_FIELD)
@@ -133,6 +141,19 @@ public class SampleDataUtils {
                                                                                             STRING_FIELD)
                                                                                      .fragment(TEST_FRAGMENT)
                                                                                      .get();
+
+    /**
+     * Dummy OpenSearch request
+     */
+    public static final String QUERY = INTEGER_ATTRIBUTE_MODEL.getJsonPath()
+                                       + ":(2 AND 3) OR "
+                                       + STRING_ATTRIBUTE_MODEL.getJsonPath()
+                                       + ":hello";
+
+    /**
+     * A query with no "groups" term
+     */
+    public static final String QUERY_WITH_NO_GROUPS = QUERY;
 
     public static final AttributeModel STRING_ATTRIBUTE_MODEL_1 = AttributeModelBuilder.build(STRING_FIELD_1,
                                                                                               PropertyType.STRING,
@@ -250,27 +271,6 @@ public class SampleDataUtils {
     public static final ResponseEntity<Boolean> PROJECT_USERS_CLIENT_RESPONSE = ResponseEntity.ok(Boolean.FALSE);
 
     /**
-     * Dummy OpenSearch request
-     */
-    public static final String QUERY = INTEGER_ATTRIBUTE_MODEL.getJsonPath()
-                                       + ":(2 AND 3) OR "
-                                       + STRING_ATTRIBUTE_MODEL.getJsonPath()
-                                       + ":hello";
-
-    /**
-     * A query with no "groups" term
-     */
-    public static final String QUERY_WITH_NO_GROUPS = QUERY;
-
-    /**
-     * A query with a term "groups"
-     */
-    public static final String QUERY_WITH_GROUPS = INTEGER_ATTRIBUTE_MODEL.getJsonPath()
-                                                   + ":(2 AND 3) OR "
-                                                   + Terms.GROUPS
-                                                   + ":admin";
-
-    /**
      * A dummy assembler for collections
      */
     public static final PagedResourcesAssembler<Collection> ASSEMBLER_COLLECTION = Mockito.mock(PagedResourcesAssembler.class);
@@ -307,9 +307,25 @@ public class SampleDataUtils {
     public static final DataObject DATAOBJECT = new DataObject(DATAOBJET_MODEL, "tenant", "DO1", "DO1");
 
     /**
+     * A dummy page of dataobjects
+     */
+    public static final Page<DataObject> PAGE_DATAOBJECT = new PageImpl<>(Lists.newArrayList(DATAOBJECT));
+
+    /**
+     * A dummy page of dataobjects
+     */
+    public static final FacetPage<DataObject> FACET_PAGE_DATAOBJECT = new FacetPage<>(Lists.newArrayList(DATAOBJECT),
+                                                                                      Sets.newHashSet());
+
+    /**
      * A dummy dataset
      */
     public static final Dataset DATASET = new Dataset(DATASET_MODEL, "tenant", "DS1", "DS1");
+
+    /**
+     * A dummy page of dataobjects
+     */
+    public static final Page<Dataset> PAGE_DATASET = new PageImpl<>(Lists.newArrayList(DATASET));
 
     /**
      * A dummy list of facets
@@ -324,22 +340,6 @@ public class SampleDataUtils {
      * A dummy list of facets
      */
     public static final List<String> QUERY_FACETS = Arrays.asList("integer", "string");
-
-    /**
-     * A dummy page of dataobjects
-     */
-    public static final Page<DataObject> PAGE_DATAOBJECT = new PageImpl<>(Lists.newArrayList(DATAOBJECT));
-
-    /**
-     * A dummy page of dataobjects
-     */
-    public static final FacetPage<DataObject> FACET_PAGE_DATAOBJECT = new FacetPage<>(Lists.newArrayList(DATAOBJECT),
-                                                                                      Sets.newHashSet());
-
-    /**
-     * A dummy page of dataobjects
-     */
-    public static final Page<Dataset> PAGE_DATASET = new PageImpl<>(Lists.newArrayList(DATASET));
 
     /**
      * A mock pageable
