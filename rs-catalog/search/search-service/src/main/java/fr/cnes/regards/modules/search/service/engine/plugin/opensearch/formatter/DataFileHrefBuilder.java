@@ -38,25 +38,11 @@ public final class DataFileHrefBuilder {
      * @return {@link String}
      */
     public static String getDataFileHref(DataFile file, String scope) {
-        switch (file.getDataType()) {
-            case QUICKLOOK_SD:
-            case QUICKLOOK_MD:
-            case QUICKLOOK_HD:
-            case THUMBNAIL:
-                String href = file.getUri();
-                if (file.isReference()) {
-                    return href;
-                }
-                return getLinkWithScope(href, scope);
-            case RAWDATA:
-            case DOCUMENT:
-            case OTHER:
-            case AIP:
-            case DESCRIPTION:
-                return file.getUri();
-            default:
-                throw new IllegalArgumentException("Unsupported DataFile type");
+        String href = file.getUri();
+        if (file.isReference()) {
+            return href;
         }
+        return getLinkWithScope(href, scope);
     }
 
     /**

@@ -29,6 +29,6 @@ import com.rometools.rome.feed.module.Module;
  */
 public interface GmlTimeModule extends Module, GmlTimeResponse {
 
-    public final static String URI = GeoRSSModule.GEORSS_GML_URI;
+    String URI = GeoRSSModule.GEORSS_GML_URI;
 
 }

@@ -36,6 +36,7 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.extension.IOpenSearchExtension;
 import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.AbstractResponseFormatter;
+import fr.cnes.regards.modules.search.service.engine.plugin.opensearch.formatter.DataFileHrefBuilder;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.MediaType;
 
@@ -206,7 +207,7 @@ public class AtomResponseFormatter extends AbstractResponseFormatter<Entry, Feed
     @Override
     protected void addFeatureServices(DataFile firstRawData) {
         Link rawdataLink = new Link();
-        rawdataLink.setHref(firstRawData.getUri());
+        rawdataLink.setHref(DataFileHrefBuilder.getDataFileHref(firstRawData, scope));
         rawdataLink.setType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
         rawdataLink.setTitle(String.format("Download rawdata for product %s", feature.getId()));
         this.feature.getAlternateLinks().add(rawdataLink);

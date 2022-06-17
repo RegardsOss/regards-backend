@@ -31,6 +31,6 @@ public interface RegardsModule extends Module, RegardsResponse {
     /**
      * REGARDS specifications for opensearch
      */
-    public final static String URI = "http://regards.com/-/spec/3.0/";
+    String URI = "http://regards.com/-/spec/3.0/";
 
 }
