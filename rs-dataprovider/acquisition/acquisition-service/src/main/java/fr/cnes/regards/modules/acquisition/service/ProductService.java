@@ -649,7 +649,8 @@ public class ProductService implements IProductService {
                 }
                 // Notification must be before the state is changed as the notifier use the current
                 // state to decrement/increment session properties
-                sessionNotifier.notifyChangeProductState(product, SIPState.INGESTED, false);
+                sessionNotifier.notifyChangeProductState(product, SIPState.INGESTED,
+                                                         product.getSipState() == ProductSIPState.INGESTION_FAILED);
                 product.setSipState(SIPState.INGESTED);
                 product.setIpId(info.getSipId());
                 save(product);
