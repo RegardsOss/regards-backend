@@ -540,6 +540,11 @@
 				<artifactId>regards-test-reporting</artifactId>
 				<version>${revision}</version>
 			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.utils</groupId>
+				<artifactId>xml-utils</artifactId>
+				<version>${revision}</version>
+			</dependency>
 
 			<!-- Regards Administration tenant resolvers -->
 			<dependency>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  
  This file is part of REGARDS.
  
@@ -17,24 +17,20 @@
  You should have received a copy of the GNU General Public License
  along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
 -->
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>fr.cnes.regards.framework.utils</groupId>
-    <artifactId>regards-utils</artifactId>
-    <description>REGARDS core</description>
-    <packaging>pom</packaging>
+    <artifactId>xml-utils</artifactId>
 
     <parent>
-        <groupId>fr.cnes.regards</groupId>
-        <artifactId>regards-aggregator-parent</artifactId>
+        <groupId>fr.cnes.regards.framework.utils</groupId>
+        <artifactId>regards-utils</artifactId>
         <version>${revision}</version>
-        <relativePath>../../rs-bom/regards-aggregator-parent</relativePath>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
-    <inceptionYear>2016</inceptionYear>
+    <inceptionYear>2021</inceptionYear>
     <licenses>
         <license>
             <name>GNU General Public License (GNU GPL)</name>
@@ -54,16 +50,12 @@
         </developer>
     </developers>
 
-    <modules>
-        <module>attribute-factory</module>
-        <module>plugin-utils</module>
-        <module>file-utils</module>
-        <module>exception-utils</module>
-        <module>encryption-standalone</module>
-        <module>spring-utils</module>
-        <module>metalink-utils</module>
-        <module>query-parser</module>
-        <module>s3-storage-utils</module>
-        <module>xml-utils</module>
-    </modules>
+    <dependencies>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.test</groupId>
+            <artifactId>regards-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
 </project>
