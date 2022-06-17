@@ -114,8 +114,8 @@ public class ExternalTokenVerificationFilter implements GlobalFilter {
             return Mono.fromCallable(() -> jwtService.parseToken(authentication))
                        .map(JWTAuthentication::getJwt)
                        .onErrorResume(JwtException.class,
-                                      e -> externalAuthenticationVerifier.verifyAndAuthenticate(authentication.getTenant(),
-                                                                                                authentication.getJwt())
+                                      e -> externalAuthenticationVerifier.verifyAndAuthenticate(authentication.getJwt(),
+                                                                                                authentication.getTenant())
                                                                          .map(Authentication::getAccessToken)
                                                                          .onErrorResume(t -> {
                                                                              LOGGER.info(

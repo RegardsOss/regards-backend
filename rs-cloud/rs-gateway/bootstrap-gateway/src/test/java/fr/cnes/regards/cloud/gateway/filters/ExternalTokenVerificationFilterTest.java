@@ -174,8 +174,8 @@ class ExternalTokenVerificationFilterTest {
         assertTrue(modifiedRequest.getHeaders().containsKey(HttpConstants.AUTHORIZATION));
         assertEquals(BEARER + " " + newToken, modifiedRequest.getHeaders().getFirst(HttpConstants.AUTHORIZATION));
 
-        verify(externalAuthenticationVerifier).verifyAndAuthenticate(authentication.getTenant(),
-                                                                     authentication.getJwt());
+        verify(externalAuthenticationVerifier).verifyAndAuthenticate(authentication.getJwt(),
+                                                                     authentication.getTenant());
 
     }
 
