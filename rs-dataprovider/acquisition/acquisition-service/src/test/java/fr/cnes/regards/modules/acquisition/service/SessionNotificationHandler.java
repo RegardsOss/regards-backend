@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyInfo;
-import org.apache.commons.compress.utils.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -32,6 +31,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author sbinda
@@ -41,7 +41,8 @@ import java.util.List;
 public class SessionNotificationHandler
     implements IHandler<StepPropertyUpdateRequestEvent>, ApplicationListener<ApplicationReadyEvent> {
 
-    List<StepPropertyUpdateRequestEvent> events = Lists.newArrayList();
+    // Use concurrent list to avoid ConcurrentModificationException
+    List<StepPropertyUpdateRequestEvent> events = new CopyOnWriteArrayList();
 
     @Autowired
     private ISubscriber subscriber;
