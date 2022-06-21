@@ -29,7 +29,6 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +44,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
+import static org.mockito.ArgumentMatchers.any;
 
 /**
  * Class IPFilterTest
@@ -117,7 +118,7 @@ public class JWTAuthenticationFilterTest {
 
         PublicAuthenticationFilter publicFilter = new PublicAuthenticationFilter(jwtService);
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
-        Mockito.when(mockedManager.authenticate(token)).thenReturn(token);
+        Mockito.when(mockedManager.authenticate(any(JWTAuthentication.class))).thenReturn(token);
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
                                                                            Mockito.mock(IRuntimeTenantResolver.class));
 
@@ -160,7 +161,7 @@ public class JWTAuthenticationFilterTest {
         PublicAuthenticationFilter publicFilter = new PublicAuthenticationFilter(jwtService);
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
         // As generateToken seems to have some random added into computation, we cannot specify what is expected
-        Mockito.when(mockedManager.authenticate(ArgumentMatchers.any())).thenReturn(token);
+        Mockito.when(mockedManager.authenticate(any())).thenReturn(token);
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
                                                                            Mockito.mock(IRuntimeTenantResolver.class));
 
