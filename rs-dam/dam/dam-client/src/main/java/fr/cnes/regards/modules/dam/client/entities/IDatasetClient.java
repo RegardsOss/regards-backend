@@ -51,7 +51,7 @@ public interface IDatasetClient {
 
     String DATASET_IPID_PATH_FILE = "/{dataset_ipId}/file";
 
-    String ENTITY_ASSOCS_MAPPING = "{datasetUrn}/assocs";
+    String ENTITY_ASSOCS_MAPPING = "/{datasetUrn}/assocs";
 
     /**
      * Retrieve a page of datasets
