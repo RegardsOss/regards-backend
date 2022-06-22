@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.aip;
 
 import com.google.common.collect.Lists;
+import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -95,6 +96,9 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
     @Autowired
     private StorageClientMock storageClient;
 
+    @Autowired
+    private Gson gson;
+
     @Test
     @Requirement("REGARDS_DSL_STO_AIP_110")
     @Requirement("REGARDS_DSL_STO_AIP_130")
@@ -129,7 +133,10 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
 
         Assert.assertNotNull(cs);
         Assert.assertNotNull(calculatedCs);
-        Assert.assertEquals(cs, calculatedCs);
+        if (!cs.equals(calculatedCs)) {
+            LOGGER.error("The real AIP looks like {}", gson.toJsonTree(aip.getAip()).toString());
+        }
+        Assert.assertEquals("This test failed as the AIP has not the right checksum", cs, calculatedCs);
 
     }
 
