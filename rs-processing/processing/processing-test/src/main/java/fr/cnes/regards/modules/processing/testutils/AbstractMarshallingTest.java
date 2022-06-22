@@ -50,7 +50,6 @@ public abstract class AbstractMarshallingTest<T> {
             String expectedJson = gson.toJson(expected);
             T actual = gson.fromJson(expectedJson, testedType);
             String actualJson = gson.toJson(actual);
-            boolean equal = actualJson.equals(expectedJson);
             // The string cannot be compared, as the order of JSON attributes are not assured
             // so we transform it into Map to compare it recursively
             Map<Object, Object> resMap = gson.fromJson(expectedJson, new TypeToken<Map<Object, Object>>() {
@@ -59,7 +58,22 @@ public abstract class AbstractMarshallingTest<T> {
             Map<Object, Object> expectedMap = gson.fromJson(actualJson, new TypeToken<Map<Object, Object>>() {
 
             }.getType());
-            assertThat(resMap).usingRecursiveComparison().isEqualTo(expectedMap);
+            recursivelyCompareTwoMap(resMap, expectedMap);
+        }
+    }
+
+    /**
+     * Recursively compare two objects and ignore any collection order
+     */
+    private void recursivelyCompareTwoMap(Object leaf1, Object leaf2) {
+        if (leaf1 instanceof Map leaf1AsMap && leaf2 instanceof Map leaf2AsMap) {
+            assertThat(leaf1AsMap.size()).isEqualTo(leaf2AsMap.size());
+            leaf1AsMap.forEach((subKey, subLeaf) -> {
+                assertThat(leaf2AsMap).hasFieldOrProperty((String) subKey);
+                recursivelyCompareTwoMap(subLeaf, leaf2AsMap.get(subKey));
+            });
+        } else {
+            assertThat(leaf1).isEqualTo(leaf2);
         }
     }
 
