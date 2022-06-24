@@ -51,8 +51,7 @@ public final class XmlExportHelper {
     /**
      * Related schema
      */
-    // FIXME externalize model name
-    public static final String XML_SCHEMA_NAME = "model_V1.0.xsd";
+    public static final String XML_SCHEMA_NAME = "model_V1.10.0.xsd";
 
     /**
      * Class logger
