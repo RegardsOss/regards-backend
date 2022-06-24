@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -379,6 +380,38 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
                           customizer,
                           "Search all error",
                           ENGINE_TYPE);
+    }
+
+    @Test
+    public void searchDataObjectJsonAttributeWithRestrictions() {
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        addCommontMatchers(customizer);
+        customizer.addParameter("sort", "providerId" + ",ASC");
+        customizer.expectValue("$.content.length()", 1);
+        addSearchTermQuery(customizer, "test_name", "data1name");
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer,
+                          "Search all error",
+                          ENGINE_TYPE);
+
+        customizer = customizer().expectStatusOk();
+        addCommontMatchers(customizer);
+        customizer.addParameter("sort", "providerId" + ",ASC");
+        customizer.expectValue("$.content.length()", 1);
+        addSearchTermQuery(customizer, "test_json.searchable_fields.field1", "value1");
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer,
+                          "Search all error",
+                          ENGINE_TYPE);
+
+        customizer = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+        customizer.addParameter("sort", "providerId" + ",ASC");
+        addSearchTermQuery(customizer, "test_json.hidden_field", null);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer,
+                          "Search all error",
+                          ENGINE_TYPE);
+
     }
 
     @Test

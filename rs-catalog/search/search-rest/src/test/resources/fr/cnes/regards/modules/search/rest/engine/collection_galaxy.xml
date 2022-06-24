@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:noNamespaceSchemaLocation="model_V1.0.xsd">
-	<name>galaxy</name>
-	<type>COLLECTION</type>
-	<attribute>
-		<label>Galaxy name</label>
-		<name>galaxy</name>
-		<type>STRING</type>
-	</attribute>
-	<attribute>
-		<label>Abstract</label>
-		<name>abstract</name>
-		<type>STRING</type>
-	</attribute>	
+       xsi:noNamespaceSchemaLocation="model_V1.0.xsd">
+    <name>galaxy</name>
+    <type>COLLECTION</type>
+    <attribute indexed="true">
+        <label>Galaxy name</label>
+        <name>galaxy</name>
+        <type>STRING</type>
+    </attribute>
+    <attribute indexed="true">
+        <label>Abstract</label>
+        <name>abstract</name>
+        <type>STRING</type>
+    </attribute>
 </model>

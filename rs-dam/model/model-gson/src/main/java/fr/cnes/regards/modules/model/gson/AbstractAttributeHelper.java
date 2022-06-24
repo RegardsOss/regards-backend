@@ -30,6 +30,7 @@ import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -75,7 +76,9 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
                   .filter(a -> (a.getType() == PropertyType.JSON) && a.hasRestriction() && (a.getRestriction().getType()
                                                                                             == RestrictionType.JSON_SCHEMA))
                   .forEach(a -> jsonSchemaAttributes.addAll(fromJsonSchema(a.getJsonPropertyPath(),
-                                                                           ((JsonSchemaRestriction) a.getRestriction()).getJsonSchema())));
+                                                                           ((JsonSchemaRestriction) a.getRestriction()).getJsonSchema(),
+                                                                           a.isIndexed(),
+                                                                           new ArrayList<>(((JsonSchemaRestriction) a.getRestriction()).getIndexableFields()))));
         attributes.addAll(jsonSchemaAttributes);
         attributes.forEach(a -> LOGGER.debug("Attribute found : {} - {} / {}",
                                              a.getName(),
@@ -91,7 +94,10 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
      * @param schema        json schema to read
      * @return computed {@link AttributeModel}s
      */
-    public static List<AttributeModel> fromJsonSchema(String attributePath, String schema) {
+    public static List<AttributeModel> fromJsonSchema(String attributePath,
+                                                      String schema,
+                                                      boolean isIndexed,
+                                                      List<String> indexableFields) {
         List<AttributeModel> jsonSchemaAttributes = Lists.newArrayList();
         try {
             JsonNode root = mapper.readTree(schema);
@@ -100,9 +106,11 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
                 createAttributes(attributePath.substring(idx + 1),
                                  attributePath.substring(0, idx),
                                  root,
+                                 isIndexed,
+                                 indexableFields,
                                  jsonSchemaAttributes);
             } else {
-                createAttributes(attributePath, null, root, jsonSchemaAttributes);
+                createAttributes(attributePath, null, root, isIndexed, indexableFields, jsonSchemaAttributes);
             }
 
         } catch (JsonProcessingException e) {
@@ -122,27 +130,49 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
     private static void createAttributes(String name,
                                          String path,
                                          JsonNode node,
+                                         boolean isIndexed,
+                                         List<String> indexableFields,
                                          List<AttributeModel> jsonSchemaAttributes) {
         String attributeType = node.get(JsonSchemaConstants.TYPE).textValue();
         switch (attributeType) {
             case JsonSchemaConstants.OBJECT_TYPE:
-                createObjectAttributes(name, path, node, jsonSchemaAttributes);
+                createObjectAttributes(name, path, node, isIndexed, indexableFields, jsonSchemaAttributes);
                 break;
             case JsonSchemaConstants.STRING_TYPE:
-                createStringAttribute(name, path, node, jsonSchemaAttributes);
+                createStringAttribute(name,
+                                      path,
+                                      node,
+                                      shouldJsonAttributeBeIndexed(isIndexed, path, name, indexableFields),
+                                      jsonSchemaAttributes);
                 break;
             case JsonSchemaConstants.INTEGER_TYPE:
-                createIntegerAttribute(name, path, node, jsonSchemaAttributes);
+                createIntegerAttribute(name,
+                                       path,
+                                       node,
+                                       shouldJsonAttributeBeIndexed(isIndexed, path, name, indexableFields),
+                                       jsonSchemaAttributes);
                 break;
             case JsonSchemaConstants.NUMBER_TYPE:
-                createDoubleAttribute(name, path, node, jsonSchemaAttributes);
+                createDoubleAttribute(name,
+                                      path,
+                                      node,
+                                      shouldJsonAttributeBeIndexed(isIndexed, path, name, indexableFields),
+                                      jsonSchemaAttributes);
                 break;
             case JsonSchemaConstants.BOOLEAN_TYPE:
-                createBooleanAttribute(name, path, node, jsonSchemaAttributes);
+                createBooleanAttribute(name,
+                                       path,
+                                       node,
+                                       shouldJsonAttributeBeIndexed(isIndexed, path, name, indexableFields),
+                                       jsonSchemaAttributes);
                 break;
             case JsonSchemaConstants.ARRAY_TYPE:
-                createArrayAttributes(name, path, node, jsonSchemaAttributes);
+                createArrayAttributes(name, path, node, isIndexed, indexableFields, jsonSchemaAttributes);
                 break;
+            default:
+                throw new IllegalArgumentException(String.format("Invalid type %s for attribute %s",
+                                                                 attributeType,
+                                                                 name));
         }
     }
 
@@ -152,18 +182,27 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
      * @param name                 name of the attribute represented by the given {@link JsonNode}
      * @param path                 path of the attribute represented by the given {@link JsonNode}
      * @param node                 {@link JsonNode} to compute
+     * @param parentIsIndexed      the indexation status of the non json parent attribute
+     * @param indexableAttributes  the list of attributes path that should be indexed
      * @param jsonSchemaAttributes {@link AttributeModel} list to add computed ones
      */
     private static void createObjectAttributes(String name,
                                                String path,
                                                JsonNode node,
+                                               boolean parentIsIndexed,
+                                               List<String> indexableAttributes,
                                                List<AttributeModel> jsonSchemaAttributes) {
         Optional.ofNullable(node.get(JsonSchemaConstants.PROPERTIES)).ifPresent(properties -> {
             Iterator<Entry<String, JsonNode>> it = properties.fields();
             do {
                 Entry<String, JsonNode> field = it.next();
                 String fieldPath = Optional.ofNullable(path).map(p -> String.format(S_S, p, name)).orElse(name);
-                createAttributes(field.getKey(), fieldPath, field.getValue(), jsonSchemaAttributes);
+                createAttributes(field.getKey(),
+                                 fieldPath,
+                                 field.getValue(),
+                                 parentIsIndexed,
+                                 indexableAttributes,
+                                 jsonSchemaAttributes);
             } while (it.hasNext());
         });
     }
@@ -174,14 +213,18 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
      * @param name                 name of the attribute represented by the given {@link JsonNode}
      * @param path                 path of the attribute represented by the given {@link JsonNode}
      * @param node                 {@link JsonNode} to compute
+     * @param parentIsIndexed      the indexation status of the non json parent attribute
+     * @param indexableAttributes  the list of attributes path that should be indexed
      * @param jsonSchemaAttributes {@link AttributeModel} list to add computed ones
      */
     private static void createArrayAttributes(String name,
                                               String path,
                                               JsonNode node,
+                                              boolean parentIsIndexed,
+                                              List<String> indexableAttributes,
                                               List<AttributeModel> jsonSchemaAttributes) {
         Optional.ofNullable(node.get(JsonSchemaConstants.ITEMS)).ifPresent(items -> {
-            createAttributes(name, path, items, jsonSchemaAttributes);
+            createAttributes(name, path, items, parentIsIndexed, indexableAttributes, jsonSchemaAttributes);
         });
     }
 
@@ -191,11 +234,13 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
      * @param name                 name of the attribute represented by the given {@link JsonNode}
      * @param path                 path of the attribute represented by the given {@link JsonNode}
      * @param node                 {@link JsonNode} to compute
+     * @param isIndexed            whether the attribute should be indexed
      * @param jsonSchemaAttributes {@link AttributeModel} list to add computed ones
      */
     private static void createStringAttribute(String name,
                                               String path,
                                               JsonNode node,
+                                              boolean isIndexed,
                                               List<AttributeModel> jsonSchemaAttributes) {
         String description = Optional.ofNullable(node.get(JsonSchemaConstants.DESCRIPTION))
                                      .map(JsonNode::asText)
@@ -214,6 +259,7 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         attribute.setFragment(fragment);
         attribute.setDescription(description);
         attribute.setVirtual(true);
+        attribute.setIndexed(isIndexed);
         switch (format) {
             case JsonSchemaConstants.URI_FORMAT:
                 attribute.setType(PropertyType.URL);
@@ -236,11 +282,13 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
      * @param name                 name of the attribute represented by the given {@link JsonNode}
      * @param path                 path of the attribute represented by the given {@link JsonNode}
      * @param node                 {@link JsonNode} to compute
+     * @param isIndexed            whether the attribute should be indexed
      * @param jsonSchemaAttributes {@link AttributeModel} list to add computed ones
      */
     private static void createBooleanAttribute(String name,
                                                String path,
                                                JsonNode node,
+                                               boolean isIndexed,
                                                List<AttributeModel> jsonSchemaAttributes) {
         String description = Optional.ofNullable(node.get(JsonSchemaConstants.DESCRIPTION))
                                      .map(JsonNode::asText)
@@ -259,6 +307,7 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         attribute.setUnit(unit);
         attribute.setLabel(label);
         attribute.setVirtual(true);
+        attribute.setIndexed(isIndexed);
         jsonSchemaAttributes.add(attribute);
     }
 
@@ -268,11 +317,13 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
      * @param name                 name of the attribute represented by the given {@link JsonNode}
      * @param path                 path of the attribute represented by the given {@link JsonNode}
      * @param node                 {@link JsonNode} to compute
+     * @param isIndexed            whether the attribute should be indexed
      * @param jsonSchemaAttributes {@link AttributeModel} list to add computed ones
      */
     private static void createIntegerAttribute(String name,
                                                String path,
                                                JsonNode node,
+                                               boolean isIndexed,
                                                List<AttributeModel> jsonSchemaAttributes) {
         String description = Optional.ofNullable(node.get(JsonSchemaConstants.DESCRIPTION))
                                      .map(JsonNode::asText)
@@ -291,6 +342,7 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         attribute.setUnit(unit);
         attribute.setLabel(label);
         attribute.setVirtual(true);
+        attribute.setIndexed(isIndexed);
         jsonSchemaAttributes.add(attribute);
     }
 
@@ -300,11 +352,13 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
      * @param name                 name of the attribute represented by the given {@link JsonNode}
      * @param path                 path of the attribute represented by the given {@link JsonNode}
      * @param node                 {@link JsonNode} to compute
+     * @param isIndexed            whether the attribute should be indexed
      * @param jsonSchemaAttributes {@link AttributeModel} list to add computed ones
      */
     private static void createDoubleAttribute(String name,
                                               String path,
                                               JsonNode node,
+                                              boolean isIndexed,
                                               List<AttributeModel> jsonSchemaAttributes) {
         String description = Optional.ofNullable(node.get(JsonSchemaConstants.DESCRIPTION))
                                      .map(JsonNode::asText)
@@ -323,7 +377,30 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
         attribute.setUnit(unit);
         attribute.setLabel(label);
         attribute.setVirtual(true);
+        attribute.setIndexed(isIndexed);
         jsonSchemaAttributes.add(attribute);
+    }
+
+    /**
+     * Compute whether the json attribute should be indexed
+     *
+     * @param parentIsIndexed     the indexation status of the non json parent attribute
+     * @param path                the json path of the attribute
+     * @param name                the attribute name
+     * @param indexableAttributes the list of attributes path that should be indexed
+     * @return true if the json attribute should be indexed
+     */
+    private static boolean shouldJsonAttributeBeIndexed(boolean parentIsIndexed,
+                                                        String path,
+                                                        String name,
+                                                        List<String> indexableAttributes) {
+        if (!parentIsIndexed) {
+            return false;
+        }
+        if (indexableAttributes.isEmpty()) {
+            return true;
+        }
+        return indexableAttributes.contains(path + "." + name);
     }
 
 }

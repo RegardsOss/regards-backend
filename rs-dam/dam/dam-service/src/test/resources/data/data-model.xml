@@ -92,129 +92,131 @@
 					}
 				}
 			}]]></json_schema>
-		</restriction>
-	</attribute>
-	<fragment>
+        </restriction>
+    </attribute>
+    <fragment>
         <name>hydro</name>
-		<description>Extension STAC : Extension about hydrology</description>
-        <attribute optional="true">
-			<label>Data type</label>
-			<name>data_type</name>
-			<type>STRING</type>
-		</attribute>        
-        <attribute>
-			<label>Variables</label>
-			<name>variables</name>
-			<type>STRING_ARRAY</type>
-		</attribute>        
-        <attribute optional="true">
-			<label>Categories</label>
-			<name>categories</name>
-			<type>STRING_ARRAY</type>
-		</attribute> 
+        <description>Extension STAC : Extension about hydrology</description>
+        <attribute optional="true" indexed="true">
+            <label>Data type</label>
+            <name>data_type</name>
+            <type>STRING</type>
+        </attribute>
+        <attribute indexed="true">
+            <label>Variables</label>
+            <name>variables</name>
+            <type>STRING_ARRAY</type>
+        </attribute>
+        <attribute optional="true" indexed="true">
+            <label>Categories</label>
+            <name>categories</name>
+            <type>STRING_ARRAY</type>
+        </attribute>
     </fragment>
-	<fragment>
+    <fragment>
         <name>spatial</name>
-		<description>Extension STAC : Extension about spatial data</description>
+        <description>Extension STAC : Extension about spatial data</description>
         <attribute optional="true">
-			<label>Cycle ID</label>
-			<name>cycle_id</name>
-			<type>INTEGER</type>
-		</attribute>
+            <label>Cycle ID</label>
+            <name>cycle_id</name>
+            <type>INTEGER</type>
+        </attribute>
         <attribute optional="true">
-			<label>CRID</label>
-			<name>crid</name>
-			<type>STRING</type>
-			<restriction>
-				<pattern>[DPTVX][GIO][A-Z0-9]{2}[A-Z0-9]{0,2}</pattern>
-			</restriction>
-		</attribute>
-		<attribute optional="true">
-			<label>Pass ID</label>
-			<name>pass_id</name>
-			<type>INTEGER</type>
-			<restriction>
-				<integer_range>
-					<min>1</min>
-					<max>584</max>
-				</integer_range>
-			</restriction>
-		</attribute>
-		<attribute optional="true">
-			<label>Tile ID</label>
-			<name>tile_id</name>
-			<type>INTEGER</type>
-			<restriction>
-				<integer_range>
-					<min>1</min>
-					<max>308</max>
-				</integer_range>
-			</restriction>
-		</attribute> 
-		<attribute optional="true">
-			<label>Tile side</label>
-			<name>tile_side</name>
-			<type>STRING</type>
-			<restriction>
-				<enumeration>
-					<value>Full</value>
-					<value>Left</value>
-					<value>Right</value>
-				</enumeration>
-			</restriction>
-		</attribute>
-		<attribute optional="true">
-			<label>Bassin ID</label>
-			<name>bassin_id</name>
-			<type>STRING</type>
-		</attribute>
-		<attribute optional="true">
-			<label>Continent ID</label>
-			<name>continent_id</name>
-			<type>STRING</type>
-			<restriction>
-				<enumeration>
-					<value>AF</value>
-					<value>AU</value>
-					<value>EU</value>
-					<value>GR</value>
-					<value>NA</value>
-					<value>SA</value>
-					<value>SI</value>
-				</enumeration>
-			</restriction>
-		</attribute>
-		<attribute optional="true">
-			<label>Scene ID</label>
-			<name>scene_id</name>
-			<type>INTEGER</type>
-		</attribute>
+            <label>CRID</label>
+            <name>crid</name>
+            <type>STRING</type>
+            <restriction>
+                <pattern>[DPTVX][GIO][A-Z0-9]{2}[A-Z0-9]{0,2}</pattern>
+            </restriction>
+        </attribute>
+        <attribute optional="true">
+            <label>Pass ID</label>
+            <name>pass_id</name>
+            <type>INTEGER</type>
+            <restriction>
+                <integer_range>
+                    <min>1</min>
+                    <max>584</max>
+                </integer_range>
+            </restriction>
+        </attribute>
+        <attribute optional="true">
+            <label>Tile ID</label>
+            <name>tile_id</name>
+            <type>INTEGER</type>
+            <restriction>
+                <integer_range>
+                    <min>1</min>
+                    <max>308</max>
+                </integer_range>
+            </restriction>
+        </attribute>
+        <attribute optional="true">
+            <label>Tile side</label>
+            <name>tile_side</name>
+            <type>STRING</type>
+            <restriction>
+                <enumeration>
+                    <value>Full</value>
+                    <value>Left</value>
+                    <value>Right</value>
+                </enumeration>
+            </restriction>
+        </attribute>
+        <attribute optional="true">
+            <label>Bassin ID</label>
+            <name>bassin_id</name>
+            <type>STRING</type>
+        </attribute>
+        <attribute optional="true">
+            <label>Continent ID</label>
+            <name>continent_id</name>
+            <type>STRING</type>
+            <restriction>
+                <enumeration>
+                    <value>AF</value>
+                    <value>AU</value>
+                    <value>EU</value>
+                    <value>GR</value>
+                    <value>NA</value>
+                    <value>SA</value>
+                    <value>SI</value>
+                </enumeration>
+            </restriction>
+        </attribute>
+        <attribute optional="true">
+            <label>Scene ID</label>
+            <name>scene_id</name>
+            <type>INTEGER</type>
+        </attribute>
     </fragment>
-	<fragment>
-		<name>dcs</name>
-		<description>Extension STAC : Extension about data characteristics</description>
-		<attribute>
-			<label>Origin</label>
-			<name>origin</name>
-			<type>STRING</type>
-		</attribute>
-		<attribute>
-			<label>Techno ID</label>
-			<name>techno_id</name>
-			<type>STRING</type>
-			<restriction>
-				<enumeration>
-					<value>spatial</value>
-					<value>model</value>
-					<value>in-situ</value>
-				</enumeration>
-			</restriction>
-		</attribute>
-		<attribute optional="true">
-			<label>Reference catalog</label>
-			<name>reference_catalog</name>
-			<description>If HYSOPE2 only references metadata without giving access to physical data, this field indicates which catalog contains data.</description>
-			<type>STRING</type>			
-		</attribute>
-	</fragment>
+    <fragment>
+        <name>dcs</name>
+        <description>Extension STAC : Extension about data characteristics</description>
+        <attribute>
+            <label>Origin</label>
+            <name>origin</name>
+            <type>STRING</type>
+        </attribute>
+        <attribute>
+            <label>Techno ID</label>
+            <name>techno_id</name>
+            <type>STRING</type>
+            <restriction>
+                <enumeration>
+                    <value>spatial</value>
+                    <value>model</value>
+                    <value>in-situ</value>
+                </enumeration>
+            </restriction>
+        </attribute>
+        <attribute optional="true">
+            <label>Reference catalog</label>
+            <name>reference_catalog</name>
+            <description>If HYSOPE2 only references metadata without giving access to physical data, this field
+                indicates which catalog contains data.
+            </description>
+            <type>STRING</type>
+        </attribute>
+    </fragment>
 </model>

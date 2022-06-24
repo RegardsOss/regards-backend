@@ -41,18 +41,23 @@ public class AttrDescToJsonMapping {
                              (a, b) -> merge(a, b));
     }
 
-    private static JsonObject type(String type) {
-        return object("type", type);
+    private static JsonObject type(String type, boolean indexed) {
+        return object(kv("type", type), kv("index", indexed));
     }
 
     private static JsonObject merge(JsonObject... objs) {
         return MERGER.mergeAll(objs);
     }
 
+    @Deprecated
     public static JsonObject stringMapping() {
+        return stringMapping(true);
+    }
+
+    public static JsonObject stringMapping(boolean indexed) {
         return object(kv("type", "text"),
                       kv("fielddata", true),
-                      kv("fields", object("keyword", object(kv("type", "keyword")))));
+                      kv("fields", object("keyword", object(kv("type", "keyword"), kv("index", indexed)))));
     }
 
     public JsonObject toJsonMapping(AttributeDescription attrDescOrNull) {
@@ -121,15 +126,15 @@ public class AttrDescToJsonMapping {
     }
 
     private JsonObject toURLJsonMapping(AttributeDescription attrDesc) {
-        return nestedPropertiesStructure(attrDesc.getPath(), stringMapping());
+        return nestedPropertiesStructure(attrDesc.getPath(), stringMapping(attrDesc.isIndexed()));
     }
 
     private JsonObject toBooleanJsonMapping(AttributeDescription attrDesc) {
-        return nestedPropertiesStructure(attrDesc.getPath(), type("boolean"));
+        return nestedPropertiesStructure(attrDesc.getPath(), type("boolean", attrDesc.isIndexed()));
     }
 
     private JsonObject toObjectJsonMapping(AttributeDescription attrDesc) {
-        return nestedPropertiesStructure(attrDesc.getPath(), type("object"));
+        return nestedPropertiesStructure(attrDesc.getPath(), type("object", attrDesc.isIndexed()));
     }
 
     private JsonObject toStringJsonMapping(AttributeDescription attrDesc) {
@@ -139,45 +144,50 @@ public class AttrDescToJsonMapping {
             case GEOMETRY:
                 return toGeometryJsonMapping(attrDesc);
             default:
-                return nestedPropertiesStructure(attrDesc.getPath(), stringMapping());
+                return nestedPropertiesStructure(attrDesc.getPath(), stringMapping(attrDesc.isIndexed()));
         }
     }
 
     private JsonObject toGeometryJsonMapping(AttributeDescription attrDesc) {
-        return nestedPropertiesStructure(attrDesc.getPath(), type("geo_shape"));
+        return nestedPropertiesStructure(attrDesc.getPath(), type("geo_shape", attrDesc.isIndexed()));
     }
 
     private JsonObject toIntegerJsonMapping(AttributeDescription attrDesc) {
-        return nestedPropertiesStructure(attrDesc.getPath(), type("integer"));
+        return nestedPropertiesStructure(attrDesc.getPath(), type("integer", attrDesc.isIndexed()));
     }
 
     private JsonObject toIntegerIntervalJsonMapping(AttributeDescription attrDesc) {
-        return nestedSimpleRange(attrDesc, type("integer"));
+        return nestedSimpleRange(attrDesc, type("integer", attrDesc.isIndexed()));
     }
 
     private JsonObject toLongJsonMapping(AttributeDescription attrDesc) {
-        return nestedPropertiesStructure(attrDesc.getPath(), type("long"));
+        return nestedPropertiesStructure(attrDesc.getPath(), type("long", attrDesc.isIndexed()));
     }
 
     private JsonObject toLongIntervalJsonMapping(AttributeDescription attrDesc) {
-        return nestedSimpleRange(attrDesc, type("long"));
+        return nestedSimpleRange(attrDesc, type("long", attrDesc.isIndexed()));
     }
 
     private JsonObject toDoubleJsonMapping(AttributeDescription attrDesc) {
-        return nestedPropertiesStructure(attrDesc.getPath(), type("double"));
+        return nestedPropertiesStructure(attrDesc.getPath(), type("double", attrDesc.isIndexed()));
     }
 
     private JsonObject toDoubleIntervalJsonMapping(AttributeDescription attrDesc) {
-        return nestedSimpleRange(attrDesc, type("double"));
+        return nestedSimpleRange(attrDesc, type("double", attrDesc.isIndexed()));
     }
 
     private JsonObject toDateJsonMapping(AttributeDescription attrDesc) {
         return nestedPropertiesStructure(attrDesc.getPath(),
-                                         object(kv("type", "date"), kv("format", "date_optional_time")));
+                                         object(kv("type", "date"),
+                                                kv("index", attrDesc.isIndexed()),
+                                                kv("format", "date_optional_time")));
     }
 
     private JsonObject toDateIntervalJsonMapping(AttributeDescription attrDesc) {
-        return nestedSimpleRange(attrDesc, object(kv("type", "date"), kv("format", "date_optional_time")));
+        return nestedSimpleRange(attrDesc,
+                                 object(kv("type", "date"),
+                                        kv("index", attrDesc.isIndexed()),
+                                        kv("format", "date_optional_time")));
     }
 
     private JsonObject nestedSimpleRange(AttributeDescription attrDesc, JsonObject type) {
@@ -199,9 +209,13 @@ public class AttrDescToJsonMapping {
                 String path = attrDesc.getPath();
                 return merge(NO_ALIAS.nestedSimpleRange(attrDesc, type),
                              nestedPropertiesStructure(attrDesc.getPath() + ".gte",
-                                                       object(kv("type", "alias"), kv("path", fullLowPath(path)))),
+                                                       object(kv("type", "alias"),
+                                                              kv("index", attrDesc.isIndexed()),
+                                                              kv("path", fullLowPath(path)))),
                              nestedPropertiesStructure(attrDesc.getPath() + ".lte",
-                                                       object(kv("type", "alias"), kv("path", fullHighPath(path)))));
+                                                       object(kv("type", "alias"),
+                                                              kv("index", attrDesc.isIndexed()),
+                                                              kv("path", fullHighPath(path)))));
             }
         };
 

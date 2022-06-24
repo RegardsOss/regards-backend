@@ -162,6 +162,11 @@ public class AttributeModelControllerIT extends AbstractRegardsTransactionalIT {
                                                    "Attribute array size useful for array based attributes")
                                          .type(JSON_NUMBER_TYPE)
                                          .optional());
+        descriptors.add(constrainedFields.withPath(prefixPath + "indexed",
+                                                   "indexed",
+                                                   "Should be searchable in ElasticSearch")
+                                         .type(JSON_BOOLEAN_TYPE)
+                                         .optional());
         descriptors.add(constrainedFields.withPath(prefixPath + "fragment",
                                                    "fragment",
                                                    "Attribute Fragment",

@@ -45,6 +45,8 @@ import fr.cnes.regards.modules.indexer.dao.builder.GeoCriterionWithPolygonOrBbox
 import fr.cnes.regards.modules.indexer.dao.builder.QueryBuilderCriterionVisitor;
 import fr.cnes.regards.modules.indexer.dao.converter.SortToLinkedHashMap;
 import fr.cnes.regards.modules.indexer.dao.deser.JsonDeserializeStrategy;
+import fr.cnes.regards.modules.indexer.dao.exception.ESIndexNotFoundRuntimeException;
+import fr.cnes.regards.modules.indexer.dao.exception.FieldNotIndexedRuntimeException;
 import fr.cnes.regards.modules.indexer.dao.mapping.AttributeDescription;
 import fr.cnes.regards.modules.indexer.dao.mapping.utils.AttrDescToJsonMapping;
 import fr.cnes.regards.modules.indexer.dao.mapping.utils.JsonConverter;
@@ -150,6 +152,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -256,9 +260,14 @@ public class EsRepository implements IEsRepository {
     private static final String INDEX_NOT_FOUND_EXCEPTION = "index_not_found_exception";
 
     /**
-     * Related message error
+     * Error raised by ES when REGARDS attempts to search on a non-indexed field
      */
-    private static final String INDEX_NOT_FOUND_ERROR_MESSAGE = "Research won't work until you've ingested some features into ES";
+    private static final String QUERY_SHARD_EXCEPTION = "query_shard_exception";
+
+    /**
+     * Cause message sent by ES when REGARDS attempts to search on a non-indexed field
+     */
+    private static final String QUERY_SHARD_EXCEPTION_CAUSE_PATTERN = "Cannot search on field \\[(.*?)\\] since it is not indexed";
 
     /**
      * Single scheduled executor service to clean reminder tasks once expiration date is reached
@@ -949,7 +958,20 @@ public class EsRepository implements IEsRepository {
         } catch (ElasticsearchException ee) {
             LOGGER.error(ee.getMessage(), ee);
             if (ee.getMessage().contains(INDEX_NOT_FOUND_EXCEPTION)) {
-                throw new RsRuntimeException(INDEX_NOT_FOUND_ERROR_MESSAGE);
+                throw new ESIndexNotFoundRuntimeException();
+            }
+            Optional<String> queryShardCause = Arrays.stream(ee.getSuppressed())
+                                                     .map(t -> t.getMessage())
+                                                     .filter(m -> m.contains(QUERY_SHARD_EXCEPTION))
+                                                     .findFirst();
+            if (queryShardCause.isPresent()) {
+                Pattern pattern = Pattern.compile(QUERY_SHARD_EXCEPTION_CAUSE_PATTERN);
+                Matcher matcher = pattern.matcher(queryShardCause.get());
+                matcher.find();
+                //If there is no result, it means that the thrown exception isn't the expected one (searching on a field which is not indexed)
+                if (matcher.group(1) != null) {
+                    throw new FieldNotIndexedRuntimeException(matcher.group(1));
+                }
             }
             throw ee;
         }
@@ -1729,7 +1751,7 @@ public class EsRepository implements IEsRepository {
         } catch (ResponseException e) {
             LOGGER.error(e.getMessage(), e);
             if (e.getMessage().contains(INDEX_NOT_FOUND_EXCEPTION)) {
-                throw new RsRuntimeException(INDEX_NOT_FOUND_ERROR_MESSAGE);
+                throw new ESIndexNotFoundRuntimeException();
             }
             throw e;
         }

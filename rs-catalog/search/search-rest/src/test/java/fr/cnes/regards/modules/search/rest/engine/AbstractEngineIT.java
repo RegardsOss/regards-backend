@@ -295,6 +295,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
         Model testModel = modelService.importModel(this.getClass().getResourceAsStream("data_model_test.xml"));
 
+        Model testMappingModel = modelService.importModel(this.getClass()
+                                                              .getResourceAsStream("data_model_mapping_test.xml"));
         // - Manage attribute model retrieval
         Mockito.when(modelAttrAssocClientMock.getModelAttrAssocsFor(Mockito.any())).thenAnswer(invocation -> {
             EntityType type = invocation.getArgument(0);
@@ -327,7 +329,10 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         createData(galaxyModel, starModel, starSystemModel, planetModel);
 
         // Add test datas
-        indexerService.saveBulkEntities(getDefaultTenant(), createTestData(testModel));
+        createTestData(testModel);
+
+        // Add datas for mapping tests
+        createMappingTestData(testMappingModel);
 
         // Refresh index to be sure data is available for requesting
         indexerService.refresh(getDefaultTenant());
@@ -547,7 +552,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         return planets;
     }
 
-    protected List<DataObject> createTestData(Model model) {
+    private void createTestData(Model model) {
         List<DataObject> datas = new ArrayList<>();
 
         DataObject data = createEntity(model, "data_one");
@@ -562,7 +567,26 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         data.setCreationDate(OffsetDateTime.now());
         datas.add(data);
 
-        return datas;
+        // Configure mapping before adding features
+        mappingService.configureMappings(getDefaultTenant(), modelService.getModelAttrAssocs("model_test"));
+
+        indexerService.saveBulkEntities(getDefaultTenant(), datas);
+    }
+
+    private void createMappingTestData(Model model) {
+        List<DataObject> datas = new ArrayList<>();
+        DataObject data = createEntity(model, "data1");
+        data.addProperty(IProperty.buildString("test_name", "data1name"));
+        data.addProperty(IProperty.buildJson("test_json",
+                                             builder.create()
+                                                    .fromJson(
+                                                        "{\"searchable_fields\":{\"field1\":\"value1\",\"field2\":\"value2\"},\"hidden_field\":\"hidden1\"}",
+                                                        JsonObject.class)));
+        datas.add(data);
+
+        mappingService.configureMappings(getDefaultTenant(), modelService.getModelAttrAssocs("model_mapping_test"));
+
+        indexerService.saveBulkEntities(getDefaultTenant(), datas);
     }
 
     protected DataObject createMercury(Model planetModel) {

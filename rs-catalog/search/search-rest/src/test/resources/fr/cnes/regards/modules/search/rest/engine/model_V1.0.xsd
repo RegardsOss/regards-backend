@@ -67,6 +67,9 @@
     <!-- Define description -->
     <xs:element name="version" type="xs:string"/>
 
+    <!-- Define name -->
+    <xs:element name="esMapping" type="xs:string"/>
+
     <!-- Define attribute -->
     <xs:element name="attribute">
         <xs:complexType>
@@ -80,10 +83,13 @@
                 <xs:element ref="computation" minOccurs="0"/>
                 <!-- Custom attribute properties -->
                 <xs:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
+                <!-- Custom elasticsearch mapping for this attribute -->
+                <xs:element ref="esMapping" minOccurs="0"/>
             </xs:sequence>
             <xs:attribute name="alterable" type="xs:boolean"
                           default="true"/>
             <xs:attribute name="optional" type="xs:boolean" default="false"/>
+            <xs:attribute name="indexed" type="xs:boolean" default="false"/>
             <xs:attribute name="group" type="xs:string"/>
         </xs:complexType>
     </xs:element>
@@ -144,9 +150,18 @@
             </xs:restriction>
         </xs:simpleType>
     </xs:element>
-    
-    <!-- Pattern restriction -->
+
+    <!-- JsonSchema restriction -->
     <xs:element name="json_schema">
+        <xs:simpleType>
+            <xs:restriction base="xs:string">
+                <xs:whiteSpace value="preserve"/>
+                <xs:minLength value="1"/>
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:element>
+
+    <xs:element name="indexable_field">
         <xs:simpleType>
             <xs:restriction base="xs:string">
                 <xs:whiteSpace value="preserve"/>
@@ -242,14 +257,17 @@
     <!-- Define restriction -->
     <xs:element name="restriction">
         <xs:complexType>
-            <xs:choice>
-                <xs:element ref="enumeration"/>
-                <xs:element ref="pattern"/>
-                <xs:element ref="integer_range"/>
-                <xs:element ref="long_range"/>
-                <xs:element ref="double_range"/>
-                <xs:element ref="json_schema"/>
-            </xs:choice>
+            <xs:sequence>
+                <xs:choice>
+                    <xs:element ref="enumeration"/>
+                    <xs:element ref="pattern"/>
+                    <xs:element ref="integer_range"/>
+                    <xs:element ref="long_range"/>
+                    <xs:element ref="double_range"/>
+                    <xs:element ref="json_schema"/>
+                </xs:choice>
+                <xs:element ref="indexable_field" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
         </xs:complexType>
     </xs:element>
 

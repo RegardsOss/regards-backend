@@ -190,7 +190,8 @@ public class ModelAttributeControllerIT extends AbstractRegardsIT {
     }
 
     private AttributeModel createAttribute(String pName) throws ModuleException {
-        final AttributeModel att = new AttributeModelBuilder("att" + pName, PropertyType.STRING, "ForTests").build();
+        final AttributeModel att = new AttributeModelBuilder("att" + pName, PropertyType.STRING, "ForTests").setIndexed(
+            true).build();
         return attributeModelService.addAttribute(att, false);
     }
 
@@ -214,6 +215,7 @@ public class ModelAttributeControllerIT extends AbstractRegardsIT {
         customizer.expect(MockMvcResultMatchers.jsonPath("$.content.attribute.id").value(pAtt.getId().intValue()));
         customizer.expect(MockMvcResultMatchers.jsonPath("$.content.attribute.name").value(pAtt.getName()));
         customizer.expect(MockMvcResultMatchers.jsonPath("$.content.attribute.type").value(pAtt.getType().toString()));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.attribute.indexed").value(pAtt.isIndexed()));
 
         // Test Model
         customizer.expect(MockMvcResultMatchers.jsonPath("$.content.model.id").value(pMod.getId().intValue()));

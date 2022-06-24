@@ -41,7 +41,7 @@ import java.util.UUID;
 @TestPropertySource(locations = { "classpath:test.properties" },
     properties = { "regards.tenant=complex_search", "spring.jpa.properties.hibernate.default_schema=complex_search" })
 @MultitenantTransactional
-public class ComplexSeachControllerIT extends AbstractEngineIT {
+public class ComplexSearchControllerIT extends AbstractEngineIT {
 
     private SearchRequest createSearchRequest(String engineType,
                                               String datasetUrn,
@@ -117,7 +117,7 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
     public void searchAll() {
         ComplexSearchRequest request = new ComplexSearchRequest(Lists.newArrayList(DataType.values()));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expectValue("$.metadata.totalElements", 14);
+        customizer.expectValue("$.metadata.totalElements", 15);
         performDefaultPost(ComplexSearchController.TYPE_MAPPING, request, customizer, "Search all error");
     }
 
@@ -232,8 +232,8 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
                                         OffsetDateTime.now(),
                                         Lists.newArrayList(astroObjects.get(JUPITER).getIpId().toString())));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        // Should be 14 for the legacy all request (-1) for excluded id of jupiter
-        customizer.expectValue("$.metadata.totalElements", 13);
+        // Should be 15 for the legacy all request (-1) for excluded id of jupiter
+        customizer.expectValue("$.metadata.totalElements", 14);
         performDefaultPost(ComplexSearchController.TYPE_MAPPING, request, customizer, "Search all error");
     }
 
@@ -241,7 +241,7 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
     public void computeDatasetSummary() {
         ComplexSearchRequest request = new ComplexSearchRequest(Lists.newArrayList(DataType.values()));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
-        customizer.expectValue("$.documentsCount", 14);
+        customizer.expectValue("$.documentsCount", 15);
         customizer.expectValue("$.filesCount", 1);
         customizer.expectValue("$.filesSize", 10);
         performDefaultPost(ComplexSearchController.TYPE_MAPPING + ComplexSearchController.SUMMARY_MAPPING,

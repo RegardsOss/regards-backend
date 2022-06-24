@@ -1,12 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:noNamespaceSchemaLocation="model_V1.0.xsd">
-    <name>model_test</name>
+    <name>model_mapping_test</name>
     <type>DATA</type>
     <attribute indexed="true">
-        <label>Name</label>
-        <name>name_test</name>
+        <label>label</label>
+        <name>test_name</name>
+        <description>description</description>
         <type>STRING</type>
+    </attribute>
+    <attribute indexed="true">
+        <label>label</label>
+        <name>test_json</name>
+        <description>description</description>
+        <type>JSON</type>
+        <restriction>
+            <json_schema>
+                <![CDATA[{"type":"object","properties":{"name":{"type":"string"},"searchable_fields":{"type":"object","properties":{"field1":{"type":"string"},"field2":{"type":"string"}}},"hidden_field":{"type":"string"}}}]]></json_schema>
+            <indexable_field>test_json.searchable_fields.field1</indexable_field>
+            <indexable_field>test_json.searchable_fields.field2</indexable_field>
+        </restriction>
     </attribute>
     <fragment>
         <name>TimePeriod</name>

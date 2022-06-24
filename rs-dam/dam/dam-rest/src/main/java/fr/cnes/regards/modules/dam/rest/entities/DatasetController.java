@@ -331,15 +331,13 @@ public class DatasetController implements IResourceController<Dataset> {
     /**
      * Validate an open search query for the given data model, represented by its id
      *
-     * @param dataModelName
-     * @param query         {@link Query}
+     * @param query {@link Query}
      * @return whether the query is valid or not
      * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.POST, value = DATA_SUB_SETTING_VALIDATION)
     @ResourceAccess(description = "Validate if a subsetting clause is correct and coherent regarding a data model")
-    public ResponseEntity<Validity> validateSubSettingClause(@RequestParam("dataModelName") String dataModelName,
-                                                             @RequestBody Query query) throws ModuleException {
+    public ResponseEntity<Validity> validateSubSettingClause(@RequestBody Query query) throws ModuleException {
         return ResponseEntity.ok(new Validity(service.validateOpenSearchSubsettingClause(query.getQuery())));
     }
 

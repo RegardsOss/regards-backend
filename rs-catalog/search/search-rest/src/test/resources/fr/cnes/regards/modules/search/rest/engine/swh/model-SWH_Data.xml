@@ -3,337 +3,337 @@
     <name>SWH_Data</name>
     <description>SWH Data</description>
     <type>DATA</type>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Coupled Mode</label>
         <name>CoupledMode</name>
         <description>Coupled Mode</description>
         <type unit="unitless">STRING</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Coupled Sce HMA2</label>
         <name>CoupledScenesHMA2</name>
         <description>Coupled Scenes HMA2</description>
         <type unit="unitless">STRING</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Coupled Sce MI</label>
         <name>CoupledScenesMI</name>
         <description>Coupled Scenes MI</description>
         <type unit="unitless">STRING_ARRAY</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Coupled Sce HMX_S</label>
         <name>CoupledScenesHMX_S</name>
         <description>Coupled Scenes HMX_S</description>
         <type unit="unitless">STRING_ARRAY</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Grid Reference</label>
         <name>GridReference</name>
         <description>Grid Reference</description>
         <type unit="unitless">STRING</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Platform Name</label>
         <name>PlatformName</name>
         <description>Platform Name</description>
         <type unit="unitless">STRING</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Processing Level</label>
         <name>ProcessingLevel</name>
         <description>Processing Level</description>
         <type unit="unitless">STRING</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Polygon Center WKT</label>
         <name>PolygonCenterWKT</name>
         <description>Polygon Center WKT</description>
         <type unit="unitless">STRING</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Coupled Sce THR2</label>
         <name>CoupledScenesTHR2</name>
         <description>Coupled Scenes THR2</description>
         <type unit="unitless">STRING_ARRAY</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Coupled Sce HX_S</label>
         <name>CoupledScenesHX_S</name>
         <description>Coupled Scenes HX_S</description>
         <type unit="unitless">STRING_ARRAY</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Data Date</label>
         <name>DataDate</name>
         <description>Data Date</description>
         <type unit="unitless">DATE_ISO8601</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Coupled Sce HX2</label>
         <name>CoupledScenesHX2</name>
         <description>Coupled Scenes HX2</description>
         <type unit="unitless">STRING_ARRAY</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Coupled Sce HMA2_S</label>
         <name>CoupledScenesHMA2_S</name>
         <description>Coupled Scenes HMA2_S</description>
         <type unit="unitless">STRING_ARRAY</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Cloud Cover</label>
         <name>CloudCover</name>
         <description>Cloud Cover</description>
         <type unit="unitless">INTEGER</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Coupled Sce P2</label>
         <name>CoupledScenesP2</name>
         <description>Coupled Scenes P2</description>
         <type unit="unitless">STRING_ARRAY</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Coupling Modes</label>
         <name>CouplingModes</name>
         <description>Coupling Modes</description>
         <type unit="unitless">STRING_ARRAY</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Free Cloud Percent</label>
         <name>FreeCloudPercentage</name>
         <description>Free Cloud Percentage</description>
         <type unit="unitless">INTEGER</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Image Quality Indic</label>
         <name>ImageQualityIndicator</name>
         <description>Image Quality Indicator</description>
         <type unit="unitless">STRING</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Coupled Sce S</label>
         <name>CoupledScenesS</name>
         <description>Coupled Scenes S</description>
         <type unit="unitless">STRING_ARRAY</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Viewing Angle</label>
         <name>ViewingAngle</name>
         <description>Viewing Angle</description>
         <type unit="unitless">DOUBLE</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>A23 Code</label>
         <name>A23Code</name>
         <description>A23 Code</description>
         <type unit="unitless">STRING</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Production Date</label>
         <name>ProductionDate</name>
         <description>Production Date</description>
         <type unit="unitless">DATE_ISO8601</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Shift Value</label>
         <name>ShiftValue</name>
         <description>Shift Value</description>
         <type unit="unitless">INTEGER</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Coupled Sce THX</label>
         <name>CoupledScenesTHX</name>
         <description>Coupled Scenes THX</description>
         <type unit="unitless">STRING_ARRAY</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Coupled Sce HM_S</label>
         <name>CoupledScenesHM_S</name>
         <description>Coupled Scenes HM_S</description>
         <type unit="unitless">STRING_ARRAY</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Polygon WKT</label>
         <name>PolygonWKT</name>
         <description>Polygon WKT</description>
         <type unit="unitless">STRING</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Coupled Sce THR_S</label>
         <name>CoupledScenesTHR_S</name>
         <description>Coupled Scenes THR_S</description>
         <type unit="unitless">STRING_ARRAY</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Geometric Processing</label>
         <name>GeometricProcessing</name>
         <description>Geometric Processing</description>
         <type unit="unitless">STRING</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Coupled Sce HMB2</label>
         <name>CoupledScenesHMB2</name>
         <description>Coupled Scenes HMB2</description>
         <type unit="unitless">STRING_ARRAY</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Nb Rows</label>
         <name>NbRows</name>
         <description>Nb Rows</description>
         <type unit="unitless">INTEGER</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Scene Count</label>
         <name>SceneCount</name>
         <description>Scene Count</description>
         <type unit="unitless">INTEGER</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Coupled Sce I2</label>
         <name>CoupledScenesI2</name>
         <description>Coupled Scenes I2</description>
         <type unit="unitless">STRING_ARRAY</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Scene ID (A21 code)</label>
         <name>SceneID</name>
         <description>Scene ID</description>
         <type unit="unitless">STRING</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Sensor Code</label>
         <name>SensorCode</name>
         <description>Sensor Code</description>
         <type unit="unitless">STRING</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Instrument Name</label>
         <name>InstrumentName</name>
         <description>Instrument Name</description>
         <type unit="unitless">STRING</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Coupled Sce THX_S</label>
         <name>CoupledScenesTHX_S</name>
         <description>Coupled Scenes THX_S</description>
         <type unit="unitless">STRING_ARRAY</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Cloud Cover quotes</label>
         <name>CloudCoverquotes</name>
         <description>Cloud Cover quotes</description>
         <type unit="unitless">STRING</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>A21 Code</label>
         <name>A21Code</name>
         <description>A21 Code</description>
         <type unit="unitless">STRING</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Nb Bands</label>
         <name>NbBands</name>
         <description>Nb Bands</description>
         <type unit="unitless">INTEGER</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Scene Rank</label>
         <name>SceneRank</name>
         <description>Scene Rank</description>
         <type unit="unitless">INTEGER</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>gain Number</label>
         <name>gainNumber</name>
         <description>gain Number</description>
         <type unit="unitless">INTEGER</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Coupled Sce THR</label>
         <name>CoupledScenesTHR</name>
         <description>Coupled Scenes THR</description>
         <type unit="unitless">STRING_ARRAY</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Coupled Sce M2</label>
         <name>CoupledScenesM2</name>
         <description>Coupled Scenes M2</description>
         <type unit="unitless">STRING_ARRAY</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Data File Size</label>
         <name>DataFileSize</name>
         <description>Data File Size</description>
         <type unit="o">LONG</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Station</label>
         <name>Station</name>
         <description>Station</description>
         <type unit="unitless">STRING</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Nb Columns</label>
         <name>NbCols</name>
         <description>Nb Columns</description>
         <type unit="unitless">INTEGER</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Sun Elevation</label>
         <name>SunElevation</name>
         <description>Sun Elevation</description>
         <type unit="unitless">DOUBLE</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Swath Mode</label>
         <name>SwathMode</name>
         <description>Swath Mode</description>
         <type unit="unitless">STRING</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Sun Azimuth</label>
         <name>SunAzimuth</name>
         <description>Sun Azimuth</description>
         <type unit="unitless">DOUBLE</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Data ID</label>
         <name>DataID</name>
         <description>Data ID</description>
         <type unit="unitless">STRING</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Coupled Sce PX</label>
         <name>CoupledScenesPX</name>
         <description>Coupled Scenes PX</description>
         <type unit="unitless">STRING_ARRAY</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Coupled Sce X2</label>
         <name>CoupledScenesX2</name>
         <description>Coupled Scenes X2</description>
         <type unit="unitless">STRING_ARRAY</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Gerald Name</label>
         <name>GeraldName</name>
         <description>Gerald Name</description>
         <type unit="unitless">STRING</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Scene Name</label>
         <name>SceneName</name>
         <description>Scene Name</description>
         <type unit="unitless">STRING</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Coupled Sce HMX</label>
         <name>CoupledScenesHMX</name>
         <description>Coupled Scenes HMX</description>
         <type unit="unitless">STRING</type>
     </attribute>
-    <attribute alterable="true" optional="true">
+    <attribute alterable="true" optional="true" indexed="true">
         <label>Incidence Angle</label>
         <name>IncidenceAngle</name>
         <description>Incidence Angle</description>

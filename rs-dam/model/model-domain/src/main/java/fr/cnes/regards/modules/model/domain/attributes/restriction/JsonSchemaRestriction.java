@@ -18,12 +18,17 @@
  */
 package fr.cnes.regards.modules.model.domain.attributes.restriction;
 
+import fr.cnes.regards.framework.jpa.json.JsonTypeDescriptor;
 import fr.cnes.regards.modules.model.domain.schema.Restriction;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Restriction for {@link PropertyType#JSON} to add jsonSchema validation
@@ -36,6 +41,13 @@ public class JsonSchemaRestriction extends AbstractRestriction {
 
     @Column(name = "json_schema")
     private String jsonSchema;
+
+    /**
+     * Jsonified list of Strings
+     **/
+    @Column(name = "indexable_fields", columnDefinition = "jsonb")
+    @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
+    private Set<String> indexableFields;
 
     public JsonSchemaRestriction() {
         this.type = RestrictionType.JSON_SCHEMA;
@@ -50,12 +62,14 @@ public class JsonSchemaRestriction extends AbstractRestriction {
     public Restriction toXml() {
         Restriction restriction = new Restriction();
         restriction.setJsonSchema(jsonSchema);
+        restriction.getIndexableField().addAll(indexableFields);
         return restriction;
     }
 
     @Override
     public void fromXml(Restriction pXmlElement) {
         jsonSchema = pXmlElement.getJsonSchema();
+        indexableFields = new HashSet<>(pXmlElement.getIndexableField());
     }
 
     public String getJsonSchema() {
@@ -66,4 +80,10 @@ public class JsonSchemaRestriction extends AbstractRestriction {
         this.jsonSchema = jsonSchema;
     }
 
+    public Set<String> getIndexableFields() {
+        if (this.indexableFields == null) {
+            this.indexableFields = new HashSet<>();
+        }
+        return this.indexableFields;
+    }
 }

@@ -19,16 +19,28 @@ public class AttributeDescription {
 
     private final String fixedMapping;
 
+    private final boolean indexed;
+
     public AttributeDescription(String path,
                                 PropertyType type,
                                 RestrictionType restriction,
                                 Map<String, String> attributeProperties,
-                                String fixedMapping) {
+                                String fixedMapping,
+                                boolean indexed) {
         this.path = path;
         this.type = type;
         this.restriction = restriction;
         this.attributeProperties = attributeProperties;
         this.fixedMapping = fixedMapping;
+        this.indexed = indexed;
+    }
+
+    public AttributeDescription(String path,
+                                PropertyType type,
+                                RestrictionType restriction,
+                                Map<String, String> attributeProperties,
+                                String fixedMapping) {
+        this(path, type, restriction, attributeProperties, fixedMapping, false);
     }
 
     public AttributeDescription(AbstractAttributeModelEvent event) {
@@ -37,6 +49,7 @@ public class AttributeDescription {
         this.restriction = event.getRestrictionType();
         this.attributeProperties = event.getAttributeProperties();
         this.fixedMapping = event.getEsMappping();
+        this.indexed = event.isIndexed();
     }
 
     public String getPath() {
@@ -57,6 +70,10 @@ public class AttributeDescription {
 
     public String getFixedMapping() {
         return fixedMapping;
+    }
+
+    public boolean isIndexed() {
+        return indexed;
     }
 
     @Override

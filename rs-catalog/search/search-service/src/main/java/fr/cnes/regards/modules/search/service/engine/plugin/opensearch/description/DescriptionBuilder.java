@@ -376,14 +376,24 @@ public class DescriptionBuilder {
         // For each attribute retrieve the QueryableAttribute informations
         Set<QueryableAttribute> queryableAttributes = Sets.newHashSet();
         for (AttributeModel att : getModelAttributes(context)) {
-            Optional<ParameterConfiguration> conf = parameterConfs.stream()
-                                                                  .filter(pc -> pc.getAttributeModelJsonPath()
-                                                                                  .equals(att.getJsonPath()))
-                                                                  .findFirst();
-            QueryableAttribute queryableAtt = createEmptyQueryableAttribute(att, conf);
-            if (!queryableAttributes.contains(queryableAtt)) {
-                queryableAttributes.add(queryableAtt);
-                parameters.add(new DescriptionParameter(finder.findName(att), att, conf.orElse(null), queryableAtt));
+            if (att.isIndexed()) {
+                Optional<ParameterConfiguration> conf = parameterConfs.stream()
+                                                                      .filter(pc -> pc.getAttributeModelJsonPath()
+                                                                                      .equals(att.getJsonPath()))
+                                                                      .findFirst();
+                QueryableAttribute queryableAtt = createEmptyQueryableAttribute(att, conf);
+                if (!queryableAttributes.contains(queryableAtt)) {
+                    queryableAttributes.add(queryableAtt);
+                    parameters.add(new DescriptionParameter(finder.findName(att),
+                                                            att,
+                                                            conf.orElse(null),
+                                                            queryableAtt));
+                }
+            } else {
+                // The configuration of the attribute tells that it should not be queryable
+                LOGGER.trace(String.format(
+                    "The attribute %s is configured as not being indexed, it is ignored by opensearch",
+                    att.getLabel()));
             }
         }
         // Run statistic search on each attributes. Results are set back into the QueryableAttributes parameter.

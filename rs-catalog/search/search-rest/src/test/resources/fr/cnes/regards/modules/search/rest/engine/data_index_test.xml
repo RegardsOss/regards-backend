@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="model_V1.0.xsd">
+    <name>index_test</name>
+    <type>DATA</type>
+    <attribute indexed="true">
+        <label>Name</label>
+        <name>name_test</name>
+        <type>STRING</type>
+    </attribute>
+    <attribute indexed="false">
+        <label>HiddenName</label>
+        <name>hidden_name_test</name>
+        <type>STRING</type>
+    </attribute>
+    <attribute optional="true" indexed="true">
+        <label>data_json_schem</label>
+        <name>data_json_schem_test</name>
+        <description>Data in json schema</description>
+        <type>JSON</type>
+        <restriction>
+            <json_schema>
+                <![CDATA[{"type":"object","properties":{"name":{"type":"string"},"searchable_fields":{"type":"object","properties":{"field1":{"type":"string"},"field2":{"type":"string"}}},"hidden_field":{"type":"string"}}}]]>
+            </json_schema>
+            <indexable_field>
+                searchable_fields.field1
+            </indexable_field>
+            <indexable_field>
+                searchable_fields.field2
+            </indexable_field>
+        </restriction>
+    </attribute>
+</model>

@@ -75,8 +75,8 @@ public class SubsettingCoherenceVisitor implements ICriterionVisitor<Boolean> {
     @Override
     public Boolean visitStringMatchCriterion(StringMatchCriterion criterion) {
         AttributeModel attribute = extractAttribute(criterion);
-        return attribute != null && (attribute.getType().equals(PropertyType.STRING) || attribute.getType()
-                                                                                                 .equals(PropertyType.STRING_ARRAY));
+        return attribute != null && attribute.isIndexed() && (attribute.getType().equals(PropertyType.STRING)
+                                                              || attribute.getType().equals(PropertyType.STRING_ARRAY));
     }
 
     @Override
@@ -87,32 +87,32 @@ public class SubsettingCoherenceVisitor implements ICriterionVisitor<Boolean> {
     @Override
     public Boolean visitStringMatchAnyCriterion(StringMatchAnyCriterion criterion) {
         AttributeModel attribute = extractAttribute(criterion);
-        return attribute != null && (attribute.getType().equals(PropertyType.STRING) || attribute.getType()
-                                                                                                 .equals(PropertyType.STRING_ARRAY));
+        return attribute != null && attribute.isIndexed() && (attribute.getType().equals(PropertyType.STRING)
+                                                              || attribute.getType().equals(PropertyType.STRING_ARRAY));
     }
 
     @Override
     public Boolean visitIntMatchCriterion(IntMatchCriterion criterion) {
         AttributeModel attribute = extractAttribute(criterion);
-        return attribute != null && attribute.getType().equals(PropertyType.INTEGER);
+        return attribute != null && attribute.isIndexed() && attribute.getType().equals(PropertyType.INTEGER);
     }
 
     @Override
     public Boolean visitLongMatchCriterion(LongMatchCriterion criterion) {
         AttributeModel attribute = extractAttribute(criterion);
-        return attribute != null && attribute.getType().equals(PropertyType.LONG);
+        return attribute != null && attribute.isIndexed() && attribute.getType().equals(PropertyType.LONG);
     }
 
     @Override
     public Boolean visitDateMatchCriterion(DateMatchCriterion criterion) {
         AttributeModel attribute = extractAttribute(criterion);
-        return attribute != null && attribute.getType().equals(PropertyType.DATE_ISO8601);
+        return attribute != null && attribute.isIndexed() && attribute.getType().equals(PropertyType.DATE_ISO8601);
     }
 
     @Override
     public <U extends Comparable<? super U>> Boolean visitRangeCriterion(RangeCriterion<U> criterion) {
         AttributeModel attribute = extractAttribute(criterion);
-        if (attribute == null) {
+        if (attribute == null || !attribute.isIndexed()) {
             return false;
         }
         switch (attribute.getType()) {
@@ -128,13 +128,13 @@ public class SubsettingCoherenceVisitor implements ICriterionVisitor<Boolean> {
     @Override
     public Boolean visitDateRangeCriterion(DateRangeCriterion criterion) {
         AttributeModel attribute = extractAttribute(criterion);
-        return attribute != null && attribute.getType().equals(PropertyType.DATE_ISO8601);
+        return attribute != null && attribute.isIndexed() && attribute.getType().equals(PropertyType.DATE_ISO8601);
     }
 
     @Override
     public Boolean visitBooleanMatchCriterion(BooleanMatchCriterion criterion) {
         AttributeModel attribute = extractAttribute(criterion);
-        return attribute != null && attribute.getType().equals(PropertyType.BOOLEAN);
+        return attribute != null && attribute.isIndexed() && attribute.getType().equals(PropertyType.BOOLEAN);
     }
 
     /**
@@ -183,7 +183,7 @@ public class SubsettingCoherenceVisitor implements ICriterionVisitor<Boolean> {
     @Override
     public Boolean visitFieldExistsCriterion(FieldExistsCriterion criterion) {
         AttributeModel attribute = extractAttribute(criterion);
-        return attribute != null;
+        return attribute != null && attribute.isIndexed();
     }
 
 }

@@ -125,6 +125,12 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
     private boolean optional;
 
     /**
+     * Whether this attribute can be searched with elasticsearch
+     */
+    @Column
+    private boolean indexed = false;
+
+    /**
      * Optional elasticsearch mapping configuration for this attribute
      */
     @JsonString(message = "Elasticsearch mapping must be a valid json format")
@@ -313,6 +319,14 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
         optional = pOptional;
     }
 
+    public boolean isIndexed() {
+        return indexed;
+    }
+
+    public void setIndexed(boolean pIndexed) {
+        this.indexed = pIndexed;
+    }
+
     public String getGroup() {
         return group;
     }
@@ -361,6 +375,7 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
         xmlAtt.setDescription(description);
         xmlAtt.setAlterable(alterable);
         xmlAtt.setOptional(optional);
+        xmlAtt.setIndexed(indexed);
         if (restriction != null) {
             xmlAtt.setRestriction(restriction.toXml());
         }
@@ -392,15 +407,16 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
     }
 
     @Override
-    public void fromXml(Attribute pXmlElement) {
-        setName(pXmlElement.getName());
-        setLabel(pXmlElement.getLabel());
-        setDescription(pXmlElement.getDescription());
-        setAlterable(pXmlElement.isAlterable());
-        setOptional(pXmlElement.isOptional());
-        setEsMapping(pXmlElement.getEsMapping());
-        if (pXmlElement.getRestriction() != null) {
-            final Restriction xmlRestriction = pXmlElement.getRestriction();
+    public void fromXml(Attribute XmlElement) {
+        setName(XmlElement.getName());
+        setLabel(XmlElement.getLabel());
+        setDescription(XmlElement.getDescription());
+        setAlterable(XmlElement.isAlterable());
+        setOptional(XmlElement.isOptional());
+        setIndexed(XmlElement.isIndexed());
+        setEsMapping(XmlElement.getEsMapping());
+        if (XmlElement.getRestriction() != null) {
+            final Restriction xmlRestriction = XmlElement.getRestriction();
             if (xmlRestriction.getEnumeration() != null) {
                 restriction = new EnumerationRestriction();
             } else if (xmlRestriction.getDoubleRange() != null) {
@@ -416,9 +432,9 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
             }
 
             // Cause null pointer exception if implementation not consistent with XSD
-            restriction.fromXml(pXmlElement.getRestriction());
+            restriction.fromXml(XmlElement.getRestriction());
         }
-        Type xmlType = pXmlElement.getType();
+        Type xmlType = XmlElement.getType();
         if (xmlType.getArraysize() != null) {
             setArraysize(xmlType.getArraysize().intValueExact());
         }
@@ -427,11 +443,11 @@ public class AttributeModel implements IIdentifiable<Long>, IXmlisable<Attribute
         }
         setUnit(xmlType.getUnit());
         setType(PropertyType.valueOf(xmlType.getValue().value()));
-        setGroup(pXmlElement.getGroup());
+        setGroup(XmlElement.getGroup());
 
-        if (!pXmlElement.getProperty().isEmpty()) {
+        if (!XmlElement.getProperty().isEmpty()) {
             List<AttributeProperty> ppts = new ArrayList<>();
-            for (Property xmlProperty : pXmlElement.getProperty()) {
+            for (Property xmlProperty : XmlElement.getProperty()) {
                 AttributeProperty attPpty = new AttributeProperty();
                 attPpty.setKey(xmlProperty.getKey());
                 attPpty.setValue(xmlProperty.getValue());

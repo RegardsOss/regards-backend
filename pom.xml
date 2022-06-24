@@ -1053,7 +1053,11 @@
 				<artifactId>indexer-dao</artifactId>
 				<version>${revision}</version>
 			</dependency>
-
+            <dependency>
+                <groupId>fr.cnes.regards.modules.indexer</groupId>
+                <artifactId>indexer-rest</artifactId>
+                <version>${revision}</version>
+            </dependency>
 
 			<!-- AccessRights -->
 			<dependency>

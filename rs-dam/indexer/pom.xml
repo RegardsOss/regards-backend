@@ -58,6 +58,7 @@
 		<module>indexer-service</module>
 		<module>indexer-dao</module>
 		<module>indexer-domain</module>
-	</modules>
+        <module>indexer-rest</module>
+    </modules>
 	
 </project>

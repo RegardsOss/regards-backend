@@ -13,10 +13,7 @@ import fr.cnes.regards.modules.model.gson.AbstractAttributeHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -39,19 +36,22 @@ public class MappingService implements IMappingService {
                     && (RestrictionType.JSON_SCHEMA.equals(attribute.getRestrictionType())
                         && attribute.getEsMapping() == null)) {
                     JsonSchemaRestriction restriction = (JsonSchemaRestriction) attribute.getRestriction();
-                    AbstractAttributeHelper.fromJsonSchema(attribute.getJsonPropertyPath(), restriction.getJsonSchema())
-                                           .forEach(a -> mappings.add(new AttributeDescription("feature."
-                                                                                               + a.getJsonPath(),
-                                                                                               a.getType(),
-                                                                                               a.hasRestriction() ?
-                                                                                                   a.getRestrictionType() :
-                                                                                                   RestrictionType.NO_RESTRICTION,
-                                                                                               a.getProperties()
-                                                                                                .stream()
-                                                                                                .collect(Collectors.toMap(
-                                                                                                    AttributeProperty::getKey,
-                                                                                                    AttributeProperty::getValue)),
-                                                                                               a.getEsMapping())));
+                    AbstractAttributeHelper.fromJsonSchema(attribute.getJsonPropertyPath(),
+                                                           restriction.getJsonSchema(),
+                                                           attribute.isIndexed(),
+                                                           new ArrayList<>(restriction.getIndexableFields()))
+                                           .forEach(a -> mappings.add(new AttributeDescription(
+                                               "feature." + a.getJsonPath(),
+                                               a.getType(),
+                                               a.hasRestriction() ?
+                                                   a.getRestrictionType() :
+                                                   RestrictionType.NO_RESTRICTION,
+                                               a.getProperties()
+                                                .stream()
+                                                .collect(Collectors.toMap(AttributeProperty::getKey,
+                                                                          AttributeProperty::getValue)),
+                                               a.getEsMapping(),
+                                               a.isIndexed())));
                 } else {
                     Map<String, String> descriptionProperties = attribute.getProperties()
                                                                          .stream()
@@ -65,7 +65,8 @@ public class MappingService implements IMappingService {
                                                               attribute.getRestrictionType() :
                                                               RestrictionType.NO_RESTRICTION,
                                                           descriptionProperties,
-                                                          attribute.getEsMapping()));
+                                                          attribute.getEsMapping(),
+                                                          attribute.isIndexed()));
                 }
             }
             // now lets put the mappings into ES

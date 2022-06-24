@@ -73,6 +73,11 @@ public abstract class AbstractAttributeModelEvent implements ISubscribable {
      */
     private Map<String, String> attributeProperties;
 
+    /**
+     * True if the attribute is searchable on ES.
+     */
+    private boolean indexed;
+
     public AbstractAttributeModelEvent() {
         attributeProperties = new HashMap<>();
     }
@@ -91,6 +96,7 @@ public abstract class AbstractAttributeModelEvent implements ISubscribable {
             pAttributeModel.getProperties()
                            .stream()
                            .collect(Collectors.toMap(AttributeProperty::getKey, AttributeProperty::getValue));
+        this.indexed = pAttributeModel.isIndexed();
     }
 
     public PropertyType getPropertyType() {
@@ -147,6 +153,14 @@ public abstract class AbstractAttributeModelEvent implements ISubscribable {
 
     public void setEsMappping(String esMappping) {
         this.esMappping = esMappping;
+    }
+
+    public boolean isIndexed() {
+        return indexed;
+    }
+
+    public void setIndexed(boolean indexed) {
+        this.indexed = indexed;
     }
 
 }

@@ -40,6 +40,8 @@ public final class AttributeModelBuilder {
 
     private boolean isOptional = false;
 
+    private boolean isIndexed = false;
+
     private Long id;
 
     private String description;
@@ -77,6 +79,7 @@ public final class AttributeModelBuilder {
         am.setLabel(label);
         am.setAlterable(isAlterable);
         am.setOptional(isOptional);
+        am.setIndexed(isIndexed);
         am.setId(id);
         am.setDescription(description);
         am.setFragment(fragment);
@@ -126,6 +129,11 @@ public final class AttributeModelBuilder {
         if (isInternal) {
             this.isStatic = true;
         }
+        return this;
+    }
+
+    public AttributeModelBuilder setIndexed(boolean indexed) {
+        isIndexed = indexed;
         return this;
     }
 
