@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
+import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 
@@ -41,12 +42,16 @@ public class MailVerification extends AbstractUserAccessUpdate {
 
     private final LocalDateTime expirationDate;
 
+    private final IEmailVerificationTokenService emailVerificationTokenService;
+
     public MailVerification(IProjectUserRepository projectUserRepository,
                             ApplicationEventPublisher eventPublisher,
+                            IEmailVerificationTokenService emailVerificationTokenService,
                             ProjectUser projectUser,
                             LocalDateTime expirationDate) {
         super(projectUserRepository, eventPublisher, projectUser);
         this.expirationDate = expirationDate;
+        this.emailVerificationTokenService = emailVerificationTokenService;
     }
 
     @Override
@@ -61,6 +66,7 @@ public class MailVerification extends AbstractUserAccessUpdate {
                                                         ProjectUser.class,
                                                         "Verification token has expired");
         }
+        emailVerificationTokenService.deleteTokenForProjectUser(user);
     }
 
     @Override

@@ -73,19 +73,11 @@ public interface IEmailVerificationTokenService {
     void deleteTokenForProjectUser(final ProjectUser pProjectUser);
 
     /**
-     * Verify that a {@link EmailVerificationToken} exists for the passed {@link ProjectUser}
-     *
-     * @param pProjectUser the project user
-     * @return
-     */
-    boolean projectUserTokenExists(final ProjectUser pProjectUser);
-
-    /**
      * Generate a new token for the given project user.
      *
      * @param pProjectUser the project user.
      * @throws EntityNotFoundException if the token could not be found
      */
-    void generateNewToken(final ProjectUser pProjectUser) throws EntityNotFoundException;
+    void renewToken(final ProjectUser pProjectUser) throws EntityNotFoundException;
 
 }

@@ -70,7 +70,11 @@ public class UserAccessUpdateFactory {
     }
 
     public MailVerification mailVerification(ProjectUser forUser, LocalDateTime withExpirationDate) {
-        return new MailVerification(userRepository, eventPublisher, forUser, withExpirationDate);
+        return new MailVerification(userRepository,
+                                    eventPublisher,
+                                    emailVerificationTokenService,
+                                    forUser,
+                                    withExpirationDate);
     }
 
     public AccessDeactivation accessDeactivation(ProjectUser forUser) {

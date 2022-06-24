@@ -41,6 +41,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.util.UriUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -83,8 +84,13 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
         EmailVerificationToken token;
         try {
             token = emailVerificationTokenService.findByProjectUser(projectUser);
+            if (token.getExpiryDate().isBefore(LocalDateTime.now())) {
+                emailVerificationTokenService.renewToken(projectUser);
+            }
         } catch (EntityNotFoundException e) {
-            LOGGER.error("Could not retrieve the verification token. Aborting the email sending.", e);
+            LOGGER.error(String.format(
+                "Could not retrieve the verification token for the user %s. Aborting the email sending.",
+                projectUser.getEmail()), e);
             return;
         }
 

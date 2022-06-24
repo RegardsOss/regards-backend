@@ -108,8 +108,8 @@ public class EmailVerificationToken {
      */
     public EmailVerificationToken(final ProjectUser pProjectUser, final String pOriginUrl, final String pRequestLink) {
         super();
-        this.generateToken();
-        this.updateExpiryDate();
+        this.renew();
+        expiryDate = LocalDateTime.now().plusDays(EXPIRATION);
         projectUser = pProjectUser;
         originUrl = pOriginUrl;
         requestLink = pRequestLink;
@@ -119,14 +119,8 @@ public class EmailVerificationToken {
     /**
      * Generate a new random token
      */
-    public void generateToken() {
+    public void renew() {
         token = UUID.randomUUID().toString();
-    }
-
-    /**
-     * Update the expiry date
-     */
-    public void updateExpiryDate() {
         expiryDate = LocalDateTime.now().plusDays(EXPIRATION);
     }
 

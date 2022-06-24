@@ -93,17 +93,11 @@ public class EmailVerificationTokenService implements IEmailVerificationTokenSer
     }
 
     @Override
-    public boolean projectUserTokenExists(ProjectUser pProjectUser) {
-        return tokenRepository.findByProjectUser(pProjectUser).isPresent();
-    }
-
-    @Override
-    public void generateNewToken(ProjectUser pProjectUser) throws EntityNotFoundException {
+    public void renewToken(ProjectUser pProjectUser) throws EntityNotFoundException {
         EmailVerificationToken token = tokenRepository.findByProjectUser(pProjectUser)
                                                       .orElseThrow(() -> new EntityNotFoundException(pProjectUser.getEmail(),
                                                                                                      EmailVerificationToken.class));
-        token.generateToken();
-        token.updateExpiryDate();
+        token.renew();
         tokenRepository.save(token);
     }
 }
