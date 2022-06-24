@@ -55,9 +55,14 @@ public class Theme {
     /**
      * Active theme is the default theme used for IHM
      */
-    @NotNull
-    @Column(nullable = false)
+    @Column
     private boolean active = false;
+
+    /**
+     * An invisible theme will be only visible by admins
+     */
+    @Column
+    private boolean visible = true;
 
     /**
      * Theme configuration
@@ -71,32 +76,40 @@ public class Theme {
         return id;
     }
 
-    public void setId(final Long pId) {
-        id = pId;
+    public void setId(final Long id) {
+        this.id = id;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(final String pName) {
-        name = pName;
+    public void setName(final String name) {
+        this.name = name;
     }
 
     public boolean isActive() {
         return active;
     }
 
-    public void setActive(final boolean pActive) {
-        active = pActive;
+    public void setActive(final boolean active) {
+        this.active = active;
     }
 
     public String getConfiguration() {
         return configuration;
     }
 
-    public void setConfiguration(final String pConfiguration) {
-        configuration = pConfiguration;
+    public void setConfiguration(final String configuration) {
+        this.configuration = configuration;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 
     @Override
@@ -120,18 +133,19 @@ public class Theme {
         }
         final Theme other = (Theme) obj;
         if (id == null) {
-            if (other.id != null) {
-                return false;
-            }
-        } else if (!id.equals(other.id)) {
-            return false;
-        }
-        return true;
+            return other.id == null;
+        } else
+            return id.equals(other.id);
     }
 
     @Override
     public String toString() {
-        return "Theme [id=" + id + ", name=" + name + ", active=" + active + ", configuration=" + configuration + "]";
+        return String.format("Theme [id=%s, name=%s, active=%s, visible=%s, configuration=%s]",
+                             id,
+                             name,
+                             active,
+                             visible,
+                             configuration);
     }
 
 }
