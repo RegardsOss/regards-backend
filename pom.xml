@@ -2482,7 +2482,6 @@
 								<!-- Sets the name of the property containing the settings for JaCoCo
 									runtime agent. -->
 								<propertyName>failsafe.jacoco.args</propertyName>
-<!--								<append>true</append>-->
 							</configuration>
 						</execution>
 					</executions>
@@ -2494,7 +2493,6 @@
 					<configuration>
 						<skipTests>${skipTests}</skipTests>
 						<!-- Sets the VM argument line used when unit tests are run. -->
-<!--	FIXME old line					<argLine>${jacoco.agent.ut.arg} ${regards.maven.test.env} ${jvm.opens.packages}</argLine>-->
 						<argLine>${regards.maven.test.env} ${jvm.opens.packages} ${surefire.jacoco.args}</argLine>
 						<properties>
 							<property>
@@ -2518,9 +2516,7 @@
 					<configuration>
 						<skipTests>${skipTests}</skipTests>
 						<!-- Sets the VM argument line used when integration tests are run. -->
-						<!--	FIXME old line					<argLine>${jacoco.agent.it.arg} ${regards.maven.test.env} ${jvm.opens.packages}</argLine>-->
 						<argLine>${failsafe.jacoco.args} ${regards.maven.test.env} ${jvm.opens.packages}</argLine>
-						<!-- <reuseForks>false</reuseForks> -->
 						<properties>
 							<property>
 								<name>listener</name>
