@@ -41,9 +41,9 @@ import java.util.stream.Collectors;
  * @author Léo Mieulet
  */
 @Component
-public class ConfigManager extends AbstractModuleManagerWithTenantSettings<Void> {
+public class WorkerManagerConfigManager extends AbstractModuleManagerWithTenantSettings<Void> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConfigManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorkerManagerConfigManager.class);
 
     @Autowired
     private WorkerConfigService workerConfigService;

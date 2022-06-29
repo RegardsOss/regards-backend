@@ -23,7 +23,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
@@ -43,7 +42,6 @@ import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
 import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender3;
 import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSenderFail;
 import fr.cnes.regards.modules.notifier.dto.RuleDTO;
-import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.notifier.dto.out.Recipient;
 import fr.cnes.regards.modules.notifier.mock.NotificationProcessingServiceMock;
 import fr.cnes.regards.modules.notifier.service.conf.NotificationConfigurationProperties;
@@ -69,10 +67,6 @@ import static org.junit.Assert.fail;
 public abstract class AbstractNotificationMultitenantServiceIT extends AbstractMultitenantServiceIT {
 
     protected static final int RECIPIENTS_PER_RULE = 10;
-
-    protected static final int EVENT_TO_RECEIVE = 1_000;
-
-    protected static final int EVENT_BULK = 1_000;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractNotificationMultitenantServiceIT.class);
 
@@ -122,9 +116,6 @@ public abstract class AbstractNotificationMultitenantServiceIT extends AbstractM
 
     @Autowired
     protected Gson gson;
-
-    @Autowired
-    protected ISubscriber subscriber;
 
     @Autowired
     protected RuleCache ruleCache;
@@ -254,17 +245,6 @@ public abstract class AbstractNotificationMultitenantServiceIT extends AbstractM
             return gson.fromJson(CharStreams.toString(reader), JsonObject.class);
         } catch (IOException e) {
             String errorMessage = "Cannot import element";
-            LOGGER.debug(errorMessage);
-            throw new AssertionError(errorMessage);
-        }
-    }
-
-    protected NotificationRequestEvent getEvent(String name) {
-        try (InputStream input = this.getClass().getResourceAsStream(name);
-            Reader reader = new InputStreamReader(input)) {
-            return gson.fromJson(CharStreams.toString(reader), NotificationRequestEvent.class);
-        } catch (IOException e) {
-            String errorMessage = "Cannot import event";
             LOGGER.debug(errorMessage);
             throw new AssertionError(errorMessage);
         }

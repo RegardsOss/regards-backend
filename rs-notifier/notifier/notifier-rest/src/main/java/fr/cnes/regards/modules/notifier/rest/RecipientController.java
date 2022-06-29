@@ -76,7 +76,7 @@ public class RecipientController implements IResourceController<PluginConfigurat
      * @return paged list of {@link PluginConfiguration}(recipient)
      */
     @ResourceAccess(description = "List all recipient")
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     @Operation(summary = "List all recipient", description = "List all recipient")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Recipients") })
     public ResponseEntity<List<EntityModel<PluginConfiguration>>> getRecipients(
@@ -91,7 +91,7 @@ public class RecipientController implements IResourceController<PluginConfigurat
      * @return the created {@link PluginConfiguration}(recipient)
      */
     @ResourceAccess(description = "Create a recipient")
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     @Operation(summary = "Create a recipient", description = "Create a recipient")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Created Recipient") })
     public ResponseEntity<EntityModel<PluginConfiguration>> createRecipient(
@@ -100,7 +100,7 @@ public class RecipientController implements IResourceController<PluginConfigurat
         try {
             return ResponseEntity.ok(toResource(recipientService.createOrUpdate(toCreate)));
         } catch (ModuleException e) {
-            LOGGER.error("Impossible! how can it throwed for a creation", e);
+            LOGGER.error("Failed to create a recipient", e);
             return null;
         }
     }
@@ -111,7 +111,7 @@ public class RecipientController implements IResourceController<PluginConfigurat
      * @return the updated {@link PluginConfiguration}(recipient)
      */
     @ResourceAccess(description = "Update a recipient")
-    @RequestMapping(method = RequestMethod.PUT)
+    @PutMapping
     @Operation(summary = "Update a recipient", description = "Update a recipient")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Updated Recipient") })
     public ResponseEntity<EntityModel<PluginConfiguration>> updateRecipient(
@@ -127,7 +127,7 @@ public class RecipientController implements IResourceController<PluginConfigurat
      * Delete a {@link PluginConfiguration}(recipient)
      */
     @ResourceAccess(description = "Delete a recipient")
-    @RequestMapping(path = ID, method = RequestMethod.DELETE)
+    @DeleteMapping(path = ID)
     @Operation(summary = "Delete a recipient", description = "Delete a recipient")
     @ApiResponses(value = { @ApiResponse(responseCode = "200") })
     public ResponseEntity<Void> deleteRecipient(

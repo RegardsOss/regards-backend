@@ -35,10 +35,10 @@ import java.util.Set;
  * @author Léo Mieulet
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=worker_conf_manager" })
-public class ConfigManagerIT extends AbstractWorkerManagerServiceUtilsIT {
+public class WorkerManagerConfigManagerIT extends AbstractWorkerManagerServiceUtilsIT {
 
     @Autowired
-    private ConfigManager configManager;
+    private WorkerManagerConfigManager configManager;
 
     @Test
     public void test() {

@@ -25,8 +25,8 @@ import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.dto.WorkerConfigDto;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
-import fr.cnes.regards.modules.workermanager.service.config.ConfigManager;
 import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigService;
+import fr.cnes.regards.modules.workermanager.service.config.WorkerManagerConfigManager;
 import fr.cnes.regards.modules.workermanager.service.flow.RequestHandlerConfiguration;
 import fr.cnes.regards.modules.workermanager.service.requests.RequestService;
 import org.assertj.core.util.Lists;
@@ -59,7 +59,7 @@ public abstract class AbstractRequestJobIT extends AbstractMultitenantServiceWit
     private WorkerConfigService workerConfigService;
 
     @Autowired
-    private ConfigManager configManager;
+    private WorkerManagerConfigManager configManager;
 
     @Autowired
     protected RequestService requestService;

@@ -77,6 +77,6 @@ public class TestConfigurationManager extends AbstractModuleManager<Void> {
 
     @Override
     public ModuleReadinessReport<Void> isReady() {
-        return new ModuleReadinessReport<>(true, null, null);
+        return new ModuleReadinessReport<>(true);
     }
 }

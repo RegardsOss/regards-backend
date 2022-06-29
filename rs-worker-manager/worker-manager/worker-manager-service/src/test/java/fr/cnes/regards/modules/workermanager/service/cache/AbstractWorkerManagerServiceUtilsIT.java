@@ -28,8 +28,8 @@ import fr.cnes.regards.modules.workermanager.dao.IRequestRepository;
 import fr.cnes.regards.modules.workermanager.dao.IWorkerConfigRepository;
 import fr.cnes.regards.modules.workermanager.domain.request.Request;
 import fr.cnes.regards.modules.workermanager.dto.requests.RequestStatus;
-import fr.cnes.regards.modules.workermanager.service.config.ConfigManager;
 import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigCacheService;
+import fr.cnes.regards.modules.workermanager.service.config.WorkerManagerConfigManager;
 import org.assertj.core.util.Lists;
 import org.junit.After;
 import org.junit.Assert;
@@ -65,7 +65,7 @@ public abstract class AbstractWorkerManagerServiceUtilsIT extends AbstractMultit
     private IWorkerConfigRepository workerConfigRepository;
 
     @Autowired
-    private ConfigManager configManager;
+    private WorkerManagerConfigManager configManager;
 
     @Autowired
     private WorkerConfigCacheService workerConfigCacheService;

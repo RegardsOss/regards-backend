@@ -21,9 +21,9 @@ package fr.cnes.regards.modules.workermanager.service.cache;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.modules.workermanager.dto.WorkerConfigDto;
 import fr.cnes.regards.modules.workermanager.dto.events.in.WorkerHeartBeatEvent;
-import fr.cnes.regards.modules.workermanager.service.config.ConfigManager;
 import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigCacheService;
 import fr.cnes.regards.modules.workermanager.service.config.WorkerConfigService;
+import fr.cnes.regards.modules.workermanager.service.config.WorkerManagerConfigManager;
 import org.assertj.core.util.Lists;
 import org.awaitility.Awaitility;
 import org.junit.Assert;
@@ -65,7 +65,7 @@ public class WorkerCacheServiceIT extends AbstractWorkerManagerServiceUtilsIT {
     private WorkerConfigService workerConfigService;
 
     @Autowired
-    private ConfigManager configManager;
+    private WorkerManagerConfigManager configManager;
 
     @Autowired
     private WorkerConfigCacheService workerConfigCacheService;

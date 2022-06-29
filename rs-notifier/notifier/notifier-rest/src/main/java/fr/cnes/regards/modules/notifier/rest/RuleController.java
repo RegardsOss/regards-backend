@@ -72,7 +72,7 @@ public class RuleController implements IResourceController<RuleDTO> {
      * @return paged list of {@link RuleDTO}
      */
     @ResourceAccess(description = "List all Rules")
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     @Operation(summary = "List all rules", description = "List all Rules")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All Rules") })
     public ResponseEntity<PagedModel<EntityModel<RuleDTO>>> getRules(
@@ -86,7 +86,7 @@ public class RuleController implements IResourceController<RuleDTO> {
      * @return the created {@link Rule}
      */
     @ResourceAccess(description = "Create a Rule")
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     @Operation(summary = "Create a rule", description = "Create a Rule")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Created Rule") })
     public ResponseEntity<EntityModel<RuleDTO>> createRule(
@@ -106,7 +106,7 @@ public class RuleController implements IResourceController<RuleDTO> {
      * @return the updated {@link Rule}
      */
     @ResourceAccess(description = "Update a Rule")
-    @RequestMapping(method = RequestMethod.PUT)
+    @PutMapping
     @Operation(summary = "Update a rule", description = "Update a Rule")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Updated Rule") })
     public ResponseEntity<EntityModel<RuleDTO>> updateRule(
@@ -120,7 +120,7 @@ public class RuleController implements IResourceController<RuleDTO> {
      * Delete a {@link Rule}
      */
     @ResourceAccess(description = "Delete a rule")
-    @RequestMapping(path = ID, method = RequestMethod.DELETE)
+    @DeleteMapping(path = ID)
     @Operation(summary = "Delete a rule", description = "Delete a rule")
     @ApiResponses(value = { @ApiResponse(responseCode = "200") })
     public ResponseEntity<Void> deleteRule(@PathVariable("id") String id) throws ModuleException {

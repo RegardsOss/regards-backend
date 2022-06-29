@@ -23,6 +23,13 @@ public class ModuleReadinessReport<T> {
     private T specifications;
 
     /**
+     * Constructor setting the readiness of the module
+     */
+    public ModuleReadinessReport(boolean ready) {
+        this.ready = ready;
+    }
+
+    /**
      * Constructor setting the readiness of the module and the reasons why it is not
      */
     public ModuleReadinessReport(boolean ready, List<String> reasons, T specifications) {

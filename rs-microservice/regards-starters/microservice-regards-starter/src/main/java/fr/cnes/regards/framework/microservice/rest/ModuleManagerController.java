@@ -42,10 +42,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -53,6 +50,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -106,7 +104,7 @@ public class ModuleManagerController {
     @Autowired(required = false)
     private List<IModuleManager<?>> managers;
 
-    @RequestMapping(method = RequestMethod.GET, value = CONFIGURATION_ENABLED_MAPPING)
+    @GetMapping(value = CONFIGURATION_ENABLED_MAPPING)
     @ResourceAccess(description = "Import/export support information", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> isConfigurationEnabled() {
         if ((managers != null) && !managers.isEmpty()) {
@@ -116,7 +114,7 @@ public class ModuleManagerController {
         }
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = CONFIGURATION_MAPPING)
+    @GetMapping(value = CONFIGURATION_MAPPING)
     @ResourceAccess(description = "Export microservice configuration", role = DefaultRole.PROJECT_ADMIN)
     public void exportConfiguration(HttpServletRequest request, HttpServletResponse response) throws ModuleException {
 
@@ -135,7 +133,8 @@ public class ModuleManagerController {
         }
 
         // Stream data
-        try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(response.getOutputStream(), "UTF-8"))) {
+        try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(response.getOutputStream(),
+                                                                       StandardCharsets.UTF_8))) {
             writer.setIndent("  ");
             configGson.toJson(microConfig, MicroserviceConfiguration.class, writer);
             writer.flush();
@@ -146,53 +145,18 @@ public class ModuleManagerController {
         }
     }
 
-    @RequestMapping(method = RequestMethod.POST, value = CONFIGURATION_MAPPING)
+    @PostMapping(value = CONFIGURATION_MAPPING)
     @ResourceAccess(description = "Import microservice configuration", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Set<ModuleImportReport>> importConfiguration(@RequestParam("file") MultipartFile file)
         throws ModuleException {
 
-        try (JsonReader reader = new JsonReader(new InputStreamReader(file.getInputStream(), "UTF-8"))) {
+        try (JsonReader reader = new JsonReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
             MicroserviceConfiguration microConfig = configGson.fromJson(reader, MicroserviceConfiguration.class);
             // Propagate configuration to modules
             if ((managers != null) && !managers.isEmpty()) {
-                Set<ModuleImportReport> importReports = new HashSet<>();
-                for (ModuleConfiguration module : microConfig.getModules()) {
-                    for (IModuleManager<?> manager : managers) {
-                        if (manager.isApplicable(module)) {
-                            Set<String> resetErrors = Sets.newHashSet();
-                            if (module.isResetBeforeImport()) {
-                                resetErrors = manager.resetConfiguration();
-                            }
-                            ModuleImportReport report = manager.importConfigurationAndLog(module);
-                            report.getImportErrors().addAll(resetErrors);
-                            importReports.add(report);
-                        }
-                    }
-                }
-                Set<ModuleImportReport> modulesInError = importReports.stream()
-                                                                      .filter(mir -> mir.isOnlyErrors()
-                                                                                     || !mir.getImportErrors()
-                                                                                            .isEmpty())
-                                                                      .collect(Collectors.toSet());
-                // if there is no error at all
-                if (modulesInError.isEmpty()) {
-                    return ResponseEntity.status(HttpStatus.CREATED).build();
-                } else {
-                    //if not all import had errors
-                    if (modulesInError.size() < importReports.size()) {
-                        return new ResponseEntity<>(importReports, HttpStatus.PARTIAL_CONTENT);
-                    } else {
-                        // now that we know that every module has errors, lets check if any configuration at all could be imported
-                        long numberModulesInTotalError = modulesInError.stream()
-                                                                       .filter(ModuleImportReport::isOnlyErrors)
-                                                                       .count();
-                        if (numberModulesInTotalError == modulesInError.size()) {
-                            return new ResponseEntity<>(importReports, HttpStatus.CONFLICT);
-                        } else {
-                            return new ResponseEntity<>(importReports, HttpStatus.PARTIAL_CONTENT);
-                        }
-                    }
-                }
+                Set<ModuleImportReport> importReports = importConfiguration(microConfig);
+                Set<ModuleImportReport> modulesInError = getModulesInError(importReports);
+                return makeImportResponse(importReports, modulesInError);
             } else {
                 LOGGER.warn("Configuration cannot be imported because no module configuration manager is found!");
                 return ResponseEntity.unprocessableEntity().build();
@@ -203,6 +167,53 @@ public class ModuleManagerController {
             LOGGER.error(message, e);
             throw new ModuleException(e);
         }
+    }
+
+    private Set<ModuleImportReport> getModulesInError(Set<ModuleImportReport> importReports) {
+        return importReports.stream()
+                            .filter(mir -> mir.isOnlyErrors() || !mir.getImportErrors().isEmpty())
+                            .collect(Collectors.toSet());
+    }
+
+    private ResponseEntity<Set<ModuleImportReport>> makeImportResponse(Set<ModuleImportReport> importReports,
+                                                                       Set<ModuleImportReport> modulesInError) {
+        // if there is no error at all
+        if (modulesInError.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        } else {
+            //if not all import had errors
+            if (modulesInError.size() < importReports.size()) {
+                return new ResponseEntity<>(importReports, HttpStatus.PARTIAL_CONTENT);
+            } else {
+                // now that we know that every module has errors, lets check if any configuration at all could be imported
+                long numberModulesInTotalError = modulesInError.stream()
+                                                               .filter(ModuleImportReport::isOnlyErrors)
+                                                               .count();
+                if (numberModulesInTotalError == modulesInError.size()) {
+                    return new ResponseEntity<>(importReports, HttpStatus.CONFLICT);
+                } else {
+                    return new ResponseEntity<>(importReports, HttpStatus.PARTIAL_CONTENT);
+                }
+            }
+        }
+    }
+
+    private Set<ModuleImportReport> importConfiguration(MicroserviceConfiguration microConfig) {
+        Set<ModuleImportReport> importReports = new HashSet<>();
+        for (ModuleConfiguration module : microConfig.getModules()) {
+            for (IModuleManager<?> manager : managers) {
+                if (manager.isApplicable(module)) {
+                    Set<String> resetErrors = Sets.newHashSet();
+                    if (module.isResetBeforeImport()) {
+                        resetErrors = manager.resetConfiguration();
+                    }
+                    ModuleImportReport report = manager.importConfigurationAndLog(module);
+                    report.getImportErrors().addAll(resetErrors);
+                    importReports.add(report);
+                }
+            }
+        }
+        return importReports;
     }
 
     @EventListener
@@ -225,7 +236,7 @@ public class ModuleManagerController {
     /**
      * @return whether the microservice is ready or not with the reasons
      */
-    @RequestMapping(method = RequestMethod.GET, value = READY_MAPPING)
+    @GetMapping(value = READY_MAPPING)
     @ResourceAccess(description = "allows to known if the microservice is ready to work",
         role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<ModuleReadinessReport<?>> isReady() {
@@ -247,7 +258,7 @@ public class ModuleManagerController {
         return new ResponseEntity<>(microserviceReadiness, HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = READY_ENABLED_MAPPING)
+    @GetMapping(value = READY_ENABLED_MAPPING)
     @ResourceAccess(description = "Check if microservice modules ready feature is enabled",
         role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> isReadyEnabled() {
@@ -267,7 +278,7 @@ public class ModuleManagerController {
     /**
      * Restart all or part of microservice modules
      */
-    @RequestMapping(method = RequestMethod.GET, value = RESTART_MAPPING)
+    @GetMapping(value = RESTART_MAPPING)
     @ResourceAccess(description = "Allows to restart all microservice modules", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Set<ModuleRestartReport>> restart() {
         Set<ModuleRestartReport> reports = new HashSet<>();
@@ -281,7 +292,7 @@ public class ModuleManagerController {
         return new ResponseEntity<>(reports, HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = RESTART_ENABLED_MAPPING)
+    @GetMapping(value = RESTART_ENABLED_MAPPING)
     @ResourceAccess(description = "Check if microservice modules restart is enabled", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> isRestartEnabled() {
         if ((managers != null) && !managers.isEmpty()) {

@@ -88,7 +88,7 @@ public class UIPluginConfigurationManager extends AbstractModuleManager<Void> {
                         pluginConfService.createPluginconfiguration(conf);
                     } else {
                         importErrors.add(String.format(
-                            "Plugin configuration can not be saved as plugin {} does not exists",
+                            "Plugin configuration can not be saved as plugin %s does not exists",
                             toImport.getPluginDefName()));
                     }
                 }
@@ -102,7 +102,7 @@ public class UIPluginConfigurationManager extends AbstractModuleManager<Void> {
 
     @Override
     public ModuleReadinessReport<Void> isReady() {
-        return new ModuleReadinessReport<Void>(true, null, null);
+        return new ModuleReadinessReport<>(true);
     }
 
 }

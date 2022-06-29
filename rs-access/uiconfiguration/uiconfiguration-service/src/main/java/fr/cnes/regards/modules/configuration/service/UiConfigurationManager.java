@@ -97,6 +97,6 @@ public class UiConfigurationManager extends AbstractModuleManager<Void> {
 
     @Override
     public ModuleReadinessReport<Void> isReady() {
-        return new ModuleReadinessReport<Void>(true, null, null);
+        return new ModuleReadinessReport<>(true);
     }
 }

@@ -75,7 +75,7 @@ public class RuleService implements IRuleService {
     @Override
     public Page<RuleDTO> getRules(Pageable page) {
         Page<Rule> rules = ruleRepo.findAll(page);
-        return new PageImpl<>(rules.get().map(this::toRuleDTO).collect(Collectors.toList()));
+        return new PageImpl<>(rules.get().map(this::toRuleDTO).toList());
     }
 
     @Override
