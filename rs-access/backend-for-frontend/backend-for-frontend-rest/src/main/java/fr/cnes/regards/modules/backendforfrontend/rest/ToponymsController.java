@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.backendforfrontend.rest;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -40,7 +39,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import java.util.List;
 
 /**
- * Controller to search for Toponymms throught instance module toponyms of access-instance
+ * Controller to search for Toponyms through instance module toponyms of access-instance
  *
  * @author Sébastien Binda
  */
@@ -69,10 +68,8 @@ public class ToponymsController {
      * @param businessId Unique identifier of toponym to search for
      * @param simplified True for simplified geometry (minimize size)
      * @return {@link ToponymDTO}
-     * @throws EntityNotFoundException
      */
-    @RequestMapping(value = ToponymsRestConfiguration.TOPONYM_ID, method = RequestMethod.GET,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = ToponymsRestConfiguration.TOPONYM_ID, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve one toponym by his identifier", role = DefaultRole.PUBLIC)
     public ResponseEntity<EntityModel<ToponymDTO>> get(@PathVariable("businessId") String businessId,
@@ -91,25 +88,25 @@ public class ToponymsController {
     }
 
     /**
-     * Endpoint to search for toponyms. Geometries are not retrivied and list content is limited to 100 entities.
+     * Endpoint to search for toponyms. Geometries are not retrieved and list content is limited to 100 entities.
      *
      * @param partialLabel
      * @param locale
      * @return {@link ToponymDTO}s
-     * @throws EntityNotFoundException
      */
-    @RequestMapping(value = ToponymsRestConfiguration.SEARCH, method = RequestMethod.GET,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = ToponymsRestConfiguration.SEARCH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(
-        description = "Endpoint to search for toponyms. Geometries are not retrivied and list content is limited to 100 entities.",
+        description = "Endpoint to search for toponyms. Geometries are not retrieved and list content is limited to 100 entities.",
         role = DefaultRole.PUBLIC)
     public ResponseEntity<List<EntityModel<ToponymDTO>>> search(@RequestParam(required = false) String partialLabel,
                                                                 @RequestParam(required = false) String locale)
         throws HttpClientErrorException, HttpServerErrorException {
         FeignSecurityManager.asInstance();
         try {
-            return client.search(partialLabel, locale);
+            // response should be remapped because of a "bug" somewhere in spring that does not treat headers as case-insensitive while feign does
+            ResponseEntity<List<EntityModel<ToponymDTO>>> response = client.search(partialLabel, locale);
+            return new ResponseEntity<>(response.getBody(), response.getStatusCode());
         } finally {
             FeignSecurityManager.reset();
         }
