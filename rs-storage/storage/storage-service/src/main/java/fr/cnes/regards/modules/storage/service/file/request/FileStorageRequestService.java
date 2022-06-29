@@ -30,6 +30,9 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
@@ -53,6 +56,9 @@ import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.job.FileStorageRequestJob;
 import fr.cnes.regards.modules.storage.service.location.StoragePluginConfigurationHandler;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
+import fr.cnes.regards.modules.storage.service.template.StorageTemplatesConf;
+import fr.cnes.regards.modules.templates.service.ITemplateService;
+import freemarker.template.TemplateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -66,15 +72,13 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MimeTypeUtils;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -114,9 +118,13 @@ public class FileStorageRequestService {
 
     private final SessionNotifier sessionNotifier;
 
+    protected FileStorageRequestService self;
+
     private IJobInfoRepository jobInfoRepo;
 
-    protected FileStorageRequestService self;
+    private INotificationClient notificationClient;
+
+    private ITemplateService templateService;
 
     @Value("${regards.storage.storage.requests.days.before.expiration:5}")
     private Integer nbDaysBeforeExpiration;
@@ -137,7 +145,9 @@ public class FileStorageRequestService {
                                      FileReferenceRequestService fileRefReqService,
                                      RequestStatusService reqStatusService,
                                      SessionNotifier sessionNotifier,
-                                     IJobInfoRepository jobInfoRepo) {
+                                     IJobInfoRepository jobInfoRepo,
+                                     INotificationClient notificationClient,
+                                     ITemplateService templateService) {
         this.pluginService = pluginService;
         this.fileStorageRequestRepo = fileStorageRequestRepo;
         this.jobInfoService = jobInfoService;
@@ -152,6 +162,8 @@ public class FileStorageRequestService {
         this.reqStatusService = reqStatusService;
         this.sessionNotifier = sessionNotifier;
         this.jobInfoRepo = jobInfoRepo;
+        this.notificationClient = notificationClient;
+        this.templateService = templateService;
     }
 
     /**
@@ -776,6 +788,7 @@ public class FileStorageRequestService {
     }
 
     public void handleSuccess(Collection<FileStorageRequestResultDTO> results) {
+        Set<String> files = new HashSet<>();
         for (FileStorageRequestResultDTO result : results) {
             FileStorageRequest request = result.getRequest();
             FileReferenceMetaInfo reqMetaInfos = request.getMetaInfo();
@@ -798,7 +811,8 @@ public class FileStorageRequestService {
                     fileRefs.add(fileRefReqService.reference(owner,
                                                              fileMeta,
                                                              new FileLocation(request.getStorage(),
-                                                                              result.getStoredUrl()),
+                                                                              result.getStoredUrl(),
+                                                                              result.isPendingActionRemaining()),
                                                              request.getGroupIds(),
                                                              sessionOwner,
                                                              session));
@@ -827,8 +841,37 @@ public class FileStorageRequestService {
             // notify the number of successful created files
             this.sessionNotifier.incrementStoredFiles(sessionOwner, session, nbFilesStored);
 
+            if (result.isNotifyActionRemainingToAdmin()) {
+                files.add(result.getStoredUrl());
+            }
+
             // Delete the FileRefRequest as it has been handled
             delete(request);
+        }
+
+        if (!files.isEmpty()) {
+            notificationClient.notifyRoles(createStorageActionPendingNotification(files),
+                                           "Storage not completed",
+                                           NotificationLevel.ERROR,
+                                           MimeTypeUtils.TEXT_HTML,
+                                           Sets.newHashSet(DefaultRole.PROJECT_ADMIN.toString()));
+        }
+    }
+
+    /**
+     * Creates notification for project administrators to inform action pending is remaining on stored files
+     *
+     * @param files
+     * @return
+     */
+    private String createStorageActionPendingNotification(Set<String> files) {
+        final Map<String, Object> data = new HashMap<>();
+        data.put("files", files);
+        try {
+            return templateService.render(StorageTemplatesConf.ACTION_REMAINING_TEMPLATE_NAME, data);
+        } catch (TemplateException e) {
+            LOGGER.error(e.getMessage(), e);
+            return null;
         }
     }
 

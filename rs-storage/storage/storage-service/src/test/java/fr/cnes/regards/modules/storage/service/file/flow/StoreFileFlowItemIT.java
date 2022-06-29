@@ -139,6 +139,7 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
         Optional<FileReference> fileRef = fileRefService.search(ONLINE_CONF_LABEL, checksum);
         Assert.assertTrue("File should be referenced", fileRef.isPresent());
         Assert.assertFalse("File should in stored state", fileRef.get().isReferenced());
+        Assert.assertFalse("File should in stored state", fileRef.get().getLocation().isPendingActionRemaining());
         Assert.assertTrue("File request should be deleted",
                           stoReqService.search(ONLINE_CONF_LABEL, checksum).isEmpty());
         // Now check for event published
@@ -176,6 +177,38 @@ public class StoreFileFlowItemIT extends AbstractStorageIT {
                        SESSION_OWNER,
                        SESSION,
                        "1");
+    }
+
+    @Test
+    public void storeFileNearLineWithPendingActionRemaining() {
+        String owner = "new-owner";
+        String checksum = UUID.randomUUID().toString();
+        String storage = "storage";
+        // Create a new bus message File reference request
+        StorageFlowItem item = StorageFlowItem.build(FileStorageRequestDTO.build("pending.file.name",
+                                                                                 checksum,
+                                                                                 "MD5",
+                                                                                 "application/octet-stream",
+                                                                                 owner,
+                                                                                 SESSION_OWNER,
+                                                                                 SESSION,
+                                                                                 originUrl,
+                                                                                 NEARLINE_CONF_LABEL,
+                                                                                 Optional.empty()),
+                                                     UUID.randomUUID().toString());
+        List<StorageFlowItem> items = new ArrayList<>();
+        items.add(item);
+        storeHandler.handleBatch(items);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
+                                                              Lists.newArrayList(NEARLINE_CONF_LABEL),
+                                                              Lists.newArrayList(owner));
+        runAndWaitJob(jobs);
+        Optional<FileReference> fileRef = fileRefService.search(NEARLINE_CONF_LABEL, checksum);
+        Assert.assertTrue("File should be referenced", fileRef.isPresent());
+        Assert.assertFalse("File should in stored state", fileRef.get().isReferenced());
+        Assert.assertTrue("File should be referenced with pending action remaining",
+                          fileRef.get().getLocation().isPendingActionRemaining());
     }
 
     @Test

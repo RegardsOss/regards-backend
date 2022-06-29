@@ -34,11 +34,35 @@ import java.net.URL;
 public interface IStorageProgressManager {
 
     /**
-     * Notify system that the given {@link FileStorageRequest} is stored.
+     * Notify system that the given {@link FileStorageRequest} is fully stored.
      *
      * @param fileReferenceRequest {@link FileStorageRequest} stored.
      */
     public void storageSucceed(FileStorageRequest fileReferenceRequest, URL storedUrl, Long fileSize);
+
+    /**
+     * Notify system that the given {@link FileStorageRequest} is stored, but an asynchronous action
+     * is needed to fully store the file. This asynchronous action can be triggered by the plugin or
+     * thanks to the {@link IStorageLocation#runPeriodicAction)}. To be fully stored after pending action
+     * is over, plugin should call the {@link #storagePendingActionSucceed(String)}.
+     *
+     * @param fileReferenceRequest {@link FileStorageRequest} stored.
+     * @param storedUrl            URL to stored file
+     * @param fileSize             size of the stored file in bytes
+     * @param notifyAdministrators inform administrator that an action is pending on this file
+     */
+    void storageSucceedWithPendingActionRemaining(FileStorageRequest fileReferenceRequest,
+                                                  URL storedUrl,
+                                                  Long fileSize,
+                                                  Boolean notifyAdministrators);
+
+    /**
+     * Notify system that the pending action on stored file is over. So the file can be considered as
+     * fully stored.
+     *
+     * @param storedUrl URL of the stored file on external system
+     */
+    void storagePendingActionSucceed(String storedUrl);
 
     /**
      * Notify the system that the given {@link FileStorageRequest} couldn't be stored.

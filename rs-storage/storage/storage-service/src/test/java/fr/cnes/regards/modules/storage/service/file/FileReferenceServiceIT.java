@@ -68,13 +68,14 @@ public class FileReferenceServiceIT extends AbstractStorageIT {
                                                     "file1.test",
                                                     "anywhere",
                                                     SESSION_OWNER_1,
-                                                    SESSION_1).get();
+                                                    SESSION_1,
+                                                    false).get();
         OffsetDateTime afterFirstDate = OffsetDateTime.now();
         Thread.sleep(1);
-        referenceRandomFile("someone-else", "Type1", "file2.test", "somewhere-else", SESSION_OWNER_1, SESSION_1);
-        referenceRandomFile("someone-else", "Type2", "file3.test", "somewhere-else", SESSION_OWNER_1, SESSION_1);
-        referenceRandomFile("someone-else", "Test", "data_4.nc", "somewhere-else", SESSION_OWNER_1, SESSION_1);
-        referenceRandomFile("someone-else", "Test", "data_5.nc", "void", SESSION_OWNER_1, SESSION_1);
+        referenceRandomFile("someone-else", "Type1", "file2.test", "somewhere-else", SESSION_OWNER_1, SESSION_1, false);
+        referenceRandomFile("someone-else", "Type2", "file3.test", "somewhere-else", SESSION_OWNER_1, SESSION_1, false);
+        referenceRandomFile("someone-else", "Test", "data_4.nc", "somewhere-else", SESSION_OWNER_1, SESSION_1, false);
+        referenceRandomFile("someone-else", "Test", "data_5.nc", "void", SESSION_OWNER_1, SESSION_1, false);
         OffsetDateTime afterEndDate = OffsetDateTime.now().plusSeconds(1);
 
         // Search all
@@ -182,6 +183,21 @@ public class FileReferenceServiceIT extends AbstractStorageIT {
     }
 
     @Test
+    public void update_file_reference_pending_action() {
+        FileReference fileRef = referenceRandomFile("owner",
+                                                    null,
+                                                    "pending.file1.test",
+                                                    NEARLINE_CONF_LABEL,
+                                                    SESSION_OWNER_1,
+                                                    SESSION_1,
+                                                    true).get();
+        Assert.assertTrue(fileRef.getLocation().isPendingActionRemaining());
+        fileRefService.handleRemainingPendingActionSuccess(Sets.newHashSet(fileRef.getLocation().getUrl()));
+        fileRef = fileRefService.search(fileRef.getLocation().getStorage(), fileRef.getMetaInfo().getChecksum()).get();
+        Assert.assertFalse(fileRef.getLocation().isPendingActionRemaining());
+    }
+
+    @Test
     public void search_by_storage_checksums() {
         // --- GIVEN ---
         // Add reference for search tests
@@ -196,10 +212,17 @@ public class FileReferenceServiceIT extends AbstractStorageIT {
         for (int i = 0; i < nbFiles; i++) {
             String checksum = UUID.randomUUID().toString();
             checksums.add(checksum);
-            referenceFile(checksum, owner, type, fileName + i, storage, sessionOwner, session);
+            referenceFile(checksum, owner, type, fileName + i, storage, sessionOwner, session, false);
         }
         // reference other file
-        referenceFile(UUID.randomUUID().toString(), owner, type, fileName + "other", storage, sessionOwner, session);
+        referenceFile(UUID.randomUUID().toString(),
+                      owner,
+                      type,
+                      fileName + "other",
+                      storage,
+                      sessionOwner,
+                      session,
+                      false);
 
         // --- WHEN ---
         Set<FileReference> filesReferenced = fileRefService.search(storage, checksums);

@@ -22,6 +22,13 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
 
 import java.nio.file.Path;
 import java.util.Collection;
@@ -35,6 +42,8 @@ import java.util.Set;
  */
 @PluginInterface(description = "Contract to respect by any data storage plugin")
 public interface IStorageLocation {
+
+    Logger LOG = LoggerFactory.getLogger(IStorageLocation.class);
 
     /**
      * Dispatch given storage requests in one or many working subsets. Each subset will result to a storage job.
@@ -77,6 +86,10 @@ public interface IStorageLocation {
      * @param progressManager
      */
     void store(FileStorageWorkingSubset workingSet, IStorageProgressManager progressManager);
+
+    default void runPeriodicAction(IPeriodicActionProgressManager progressManager) {
+        LOG.debug("No periodic action defined for {} storage location", this.getClass().getName());
+    }
 
     /**
      * Allow service to validate that a file referenced on this storage location is valid.

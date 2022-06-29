@@ -172,7 +172,12 @@ public class FileReferenceRequestService {
                                                                                                       .equals(file.getStorage()))
                                                                                      .findFirst();
             try {
-                FileReference fileRef = reference(file, oFileRef, oFileDeletionReq, Sets.newHashSet(groupId), true);
+                FileReference fileRef = reference(file,
+                                                  oFileRef,
+                                                  oFileDeletionReq,
+                                                  Sets.newHashSet(groupId),
+                                                  true,
+                                                  false);
                 reqGrpService.requestSuccess(groupId,
                                              FileRequestType.REFERENCE,
                                              fileRef.getMetaInfo().getChecksum(),
@@ -235,28 +240,30 @@ public class FileReferenceRequestService {
         if (oFileRef.isPresent()) {
             oFileDelReq = fileDeletionRequestService.search(oFileRef.get());
         }
-        return reference(FileReferenceRequestDTO.build(metaInfo.getFileName(),
-                                                       metaInfo.getChecksum(),
-                                                       metaInfo.getAlgorithm(),
-                                                       metaInfo.getMimeType().toString(),
-                                                       metaInfo.getFileSize(),
-                                                       owner,
-                                                       location.getStorage(),
-                                                       location.getUrl(),
-                                                       sessionOwner,
-                                                       session)
-                                                .withHeight(metaInfo.getHeight())
-                                                .withWidth(metaInfo.getWidth())
-                                                .withType(metaInfo.getType()), oFileRef, oFileDelReq, groupIds, false);
+        FileReferenceRequestDTO fileRef = FileReferenceRequestDTO.build(metaInfo.getFileName(),
+                                                                        metaInfo.getChecksum(),
+                                                                        metaInfo.getAlgorithm(),
+                                                                        metaInfo.getMimeType().toString(),
+                                                                        metaInfo.getFileSize(),
+                                                                        owner,
+                                                                        location.getStorage(),
+                                                                        location.getUrl(),
+                                                                        sessionOwner,
+                                                                        session);
+        fileRef.withHeight(metaInfo.getHeight());
+        fileRef.withWidth(metaInfo.getWidth());
+        fileRef.withType(metaInfo.getType());
+        return reference(fileRef, oFileRef, oFileDelReq, groupIds, false, location.isPendingActionRemaining());
     }
 
     /**
      * Reference a new file. No file movement is made here. File is only referenced.
      *
-     * @param request      {@link FileReferenceRequestDTO}
-     * @param fileRef      {@link FileReference} of associated file if already exists
-     * @param groupIds     Business requests identifiers associated to the new file reference.
-     * @param isReferenced
+     * @param request                {@link FileReferenceRequestDTO}
+     * @param fileRef                {@link FileReference} of associated file if already exists
+     * @param groupIds               Business requests identifiers associated to the new file reference.
+     * @param isReferenced           does the file is a reference (meaning not stored b this service)
+     * @param pendingActionRemaining does an asynchronous action needed to consider file as fully stored
      * @return {@link FileReference}
      * @throws ModuleException if the file reference can not be created.
      */
@@ -264,7 +271,8 @@ public class FileReferenceRequestService {
                                     Optional<FileReference> fileRef,
                                     Optional<FileDeletionRequest> fileDelReq,
                                     Collection<String> groupIds,
-                                    boolean isReferenced) throws ModuleException {
+                                    boolean isReferenced,
+                                    boolean pendingActionRemaining) throws ModuleException {
         if (fileRef.isPresent()) {
             return handleAlreadyExists(fileRef.get(), fileDelReq, request, groupIds);
         } else {
@@ -272,7 +280,9 @@ public class FileReferenceRequestService {
             validateReferenceUrl(request);
             FileReference newFileRef = fileRefService.create(Lists.newArrayList(request.getOwner()),
                                                              request.buildMetaInfo(),
-                                                             new FileLocation(request.getStorage(), request.getUrl()),
+                                                             new FileLocation(request.getStorage(),
+                                                                              request.getUrl(),
+                                                                              pendingActionRemaining),
                                                              isReferenced);
             String message = String.format("New file <%s> referenced at <%s> (checksum: %s)",
                                            newFileRef.getMetaInfo().getFileName(),

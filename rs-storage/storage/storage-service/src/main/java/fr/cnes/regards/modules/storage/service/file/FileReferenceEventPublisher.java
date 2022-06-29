@@ -86,7 +86,8 @@ public class FileReferenceEventPublisher {
                                                    null,
                                                    errorCause,
                                                    new FileLocation(errorRequest.getStorage(),
-                                                                    errorRequest.getStorageSubDirectory()),
+                                                                    errorRequest.getStorageSubDirectory(),
+                                                                    false),
                                                    null,
                                                    Sets.newHashSet(errorRequest.getGroupId())));
     }
@@ -208,7 +209,7 @@ public class FileReferenceEventPublisher {
                                                    FileReferenceEventType.STORE_ERROR,
                                                    owners,
                                                    message,
-                                                   new FileLocation(storage, null),
+                                                   new FileLocation(storage, null, false),
                                                    null,
                                                    groupIds));
     }
@@ -246,7 +247,7 @@ public class FileReferenceEventPublisher {
                                                    FileReferenceEventType.AVAILABLE,
                                                    owners,
                                                    message,
-                                                   new FileLocation(availableStorage, url.toString()),
+                                                   new FileLocation(availableStorage, url.toString(), false),
                                                    null,
                                                    Sets.newHashSet(groupId)));
     }

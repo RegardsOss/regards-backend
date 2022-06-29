@@ -28,7 +28,6 @@ import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockingTaskExecutor.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -61,28 +60,31 @@ public class StorageLocationScheduler extends AbstractTaskScheduler {
 
     private static final String DEFAULT_DELAY = "3600000";
 
+    private static final String DEFAULT_PERIODIC_TASKS_CRON = "0 0 5 * * ?";
+
     private static final String MONITOR_TITLE = "Monitoring storage location scheduling";
 
     private static final String MONITOR_ACTIONS = "MONITORING STORAGE LOCATION ACTIONS";
 
-    @Autowired
-    private ITenantResolver tenantResolver;
+    private static final String STORE_PENDING_ACTION = "STORE PENDING REMAINING ACTIONS";
 
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
+    private static final String STORE_PENDING_TITLE = "Run storage remaining pending actions";
 
-    @Autowired
-    private StorageLocationService storageLocationService;
-
-    @Autowired
-    private LockingTaskExecutors lockingTaskExecutors;
-
-    @Value("${regards.storage.location.full.calculation.ratio:20}")
-    private Integer fullCalculationRatio;
+    private static final String STORE_PENDING_ACTION_SCHEDULER_LOCK = "pending_action_remaining_schedule_lock";
 
     private static int lightCalculationCount = 0;
 
     private static boolean reset = false;
+
+    private final LockingTaskExecutors lockingTaskExecutors;
+
+    private final Integer fullCalculationRatio;
+
+    private final ITenantResolver tenantResolver;
+
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    private StorageLocationService storageLocationService;
 
     private final Task monitorTask = () -> {
         LockAssert.assertLocked();
@@ -91,9 +93,29 @@ public class StorageLocationScheduler extends AbstractTaskScheduler {
         LOGGER.trace("Data storages monitoring done in {}ms", System.currentTimeMillis() - startTime);
     };
 
+    private final Task storagePeriodicActionTask = () -> {
+        LockAssert.assertLocked();
+        long startTime = System.currentTimeMillis();
+        storageLocationService.runPeriodicTasks();
+        LOGGER.info("Periodic task on storages done in {}ms", System.currentTimeMillis() - startTime);
+    };
+
+    public StorageLocationScheduler(ITenantResolver tenantResolver,
+                                    IRuntimeTenantResolver runtimeTenantResolver,
+                                    StorageLocationService storageLocationService,
+                                    LockingTaskExecutors lockingTaskExecutors,
+                                    @Value("${regards.storage.location.full.calculation.ratio:20}")
+                                    Integer fullCalculationRatio) {
+        this.tenantResolver = tenantResolver;
+        this.runtimeTenantResolver = runtimeTenantResolver;
+        this.storageLocationService = storageLocationService;
+        this.lockingTaskExecutors = lockingTaskExecutors;
+        this.fullCalculationRatio = fullCalculationRatio;
+    }
+
     @Scheduled(initialDelayString = "${regards.storage.location.schedule.initial.delay:" + DEFAULT_INITIAL_DELAY + "}",
         fixedDelayString = "${regards.storage.location.schedule.delay:" + DEFAULT_DELAY + "}")
-    public void scheduleUpdateRequests() {
+    public void scheduleMonitorStorageLocations() {
         if (lightCalculationCount > fullCalculationRatio) {
             lightCalculationCount = 0;
             reset = true;
@@ -101,15 +123,26 @@ public class StorageLocationScheduler extends AbstractTaskScheduler {
             lightCalculationCount++;
             reset = false;
         }
+        scheduleForAllTenants(MONITOR_ACTIONS, monitorTask, FILE_LOCATION_SCHEDULER_LOCK, MONITOR_TITLE);
+    }
+
+    @Scheduled(cron = "${regards.storage.location.periodic.tasks.cron:" + DEFAULT_PERIODIC_TASKS_CRON + "}")
+    public void schedulePeriodicActionOnStorages() {
+        scheduleForAllTenants(STORE_PENDING_ACTION,
+                              storagePeriodicActionTask,
+                              STORE_PENDING_ACTION_SCHEDULER_LOCK,
+                              STORE_PENDING_TITLE);
+    }
+
+    private void scheduleForAllTenants(String actionLabel, Task task, String lockId, String schedulerTitle) {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                traceScheduling(tenant, MONITOR_ACTIONS);
-                lockingTaskExecutors.executeWithLock(monitorTask,
-                                                     new LockConfiguration(FILE_LOCATION_SCHEDULER_LOCK,
-                                                                           Instant.now().plusSeconds(120)));
+                traceScheduling(tenant, actionLabel);
+                lockingTaskExecutors.executeWithLock(task,
+                                                     new LockConfiguration(lockId, Instant.now().plusSeconds(120)));
             } catch (Throwable e) {
-                handleSchedulingError(MONITOR_ACTIONS, MONITOR_TITLE, e);
+                handleSchedulingError(actionLabel, schedulerTitle, e);
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

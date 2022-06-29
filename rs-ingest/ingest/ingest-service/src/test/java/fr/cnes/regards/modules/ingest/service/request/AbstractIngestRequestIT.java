@@ -110,7 +110,7 @@ public abstract class AbstractIngestRequestIT extends AbstractMultitenantService
 
     protected FileReference simulatefileReference(String checksum, String owner) {
         FileReferenceMetaInfo meta = new FileReferenceMetaInfo(checksum, "MD5", "file.name", 10L, MediaType.TEXT_PLAIN);
-        return new FileReference(owner, meta, new FileLocation("somewhere", "file:///somewhere/file.name"));
+        return new FileReference(owner, meta, new FileLocation("somewhere", "file:///somewhere/file.name", false));
     }
 
     @After

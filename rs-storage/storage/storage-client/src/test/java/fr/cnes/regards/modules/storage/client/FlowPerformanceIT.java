@@ -106,7 +106,7 @@ public class FlowPerformanceIT extends AbstractRegardsTransactionalIT {
                                                                            "file_" + i + ".test",
                                                                            i,
                                                                            MediaType.APPLICATION_OCTET_STREAM);
-                FileLocation location = new FileLocation("storage-" + count, "storage://plop/file");
+                FileLocation location = new FileLocation("storage-" + count, "storage://plop/file", false);
                 FileReference fileRef = new FileReference(Lists.newArrayList("owner"), metaInfo, location);
                 toSave.add(fileRef);
                 if (toSave.size() >= 10_000) {

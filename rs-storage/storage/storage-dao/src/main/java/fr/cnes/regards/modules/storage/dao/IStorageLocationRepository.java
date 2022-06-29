@@ -23,6 +23,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * JPA Repository to handle access to {@link StorageLocation} entities.
@@ -33,6 +34,8 @@ public interface IStorageLocationRepository
     extends JpaRepository<StorageLocation, Long>, JpaSpecificationExecutor<StorageLocation> {
 
     Optional<StorageLocation> findByName(String name);
+
+    Set<StorageLocation> findByNumberOfPendingFilesGreaterThan(Long minimumNumberOfPendingFiles);
 
     void deleteByName(String name);
 

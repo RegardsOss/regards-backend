@@ -58,6 +58,7 @@ import fr.cnes.regards.modules.storage.service.plugin.SimpleNearlineDataStorage;
 import fr.cnes.regards.modules.storage.service.plugin.SimpleOfflineDataStorage;
 import fr.cnes.regards.modules.storage.service.plugin.SimpleOnlineDataStorage;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifierPropertyEnum;
+import fr.cnes.regards.modules.templates.dao.ITemplateRepository;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -84,8 +85,6 @@ import java.util.concurrent.TimeoutException;
  */
 public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractStorageIT.class);
-
     protected static final String ONLINE_CONF_LABEL = "target";
 
     protected static final String OFFLINE_CONF_LABEL = "offline";
@@ -93,6 +92,8 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
     protected static final String ONLINE_CONF_LABEL_WITHOUT_DELETE = "target_without_delete";
 
     protected static final String NEARLINE_CONF_LABEL = "NL_target";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractStorageIT.class);
 
     private static final Long ALLOCATED_SIZE_IN_KO = 1_000_000L;
 
@@ -169,9 +170,6 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
     protected StorageLocationConfigurationService storageLocationConfService;
 
     @Autowired
-    private StorageLocationService storageLocationService;
-
-    @Autowired
     protected IDownloadTokenRepository downloadTokenRepo;
 
     @Autowired
@@ -180,7 +178,13 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
     @Autowired
     protected IRequestGroupRepository groupRepo;
 
+    @Autowired
+    protected ITemplateRepository templateRepo;
+
     protected String originUrl = "file://in/this/directory/file.test";
+
+    @Autowired
+    private StorageLocationService storageLocationService;
 
     protected void init() throws ModuleException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
@@ -194,6 +198,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
         } catch (IOException e) {
             Assert.fail(e.getMessage());
         }
+        templateRepo.deleteAll();
         grpReqInfoRepo.deleteAll();
         copyRequestRepository.deleteAll();
         fileDeletionRequestRepo.deleteAll();
@@ -219,6 +224,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
         initDataStorageNLPluginConfiguration(NEARLINE_CONF_LABEL);
         storagePlgConfHandler.refresh();
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+        simulateApplicationStartedEvent();
     }
 
     protected StorageLocationConfiguration initDataStorageOLPluginConfiguration(String label) throws ModuleException {
@@ -264,6 +270,8 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                                                                getBaseStorageLocation().getPath()),
                                                             IPluginParam.build(SimpleNearlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN,
                                                                                "error.*"),
+                                                            IPluginParam.build(SimpleNearlineDataStorage.HANDLE_STORAGE_PENDING_FILE_PATTERN,
+                                                                               "pending.*"),
                                                             IPluginParam.build(SimpleNearlineDataStorage.HANDLE_RESTORATION_ERROR_FILE_PATTERN,
                                                                                "restoError.*"),
                                                             IPluginParam.build(SimpleNearlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN,
@@ -383,6 +391,8 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
         fileRefReqs = stoReqService.search(storage, checksum);
         oFileRef = fileRefService.search(storage, checksum);
         Assert.assertTrue("File reference should have been created.", oFileRef.isPresent());
+        Assert.assertFalse("File reference should be fully stored witout remaining action.",
+                           oFileRef.get().getLocation().isPendingActionRemaining());
         try {
             Assert.assertTrue("File should be created on disk",
                               Files.exists(Paths.get(new URL(oFileRef.get().getLocation().getUrl()).getPath())));
@@ -399,14 +409,17 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                                     String fileName,
                                                     String storage,
                                                     String sessionOwner,
-                                                    String session) {
+                                                    String session,
+                                                    boolean pendingActionRemaining) {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum,
                                                                        "MD5",
                                                                        fileName,
                                                                        1024L,
                                                                        MediaType.APPLICATION_OCTET_STREAM);
         fileMetaInfo.setType(type);
-        FileLocation location = new FileLocation(storage, "anywhere://in/this/directory/file.test");
+        FileLocation location = new FileLocation(storage,
+                                                 "anywhere://in/this/directory/file.test",
+                                                 pendingActionRemaining);
         try {
             fileReqService.reference(owner,
                                      fileMetaInfo,
@@ -426,8 +439,16 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                                           String fileName,
                                                           String storage,
                                                           String sessionOwner,
-                                                          String session) {
-        return this.referenceFile(UUID.randomUUID().toString(), owner, type, fileName, storage, sessionOwner, session);
+                                                          String session,
+                                                          boolean pendingRemainingAction) {
+        return this.referenceFile(UUID.randomUUID().toString(),
+                                  owner,
+                                  type,
+                                  fileName,
+                                  storage,
+                                  sessionOwner,
+                                  session,
+                                  pendingRemainingAction);
     }
 
     protected FileStorageRequest generateStoreFileError(String owner,
@@ -440,7 +461,7 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
                                                                        "error.file.test",
                                                                        132L,
                                                                        MediaType.APPLICATION_OCTET_STREAM);
-        FileLocation destination = new FileLocation(storageDestination, "/in/this/directory");
+        FileLocation destination = new FileLocation(storageDestination, "/in/this/directory", false);
         // Run file reference creation.
         stoReqService.handleRequest(owner,
                                     sessionOwner,

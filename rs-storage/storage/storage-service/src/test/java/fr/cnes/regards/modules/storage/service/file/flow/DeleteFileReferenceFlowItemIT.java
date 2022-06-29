@@ -65,11 +65,13 @@ import java.util.stream.Collectors;
     locations = { "classpath:application-test.properties" })
 public class DeleteFileReferenceFlowItemIT extends AbstractStorageIT {
 
-    @Autowired
-    private DeletionFlowHandler deletionFlowHandler;
+    private static final String SESSION_OWNER_1 = "SOURCE 1";
 
-    @Autowired
-    private ReferenceFlowItemHandler referenceFlowItemHandler;
+    private static final String SESSION_OWNER_2 = "SOURCE 2";
+
+    private static final String SESSION_1 = "SESSION 1";
+
+    private static boolean waitForLock = false;
 
     @Autowired
     FileReferenceRequestService fileRefReqService;
@@ -81,15 +83,13 @@ public class DeleteFileReferenceFlowItemIT extends AbstractStorageIT {
     FileStorageRequestService fileStorageReqService;
 
     @Autowired
+    private DeletionFlowHandler deletionFlowHandler;
+
+    @Autowired
+    private ReferenceFlowItemHandler referenceFlowItemHandler;
+
+    @Autowired
     private LockingTaskExecutors lockingTaskExecutors;
-
-    private static boolean waitForLock = false;
-
-    private static final String SESSION_OWNER_1 = "SOURCE 1";
-
-    private static final String SESSION_OWNER_2 = "SOURCE 2";
-
-    private static final String SESSION_1 = "SESSION 1";
 
     @Before
     public void initialize() throws ModuleException {
@@ -140,7 +140,7 @@ public class DeleteFileReferenceFlowItemIT extends AbstractStorageIT {
         String checksum = UUID.randomUUID().toString();
         String storage = "some-storage";
         String owner = "owner";
-        this.referenceFile(checksum, owner, null, "file.test", storage, SESSION_OWNER_1, SESSION_1);
+        this.referenceFile(checksum, owner, null, "file.test", storage, SESSION_OWNER_1, SESSION_1, false);
         Mockito.clearInvocations(publisher);
         DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO.build(checksum,
                                                                                     storage,
@@ -207,8 +207,8 @@ public class DeleteFileReferenceFlowItemIT extends AbstractStorageIT {
         String checksum = UUID.randomUUID().toString();
         String storage = "some-storage";
         String owner = "owner";
-        this.referenceFile(checksum, owner, null, "file.test", storage, SESSION_OWNER_1, SESSION_1);
-        this.referenceFile(checksum, "other-owner", null, "file.test", storage, SESSION_OWNER_2, SESSION_1);
+        this.referenceFile(checksum, owner, null, "file.test", storage, SESSION_OWNER_1, SESSION_1, false);
+        this.referenceFile(checksum, "other-owner", null, "file.test", storage, SESSION_OWNER_2, SESSION_1, false);
         Mockito.clearInvocations(publisher);
         DeletionFlowItem item = DeletionFlowItem.build(FileDeletionRequestDTO.build(checksum,
                                                                                     storage,
@@ -616,28 +616,6 @@ public class DeleteFileReferenceFlowItemIT extends AbstractStorageIT {
                        "1");
     }
 
-    public class LockDeletion extends Thread {
-
-        private final Task wait = () -> {
-            do {
-                Thread.sleep(1000);
-            } while (waitForLock);
-        };
-
-        @Override
-        public void run() {
-            try {
-                runtimeTenantResolver.forceTenant(getDefaultTenant());
-                lockingTaskExecutors.executeWithLock(wait,
-                                                     new LockConfiguration(DeletionFlowItem.DELETION_LOCK,
-                                                                           Instant.now().plusSeconds(30)));
-            } catch (Throwable e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-    }
-
     @Test
     public void testLock() throws Throwable {
 
@@ -681,5 +659,27 @@ public class DeleteFileReferenceFlowItemIT extends AbstractStorageIT {
         Thread.sleep(1100);
         jobs = fileDeletionRequestService.scheduleJobs(FileRequestStatus.TO_DO, Lists.newArrayList());
         Assert.assertFalse("Deletion jobs should be scheduled now", jobs.isEmpty());
+    }
+
+    public class LockDeletion extends Thread {
+
+        private final Task wait = () -> {
+            do {
+                Thread.sleep(1000);
+            } while (waitForLock);
+        };
+
+        @Override
+        public void run() {
+            try {
+                runtimeTenantResolver.forceTenant(getDefaultTenant());
+                lockingTaskExecutors.executeWithLock(wait,
+                                                     new LockConfiguration(DeletionFlowItem.DELETION_LOCK,
+                                                                           Instant.now().plusSeconds(30)));
+            } catch (Throwable e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
     }
 }

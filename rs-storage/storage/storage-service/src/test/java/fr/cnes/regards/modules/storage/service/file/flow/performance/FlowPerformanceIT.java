@@ -78,6 +78,8 @@ public class FlowPerformanceIT extends AbstractStorageIT {
 
     private static final String SESSION = "SESSION 1";
 
+    private final Set<String> nlChecksums = Sets.newHashSet();
+
     @Autowired
     private ReferenceFlowItemHandler referenceFlowHandler;
 
@@ -89,8 +91,6 @@ public class FlowPerformanceIT extends AbstractStorageIT {
 
     @Autowired
     private DeletionFlowHandler deleteHandler;
-
-    private final Set<String> nlChecksums = Sets.newHashSet();
 
     @Before
     public void initialize() throws ModuleException {
@@ -120,7 +120,7 @@ public class FlowPerformanceIT extends AbstractStorageIT {
                                                                            "file_" + i + ".test",
                                                                            i,
                                                                            MediaType.APPLICATION_OCTET_STREAM);
-                FileLocation location = new FileLocation("storage_" + i, "storage://plop/file");
+                FileLocation location = new FileLocation("storage_" + i, "storage://plop/file", false);
                 FileReference fileRef = new FileReference(Lists.newArrayList(FILE_REF_OWNER), metaInfo, location);
                 toSave.add(fileRef);
                 if (toSave.size() >= 10_000) {
@@ -146,7 +146,7 @@ public class FlowPerformanceIT extends AbstractStorageIT {
                                                                        "file_" + i + ".test",
                                                                        i,
                                                                        MediaType.APPLICATION_OCTET_STREAM);
-            FileLocation location = new FileLocation(NEARLINE_CONF_LABEL, "storage://plop/file");
+            FileLocation location = new FileLocation(NEARLINE_CONF_LABEL, "storage://plop/file", false);
             FileReference fileRef = new FileReference(Lists.newArrayList(FILE_REF_OWNER), metaInfo, location);
             toSave.add(fileRef);
         }

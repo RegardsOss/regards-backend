@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,29 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storage.service;
+package fr.cnes.regards.modules.storage.domain.database;
 
-/**
- * Centralize the storage jobs priorities.
- *
- * @author Sébastien Binda
- */
-public final class StorageJobsPriority {
+public interface StoragePendingFilesAggregation {
 
-    public static int FILE_CACHE_JOB = 30;
+    String getStorage();
 
-    public static int FILE_STORAGE_JOB = 40;
+    Long getNumberOfPendingReferences();
 
-    public static int FILE_DELETION_JOB = 60;
-
-    public static int FILE_COPY_JOB = 80;
-
-    public static int CACHE_VERIFICATION = 90;
-
-    public static int CACHE_PURGE = 100;
-
-    public static int STORAGE_PERIODIC_ACTION_JOB = 150;
-
-    private StorageJobsPriority() {
-    }
 }

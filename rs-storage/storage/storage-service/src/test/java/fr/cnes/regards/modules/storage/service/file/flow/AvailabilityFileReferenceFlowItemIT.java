@@ -73,16 +73,16 @@ public class AvailabilityFileReferenceFlowItemIT extends AbstractStorageIT {
     private static final String SESSION_1 = "SESSION 1";
 
     @Autowired
-    private AvailabilityFlowItemHandler handler;
-
-    @Autowired
-    private RetryFlowItemHandler retryHandler;
-
-    @Autowired
     FileReferenceRequestService fileRefService;
 
     @Autowired
     FileStorageRequestService fileStorageRequestService;
+
+    @Autowired
+    private AvailabilityFlowItemHandler handler;
+
+    @Autowired
+    private RetryFlowItemHandler retryHandler;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -117,13 +117,15 @@ public class AvailabilityFileReferenceFlowItemIT extends AbstractStorageIT {
                                                        "file.offline.1.test",
                                                        "somewhere",
                                                        SESSION_OWNER_1,
-                                                       SESSION_1).get();
+                                                       SESSION_1,
+                                                       false).get();
         FileReference file7 = this.referenceRandomFile("owner",
                                                        "file",
                                                        "file.offline.2.test",
                                                        "somewhere-else",
                                                        SESSION_OWNER_1,
-                                                       SESSION_1).get();
+                                                       SESSION_1,
+                                                       false).get();
         // Simulate storage of a file in two locations near line and online
         String checksum = UUID.randomUUID().toString();
         this.generateStoredFileReference(checksum,

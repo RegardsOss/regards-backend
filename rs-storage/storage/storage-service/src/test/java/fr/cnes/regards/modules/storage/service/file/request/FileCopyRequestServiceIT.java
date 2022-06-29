@@ -62,15 +62,15 @@ import java.util.concurrent.ExecutionException;
     locations = { "classpath:application-test.properties" })
 public class FileCopyRequestServiceIT extends AbstractStorageIT {
 
+    private static final String SESSION_OWNER = "SOURCE 1";
+
+    private static final String SESSION = "SESSION 1";
+
     @Autowired
     private RequestsGroupService reqGrpService;
 
     @Autowired
     private IDynamicTenantSettingService dynamicTenantSettingService;
-
-    private static final String SESSION_OWNER = "SOURCE 1";
-
-    private static final String SESSION = "SESSION 1";
 
     @Before
     @Override
@@ -390,7 +390,8 @@ public class FileCopyRequestServiceIT extends AbstractStorageIT {
                                                     "file1.test",
                                                     storage,
                                                     SESSION_OWNER,
-                                                    SESSION).get();
+                                                    SESSION,
+                                                    false).get();
         Set<FileCopyRequestDTO> requests = Sets.newHashSet(FileCopyRequestDTO.build(fileRef.getMetaInfo().getChecksum(),
                                                                                     storageCopyDest,
                                                                                     SESSION_OWNER,

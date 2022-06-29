@@ -166,7 +166,7 @@ pipeline {
         }
         stage("Deploy artifacts") {
             when {
-                branch pattern: /(master|develop.*|release.*)/, comparator: "REGEXP"
+                branch pattern: /(master|develop.*|release.*|feature\/dma_.*|hotfix\/dma_.*)/, comparator: "REGEXP"
             }
             steps {
                 runMavenDockerImgWithoutCoTS("Deploy Maven Artifacts", "deployMvnArtifacts")

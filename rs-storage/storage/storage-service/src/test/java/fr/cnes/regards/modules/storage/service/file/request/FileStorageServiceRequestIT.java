@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.service.file.request;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -218,7 +219,7 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
                                                                        fileName,
                                                                        132L,
                                                                        MediaType.APPLICATION_OCTET_STREAM);
-        FileLocation destination = new FileLocation(storageDestination, "/in/this/directory");
+        FileLocation destination = new FileLocation(storageDestination, "/in/this/directory", false);
         // Run file reference creation.
         stoReqService.handleRequest(owner,
                                     SESSION_OWNER_1,
@@ -288,7 +289,7 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
                                                                        inputImage.getTotalSpace(),
                                                                        MediaType.IMAGE_PNG);
         URL origin = new URL("file", "localhost", inputImage.getAbsolutePath());
-        FileLocation destination = new FileLocation(ONLINE_CONF_LABEL, "/in/this/directory");
+        FileLocation destination = new FileLocation(ONLINE_CONF_LABEL, "/in/this/directory", false);
         // Run file reference creation.
         stoReqService.handleRequest(owner,
                                     SESSION_OWNER_1,
@@ -421,6 +422,36 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
     }
 
     @Test
+    public void storeFileNearlineWithPendingActionRemaining() {
+        String owner = "someone";
+        // Add a file reference request for a file that will be stored with action pending remaining
+        String checksum = UUID.randomUUID().toString();
+        String fileName = "pending.file.test";
+        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum,
+                                                                       "MD5",
+                                                                       fileName,
+                                                                       132L,
+                                                                       MediaType.APPLICATION_OCTET_STREAM);
+        stoReqService.handleRequest(owner,
+                                    SESSION_OWNER_1,
+                                    SESSION_1,
+                                    fileMetaInfo,
+                                    originUrl,
+                                    NEARLINE_CONF_LABEL,
+                                    Optional.of("/in/this/directory"),
+                                    UUID.randomUUID().toString());
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        Collection<JobInfo> jobs = stoReqService.scheduleJobs(FileRequestStatus.TO_DO,
+                                                              Lists.newArrayList(NEARLINE_CONF_LABEL),
+                                                              Lists.newArrayList(owner));
+        runAndWaitJob(jobs);
+        Optional<FileReference> fileRef = fileRefService.search(NEARLINE_CONF_LABEL, checksum);
+        Assert.assertTrue("File should be referenced", fileRef.isPresent());
+        Assert.assertFalse("File should in stored state", fileRef.get().isReferenced());
+        Assert.assertTrue("File should in stored state", fileRef.get().getLocation().isPendingActionRemaining());
+    }
+
+    @Test
     public void storeWithUnknownStorageLocation() throws MalformedURLException {
         String owner = "someone";
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo("invalid_checksum",
@@ -429,7 +460,7 @@ public class FileStorageServiceRequestIT extends AbstractStorageIT {
                                                                        132L,
                                                                        MediaType.APPLICATION_OCTET_STREAM);
         URL originUrl = new URL("file://in/this/directory/file.test");
-        FileLocation destination = new FileLocation("elsewhere", "elsewhere://in/this/directory/file.test");
+        FileLocation destination = new FileLocation("elsewhere", "elsewhere://in/this/directory/file.test", false);
         stoReqService.handleRequest(owner,
                                     SESSION_OWNER_1,
                                     SESSION_1,

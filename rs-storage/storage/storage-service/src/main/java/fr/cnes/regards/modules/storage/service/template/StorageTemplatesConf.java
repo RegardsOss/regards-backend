@@ -16,29 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storage.service;
+package fr.cnes.regards.modules.storage.service.template;
 
-/**
- * Centralize the storage jobs priorities.
- *
- * @author Sébastien Binda
- */
-public final class StorageJobsPriority {
+import fr.cnes.regards.modules.templates.domain.Template;
+import fr.cnes.regards.modules.templates.service.TemplateConfigUtil;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-    public static int FILE_CACHE_JOB = 30;
+import java.io.IOException;
 
-    public static int FILE_STORAGE_JOB = 40;
+@Configuration
+public class StorageTemplatesConf {
 
-    public static int FILE_DELETION_JOB = 60;
+    public final static String ACTION_REMAINING_TEMPLATE_NAME = "action_pending_remaining";
 
-    public static int FILE_COPY_JOB = 80;
-
-    public static int CACHE_VERIFICATION = 90;
-
-    public static int CACHE_PURGE = 100;
-
-    public static int STORAGE_PERIODIC_ACTION_JOB = 150;
-
-    private StorageJobsPriority() {
+    @Bean
+    public Template accountRefusedTemplate() throws IOException {
+        return TemplateConfigUtil.readTemplate(ACTION_REMAINING_TEMPLATE_NAME,
+                                               "template/action-pending-remaining.html");
     }
+
 }

@@ -189,7 +189,8 @@ public class FileReferenceRequestServiceIT extends AbstractStorageIT {
                                                                "file.test",
                                                                ONLINE_CONF_LABEL,
                                                                SESSION_OWNER_1,
-                                                               SESSION_1);
+                                                               SESSION_1,
+                                                               false);
         Assert.assertTrue("File reference should have been created", oFileRef.isPresent());
         Collection<FileStorageRequest> storageReqs = stoReqService.search(oFileRef.get().getLocation().getStorage(),
                                                                           oFileRef.get().getMetaInfo().getChecksum());
@@ -204,7 +205,7 @@ public class FileReferenceRequestServiceIT extends AbstractStorageIT {
                                                                        "file.test",
                                                                        1024L,
                                                                        MediaType.APPLICATION_OCTET_STREAM);
-        FileLocation location = new FileLocation(OFFLINE_CONF_LABEL, "anywhere://in/this/directory/file.test");
+        FileLocation location = new FileLocation(OFFLINE_CONF_LABEL, "anywhere://in/this/directory/file.test", false);
         try {
             fileReqService.reference("someone",
                                      fileMetaInfo,

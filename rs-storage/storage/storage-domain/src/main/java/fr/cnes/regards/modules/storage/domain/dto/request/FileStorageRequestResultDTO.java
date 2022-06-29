@@ -37,11 +37,21 @@ public class FileStorageRequestResultDTO {
 
     private String errorCause;
 
-    public static FileStorageRequestResultDTO build(FileStorageRequest request, String storedUrl, Long fileSize) {
+    private boolean pendingActionRemaining;
+
+    private boolean notifyActionRemainingToAdmin;
+
+    public static FileStorageRequestResultDTO build(FileStorageRequest request,
+                                                    String storedUrl,
+                                                    Long fileSize,
+                                                    boolean pendingActionRemaining,
+                                                    boolean notifyActionRemainingToAdmin) {
         FileStorageRequestResultDTO dto = new FileStorageRequestResultDTO();
         dto.request = request;
         dto.storedUrl = storedUrl;
         dto.fileSize = fileSize;
+        dto.pendingActionRemaining = pendingActionRemaining;
+        dto.notifyActionRemainingToAdmin = notifyActionRemainingToAdmin;
         return dto;
     }
 
@@ -71,4 +81,11 @@ public class FileStorageRequestResultDTO {
         return errorCause;
     }
 
+    public boolean isPendingActionRemaining() {
+        return pendingActionRemaining;
+    }
+
+    public boolean isNotifyActionRemainingToAdmin() {
+        return notifyActionRemainingToAdmin;
+    }
 }

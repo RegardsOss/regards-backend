@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.domain.database.request.FileCacheRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
@@ -54,8 +55,6 @@ import java.util.regex.Pattern;
     url = "https://regardsoss.github.io/")
 public class SimpleNearlineDataStorage implements INearlineStorageLocation {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleNearlineDataStorage.class);
-
     /**
      * Plugin parameter name of the storage base location as a string
      */
@@ -63,17 +62,26 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
 
     public static final String HANDLE_STORAGE_ERROR_FILE_PATTERN = "error_file_pattern";
 
+    public static final String HANDLE_STORAGE_PENDING_FILE_PATTERN = "pending_file_pattern";
+
     public static final String HANDLE_DELETE_ERROR_FILE_PATTERN = "delete_error_file_pattern";
 
     public static final String HANDLE_RESTORATION_ERROR_FILE_PATTERN = "resto_error_pattern";
 
-    ;
+    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleNearlineDataStorage.class);
+
+    private final static String BASE_URL = "target/storage-nearline";
+
+    private final String doNotHandlePattern = "doNotHandle.*";
 
     /**
      * {@link IRuntimeTenantResolver} instance
      */
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private IFileReferenceRepository fileRefRepo;
 
     /**
      * Base storage location url
@@ -86,6 +94,10 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
         label = "Error file pattern")
     private String errorFilePattern;
 
+    @PluginParameter(name = HANDLE_STORAGE_PENDING_FILE_PATTERN, description = "Pending file pattern",
+        label = "Error file pattern")
+    private String pendingFilePattern;
+
     @PluginParameter(name = HANDLE_DELETE_ERROR_FILE_PATTERN, description = "Delete Error file pattern",
         label = "Delete Error file pattern")
     private String deleteErrorFilePattern;
@@ -93,10 +105,6 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
     @PluginParameter(name = HANDLE_RESTORATION_ERROR_FILE_PATTERN, description = "Restoration Error file pattern",
         label = "Delete Error file pattern")
     private String restoErrorFilePattern;
-
-    private final String doNotHandlePattern = "doNotHandle.*";
-
-    private final static String BASE_URL = "target/storage-nearline";
 
     /**
      * Plugin init method
@@ -142,6 +150,7 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
             LOGGER.info("File {} ignored for storage", fileName);
             return;
         } else if (Pattern.matches(errorFilePattern, fileName)) {
+            LOGGER.error("Simulated error for file storage {}.", fileName);
             progressManager.storageFailed(fileRefRequest, "Specific error generated for tests");
         } else {
             String directory;
@@ -168,7 +177,16 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
                     }
                     LOGGER.info("Create file with size {}", Paths.get(storedUrl).toFile().length());
                 }
-                progressManager.storageSucceed(fileRefRequest, new URL("file", null, storedUrl), 1024L);
+                if (Pattern.matches(pendingFilePattern, fileName)) {
+                    LOGGER.info("Simulated success with pending for file storage {}.", fileName);
+                    progressManager.storageSucceedWithPendingActionRemaining(fileRefRequest,
+                                                                             new URL("file", null, storedUrl),
+                                                                             1024L,
+                                                                             true);
+                } else {
+                    LOGGER.info("Simulated success for file storage {}.", fileName);
+                    progressManager.storageSucceed(fileRefRequest, new URL("file", null, storedUrl), 1024L);
+                }
             } catch (IOException e) {
                 LOGGER.error(e.getMessage(), e);
                 progressManager.storageFailed(fileRefRequest, e.getMessage());
@@ -230,6 +248,14 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
                     progressManager.restoreFailed(f, e.getMessage());
                 }
             }
+        });
+    }
+
+    @Override
+    public void runPeriodicAction(IPeriodicActionProgressManager progressManager) {
+        LOG.info("Running task !!!!");
+        fileRefRepo.findAll().stream().filter(f -> f.getLocation().isPendingActionRemaining()).forEach(f -> {
+            progressManager.storagePendingActionSucceed(f.getLocation().getUrl());
         });
     }
 

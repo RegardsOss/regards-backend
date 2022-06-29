@@ -63,9 +63,6 @@ import java.util.concurrent.ExecutionException;
     locations = { "classpath:application-test.properties" })
 public class FileDeletionRequestServiceIT extends AbstractStorageIT {
 
-    @Autowired
-    private IDynamicTenantSettingService dynamicTenantSettingService;
-
     private static final String SESSION_OWNER_1 = "SOURCE 1";
 
     private static final String SESSION_OWNER_2 = "SOURCE 2";
@@ -73,6 +70,9 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
     private static final String SESSION_OWNER_3 = "SOURCE 3";
 
     private static final String SESSION_1 = "SESSION 1";
+
+    @Autowired
+    private IDynamicTenantSettingService dynamicTenantSettingService;
 
     @Before
     @Override
@@ -115,7 +115,13 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
         List<String> owners = Lists.newArrayList("someone", "someone-else");
         Optional<FileReference> oFileRef = Optional.empty();
         for (String owner : owners) {
-            oFileRef = referenceRandomFile(owner, null, "file1.test", storage, "source " + owner, "session " + owner);
+            oFileRef = referenceRandomFile(owner,
+                                           null,
+                                           "file1.test",
+                                           storage,
+                                           "source " + owner,
+                                           "session " + owner,
+                                           false);
         }
         Assert.assertTrue("File reference should have been created", oFileRef.isPresent());
         Collection<FileStorageRequest> storageReqs = stoReqService.search(oFileRef.get().getLocation().getStorage(),

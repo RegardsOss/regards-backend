@@ -20,8 +20,6 @@ package fr.cnes.regards.modules.storage.service.file.job;
 
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -29,6 +27,7 @@ import fr.cnes.regards.framework.utils.file.CommonFileUtils;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storage.domain.plugin.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
+import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import fr.cnes.regards.modules.storage.service.file.request.FileStorageRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +68,9 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
     private FileStorageRequestService fileStorageReqService;
 
     @Autowired
+    private FileReferenceService fileRefService;
+
+    @Autowired
     private IPluginService pluginService;
 
     @Autowired
@@ -81,8 +83,7 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
     private int nbRequestToHandle = 0;
 
     @Override
-    public void setParameters(Map<String, JobParameter> parameters)
-        throws JobParameterMissingException, JobParameterInvalidException {
+    public void setParameters(Map<String, JobParameter> parameters) {
         plgBusinessId = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();
         workingSubset = parameters.get(WORKING_SUB_SET).getValue();
         nbRequestToHandle = workingSubset.getFileReferenceRequests().size();
@@ -92,7 +93,9 @@ public class FileStorageRequestJob extends AbstractJob<Void> {
     public void run() {
         long start = System.currentTimeMillis();
         // Initiate the job progress manager
-        FileStorageJobProgressManager progressManager = new FileStorageJobProgressManager(fileStorageReqService, this);
+        FileStorageJobProgressManager progressManager = new FileStorageJobProgressManager(fileStorageReqService,
+                                                                                          fileRefService,
+                                                                                          this);
 
         nbRequestToHandle = workingSubset.getFileReferenceRequests().size();
         logger.debug("[STORAGE JOB] Runing storage job for {} storage requests", nbRequestToHandle);

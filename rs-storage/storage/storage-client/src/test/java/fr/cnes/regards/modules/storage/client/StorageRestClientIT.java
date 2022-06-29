@@ -136,7 +136,7 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
                                                             "file.test_" + i,
                                                             10L,
                                                             MediaType.APPLICATION_JSON),
-                                  new FileLocation("somewhere", "file://plop/plip.file_" + i),
+                                  new FileLocation("somewhere", "file://plop/plip.file_" + i, false),
                                   false);
         }
         Response response = client.export();
@@ -175,7 +175,7 @@ public class StorageRestClientIT extends AbstractRegardsWebIT {
                                                             "file_ref.txt",
                                                             1L,
                                                             MediaType.APPLICATION_JSON),
-                                  new FileLocation("somewhere", "file://sample/file_ref.txt"),
+                                  new FileLocation("somewhere", "file://sample/file_ref.txt", false),
                                   true);
         }
         ResponseEntity<Set<FileReferenceDTO>> response = client.getFileReferencesWithoutOwners(storageName, checksums);

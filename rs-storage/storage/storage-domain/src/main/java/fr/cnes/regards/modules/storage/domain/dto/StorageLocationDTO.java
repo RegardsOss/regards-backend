@@ -25,15 +25,19 @@ import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfigurat
  */
 public class StorageLocationDTO {
 
+    private final Long nbStorageError;
+
+    private final StorageLocationConfiguration configuration;
+
     private String name;
 
     private Long nbFilesStored;
 
-    private Long totalStoredFilesSizeKo;
-
-    private Long nbStorageError;
-
     private Long nbDeletionError;
+
+    private Long nbFilesStoredWithPendingActionRemaining;
+
+    private Long totalStoredFilesSizeKo;
 
     private boolean storageRunning = false;
 
@@ -43,10 +47,9 @@ public class StorageLocationDTO {
 
     private boolean allowsPhysicalDeletion = false;
 
-    private StorageLocationConfiguration configuration;
-
     public StorageLocationDTO(String name,
                               Long nbFilesStored,
+                              Long nbFilesStoredWithPendingActionRemaining,
                               Long totalStoredFilesSizeKo,
                               Long nbStorageError,
                               Long nbDeletionError,
@@ -57,6 +60,7 @@ public class StorageLocationDTO {
                               boolean allowPhysicalDeletion) {
         this.name = name;
         this.nbFilesStored = nbFilesStored;
+        this.nbFilesStoredWithPendingActionRemaining = nbFilesStoredWithPendingActionRemaining;
         this.totalStoredFilesSizeKo = totalStoredFilesSizeKo;
         this.nbStorageError = nbStorageError;
         this.nbDeletionError = nbDeletionError;
@@ -105,5 +109,9 @@ public class StorageLocationDTO {
 
     public boolean isAllowsPhysicalDeletion() {
         return allowsPhysicalDeletion;
+    }
+
+    public Long getNbFilesStoredWithPendingActionRemaining() {
+        return nbFilesStoredWithPendingActionRemaining;
     }
 }

@@ -72,24 +72,6 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPUpdatesCreatorJobIT.class);
 
-    @Autowired
-    private StorageClientMock storageClient;
-
-    @Autowired
-    private IAIPUpdateRequestRepository aipUpdateRequestRepository;
-
-    @Autowired
-    private IAIPService aipService;
-
-    @Autowired
-    private AIPUpdateRequestScheduler aipUpdateRequestScheduler;
-
-    @Autowired
-    private StorageResponseFlowHandler storageListener;
-
-    @Autowired
-    private IJobService jobService;
-
     private static final List<String> CATEGORIES_0 = Lists.newArrayList("CATEGORY", "CATEGORY00", "CATEGORY01");
 
     private static final List<String> CATEGORIES_1 = Lists.newArrayList("CATEGORY1");
@@ -119,6 +101,24 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
     private static final String SESSION_1 = OffsetDateTime.now().minusDays(4).toString();
 
     boolean isToNotify;
+
+    @Autowired
+    private StorageClientMock storageClient;
+
+    @Autowired
+    private IAIPUpdateRequestRepository aipUpdateRequestRepository;
+
+    @Autowired
+    private IAIPService aipService;
+
+    @Autowired
+    private AIPUpdateRequestScheduler aipUpdateRequestScheduler;
+
+    @Autowired
+    private StorageResponseFlowHandler storageListener;
+
+    @Autowired
+    private IJobService jobService;
 
     @Override
     public void doInit() {
@@ -324,7 +324,8 @@ public class AIPUpdateRunnerJobIT extends IngestMultitenantServiceIT {
     }
 
     protected FileReference simulatefileReference(String checksum, String owner) {
-        FileReferenceMetaInfo meta = new FileReferenceMetaInfo(checksum, "MD5", "file.name", 10L, MediaType.TEXT_PLAIN);
-        return new FileReference(owner, meta, new FileLocation("somewhere", "file:///somewhere/file.name"));
+        return new FileReference(owner,
+                                 new FileReferenceMetaInfo(checksum, "MD5", "file.name", 10L, MediaType.TEXT_PLAIN),
+                                 new FileLocation("somewhere", "file:///somewhere/file.name", false));
     }
 }

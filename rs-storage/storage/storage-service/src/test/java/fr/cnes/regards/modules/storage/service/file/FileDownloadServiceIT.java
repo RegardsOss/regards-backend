@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.storage.service.file;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.DownloadableFile;
 import fr.cnes.regards.modules.storage.domain.database.CacheFile;
@@ -35,7 +34,6 @@ import io.vavr.control.Try;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -66,9 +64,6 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
     private static final String SESSION_OWNER = "SOURCE 1";
 
     private static final String SESSION = "SESSION 1";
-
-    @Autowired
-    private IDynamicTenantSettingService dynamicTenantSettingService;
 
     @Before
     @Override
@@ -106,7 +101,8 @@ public class FileDownloadServiceIT extends AbstractStorageIT {
                                                    "file.test",
                                                    "somewhere",
                                                    "source1",
-                                                   "session1").get();
+                                                   "session1",
+                                                   false).get();
         Try<Callable<DownloadableFile>> result = Try.of(() -> downloadService.downloadFile(fileRef.getMetaInfo()
                                                                                                   .getChecksum()));
         assertTrue("File should not be available for download as it is not handled by a known storage location plugin",

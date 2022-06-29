@@ -116,7 +116,8 @@ public class StorageClientMock implements IStorageClient {
                                                                                  1000L,
                                                                                  MimeType.valueOf(file.getMimeType())),
                                                        new FileLocation(file.getStorage(),
-                                                                        "http://somedomain.com/api/v1/storage/file/2")));
+                                                                        "http://somedomain.com/api/v1/storage/file/2",
+                                                                        false)));
             requestInfos.add(resultInfo);
         }
 
@@ -208,7 +209,7 @@ public class StorageClientMock implements IStorageClient {
                                                                              "some file",
                                                                              1000L,
                                                                              MimeType.valueOf("application/pdf")),
-                                                   new FileLocation(file.getStorage(), null)));
+                                                   new FileLocation(file.getStorage(), null, false)));
         List<RequestResultInfo> requestInfos = Collections.singletonList(resultInfo);
         publisher.publish(FileRequestsGroupEvent.build(requestInfo.getGroupId(),
                                                        FileRequestType.DELETION,

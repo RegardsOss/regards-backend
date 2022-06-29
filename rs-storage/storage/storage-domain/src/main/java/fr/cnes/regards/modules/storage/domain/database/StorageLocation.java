@@ -50,6 +50,9 @@ public class StorageLocation {
     @Column(name = "total_size_ko")
     private Long totalSizeOfReferencedFiles = 0L;
 
+    @Column(name = "nb_ref_pending")
+    private Long numberOfPendingFiles = 0L;
+
     @Column(name = "last_update_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime lastUpdateDate;
@@ -79,8 +82,24 @@ public class StorageLocation {
         return numberOfReferencedFiles;
     }
 
+    public void setNumberOfReferencedFiles(Long numberOfReferencedFiles) {
+        this.numberOfReferencedFiles = numberOfReferencedFiles;
+    }
+
+    public Long getNumberOfPendingFiles() {
+        return numberOfPendingFiles;
+    }
+
+    public void setNumberOfPendingFiles(Long numberOfPendingFiles) {
+        this.numberOfPendingFiles = numberOfPendingFiles;
+    }
+
     public Long getTotalSizeOfReferencedFilesInKo() {
         return totalSizeOfReferencedFiles;
+    }
+
+    public void setTotalSizeOfReferencedFilesInKo(Long totalSizeOfReferencedFiles) {
+        this.totalSizeOfReferencedFiles = totalSizeOfReferencedFiles;
     }
 
     public OffsetDateTime getLastUpdateDate() {
@@ -89,14 +108,6 @@ public class StorageLocation {
 
     public void setLastUpdateDate(OffsetDateTime lastUpdateDate) {
         this.lastUpdateDate = lastUpdateDate;
-    }
-
-    public void setTotalSizeOfReferencedFilesInKo(Long totalSizeOfReferencedFiles) {
-        this.totalSizeOfReferencedFiles = totalSizeOfReferencedFiles;
-    }
-
-    public void setNumberOfReferencedFiles(Long numberOfReferencedFiles) {
-        this.numberOfReferencedFiles = numberOfReferencedFiles;
     }
 
 }

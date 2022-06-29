@@ -21,10 +21,7 @@ package fr.cnes.regards.modules.storage.service.file;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceWithOwnersRepository;
-import fr.cnes.regards.modules.storage.domain.database.FileLocation;
-import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
-import fr.cnes.regards.modules.storage.domain.database.StorageMonitoringAggregation;
+import fr.cnes.regards.modules.storage.domain.database.*;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storage.service.file.request.RequestsGroupService;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
@@ -71,12 +68,16 @@ public class FileReferenceService {
     /**
      * Calculate the total file size by adding fileSize of each {@link FileReference} with an id over the given id.
      */
-    public Collection<StorageMonitoringAggregation> aggragateFilesSizePerStorage(Long lastReferencedFileId) {
+    public Collection<StorageMonitoringAggregation> aggregateFilesSizePerStorage(Long lastReferencedFileId) {
         if (lastReferencedFileId != null) {
             return fileRefRepo.getTotalFileSizeAggregation(lastReferencedFileId);
         } else {
             return fileRefRepo.getTotalFileSizeAggregation();
         }
+    }
+
+    public Collection<StoragePendingFilesAggregation> aggregateFilesPendingPerStorage() {
+        return fileRefRepo.getPendingFilesAggregation();
     }
 
     /**
@@ -125,6 +126,42 @@ public class FileReferenceService {
         this.sessionNotifier.decrementRunningRequests(sessionOwner, session);
         // Notify successfully deleted file
         this.sessionNotifier.notifyDeletedFiles(sessionOwner, session, fileRef.isReferenced());
+    }
+
+    /**
+     * Update {@link FileReference}s for given urls to indicates thaht pendingActionRemaining is done.
+     * So the property pendingActionRemaining can be set to false.
+     *
+     * @param pendingActionSucceedUrls urls of file references to update
+     */
+    public void handleRemainingPendingActionSuccess(Set<String> pendingActionSucceedUrls) {
+        Set<FileReference> refs;
+        int loops = 0;
+        do {
+            // If file has been created in another thread,maybe the file reference does not exist yet. Ensure file reference exists
+            // with a search retry.
+            refs = fileRefRepo.findByLocationPendingActionRemainingAndLocationUrlIn(true, pendingActionSucceedUrls);
+            if (refs.size() != pendingActionSucceedUrls.size()) {
+                LOGGER.warn("Some pending actions succeeded for file reference that does not exists yet !!! ({}/{})",
+                            refs.size(),
+                            pendingActionSucceedUrls.size());
+                try {
+                    Thread.sleep(1_000);
+                } catch (InterruptedException e) {
+                    LOGGER.error(e.getMessage(), e);
+                }
+            }
+            loops++;
+        } while (refs.size() != pendingActionSucceedUrls.size() && loops < 10);
+
+        if (refs.size() != pendingActionSucceedUrls.size()) {
+            LOGGER.error("Some pending actions succeeded for file reference that does not exists yet !!! ({}/{})",
+                         refs.size(),
+                         pendingActionSucceedUrls.size());
+        }
+
+        refs.forEach(f -> f.getLocation().setPendingActionRemaining(false));
+        fileRefRepo.saveAll(refs);
     }
 
     /**

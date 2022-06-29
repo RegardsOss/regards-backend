@@ -45,14 +45,22 @@ public class FileLocation {
     @Column(length = URL_MAX_LENGTH)
     private String url;
 
+    /**
+     * Indicates if stored file need an extra asynchronous action to be fully stored.
+     * Whatever the value of this boolean, the file is considered as stored.
+     */
+    @Column(name = "pending")
+    private boolean pendingActionRemaining;
+
     public FileLocation() {
         super();
     }
 
-    public FileLocation(String storage, String url) {
+    public FileLocation(String storage, String url, boolean pendingActionRemaining) {
         super();
         this.storage = storage;
         this.url = url;
+        this.pendingActionRemaining = pendingActionRemaining;
     }
 
     /**
@@ -81,6 +89,14 @@ public class FileLocation {
      */
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public boolean isPendingActionRemaining() {
+        return pendingActionRemaining;
+    }
+
+    public void setPendingActionRemaining(boolean pendingActionRemaining) {
+        this.pendingActionRemaining = pendingActionRemaining;
     }
 
     /* (non-Javadoc)

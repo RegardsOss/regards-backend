@@ -22,6 +22,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -32,6 +33,7 @@ import fr.cnes.regards.modules.storage.dao.IStorageMonitoringRepository;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storage.domain.database.StorageLocation;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
@@ -60,7 +62,7 @@ import java.util.*;
  *
  * @author Sébastien Binda
  */
-@ActiveProfiles("noscheduler")
+@ActiveProfiles({ "noscheduler", "nojobs" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests" },
     locations = { "classpath:application-test.properties" })
 public class StorageLocationServiceIT extends AbstractStorageIT {
@@ -83,6 +85,20 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
     @Autowired
     private FileReferenceRequestService fileRefService;
 
+    private Long initStorageLocations(String storage) {
+        Long totalSize = 0L;
+        createFileReference(storage, 1024L);
+        totalSize++;
+        createFileReference(storage, 1024L, true);
+        totalSize++;
+        createFileReference(storage, 1024L);
+        totalSize++;
+        createFileReference(storage, 1024L);
+        totalSize++;
+        storageLocationService.monitorStorageLocations(false);
+        return totalSize;
+    }
+
     @Before
     public void initialize() throws ModuleException {
         requInfoRepo.deleteAll();
@@ -94,13 +110,19 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
     }
 
     private FileReference createFileReference(String storage, Long fileSize) {
+        return this.createFileReference(storage, fileSize, false);
+    }
+
+    private FileReference createFileReference(String storage, Long fileSize, boolean pendingActionRemaining) {
         String checksum = UUID.randomUUID().toString();
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum,
                                                                        "MD5",
                                                                        "file.test",
                                                                        fileSize,
                                                                        MediaType.APPLICATION_OCTET_STREAM);
-        FileLocation location = new FileLocation(storage, "anywhere://in/this/directory/" + checksum);
+        FileLocation location = new FileLocation(storage,
+                                                 "anywhere://in/this/directory/" + checksum,
+                                                 pendingActionRemaining);
         try {
             return fileRefService.reference("someone",
                                             fileMetaInfo,
@@ -115,32 +137,55 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
     }
 
     @Test
+    public void runPeriodicActions() throws ModuleException {
+        initStorageLocations(NEARLINE_CONF_LABEL);
+        Optional<StorageLocationDTO> location = storageLocationService.getAllLocations()
+                                                                      .stream()
+                                                                      .filter(l -> l.getName()
+                                                                                    .equals(NEARLINE_CONF_LABEL))
+                                                                      .findFirst();
+        Assert.assertTrue(location.isPresent());
+        Assert.assertEquals(4L, location.get().getNbFilesStored().longValue());
+        Assert.assertEquals(1L, location.get().getNbFilesStoredWithPendingActionRemaining().longValue());
+
+        // Now run periodic action, the SimpleNearLinePlugin automaticly inform system that all remaining actions are done.
+        Set<JobInfo> jobs = storageLocationService.runPeriodicTasks();
+        Assert.assertEquals(1, jobs.size());
+        runAndWaitJob(jobs);
+
+        // Run monitoring to update snapshot of storages
+        storageLocationService.monitorStorageLocations(false);
+        location = storageLocationService.getAllLocations()
+                                         .stream()
+                                         .filter(l -> l.getName().equals(NEARLINE_CONF_LABEL))
+                                         .findFirst();
+        Assert.assertTrue(location.isPresent());
+        // Now 0 files should be in pending state
+        Assert.assertEquals(4L, location.get().getNbFilesStored().longValue());
+        Assert.assertEquals(0L, location.get().getNbFilesStoredWithPendingActionRemaining().longValue());
+    }
+
+    @Test
     public void monitorStorageLocation() {
-        Long totalSize = 0L;
         String storage = "STAF";
-        Assert.assertFalse("0. There not have file referenced yet", storageLocationService.search(storage).isPresent());
+        Assert.assertFalse("0. No location should be referenced yet",
+                           storageLocationService.search(storage).isPresent());
+        Long totalSize = initStorageLocations(storage);
         storageLocationService.monitorStorageLocations(false);
-        Assert.assertFalse("1. There not have file referenced yet", storageLocationService.search(storage).isPresent());
-        createFileReference(storage, 1024L);
-        totalSize++;
-        createFileReference(storage, 1024L);
-        totalSize++;
-        createFileReference(storage, 1024L);
-        totalSize++;
-        createFileReference(storage, 1024L);
-        totalSize++;
-        storageLocationService.monitorStorageLocations(false);
-        Assert.assertTrue("There should be file referenced for STAF storage",
+        Assert.assertTrue("1. Storage ocation should be referenced",
                           storageLocationService.search(storage).isPresent());
+
+        Optional<StorageLocation> storageLocation = storageLocationService.search(storage);
+        Assert.assertTrue("There should be file referenced for STAF storage", storageLocation.isPresent());
         Assert.assertEquals("Total size on STAF storage is invalid",
                             totalSize.longValue(),
-                            storageLocationService.search(storage)
-                                                  .get()
-                                                  .getTotalSizeOfReferencedFilesInKo()
-                                                  .longValue());
+                            storageLocation.get().getTotalSizeOfReferencedFilesInKo().longValue());
         Assert.assertEquals("Total number of files on STAF storage is invalid",
                             4L,
-                            storageLocationService.search(storage).get().getNumberOfReferencedFiles().longValue());
+                            storageLocation.get().getNumberOfReferencedFiles().longValue());
+        Assert.assertEquals("Total number of pending files invalid",
+                            1L,
+                            storageLocation.get().getNumberOfPendingFiles().longValue());
         createFileReference(storage, 3 * 1024L);
         totalSize += 3;
         storageLocationService.monitorStorageLocations(false);

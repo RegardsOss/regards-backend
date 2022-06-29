@@ -26,6 +26,9 @@ import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
@@ -34,18 +37,17 @@ import fr.cnes.regards.modules.storage.dao.IFileDeletetionRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IStorageLocationRepository;
 import fr.cnes.regards.modules.storage.dao.IStorageMonitoringRepository;
-import fr.cnes.regards.modules.storage.domain.database.StorageLocation;
-import fr.cnes.regards.modules.storage.domain.database.StorageLocationConfiguration;
-import fr.cnes.regards.modules.storage.domain.database.StorageMonitoring;
-import fr.cnes.regards.modules.storage.domain.database.StorageMonitoringAggregation;
+import fr.cnes.regards.modules.storage.domain.database.*;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
 import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
 import fr.cnes.regards.modules.storage.domain.dto.StorageLocationDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileRequestInfoDTO;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
+import fr.cnes.regards.modules.storage.service.StorageJobsPriority;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
+import fr.cnes.regards.modules.storage.service.file.job.PeriodicStorageLocationJob;
 import fr.cnes.regards.modules.storage.service.file.request.FileCacheRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.FileCopyRequestService;
 import fr.cnes.regards.modules.storage.service.file.request.FileDeletionRequestService;
@@ -120,6 +122,9 @@ public class StorageLocationService {
     @Autowired
     private IAuthenticationResolver authResolver;
 
+    @Autowired
+    private IJobInfoService jobInfoService;
+
     @Value("${regards.storage.data.storage.threshold.percent:70}")
     private Integer threshold;
 
@@ -143,6 +148,7 @@ public class StorageLocationService {
         boolean storageRunning = storageService.isStorageRunning(storageId);
         Long nbReferencedFiles = null;
         Long totalSizeOfReferencedFiles = null;
+        Long nbPendingFiles = null;
         StorageLocationConfiguration conf = null;
         if (oConf.isPresent() && oLoc.isPresent()) {
             conf = oConf.get();
@@ -150,6 +156,7 @@ public class StorageLocationService {
             if (conf.getPluginConfiguration() != null) {
                 nbReferencedFiles = loc.getNumberOfReferencedFiles();
                 totalSizeOfReferencedFiles = loc.getTotalSizeOfReferencedFilesInKo();
+                nbPendingFiles = loc.getNumberOfPendingFiles();
             }
         } else if (oConf.isPresent()) {
             conf = oConf.get();
@@ -162,6 +169,7 @@ public class StorageLocationService {
         }
         return new StorageLocationDTO(storageId,
                                       nbReferencedFiles,
+                                      nbPendingFiles,
                                       totalSizeOfReferencedFiles,
                                       nbStorageError,
                                       nbDeletionError,
@@ -197,6 +205,7 @@ public class StorageLocationService {
             if (monitored != null) {
                 locationsDto.add(new StorageLocationDTO(conf.getName(),
                                                         monitored.getNumberOfReferencedFiles(),
+                                                        monitored.getNumberOfPendingFiles(),
                                                         monitored.getTotalSizeOfReferencedFilesInKo(),
                                                         nbStorageError,
                                                         nbDeletionError,
@@ -208,6 +217,7 @@ public class StorageLocationService {
                 monitoredLocations.remove(monitored.getName());
             } else {
                 locationsDto.add(new StorageLocationDTO(conf.getName(),
+                                                        0L,
                                                         0L,
                                                         0L,
                                                         nbStorageError,
@@ -225,6 +235,7 @@ public class StorageLocationService {
             Long nbDeletionError = 0L;
             locationsDto.add(new StorageLocationDTO(monitored.getName(),
                                                     monitored.getNumberOfReferencedFiles(),
+                                                    monitored.getNumberOfPendingFiles(),
                                                     monitored.getTotalSizeOfReferencedFilesInKo(),
                                                     nbStorageError,
                                                     nbDeletionError,
@@ -238,7 +249,7 @@ public class StorageLocationService {
     }
 
     /**
-     * Monitor all storage locations to calculate informations about stored files.
+     * Monitor all storage locations to calculate information about stored files.
      */
     public void monitorStorageLocations(Boolean reset) {
         LOGGER.trace("Starting locations monitor process (reset={})", reset.toString());
@@ -259,9 +270,12 @@ public class StorageLocationService {
 
         // lets ask the data base to calculate the used space per data storage
         long start = System.currentTimeMillis();
-        Collection<StorageMonitoringAggregation> aggregations = fileReferenceService.aggragateFilesSizePerStorage(
+        Collection<StorageMonitoringAggregation> aggregations = fileReferenceService.aggregateFilesSizePerStorage(
             storageMonitoring.getLastFileReferenceIdMonitored());
         LOGGER.trace("Aggregation calcul done (reset={})", reset);
+        List<String> storages = aggregations.stream()
+                                            .map(StorageMonitoringAggregation::getStorage)
+                                            .collect(Collectors.toList());
         for (StorageMonitoringAggregation agg : aggregations) {
             // Retrieve associated storage info if exists
             Optional<StorageLocation> oStorage = storageLocationRepo.findByName(agg.getStorage());
@@ -316,11 +330,28 @@ public class StorageLocationService {
                     storage.getName());
             }
         }
+        monitorPendingFiles();
         long finish = System.currentTimeMillis();
         storageMonitoring.setLastMonitoringDuration(finish - start);
         storageMonitoring.setLastMonitoringDate(monitoringDate);
         storageMonitoring.setRunning(false);
         storageMonitoringRepo.save(storageMonitoring);
+    }
+
+    private void monitorPendingFiles() {
+        long start = System.currentTimeMillis();
+        LOGGER.debug("Start monitoring storage pending files ...");
+        Collection<StoragePendingFilesAggregation> pendingAggregations = fileReferenceService.aggregateFilesPendingPerStorage();
+        storageLocationRepo.findAll().forEach(loc -> {
+            Long numberOfPending = pendingAggregations.stream()
+                                                      .filter(pa -> pa.getStorage().equals(loc.getName()))
+                                                      .map(StoragePendingFilesAggregation::getNumberOfPendingReferences)
+                                                      .findFirst()
+                                                      .orElse(0L);
+            loc.setNumberOfPendingFiles(numberOfPending);
+            storageLocationRepo.save(loc);
+        });
+        LOGGER.debug("Monitoring of storage pending files done in {}ms", System.currentTimeMillis() - start);
     }
 
     private void notifyAdmins(String title, String message, NotificationLevel type, MimeType mimeType) {
@@ -489,6 +520,7 @@ public class StorageLocationService {
                                       0L,
                                       0L,
                                       0L,
+                                      0L,
                                       false,
                                       false,
                                       false,
@@ -510,6 +542,7 @@ public class StorageLocationService {
         StorageLocationConfiguration newConf = pLocationConfService.update(storageId,
                                                                            storageLocation.getConfiguration());
         return new StorageLocationDTO(storageLocation.getName(),
+                                      0L,
                                       0L,
                                       0L,
                                       0L,
@@ -608,5 +641,25 @@ public class StorageLocationService {
                                         FileRequestType.DELETION,
                                         request.getStatus(),
                                         request.getErrorCause());
+    }
+
+    /**
+     * Schedule a {@link PeriodicStorageLocationJob} for each storage location containing
+     * files with pending remaining actions
+     */
+    public Set<JobInfo> runPeriodicTasks() {
+        Set<JobInfo> jobs = Sets.newHashSet();
+        storageLocationRepo.findByNumberOfPendingFilesGreaterThan(0L).forEach(storage -> {
+            Set<JobParameter> parameters = Sets.newHashSet();
+            parameters.add(new JobParameter(PeriodicStorageLocationJob.DATA_STORAGE_CONF_BUSINESS_ID,
+                                            storage.getName()));
+            jobs.add(jobInfoService.createAsQueued(new JobInfo(false,
+                                                               StorageJobsPriority.STORAGE_PERIODIC_ACTION_JOB,
+                                                               parameters,
+                                                               authResolver.getUser(),
+                                                               PeriodicStorageLocationJob.class.getName())));
+            LOGGER.debug("[STORAGE PERIODIC ACTION] Job scheduled on storage {}", storage.getName());
+        });
+        return jobs;
     }
 }

@@ -196,7 +196,7 @@ public class StorageClientIT extends AbstractRegardsTransactionalIT {
                                                                  "storage",
                                                                  "path",
                                                                  Sets.newHashSet("owner"));
-            resultInfo.setResultFile(new FileReference("owner", metaInfo, new FileLocation("storage", "path")));
+            resultInfo.setResultFile(new FileReference("owner", metaInfo, new FileLocation("storage", "path", false)));
             publisher.publish(FileRequestsGroupEvent.build(groupId,
                                                            FileRequestType.STORAGE,
                                                            FlowItemStatus.SUCCESS,

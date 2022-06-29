@@ -17,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -41,6 +41,7 @@ public class StorageRestClientMock implements IStorageRestClient {
                                                                        0L,
                                                                        0L,
                                                                        0L,
+                                                                       0L,
                                                                        true,
                                                                        true,
                                                                        true,
@@ -48,9 +49,7 @@ public class StorageRestClientMock implements IStorageRestClient {
                                                                                                         pluginConfiguration,
                                                                                                         0L),
                                                                        true);
-        List<EntityModel<StorageLocationDTO>> list = new ArrayList<>();
-        list.add(EntityModel.of(storageLocationDTO));
-        return ResponseEntity.ok(list);
+        return ResponseEntity.ok(Collections.singletonList(EntityModel.of(storageLocationDTO)));
     }
 
     @Override

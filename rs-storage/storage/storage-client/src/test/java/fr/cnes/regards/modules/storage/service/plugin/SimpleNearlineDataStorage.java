@@ -54,8 +54,6 @@ import java.util.regex.Pattern;
     url = "https://regardsoss.github.io/")
 public class SimpleNearlineDataStorage implements INearlineStorageLocation {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleNearlineDataStorage.class);
-
     /**
      * Plugin parameter name of the storage base location as a string
      */
@@ -67,7 +65,9 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
 
     public static final String HANDLE_RESTORATION_ERROR_FILE_PATTERN = "resto_error_pattern";
 
-    ;
+    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleNearlineDataStorage.class);
+
+    private final String doNotHandlePattern = "doNotHandle.*";
 
     /**
      * {@link IRuntimeTenantResolver} instance
@@ -93,8 +93,6 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
     @PluginParameter(name = HANDLE_RESTORATION_ERROR_FILE_PATTERN, description = "Restoration Error file pattern",
         label = "Delete Error file pattern")
     private String restoErrorFilePattern;
-
-    private final String doNotHandlePattern = "doNotHandle.*";
 
     /**
      * Plugin init method
@@ -150,8 +148,7 @@ public class SimpleNearlineDataStorage implements INearlineStorageLocation {
             }
             String storedUrl = String.format("%s%s",
                                              baseStorageLocationAsString,
-                                             Paths.get("/", directory, fileRefRequest.getMetaInfo().getChecksum())
-                                                  .toString());
+                                             Paths.get("/", directory, fileRefRequest.getMetaInfo().getChecksum()));
             try {
                 if (!Files.exists(Paths.get(storedUrl).getParent())) {
                     Files.createDirectories(Paths.get(storedUrl).getParent());

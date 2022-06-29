@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.dao;
 
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.StorageMonitoringAggregation;
+import fr.cnes.regards.modules.storage.domain.database.StoragePendingFilesAggregation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -55,16 +56,18 @@ public interface IFileReferenceRepository
     Set<FileReference> findByMetaInfoChecksumIn(Collection<String> checksums);
 
     @Query(
-        "select fr.location.storage as storage, sum(fr.metaInfo.fileSize) as usedSize, count(*) as numberOfFileReference, max(fr.id) as lastFileReferenceId"
-        + " from FileReference fr group by storage")
+        "select fr.location.storage as storage, sum(fr.metaInfo.fileSize) as usedSize, count(1) as numberOfFileReference, max(fr.id) as lastFileReferenceId"
+        + " from FileReference fr group by fr.location.storage")
     Collection<StorageMonitoringAggregation> getTotalFileSizeAggregation();
 
     @Query(
-        "select fr.location.storage as storage, sum(fr.metaInfo.fileSize) as usedSize, count(*) as numberOfFileReference, max(fr.id) as lastFileReferenceId"
+        "select fr.location.storage as storage, sum(fr.metaInfo.fileSize) as usedSize, count(1) as numberOfFileReference, max(fr.id) as lastFileReferenceId"
         + " from FileReference fr where fr.id > :id group by fr.location.storage")
     Collection<StorageMonitoringAggregation> getTotalFileSizeAggregation(@Param("id") Long fromFileReferenceId);
 
-    Long countByLocationStorage(String storage);
+    @Query("select fr.location.storage as storage, count(1) as numberOfPendingReferences"
+           + " from FileReference fr where fr.location.pendingActionRemaining = true group by fr.location.storage")
+    Collection<StoragePendingFilesAggregation> getPendingFilesAggregation();
 
     @Query(value = "insert into ta_file_reference_owner(file_ref_id,owner) values(:id, :owner)", nativeQuery = true)
     @Modifying
@@ -84,4 +87,7 @@ public interface IFileReferenceRepository
     boolean hasOwner(@Param("id") Long id);
 
     FileReference findOneById(Long id);
+
+    Set<FileReference> findByLocationPendingActionRemainingAndLocationUrlIn(boolean pendingActionRemaining,
+                                                                            Set<String> urls);
 }

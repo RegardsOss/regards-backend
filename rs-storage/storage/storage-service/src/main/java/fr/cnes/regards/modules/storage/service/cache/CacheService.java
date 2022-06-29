@@ -343,6 +343,7 @@ public class CacheService {
         conf.setStorageType(StorageType.CACHE);
         return new StorageLocationDTO(CACHE_NAME,
                                       getTotalCachedFiles(),
+                                      0L,
                                       getCacheSizeUsedKB(),
                                       0L,
                                       0L,
