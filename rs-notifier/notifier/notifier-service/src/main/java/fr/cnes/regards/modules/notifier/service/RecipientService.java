@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -25,6 +26,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
 import fr.cnes.regards.modules.notifier.domain.plugin.IRecipientNotifier;
+import fr.cnes.regards.modules.notifier.dto.internal.NotifierClearCacheEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -55,12 +57,16 @@ public class RecipientService implements IRecipientService {
 
     private final NotificationProcessingService notificationProcessingService;
 
+    private final IPublisher publisher;
+
     public RecipientService(IPluginService pluginService,
                             IRecipientErrorRepository recipientErrorRepository,
-                            NotificationProcessingService notificationProcessingService) {
+                            NotificationProcessingService notificationProcessingService,
+                            IPublisher publisher) {
         this.pluginService = pluginService;
         this.recipientErrorRepository = recipientErrorRepository;
         this.notificationProcessingService = notificationProcessingService;
+        this.publisher = publisher;
     }
 
     @Override
@@ -99,10 +105,12 @@ public class RecipientService implements IRecipientService {
     }
 
     private PluginConfiguration create(PluginConfiguration newRecipient) throws ModuleException {
+        clearCache();
         return pluginService.savePluginConfiguration(newRecipient);
     }
 
     private PluginConfiguration update(PluginConfiguration newRecipient) throws ModuleException {
+        clearCache();
         return pluginService.updatePluginConfiguration(newRecipient);
     }
 
@@ -124,6 +132,11 @@ public class RecipientService implements IRecipientService {
         for (String businessId : pluginToDelete) {
             doDelete(businessId);
         }
+        clearCache();
+    }
+
+    private void clearCache() {
+        publisher.publish(new NotifierClearCacheEvent());
     }
 
     private void doDelete(String businessId) throws ModuleException {

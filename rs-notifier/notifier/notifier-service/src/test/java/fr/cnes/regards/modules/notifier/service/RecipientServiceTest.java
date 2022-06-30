@@ -18,13 +18,16 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.notifier.dao.IRecipientErrorRepository;
 import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender3;
+import fr.cnes.regards.modules.notifier.dto.internal.NotifierClearCacheEvent;
 import fr.cnes.regards.modules.notifier.mock.InMemoryPluginService;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,10 +53,13 @@ public class RecipientServiceTest {
 
     private final IRecipientService recipientService;
 
+    private final IPublisher publisher;
+
     public RecipientServiceTest() {
         recipientErrors = mock(IRecipientErrorRepository.class);
         pluginService = new InMemoryPluginService();
-        recipientService = new RecipientService(pluginService, recipientErrors, null);
+        publisher = mock(IPublisher.class);
+        recipientService = new RecipientService(pluginService, recipientErrors, null, publisher);
     }
 
     @Test
@@ -64,6 +70,8 @@ public class RecipientServiceTest {
 
         Set<PluginConfiguration> recipients = recipientService.getRecipients(Collections.singleton(RECIPIENT_1));
         assertThat(recipients).containsExactly(firstRecipient);
+
+        Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(NotifierClearCacheEvent.class));
     }
 
     @Test
@@ -78,6 +86,8 @@ public class RecipientServiceTest {
 
         Set<PluginConfiguration> recipients = recipientService.getRecipients(Collections.singleton(RECIPIENT_1));
         assertThat(recipients).hasSize(1).map(PluginConfiguration::getVersion).containsExactly("2");
+
+        Mockito.verify(publisher, Mockito.times(2)).publish(Mockito.any(NotifierClearCacheEvent.class));
     }
 
     @Test
@@ -118,6 +128,8 @@ public class RecipientServiceTest {
                   .isThrownBy(() -> pluginService.getPluginConfiguration(RECIPIENT_1));
         Assertions.assertThatExceptionOfType(EntityNotFoundException.class)
                   .isThrownBy(() -> pluginService.getPluginConfiguration(RECIPIENT_2));
+
+        Mockito.verify(publisher, Mockito.times(3)).publish(Mockito.any(NotifierClearCacheEvent.class));
     }
 
     @Test
@@ -131,6 +143,8 @@ public class RecipientServiceTest {
 
         verify(recipientErrors).deleteByRecipientBusinessId(RECIPIENT_1);
         verify(recipientErrors).deleteByRecipientBusinessId(RECIPIENT_2);
+
+        Mockito.verify(publisher, Mockito.times(3)).publish(Mockito.any(NotifierClearCacheEvent.class));
     }
 
     @Test
@@ -144,6 +158,8 @@ public class RecipientServiceTest {
 
         Set<PluginConfiguration> recipients = recipientService.getRecipients();
         assertThat(recipients).hasSize(1).contains(secondRecipient);
+
+        Mockito.verify(publisher, Mockito.times(2)).publish(Mockito.any(NotifierClearCacheEvent.class));
     }
 
     @Test
@@ -155,6 +171,8 @@ public class RecipientServiceTest {
 
         // Twice for creations and once for deletion
         verify(recipientErrors).deleteByRecipientBusinessId(RECIPIENT_1);
+
+        Mockito.verify(publisher, Mockito.times(1)).publish(Mockito.any(NotifierClearCacheEvent.class));
     }
 
     private PluginConfiguration aRecipient(String withName) {

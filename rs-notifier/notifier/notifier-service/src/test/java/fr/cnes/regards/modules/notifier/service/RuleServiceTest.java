@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
@@ -26,6 +27,7 @@ import fr.cnes.regards.modules.notifier.dao.INotificationRequestRepository;
 import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
 import fr.cnes.regards.modules.notifier.domain.plugin.RecipientSender3;
 import fr.cnes.regards.modules.notifier.dto.RuleDTO;
+import fr.cnes.regards.modules.notifier.dto.internal.NotifierClearCacheEvent;
 import fr.cnes.regards.modules.notifier.mock.InMemoryPluginService;
 import fr.cnes.regards.modules.notifier.mock.InMemoryRuleRepoBuilder;
 import org.assertj.core.api.Assertions;
@@ -61,7 +63,7 @@ public class RuleServiceTest {
 
     private final IPluginService pluginService;
 
-    private final RuleCache ruleCache;
+    private final IPublisher publisher;
 
     private final INotificationRequestRepository notifRepo;
 
@@ -69,10 +71,10 @@ public class RuleServiceTest {
         ruleRepo = new InMemoryRuleRepoBuilder().get();
         recipientService = mockRecipientService();
         pluginService = new InMemoryPluginService();
-        ruleCache = mock(RuleCache.class);
+        publisher = mock(IPublisher.class);
         notifRepo = mock(INotificationRequestRepository.class);
 
-        ruleService = new RuleService(notifRepo, ruleRepo, recipientService, pluginService, ruleCache);
+        ruleService = new RuleService(notifRepo, ruleRepo, recipientService, pluginService, publisher);
     }
 
     private IRecipientService mockRecipientService() {
@@ -156,7 +158,7 @@ public class RuleServiceTest {
         updatedRule.setVersion("2");
         ruleService.createOrUpdate(RuleDTO.build(updatedRule, recipients));
 
-        verify(ruleCache).clear();
+        Mockito.verify(publisher, Mockito.times(2)).publish(Mockito.any(NotifierClearCacheEvent.class));
     }
 
     @Test
@@ -213,7 +215,7 @@ public class RuleServiceTest {
 
         ruleService.delete(RULE_1);
 
-        verify(ruleCache).clear();
+        Mockito.verify(publisher, Mockito.times(2)).publish(Mockito.any(NotifierClearCacheEvent.class));
     }
 
     @Test
@@ -269,7 +271,7 @@ public class RuleServiceTest {
 
         ruleService.deleteAll();
 
-        verify(ruleCache).clear();
+        Mockito.verify(publisher, Mockito.times(3)).publish(Mockito.any(NotifierClearCacheEvent.class));
     }
 
     @Test
@@ -299,7 +301,7 @@ public class RuleServiceTest {
 
         ruleService.recipientDeleted(RECIPIENT_1);
 
-        verify(ruleCache).clear();
+        Mockito.verify(publisher, Mockito.times(2)).publish(Mockito.any(NotifierClearCacheEvent.class));
     }
 
     @Test
@@ -310,7 +312,7 @@ public class RuleServiceTest {
 
         ruleService.recipientDeleted(RECIPIENT_1);
 
-        verify(ruleCache).clear();
+        Mockito.verify(publisher, Mockito.times(2)).publish(Mockito.any(NotifierClearCacheEvent.class));
     }
 
     private PluginConfiguration aRule(String withName) {

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.notifier.service;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -26,6 +27,7 @@ import fr.cnes.regards.modules.notifier.dao.INotificationRequestRepository;
 import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
 import fr.cnes.regards.modules.notifier.domain.Rule;
 import fr.cnes.regards.modules.notifier.dto.RuleDTO;
+import fr.cnes.regards.modules.notifier.dto.internal.NotifierClearCacheEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -58,18 +60,18 @@ public class RuleService implements IRuleService {
 
     private final IPluginService pluginService;
 
-    private final RuleCache ruleCache;
+    private final IPublisher publisher;
 
     public RuleService(INotificationRequestRepository notifRepo,
                        IRuleRepository ruleRepo,
                        IRecipientService recipientService,
                        IPluginService pluginService,
-                       RuleCache ruleCache) {
+                       IPublisher publisher) {
         this.notifRepo = notifRepo;
         this.ruleRepo = ruleRepo;
         this.recipientService = recipientService;
         this.pluginService = pluginService;
-        this.ruleCache = ruleCache;
+        this.publisher = publisher;
     }
 
     @Override
@@ -93,6 +95,8 @@ public class RuleService implements IRuleService {
         PluginConfiguration newPlugin = pluginService.savePluginConfiguration(newRule.getRulePluginConfiguration());
         Set<PluginConfiguration> newRecipients = recipientService.getRecipients(newRule.getRecipientsBusinessIds());
 
+        clearCache();
+        
         Rule toSave = Rule.build(newPlugin, newRecipients);
         return toRuleDTO(ruleRepo.save(toSave));
     }
@@ -148,7 +152,7 @@ public class RuleService implements IRuleService {
     }
 
     private void clearCache() {
-        ruleCache.clear();
+        publisher.publish(new NotifierClearCacheEvent());
     }
 
     private RuleDTO toRuleDTO(Rule rule) {
