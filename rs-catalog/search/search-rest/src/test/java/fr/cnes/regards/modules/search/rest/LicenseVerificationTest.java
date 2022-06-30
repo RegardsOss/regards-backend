@@ -78,18 +78,18 @@ public class LicenseVerificationTest {
     }
 
     @Test
-    public void verify_license_for_rawdata() throws Exception {
-        CatalogDownloadTester downloader = new CatalogDownloadTester(LicenseVerificationStatus.NOT_ACCEPTED);
-        ResponseEntity<Download> response = downloader.downloadFile(productFactory.authorizedProduct().toString(),
-                                                                    fileFactory.rawadata().getChecksum());
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.LOCKED);
-    }
-
-    @Test
     public void verify_license_for_description() throws Exception {
         CatalogDownloadTester downloader = new CatalogDownloadTester(LicenseVerificationStatus.NOT_ACCEPTED);
         ResponseEntity<Download> response = downloader.downloadFile(productFactory.authorizedProduct().toString(),
                                                                     fileFactory.description().getChecksum());
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    public void verify_license_for_rawdata() throws Exception {
+        CatalogDownloadTester downloader = new CatalogDownloadTester(LicenseVerificationStatus.NOT_ACCEPTED);
+        ResponseEntity<Download> response = downloader.downloadFile(productFactory.authorizedProduct().toString(),
+                                                                    fileFactory.rawdata().getChecksum());
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.LOCKED);
     }
 

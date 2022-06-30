@@ -95,7 +95,8 @@ public class CatalogDownloadController {
                                                                      DataType.QUICKLOOK_MD,
                                                                      DataType.QUICKLOOK_HD,
                                                                      DataType.THUMBNAIL,
-                                                                     DataType.DOCUMENT);
+                                                                     DataType.DOCUMENT,
+                                                                     DataType.DESCRIPTION);
 
     @Autowired
     private ICatalogSearchService searchService;

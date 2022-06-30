@@ -36,7 +36,7 @@ public class FakeFileFactory {
                              quicklook_hd(),
                              thumbnail(),
                              document(),
-                             rawadata(),
+                             rawdata(),
                              description(),
                              aip(),
                              other());
@@ -48,7 +48,8 @@ public class FakeFileFactory {
                              quicklook_md().getChecksum(),
                              quicklook_hd().getChecksum(),
                              thumbnail().getChecksum(),
-                             document().getChecksum());
+                             document().getChecksum(),
+                             description().getChecksum());
     }
 
     public String validFile() {
@@ -90,7 +91,7 @@ public class FakeFileFactory {
         return file;
     }
 
-    public DataFile rawadata() {
+    public DataFile rawdata() {
         DataFile file = new DataFile();
         file.setChecksum("rawdata");
         file.setDataType(DataType.RAWDATA);

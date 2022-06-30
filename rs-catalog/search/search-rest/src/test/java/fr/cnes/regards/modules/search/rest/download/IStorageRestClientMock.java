@@ -50,22 +50,18 @@ public class IStorageRestClientMock implements IStorageRestClient, IStorageFileL
 
     private void mockFileDownload(StorageDownloadStatus downloadStatus) {
         if (downloadStatus == StorageDownloadStatus.HTTP_ERROR) {
-            when(storageClient.downloadFile(validFiles(), any())) //
-                                                                  .thenThrow(new HttpServerErrorException(HttpStatus.BAD_REQUEST,
-                                                                                                          "http error"));
+            when(storageClient.downloadFile(validFiles(),
+                                            any())).thenThrow(new HttpServerErrorException(HttpStatus.BAD_REQUEST,
+                                                                                           "http error"));
         } else if (downloadStatus == StorageDownloadStatus.FAILURE) {
-            when(storageClient.downloadFile(validFiles(), any())) //
-                                                                  .thenReturn(storageResponse(HttpStatus.NOT_FOUND,
-                                                                                              "errors."));
+            when(storageClient.downloadFile(validFiles(), any())).thenReturn(storageResponse(HttpStatus.NOT_FOUND,
+                                                                                             "errors."));
         } else {
             // Can't inline because response is mocked (can't mock during mock creation)
             Response invalidResponse = invalidStorageResponse();
-            when(storageClient.downloadFile(eq(files.invalidFile()), any())) //
-                                                                             .thenReturn(invalidResponse);
+            when(storageClient.downloadFile(eq(files.invalidFile()), any())).thenReturn(invalidResponse);
 
-            when(storageClient.downloadFile(validFiles(), any())). //
-                                                                       thenReturn(storageResponse(HttpStatus.OK,
-                                                                                                  "content"));
+            when(storageClient.downloadFile(validFiles(), any())).thenReturn(storageResponse(HttpStatus.OK, "content"));
 
         }
     }

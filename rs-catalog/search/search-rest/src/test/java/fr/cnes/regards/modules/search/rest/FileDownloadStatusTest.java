@@ -62,7 +62,7 @@ public class FileDownloadStatusTest {
     @Test
     public void send_locked_response_if_license_is_not_accepted() throws Exception {
         CatalogDownloadTester controller = new CatalogDownloadTester(LicenseVerificationStatus.NOT_ACCEPTED);
-        response = controller.testProductAccess(products.authorizedProduct(), files.rawadata().getChecksum());
+        response = controller.testProductAccess(products.authorizedProduct(), files.rawdata().getChecksum());
         assertResponseIsEmptyWithStatus(HttpStatus.LOCKED);
     }
 
