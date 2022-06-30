@@ -2,9 +2,8 @@ package fr.cnes.regards.modules.storage.service.file.download;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.modules.storage.domain.database.DefaultDownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserQuotaAggregate;
@@ -16,12 +15,11 @@ import io.vavr.control.Try;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -31,9 +29,10 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_download_quota_tests" })
-@RunWith(SpringRunner.class)
-public class DownloadQuotaServiceIT extends AbstractRegardsTransactionalIT {
+@ActiveProfiles({ "noscheduler" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_download_quota_tests" },
+    locations = { "classpath:application-test.properties" })
+public class DownloadQuotaServiceIT extends AbstractMultitenantServiceIT {
 
     public static final long MAX_QUOTA = 10L;
 
@@ -49,9 +48,6 @@ public class DownloadQuotaServiceIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
-
-    @Mock
-    private ISubscriber subscriber;
 
     @Autowired
     @InjectMocks
@@ -69,6 +65,7 @@ public class DownloadQuotaServiceIT extends AbstractRegardsTransactionalIT {
         quotaService.setDefaultLimits(new AtomicReference<>(HashMap.of(getDefaultTenant(),
                                                                        new DefaultDownloadQuotaLimits(MAX_QUOTA,
                                                                                                       RATE_LIMIT))));
+        simulateApplicationReadyEvent();
     }
 
     @After

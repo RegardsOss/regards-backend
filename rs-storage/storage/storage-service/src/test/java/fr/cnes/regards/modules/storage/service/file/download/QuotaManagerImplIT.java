@@ -3,13 +3,13 @@ package fr.cnes.regards.modules.storage.service.file.download;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.modules.storage.domain.database.DownloadQuotaLimits;
 import fr.cnes.regards.modules.storage.domain.database.UserQuotaAggregate;
 import fr.cnes.regards.modules.storage.domain.database.UserRateAggregate;
@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -38,8 +39,10 @@ import java.util.concurrent.*;
 
 import static org.junit.Assert.assertEquals;
 
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_download_quota_tests" })
-public class QuotaManagerImplIT extends AbstractRegardsTransactionalIT {
+@ActiveProfiles({ "noscheduler" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_download_quota_tests" },
+    locations = { "classpath:application-test.properties" })
+public class QuotaManagerImplIT extends AbstractMultitenantServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(QuotaManagerImplIT.class);
 
