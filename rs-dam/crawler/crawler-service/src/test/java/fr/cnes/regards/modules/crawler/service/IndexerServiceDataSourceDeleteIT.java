@@ -31,8 +31,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.data.domain.Page;
 
-import java.util.concurrent.ExecutionException;
-
 public class IndexerServiceDataSourceDeleteIT extends AbstractIndexerServiceDataSourceIT {
 
     @Test

@@ -40,18 +40,19 @@ public class MappingService implements IMappingService {
                                                            restriction.getJsonSchema(),
                                                            attribute.isIndexed(),
                                                            new ArrayList<>(restriction.getIndexableFields()))
-                                           .forEach(a -> mappings.add(new AttributeDescription(
-                                               "feature." + a.getJsonPath(),
-                                               a.getType(),
-                                               a.hasRestriction() ?
-                                                   a.getRestrictionType() :
-                                                   RestrictionType.NO_RESTRICTION,
-                                               a.getProperties()
-                                                .stream()
-                                                .collect(Collectors.toMap(AttributeProperty::getKey,
-                                                                          AttributeProperty::getValue)),
-                                               a.getEsMapping(),
-                                               a.isIndexed())));
+                                           .forEach(a -> mappings.add(new AttributeDescription("feature."
+                                                                                               + a.getJsonPath(),
+                                                                                               a.getType(),
+                                                                                               a.hasRestriction() ?
+                                                                                                   a.getRestrictionType() :
+                                                                                                   RestrictionType.NO_RESTRICTION,
+                                                                                               a.getProperties()
+                                                                                                .stream()
+                                                                                                .collect(Collectors.toMap(
+                                                                                                    AttributeProperty::getKey,
+                                                                                                    AttributeProperty::getValue)),
+                                                                                               a.getEsMapping(),
+                                                                                               a.isIndexed())));
                 } else {
                     Map<String, String> descriptionProperties = attribute.getProperties()
                                                                          .stream()

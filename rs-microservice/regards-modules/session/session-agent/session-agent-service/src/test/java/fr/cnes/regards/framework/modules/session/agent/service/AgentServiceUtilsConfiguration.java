@@ -29,6 +29,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @EnableAutoConfiguration
 public class AgentServiceUtilsConfiguration {
+
     @Bean
     public JobTestCleaner getJobTestCleaner() {
         return new JobTestCleaner();

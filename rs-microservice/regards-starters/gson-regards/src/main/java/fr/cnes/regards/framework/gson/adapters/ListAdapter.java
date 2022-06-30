@@ -43,7 +43,8 @@ public class ListAdapter<E> extends TypeAdapter<List<E>> {
 
         @Override
         public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> typeToken) {
-            if (typeToken.getRawType() != List.class || !(typeToken.getType() instanceof final ParameterizedType parameterizedType)) {
+            if (typeToken.getRawType() != List.class
+                || !(typeToken.getType() instanceof final ParameterizedType parameterizedType)) {
                 return null;
             }
             final Type actualType = parameterizedType.getActualTypeArguments()[0];

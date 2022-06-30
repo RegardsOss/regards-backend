@@ -143,9 +143,7 @@ public class ICriterionJsoniterDecoder implements NullSafeDecoderBuilder {
         };
     }
 
-    private ICriterion getBetweenCriterion(String attributeName,
-                                           Any lowerBound,
-                                           Any upperBound) throws IOException {
+    private ICriterion getBetweenCriterion(String attributeName, Any lowerBound, Any upperBound) throws IOException {
         ComparisonOperator lowerOperator = lowerBound.get(OPERATOR).as(ComparisonOperator.class);
         ComparisonOperator upperOperator = upperBound.get(OPERATOR).as(ComparisonOperator.class);
         String lowerValueAsString = lowerBound.get(VALUE).toString();

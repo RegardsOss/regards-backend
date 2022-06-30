@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.modules.crawler.service.exception;
 
-import fr.cnes.regards.modules.indexer.dao.BulkSaveLightResult;
 import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
+import fr.cnes.regards.modules.indexer.dao.BulkSaveLightResult;
 
 /**
  * Exception used to manage a problem with datasource plugin or Elasticsearch during an ingestion by permitting

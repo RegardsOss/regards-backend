@@ -74,9 +74,9 @@ public class CrawlingCursor {
     }
 
     private CrawlingCursor(int position,
-                          int size,
-                          OffsetDateTime lastEntityDate,
-                          OffsetDateTime previousLastEntityDate) {
+                           int size,
+                           OffsetDateTime lastEntityDate,
+                           OffsetDateTime previousLastEntityDate) {
         Assert.isTrue(size > 0, "Cursor size should be greater than 0");
         Assert.isTrue(position >= 0, "Position should be greater than 0");
         this.hasNext = false;

@@ -55,9 +55,9 @@ public class AttrDescToJsonMappingTest {
         String json = mapping.toString();
         assertThat(json).isEqualTo(
             "{\"properties\":{\"some\":{\"properties\":{\"nested\":{\"properties\":{\"prop\":{\"properties\":{"
-                + "\"lowerBound\":{\"type\":\"date\",\"index\":false,\"format\":\"date_optional_time\"},"
-                + "\"upperBound\":{\"type\":\"date\",\"index\":false,\"format\":\"date_optional_time\"},"
-                + "\"gte\":{\"type\":\"alias\",\"index\":false,\"path\":\"some.nested.prop.lowerBound\"},"
-                + "\"lte\":{\"type\":\"alias\",\"index\":false,\"path\":\"some.nested.prop.upperBound\"}}}}}}}}}");
+            + "\"lowerBound\":{\"type\":\"date\",\"index\":false,\"format\":\"date_optional_time\"},"
+            + "\"upperBound\":{\"type\":\"date\",\"index\":false,\"format\":\"date_optional_time\"},"
+            + "\"gte\":{\"type\":\"alias\",\"index\":false,\"path\":\"some.nested.prop.lowerBound\"},"
+            + "\"lte\":{\"type\":\"alias\",\"index\":false,\"path\":\"some.nested.prop.upperBound\"}}}}}}}}}");
     }
 }

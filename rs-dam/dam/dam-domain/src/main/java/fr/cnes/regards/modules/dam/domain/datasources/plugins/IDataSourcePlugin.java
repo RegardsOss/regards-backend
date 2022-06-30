@@ -20,8 +20,8 @@
 package fr.cnes.regards.modules.dam.domain.datasources.plugins;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
+import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 
 import java.time.OffsetDateTime;
 import java.util.List;

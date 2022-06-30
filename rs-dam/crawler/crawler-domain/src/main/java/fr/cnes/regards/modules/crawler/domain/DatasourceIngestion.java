@@ -217,7 +217,7 @@ public class DatasourceIngestion {
 
     public void setLastEntityDate(OffsetDateTime lastEntityDate) {
         // this last entity date becomes the previous last entity date of the next ingestion
-        if(cursor == null) {
+        if (cursor == null) {
             cursor = new CrawlingCursor(lastEntityDate);
         } else {
             cursor.setPreviousLastEntityDate(lastEntityDate);

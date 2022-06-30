@@ -43,7 +43,8 @@ public class SetAdapter<E> extends TypeAdapter<Set<E>> {
 
         @Override
         public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> typeToken) {
-            if (typeToken.getRawType() != Set.class || !(typeToken.getType() instanceof final ParameterizedType parameterizedType)) {
+            if (typeToken.getRawType() != Set.class
+                || !(typeToken.getType() instanceof final ParameterizedType parameterizedType)) {
                 return null;
             }
             final Type actualType = parameterizedType.getActualTypeArguments()[0];

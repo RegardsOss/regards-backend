@@ -50,8 +50,12 @@ class CrawlingCursorTest {
         AtomicInteger iterationCounter = new AtomicInteger(0);
         List<DataObject> actualList = getAllElementsFromPage(listData, cursor, iterationCounter, false);
 
-        Assertions.assertEquals(expectedPageNb, iterationCounter.get(), "Unexpected number of iterations performed by the crawling cursor");
-        Assertions.assertEquals(listData, actualList, "Unexpected elements from pages returned, next() method from CrawledPage does not work with no date");
+        Assertions.assertEquals(expectedPageNb,
+                                iterationCounter.get(),
+                                "Unexpected number of iterations performed by the crawling cursor");
+        Assertions.assertEquals(listData,
+                                actualList,
+                                "Unexpected elements from pages returned, next() method from CrawledPage does not work with no date");
     }
 
     @Test
@@ -62,13 +66,17 @@ class CrawlingCursorTest {
         List<DataObject> listData = initData(11, referenceDate, false);
 
         // with the current algorithm the same data are returned on page 0 and 1 when dates are equal. Hence, we expect cursor.getPageSize() more data.
-        final int expectedNbData = listData.size() + cursor.getSize() ;
+        final int expectedNbData = listData.size() + cursor.getSize();
         final int expectedPosition = (int) Math.ceil((double) expectedNbData / (double) cursor.getSize()) - 1;
 
         AtomicInteger iterationCounter = new AtomicInteger(0);
         List<DataObject> actualList = getAllElementsFromPage(listData, cursor, iterationCounter, true);
-        Assertions.assertEquals(expectedPosition, iterationCounter.get(), "Unexpected number of iterations performed by the crawling cursor");
-        Assertions.assertEquals(expectedNbData, actualList.size(), "Unexpected number elements from pages returned next(). Method from CrawledPage does not work with equal dates.");
+        Assertions.assertEquals(expectedPosition,
+                                iterationCounter.get(),
+                                "Unexpected number of iterations performed by the crawling cursor");
+        Assertions.assertEquals(expectedNbData,
+                                actualList.size(),
+                                "Unexpected number elements from pages returned next(). Method from CrawledPage does not work with equal dates.");
     }
 
     @Test
@@ -85,12 +93,17 @@ class CrawlingCursorTest {
         AtomicInteger iterationCounter = new AtomicInteger(0);
 
         List<DataObject> actualList = getAllElementsFromPage(listData, cursor, iterationCounter, true);
-        Assertions.assertEquals(expectedPosition, iterationCounter.get(), "Unexpected number of iterations performed by the crawling cursor");
-        Assertions.assertEquals(expectedNbData, actualList.size(), "Unexpected number elements from pages returned next(). Method from CrawledPage does not work with different dates.");
+        Assertions.assertEquals(expectedPosition,
+                                iterationCounter.get(),
+                                "Unexpected number of iterations performed by the crawling cursor");
+        Assertions.assertEquals(expectedNbData,
+                                actualList.size(),
+                                "Unexpected number elements from pages returned next(). Method from CrawledPage does not work with different dates.");
     }
 
     @Test
-    @Purpose("Test if all data are returned with all pages if some data have the same last update dates and some have different")
+    @Purpose(
+        "Test if all data are returned with all pages if some data have the same last update dates and some have different")
     void crawl_page_with_mixed_date() {
         CrawlingCursor cursor = new CrawlingCursor(0, 2);
         OffsetDateTime referenceDate = OffsetDateTime.of(2020, 1, 1, 1, 1, 1, 1, ZoneOffset.UTC);
@@ -106,8 +119,12 @@ class CrawlingCursorTest {
         AtomicInteger iterationCounter = new AtomicInteger(0);
 
         List<DataObject> actualList = getAllElementsFromPage(listData, cursor, iterationCounter, true);
-        Assertions.assertEquals(expectedPosition, iterationCounter.get(), "Unexpected number of iterations performed by the crawling cursor");
-        Assertions.assertEquals(expectedNbData, actualList.size(), "Unexpected elements from pages returned, next() method from CrawledPage does not work with date equals");
+        Assertions.assertEquals(expectedPosition,
+                                iterationCounter.get(),
+                                "Unexpected number of iterations performed by the crawling cursor");
+        Assertions.assertEquals(expectedNbData,
+                                actualList.size(),
+                                "Unexpected elements from pages returned, next() method from CrawledPage does not work with date equals");
     }
 
     private List<DataObject> initData(int numElements, OffsetDateTime referenceDate, boolean differentDates) {
@@ -121,7 +138,10 @@ class CrawlingCursorTest {
         return listData;
     }
 
-    private List<DataObject> getAllElementsFromPage(List<DataObject> listData, CrawlingCursor cursor, AtomicInteger iterationCounter, boolean lastUpdateDatePresent) {
+    private List<DataObject> getAllElementsFromPage(List<DataObject> listData,
+                                                    CrawlingCursor cursor,
+                                                    AtomicInteger iterationCounter,
+                                                    boolean lastUpdateDatePresent) {
         listData.sort(Comparator.comparing(DataObject::lastUpdateDate,
                                            Comparator.nullsLast(Comparator.naturalOrder())));
 
@@ -147,8 +167,7 @@ class CrawlingCursorTest {
         List<DataObject> subListElements;
         if (cursor.getPreviousLastEntityDate() != null) {
             subListElements = listData.stream()
-                                      .filter(data -> (data.lastUpdateDate()
-                                                           .isAfter(cursor.getPreviousLastEntityDate())
+                                      .filter(data -> (data.lastUpdateDate().isAfter(cursor.getPreviousLastEntityDate())
                                                        || data.lastUpdateDate()
                                                               .isEqual(cursor.getPreviousLastEntityDate())))
                                       .toList();
@@ -164,7 +183,7 @@ class CrawlingCursorTest {
         log.info("Crawling cursor {}", cursor);
         // SIMULATE computations from plugins
         // lastUpdateDate
-        if(lastUpdateDatePresent) {
+        if (lastUpdateDatePresent) {
             cursor.setLastEntityDate(getMaxLastUpdateDate(subListElements));
         }
         // hasNext()

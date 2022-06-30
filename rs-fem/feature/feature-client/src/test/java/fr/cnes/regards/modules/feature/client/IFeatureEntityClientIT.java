@@ -133,11 +133,16 @@ public class IFeatureEntityClientIT extends AbstractRegardsWebIT {
                                                                                         "model"));
 
         ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> response = client.findAll("model",
-                                                                                            OffsetDateTime.now().minusDays(2), //to get what was just created
+                                                                                            OffsetDateTime.now()
+                                                                                                          .minusDays(2),
+                                                                                            //to get what was just created
                                                                                             0,
-                                                                                            2, Sort.by("sessionOwner", "model"));
+                                                                                            2,
+                                                                                            Sort.by("sessionOwner",
+                                                                                                    "model"));
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
-        List<FeatureEntityDto> body = HateoasUtils.unwrapCollection(Objects.requireNonNull(response.getBody()).getContent());
+        List<FeatureEntityDto> body = HateoasUtils.unwrapCollection(Objects.requireNonNull(response.getBody())
+                                                                           .getContent());
         Assert.assertEquals("first should be featureEntity1, actual is " + body.get(0).getProviderId(),
                             toDto(featureEntity1),
                             body.get(0));

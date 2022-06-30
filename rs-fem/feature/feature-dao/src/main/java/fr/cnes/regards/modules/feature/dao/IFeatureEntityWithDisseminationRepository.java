@@ -38,7 +38,6 @@ import java.util.Set;
 public interface IFeatureEntityWithDisseminationRepository
     extends JpaRepository<FeatureEntity, Long>, JpaSpecificationExecutor<FeatureEntity> {
 
-
     default List<FeatureEntity> findByUrnIn(Set<FeatureUniformResourceName> urn) {
         return findByUrnIn(urn, Sort.unsorted());
     }

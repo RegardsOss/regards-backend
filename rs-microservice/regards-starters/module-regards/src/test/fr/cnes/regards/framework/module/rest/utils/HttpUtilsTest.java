@@ -1,14 +1,13 @@
 package fr.cnes.regards.framework.module.rest.utils;
 
 import com.google.common.net.HttpHeaders;
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.springframework.mock.web.MockHttpServletRequest;
 
 public class HttpUtilsTest {
 

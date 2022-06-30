@@ -3,7 +3,6 @@ package fr.cnes.regards.framework.modules.jobs.service;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 
-import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.concurrent.RunnableFuture;
 

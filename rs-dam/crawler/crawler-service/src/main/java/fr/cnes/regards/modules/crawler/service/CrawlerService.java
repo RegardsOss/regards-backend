@@ -36,6 +36,7 @@ import fr.cnes.regards.modules.crawler.service.conf.CrawlerPropertiesConfigurati
 import fr.cnes.regards.modules.crawler.service.event.DataSourceMessageEvent;
 import fr.cnes.regards.modules.crawler.service.exception.FirstFindException;
 import fr.cnes.regards.modules.crawler.service.exception.NotFinishedException;
+import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.DataSourceException;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDataSourcePlugin;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IInternalDataSourcePlugin;
@@ -47,7 +48,6 @@ import fr.cnes.regards.modules.indexer.dao.BulkSaveLightResult;
 import fr.cnes.regards.modules.indexer.dao.BulkSaveResult;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
-import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.model.domain.Model;
@@ -65,8 +65,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
 
-record CrawlingParameters(OffsetDateTime lastUpdateDate, String tenant, IDataSourcePlugin dsPlugin,
-                                  Long datasourceId, OffsetDateTime ingestionStart) {
+record CrawlingParameters(OffsetDateTime lastUpdateDate, String tenant, IDataSourcePlugin dsPlugin, Long datasourceId,
+                          OffsetDateTime ingestionStart) {
 
 }
 
@@ -84,7 +84,6 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
     private static final DateTimeFormatter ISO_TIME_UTC = new DateTimeFormatterBuilder().parseCaseInsensitive()
                                                                                         .append(DateTimeFormatter.ISO_LOCAL_TIME)
                                                                                         .toFormatter();
-
 
     @Autowired
     private IModelService modelService;
@@ -181,7 +180,11 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
                                                                               DataObject.class);
                 mergeNeeded = esRepos.count(searchKey, ICriterion.all()) != 0;
             }
-            saveResult = readDatasource(new CrawlingParameters(lastUpdateDate, tenant, dsPlugin, datasourceId, ingestionStart), dsi, mergeNeeded);
+            saveResult = readDatasource(new CrawlingParameters(lastUpdateDate,
+                                                               tenant,
+                                                               dsPlugin,
+                                                               datasourceId,
+                                                               ingestionStart), dsi, mergeNeeded);
             // In case Dataset associated with datasourceId already exists (or had been created between datasource creation
             // and its ingestion), we must search for it and do as it has been updated (to update all associated data
             // objects which have a lastUpdate date >= now)
@@ -208,12 +211,14 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
 
             return Optional.of(new IngestionResult(ingestionStart,
                                                    saveResult.getSavedDocsCount(),
-                                                   saveResult.getInErrorDocsCount(), dsi.getCursor().getLastEntityDate()));
+                                                   saveResult.getInErrorDocsCount(),
+                                                   dsi.getCursor().getLastEntityDate()));
         }
         return Optional.empty();
     }
 
-    private BulkSaveLightResult readDatasource(CrawlingParameters crawlingParameters, DatasourceIngestion dsi,
+    private BulkSaveLightResult readDatasource(CrawlingParameters crawlingParameters,
+                                               DatasourceIngestion dsi,
                                                boolean mergeNeeded) throws FirstFindException, NotFinishedException {
         String dsiId = dsi.getId();
         sendMessage(String.format("Start reading datasource and %screating objects...", mergeNeeded ? "merging/" : ""),
@@ -239,7 +244,7 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
             cursor = dsi.getCursor();
             while (cursor.hasNext()) {
                 cursor.next();
-                isFirstFind =false;
+                isFirstFind = false;
                 sendMessage(String.format("  Searching page of %d records from datasource...", cursor.getSize()),
                             dsiId);
                 availableRecordsCount = doReadAndIndex(crawlingParameters,
@@ -264,7 +269,8 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
         return saveResult;
     }
 
-    private int doReadAndIndex(CrawlingParameters crawlingParameters, DatasourceIngestion dsi,
+    private int doReadAndIndex(CrawlingParameters crawlingParameters,
+                               DatasourceIngestion dsi,
                                boolean mergeNeeded,
                                int availableRecordsCount,
                                BulkSaveLightResult saveResult) throws DataSourceException, ModuleException {
@@ -339,7 +345,8 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
     /**
      * Read datasource since given date page setting ipId to each objects
      */
-    private List<DataObject> findAllFromDatasource(CrawlingParameters crawlingParameters, CrawlingCursor cursor) throws DataSourceException, ModuleException {
+    private List<DataObject> findAllFromDatasource(CrawlingParameters crawlingParameters, CrawlingCursor cursor)
+        throws DataSourceException, ModuleException {
         // Retrieve target model
         String tenant = crawlingParameters.tenant();
         Long datasourceId = crawlingParameters.datasourceId();
@@ -351,12 +358,11 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
         try {
             long start = System.currentTimeMillis();
             dataObjectsRetrieved = dsPlugin.findAll(tenant, cursor, crawlingParameters.lastUpdateDate());
-            LOGGER.info(
-                "Searching entities (size={}, page={}, lastUpdateDate={}) from datasource plugin took {}ms",
-                cursor.getSize(),
-                cursor.getPosition(),
-                cursor.getPreviousLastEntityDate(),
-                System.currentTimeMillis() - start);
+            LOGGER.info("Searching entities (size={}, page={}, lastUpdateDate={}) from datasource plugin took {}ms",
+                        cursor.getSize(),
+                        cursor.getPosition(),
+                        cursor.getPreviousLastEntityDate(),
+                        System.currentTimeMillis() - start);
         } catch (Exception e) {
             // Catch Exception in order to catch all exceptions (in particular runtime) from plugins. Plugins can be out of our scope.
             String message = "Error retriving features from datasource " + dsPlugin.getClass().getName();

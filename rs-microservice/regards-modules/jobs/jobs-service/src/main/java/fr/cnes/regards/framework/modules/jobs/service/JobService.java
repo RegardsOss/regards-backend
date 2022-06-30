@@ -173,7 +173,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                 }
             } catch (InterruptedException e) {
                 LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
-                                 + "of the end, pray for your soul", e);
+                             + "of the end, pray for your soul", e);
                 break;
             } catch (Exception e) {
                 LOGGER.warn("Unexpected error occurred on service poller, ignoring error.", e);
@@ -182,7 +182,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                     Thread.sleep(1000);
                 } catch (InterruptedException ie) {
                     LOGGER.error("Thread sleep has been interrupted, looks like it's the beginning "
-                                     + "of the end, pray for your soul", ie);
+                                 + "of the end, pray for your soul", ie);
                     break;
                 }
             }
@@ -355,7 +355,9 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
                         RunnableFuture<Void> task = jobsMap.get(jobInfo);
                         task.cancel(true);
                     } else {
-                        LOGGER.debug("Event received to abort the running job {}, but this job is not running on this instance", jobId);
+                        LOGGER.debug(
+                            "Event received to abort the running job {}, but this job is not running on this instance",
+                            jobId);
                     }
                     break;
                 case PENDING: // even a PENDING Job must be set at ABORTED status to avoid a third party service to

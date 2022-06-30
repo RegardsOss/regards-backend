@@ -19,10 +19,10 @@
 package fr.cnes.regards.modules.dam.rest.datasources;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDBConnectionPlugin;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDBDataSourcePlugin;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
-import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
 
 import java.time.OffsetDateTime;
 import java.util.List;

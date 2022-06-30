@@ -34,10 +34,10 @@ import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.domain.IngestionResult;
 import fr.cnes.regards.modules.crawler.domain.IngestionStatus;
 import fr.cnes.regards.modules.crawler.service.exception.NotFinishedException;
+import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDataSourcePlugin;
 import fr.cnes.regards.modules.indexer.dao.BulkSaveLightResult;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
-import fr.cnes.regards.modules.dam.domain.datasources.CrawlingCursor;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import org.slf4j.Logger;
@@ -172,7 +172,7 @@ public class DatasourceIngestionService {
             // To avoid redoing an ingestion in this "do...while" (must be at next call to manage)
             dsIngestion.setNextPlannedIngestDate(null);
             // To avoid redoing an ingestion from beginning in case where plugin are date optimized
-            if(summary.getLastEntityDate() != null) {
+            if (summary.getLastEntityDate() != null) {
                 dsIngestion.setLastEntityDate(summary.getLastEntityDate());
             }
             // Save ingestion status

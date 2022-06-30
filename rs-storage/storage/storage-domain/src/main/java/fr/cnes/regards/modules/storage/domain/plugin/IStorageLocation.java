@@ -30,11 +30,6 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-
 /**
  * Plugin interface for all storage systems.
  *

@@ -35,16 +35,16 @@ class ICriterionJsoniterDecoderTest {
     void testSimpleRangeCrit() throws IOException {
         String content = """
             {
-            "valueComparisons":[
-                                    {
-                                     "operator":"GREATER",
-                                     "value":10.0
-                                    }
-                                  ],
-             "name":"feature.properties.IntegerA",
-             "@type@":"fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion"
-             }
-                   """;
+              "valueComparisons": [
+                {
+                  "operator": "GREATER",
+                  "value": 10.0
+                }
+              ],
+              "name": "feature.properties.IntegerA",
+              "@type@": "fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion"
+            }
+            """;
         ICriterionJsoniterDecoder decoder = new ICriterionJsoniterDecoder();
         Object parsed = decoder.decode(JsonIterator.parse(content));
         if (parsed instanceof RangeCriterion<?> rangeCriterion) {
@@ -66,21 +66,21 @@ class ICriterionJsoniterDecoderTest {
     @Test
     void testBetweenRangeCrit() throws IOException {
         String content = """
-            {
-            "valueComparisons":[
-                                    {
-                                     "operator":"GREATER",
-                                     "value":10.0
-                                    },
-                                    {
-                                     "operator":"LESS",
-                                     "value":12.0
-                                    }
-                                  ],
-             "name":"feature.properties.IntegerA",
-             "@type@":"fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion"
-             }
-                   """;
+             {
+             "valueComparisons":[
+                 {
+                  "operator":"GREATER",
+                  "value":10.0
+                 },
+                 {
+                  "operator":"LESS",
+                  "value":12.0
+                 }
+               ],
+              "name":"feature.properties.IntegerA",
+              "@type@":"fr.cnes.regards.modules.indexer.domain.criterion.RangeCriterion"
+              }
+            """;
         ICriterionJsoniterDecoder decoder = new ICriterionJsoniterDecoder();
         Object parsed = decoder.decode(JsonIterator.parse(content));
         if (parsed instanceof RangeCriterion<?> rangeCriterion) {

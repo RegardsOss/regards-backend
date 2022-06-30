@@ -56,7 +56,7 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
 
     // Do not use entity graph it makes max computation into memory
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @QueryHints({@QueryHint(name = "javax.persistence.lock.timeout", value = UPGRADE_SKIPLOCKED)})
+    @QueryHints({ @QueryHint(name = "javax.persistence.lock.timeout", value = UPGRADE_SKIPLOCKED) })
     JobInfo findFirstByStatusStatusOrderByPriorityDesc(JobStatus status);
 
     default JobInfo findHighestPriorityQueued() {
