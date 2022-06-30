@@ -298,7 +298,7 @@ public class FeatureFilesService {
                                                                         metadata.getSession(),
                                                                         loc.getUrl(),
                                                                         storageMetadata.getPluginBusinessId(),
-                                                                        Optional.of(loc.getUrl())));
+                                                                        Optional.ofNullable(storageMetadata.getStorePath())));
                     } else {
                         referenceRequests.add(FileReferenceRequestDTO.build(attributes.getFilename(),
                                                                             attributes.getChecksum(),
