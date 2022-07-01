@@ -113,6 +113,7 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
     public Mono<PExecution> update(PExecution exec) {
         return entityExecRepo
             .save(mapper.toEntity(exec))
+            .map(ExecutionEntity::persisted)
             .map(mapper::toDomain)
             .doOnNext(e -> cache.put(e.getId(), e));
     }
@@ -123,6 +124,7 @@ public class PExecutionRepositoryImpl implements IPExecutionRepository {
             .map(Mono::just)
             .getOrElse(() -> entityExecRepo
                 .findById(id)
+                .map(ExecutionEntity::persisted)
                 .map(mapper::toDomain)
                 .doOnNext(e -> cache.put(e.getId(), e))
             )
