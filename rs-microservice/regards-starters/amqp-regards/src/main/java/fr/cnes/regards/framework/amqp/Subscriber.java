@@ -31,6 +31,7 @@ import org.springframework.amqp.support.converter.MessageConverter;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * {@link Subscriber} uses {@link ITenantResolver} to resolve tenants in multitenant context. On listener will be
@@ -90,12 +91,10 @@ public class Subscriber extends AbstractSubscriber implements ISubscriber {
 
     @Override
     public void removeTenant(String tenant) {
-        if (listeners != null) {
-            for (Map.Entry<String, Map<String, SimpleMessageListenerContainer>> entry : listeners.entrySet()) {
-                SimpleMessageListenerContainer container = entry.getValue().remove(tenant);
-                if (container != null) {
-                    container.stop();
-                }
+        for (Map.Entry<String, ConcurrentMap<String, SimpleMessageListenerContainer>> entry : listeners.entrySet()) {
+            SimpleMessageListenerContainer container = entry.getValue().remove(tenant);
+            if (container != null) {
+                container.stop();
             }
         }
     }

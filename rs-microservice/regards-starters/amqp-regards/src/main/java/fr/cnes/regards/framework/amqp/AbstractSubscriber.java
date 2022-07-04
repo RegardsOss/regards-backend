@@ -49,6 +49,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Common subscriber methods
@@ -80,22 +81,22 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     /**
      * Reference to running listeners per handlers and virtual hosts
      */
-    protected final Map<String, Map<String, SimpleMessageListenerContainer>> listeners;
+    protected final ConcurrentMap<String, ConcurrentMap<String, SimpleMessageListenerContainer>> listeners;
 
     /**
      * Reference to events managed by handlers
      */
-    protected final Map<String, Class<?>> handledEvents;
+    protected final ConcurrentMap<String, Class<?>> handledEvents;
 
     /**
      * Reference to custom exchange/queue configuration as Pair<QueueName,ExchangeName> by handler
      */
-    protected final Map<String, Pair<Optional<String>, Optional<String>>> handledQueueExchangeNames;
+    protected final ConcurrentMap<String, Pair<Optional<String>, Optional<String>>> handledQueueExchangeNames;
 
     /**
      * Reference to instances of handlers
      */
-    protected final Map<String, IHandler<? extends ISubscribable>> handlerInstances;
+    protected final ConcurrentMap<String, IHandler<? extends ISubscribable>> handlerInstances;
 
     /**
      * bean handling the conversion using either Jackson or Gson
@@ -126,10 +127,10 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         this.virtualHostAdmin = virtualHostAdmin;
         this.amqpAdmin = amqpAdmin;
         this.jsonMessageConverters = jsonMessageConverters;
-        this.listeners = new HashMap<>();
-        this.handledEvents = new HashMap<>();
-        this.handlerInstances = new HashMap<>();
-        this.handledQueueExchangeNames = new HashMap<>();
+        this.listeners = new ConcurrentHashMap<>();
+        this.handledEvents = new ConcurrentHashMap<>();
+        this.handlerInstances = new ConcurrentHashMap<>();
+        this.handledQueueExchangeNames = new ConcurrentHashMap<>();
         this.errorHandler = errorHandler;
         this.microserviceName = microserviceName;
         this.instancePublisher = instancePublisher;
@@ -232,8 +233,8 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         WorkerMode mode = null;
         Type[] genericInterfaces = handler.getClass().getGenericInterfaces();
         for (Type genericInterface : genericInterfaces) {
-            if (genericInterface instanceof ParameterizedType) {
-                String interf = ((ParameterizedType) genericInterface).getRawType().getTypeName();
+            if (genericInterface instanceof ParameterizedType parameterizedType) {
+                String interf = parameterizedType.getRawType().getTypeName();
                 if (interf.equals(IBatchHandler.class.getName()) || interf.equals(IHandler.class.getName())) {
                     event = (Class<?>) ((ParameterizedType) genericInterface).getActualTypeArguments()[0];
                     Event annotation = event.getAnnotation(Event.class);
@@ -269,11 +270,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             } else {
                 queueName = amqpAdmin.getUnicastQueueName(tenant, event, target);
             }
-            LOGGER.info("Purging queue {} --> for {},{},{}",
-                        queueName,
-                        event.getName(),
-                        target.toString(),
-                        mode.toString());
+            LOGGER.info("Purging queue {} --> for {},{},{}", queueName, event.getName(), target, mode);
             amqpAdmin.purgeQueue(queueName, false);
         } catch (AmqpIOException e) {
             //todo
@@ -325,15 +322,12 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
         Set<String> tenants = resolveTenants();
 
-        Map<String, SimpleMessageListenerContainer> vhostsContainers = new ConcurrentHashMap<>();
-
         String handlerClassName = handler.getClass().getName();
-        if (!listeners.containsKey(handlerClassName)) {
-            listeners.put(handlerClassName, vhostsContainers);
-            handledEvents.put(handlerClassName, channel.getEventType());
-            handlerInstances.put(handlerClassName, handler);
-            handledQueueExchangeNames.put(handlerClassName, Pair.of(channel.getQueueName(), channel.getExchangeName()));
-        }
+        listeners.putIfAbsent(handlerClassName, new ConcurrentHashMap<>());
+        handledEvents.putIfAbsent(handlerClassName, channel.getEventType());
+        handlerInstances.putIfAbsent(handlerClassName, handler);
+        handledQueueExchangeNames.putIfAbsent(handlerClassName,
+                                              Pair.of(channel.getQueueName(), channel.getExchangeName()));
 
         Multimap<String, Queue> vhostQueues = ArrayListMultimap.create();
 
@@ -382,7 +376,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             // If queue name is not provided, the queueName and the exchange are created with generated names
             // If queueName is provided and exchange name is not, so the queue is created without binding with any exchange.
             // If queueName and exchange name are provided, queueName is bind to the given exchange
-            if (!channel.getQueueName().isPresent() || channel.getExchangeName().isPresent()) {
+            if (channel.getQueueName().isEmpty() || channel.getExchangeName().isPresent()) {
                 Exchange exchange = amqpAdmin.declareExchange(channel);
                 amqpAdmin.declareBinding(queue, exchange, channel.getWorkerMode(), channel.getRoutingKey());
             }
@@ -409,16 +403,14 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         String handlerClassName = handler.getClass().getName();
         Map<String, SimpleMessageListenerContainer> vhostsContainers = listeners.get(handlerClassName);
         // Virtual host already registered, just add queues to current container
-        if (vhostsContainers.containsKey(virtualHost)) {
+        vhostsContainers.computeIfPresent(virtualHost, (vHost, container) -> {
             LOGGER.warn("Handler {} that handles {} events already defined for virtual host {}",
                         handlerClassName,
                         eventType.getName(),
                         virtualHost);
             // Add missing queues errorHandler
-            SimpleMessageListenerContainer container = vhostsContainers.get(virtualHost);
             String[] existingQueues = container.getQueueNames();
             Set<String> newQueueNames = new HashSet<>();
-            boolean exists;
             for (Queue queue : queues) {
                 if (Arrays.stream(existingQueues).noneMatch(q -> q.equals(queue.getName()))) {
                     newQueueNames.add(queue.getName());
@@ -428,54 +420,55 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             if (!newQueueNames.isEmpty()) {
                 container.addQueueNames(newQueueNames.toArray(new String[0]));
             }
-            return;
-        }
+            return container;
+        });
+        vhostsContainers.computeIfAbsent(virtualHost, vHost -> {
+            // Retrieve tenant vhost connection factory
+            ConnectionFactory connectionFactory = virtualHostAdmin.getVhostConnectionFactory(vHost);
 
-        // Retrieve tenant vhost connection factory
-        ConnectionFactory connectionFactory = virtualHostAdmin.getVhostConnectionFactory(virtualHost);
+            // Init container
+            SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+            container.setConnectionFactory(connectionFactory);
+            if (!eventType.equals(NotificationEvent.class)) {
+                // Do not send notification event on notification event error. (prevent infinite loop)
+                container.setErrorHandler(errorHandler);
+            }
 
-        // Init container
-        SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
-        container.setConnectionFactory(connectionFactory);
-        if (!eventType.equals(NotificationEvent.class)) {
-            // Do not send notification event on notification event error. (prevent infinite loop)
-            container.setErrorHandler(errorHandler);
-        }
+            if (handler instanceof IBatchHandler<?> batchHandler) {
+                container.setChannelTransacted(false);
+                container.setAcknowledgeMode(AcknowledgeMode.MANUAL);
 
-        if (handler instanceof IBatchHandler) {
-            container.setChannelTransacted(false);
-            container.setAcknowledgeMode(AcknowledgeMode.MANUAL);
+                container.setConsumerBatchEnabled(true);
+                container.setDeBatchingEnabled(true); // Required if consumer batch enabled is true
+                container.setBatchSize(batchHandler.getBatchSize());
+                container.setPrefetchCount(batchHandler.getBatchSize());
+                container.setReceiveTimeout(batchHandler.getReceiveTimeout());
+                MessageListener batchListener = new RabbitBatchMessageListener(amqpAdmin,
+                                                                               microserviceName,
+                                                                               instancePublisher,
+                                                                               publisher,
+                                                                               runtimeTenantResolver,
+                                                                               tenantResolver,
+                                                                               messageConverter,
+                                                                               batchHandler);
+                container.setMessageListener(batchListener);
+            } else {
+                container.setChannelTransacted(true);
+                container.setDefaultRequeueRejected(false);
+                MessageListenerAdapter messageListener = new RabbitMessageListenerAdapter(handler,
+                                                                                          DEFAULT_HANDLING_METHOD);
+                messageListener.setMessageConverter(messageConverter);
+                container.setMessageListener(messageListener);
+            }
 
-            IBatchHandler<?> batchHandler = (IBatchHandler<?>) handler;
-            container.setConsumerBatchEnabled(true);
-            container.setDeBatchingEnabled(true); // Required if consumer batch enabled is true
-            container.setBatchSize(batchHandler.getBatchSize());
-            container.setPrefetchCount(batchHandler.getBatchSize());
-            container.setReceiveTimeout(batchHandler.getReceiveTimeout());
-            MessageListener batchListener = new RabbitBatchMessageListener(amqpAdmin,
-                                                                           microserviceName,
-                                                                           instancePublisher,
-                                                                           publisher,
-                                                                           runtimeTenantResolver,
-                                                                           tenantResolver,
-                                                                           messageConverter,
-                                                                           batchHandler);
-            container.setMessageListener(batchListener);
-        } else {
-            container.setChannelTransacted(true);
-            container.setDefaultRequeueRejected(false);
-            MessageListenerAdapter messageListener = new RabbitMessageListenerAdapter(handler, DEFAULT_HANDLING_METHOD);
-            messageListener.setMessageConverter(messageConverter);
-            container.setMessageListener(messageListener);
-        }
+            // Prevent duplicate queue
+            Set<String> queueNames = new HashSet<>();
+            queues.forEach(q -> queueNames.add(q.getName()));
+            container.addQueueNames(queueNames.toArray(new String[0]));
 
-        // Prevent duplicate queue
-        Set<String> queueNames = new HashSet<>();
-        queues.forEach(q -> queueNames.add(q.getName()));
-        container.addQueueNames(queueNames.toArray(new String[0]));
-        vhostsContainers.put(virtualHost, container);
-
-        container.start();
+            container.start();
+            return container;
+        });
     }
 
     /**
@@ -484,7 +477,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      * @param tenant new tenant to manage
      */
     protected void addTenantListeners(String tenant) {
-        for (Map.Entry<String, Map<String, SimpleMessageListenerContainer>> entry : listeners.entrySet()) {
+        for (Map.Entry<String, ConcurrentMap<String, SimpleMessageListenerContainer>> entry : listeners.entrySet()) {
             String handlerClass = entry.getKey();
             Class<?> eventType = handledEvents.get(handlerClass);
             IHandler<? extends ISubscribable> handler = handlerInstances.get(handlerClass);
@@ -518,7 +511,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         if (listeners.containsKey(handlerClassName)) {
             return listeners.get(handlerClassName);
         }
-        return null;
+        return Collections.emptyMap();
     }
 
 }

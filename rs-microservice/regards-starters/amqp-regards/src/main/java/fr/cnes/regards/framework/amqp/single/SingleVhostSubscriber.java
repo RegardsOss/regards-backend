@@ -36,6 +36,7 @@ import org.springframework.amqp.support.converter.MessageConverter;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Single virtual host subscriber implementation
@@ -84,28 +85,23 @@ public class SingleVhostSubscriber extends AbstractSubscriber implements ISubscr
 
     @Override
     public void removeTenant(String tenant) {
-        if (listeners != null) {
-            for (Map.Entry<String, Map<String, SimpleMessageListenerContainer>> entry : listeners.entrySet()) {
+        for (Map.Entry<String, ConcurrentMap<String, SimpleMessageListenerContainer>> entry : listeners.entrySet()) {
 
-                String handlerClassName = entry.getKey();
-                Class<?> eventType = handledEvents.get(handlerClassName);
-                //                IHandler<? extends ISubscribable> handler = handlerInstances.get(handlerClassName);
-                WorkerMode workerMode = EventUtils.getWorkerMode(eventType);
-                Target target = EventUtils.getTargetRestriction(eventType);
+            String handlerClassName = entry.getKey();
+            Class<?> eventType = handledEvents.get(handlerClassName);
+            WorkerMode workerMode = EventUtils.getWorkerMode(eventType);
+            Target target = EventUtils.getTargetRestriction(eventType);
 
-                // Only useful for UNICAST tenant dependent queues
-                if (WorkerMode.UNICAST.equals(workerMode)) {
-                    //                    Optional<Class<? extends IHandler<?>>> handlerType =
-                    //                            handler == null ? Optional.empty() : Optional.of(handler.getType());
-                    String queueNameToRemove = amqpAdmin.getUnicastQueueName(tenant, eventType, target);
-                    String virtualHost = resolveVirtualHost(tenant);
+            // Only useful for UNICAST tenant dependent queues
+            if (WorkerMode.UNICAST.equals(workerMode)) {
+                String queueNameToRemove = amqpAdmin.getUnicastQueueName(tenant, eventType, target);
+                String virtualHost = resolveVirtualHost(tenant);
 
-                    Map<String, SimpleMessageListenerContainer> vhostsContainers = entry.getValue();
-                    SimpleMessageListenerContainer container = vhostsContainers.get(virtualHost);
-                    container.removeQueueNames(queueNameToRemove);
-                }
-                // Nothing to do for BROADCAST
+                Map<String, SimpleMessageListenerContainer> vhostsContainers = entry.getValue();
+                SimpleMessageListenerContainer container = vhostsContainers.get(virtualHost);
+                container.removeQueueNames(queueNameToRemove);
             }
+            // Nothing to do for BROADCAST
         }
     }
 
