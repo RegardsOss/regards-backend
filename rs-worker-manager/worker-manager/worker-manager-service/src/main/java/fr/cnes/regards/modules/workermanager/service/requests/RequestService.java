@@ -212,7 +212,7 @@ public class RequestService {
     public void deleteRequests(List<Request> requests) {
         SessionsRequestsInfo info = new SessionsRequestsInfo();
         info.addRequests(requests.stream().map(Request::toDTO).collect(Collectors.toList()));
-        requestRepository.deleteInBatch(requests);
+        requestRepository.deleteAllInBatch(requests);
         sessionService.notifyDelete(info);
     }
 

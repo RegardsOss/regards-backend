@@ -121,7 +121,7 @@ public class ManagerCleanService {
         // Update source aggregation information due to session removal
         Map<String, Source> updatedSourcesMap = updateSources(sessionPage.getContent());
         // Delete expired sessions
-        this.sessionRepo.deleteInBatch(sessionPage);
+        this.sessionRepo.deleteAllInBatch(sessionPage);
         // Save all changes on sources
         this.sourceRepo.saveAll(updatedSourcesMap.values());
         return sessionPage.getNumberOfElements();

@@ -225,7 +225,7 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
                                                     .filter(request -> !successCopyRequest.contains(request))
                                                     .collect(Collectors.toList()));
         // Successful requests are deleted now!
-        this.featureCopyRequestRepo.deleteInBatch(successCopyRequest);
+        this.featureCopyRequestRepo.deleteAllInBatch(successCopyRequest);
 
         LOGGER.trace("------------->>> {} copy request treated in {} ms",
                      successCopyRequest.size(),

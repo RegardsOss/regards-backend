@@ -261,7 +261,7 @@ public class NotificationProcessingService {
             publisher.publish(completedRequests.stream().map(this::mapRequestToEvent).collect(Collectors.toList()));
 
             // Delete all successful requests
-            notificationRequestRepository.deleteInBatch(successRequests);
+            notificationRequestRepository.deleteAllInBatch(successRequests);
             // Update state to ERROR for all completed request in error
             notificationRequestRepository.updateState(NotificationState.ERROR,
                                                       errorRequests.stream()

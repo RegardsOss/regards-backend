@@ -574,7 +574,7 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
             featureUpdateRequestRepo.saveAll(requests);
         } else {
             doOnTerminated(requests);
-            featureUpdateRequestRepo.deleteInBatch(requests);
+            featureUpdateRequestRepo.deleteAllInBatch(requests);
         }
     }
 

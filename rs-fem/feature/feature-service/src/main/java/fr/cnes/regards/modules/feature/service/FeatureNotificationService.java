@@ -279,7 +279,7 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
         }
         onSuccess(success);
         // Successful requests are deleted now!
-        abstractFeatureRequestRepo.deleteInBatch(success);
+        abstractFeatureRequestRepo.deleteAllInBatch(success);
     }
 
     @Override

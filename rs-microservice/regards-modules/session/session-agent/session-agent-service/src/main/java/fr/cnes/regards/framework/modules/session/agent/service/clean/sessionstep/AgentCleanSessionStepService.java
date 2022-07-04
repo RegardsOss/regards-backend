@@ -93,7 +93,7 @@ public class AgentCleanSessionStepService {
         // Delete all related StepPropertyUpdateRequests
         stepPropertyRepo.deleteBySessionStepIn(sessionStepsToDelete.getContent());
         // Delete SessionSteps
-        this.sessionStepRepo.deleteInBatch(sessionStepsToDelete.getContent());
+        this.sessionStepRepo.deleteAllInBatch(sessionStepsToDelete.getContent());
         return sessionStepsToDelete.getNumberOfElements();
     }
 }

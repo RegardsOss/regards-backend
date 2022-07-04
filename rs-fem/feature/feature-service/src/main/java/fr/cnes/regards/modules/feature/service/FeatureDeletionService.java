@@ -322,7 +322,7 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
                 }
                 deletionRepo.saveAll(requestsAlreadyDeleted);
             } else {
-                this.deletionRepo.deleteInBatch(requestsAlreadyDeleted);
+                this.deletionRepo.deleteAllInBatch(requestsAlreadyDeleted);
             }
 
             // PROPAGATE to CATALOG
@@ -405,7 +405,7 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
         } else {
             // If no notification required, requests are over and can be deleted
             doOnTerminated(successfulRequests.keySet());
-            this.deletionRepo.deleteInBatch(successfulRequests.keySet());
+            this.deletionRepo.deleteAllInBatch(successfulRequests.keySet());
         }
 
         // Delete features, related requests will be deleted once we know notifier has successfully sent the notification about it

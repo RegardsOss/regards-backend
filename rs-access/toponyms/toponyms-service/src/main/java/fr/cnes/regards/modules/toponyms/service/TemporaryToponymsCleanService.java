@@ -49,7 +49,7 @@ public class TemporaryToponymsCleanService {
             toponymsToDelete = toponymsRepository.findByVisibleAndToponymMetadataExpirationDateBefore(false,
                                                                                                       startTime,
                                                                                                       page);
-            this.toponymsRepository.deleteInBatch(toponymsToDelete);
+            this.toponymsRepository.deleteAllInBatch(toponymsToDelete);
             nbDeleted += toponymsToDelete.getNumberOfElements();
         } while (toponymsToDelete.hasNext());
         return nbDeleted;

@@ -139,7 +139,7 @@ public class FeatureUpdateDisseminationService {
         }
         notifySessions(sessionInfos);
         featureWithDisseminationRepo.saveAll(featureEntities);
-        featureUpdateDisseminationRequestRepository.deleteInBatch(results);
+        featureUpdateDisseminationRequestRepository.deleteAllInBatch(results);
     }
 
     private List<FeatureEntity> getFeatureEntities(Page<FeatureUpdateDisseminationRequest> results) {

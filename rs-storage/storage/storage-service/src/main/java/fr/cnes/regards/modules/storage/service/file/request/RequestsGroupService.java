@@ -224,7 +224,7 @@ public class RequestsGroupService {
         long expiredGroupsCount = expiredGroups.getTotalElements();
         int expiredGroupsHandledCount = expiredGroups.getNumberOfElements();
         if (expiredGroupsCount > 0) {
-            reqGroupRepository.deleteInBatch(expiredGroups);
+            reqGroupRepository.deleteAllInBatch(expiredGroups);
             groupReqInfoRepository.deleteByGroupIdIn(expiredGroups.stream()
                                                                   .map(RequestGroup::getId)
                                                                   .collect(Collectors.toSet()));
