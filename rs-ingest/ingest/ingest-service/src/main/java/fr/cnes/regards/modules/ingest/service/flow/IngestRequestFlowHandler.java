@@ -72,4 +72,8 @@ public class IngestRequestFlowHandler extends AbstractRequestFlowHandler<IngestR
         return confProperties.getBatchReceiveTimeout();
     }
 
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return true;
+    }
 }

@@ -94,4 +94,9 @@ public class FeatureUpdateRequestEventHandler extends AbstractFeatureRequestEven
         return featureService;
     }
 
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return true;
+    }
+
 }

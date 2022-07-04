@@ -75,4 +75,9 @@ public class FeatureDisseminationResponseHandler
                      messages.size(),
                      System.currentTimeMillis() - start);
     }
+
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return true;
+    }
 }

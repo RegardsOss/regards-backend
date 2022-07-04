@@ -122,8 +122,11 @@ public class RequestHandler implements ApplicationListener<ApplicationReadyEvent
 
     @Override
     public boolean isDedicatedDLQEnabled() {
-        // Warning : Do not set dedicated DLQ for queue creation consistency with Notifier plugins when sending message
-        // from feature notifier to workerManager with WorkerMangerSender
+        // Warning : Do not set dedicated DLQ here as Workers from WorkerManager do not create the same DLQ queue
+        // as the RabbitMQ layer we have when this boolean is true.
+        // If this boolean would be true, DLQ defined by the worker and by FEM would not be the
+        // same and the service that start up first would prevent the other one to boot
+        // (as it cannot create the queue)
         return false;
     }
 }

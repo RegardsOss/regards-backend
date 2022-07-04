@@ -91,4 +91,8 @@ public class NotificationRequestEventHandler extends AbstractFeatureRequestEvent
         return notificationService;
     }
 
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return true;
+    }
 }

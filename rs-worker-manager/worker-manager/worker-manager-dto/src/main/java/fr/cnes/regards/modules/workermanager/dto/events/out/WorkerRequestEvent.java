@@ -26,6 +26,7 @@ import javax.validation.constraints.NotNull;
 
 /**
  * Empty POJO to handle worker requests sent by manager with undefined body.
+ * We use this class to declare the DLQ and during tests
  *
  * @autor Sébastien Binda
  */
