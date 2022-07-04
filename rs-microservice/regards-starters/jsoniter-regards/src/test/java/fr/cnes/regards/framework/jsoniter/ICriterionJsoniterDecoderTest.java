@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 
 class ICriterionJsoniterDecoderTest {
@@ -86,6 +87,8 @@ class ICriterionJsoniterDecoderTest {
         if (parsed instanceof RangeCriterion<?> rangeCriterion) {
             List<? extends ValueComparison<?>> valueComparisons = rangeCriterion.getValueComparisons()
                                                                                 .stream()
+                                                                                .sorted(Comparator.comparing(
+                                                                                    ValueComparison::getOperator))
                                                                                 .toList();
             Assertions.assertEquals(2, valueComparisons.size(), "There should be 2 value comparisons");
             Assertions.assertEquals(ComparisonOperator.GREATER,
