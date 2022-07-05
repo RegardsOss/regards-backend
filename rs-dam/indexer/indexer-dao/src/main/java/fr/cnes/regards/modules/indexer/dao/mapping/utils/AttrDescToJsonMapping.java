@@ -209,13 +209,9 @@ public class AttrDescToJsonMapping {
                 String path = attrDesc.getPath();
                 return merge(NO_ALIAS.nestedSimpleRange(attrDesc, type),
                              nestedPropertiesStructure(attrDesc.getPath() + ".gte",
-                                                       object(kv("type", "alias"),
-                                                              kv("index", attrDesc.isIndexed()),
-                                                              kv("path", fullLowPath(path)))),
+                                                       object(kv("type", "alias"), kv("path", fullLowPath(path)))),
                              nestedPropertiesStructure(attrDesc.getPath() + ".lte",
-                                                       object(kv("type", "alias"),
-                                                              kv("index", attrDesc.isIndexed()),
-                                                              kv("path", fullHighPath(path)))));
+                                                       object(kv("type", "alias"), kv("path", fullHighPath(path)))));
             }
         };
 
