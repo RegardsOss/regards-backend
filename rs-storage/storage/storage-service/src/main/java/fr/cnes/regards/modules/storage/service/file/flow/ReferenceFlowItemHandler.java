@@ -83,4 +83,8 @@ public class ReferenceFlowItemHandler
         return BULK_SIZE;
     }
 
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return true;
+    }
 }

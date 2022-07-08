@@ -84,4 +84,9 @@ public class StorageFlowItemHandler
     public int getBatchSize() {
         return BULK_SIZE;
     }
+
+    @Override
+    public boolean isDedicatedDLQEnabled() {
+        return true;
+    }
 }
