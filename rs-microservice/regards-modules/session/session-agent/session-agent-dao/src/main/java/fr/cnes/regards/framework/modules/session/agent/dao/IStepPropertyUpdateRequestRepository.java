@@ -19,7 +19,6 @@
 package fr.cnes.regards.framework.modules.session.agent.dao;
 
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
-import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -53,7 +52,10 @@ public interface IStepPropertyUpdateRequestRepository extends JpaRepository<Step
 
     long countBySourceAndRegistrationDateBefore(String source, OffsetDateTime lastUpdate);
 
-    void deleteBySessionStepIn(List<SessionStep> sessionSteps);
+    @Modifying
+    @Query(
+        value = "delete from StepPropertyUpdateRequest r where r.sessionStep.stepId = ?1 and r.sessionStep.source = ?2 and r.sessionStep.session = ?3")
+    void deleteBySessionStep(String stepId, String source, String session);
 
     List<StepPropertyUpdateRequest> findBySession(String session);
 

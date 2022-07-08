@@ -88,12 +88,14 @@ public class AgentCleanSessionStepService {
 
     @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
     public int deleteOnePage(OffsetDateTime startClean, Pageable page) {
+        int nbDeleted = 0;
         // Get all session steps to delete older than startClean
         Page<SessionStep> sessionStepsToDelete = sessionStepRepo.findByLastUpdateDateBefore(startClean, page);
         // Delete all related StepPropertyUpdateRequests
-        stepPropertyRepo.deleteBySessionStepIn(sessionStepsToDelete.getContent());
-        // Delete SessionSteps
-        this.sessionStepRepo.deleteAllInBatch(sessionStepsToDelete.getContent());
-        return sessionStepsToDelete.getNumberOfElements();
+        for (SessionStep s : sessionStepsToDelete.getContent()) {
+            stepPropertyRepo.deleteBySessionStep(s.getStepId(), s.getSource(), s.getSession());
+            nbDeleted += sessionStepRepo.deleteAllByStep(s.getStepId(), s.getSource(), s.getSession());
+        }
+        return nbDeleted;
     }
 }

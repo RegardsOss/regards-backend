@@ -22,6 +22,8 @@ import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.OffsetDateTime;
@@ -67,5 +69,9 @@ public interface ISessionStepRepository extends JpaRepository<SessionStep, Long>
      * Return all names of sources and sessions associated to SessionSteps
      */
     Page<ISessionStepLight> findBy(Pageable pageToRequest);
+
+    @Modifying
+    @Query(value = "delete from SessionStep s where s.stepId = ?1 and s.source = ?2 and s.session = ?3")
+    int deleteAllByStep(String stepId, String source, String session);
 
 }

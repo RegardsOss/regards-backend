@@ -18,19 +18,25 @@
  */
 package fr.cnes.regards.framework.modules.session.agent.service.clean;
 
+import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.step.StepPropertyStateEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequest;
 import fr.cnes.regards.framework.modules.session.agent.domain.update.StepPropertyUpdateRequestInfo;
 import fr.cnes.regards.framework.modules.session.agent.service.AbstractAgentServiceUtilsIT;
+import fr.cnes.regards.framework.modules.session.agent.service.clean.sessionstep.AgentCleanSessionStepService;
 import fr.cnes.regards.framework.modules.session.agent.service.clean.snapshotprocess.AgentCleanSnapshotProcessService;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
+import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
+import fr.cnes.regards.framework.modules.session.commons.domain.StepState;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -45,14 +51,23 @@ import java.util.List;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_clean_process_it",
-    "regards.session.agent.clean.snapshot.process.limit.store=30" })
+    "regards.session.agent.clean.snapshot.process.limit.store=30", "spring.jpa.show-sql=false", })
 @ActiveProfiles({ "noscheduler" })
 public class AgentCleanSnapshotProcessProcessIT extends AbstractAgentServiceUtilsIT {
 
     private static OffsetDateTime UPDATE_DATE;
 
     @Autowired
+    ISessionStepRepository ssRepo;
+
+    @Autowired
     private AgentCleanSnapshotProcessService agentCleanSnapshotProcessService;
+
+    @Autowired
+    private IStepPropertyUpdateRequestRepository repo;
+
+    @Autowired
+    private AgentCleanSessionStepService agent;
 
     @Value("${regards.session.agent.clean.snapshot.process.limit.store}")
     private int limitStoreSnapshotProcess;
@@ -60,6 +75,41 @@ public class AgentCleanSnapshotProcessProcessIT extends AbstractAgentServiceUtil
     @Override
     public void doInit() {
         UPDATE_DATE = OffsetDateTime.now(ZoneOffset.UTC).minusDays(limitStoreSnapshotProcess);
+    }
+
+    @Test
+    @Purpose(
+        "Test deletion performance to avoid bad patterns in hibernate usage during deletion of big amount of rows.")
+    public void deletionPerformanceTest() {
+        SessionStep step = new SessionStep("storage", "toto", "toto", StepTypeEnum.STORAGE, new StepState());
+        step.setLastUpdateDate(OffsetDateTime.now());
+        step = ssRepo.save(step);
+        List<StepPropertyUpdateRequest> urs = new ArrayList<>();
+        for (int i = 0; i < 1_000; i++) {
+            StepPropertyUpdateRequestInfo info = new StepPropertyUpdateRequestInfo(StepTypeEnum.ACQUISITION,
+                                                                                   StepPropertyStateEnum.SUCCESS,
+                                                                                   "pp",
+                                                                                   "1",
+                                                                                   false,
+                                                                                   false);
+            StepPropertyUpdateRequest ur = new StepPropertyUpdateRequest("storage",
+                                                                         "toto",
+                                                                         "toto",
+                                                                         OffsetDateTime.now(),
+                                                                         StepPropertyEventTypeEnum.INC,
+                                                                         info);
+
+            ur = repo.save(ur);
+            ur.setSessionStep(step);
+            urs.add(ur);
+        }
+        repo.saveAll(urs);
+
+        long start = System.currentTimeMillis();
+        agent.deleteOnePage(OffsetDateTime.now(), PageRequest.of(0, 10));
+        Assert.assertEquals(0, repo.findAll().size());
+        long duration = System.currentTimeMillis() - start;
+        Assert.assertTrue(String.format("Deletion process duration is too long (%d ms)", duration), duration < 100);
     }
 
     @Test
