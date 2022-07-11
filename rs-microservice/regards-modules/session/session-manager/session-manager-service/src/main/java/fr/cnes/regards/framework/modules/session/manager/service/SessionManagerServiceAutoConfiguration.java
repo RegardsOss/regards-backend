@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepReposit
 import fr.cnes.regards.framework.modules.session.commons.service.SessionCommonsServiceAutoConfiguration;
 import fr.cnes.regards.framework.modules.session.manager.dao.ISessionManagerRepository;
 import fr.cnes.regards.framework.modules.session.manager.dao.ISourceManagerRepository;
+import fr.cnes.regards.framework.modules.session.manager.dao.ISourceManagerStepAggregationRepository;
 import fr.cnes.regards.framework.modules.session.manager.service.clean.session.ManagerCleanJobService;
 import fr.cnes.regards.framework.modules.session.manager.service.clean.session.ManagerCleanScheduler;
 import fr.cnes.regards.framework.modules.session.manager.service.clean.session.ManagerCleanService;
@@ -87,8 +88,13 @@ public class SessionManagerServiceAutoConfiguration {
     public ManagerCleanService managerCleanService(ISessionStepRepository sessionStepRepo,
                                                    ISessionManagerRepository sessionRepo,
                                                    ISourceManagerRepository sourceRepo,
+                                                   ISourceManagerStepAggregationRepository sourceStepAggregationRepo,
                                                    ManagerCleanService managerCleanService) {
-        return new ManagerCleanService(sessionStepRepo, sessionRepo, sourceRepo, managerCleanService);
+        return new ManagerCleanService(sessionStepRepo,
+                                       sessionRepo,
+                                       sourceRepo,
+                                       sourceStepAggregationRepo,
+                                       managerCleanService);
     }
 
     @Bean

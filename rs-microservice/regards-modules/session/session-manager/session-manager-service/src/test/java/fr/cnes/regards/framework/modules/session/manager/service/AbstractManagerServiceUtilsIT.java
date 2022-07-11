@@ -35,6 +35,7 @@ import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRep
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.manager.dao.ISessionManagerRepository;
 import fr.cnes.regards.framework.modules.session.manager.dao.ISourceManagerRepository;
+import fr.cnes.regards.framework.modules.session.manager.dao.ISourceManagerStepAggregationRepository;
 import fr.cnes.regards.framework.modules.session.manager.service.clean.snapshotprocess.ManagerCleanSnapshotProcessService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.junit.After;
@@ -61,58 +62,6 @@ public abstract class AbstractManagerServiceUtilsIT extends AbstractMultitenantS
     protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractManagerServiceUtilsIT.class);
 
     /**
-     * Services
-     */
-
-    @Autowired
-    protected IRuntimeTenantResolver runtimeTenantResolver;
-
-    // JOBS
-    @Autowired
-    protected IJobInfoService jobInfoService;
-
-    // AMQP
-    @Autowired
-    private IRabbitVirtualHostAdmin vhostAdmin;
-
-    @Autowired
-    private IAmqpAdmin amqpAdmin;
-
-    @SpyBean
-    protected IPublisher publisher;
-
-    @Autowired
-    private ISubscriber subscriber;
-
-    // SESSION
-    @Autowired
-    protected ManagerCleanSnapshotProcessService managerCleanService;
-
-    /**
-     * Repositories
-     */
-
-    // JOBS
-    @Autowired
-    protected IJobInfoRepository jobInfoRepo;
-
-    @Autowired
-    private JobTestCleaner jobTestCleaner;
-
-    // SESSION MANAGER
-    @Autowired
-    protected ISessionStepRepository sessionStepRepo;
-
-    @Autowired
-    protected ISessionManagerRepository sessionRepo;
-
-    @Autowired
-    protected ISourceManagerRepository sourceRepo;
-
-    @Autowired
-    protected ISnapshotProcessRepository snapshotProcessRepo;
-
-    /**
      * Parameters
      */
 
@@ -135,6 +84,61 @@ public abstract class AbstractManagerServiceUtilsIT extends AbstractMultitenantS
     protected static final String SESSION_3 = "SESSION 3";
 
     protected static final String SESSION_4 = "SESSION 4";
+
+    /**
+     * Services
+     */
+
+    @Autowired
+    protected IRuntimeTenantResolver runtimeTenantResolver;
+
+    // JOBS
+    @Autowired
+    protected IJobInfoService jobInfoService;
+
+    @SpyBean
+    protected IPublisher publisher;
+
+    // SESSION
+    @Autowired
+    protected ManagerCleanSnapshotProcessService managerCleanService;
+
+    /**
+     * Repositories
+     */
+
+    // JOBS
+    @Autowired
+    protected IJobInfoRepository jobInfoRepo;
+
+    // SESSION MANAGER
+    @Autowired
+    protected ISessionStepRepository sessionStepRepo;
+
+    @Autowired
+    protected ISourceManagerStepAggregationRepository aggRepo;
+
+    @Autowired
+    protected ISessionManagerRepository sessionRepo;
+
+    @Autowired
+    protected ISourceManagerRepository sourceRepo;
+
+    @Autowired
+    protected ISnapshotProcessRepository snapshotProcessRepo;
+
+    // AMQP
+    @Autowired
+    private IRabbitVirtualHostAdmin vhostAdmin;
+
+    @Autowired
+    private IAmqpAdmin amqpAdmin;
+
+    @Autowired
+    private ISubscriber subscriber;
+
+    @Autowired
+    private JobTestCleaner jobTestCleaner;
 
     // -------------
     // BEFORE METHODS
@@ -206,10 +210,11 @@ public abstract class AbstractManagerServiceUtilsIT extends AbstractMultitenantS
     //     REPO
     // -------------
     private void cleanRepositories() {
-        this.sessionStepRepo.deleteAll();
-        this.sessionRepo.deleteAll();
-        this.sourceRepo.deleteAll();
-        this.snapshotProcessRepo.deleteAll();
+        this.sessionStepRepo.deleteAllInBatch();
+        this.sessionRepo.deleteAllInBatch();
+        this.aggRepo.deleteAllInBatch();
+        this.sourceRepo.deleteAllInBatch();
+        this.snapshotProcessRepo.deleteAllInBatch();
         this.jobInfoRepo.deleteAll();
     }
 

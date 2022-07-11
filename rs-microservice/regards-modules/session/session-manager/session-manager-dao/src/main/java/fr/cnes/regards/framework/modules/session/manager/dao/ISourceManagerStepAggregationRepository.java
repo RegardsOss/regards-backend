@@ -20,6 +20,8 @@ package fr.cnes.regards.framework.modules.session.manager.dao;
 
 import fr.cnes.regards.framework.modules.session.manager.domain.SourceStepAggregation;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -29,5 +31,15 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface ISourceManagerStepAggregationRepository extends JpaRepository<SourceStepAggregation, Long> {
+
+    @Modifying
+    @Query(value = "delete from t_source_step_aggregation ssa where ssa.id in "
+                   + "(select assoc.id from t_source_step_aggregation assoc left join t_source_manager s on assoc.source_name = s.name where s.nb_sessions = ?1)",
+        nativeQuery = true)
+    void deleteBySourcesNbSessions(long nbSessions);
+
+    default void deleteByEmptySources() {
+        deleteBySourcesNbSessions(0L);
+    }
 
 }

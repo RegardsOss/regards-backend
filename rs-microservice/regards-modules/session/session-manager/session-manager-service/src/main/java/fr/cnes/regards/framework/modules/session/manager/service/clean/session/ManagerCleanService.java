@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepTypeEnum;
 import fr.cnes.regards.framework.modules.session.manager.dao.ISessionManagerRepository;
 import fr.cnes.regards.framework.modules.session.manager.dao.ISourceManagerRepository;
+import fr.cnes.regards.framework.modules.session.manager.dao.ISourceManagerStepAggregationRepository;
 import fr.cnes.regards.framework.modules.session.manager.domain.DeltaSessionStep;
 import fr.cnes.regards.framework.modules.session.manager.domain.Session;
 import fr.cnes.regards.framework.modules.session.manager.domain.Source;
@@ -57,6 +58,8 @@ public class ManagerCleanService {
 
     private ISessionManagerRepository sessionRepo;
 
+    private ISourceManagerStepAggregationRepository sourceStepAggregationRepo;
+
     private ISourceManagerRepository sourceRepo;
 
     private ManagerCleanService self;
@@ -70,10 +73,12 @@ public class ManagerCleanService {
     public ManagerCleanService(ISessionStepRepository sessionStepRepo,
                                ISessionManagerRepository sessionRepo,
                                ISourceManagerRepository sourceRepo,
+                               ISourceManagerStepAggregationRepository sourceStepAggregationRepo,
                                ManagerCleanService managerCleanService) {
         this.sessionStepRepo = sessionStepRepo;
         this.sessionRepo = sessionRepo;
         this.sourceRepo = sourceRepo;
+        this.sourceStepAggregationRepo = sourceStepAggregationRepo;
         this.self = managerCleanService;
     }
 
@@ -103,7 +108,8 @@ public class ManagerCleanService {
         } while (!interrupted && nbSessionsProcessed != 0);
 
         // delete source not associated to any sessions
-        this.sourceRepo.deleteByNbSessions(0L);
+        this.sourceStepAggregationRepo.deleteByEmptySources();
+        this.sourceRepo.deleteByEmptySources();
         // delete expired session steps
         this.sessionStepRepo.deleteByLastUpdateDateBefore(startClean);
 
@@ -121,7 +127,7 @@ public class ManagerCleanService {
         // Update source aggregation information due to session removal
         Map<String, Source> updatedSourcesMap = updateSources(sessionPage.getContent());
         // Delete expired sessions
-        this.sessionRepo.deleteAllInBatch(sessionPage);
+        this.sessionRepo.deleteAllByIdInBatch(sessionPage.stream().map(Session::getId).toList());
         // Save all changes on sources
         this.sourceRepo.saveAll(updatedSourcesMap.values());
         return sessionPage.getNumberOfElements();

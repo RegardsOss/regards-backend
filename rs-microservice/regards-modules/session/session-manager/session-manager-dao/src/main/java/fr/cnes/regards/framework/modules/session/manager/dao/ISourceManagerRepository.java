@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.modules.session.manager.dao;
 import fr.cnes.regards.framework.modules.session.manager.domain.Source;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -39,7 +40,13 @@ public interface ISourceManagerRepository extends JpaRepository<Source, Long>, J
 
     Optional<Source> findByName(String name);
 
-    void deleteByNbSessions(long noSession);
+    @Modifying
+    @Query("delete from Source s where s.nbSessions = ?1")
+    void deleteBySourcesNbSessions(long nbSessions);
+
+    default void deleteByEmptySources() {
+        deleteBySourcesNbSessions(0L);
+    }
 
     void deleteByName(String source);
 

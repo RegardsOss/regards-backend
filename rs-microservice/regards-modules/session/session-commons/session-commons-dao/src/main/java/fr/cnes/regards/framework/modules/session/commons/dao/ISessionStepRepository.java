@@ -61,6 +61,8 @@ public interface ISessionStepRepository extends JpaRepository<SessionStep, Long>
     /**
      * Clean SessionSteps
      */
+    @Modifying
+    @Query("delete from SessionStep s where s.lastUpdateDate < ?1")
     void deleteByLastUpdateDateBefore(OffsetDateTime startClean);
 
     Page<SessionStep> findByLastUpdateDateBefore(OffsetDateTime startClean, Pageable page);
