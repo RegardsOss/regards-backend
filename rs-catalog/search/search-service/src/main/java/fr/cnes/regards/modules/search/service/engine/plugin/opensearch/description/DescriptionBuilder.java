@@ -391,9 +391,8 @@ public class DescriptionBuilder {
                 }
             } else {
                 // The configuration of the attribute tells that it should not be queryable
-                LOGGER.trace(String.format(
-                    "The attribute %s is configured as not being indexed, it is ignored by opensearch",
-                    att.getLabel()));
+                LOGGER.warn("The attribute {} is configured as not being indexed, it is ignored by opensearch",
+                            att.getLabel());
             }
         }
         // Run statistic search on each attributes. Results are set back into the QueryableAttributes parameter.
