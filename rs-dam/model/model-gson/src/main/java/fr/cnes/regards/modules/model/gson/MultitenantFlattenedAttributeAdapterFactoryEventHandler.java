@@ -190,14 +190,19 @@ public class MultitenantFlattenedAttributeAdapterFactoryEventHandler
             String tenant = wrapper.getTenant();
             List<AttributeModel> attributes = attributeHelper.getAllAttributes(tenant);
             factory.refresh(tenant, attributes);
-            notifClient.notify(String.format(
-                                   "Attribute cache refresh finished for microservice %s on project %s. %s attributes detected",
-                                   microserviceName,
-                                   tenant,
-                                   attributes.size()),
-                               String.format("[%s] Attribute cache refresh done", microserviceName),
-                               NotificationLevel.INFO,
-                               DefaultRole.ADMIN);
+            runtimeTenantResolver.forceTenant(tenant);
+            try {
+                notifClient.notify(String.format(
+                                       "Attribute cache refresh finished for microservice %s on project %s. %s attributes detected",
+                                       microserviceName,
+                                       tenant,
+                                       attributes.size()),
+                                   String.format("[%s] Attribute cache refresh done", microserviceName),
+                                   NotificationLevel.INFO,
+                                   DefaultRole.ADMIN);
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
         }
     }
 
