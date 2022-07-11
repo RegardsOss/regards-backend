@@ -450,11 +450,13 @@ public interface IEsRepository {
      * @param searchKey the search key
      * @param criterion the search criterion
      * @param aggs      the aggregations wished for
+     * @param limit     limit number of aggreation terms to return
      * @return the aggregations
      */
     <T extends IIndexable> Aggregations getAggregationsFor(SearchKey<?, T> searchKey,
                                                            ICriterion criterion,
-                                                           Collection<AggregationBuilder> aggs);
+                                                           Collection<AggregationBuilder> aggs,
+                                                           int limit);
 
     /**
      * Retrieve stats for each given attribute

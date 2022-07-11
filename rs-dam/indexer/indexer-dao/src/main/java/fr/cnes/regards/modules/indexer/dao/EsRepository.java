@@ -1509,9 +1509,12 @@ public class EsRepository implements IEsRepository {
     @Override
     public <T extends IIndexable> Aggregations getAggregationsFor(SearchKey<?, T> searchKey,
                                                                   ICriterion criterion,
-                                                                  Collection<AggregationBuilder> aggs) {
+                                                                  Collection<AggregationBuilder> aggs,
+                                                                  int limit) {
         try {
-            SearchSourceBuilder builder = createSourceBuilder4Agg(addTypes(criterion, searchKey.getSearchTypes()));
+            SearchSourceBuilder builder = createSourceBuilder4Agg(addTypes(criterion, searchKey.getSearchTypes()),
+                                                                  0,
+                                                                  limit);
             aggs.forEach(builder::aggregation);
             SearchRequest request = new SearchRequest(searchKey.getSearchIndex()).source(builder);
             // Launch the request
