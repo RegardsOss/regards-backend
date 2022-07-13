@@ -24,6 +24,8 @@ import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.modules.session.commons.domain.SessionStep;
 
+import java.util.Objects;
+
 /**
  * Event to update Session
  *
@@ -47,5 +49,25 @@ public class SessionStepEvent implements ISubscribable {
 
     public SessionStep getSessionStep() {
         return sessionStep;
+    }
+
+    @Override
+    public String toString() {
+        return "SessionStepEvent{" + "sessionStep=" + sessionStep + '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        SessionStepEvent that = (SessionStepEvent) o;
+        return Objects.equals(sessionStep, that.sessionStep);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(sessionStep);
     }
 }

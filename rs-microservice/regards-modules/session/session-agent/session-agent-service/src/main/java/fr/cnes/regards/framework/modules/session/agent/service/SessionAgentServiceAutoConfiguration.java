@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.modules.session.agent.service;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.framework.modules.session.agent.dao.IStepPropertyUpdateRequestRepository;
 import fr.cnes.regards.framework.modules.session.agent.service.clean.sessionstep.AgentCleanSessionStepJobService;
 import fr.cnes.regards.framework.modules.session.agent.service.clean.sessionstep.AgentCleanSessionStepScheduler;
@@ -31,6 +33,8 @@ import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnaps
 import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotScheduler;
 import fr.cnes.regards.framework.modules.session.agent.service.update.AgentSnapshotService;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
 
 /**
@@ -98,13 +102,32 @@ public class SessionAgentServiceAutoConfiguration {
      */
 
     @Bean
-    public AgentSnapshotJobService agentSnapshotJobService() {
-        return new AgentSnapshotJobService();
+    @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
+    public AgentSnapshotJobService agentSnapshotJobService(IStepPropertyUpdateRequestRepository stepPropertyUpdateRequestRepo,
+                                                           ISnapshotProcessRepository snapshotStepRepo,
+                                                           JobInfoService jobInfoService,
+                                                           AgentSnapshotJobService self,
+                                                           @Value("${regards.session.agent.snapshot.page.size:1000}")
+                                                           int snapshotPropertyPageSize) {
+        return new AgentSnapshotJobService(jobInfoService,
+                                           snapshotStepRepo,
+                                           self,
+                                           stepPropertyUpdateRequestRepo,
+                                           snapshotPropertyPageSize);
     }
 
     @Bean
-    public AgentSnapshotService agentSnapshotService() {
-        return new AgentSnapshotService();
+    public AgentSnapshotService agentSnapshotService(ISessionStepRepository sessionStepRepo,
+                                                     IStepPropertyUpdateRequestRepository stepPropertyRepo,
+                                                     ISnapshotProcessRepository snapshotProcessRepo,
+                                                     IPublisher publisher,
+                                                     @Value("${regards.session.agent.step.requests.page.size:1000}")
+                                                     int stepPropertyPageSize) {
+        return new AgentSnapshotService(sessionStepRepo,
+                                        stepPropertyRepo,
+                                        snapshotProcessRepo,
+                                        publisher,
+                                        stepPropertyPageSize);
     }
 
     @Bean

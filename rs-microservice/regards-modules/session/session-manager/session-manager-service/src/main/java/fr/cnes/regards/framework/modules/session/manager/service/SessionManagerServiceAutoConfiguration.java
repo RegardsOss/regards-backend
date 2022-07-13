@@ -18,7 +18,9 @@
  */
 package fr.cnes.regards.framework.modules.session.manager.service;
 
+import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
 import fr.cnes.regards.framework.modules.session.commons.dao.ISessionStepRepository;
+import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRepository;
 import fr.cnes.regards.framework.modules.session.commons.service.SessionCommonsServiceAutoConfiguration;
 import fr.cnes.regards.framework.modules.session.manager.dao.ISessionManagerRepository;
 import fr.cnes.regards.framework.modules.session.manager.dao.ISourceManagerRepository;
@@ -36,6 +38,7 @@ import fr.cnes.regards.framework.modules.session.manager.service.handlers.Sessio
 import fr.cnes.regards.framework.modules.session.manager.service.update.ManagerSnapshotJobService;
 import fr.cnes.regards.framework.modules.session.manager.service.update.ManagerSnapshotScheduler;
 import fr.cnes.regards.framework.modules.session.manager.service.update.ManagerSnapshotService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.context.annotation.*;
 
@@ -59,8 +62,18 @@ public class SessionManagerServiceAutoConfiguration {
     }
 
     @Bean
-    public ManagerSnapshotJobService managerJobService() {
-        return new ManagerSnapshotJobService();
+    @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
+    public ManagerSnapshotJobService managerJobService(JobInfoService jobInfoService,
+                                                       ISnapshotProcessRepository snapshotRepo,
+                                                       ISessionStepRepository sessionStepRepository,
+                                                       ManagerSnapshotJobService self,
+                                                       @Value("${regards.session.agent.snapshot.page.size:1000}")
+                                                       int snapshotPropertyPageSize) {
+        return new ManagerSnapshotJobService(jobInfoService,
+                                             snapshotRepo,
+                                             sessionStepRepository,
+                                             self,
+                                             snapshotPropertyPageSize);
     }
 
     @Bean

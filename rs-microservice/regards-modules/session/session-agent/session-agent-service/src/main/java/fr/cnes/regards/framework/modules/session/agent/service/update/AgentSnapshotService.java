@@ -32,10 +32,9 @@ import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import fr.cnes.regards.framework.modules.session.commons.domain.StepState;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SessionStepEvent;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -46,7 +45,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Service to create or update {@link SessionStep} with new {@link StepPropertyUpdateRequest}.
@@ -58,22 +56,29 @@ public class AgentSnapshotService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AgentSnapshotService.class);
 
-    @Autowired
-    private ISessionStepRepository sessionStepRepo;
+    private final ISessionStepRepository sessionStepRepo;
 
-    @Autowired
-    private IStepPropertyUpdateRequestRepository stepPropertyRepo;
+    private final IStepPropertyUpdateRequestRepository stepPropertyRepo;
 
-    @Autowired
-    private ISnapshotProcessRepository snapshotProcessRepo;
+    private final ISnapshotProcessRepository snapshotProcessRepo;
 
-    @Autowired
-    private IPublisher publisher;
+    private final IPublisher publisher;
 
-    @Value("${regards.session.agent.step.requests.page.size:1000}")
-    private int stepPropertyPageSize;
+    private final int stepPropertyPageSize;
 
     private OffsetDateTime lastSnapshotDate;
+
+    public AgentSnapshotService(ISessionStepRepository sessionStepRepo,
+                                IStepPropertyUpdateRequestRepository stepPropertyRepo,
+                                ISnapshotProcessRepository snapshotProcessRepo,
+                                IPublisher publisher,
+                                int stepPropertyPageSize) {
+        this.sessionStepRepo = sessionStepRepo;
+        this.stepPropertyRepo = stepPropertyRepo;
+        this.snapshotProcessRepo = snapshotProcessRepo;
+        this.publisher = publisher;
+        this.stepPropertyPageSize = stepPropertyPageSize;
+    }
 
     /**
      * Create or update {@link SessionStep}s with new {@link StepPropertyUpdateRequest}.
@@ -100,6 +105,13 @@ public class AgentSnapshotService {
             interrupted = Thread.currentThread().isInterrupted();
         } while (pageToRequest != null && !interrupted);
 
+        return saveSessionSteps(snapshotProcess, sessionStepsBySession, stepPropertyRequestsProcessed, interrupted);
+    }
+
+    public int saveSessionSteps(SnapshotProcess snapshotProcess,
+                                Map<String, Map<String, SessionStep>> sessionStepsBySession,
+                                List<StepPropertyUpdateRequest> stepPropertyRequestsProcessed,
+                                boolean interrupted) {
         // SAVE SESSION STEPS ONLY IF PROCESS WAS NOT INTERRUPTED
         int sessionUpdatedSize = 0;
         if (!interrupted) {
@@ -108,7 +120,7 @@ public class AgentSnapshotService {
                                                                          .flatMap(session -> session.getValue()
                                                                                                     .values()
                                                                                                     .stream())
-                                                                         .collect(Collectors.toList());
+                                                                         .toList();
             if (!sessionStepsUpdated.isEmpty()) {
                 sessionUpdatedSize = sessionStepsUpdated.size();
                 // save session steps
@@ -119,14 +131,16 @@ public class AgentSnapshotService {
                 snapshotProcess.setLastUpdateDate(lastSnapshotDate);
                 this.snapshotProcessRepo.save(snapshotProcess);
                 // publish session steps events
-                this.publisher.publish(sessionStepsUpdated.stream()
-                                                          .map(SessionStepEvent::new)
-                                                          .collect(Collectors.toList()));
+                List<SessionStepEvent> sessionStepEvents = sessionStepsUpdated.stream()
+                                                                              .map(sessionStep -> new SessionStepEvent(
+                                                                                  Hibernate.unproxy(sessionStep,
+                                                                                                    SessionStep.class)))
+                                                                              .toList();
+                this.publisher.publish(sessionStepEvents);
             }
         } else {
             LOGGER.debug("{} thread has been interrupted", this.getClass().getName());
         }
-
         return sessionUpdatedSize;
     }
 
@@ -146,21 +160,10 @@ public class AgentSnapshotService {
                                                OffsetDateTime freezeDate,
                                                Pageable pageToRequest) {
         String source = snapshotProcess.getSource();
-        OffsetDateTime lastUpdated = snapshotProcess.getLastUpdateDate();
-
-        // get step property requests to process
-        Page<StepPropertyUpdateRequest> stepPropertyPage;
-        if (lastUpdated != null) {
-            stepPropertyPage = this.stepPropertyRepo.findBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(
-                source,
-                lastUpdated,
-                freezeDate,
-                pageToRequest);
-        } else {
-            stepPropertyPage = this.stepPropertyRepo.findBySourceAndRegistrationDateBefore(source,
-                                                                                           freezeDate,
-                                                                                           pageToRequest);
-        }
+        Page<StepPropertyUpdateRequest> stepPropertyPage = getStepPropertiesByPage(snapshotProcess,
+                                                                                   freezeDate,
+                                                                                   pageToRequest,
+                                                                                   source);
 
         // loop on every stepPropertyUpdateRequest to create or update SessionSteps
         List<StepPropertyUpdateRequest> stepPropertyUpdateRequests = stepPropertyPage.getContent();
@@ -205,6 +208,28 @@ public class AgentSnapshotService {
         return stepPropertyPage.hasNext() ? stepPropertyPage.nextPageable() : null;
     }
 
+    private Page<StepPropertyUpdateRequest> getStepPropertiesByPage(SnapshotProcess snapshotProcess,
+                                                                    OffsetDateTime freezeDate,
+                                                                    Pageable pageToRequest,
+                                                                    String source) {
+        OffsetDateTime lastUpdated = snapshotProcess.getLastUpdateDate();
+
+        // get step property requests to process
+        Page<StepPropertyUpdateRequest> stepPropertyPage;
+        if (lastUpdated != null) {
+            stepPropertyPage = this.stepPropertyRepo.findBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(
+                source,
+                lastUpdated,
+                freezeDate,
+                pageToRequest);
+        } else {
+            stepPropertyPage = this.stepPropertyRepo.findBySourceAndRegistrationDateBefore(source,
+                                                                                           freezeDate,
+                                                                                           pageToRequest);
+        }
+        return stepPropertyPage;
+    }
+
     /**
      * Update sessionStep with stepPropertyUpdateRequest
      *
@@ -231,20 +256,20 @@ public class AgentSnapshotService {
         if (type.equals(StepPropertyEventTypeEnum.INC) && (NumberUtils.isCreatable(previousValue)
                                                            && NumberUtils.isCreatable(value))) {
             // increment parameters (in/out, state, property)
-            calculateDifferences(sessionStep,
-                                 stepPropertyUpdateRequestInfo,
-                                 property,
-                                 NumberUtils.toLong(previousValue),
-                                 NumberUtils.toLong(value));
+            computePreviousStepDifferences(sessionStep,
+                                           stepPropertyUpdateRequestInfo,
+                                           property,
+                                           NumberUtils.toLong(previousValue),
+                                           NumberUtils.toLong(value));
 
         } else if (type.equals(StepPropertyEventTypeEnum.DEC) && (NumberUtils.isCreatable(previousValue)
                                                                   && NumberUtils.isCreatable(value))) {
             // decrement parameters (in/out, state, property)
-            calculateDifferences(sessionStep,
-                                 stepPropertyUpdateRequestInfo,
-                                 property,
-                                 NumberUtils.toLong(previousValue),
-                                 -NumberUtils.toLong(value));
+            computePreviousStepDifferences(sessionStep,
+                                           stepPropertyUpdateRequestInfo,
+                                           property,
+                                           NumberUtils.toLong(previousValue),
+                                           -NumberUtils.toLong(value));
 
         } else if (type.equals(StepPropertyEventTypeEnum.VALUE) && NumberUtils.isCreatable(value)) {
             // reset all values to 0 if value is a number
@@ -270,11 +295,11 @@ public class AgentSnapshotService {
      * @param previousValue                 previous value of the corresponding property
      * @param valueNum                      new value to update the corresponding property
      */
-    private void calculateDifferences(SessionStep sessionStep,
-                                      StepPropertyUpdateRequestInfo stepPropertyUpdateRequestInfo,
-                                      String property,
-                                      long previousValue,
-                                      long valueNum) {
+    private void computePreviousStepDifferences(SessionStep sessionStep,
+                                                StepPropertyUpdateRequestInfo stepPropertyUpdateRequestInfo,
+                                                String property,
+                                                long previousValue,
+                                                long valueNum) {
         // set in/out
         if (stepPropertyUpdateRequestInfo.isInputRelated()) {
             sessionStep.setInputRelated(sessionStep.getInputRelated() + valueNum);

@@ -23,6 +23,8 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 
+import java.util.Objects;
+
 /**
  * Event to delete a session
  *
@@ -60,5 +62,25 @@ public class SessionDeleteEvent implements ISubscribable {
 
     public void setSession(String session) {
         this.session = session;
+    }
+
+    @Override
+    public String toString() {
+        return "SessionDeleteEvent{" + "source='" + source + '\'' + ", session='" + session + '\'' + '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        SessionDeleteEvent that = (SessionDeleteEvent) o;
+        return Objects.equals(source, that.source) && Objects.equals(session, that.session);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(source, session);
     }
 }

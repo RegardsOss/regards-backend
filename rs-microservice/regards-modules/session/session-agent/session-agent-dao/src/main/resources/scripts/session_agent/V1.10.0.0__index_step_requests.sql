@@ -1,0 +1,1 @@
+CREATE INDEX idx_step_property_update_request_source ON t_step_property_update_request (source);

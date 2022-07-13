@@ -19,6 +19,8 @@
 package fr.cnes.regards.framework.modules.session.commons.dao;
 
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -38,6 +40,8 @@ public interface ISnapshotProcessRepository extends JpaRepository<SnapshotProces
     Set<SnapshotProcess> findBySourceIn(Collection<String> sources);
 
     Set<SnapshotProcess> findByJobIdIn(List<UUID> jobIds);
+
+    Page<SnapshotProcess> findByJobIdIsNull(Pageable pageable);
 
     @Modifying
     @Query("DELETE FROM SnapshotProcess p where p.source NOT IN (SELECT s.source FROM SessionStep s) "

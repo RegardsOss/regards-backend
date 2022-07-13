@@ -19,7 +19,6 @@
 package fr.cnes.regards.framework.modules.session.manager.service.update;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.JobInfoService;
@@ -28,11 +27,18 @@ import fr.cnes.regards.framework.modules.session.commons.dao.ISnapshotProcessRep
 import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.util.Pair;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 
 /**
@@ -40,66 +46,101 @@ import java.util.function.Predicate;
  *
  * @author Iliana Ghazali
  **/
-@MultitenantTransactional
 public class ManagerSnapshotJobService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManagerSnapshotJobService.class);
 
-    @Autowired
-    private JobInfoService jobInfoService;
+    private static final String LOG_HEADER = "[MANAGER SNAPSHOT SCHEDULER] >>>";
 
-    @Autowired
-    private ISnapshotProcessRepository snapshotProcessRepo;
+    public static final int JOB_PRIORITY = 1000;
 
-    @Autowired
-    private ISessionStepRepository sessionStepRepo;
+    private final int snapshotPropertyPageSize;
+
+    private final JobInfoService jobInfoService;
+
+    private final ISnapshotProcessRepository snapshotRepo;
+
+    private final ISessionStepRepository sessionStepRepo;
+
+    private final ManagerSnapshotJobService self;
+
+    public ManagerSnapshotJobService(JobInfoService jobInfoService,
+                                     ISnapshotProcessRepository snapshotRepo,
+                                     ISessionStepRepository sessionStepRepo,
+                                     ManagerSnapshotJobService managerSnapshotJobService,
+                                     int snapshotPropertyPageSize) {
+        this.jobInfoService = jobInfoService;
+        this.snapshotRepo = snapshotRepo;
+        this.snapshotPropertyPageSize = snapshotPropertyPageSize;
+        this.sessionStepRepo = sessionStepRepo;
+        this.self = managerSnapshotJobService;
+    }
 
     public void scheduleJob() {
-        long start = System.currentTimeMillis();
-        LOGGER.trace("[MANAGER SNAPSHOT SCHEDULER] Scheduling job at date {}...", OffsetDateTime.now());
-
-        // Freeze start date to select stepEvents
         OffsetDateTime schedulerStartDate = OffsetDateTime.now();
-        List<SnapshotProcess> snapshotProcessesRetrieved = this.snapshotProcessRepo.findAll();
+        LOGGER.debug("{} Scheduling ManagerSnapshotJobs at {}...", LOG_HEADER, schedulerStartDate);
+        int totalNbJobsScheduled = 0;
+        Pageable pageable = PageRequest.of(0, snapshotPropertyPageSize, Sort.by(Sort.Order.asc("source")));
+        boolean hasNext = true;
 
-        // Filter out all snapshot processes currently running or with no step events to update
-        Predicate<SnapshotProcess> predicateAlreadyProcessed = process -> (process.getJobId() != null)
-                                                                          || ((process.getLastUpdateDate() == null
-                                                                               && sessionStepRepo.countBySourceAndRegistrationDateBefore(
-            process.getSource(),
-            schedulerStartDate) == 0) || (process.getLastUpdateDate() != null
-                                          && sessionStepRepo.countBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(
-            process.getSource(),
-            process.getLastUpdateDate(),
-            schedulerStartDate) == 0));
-
-        snapshotProcessesRetrieved.removeIf(predicateAlreadyProcessed);
-
-        // IF EVENTS WERE ADDED
-        // launch one job per snapshotProcess, ie, one job per source
-        if (!snapshotProcessesRetrieved.isEmpty()) {
-            for (SnapshotProcess snapshotProcessToUpdate : snapshotProcessesRetrieved) {
-                // create one job per each source
-                HashSet<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(ManagerSnapshotJob.SNAPSHOT_PROCESS,
-                                                                                       snapshotProcessToUpdate),
-                                                                      new JobParameter(ManagerSnapshotJob.FREEZE_DATE,
-                                                                                       schedulerStartDate));
-                JobInfo jobInfo = new JobInfo(false, 1000, jobParameters, null, ManagerSnapshotJob.class.getName());
-
-                // create job
-                jobInfo = jobInfoService.createAsQueued(jobInfo);
-
-                // update snapshot process with new job id to indicate there is a current process ongoing
-                snapshotProcessToUpdate.setJobId(jobInfo.getId());
-                this.snapshotProcessRepo.save(snapshotProcessToUpdate);
-
-                LOGGER.trace("[MANAGER SNAPSHOT SCHEDULER] ManagerSnapshotJob scheduled in {} ms for source {}",
-                             System.currentTimeMillis() - start,
-                             snapshotProcessToUpdate.getSource());
+        while (hasNext) {
+            Pair<Boolean, Integer> pairHasNextNbJobs = self.handlePageSnapshots(schedulerStartDate, pageable);
+            hasNext = pairHasNextNbJobs.getFirst();
+            totalNbJobsScheduled += pairHasNextNbJobs.getSecond();
+            if(hasNext) {
+                pageable = pageable.next();
             }
-        } else {
-            LOGGER.trace("[MANAGER SNAPSHOT SCHEDULER] No sessionSteps found to be updated. Handled in {} ms",
-                         System.currentTimeMillis() - start);
         }
+
+        LOGGER.debug("{} Scheduled a total of {} ManagerSnapshotJobs in {} ms",
+                     LOG_HEADER,
+                     totalNbJobsScheduled,
+                     Duration.between(schedulerStartDate, OffsetDateTime.now()).toMillis());
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public Pair<Boolean, Integer> handlePageSnapshots(OffsetDateTime schedulerStartDate, Pageable pageable) {
+        Page<SnapshotProcess> snapshotPage = this.snapshotRepo.findByJobIdIsNull(pageable);
+        // Filter out all snapshot processes currently running or with no step events to update
+        Predicate<SnapshotProcess> predicateSnapAlreadyProcessed = process -> process.getLastUpdateDate() == null ?
+            sessionStepRepo.countBySourceAndRegistrationDateBefore(process.getSource(), schedulerStartDate) == 0 :
+            sessionStepRepo.countBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(process.getSource(),
+                                                                                                   process.getLastUpdateDate(),
+                                                                                                   schedulerStartDate) == 0;
+        Set<SnapshotProcess> snapshotsRetrieved = new HashSet<>(snapshotPage.getContent());
+        snapshotsRetrieved.removeIf(predicateSnapAlreadyProcessed);
+        // launch one job per snapshotProcess, ie, one job per source
+        if (!snapshotsRetrieved.isEmpty()) {
+            return Pair.of(snapshotPage.hasNext(), createOneJobPerSnapshot(schedulerStartDate, snapshotsRetrieved));
+        } else {
+            LOGGER.trace("{} No ManagerSnapshotJobs scheduled for page number {}", LOG_HEADER, pageable.getPageNumber());
+            return Pair.of(snapshotPage.hasNext(), 0);
+        }
+    }
+
+    private int createOneJobPerSnapshot(OffsetDateTime schedulerStartDate,
+                                        Set<SnapshotProcess> snapshotProcessesRetrieved) {
+        int nbJobsScheduled = 0;
+        for (SnapshotProcess snapshotProcessToUpdate : snapshotProcessesRetrieved) {
+            // create one job per each source
+            HashSet<JobParameter> jobParameters = Sets.newHashSet(new JobParameter(ManagerSnapshotJob.SNAPSHOT_PROCESS,
+                                                                                   snapshotProcessToUpdate),
+                                                                  new JobParameter(ManagerSnapshotJob.FREEZE_DATE,
+                                                                                   schedulerStartDate));
+            JobInfo jobInfo = new JobInfo(false, JOB_PRIORITY, jobParameters, null, ManagerSnapshotJob.class.getName());
+
+            // create job
+            jobInfo = jobInfoService.createAsQueued(jobInfo);
+
+            // update snapshot process with new job id to indicate there is a current process ongoing
+            snapshotProcessToUpdate.setJobId(jobInfo.getId());
+            this.snapshotRepo.save(snapshotProcessToUpdate);
+            nbJobsScheduled++;
+
+            LOGGER.trace("{} ManagerSnapshotJob scheduled for source {}",
+                         LOG_HEADER,
+                         snapshotProcessToUpdate.getSource());
+        }
+        return nbJobsScheduled;
     }
 }
