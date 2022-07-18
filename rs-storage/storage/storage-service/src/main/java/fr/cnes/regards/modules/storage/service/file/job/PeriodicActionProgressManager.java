@@ -24,6 +24,7 @@ import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
 import java.util.Set;
 
 public class PeriodicActionProgressManager implements IPeriodicActionProgressManager {
@@ -34,6 +35,8 @@ public class PeriodicActionProgressManager implements IPeriodicActionProgressMan
 
     private final Set<String> pendingActionSucceedUrls = Sets.newHashSet();
 
+    private final Set<Path> pendingActionErrorPaths = Sets.newHashSet();
+
     public PeriodicActionProgressManager(FileReferenceService fileRefService) {
         this.fileRefService = fileRefService;
     }
@@ -41,6 +44,10 @@ public class PeriodicActionProgressManager implements IPeriodicActionProgressMan
     protected void bulkSavePendings() {
         fileRefService.handleRemainingPendingActionSuccess(pendingActionSucceedUrls);
         pendingActionSucceedUrls.clear();
+    }
+
+    protected void notifyPendingActionErrors() {
+        fileRefService.notifyPendingActionErrors(pendingActionErrorPaths);
     }
 
     @Override
@@ -52,6 +59,14 @@ public class PeriodicActionProgressManager implements IPeriodicActionProgressMan
             bulkSavePendings();
         }
         // Do not advance job completion as this is an asynchronous action not associated to job store requests.
+    }
+
+    @Override
+    public void storagePendingActionError(Path pendingActionErrorPath) {
+        LOG.warn(
+            "[STORE PENDING ACTION ERROR] Remaining pending action is over with error for file {}. Action will be automatically retried later",
+            pendingActionErrorPath);
+        pendingActionErrorPaths.add(pendingActionErrorPath);
     }
 
 }

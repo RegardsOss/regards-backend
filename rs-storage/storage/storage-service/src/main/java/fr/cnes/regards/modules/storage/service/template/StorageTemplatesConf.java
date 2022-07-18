@@ -31,7 +31,7 @@ public class StorageTemplatesConf {
     public final static String ACTION_REMAINING_TEMPLATE_NAME = "action_pending_remaining";
 
     @Bean
-    public Template accountRefusedTemplate() throws IOException {
+    public Template actionRemainingTemplate() throws IOException {
         return TemplateConfigUtil.readTemplate(ACTION_REMAINING_TEMPLATE_NAME,
                                                "template/action-pending-remaining.html");
     }

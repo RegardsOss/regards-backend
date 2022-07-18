@@ -18,26 +18,32 @@
  */
 package fr.cnes.regards.modules.storage.service.file;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceWithOwnersRepository;
 import fr.cnes.regards.modules.storage.domain.database.*;
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storage.service.file.request.RequestsGroupService;
 import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
+import fr.cnes.regards.modules.storage.service.template.StorageTemplatesConf;
+import fr.cnes.regards.modules.templates.service.ITemplateService;
+import freemarker.template.TemplateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.MimeTypeUtils;
 
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
+import java.nio.file.Path;
+import java.util.*;
 
 /**
  * Service to handle actions on {@link FileReference}s entities.
@@ -50,20 +56,35 @@ public class FileReferenceService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceService.class);
 
-    @Autowired
     private IFileReferenceRepository fileRefRepo;
 
-    @Autowired
     private IFileReferenceWithOwnersRepository fileRefWithOwnersRepo;
 
-    @Autowired
     private RequestsGroupService requInfoService;
 
-    @Autowired
     private FileReferenceEventPublisher fileRefEventPublisher;
 
-    @Autowired
     private SessionNotifier sessionNotifier;
+
+    private INotificationClient notificationClient;
+
+    private ITemplateService templateService;
+
+    public FileReferenceService(IFileReferenceRepository fileRefRepo,
+                                IFileReferenceWithOwnersRepository fileRefWithOwnersRepo,
+                                RequestsGroupService requInfoService,
+                                FileReferenceEventPublisher fileRefEventPublisher,
+                                SessionNotifier sessionNotifier,
+                                INotificationClient notificationClient,
+                                ITemplateService templateService) {
+        this.fileRefRepo = fileRefRepo;
+        this.fileRefWithOwnersRepo = fileRefWithOwnersRepo;
+        this.requInfoService = requInfoService;
+        this.fileRefEventPublisher = fileRefEventPublisher;
+        this.sessionNotifier = sessionNotifier;
+        this.notificationClient = notificationClient;
+        this.templateService = templateService;
+    }
 
     /**
      * Calculate the total file size by adding fileSize of each {@link FileReference} with an id over the given id.
@@ -162,6 +183,25 @@ public class FileReferenceService {
 
         refs.forEach(f -> f.getLocation().setPendingActionRemaining(false));
         fileRefRepo.saveAll(refs);
+    }
+
+    public void notifyPendingActionErrors(Set<Path> pendingActionErrorPaths) {
+        if (!pendingActionErrorPaths.isEmpty()) {
+            String notification = "";
+            final Map<String, Object> data = new HashMap<>();
+            data.put("files", pendingActionErrorPaths.stream().map(Path::toString));
+            try {
+                notification = templateService.render(StorageTemplatesConf.ACTION_REMAINING_TEMPLATE_NAME, data);
+            } catch (TemplateException e) {
+                notification = String.format("Error during remaining pending actions for : {}",
+                                             pendingActionErrorPaths);
+            }
+            notificationClient.notifyRoles(notification,
+                                           "Storage not completed",
+                                           NotificationLevel.ERROR,
+                                           MimeTypeUtils.TEXT_HTML,
+                                           Sets.newHashSet(DefaultRole.PROJECT_ADMIN.toString()));
+        }
     }
 
     /**

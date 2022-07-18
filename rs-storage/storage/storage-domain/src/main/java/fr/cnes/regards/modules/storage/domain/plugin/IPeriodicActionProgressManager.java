@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.domain.plugin;
 
+import java.nio.file.Path;
+
 /**
  * Interface to provide a manager of pending actions to storage plugins during storage location pending action task.<br/>
  * <p>
@@ -31,6 +33,18 @@ package fr.cnes.regards.modules.storage.domain.plugin;
  */
 public interface IPeriodicActionProgressManager {
 
+    /**
+     * Inform progress manager that a remaining pending action has been successfully for a given file url.
+     *
+     * @param pendingActionSucceedUrl
+     */
     void storagePendingActionSucceed(String pendingActionSucceedUrl);
+
+    /**
+     * Inform progress manager that a remaining pending action has been terminated in error for a given file url.
+     *
+     * @param pendingActionErrorPath
+     */
+    void storagePendingActionError(Path pendingActionErrorPath);
 
 }

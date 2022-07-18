@@ -55,6 +55,7 @@ public class PeriodicStorageLocationJob extends AbstractJob<Void> {
             PeriodicActionProgressManager progressManager = new PeriodicActionProgressManager(fileRefService);
             storagePlugin.runPeriodicAction(progressManager);
             progressManager.bulkSavePendings();
+            progressManager.notifyPendingActionErrors();
             LOGGER.info("Periodic task on storage {} done in {}ms",
                         storageLocation,
                         System.currentTimeMillis() - startTime);
