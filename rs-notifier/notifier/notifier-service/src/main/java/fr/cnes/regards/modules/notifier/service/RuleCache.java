@@ -24,6 +24,8 @@ import com.google.common.cache.LoadingCache;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.notifier.dao.IRuleRepository;
 import fr.cnes.regards.modules.notifier.domain.Rule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -36,6 +38,8 @@ import java.util.concurrent.ExecutionException;
  */
 @Component
 public class RuleCache {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RuleCache.class);
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
@@ -72,6 +76,8 @@ public class RuleCache {
      * Clean all {@link Rule} in cache for the current tenant
      */
     public void clear() {
-        ruleCachePerTenant.invalidate(runtimeTenantResolver.getTenant());
+        String tenant = runtimeTenantResolver.getTenant();
+        ruleCachePerTenant.invalidate(tenant);
+        LOGGER.debug("Clear rule cache of tenant {}", tenant);
     }
 }
