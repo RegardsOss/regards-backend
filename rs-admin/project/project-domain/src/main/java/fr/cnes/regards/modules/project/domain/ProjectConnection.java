@@ -41,7 +41,8 @@ import java.util.Optional;
 @SequenceGenerator(name = "projectConnectionSequence", initialValue = 1, sequenceName = "seq_project_connection")
 @Table(name = "t_project_connection", uniqueConstraints = {
     @UniqueConstraint(name = "uk_project_connection_project_microservice",
-        columnNames = { "project_id", "microservice" }) })
+        columnNames = { "project_id", "microservice" }),
+    @UniqueConstraint(name = "uk_t_project_connection_microservice_url", columnNames = { "microservice", "url" }) })
 public class ProjectConnection implements IIdentifiable<Long> {
 
     public static final int ERROR_MAX_LENGTH = 255;
@@ -116,35 +117,6 @@ public class ProjectConnection implements IIdentifiable<Long> {
     public ProjectConnection() {
         microservice = "undefined";
         project = new Project();
-    }
-
-    /**
-     * Constructor
-     *
-     * @param id              Identifier
-     * @param project         Associated project
-     * @param microservice    Microservice name
-     * @param username        Database username
-     * @param password        Database password
-     * @param driverClassName Database driver class name
-     * @param url             Database url
-     * @deprecated giving id is totally nonsense (and is not taken into account)
-     */
-    @Deprecated
-    public ProjectConnection(Long id,
-                             Project project,
-                             String microservice,
-                             String username,
-                             String password,
-                             String driverClassName,
-                             String url) {
-        this.id = id;
-        this.project = project;
-        this.microservice = microservice;
-        userName = username;
-        this.password = password;
-        this.driverClassName = driverClassName;
-        this.url = url;
     }
 
     /**

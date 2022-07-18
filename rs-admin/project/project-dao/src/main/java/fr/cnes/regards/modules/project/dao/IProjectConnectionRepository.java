@@ -57,14 +57,12 @@ public interface IProjectConnectionRepository extends JpaRepository<ProjectConne
                                                                                TenantConnectionState state);
 
     /**
-     * Retrieve all connections with same parameters as below
+     * Retrieve all connections with provided URL
      *
-     * @param username database connection user name
-     * @param password database connection password
-     * @param url      database connection url
+     * @param url database connection url
      * @return list of connections
      */
-    List<ProjectConnection> findByUserNameAndPasswordAndUrl(String username, String password, String url);
+    List<ProjectConnection> findByUrl(String url);
 
     /**
      * Retrieve connection for project and microservice

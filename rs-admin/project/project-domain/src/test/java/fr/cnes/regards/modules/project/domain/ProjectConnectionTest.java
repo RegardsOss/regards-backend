@@ -42,11 +42,6 @@ public class ProjectConnectionTest {
     private static Validator validator;
 
     /**
-     * Test id
-     */
-    private final Long id = 0L;
-
-    /**
      * Test microservice
      */
     private final String miroservice = "ms";
@@ -87,35 +82,7 @@ public class ProjectConnectionTest {
         validator = factory.getValidator();
 
         projectTest = new Project(0L, "desc", "icon", true, "name");
-        connection = new ProjectConnection(id, projectTest, miroservice, user, pwd, driver, url);
-    }
-
-    /**
-     * Test method for
-     * {@link ProjectConnection#ProjectConnection(Long, Project, String, String, String, String, String)}.
-     */
-    @Test
-    public void testProjectConnectionWithId() {
-        ProjectConnection projectConn = new ProjectConnection(id, projectTest, miroservice, user, pwd, driver, url);
-
-        Assert.assertEquals(id, projectConn.getId());
-        Assert.assertEquals(projectTest, projectConn.getProject());
-        Assert.assertEquals(miroservice, projectConn.getMicroservice());
-        Assert.assertEquals(user, projectConn.getUserName());
-        Assert.assertEquals(pwd, projectConn.getPassword());
-        Assert.assertEquals(driver, projectConn.getDriverClassName());
-        Assert.assertEquals(url, projectConn.getUrl());
-
-        Set<ConstraintViolation<ProjectConnection>> constraintViolations = validator.validate(projectConn);
-        Assert.assertEquals(0, constraintViolations.size());
-
-        projectConn = new ProjectConnection(id, null, miroservice, user, pwd, driver, url);
-        constraintViolations = validator.validate(projectConn);
-        Assert.assertEquals(1, constraintViolations.size());
-
-        projectConn = new ProjectConnection(id, null, null, user, pwd, driver, url);
-        constraintViolations = validator.validate(projectConn);
-        Assert.assertEquals(2, constraintViolations.size());
+        connection = new ProjectConnection(projectTest, miroservice, user, pwd, driver, url);
     }
 
     /**
@@ -142,24 +109,6 @@ public class ProjectConnectionTest {
         projectConn = new ProjectConnection(null, null, user, pwd, driver, url);
         constraintViolations = validator.validate(projectConn);
         Assert.assertEquals(2, constraintViolations.size());
-    }
-
-    /**
-     * Test method for {@link fr.cnes.regards.modules.project.domain.ProjectConnection#getId()}.
-     */
-    @Test
-    public void testGetId() {
-        Assert.assertEquals(id, connection.getId());
-    }
-
-    /**
-     * Test method for {@link fr.cnes.regards.modules.project.domain.ProjectConnection#setId(java.lang.Long)}.
-     */
-    @Test
-    public void testSetId() {
-        final Long newId = 2L;
-        connection.setId(newId);
-        Assert.assertEquals(newId, connection.getId());
     }
 
     /**

@@ -42,13 +42,8 @@ public class ProjectConnectionClientStub implements IProjectConnectionClient {
     public ResponseEntity<PagedModel<EntityModel<ProjectConnection>>> getAllProjectConnections(String pProjectName) {
 
         List<EntityModel<ProjectConnection>> resources = new ArrayList<>();
-        ProjectConnection connection = new ProjectConnection(0L,
-                                                             ProjectClientStub.PROJECT,
-                                                             "MICROSERVICE",
-                                                             "",
-                                                             "",
-                                                             "",
-                                                             "");
+        ProjectConnection connection = new ProjectConnection(ProjectClientStub.PROJECT, "MICROSERVICE", "", "", "", "");
+        connection.setId(0L);
         resources.add(EntityModel.of(connection));
 
         PagedModel<EntityModel<ProjectConnection>> page = PagedModel.of(resources,

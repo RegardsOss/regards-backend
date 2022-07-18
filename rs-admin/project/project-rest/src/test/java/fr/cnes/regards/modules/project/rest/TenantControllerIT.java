@@ -61,9 +61,11 @@ public class TenantControllerIT extends AbstractRegardsIT {
     @Autowired
     private IProjectConnectionRepository projectConnectionRepository;
 
-    private final String TEST_MS = "rs-test-tenant";
+    private final String TEST_MS_ACTIVE = "rs-test-tenant";
 
     private final String ACTIVE_PROJECT_NAME = "activeProject";
+
+    private final String TEST_MS_DISABLED = "disabledProject";
 
     @Before
     public void initialize() {
@@ -78,14 +80,14 @@ public class TenantControllerIT extends AbstractRegardsIT {
         deletedProject.setLabel("label");
 
         ProjectConnection rsTestConnection = new ProjectConnection(activeProject,
-                                                                   TEST_MS,
+                                                                   TEST_MS_ACTIVE,
                                                                    "user",
                                                                    "password",
                                                                    "driver",
                                                                    "url");
         rsTestConnection.setState(TenantConnectionState.ENABLED);
         ProjectConnection rsTestConnection2 = new ProjectConnection(deletedProject,
-                                                                    TEST_MS,
+                                                                    TEST_MS_DISABLED,
                                                                     "user",
                                                                     "password",
                                                                     "driver",
@@ -120,7 +122,7 @@ public class TenantControllerIT extends AbstractRegardsIT {
                                .expect(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT,
                                                                       Matchers.contains(ACTIVE_PROJECT_NAME))),
                    "error",
-                   TEST_MS);
+                   TEST_MS_ACTIVE);
     }
 
 }

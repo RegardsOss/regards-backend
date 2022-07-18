@@ -129,6 +129,8 @@ public class ProjectConnectionServiceIT extends AbstractRegardsServiceIT {
 
     private ProjectConnection projectCtx;
 
+    private final String MS_TEST_3 = "ms-test-3";
+
     @Before
     public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
         projectConnectionRepo.deleteAll();
@@ -159,8 +161,9 @@ public class ProjectConnectionServiceIT extends AbstractRegardsServiceIT {
                                                          COMMON_PROJECT_USER_PWD,
                                                          COMMON_PROJECT_DRIVER,
                                                          PROJECT2_URL));
+
         projectConnectionRepo.save(new ProjectConnection(project2,
-                                                         "ms-test-3",
+                                                         MS_TEST_3,
                                                          COMMON_PROJECT_USER_NAME,
                                                          COMMON_PROJECT_USER_PWD,
                                                          COMMON_PROJECT_DRIVER,
@@ -181,8 +184,7 @@ public class ProjectConnectionServiceIT extends AbstractRegardsServiceIT {
         Project project1 = projectService.retrieveProject(PROJECT_TEST_1);
 
         // Test database parameter conflict detection : project 1 connection = project 2 connection
-        ProjectConnection connection = new ProjectConnection(600L,
-                                                             project1,
+        ProjectConnection connection = new ProjectConnection(project1,
                                                              "microservice-test",
                                                              COMMON_PROJECT_USER_NAME,
                                                              COMMON_PROJECT_USER_PWD,
@@ -255,6 +257,22 @@ public class ProjectConnectionServiceIT extends AbstractRegardsServiceIT {
         Assert.assertTrue(page.isEmpty());
     }
 
+    @Test(expected = ModuleException.class)
+    public void create_fail_when_using_existing_url_and_microservice() throws ModuleException {
+        // when: reuse the same microservice + url
+        Project someProject = new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, "some_project");
+        someProject.setLabel("Some project");
+        someProject = projectRepo.save(someProject);
+
+        ProjectConnection projectConnection = new ProjectConnection(someProject,
+                                                                    MS_TEST_2,
+                                                                    "some username",
+                                                                    "some password",
+                                                                    COMMON_PROJECT_DRIVER,
+                                                                    PROJECT2_URL);
+        projectConnectionService.createProjectConnection(projectConnection, false);
+    }
+
     /**
      * Test updating of a database connection for a given project and a given microservice.
      */
@@ -280,8 +298,7 @@ public class ProjectConnectionServiceIT extends AbstractRegardsServiceIT {
         }
 
         // Updating with an non existing project
-        connection = new ProjectConnection(0L,
-                                           new Project(COMMON_PROJECT_DESCRIPTION,
+        connection = new ProjectConnection(new Project(COMMON_PROJECT_DESCRIPTION,
                                                        COMMON_PROJECT_ICON,
                                                        true,
                                                        PROJECT_TEST_3),
@@ -290,8 +307,10 @@ public class ProjectConnectionServiceIT extends AbstractRegardsServiceIT {
                                            COMMON_PROJECT_USER_PWD,
                                            COMMON_PROJECT_DRIVER,
                                            PROJECT1_URL);
+        long projectConnectionId = 0L;
+        connection.setId(projectConnectionId);
         try {
-            connection = projectConnectionService.updateProjectConnection(0L, connection);
+            projectConnectionService.updateProjectConnection(projectConnectionId, connection);
             Assert.fail(errorUpdate);
         } catch (ModuleException e) {
             // Nothing to do
@@ -299,8 +318,7 @@ public class ProjectConnectionServiceIT extends AbstractRegardsServiceIT {
 
         // Updating a non existing projectConnection
         final long id = 56L;
-        connection = new ProjectConnection(id,
-                                           new Project(0L,
+        connection = new ProjectConnection(new Project(0L,
                                                        COMMON_PROJECT_DESCRIPTION,
                                                        COMMON_PROJECT_ICON,
                                                        true,
@@ -310,6 +328,7 @@ public class ProjectConnectionServiceIT extends AbstractRegardsServiceIT {
                                            COMMON_PROJECT_USER_PWD,
                                            COMMON_PROJECT_DRIVER,
                                            PROJECT1_URL);
+        connection.setId(projectConnectionId);
         try {
             connection = projectConnectionService.updateProjectConnection(id, connection);
             Assert.fail(errorUpdate);

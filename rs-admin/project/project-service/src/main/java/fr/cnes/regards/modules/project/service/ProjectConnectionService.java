@@ -168,10 +168,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
      * @throws EntityInvalidException if a conflict is detected
      */
     private void manageProjectConnectionConflicts(ProjectConnection projectConnection) throws EntityInvalidException {
-        List<ProjectConnection> connections = projectConnectionRepository.findByUserNameAndPasswordAndUrl(
-            projectConnection.getUserName(),
-            projectConnection.getPassword(),
-            projectConnection.getUrl());
+        List<ProjectConnection> connections = projectConnectionRepository.findByUrl(projectConnection.getUrl());
 
         String projectName = projectConnection.getProject().getName();
         for (ProjectConnection connection : connections) {
