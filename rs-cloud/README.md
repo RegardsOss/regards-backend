@@ -1,12 +1,5 @@
-# REGARDS cloud
+# REGARDS cloud microservices
 
-REGARDS is still under development. **This version is a beta version**.
+This folder contains microservices that handles cloud communication between microservices (Registry, Config, Authentication) 
 
-This is the microservice infrastructure repository. It manages :
-* System gateway (relying on Spring Cloud Gateway),
-* System authentication (relying on Spring OAuth2),
-* Microservice registry for load balancing (relying on Netflix Eureka),
-* Configuration (relying on Spring Cloud Config).
-
-## Build
-The [README](https://github.com/RegardsOss/regards-deployment/blob/master/README.md) of the project [rs-deployment](https://github.com/RegardsOss/regards-deployment) describes how to generate all the REGARDS repositories.
+[Check out the doc!](https://regardsoss.github.io/docs/development/backend/architecture/overview/)

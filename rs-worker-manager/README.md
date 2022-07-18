@@ -1,3 +1,3 @@
 # REGARDS WorkerManager microservice
 
-[Developers guide](https://regardsoss.github.io/docs/development/backend/services/workermanager/overview/)
+Here is the [Worker Manager](https://regardsoss.github.io/docs/development/backend/services/worker-manager/overview/) microservice source code.

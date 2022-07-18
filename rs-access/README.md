@@ -1,8 +1,3 @@
-# REGARDS access
+# REGARDS Access and Access-Instance microservices
 
-This is the backend for frontend repository.
-
-REGARDS is still under development. **This version is a beta version**.
-
-## Build
-The [README](https://github.com/RegardsOss/regards-deployment/blob/master/README.md) of the project [rs-deployment](https://github.com/RegardsOss/regards-deployment) describes how to generate all the REGARDS repositories.
+Here is the [Access and Access-Instance](https://regardsoss.github.io/docs/development/backend/services/access/overview/) microservices source code.

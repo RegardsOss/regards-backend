@@ -1,8 +1,3 @@
-# REGARDS catalog
+# REGARDS catalog microservice
 
-This is the CATALOG microservice repository.
-
-REGARDS is still under development. **This version is a beta version**.
-
-## Build
-The [README](https://github.com/RegardsOss/regards-deployment/blob/master/README.md) of the project [rs-deployment](https://github.com/RegardsOss/regards-deployment) describes how to generate all the REGARDS repositories.
+Here is the [CATALOG](https://regardsoss.github.io/docs/development/backend/services/catalog/overview/) microservice source code.

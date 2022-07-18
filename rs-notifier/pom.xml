@@ -25,7 +25,7 @@
 	<artifactId>notifier</artifactId>
 	<packaging>pom</packaging>
 
-	<description>Microservice managing the systems's indexed data</description>
+	<description>Microservice managing Internal and external dissemination</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
 	<licenses>
