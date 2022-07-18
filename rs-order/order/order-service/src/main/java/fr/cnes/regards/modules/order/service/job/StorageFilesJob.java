@@ -31,6 +31,7 @@ import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.order.service.IOrderJobService;
 import fr.cnes.regards.modules.order.service.job.parameters.*;
+import fr.cnes.regards.modules.order.service.processing.IOrderProcessingService;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import io.vavr.control.Option;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,6 +66,9 @@ public class StorageFilesJob extends AbstractJob<Void> {
 
     @Autowired
     protected IOrderJobService orderJobService;
+
+    @Autowired
+    private IOrderProcessingService processingService;
 
     protected Integer subOrderAvailabilityDurationHours;
 
@@ -169,14 +173,7 @@ public class StorageFilesJob extends AbstractJob<Void> {
                              // All order data files statuses are updated into database (if there is no process to launch)
                              dataFileService.save(dataFilesMultimap.values()))
                 // PROCESSING TO BE LAUNCHED
-                .peek(id -> {
-                    // Delete the OrderDataFiles which were only temporary input files
-                    orderDataFileRepository.deleteAll(dataFilesMultimap.values());
-                    // Enqueue the processing job because all of its dependencies are ready (if there is a process to launch)
-                    jobInfoService.enqueueJobForId(id);
-                    // Nudge the order job service to enqueue next storage files jobs.
-                    orderJobService.manageUserOrderStorageFilesJobInfos(user);
-                });
+                .peek(id -> processingService.enqueuedProcessingJob(id, dataFilesMultimap.values(), user));
         }
     }
 
@@ -194,8 +191,10 @@ public class StorageFilesJob extends AbstractJob<Void> {
             }
             alreadyHandledFiles.add(available);
             this.advanceCompletion();
-            this.semaphore.release();
         }
+
         orderDataFileRepository.saveAll(handledOrderDataFiles);
+        // Release as much semaphore permits as there is available files
+        this.semaphore.release(availableFilesOrderedByThisJob.size());
     }
 }

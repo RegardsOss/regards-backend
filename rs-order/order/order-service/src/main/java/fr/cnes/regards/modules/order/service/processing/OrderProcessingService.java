@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.order.service.processing;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
@@ -69,6 +70,7 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
@@ -81,6 +83,7 @@ import java.util.stream.Stream;
  * @author Guillaume Andrieu
  */
 @Service
+@MultitenantTransactional
 public class OrderProcessingService implements IOrderProcessingService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderProcessingService.class);
@@ -216,6 +219,16 @@ public class OrderProcessingService implements IOrderProcessingService {
                 tenant, user, userRole
             );
         }
+    }
+
+    @Override
+    public void enqueuedProcessingJob(UUID processJobId, Collection<OrderDataFile> dataFiles, String user) {
+        // Delete the OrderDataFiles which were only temporary input files
+        orderDataFileRepository.deleteAll(dataFiles);
+        // Enqueue the processing job because all of its dependencies are ready (if there is a process to launch)
+        jobInfoService.enqueueJobForId(processJobId);
+        // Nudge the order job service to enqueue next storage files jobs.
+        orderJobService.manageUserOrderStorageFilesJobInfos(user);
     }
 
     protected Publisher<FilesTask> manageFeaturesWithOnlyExternalFiles(

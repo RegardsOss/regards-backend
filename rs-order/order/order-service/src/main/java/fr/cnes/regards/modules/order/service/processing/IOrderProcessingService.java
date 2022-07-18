@@ -20,8 +20,12 @@ package fr.cnes.regards.modules.order.service.processing;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.order.domain.Order;
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.service.utils.OrderCounts;
+
+import java.util.Collection;
+import java.util.UUID;
 
 /**
  * This interface defines signatures for the companion of IOrderService dealing with
@@ -39,4 +43,12 @@ public interface IOrderProcessingService {
                                                 OrderCounts counts,
                                                 int subOrderDuration) throws ModuleException;
 
+    /**
+     * Enqueue a ProcessExecutionJob in pending state.
+     *
+     * @param processJobId {@link UUID} id of the processing job to enqueue
+     * @param dataFiles    {@link OrderDataFile}s to delete. Corresponding to associated processing job input files
+     * @param user         {@link String} Order owner email.
+     */
+    void enqueuedProcessingJob(UUID processJobId, Collection<OrderDataFile> dataFiles, String user);
 }
