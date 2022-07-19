@@ -135,6 +135,7 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
         Assert.assertNotNull(calculatedCs);
         if (!cs.equals(calculatedCs)) {
             LOGGER.error("The real AIP looks like {}", gson.toJsonTree(aip.getAip()).toString());
+            LOGGER.error("The AIP downloaded looks like {}", gson.toJsonTree(response.getContentAsString()).toString());
         }
         Assert.assertEquals("This test failed as the AIP has not the right checksum", cs, calculatedCs);
 
