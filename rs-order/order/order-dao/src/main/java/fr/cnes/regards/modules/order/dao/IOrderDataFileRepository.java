@@ -27,13 +27,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.Convert;
-import javax.persistence.Converts;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Specific OrderDataFile repository methods
@@ -78,15 +76,12 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
      * @param states must not be null nor empty !!!!
      */
     @Query(name = "selectSumSizesByOrderIdAndStates") // Query is defined on OrderDataFile class
-    @Converts({ @Convert(converter = OffsetDateTimeAttributeConverter.class) })
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
     List<Object[]> selectSumSizesByOrderIdAndStates(OffsetDateTime limitDate, Collection<String> states);
 
     default List<Object[]> selectSumSizesByOrderIdAndStates(OffsetDateTime limitDate, FileState... states) {
         return selectSumSizesByOrderIdAndStates(limitDate,
-                                                Arrays.asList(states)
-                                                      .stream()
-                                                      .map(FileState::toString)
-                                                      .collect(Collectors.toList()));
+                                                Arrays.stream(states).map(FileState::toString).toList());
     }
 
     /**
@@ -96,17 +91,14 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
      * @param states must not be null nor empty !!!!
      */
     @Query(name = "selectCountFilesByOrderIdAndStates") // Query is defined on OrderDataFile class
-    @Converts(
-        { @Convert(converter = OffsetDateTimeAttributeConverter.class), @Convert(converter = FileStateConverter.class),
-            @Convert(converter = FileStateCollectionConverter.class) })
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    @Convert(converter = FileStateConverter.class)
+    @Convert(converter = FileStateCollectionConverter.class)
     List<Object[]> selectCountFilesByOrderIdAndStates(OffsetDateTime limitDate, Collection<String> states);
 
     default List<Object[]> selectCountFilesByOrderIdAndStates(OffsetDateTime limitDate, FileState... states) {
         return selectCountFilesByOrderIdAndStates(limitDate,
-                                                  Arrays.asList(states)
-                                                        .stream()
-                                                        .map(FileState::toString)
-                                                        .collect(Collectors.toList()));
+                                                  Arrays.stream(states).map(FileState::toString).toList());
     }
 
     /**
@@ -116,38 +108,39 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
      * @param states must not be null nor empty !!!!
      */
     @Query(name = "selectCountFilesByOrderIdAndStates4AllOrders") // Query is defined on OrderDataFile class
-    @Converts(
-        { @Convert(converter = OffsetDateTimeAttributeConverter.class), @Convert(converter = FileStateConverter.class),
-            @Convert(converter = FileStateCollectionConverter.class) })
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
+    @Convert(converter = FileStateConverter.class)
+    @Convert(converter = FileStateCollectionConverter.class)
     List<Object[]> selectCountFilesByOrderIdAndStates4AllOrders(OffsetDateTime limitDate, Collection<String> states);
 
     default List<Object[]> selectCountFilesByOrderIdAndStates4AllOrders(OffsetDateTime limitDate, FileState... states) {
         return selectCountFilesByOrderIdAndStates4AllOrders(limitDate,
-                                                            Arrays.asList(states)
-                                                                  .stream()
+                                                            Arrays.stream(states)
                                                                   .map(FileState::toString)
-                                                                  .collect(Collectors.toList()));
+                                                                  .toList());
     }
 
     @Modifying
     void deleteByOrderId(Long orderId);
 
-    @Query(value = "SELECT df.* "
-                   + "FROM {h-schema}t_data_file df "
-                   + "JOIN {h-schema}t_task t ON t.id = df.files_task_id "
-                   + "JOIN {h-schema}t_dataset_task dt ON dt.id = t.parent_id "
-                   + "WHERE dt.id = ?1 "
-                   + "AND df.data_objects_ip_id IN "
-                   + "("
-                   + "    SELECT df.data_objects_ip_id "
-                   + "    FROM {h-schema}t_data_file df "
-                   + "    JOIN {h-schema}t_task t ON t.id = df.files_task_id "
-                   + "    JOIN {h-schema}t_dataset_task dt ON dt.id = t.parent_id "
-                   + "    WHERE dt.id = ?1 "
-                   + "    AND df.state IN ?2 "
-                   + "    LIMIT ?3 "
-                   + ") "
-                   + "ORDER BY df.id", nativeQuery = true)
+    @Query(value = """
+        SELECT df.*
+        FROM {h-schema}t_data_file df
+        JOIN {h-schema}t_task t ON t.id = df.files_task_id
+        JOIN {h-schema}t_dataset_task dt ON dt.id = t.parent_id
+        WHERE dt.id = ?1
+        AND df.data_objects_ip_id IN
+        (
+            SELECT df.data_objects_ip_id
+            FROM {h-schema}t_data_file df
+            JOIN {h-schema}t_task t ON t.id = df.files_task_id
+            JOIN {h-schema}t_dataset_task dt ON dt.id = t.parent_id
+            WHERE dt.id = ?1
+            AND df.state IN ?2
+            LIMIT ?3
+        )
+        ORDER BY df.id
+        """, nativeQuery = true)
     List<OrderDataFile> selectByDatasetTaskAndStateAndLimit(long datasetTaskId, List<String> states, int limit);
 
 }

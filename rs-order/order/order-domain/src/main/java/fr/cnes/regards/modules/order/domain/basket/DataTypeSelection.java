@@ -34,11 +34,13 @@ public enum DataTypeSelection {
     ALL(DataType.RAWDATA,
         DataType.QUICKLOOK_SD,
         DataType.QUICKLOOK_MD,
-        DataType.QUICKLOOK_HD), QUICKLOOKS(DataType.QUICKLOOK_SD,
-                                           DataType.QUICKLOOK_MD,
-                                           DataType.QUICKLOOK_HD), RAWDATA(DataType.RAWDATA);
+        DataType.QUICKLOOK_HD),
+    QUICKLOOKS(DataType.QUICKLOOK_SD,
+               DataType.QUICKLOOK_MD,
+               DataType.QUICKLOOK_HD),
+    RAWDATA(DataType.RAWDATA);
 
-    private DataType[] fileTypes;
+    private final DataType[] fileTypes;
 
     DataTypeSelection(DataType... fileTypes) {
         this.fileTypes = fileTypes;
