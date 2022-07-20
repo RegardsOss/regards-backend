@@ -386,7 +386,7 @@ public class OrderProcessingService implements IOrderProcessingService {
             dataFileOut.setChecksum(UUID.randomUUID().toString());
             // ^- This is ugly but needed to prevent FilesTask to ignore files because they would have the same checksum
             dataFileOut.setFilesize(expectedSize);
-            return List.of(createAndSaveOrderDataFile(dataFileOut, dsSelIpId, orderId))
+            return List.of(new OrderDataFile(dataFileOut, dsSelIpId, orderId))
                        .distinct()
                        .map(orderDataFileService::save)
                        .map(OrderDataFile::getId)
@@ -409,7 +409,7 @@ public class OrderProcessingService implements IOrderProcessingService {
                     dataFileOut.setChecksum(UUID.randomUUID().toString());
                     // ^- This is ugly but needed to prevent FilesTask to ignore files because they would have the same checksum
                     dataFileOut.setFilesize(expectedSize);
-                    return List.of(createAndSaveOrderDataFile(dataFileOut, feature.getId(), orderId));
+                    return List.of(new OrderDataFile(dataFileOut, feature.getId(), orderId));
                 } else if (cardinality == Cardinality.ONE_PER_INPUT_FILE) {
                     return featureRequiredDatafiles(feature, requiredDataTypes).map(dataFile -> {
                         long expectedSize = sizeForecast.expectedResultSizeInBytes(dataFile.getFilesize());
@@ -426,7 +426,7 @@ public class OrderProcessingService implements IOrderProcessingService {
                         dataFileOut.setChecksum(UUID.randomUUID().toString());
                         // ^- This is ugly but needed to prevent FilesTask to ignore files because they would have the same checksum
                         dataFileOut.setFilesize(expectedSize);
-                        return createAndSaveOrderDataFile(dataFileOut, feature.getId(), orderId);
+                        return new OrderDataFile(dataFileOut, feature.getId(), orderId);
                     }).toList();
                 } else {
                     // Happens only if some new cases appear for Cardinality
@@ -434,10 +434,6 @@ public class OrderProcessingService implements IOrderProcessingService {
                 }
             }).distinct().map(orderDataFileService::save).map(OrderDataFile::getId).toJavaArray(Long[]::new);
         }
-    }
-
-    protected OrderDataFile createAndSaveOrderDataFile(DataFile dataFile, UniformResourceName name, Long orderId) {
-        return new OrderDataFile(dataFile, name, orderId);
     }
 
     /**
