@@ -219,13 +219,10 @@ public class AccessSearchController {
      */
     private void injectApplicableServices(JsonObject pEntities) {
         try (Stream<JsonElement> elements = JSON_ARRAY_TO_STREAM.apply(pEntities.get("content").getAsJsonArray())) {
-            // @formatter:off
-            elements
-                .map(JsonElement::getAsJsonObject)
-                .map(element -> element.get("content"))
-                .map(JsonElement::getAsJsonObject)
-                .forEach(element -> element.add("services", entityToApplicableServices(element)));
-            // @formatter:on
+            elements.map(JsonElement::getAsJsonObject)
+                    .map(element -> element.get("content"))
+                    .map(JsonElement::getAsJsonObject)
+                    .forEach(element -> element.add("services", entityToApplicableServices(element)));
         }
     }
 
@@ -236,21 +233,23 @@ public class AccessSearchController {
      * @return The list of applicable services, represented as a {@link JsonObject}
      */
     private JsonElement entityToApplicableServices(JsonObject pEntity) {
-        // @formatter:off
-        List<EntityModel<PluginServiceDto>> applicableServices = JSON_ARRAY_TO_STREAM.apply(pEntity.get("tags").getAsJsonArray()) // Retrieve tags list and convert it to stream
-            .filter(jsonElement -> !jsonElement.isJsonNull())
-            .map(JsonElement::getAsString) // Convert elements of the stream to strings
-            .filter(UniformResourceName::isValidUrn) // Only keep URNs
-            .map(UniformResourceName::fromString) // Convert elements of the stream to URNs
-            .filter(urn -> EntityType.DATASET.equals(urn.getEntityType())) // Only keep URNs of datasets
-            .map(UniformResourceName::toString) // Go back to strings
-            .distinct() // Remove doubles
-            .map(datasetIpId -> serviceAggregatorClient.retrieveServices(Arrays.asList(datasetIpId), null))
-            .map(ResponseEntity::getBody)
-            .flatMap(List::stream) // Now each element of the stream is a List of services, so we flatten the structure in a stream of services
-            .distinct() // Remove doubles
-            .collect(Collectors.toList());
-        // @formatter:on
+        List<EntityModel<PluginServiceDto>> applicableServices = JSON_ARRAY_TO_STREAM.apply(pEntity.get("tags")
+                                                                                                   .getAsJsonArray()) // Retrieve tags list and convert it to stream
+                                                                                     .filter(jsonElement -> !jsonElement.isJsonNull())
+                                                                                     .map(JsonElement::getAsString) // Convert elements of the stream to strings
+                                                                                     .filter(UniformResourceName::isValidUrn) // Only keep URNs
+                                                                                     .map(UniformResourceName::fromString) // Convert elements of the stream to URNs
+                                                                                     .filter(urn -> EntityType.DATASET.equals(
+                                                                                         urn.getEntityType())) // Only keep URNs of datasets
+                                                                                     .map(UniformResourceName::toString) // Go back to strings
+                                                                                     .distinct() // Remove doubles
+                                                                                     .map(datasetIpId -> serviceAggregatorClient.retrieveServices(
+                                                                                         Arrays.asList(datasetIpId),
+                                                                                         null))
+                                                                                     .map(ResponseEntity::getBody)
+                                                                                     .flatMap(List::stream) // Now each element of the stream is a List of services, so we flatten the structure in a stream of services
+                                                                                     .distinct() // Remove doubles
+                                                                                     .collect(Collectors.toList());
 
         return gson.toJsonTree(applicableServices);
     }

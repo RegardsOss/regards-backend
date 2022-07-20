@@ -113,167 +113,172 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
 
     protected List<OrderDataFile> processResultDataFiles;
 
-    // @formatter:off
-
     @Override
     public void run() {
 
         ProcessDatasetDescription processDatasetDescription = dsSel.getProcessDatasetDescription();
         PBatchRequest request = createBatchRequest(dsSel.getDatasetIpId(), processDatasetDescription);
         try {
-            PBatchResponse batchResponse = createBatch(dsSel.getDsSelId(), processDatasetDescription, request, processingClient);
+            PBatchResponse batchResponse = createBatch(dsSel.getDsSelId(),
+                                                       processDatasetDescription,
+                                                       request,
+                                                       processingClient);
 
             Scope scope = processInfo.getScope();
 
             switch (scope) {
                 case FEATURE: {
-                    HashMap.ofAll(processInputDataFiles.getFilesPerFeature())
-                        .forEach((feature, inputs) -> {
-                            sendExecRequest(createExecRequestEvent(
-                                gson.toJson(new ExecutionCorrelationIdentifier(user, Option.of(feature.getIpId()))),
-                                batchResponse.getBatchId(),
-                                createInputsForFeatureWithCorrelationId(feature, inputs))
-                            );
-                        });
+                    HashMap.ofAll(processInputDataFiles.getFilesPerFeature()).forEach((feature, inputs) -> {
+                        sendExecRequest(createExecRequestEvent(gson.toJson(new ExecutionCorrelationIdentifier(user,
+                                                                                                              Option.of(
+                                                                                                                  feature.getIpId()))),
+                                                               batchResponse.getBatchId(),
+                                                               createInputsForFeatureWithCorrelationId(feature,
+                                                                                                       inputs)));
+                    });
                     break;
                 }
                 case SUBORDER: {
-                    sendExecRequest(createExecRequestEvent(
-                        gson.toJson(new ExecutionCorrelationIdentifier(user, Option.none())),
-                        batchResponse.getBatchId(),
-                        createAllInputsWithCorrelationId())
-                    );
+                    sendExecRequest(createExecRequestEvent(gson.toJson(new ExecutionCorrelationIdentifier(user,
+                                                                                                          Option.none())),
+                                                           batchResponse.getBatchId(),
+                                                           createAllInputsWithCorrelationId()));
                     break;
                 }
                 default:
-                    throw new NotImplementedException(
-                            "A Scope case implementation is missing in " + this.getClass().getName());
+                    throw new NotImplementedException("A Scope case implementation is missing in " + this.getClass()
+                                                                                                         .getName());
             }
-        }
-        catch(NotImplementedException e) {
+        } catch (NotImplementedException e) {
             UUID errorCorrelationId = UUID.randomUUID();
             STATIC_LOGGER.error("errorCid={} dFailure to create executions for suborder {}",
-                errorCorrelationId, batchCorrelationId.repr(), e
-            );
+                                errorCorrelationId,
+                                batchCorrelationId.repr(),
+                                e);
             // The error management is already coded in the ProcessingExecutionResultEventHandler
             // we only need to notify that a suborder execution has failed.
-            PExecutionResultEvent event = new PExecutionResultEvent(
-                    errorCorrelationId, // unused by the handler in case of failure
-                    gson.toJson(new ExecutionCorrelationIdentifier(user, Option.none())),
-                    errorCorrelationId, // unused by the handler in case of failure
-                    batchCorrelationId.repr(),
-                    processDesc.getProcessId(), processDesc.getProcessInfo(),
-                    ExecutionStatus.FAILURE,
-                    List.empty(),
-                    List.of("Executions could not be created errorCid=" + errorCorrelationId)
-            );
+            PExecutionResultEvent event = new PExecutionResultEvent(errorCorrelationId,
+                                                                    // unused by the handler in case of failure
+                                                                    gson.toJson(new ExecutionCorrelationIdentifier(user,
+                                                                                                                   Option.none())),
+                                                                    errorCorrelationId,
+                                                                    // unused by the handler in case of failure
+                                                                    batchCorrelationId.repr(),
+                                                                    processDesc.getProcessId(),
+                                                                    processDesc.getProcessInfo(),
+                                                                    ExecutionStatus.FAILURE,
+                                                                    List.empty(),
+                                                                    List.of("Executions could not be created errorCid="
+                                                                            + errorCorrelationId));
             publisher.publish(event);
-        }
-        finally {
+        } finally {
             advanceCompletion();
         }
     }
 
-
     private List<PInputFile> createInputsForFeatureWithCorrelationId(ProcessOutputFeatureDesc feature,
-            java.util.List<OrderDataFile> inputs) {
-        return List.ofAll(inputs).map(orderDataFile -> createInputWithCorrelationId(
-            orderDataFile,
-            feature.getIpId(),
-            ProcessInputCorrelationIdentifier.repr(
-                batchCorrelationId,
-                feature.getIpId(),
-                orderDataFile.getFilename()
-            )
-        ));
+                                                                     java.util.List<OrderDataFile> inputs) {
+        return List.ofAll(inputs)
+                   .map(orderDataFile -> createInputWithCorrelationId(orderDataFile,
+                                                                      feature.getIpId(),
+                                                                      ProcessInputCorrelationIdentifier.repr(
+                                                                          batchCorrelationId,
+                                                                          feature.getIpId(),
+                                                                          orderDataFile.getFilename())));
     }
 
     private List<PInputFile> createAllInputsWithCorrelationId() {
-        List<Tuple2<ProcessOutputFeatureDesc, OrderDataFile>> featureAndFileTuples = HashMap
-            .ofAll(processInputDataFiles.getFilesPerFeature())
-            .toList()
-            .flatMap(featureDescAndDataFiles ->
-                List.ofAll(featureDescAndDataFiles._2())
-                    .map(dataFile -> Tuple.of(featureDescAndDataFiles._1, dataFile))
-            );
-        return featureAndFileTuples
-            .map(featureAndFile -> createInputWithCorrelationId(
-                featureAndFile._2,
-                featureAndFile._1.getIpId(),
-                ProcessInputCorrelationIdentifier.repr(
-                    batchCorrelationId,
-                    featureAndFile._1.getIpId(),
-                    featureAndFile._2.getFilename())
-            ));
+        List<Tuple2<ProcessOutputFeatureDesc, OrderDataFile>> featureAndFileTuples = HashMap.ofAll(processInputDataFiles.getFilesPerFeature())
+                                                                                            .toList()
+                                                                                            .flatMap(
+                                                                                                featureDescAndDataFiles -> List.ofAll(
+                                                                                                                                   featureDescAndDataFiles._2())
+                                                                                                                               .map(
+                                                                                                                                   dataFile -> Tuple.of(
+                                                                                                                                       featureDescAndDataFiles._1,
+                                                                                                                                       dataFile)));
+        return featureAndFileTuples.map(featureAndFile -> createInputWithCorrelationId(featureAndFile._2,
+                                                                                       featureAndFile._1.getIpId(),
+                                                                                       ProcessInputCorrelationIdentifier.repr(
+                                                                                           batchCorrelationId,
+                                                                                           featureAndFile._1.getIpId(),
+                                                                                           featureAndFile._2.getFilename())));
     }
 
     private void sendExecRequest(PExecutionRequestEvent event) {
-        this.eventSender.sendProcessingRequest(event).onFailure(t -> STATIC_LOGGER
-                .error("Failed to send execution request event {}, {}", event, t.getMessage(), t));
+        this.eventSender.sendProcessingRequest(event)
+                        .onFailure(t -> STATIC_LOGGER.error("Failed to send execution request event {}, {}",
+                                                            event,
+                                                            t.getMessage(),
+                                                            t));
     }
 
-    protected PBatchRequest createBatchRequest(String datasetIpid, ProcessDatasetDescription processDatasetDescription) {
+    protected PBatchRequest createBatchRequest(String datasetIpid,
+                                               ProcessDatasetDescription processDatasetDescription) {
         FileSetStatistics stats = createBatchStats(datasetIpid);
-        return new PBatchRequest(
-            batchCorrelationId.repr(),
-            processDesc.getProcessId(),
-            tenant, user, userRole,
-            HashMap.ofAll(processDatasetDescription.getParameters()),
-            HashMap.of(datasetIpid, stats)
-        );
+        return new PBatchRequest(batchCorrelationId.repr(),
+                                 processDesc.getProcessId(),
+                                 tenant,
+                                 user,
+                                 userRole,
+                                 HashMap.ofAll(processDatasetDescription.getParameters()),
+                                 HashMap.of(datasetIpid, stats));
     }
 
     protected FileSetStatistics createBatchStats(String datasetIpid) {
         Long totalInputSizes = List.ofAll(processInputDataFiles.getFilesPerFeature().values())
-                .flatMap(Function.identity())
-                .map(OrderDataFile::getFilesize)
-                .fold(0L, Long::sum);
+                                   .flatMap(Function.identity())
+                                   .map(OrderDataFile::getFilesize)
+                                   .fold(0L, Long::sum);
         return new FileSetStatistics(datasetIpid, 1, totalInputSizes);
     }
 
-    protected PExecutionRequestEvent createExecRequestEvent(String correlationId, UUID batchId,
-            List<PInputFile> inputFiles) {
+    protected PExecutionRequestEvent createExecRequestEvent(String correlationId,
+                                                            UUID batchId,
+                                                            List<PInputFile> inputFiles) {
         return new PExecutionRequestEvent(correlationId, batchId, inputFiles);
     }
 
     protected PInputFile createInputWithCorrelationId(OrderDataFile df, String featureIpId, String inputCorrelationId) {
         URL fileUrl = Try.of(() -> new URL(df.getUrl())).getOrNull();
         UniformResourceName featureIdUrn = UniformResourceName.fromString(featureIpId);
-        io.vavr.collection.Map<String, String> metadataMap = mapper
-                .toMap(new OrderInputFileMetadata(!df.isReference(), featureIdUrn, null));
-        return new PInputFile("", // unused parameter name
-                featureIpId + "/" + df.getFilename(),
-                df.getMimeType().toString(),
-                fileUrl,
-                df.getFilesize(),
-                df.getChecksum(),
-                df.getFilename(),
-                metadataMap,
-                inputCorrelationId
-        );
+        io.vavr.collection.Map<String, String> metadataMap = mapper.toMap(new OrderInputFileMetadata(!df.isReference(),
+                                                                                                     featureIdUrn,
+                                                                                                     null));
+        return new PInputFile("",
+                              // unused parameter name
+                              featureIpId + "/" + df.getFilename(),
+                              df.getMimeType().toString(),
+                              fileUrl,
+                              df.getFilesize(),
+                              df.getChecksum(),
+                              df.getFilename(),
+                              metadataMap,
+                              inputCorrelationId);
     }
 
-    protected PBatchResponse createBatch(
-            Long dsSelId,
-            ProcessDatasetDescription processDatasetDescription,
-            PBatchRequest request,
-            IProcessingRestClient processingClient
-    ) {
+    protected PBatchResponse createBatch(Long dsSelId,
+                                         ProcessDatasetDescription processDatasetDescription,
+                                         PBatchRequest request,
+                                         IProcessingRestClient processingClient) {
         try {
             FeignSecurityManager.asUser(user, userRole);
             ResponseEntity<PBatchResponse> batchResponse = processingClient.createBatch(request);
             FeignSecurityManager.reset();
 
             if (!batchResponse.getStatusCode().is2xxSuccessful()) {
-                throw new CouldNotCreateBatchException(jobInfoId, dsSelId,
-                        processDatasetDescription.getProcessBusinessId(), batchResponse);
+                throw new CouldNotCreateBatchException(jobInfoId,
+                                                       dsSelId,
+                                                       processDatasetDescription.getProcessBusinessId(),
+                                                       batchResponse);
             }
 
             return batchResponse.getBody();
         } catch (HttpClientErrorException | HttpServerErrorException e) {
-            STATIC_LOGGER.error(e.getMessage(),e);
-            throw new CouldNotCreateBatchException(jobInfoId, dsSelId,
-                    processDatasetDescription.getProcessBusinessId());
+            STATIC_LOGGER.error(e.getMessage(), e);
+            throw new CouldNotCreateBatchException(jobInfoId,
+                                                   dsSelId,
+                                                   processDatasetDescription.getProcessBusinessId());
         }
     }
 
@@ -284,7 +289,7 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
-            throws JobParameterMissingException, JobParameterInvalidException {
+        throws JobParameterMissingException, JobParameterInvalidException {
         for (JobParameter param : parameters.values()) {
             if (ProcessInputsPerFeatureJobParameter.isCompatible(param)) {
                 processInputDataFiles = param.getValue();
@@ -300,11 +305,12 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
             } else if (ProcessDTOJobParameter.isCompatible(param)) {
                 processDesc = param.getValue();
                 processInfo = new OrderProcessInfoMapper().fromMap(processDesc.getProcessInfo())
-                        .getOrElseThrow(() -> new JobParameterInvalidException(
-                                "Cannot find processInfo from processDesc"));
+                                                          .getOrElseThrow(() -> new JobParameterInvalidException(
+                                                              "Cannot find processInfo from processDesc"));
             } else if (ProcessBatchCorrelationIdJobParameter.isCompatible(param)) {
                 batchCorrelationId = BatchSuborderCorrelationIdentifier.parse(param.getValue())
-                        .getOrElseThrow(() -> new JobParameterInvalidException("Cannot parse batchCorrelationId"));
+                                                                       .getOrElseThrow(() -> new JobParameterInvalidException(
+                                                                           "Cannot parse batchCorrelationId"));
             } else if (BasketDatasetSelectionJobParameter.isCompatible(param)) {
                 dsSel = param.getValue();
             }
@@ -336,18 +342,22 @@ public class ProcessExecutionJob extends AbstractJob<Void> {
     @SuppressWarnings("serial")
     public static class CouldNotCreateBatchException extends RuntimeException {
 
-        public CouldNotCreateBatchException(UUID jobInfoId, Long dsSelId, UUID processBusinessId,
-                ResponseEntity<PBatchResponse> batchResponse) {
-            super(String.format("jobInfo:%s dsSel:%d Could not create batch, response status is %s", jobInfoId, dsSelId,
+        public CouldNotCreateBatchException(UUID jobInfoId,
+                                            Long dsSelId,
+                                            UUID processBusinessId,
+                                            ResponseEntity<PBatchResponse> batchResponse) {
+            super(String.format("jobInfo:%s dsSel:%d Could not create batch, response status is %s",
+                                jobInfoId,
+                                dsSelId,
                                 batchResponse.getStatusCode()));
         }
 
         public CouldNotCreateBatchException(UUID jobInfoId, Long dsSelId, UUID processBusinessId) {
-            super(String.format("jobInfo:%s dsSel:%d Could not create batch, response status is %s", jobInfoId, dsSelId,
+            super(String.format("jobInfo:%s dsSel:%d Could not create batch, response status is %s",
+                                jobInfoId,
+                                dsSelId,
                                 HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
-
-    // @formatter:on
 
 }

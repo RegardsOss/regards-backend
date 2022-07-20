@@ -53,8 +53,6 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class MonitoringServiceImpl implements IMonitoringService {
 
-    // @formatter:off
-
     private static final Logger LOGGER = LoggerFactory.getLogger(MonitoringServiceImpl.class);
 
     private final IPExecutionRepository execRepo;
@@ -62,10 +60,9 @@ public class MonitoringServiceImpl implements IMonitoringService {
     private final IPProcessRepository processRepository;
 
     static Cache<UUID, String> cache = Caffeine.newBuilder()
-            .expireAfterWrite(5, TimeUnit.MINUTES)
-            .maximumSize(1000)
-            .build();
-
+                                               .expireAfterWrite(5, TimeUnit.MINUTES)
+                                               .maximumSize(1000)
+                                               .build();
 
     @Autowired
     public MonitoringServiceImpl(IPExecutionRepository execRepo, IPProcessRepository processRepository) {
@@ -73,46 +70,65 @@ public class MonitoringServiceImpl implements IMonitoringService {
         this.processRepository = processRepository;
     }
 
-    private Mono<Page<PExecution>> getPExecutionsPageForCriteria(String tenant, List<ExecutionStatus> status, String processBid,
-            @Nullable String userEmail, OffsetDateTime from, OffsetDateTime to, PageRequest paged) {
+    private Mono<Page<PExecution>> getPExecutionsPageForCriteria(String tenant,
+                                                                 List<ExecutionStatus> status,
+                                                                 String processBid,
+                                                                 @Nullable String userEmail,
+                                                                 OffsetDateTime from,
+                                                                 OffsetDateTime to,
+                                                                 PageRequest paged) {
         return execRepo.countAllForMonitoringSearch(tenant, processBid, userEmail, status, from, to)
-            .flatMap(total ->
-                execRepo.findAllForMonitoringSearch(tenant, processBid, userEmail, status, from, to, paged)
-                    .collectList()
-                    .map(content -> {
-                        Page<PExecution> p = new PageImpl<>(content, paged, total);
-                        return p;
-                    })
-            )
-            .switchIfEmpty(Mono.just(new PageImpl<>(new ArrayList<>(), paged, 0)))
-            .doOnError(t -> LOGGER.error(t.getMessage(), t));
+                       .flatMap(total -> execRepo.findAllForMonitoringSearch(tenant,
+                                                                             processBid,
+                                                                             userEmail,
+                                                                             status,
+                                                                             from,
+                                                                             to,
+                                                                             paged).collectList().map(content -> {
+                           Page<PExecution> p = new PageImpl<>(content, paged, total);
+                           return p;
+                       }))
+                       .switchIfEmpty(Mono.just(new PageImpl<>(new ArrayList<>(), paged, 0)))
+                       .doOnError(t -> LOGGER.error(t.getMessage(), t));
     }
 
     @Override
-    public Mono<Page<ExecutionMonitoringDTO>> getExecutionsPageForCriteria(
-            String tenant,
-            List<ExecutionStatus> status,
-            String processBid,
-            @Nullable String userEmail,
-            OffsetDateTime from,
-            OffsetDateTime to,
-            PageRequest paged
-    ) {
+    public Mono<Page<ExecutionMonitoringDTO>> getExecutionsPageForCriteria(String tenant,
+                                                                           List<ExecutionStatus> status,
+                                                                           String processBid,
+                                                                           @Nullable String userEmail,
+                                                                           OffsetDateTime from,
+                                                                           OffsetDateTime to,
+                                                                           PageRequest paged) {
 
-        return getPExecutionsPageForCriteria(tenant, status, processBid, userEmail, from, to, paged)
-            .flatMap(page ->
-                Flux.fromIterable(page.getContent())
-                    .flatMap(exec -> Option.of(cache.asMap().get(exec.getProcessBusinessId()))
-                        .map(name -> Mono.just(new ExecutionMonitoringDTO(exec, name)))
-                        .getOrElse(() -> processRepository
-                            .findByTenantAndProcessBusinessID(exec.getTenant(), exec.getProcessBusinessId())
-                            .doOnNext(process -> cache.put(process.getProcessId(), process.getProcessName()))
-                            .map(process -> new ExecutionMonitoringDTO(exec, process.getProcessName()))
-                        )
-                    )
-                    .collectList()
-                    .map(dtos -> new PageImpl<>(dtos, page.getPageable(), page.getTotalElements())));
+        return getPExecutionsPageForCriteria(tenant,
+                                             status,
+                                             processBid,
+                                             userEmail,
+                                             from,
+                                             to,
+                                             paged).flatMap(page -> Flux.fromIterable(page.getContent())
+                                                                        .flatMap(exec -> Option.of(cache.asMap()
+                                                                                                        .get(exec.getProcessBusinessId()))
+                                                                                               .map(name -> Mono.just(
+                                                                                                   new ExecutionMonitoringDTO(
+                                                                                                       exec,
+                                                                                                       name)))
+                                                                                               .getOrElse(() -> processRepository.findByTenantAndProcessBusinessID(
+                                                                                                                                     exec.getTenant(),
+                                                                                                                                     exec.getProcessBusinessId())
+                                                                                                                                 .doOnNext(
+                                                                                                                                     process -> cache.put(
+                                                                                                                                         process.getProcessId(),
+                                                                                                                                         process.getProcessName()))
+                                                                                                                                 .map(
+                                                                                                                                     process -> new ExecutionMonitoringDTO(
+                                                                                                                                         exec,
+                                                                                                                                         process.getProcessName()))))
+                                                                        .collectList()
+                                                                        .map(dtos -> new PageImpl<>(dtos,
+                                                                                                    page.getPageable(),
+                                                                                                    page.getTotalElements())));
     }
 
-    // @formatter:on
 }

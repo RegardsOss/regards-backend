@@ -43,34 +43,28 @@ import java.util.List;
 public class RequestsControllerDocumentationHelper {
 
     public static ParameterDescriptor featureRequestTypeEnumDoc(String name) {
-        // @formatter:off
-        ParameterDescriptor param = RequestDocumentation
-            .parameterWithName(name)
-            .description("Request type")
-            .attributes(
-                        Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"),
-                        Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value(Arrays.toString(FeatureRequestTypeEnum.values()))
-                        );
-        // @formatter:on
+        ParameterDescriptor param = RequestDocumentation.parameterWithName(name)
+                                                        .description("Request type")
+                                                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                              .value("String"),
+                                                                    Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                              .value(Arrays.toString(
+                                                                                  FeatureRequestTypeEnum.values())));
         return param;
     }
 
     public static List<ParameterDescriptor> paginationDoc() {
         List<ParameterDescriptor> params = Lists.newArrayList();
-        // @formatter:off
-        params.add(
-            RequestDocumentation.parameterWithName("page")
-                .optional()
-                .description("Number of the page to retrieve")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer"))
-        );
-        params.add(
-            RequestDocumentation.parameterWithName("size")
-                 .optional()
-                 .description("Number of elements by page")
-                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer"))
-        );
-        // @formatter:on
+        params.add(RequestDocumentation.parameterWithName("page")
+                                       .optional()
+                                       .description("Number of the page to retrieve")
+                                       .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                             .value("Integer")));
+        params.add(RequestDocumentation.parameterWithName("size")
+                                       .optional()
+                                       .description("Number of elements by page")
+                                       .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                             .value("Integer")));
         return params;
     }
 
@@ -100,49 +94,43 @@ public class RequestsControllerDocumentationHelper {
 
     public static List<ParameterDescriptor> featureRequestSearchParametersDoc() {
         List<ParameterDescriptor> params = Lists.newArrayList();
-        // @formatter:off
-        params.add(
-            RequestDocumentation.parameterWithName("source")
-                .optional()
-                .description("Source of the requests to search for")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"))
-        );
-        params.add(
-            RequestDocumentation.parameterWithName("session")
-                 .optional()
-                 .description("Session of the requests to search for")
-                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"))
-        );
-        params.add(
-            RequestDocumentation.parameterWithName("providerId")
-                 .optional()
-                 .description("providerId of the requests to search for")
-                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"))
-        );
-        params.add(
-            RequestDocumentation.parameterWithName("from")
-                 .optional()
-                 .description("Search for requests with registrationDate greather than this parameter")
-                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Date ISO-8601"))
-                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value(OffsetDateTime.now().toString()))
-        );
-        params.add(
-            RequestDocumentation.parameterWithName("to")
-                 .optional()
-                 .description("Search for requests with registrationDate lower than this parameter")
-                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Date ISO-8601"))
-                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value(OffsetDateTime.now().toString()))
-        );
-        params.add(
-            RequestDocumentation.parameterWithName("state")
-                 .optional()
-                 .description("state of the requests to search for")
-                 .attributes(
-                             Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"),
-                             Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value(Arrays.toString(RequestState.values()))
-                 )
-        );
-        // @formatter:on
+        params.add(RequestDocumentation.parameterWithName("source")
+                                       .optional()
+                                       .description("Source of the requests to search for")
+                                       .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                             .value("String")));
+        params.add(RequestDocumentation.parameterWithName("session")
+                                       .optional()
+                                       .description("Session of the requests to search for")
+                                       .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                             .value("String")));
+        params.add(RequestDocumentation.parameterWithName("providerId")
+                                       .optional()
+                                       .description("providerId of the requests to search for")
+                                       .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                             .value("String")));
+        params.add(RequestDocumentation.parameterWithName("from")
+                                       .optional()
+                                       .description(
+                                           "Search for requests with registrationDate greather than this parameter")
+                                       .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                             .value("Date ISO-8601"))
+                                       .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                             .value(OffsetDateTime.now().toString())));
+        params.add(RequestDocumentation.parameterWithName("to")
+                                       .optional()
+                                       .description(
+                                           "Search for requests with registrationDate lower than this parameter")
+                                       .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                             .value("Date ISO-8601"))
+                                       .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                             .value(OffsetDateTime.now().toString())));
+        params.add(RequestDocumentation.parameterWithName("state")
+                                       .optional()
+                                       .description("state of the requests to search for")
+                                       .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"),
+                                                   Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                             .value(Arrays.toString(RequestState.values()))));
         return params;
     }
 

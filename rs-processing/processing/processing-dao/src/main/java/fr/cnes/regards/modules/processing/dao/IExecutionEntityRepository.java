@@ -39,30 +39,20 @@ import java.util.UUID;
 @Repository
 public interface IExecutionEntityRepository extends ReactiveCrudRepository<ExecutionEntity, UUID> {
 
-    // @formatter:off
-
     /**
      * We look for executions whose last recorded step is RUNNING, and its difference between recording time
      * and now is greater than the duration declared in the corresponding execution.
      */
-    @Query(" SELECT * "
-            + " FROM t_execution AS E "
-            + " WHERE E.current_status = 'RUNNING' "
-            + "   AND EXTRACT(EPOCH FROM now()) - EXTRACT(EPOCH FROM E.last_updated) > (E.timeout_after_millis / 1000) "
-    )
+    @Query("""
+         SELECT * 
+        FROM t_execution AS E 
+        WHERE E.current_status = 'RUNNING' 
+          AND EXTRACT(EPOCH FROM now()) - EXTRACT(EPOCH FROM E.last_updated) > (E.timeout_after_millis / 1000) """)
     Flux<ExecutionEntity> getTimedOutExecutions();
 
-    Flux<ExecutionEntity> findByTenantAndCurrentStatusIn(
-            String tenant,
-            List<ExecutionStatus> status,
-            Pageable page
-    );
+    Flux<ExecutionEntity> findByTenantAndCurrentStatusIn(String tenant, List<ExecutionStatus> status, Pageable page);
 
-    Mono<Integer> countByProcessBusinessIdAndCurrentStatusIn(
-            UUID processBusinessId,
-            List<ExecutionStatus> nonFinalStatusList
-    );
-
-    // @formatter:on
+    Mono<Integer> countByProcessBusinessIdAndCurrentStatusIn(UUID processBusinessId,
+                                                             List<ExecutionStatus> nonFinalStatusList);
 
 }

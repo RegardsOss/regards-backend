@@ -66,56 +66,47 @@ public class FeatureEntityControllerDocumentationHelper {
 
     public static List<ParameterDescriptor> featuresSearchParametersDoc() {
         List<ParameterDescriptor> params = Lists.newArrayList();
-        // @formatter:off
-        params.add(
-            RequestDocumentation.parameterWithName("source")
-                .optional()
-                .description("Source of the features to search for")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"))
-        );
-        params.add(
-            RequestDocumentation.parameterWithName("session")
-                 .optional()
-                 .description("Session of the features to search for")
-                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"))
-        );
-        params.add(
-            RequestDocumentation.parameterWithName("providerId")
-                 .optional()
-                 .description("providerId of the features to search for")
-                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"))
-        );
-        params.add(
-            RequestDocumentation.parameterWithName("from")
-                 .optional()
-                 .description("Search for features with lastUpdate date greather than this parameter")
-                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Date ISO-8601"))
-                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value(OffsetDateTime.now().toString()))
-        );
-        params.add(
-            RequestDocumentation.parameterWithName("to")
-                 .optional()
-                 .description("Search for features with lastUpdate date lower than this parameter")
-                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Date ISO-8601"))
-                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value(OffsetDateTime.now().toString()))
-        );
-        params.add(
-            RequestDocumentation.parameterWithName("model")
-                 .optional()
-                 .description("model of the features to search for")
-                 .attributes(
-                             Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")
-                 )
-        );
-        params.add(
-                   RequestDocumentation.parameterWithName("full")
-                        .optional()
-                        .description("Returned feature are complet (with all geojson content) if true. Default true.")
-                        .attributes(
-                                    Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Boolean")
-                        )
-               );
-        // @formatter:on
+        params.add(RequestDocumentation.parameterWithName("source")
+                                       .optional()
+                                       .description("Source of the features to search for")
+                                       .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                             .value("String")));
+        params.add(RequestDocumentation.parameterWithName("session")
+                                       .optional()
+                                       .description("Session of the features to search for")
+                                       .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                             .value("String")));
+        params.add(RequestDocumentation.parameterWithName("providerId")
+                                       .optional()
+                                       .description("providerId of the features to search for")
+                                       .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                             .value("String")));
+        params.add(RequestDocumentation.parameterWithName("from")
+                                       .optional()
+                                       .description(
+                                           "Search for features with lastUpdate date greather than this parameter")
+                                       .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                             .value("Date ISO-8601"))
+                                       .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                             .value(OffsetDateTime.now().toString())));
+        params.add(RequestDocumentation.parameterWithName("to")
+                                       .optional()
+                                       .description("Search for features with lastUpdate date lower than this parameter")
+                                       .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                             .value("Date ISO-8601"))
+                                       .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                             .value(OffsetDateTime.now().toString())));
+        params.add(RequestDocumentation.parameterWithName("model")
+                                       .optional()
+                                       .description("model of the features to search for")
+                                       .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                             .value("String")));
+        params.add(RequestDocumentation.parameterWithName("full")
+                                       .optional()
+                                       .description(
+                                           "Returned feature are complet (with all geojson content) if true. Default true.")
+                                       .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                             .value("Boolean")));
         return params;
     }
 

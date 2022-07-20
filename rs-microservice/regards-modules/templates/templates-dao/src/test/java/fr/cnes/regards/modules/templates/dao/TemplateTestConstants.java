@@ -61,10 +61,12 @@ public final class TemplateTestConstants {
     /**
      * Data
      */
-    // @formatter:off
     @SuppressWarnings("serial")
-    public static final Map<String, String> DATA = new HashMap<String, String>() {{ put("name", "Defaultname");put("age", DATA_VALUE_1);put("height", DATA_VALUE_2); }};
-    // @formatter:on
+    public static final Map<String, String> DATA = new HashMap<String, String>() {{
+        put("name", "Defaultname");
+        put("age", DATA_VALUE_1);
+        put("height", DATA_VALUE_2);
+    }};
 
     /**
      * Key for a value to store in the data map

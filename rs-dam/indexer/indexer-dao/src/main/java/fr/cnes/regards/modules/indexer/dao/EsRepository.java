@@ -508,59 +508,47 @@ public class EsRepository implements IEsRepository {
     }
 
     private JsonElement pluginConfPropertiesMapping() {
-        // @formatter:off
-        return object(
-                kv(PROPERTIES, object(
-                        kv("active", object("type", BOOLEAN)),
-                        kv("businessId", stringMapping()),
-                        kv("id", object("type", "long")),
-                        kv("label", stringMapping()),
-                        kv("pluginId", stringMapping()),
-                        kv("priorityOrder", object("type", "long")),
-                        kv("parameters", object("type", "nested")),
-                        kv(VERSION, stringMapping())
-                )));
-        // @formatter:on
+        return object(kv(PROPERTIES,
+                         object(kv("active", object("type", BOOLEAN)),
+                                kv("businessId", stringMapping()),
+                                kv("id", object("type", "long")),
+                                kv("label", stringMapping()),
+                                kv("pluginId", stringMapping()),
+                                kv("priorityOrder", object("type", "long")),
+                                kv("parameters", object("type", "nested")),
+                                kv(VERSION, stringMapping()))));
     }
 
     private JsonElement modelPropertiesMapping() {
-        // @formatter:off
-        return object(
-                kv(PROPERTIES, object(
-                        kv("description", object("type", "text")),
-                        kv("id", object("type", "long")),
-                        kv("name", stringMapping()),
-                        kv("type", stringMapping()),
-                        kv(VERSION, stringMapping())
-                )));
-        // @formatter:on
+        return object(kv(PROPERTIES,
+                         object(kv("description", object("type", "text")),
+                                kv("id", object("type", "long")),
+                                kv("name", stringMapping()),
+                                kv("type", stringMapping()),
+                                kv(VERSION, stringMapping()))));
     }
 
     private JsonElement feautrePropertiesMapping() {
-        // @formatter:off
-        return object(
-                kv(PROPERTIES, object(
-                        kv("entityType", stringMapping()),
-                        kv("files", object("type", "object")),
-                        kv("id", stringMapping()),
-                        kv("label", stringMapping()),
-                        kv("last", object("type", BOOLEAN)),
-                        kv("model", stringMapping()),
-                        kv("normalizedGeometry", object("type", "geo_shape")),
-                        kv(PROPERTIES, object("type", "object")),
-                        kv("providerId", stringMapping()),
-                        kv("type", stringMapping()),
-                        kv(VERSION, stringMapping()),
-                        kv("crs", stringMapping()),
-                        kv("tags", stringMapping()),
-                        kv("virtualId", stringMapping()),
-                        // DataObjectFeature specific attribute
-                        kv("session", stringMapping()),
-                        kv("sessionOwner", stringMapping()),
-                        // DatasetFeature specific attribute
-                        kv("licence", object("type", "text"))
-                )));
-        // @formatter:on
+        return object(kv(PROPERTIES,
+                         object(kv("entityType", stringMapping()),
+                                kv("files", object("type", "object")),
+                                kv("id", stringMapping()),
+                                kv("label", stringMapping()),
+                                kv("last", object("type", BOOLEAN)),
+                                kv("model", stringMapping()),
+                                kv("normalizedGeometry", object("type", "geo_shape")),
+                                kv(PROPERTIES, object("type", "object")),
+                                kv("providerId", stringMapping()),
+                                kv("type", stringMapping()),
+                                kv(VERSION, stringMapping()),
+                                kv("crs", stringMapping()),
+                                kv("tags", stringMapping()),
+                                kv("virtualId", stringMapping()),
+                                // DataObjectFeature specific attribute
+                                kv("session", stringMapping()),
+                                kv("sessionOwner", stringMapping()),
+                                // DatasetFeature specific attribute
+                                kv("licence", object("type", "text")))));
     }
 
     @Override
