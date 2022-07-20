@@ -80,6 +80,7 @@ public class ExternalTokenVerificationFilter implements GlobalFilter {
         String authHeader = request.getHeaders().getFirst(HttpConstants.AUTHORIZATION);
 
         if (!Strings.isNullOrEmpty(authHeader) && authHeader.startsWith(HttpConstants.BEARER)) {
+
             final String jwtKey = authHeader.substring(HttpConstants.BEARER.length()).trim();
 
             // if token invalid, no need to check,
@@ -91,6 +92,8 @@ public class ExternalTokenVerificationFilter implements GlobalFilter {
                     // Even if it's an expired Regards token, pass it along, it will be invalidated by the JWTAuthenticationProvider down stream
                     return chain.filter(exchange.mutate().request(modifiedRequest).build());
                 });
+            } else {
+                LOGGER.debug("Token found in already invalid tokens cache");
             }
         }
         return chain.filter(exchange);
@@ -98,6 +101,7 @@ public class ExternalTokenVerificationFilter implements GlobalFilter {
 
     private Mono<String> tryAuthentication(ServerHttpRequest request, String jwtKey) {
         if (valid.asMap().containsKey(jwtKey)) {
+            LOGGER.debug("Token found in already valid tokens cache");
             return Mono.just(Objects.requireNonNull(valid.getIfPresent(jwtKey)));
         } else {
             JWTAuthentication authentication = new JWTAuthentication(jwtKey);
@@ -110,11 +114,12 @@ public class ExternalTokenVerificationFilter implements GlobalFilter {
             if (!Strings.isNullOrEmpty(tenant)) {
                 authentication.setTenant(tenant);
             }
+            LOGGER.debug("New token tenant = {}", tenant);
 
             return Mono.fromCallable(() -> jwtService.parseToken(authentication))
                        .map(JWTAuthentication::getJwt)
                        .onErrorResume(JwtException.class,
-                                      e -> externalAuthenticationVerifier.verifyAndAuthenticate(authentication.getJwt(),
+                                      e -> externalAuthenticationVerifier.verifyAndAuthenticate(jwtKey,
                                                                                                 authentication.getTenant())
                                                                          .map(Authentication::getAccessToken)
                                                                          .onErrorResume(t -> {

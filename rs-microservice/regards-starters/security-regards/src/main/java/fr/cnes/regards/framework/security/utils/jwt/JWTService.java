@@ -148,7 +148,7 @@ public class JWTService {
                          .setSigningKey(Encoders.BASE64.encode(secret.getBytes()))
                          .parseClaimsJws(pAuthentication.getJwt());
             // OK, trusted JWT parsed and validated
-        } catch (MalformedJwtException m) {
+        } catch (MalformedJwtException | IllegalArgumentException m) {
             LOG.error("Failed to parse claims");
             throw new InvalidJwtException(m);
         }
