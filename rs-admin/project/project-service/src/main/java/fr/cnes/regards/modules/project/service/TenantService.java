@@ -23,6 +23,8 @@ import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -37,6 +39,11 @@ import java.util.Set;
  */
 @Service
 public class TenantService implements ITenantService {
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(TenantService.class);
 
     /**
      * JPA Repository to query projects from database
@@ -74,10 +81,19 @@ public class TenantService implements ITenantService {
         // Retrieve all projects
         List<Project> projects = projectRepository.findByIsDeletedFalse();
         for (Project project : projects) {
-            ProjectConnection pc = projectConnectionRepository.findOneByProjectNameAndMicroservice(project.getName(),
+            String projectName = project.getName();
+            ProjectConnection pc = projectConnectionRepository.findOneByProjectNameAndMicroservice(projectName,
                                                                                                    microserviceName);
-            if ((pc != null) && TenantConnectionState.ENABLED.equals(pc.getState())) {
-                tenants.add(project.getName());
+            if (pc != null) {
+                if (TenantConnectionState.ENABLED.equals(pc.getState())) {
+                    tenants.add(projectName);
+                } else {
+                    LOGGER.warn(
+                        "The tenant {} has been considered inactive on microservice {}, as its project connection state is {}",
+                        projectName,
+                        microserviceName,
+                        pc.getState());
+                }
             }
         }
         return tenants;
