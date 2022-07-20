@@ -48,6 +48,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -108,6 +109,7 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
                     }
                 })
                 .map(wd -> context.withParam(ExecutionLocalWorkdir.class, wd))
+                .subscribeOn(Schedulers.boundedElastic())
                 .subscriberContext(addInContext(PExecution.class, exec))
                 .switchIfEmpty(Mono.error(new WorkdirPreparationException(exec, "Unknown error")));
         };
@@ -209,7 +211,7 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
                     }
                     Path mfPath = Paths.get(wd.inputFolder().toString(), urn.toString(),
                             METADATA_DIR_PATH,
-                            featureName.replaceAll(" ", "_") + METADATA_FILE_EXT);
+                            featureName.replace(" ", "_") + METADATA_FILE_EXT);
                     Files.createDirectories(mfPath.getParent());
                     try (FileWriter writer = new FileWriter(Files.createFile(mfPath).toFile())) {
                         gson.toJson(featureContent, writer);
