@@ -387,6 +387,8 @@ public class OrderProcessingService implements IOrderProcessingService {
             // ^- This is ugly but needed to prevent FilesTask to ignore files because they would have the same checksum
             dataFileOut.setFilesize(expectedSize);
             return List.of(createAndSaveOrderDataFile(dataFileOut, dsSelIpId, orderId))
+                       .distinct()
+                       .map(orderDataFileService::save)
                        .map(OrderDataFile::getId)
                        .toJavaArray(Long[]::new);
         } else {
@@ -430,13 +432,12 @@ public class OrderProcessingService implements IOrderProcessingService {
                     // Happens only if some new cases appear for Cardinality
                     throw new NotImplementedException("New Cardinality case missing");
                 }
-            }).map(OrderDataFile::getId).toJavaArray(Long[]::new);
+            }).distinct().map(orderDataFileService::save).map(OrderDataFile::getId).toJavaArray(Long[]::new);
         }
     }
 
     protected OrderDataFile createAndSaveOrderDataFile(DataFile dataFile, UniformResourceName name, Long orderId) {
-        OrderDataFile orderDataFile = new OrderDataFile(dataFile, name, orderId);
-        return orderDataFileService.save(orderDataFile);
+        return new OrderDataFile(dataFile, name, orderId);
     }
 
     /**
