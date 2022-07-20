@@ -564,7 +564,7 @@ public class OrderProcessingService implements IOrderProcessingService {
             .flatMap(f -> List.ofAll(f.getFiles().values())
                 .filter(file -> !file.isReference() && requiredDatatypes.contains(file.getDataType()))
                 .map(file -> new OrderDataFile(file, f.getId(), orderId))
-            )
+            ).distinct()
             .map(orderDataFileRepository::save)
             .map(OrderDataFile::getId)
             .toJavaArray(Long[]::new);
