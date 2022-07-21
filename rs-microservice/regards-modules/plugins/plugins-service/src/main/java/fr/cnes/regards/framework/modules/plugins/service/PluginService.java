@@ -615,7 +615,8 @@ public class PluginService implements IPluginService, InitializingBean {
      * @param dynamicParameters plugin parameters (including potential dynamic ones)
      * @return plugin instance
      */
-    @Transactional(noRollbackFor = { EntityNotFoundException.class, EntityNotEmptyException.class })
+    @Transactional(noRollbackFor = { EntityNotFoundException.class, EntityNotEmptyException.class,
+        PluginUtilsRuntimeException.class })
     private <T> T instanciatePluginAndCache(String businessId, IPluginParam... dynamicParameters)
         throws ModuleException, NotAvailablePluginConfigurationException {
 
