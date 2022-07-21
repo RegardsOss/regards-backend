@@ -91,7 +91,7 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
     /**
      * The workspace occupation threshold at which point notification should be sent
      */
-    @Value("${regards.workspace.occupation.threshold:70}")
+    @Value("${regards.workspace.occupation.threshold:80}")
     private Integer workspaceOccupationThreshold;
 
     /**
