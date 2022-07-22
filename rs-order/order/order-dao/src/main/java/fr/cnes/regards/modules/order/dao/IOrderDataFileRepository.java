@@ -80,8 +80,7 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
     List<Object[]> selectSumSizesByOrderIdAndStates(OffsetDateTime limitDate, Collection<String> states);
 
     default List<Object[]> selectSumSizesByOrderIdAndStates(OffsetDateTime limitDate, FileState... states) {
-        return selectSumSizesByOrderIdAndStates(limitDate,
-                                                Arrays.stream(states).map(FileState::toString).toList());
+        return selectSumSizesByOrderIdAndStates(limitDate, Arrays.stream(states).map(FileState::toString).toList());
     }
 
     /**
@@ -97,8 +96,7 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
     List<Object[]> selectCountFilesByOrderIdAndStates(OffsetDateTime limitDate, Collection<String> states);
 
     default List<Object[]> selectCountFilesByOrderIdAndStates(OffsetDateTime limitDate, FileState... states) {
-        return selectCountFilesByOrderIdAndStates(limitDate,
-                                                  Arrays.stream(states).map(FileState::toString).toList());
+        return selectCountFilesByOrderIdAndStates(limitDate, Arrays.stream(states).map(FileState::toString).toList());
     }
 
     /**
@@ -115,9 +113,7 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
 
     default List<Object[]> selectCountFilesByOrderIdAndStates4AllOrders(OffsetDateTime limitDate, FileState... states) {
         return selectCountFilesByOrderIdAndStates4AllOrders(limitDate,
-                                                            Arrays.stream(states)
-                                                                  .map(FileState::toString)
-                                                                  .toList());
+                                                            Arrays.stream(states).map(FileState::toString).toList());
     }
 
     @Modifying

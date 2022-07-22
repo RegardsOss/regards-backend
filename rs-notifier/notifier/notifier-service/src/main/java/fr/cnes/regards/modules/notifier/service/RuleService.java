@@ -96,7 +96,7 @@ public class RuleService implements IRuleService {
         Set<PluginConfiguration> newRecipients = recipientService.getRecipients(newRule.getRecipientsBusinessIds());
 
         clearCache();
-        
+
         Rule toSave = Rule.build(newPlugin, newRecipients);
         return toRuleDTO(ruleRepo.save(toSave));
     }

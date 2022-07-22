@@ -87,7 +87,7 @@ public class ManagerSnapshotJobService {
             Pair<Boolean, Integer> pairHasNextNbJobs = self.handlePageSnapshots(schedulerStartDate, pageable);
             hasNext = pairHasNextNbJobs.getFirst();
             totalNbJobsScheduled += pairHasNextNbJobs.getSecond();
-            if(hasNext) {
+            if (hasNext) {
                 pageable = pageable.next();
             }
         }
@@ -106,14 +106,17 @@ public class ManagerSnapshotJobService {
             sessionStepRepo.countBySourceAndRegistrationDateBefore(process.getSource(), schedulerStartDate) == 0 :
             sessionStepRepo.countBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(process.getSource(),
                                                                                                    process.getLastUpdateDate(),
-                                                                                                   schedulerStartDate) == 0;
+                                                                                                   schedulerStartDate)
+            == 0;
         Set<SnapshotProcess> snapshotsRetrieved = new HashSet<>(snapshotPage.getContent());
         snapshotsRetrieved.removeIf(predicateSnapAlreadyProcessed);
         // launch one job per snapshotProcess, ie, one job per source
         if (!snapshotsRetrieved.isEmpty()) {
             return Pair.of(snapshotPage.hasNext(), createOneJobPerSnapshot(schedulerStartDate, snapshotsRetrieved));
         } else {
-            LOGGER.trace("{} No ManagerSnapshotJobs scheduled for page number {}", LOG_HEADER, pageable.getPageNumber());
+            LOGGER.trace("{} No ManagerSnapshotJobs scheduled for page number {}",
+                         LOG_HEADER,
+                         pageable.getPageNumber());
             return Pair.of(snapshotPage.hasNext(), 0);
         }
     }

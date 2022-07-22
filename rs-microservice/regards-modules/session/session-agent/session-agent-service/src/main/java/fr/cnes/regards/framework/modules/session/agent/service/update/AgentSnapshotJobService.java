@@ -91,7 +91,7 @@ public class AgentSnapshotJobService {
             Pair<Boolean, Integer> pairHasNextNbJobs = self.handlePageSnapshots(schedulerStartDate, pageable);
             hasNext = pairHasNextNbJobs.getFirst();
             totalNbJobsScheduled += pairHasNextNbJobs.getSecond();
-            if(hasNext) {
+            if (hasNext) {
                 pageable = pageable.next();
             }
         }
@@ -107,10 +107,12 @@ public class AgentSnapshotJobService {
         Page<SnapshotProcess> snapshotPage = this.snapshotRepo.findByJobIdIsNull(pageable);
         // Filter out all snapshot processes with no step events to update
         Predicate<SnapshotProcess> predicateSnapAlreadyProcessed = process -> (process.getLastUpdateDate() == null ?
-            stepPropertyUpdateRequestRepo.countBySourceAndRegistrationDateBefore(process.getSource(), schedulerStartDate) == 0 :
+            stepPropertyUpdateRequestRepo.countBySourceAndRegistrationDateBefore(process.getSource(),
+                                                                                 schedulerStartDate) == 0 :
             stepPropertyUpdateRequestRepo.countBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(process.getSource(),
                                                                                                                  process.getLastUpdateDate(),
-                                                                                                                 schedulerStartDate) == 0);
+                                                                                                                 schedulerStartDate)
+            == 0);
         Set<SnapshotProcess> snapshotsRetrieved = new HashSet<>(snapshotPage.getContent());
         snapshotsRetrieved.removeIf(predicateSnapAlreadyProcessed);
         // launch one job per snapshotProcess, ie, one job per source
