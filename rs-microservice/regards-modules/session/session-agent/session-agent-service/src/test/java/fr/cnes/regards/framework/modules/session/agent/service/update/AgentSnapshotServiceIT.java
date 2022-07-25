@@ -65,7 +65,11 @@ public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsIT {
         Assert.assertEquals("Wrong number of stepPropertyUpdateRequests created", 9, stepRequests.size());
 
         OffsetDateTime freezeDate = CREATION_DATE.plusMinutes(22);
-        int nbSessionStepsCreated = agentSnapshotService.generateSessionStep(snapshotProcess, freezeDate);
+        agentSnapshotService.generateSessionStep(snapshotProcess, freezeDate);
+        int nbSessionStepsCreated = (int) sessionStepRepo.findAll()
+                                                         .stream()
+                                                         .filter(f -> f.getLastUpdateDate().isAfter(CREATION_DATE))
+                                                         .count();
         checkRun1Test(nbSessionStepsCreated);
 
         // launch the second run with same source and session owner, fields should be updated
@@ -77,8 +81,12 @@ public class AgentSnapshotServiceIT extends AbstractAgentServiceUtilsIT {
         Assert.assertEquals("Wrong number of stepPropertyUpdateRequests created", 5, stepRequests2.size());
 
         OffsetDateTime freezeDate2 = CREATION_DATE.plusMinutes(50);
-        int nbSessionStepsCreated2 = agentSnapshotService.generateSessionStep(snapshotProcess, freezeDate2);
-        checkRun2Test(nbSessionStepsCreated2);
+        agentSnapshotService.generateSessionStep(snapshotProcess, freezeDate2);
+        nbSessionStepsCreated = (int) sessionStepRepo.findAll()
+                                                     .stream()
+                                                     .filter(f -> f.getLastUpdateDate().isAfter(freezeDate))
+                                                     .count();
+        checkRun2Test(nbSessionStepsCreated);
     }
 
     private List<StepPropertyUpdateRequest> createRun1StepEvents() {

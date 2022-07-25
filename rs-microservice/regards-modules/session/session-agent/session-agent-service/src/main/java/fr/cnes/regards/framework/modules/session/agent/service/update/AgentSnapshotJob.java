@@ -76,11 +76,10 @@ public class AgentSnapshotJob extends AbstractJob<Void> {
         String source = snapshotProcess.getSource();
         logger.debug("[{}] AgentSnapshot job starts for source {}", jobInfoId, source);
         long start = System.currentTimeMillis();
-        int nbSessionStep = agentSnapshotService.generateSessionStep(snapshotProcess, freezeDate);
-        logger.debug("[{}] AgentSnapshot job ends in {} ms. {} session step created for source {}",
+        agentSnapshotService.generateSessionStep(snapshotProcess, freezeDate);
+        logger.debug("[{}] AgentSnapshot job ends in {} ms for source {}",
                      jobInfoId,
                      System.currentTimeMillis() - start,
-                     nbSessionStep,
                      source);
     }
 }

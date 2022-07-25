@@ -39,12 +39,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Service to create or update {@link SessionStep} with new {@link StepPropertyUpdateRequest}.
@@ -62,22 +65,25 @@ public class AgentSnapshotService {
 
     private final ISnapshotProcessRepository snapshotProcessRepo;
 
+    private final AgentSnapshotService self;
+
     private final IPublisher publisher;
 
     private final int stepPropertyPageSize;
-
-    private OffsetDateTime lastSnapshotDate;
 
     public AgentSnapshotService(ISessionStepRepository sessionStepRepo,
                                 IStepPropertyUpdateRequestRepository stepPropertyRepo,
                                 ISnapshotProcessRepository snapshotProcessRepo,
                                 IPublisher publisher,
+                                AgentSnapshotService self,
                                 int stepPropertyPageSize) {
         this.sessionStepRepo = sessionStepRepo;
         this.stepPropertyRepo = stepPropertyRepo;
         this.snapshotProcessRepo = snapshotProcessRepo;
         this.publisher = publisher;
         this.stepPropertyPageSize = stepPropertyPageSize;
+        this.self = self;
+
     }
 
     /**
@@ -88,86 +94,70 @@ public class AgentSnapshotService {
      * @param freezeDate      corresponding to schedulerStartDate. Limit date to retrieve step properties
      * @return number of {@link SessionStep}s created
      */
-    public int generateSessionStep(SnapshotProcess snapshotProcess, OffsetDateTime freezeDate) {
-        Map<String, Map<String, SessionStep>> sessionStepsBySession = new HashMap<>();
+    public void generateSessionStep(SnapshotProcess snapshotProcess, OffsetDateTime freezeDate) {
+        OffsetDateTime startDate = snapshotProcess.getLastUpdateDate();
 
         // CREATE SESSION STEPS
         boolean interrupted;
+        // NOTE : Sort by creationDate and not registrationDate.
+        // Use creation date to handle requests in the same order as they have been emitted and not received.
         Pageable pageToRequest = PageRequest.of(0, stepPropertyPageSize, Sort.by("creationDate").and(Sort.by("id")));
-        List<StepPropertyUpdateRequest> stepPropertyRequestsProcessed = new ArrayList<>();
         // iterate on all pages of stepPropertyUpdateRequest to create SessionSteps
         do {
-            pageToRequest = updateOnePageStepRequests(sessionStepsBySession,
-                                                      stepPropertyRequestsProcessed,
-                                                      snapshotProcess,
-                                                      freezeDate,
-                                                      pageToRequest);
+            pageToRequest = self.updateOnePageStepRequests(snapshotProcess, startDate, freezeDate, pageToRequest);
             interrupted = Thread.currentThread().isInterrupted();
         } while (pageToRequest != null && !interrupted);
-
-        return saveSessionSteps(snapshotProcess, sessionStepsBySession, stepPropertyRequestsProcessed, interrupted);
     }
 
-    public int saveSessionSteps(SnapshotProcess snapshotProcess,
-                                Map<String, Map<String, SessionStep>> sessionStepsBySession,
-                                List<StepPropertyUpdateRequest> stepPropertyRequestsProcessed,
-                                boolean interrupted) {
-        // SAVE SESSION STEPS ONLY IF PROCESS WAS NOT INTERRUPTED
-        int sessionUpdatedSize = 0;
-        if (!interrupted) {
-            List<SessionStep> sessionStepsUpdated = sessionStepsBySession.entrySet()
-                                                                         .stream()
-                                                                         .flatMap(session -> session.getValue()
-                                                                                                    .values()
-                                                                                                    .stream())
-                                                                         .toList();
-            if (!sessionStepsUpdated.isEmpty()) {
-                sessionUpdatedSize = sessionStepsUpdated.size();
-                // save session steps
-                this.sessionStepRepo.saveAll(sessionStepsUpdated);
-                // save step property requests linked to session steps
-                this.stepPropertyRepo.saveAll(stepPropertyRequestsProcessed);
-                // update snapshotProcess lastUpdateDate with the most recent stepPropertyRequest
-                snapshotProcess.setLastUpdateDate(lastSnapshotDate);
-                this.snapshotProcessRepo.save(snapshotProcess);
-                // publish session steps events
-                List<SessionStepEvent> sessionStepEvents = sessionStepsUpdated.stream()
-                                                                              .map(sessionStep -> new SessionStepEvent(
-                                                                                  Hibernate.unproxy(sessionStep,
-                                                                                                    SessionStep.class)))
-                                                                              .toList();
-                this.publisher.publish(sessionStepEvents);
-            }
-        } else {
-            LOGGER.debug("{} thread has been interrupted", this.getClass().getName());
+    private void saveSessionSteps(Map<String, Map<String, SessionStep>> sessionStepsBySession) {
+        Set<SessionStep> sessionStepsUpdated = sessionStepsBySession.entrySet()
+                                                                    .stream()
+                                                                    .flatMap(session -> session.getValue()
+                                                                                               .values()
+                                                                                               .stream())
+                                                                    .collect(Collectors.toSet());
+        if (!sessionStepsUpdated.isEmpty()) {
+            // save session steps
+            this.sessionStepRepo.saveAll(sessionStepsUpdated);
+            // publish session steps events
+            List<SessionStepEvent> sessionStepEvents = sessionStepsUpdated.stream()
+                                                                          .map(sessionStep -> new SessionStepEvent(
+                                                                              Hibernate.unproxy(sessionStep,
+                                                                                                SessionStep.class)))
+                                                                          .toList();
+            this.publisher.publish(sessionStepEvents);
         }
-        return sessionUpdatedSize;
     }
 
     /**
      * Create or update SessionSteps by session and by stepId with new StepPropertyUpdateRequest events
      *
-     * @param sessionStepsBySession map containing SessionSteps by session and stepId
-     * @param stepPropertyProcessed all the stepProperty processed on this page
-     * @param snapshotProcess       information about the stepPropertyRequests to process
-     * @param freezeDate            only considered stepPropertyRequests before this date
-     * @param pageToRequest         page of stepPropertyRequests requested
+     * @param snapshotProcess information about the stepPropertyRequests to process
+     * @param startDate       only consider stepPropertyRequests after this date
+     * @param endDate         only considered stepPropertyRequests before this date
+     * @param pageToRequest   page of stepPropertyRequests requested
      * @return nextPageable if present
      */
-    private Pageable updateOnePageStepRequests(Map<String, Map<String, SessionStep>> sessionStepsBySession,
-                                               List<StepPropertyUpdateRequest> stepPropertyProcessed,
-                                               SnapshotProcess snapshotProcess,
-                                               OffsetDateTime freezeDate,
-                                               Pageable pageToRequest) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Pageable updateOnePageStepRequests(SnapshotProcess snapshotProcess,
+                                              OffsetDateTime startDate,
+                                              OffsetDateTime endDate,
+                                              Pageable pageToRequest) {
+        Map<String, Map<String, SessionStep>> sessionStepsBySession = new HashMap<>();
         String source = snapshotProcess.getSource();
-        Page<StepPropertyUpdateRequest> stepPropertyPage = getStepPropertiesByPage(snapshotProcess,
-                                                                                   freezeDate,
+        Page<StepPropertyUpdateRequest> stepPropertyPage = getStepPropertiesByPage(startDate,
+                                                                                   endDate,
                                                                                    pageToRequest,
                                                                                    source);
 
         // loop on every stepPropertyUpdateRequest to create or update SessionSteps
         List<StepPropertyUpdateRequest> stepPropertyUpdateRequests = stepPropertyPage.getContent();
+        boolean interrupted = false;
         for (StepPropertyUpdateRequest stepPropertyUpdateRequest : stepPropertyUpdateRequests) {
+            interrupted = Thread.currentThread().isInterrupted();
+            if (interrupted) {
+                break;
+            }
             String session = stepPropertyUpdateRequest.getSession();
             String stepId = stepPropertyUpdateRequest.getStepId();
 
@@ -195,36 +185,39 @@ public class AgentSnapshotService {
 
             // UPDATE STEP PROPERTY REQUEST WITH ASSOCIATED SESSION STEP
             stepPropertyUpdateRequest.setSessionStep(sessionStep);
-
-            // UPDATE SNAPSHOT PROCESS LAST UPDATE DATE
-            OffsetDateTime stepPropertyRegistrationDate = stepPropertyUpdateRequest.getRegistrationDate();
-            if (lastSnapshotDate == null || lastSnapshotDate.isBefore(stepPropertyRegistrationDate)) {
-                lastSnapshotDate = stepPropertyRegistrationDate;
-            }
         }
-        // add stepPropertyRequests processed to the list of stepProperties processed
-        stepPropertyProcessed.addAll(stepPropertyUpdateRequests);
+        if (!stepPropertyUpdateRequests.isEmpty()) {
+            snapshotProcess.setLastUpdateDate(stepPropertyUpdateRequests.get(stepPropertyUpdateRequests.size() - 1)
+                                                                        .getRegistrationDate());
+        }
+        if (!interrupted) {
+            // add stepPropertyRequests processed to the list of stepProperties processed
+            stepPropertyRepo.saveAll(stepPropertyUpdateRequests);
+            this.snapshotProcessRepo.save(snapshotProcess);
+            saveSessionSteps(sessionStepsBySession);
+        } else {
+            LOGGER.debug("{} thread has been interrupted", this.getClass().getName());
+        }
 
         return stepPropertyPage.hasNext() ? stepPropertyPage.nextPageable() : null;
     }
 
-    private Page<StepPropertyUpdateRequest> getStepPropertiesByPage(SnapshotProcess snapshotProcess,
-                                                                    OffsetDateTime freezeDate,
+    private Page<StepPropertyUpdateRequest> getStepPropertiesByPage(OffsetDateTime startDate,
+                                                                    OffsetDateTime endDate,
                                                                     Pageable pageToRequest,
                                                                     String source) {
-        OffsetDateTime lastUpdated = snapshotProcess.getLastUpdateDate();
 
         // get step property requests to process
         Page<StepPropertyUpdateRequest> stepPropertyPage;
-        if (lastUpdated != null) {
+        if (startDate != null) {
             stepPropertyPage = this.stepPropertyRepo.findBySourceAndRegistrationDateGreaterThanAndRegistrationDateLessThan(
                 source,
-                lastUpdated,
-                freezeDate,
+                startDate,
+                endDate,
                 pageToRequest);
         } else {
             stepPropertyPage = this.stepPropertyRepo.findBySourceAndRegistrationDateBefore(source,
-                                                                                           freezeDate,
+                                                                                           endDate,
                                                                                            pageToRequest);
         }
         return stepPropertyPage;

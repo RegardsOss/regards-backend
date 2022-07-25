@@ -117,16 +117,19 @@ public class SessionAgentServiceAutoConfiguration {
     }
 
     @Bean
+    @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
     public AgentSnapshotService agentSnapshotService(ISessionStepRepository sessionStepRepo,
                                                      IStepPropertyUpdateRequestRepository stepPropertyRepo,
                                                      ISnapshotProcessRepository snapshotProcessRepo,
                                                      IPublisher publisher,
+                                                     AgentSnapshotService service,
                                                      @Value("${regards.session.agent.step.requests.page.size:1000}")
                                                      int stepPropertyPageSize) {
         return new AgentSnapshotService(sessionStepRepo,
                                         stepPropertyRepo,
                                         snapshotProcessRepo,
                                         publisher,
+                                        service,
                                         stepPropertyPageSize);
     }
 
