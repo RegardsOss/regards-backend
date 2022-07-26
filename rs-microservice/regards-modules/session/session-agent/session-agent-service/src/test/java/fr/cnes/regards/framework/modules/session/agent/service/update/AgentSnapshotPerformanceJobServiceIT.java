@@ -46,7 +46,8 @@ import java.util.List;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(
-    properties = { "spring.jpa.properties.hibernate.default_schema=agent_performance_it", "regards.jobs.pool.size=5" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=agent_performance_it", "regards.jobs.pool.size=15",
+        "regards.jpa.multitenant.maxPoolSize=3" })
 @ActiveProfiles({ "testAmqp", "noscheduler" })
 public class AgentSnapshotPerformanceJobServiceIT extends AbstractAgentServiceUtilsIT {
 

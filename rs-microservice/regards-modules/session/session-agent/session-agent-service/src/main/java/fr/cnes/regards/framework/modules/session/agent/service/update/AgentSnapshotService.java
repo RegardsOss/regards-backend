@@ -94,7 +94,14 @@ public class AgentSnapshotService {
      * @param freezeDate      corresponding to schedulerStartDate. Limit date to retrieve step properties
      * @return number of {@link SessionStep}s created
      */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void generateSessionStep(SnapshotProcess snapshotProcess, OffsetDateTime freezeDate) {
+        /**
+         * NOTE : Method is annotated with Propagation.NOT_SUPPORTED to avoid use a new db connection.
+         * The db connection is created for the update method called under.
+         * If propagation is set do REQUIRED, then this method will need two connections one for this transaction, and
+         * one for the updateOnePageStepRequests transaction with is in propagation.REQUIRED_NEW.
+         */
         OffsetDateTime startDate = snapshotProcess.getLastUpdateDate();
 
         // CREATE SESSION STEPS

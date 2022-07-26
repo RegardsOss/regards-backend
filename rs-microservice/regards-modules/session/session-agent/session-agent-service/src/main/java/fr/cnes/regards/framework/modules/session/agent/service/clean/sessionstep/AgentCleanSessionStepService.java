@@ -31,6 +31,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -66,7 +67,14 @@ public class AgentCleanSessionStepService {
         this.self = agentCleanSessionStepService;
     }
 
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public int clean() {
+        /**
+         * NOTE : Method is annotated with Propagation.NOT_SUPPORTED to avoid use a new db connection.
+         * The db connection is created for the deleteOnePage method called under.
+         * If propagation is set do REQUIRED, then this method will need two connections one for this transaction, and
+         * one for the deleteOnePage transaction with is in propagation.REQUIRED_NEW.
+         */
         // Init startClean with the current date minus the limit of SessionStep save configured
         OffsetDateTime startClean = OffsetDateTime.now(ZoneOffset.UTC).minusDays(this.limitStoreSessionSteps);
         LOGGER.debug("Check old session steps before {}", startClean);
