@@ -43,10 +43,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -106,9 +103,9 @@ public class AgentSnapshotService {
 
         // CREATE SESSION STEPS
         boolean interrupted;
-        // NOTE : Sort by creationDate and not registrationDate.
-        // Use creation date to handle requests in the same order as they have been emitted and not received.
-        Pageable pageToRequest = PageRequest.of(0, stepPropertyPageSize, Sort.by("creationDate").and(Sort.by("id")));
+        Pageable pageToRequest = PageRequest.of(0,
+                                                stepPropertyPageSize,
+                                                Sort.by("registrationDate").and(Sort.by("id")));
         // iterate on all pages of stepPropertyUpdateRequest to create SessionSteps
         do {
             pageToRequest = self.updateOnePageStepRequests(snapshotProcess, startDate, freezeDate, pageToRequest);
@@ -194,7 +191,10 @@ public class AgentSnapshotService {
             stepPropertyUpdateRequest.setSessionStep(sessionStep);
         }
         if (!stepPropertyUpdateRequests.isEmpty()) {
-            snapshotProcess.setLastUpdateDate(stepPropertyUpdateRequests.get(stepPropertyUpdateRequests.size() - 1)
+            snapshotProcess.setLastUpdateDate(stepPropertyUpdateRequests.stream()
+                                                                        .max(Comparator.comparing(
+                                                                            StepPropertyUpdateRequest::getRegistrationDate))
+                                                                        .get()
                                                                         .getRegistrationDate());
         }
         if (!interrupted) {
