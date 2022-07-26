@@ -29,7 +29,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -72,37 +71,10 @@ public interface IPluginService {
     List<PluginMetaData> getPluginsByType(Class<?> interfacePluginType);
 
     /**
-     * @return whether the plugin configured by the given plugin configuration threw its id can be instantiated or not
-     * @throws NotAvailablePluginConfigurationException
-     * @deprecated use {@link #canInstantiate(String)} instead
-     */
-    @Deprecated
-    boolean canInstantiate(Long id) throws ModuleException, NotAvailablePluginConfigurationException;
-
-    /**
-     * Use {@link #canInstantiate(String)} with business identifier to be instance independent.
-     *
-     * @return whether the plugin configured by the given plugin configuration threw its id can be instantiated or not
-     * @throws NotAvailablePluginConfigurationException
+     * @return whether the plugin configured by the given plugin configuration through its id can be instantiated or not
+     * @throws NotAvailablePluginConfigurationException see {@link IPluginService#getPlugin(String, IPluginParam...)}
      */
     boolean canInstantiate(String businessId) throws ModuleException, NotAvailablePluginConfigurationException;
-
-    /**
-     * Use {@link #getPlugin(String, IPluginParam...)} with business identifier to be instance independent.
-     * Get a plugin instance for a given configuration. The pReturnInterfaceType attribute indicates the PluginInterface
-     * return type.
-     *
-     * @param <T>                     a plugin instance
-     * @param id                      database identifier of the {@link PluginConfiguration}.
-     * @param dynamicPluginParameters list of dynamic {@link AbstractPluginParam}
-     * @return a plugin instance
-     * @throws ModuleException                          thrown if we cannot find any PluginConfiguration corresponding to pId
-     * @throws NotAvailablePluginConfigurationException
-     * @deprecated use {@link #getPlugin(String, IPluginParam...)} instead
-     */
-    @Deprecated
-    <T> T getPlugin(Long id, IPluginParam... dynamicPluginParameters)
-        throws ModuleException, NotAvailablePluginConfigurationException;
 
     /**
      * Get a plugin instance for a given configuration. The pReturnInterfaceType attribute indicates the PluginInterface
@@ -113,20 +85,34 @@ public interface IPluginService {
      * @param dynamicPluginParameters list of dynamic {@link AbstractPluginParam}
      * @return a plugin instance
      * @throws ModuleException                          thrown if we cannot find any PluginConfiguration corresponding to pId
-     * @throws NotAvailablePluginConfigurationException
+     * @throws NotAvailablePluginConfigurationException In case plugin configuration is not active
      */
     <T> T getPlugin(String businessId, IPluginParam... dynamicPluginParameters)
         throws ModuleException, NotAvailablePluginConfigurationException;
 
     /**
-     * Get a plugin instance in a Optional for a given configuration. The pReturnInterfaceType attribute indicates the PluginInterface
+     * Get a plugin instance for a given configuration. The pReturnInterfaceType attribute indicates the PluginInterface
+     * return type.
+     *
+     * @param <T>                     a plugin instance
+     * @param plgConf                 {@link PluginConfiguration} to instanciate
+     * @param dynamicPluginParameters list of dynamic {@link AbstractPluginParam}
+     * @return a plugin instance
+     * @throws ModuleException                          thrown if we cannot find any PluginConfiguration corresponding to pId
+     * @throws NotAvailablePluginConfigurationException In case plugin configuration is not active
+     */
+    <T> T getPlugin(PluginConfiguration plgConf, IPluginParam... dynamicPluginParameters)
+        throws ModuleException, NotAvailablePluginConfigurationException;
+
+    /**
+     * Get a plugin instance in an Optional for a given configuration. The pReturnInterfaceType attribute indicates the PluginInterface
      * return type.
      *
      * @param <T>                     a plugin instance
      * @param businessId              business identifier of the {@link PluginConfiguration}.
      * @param dynamicPluginParameters list of dynamic {@link AbstractPluginParam}
-     * @return a plugin instance in a optional if exists or empty otherwise
-     * @throws NotAvailablePluginConfigurationException
+     * @return a plugin instance in an optional if exists or empty otherwise
+     * @throws NotAvailablePluginConfigurationException see {@link IPluginService#getPlugin(String, IPluginParam...)}
      */
     <T> Optional<T> getOptionalPlugin(String businessId, IPluginParam... dynamicPluginParameters)
         throws NotAvailablePluginConfigurationException;
@@ -140,7 +126,7 @@ public interface IPluginService {
      * @param pluginParameters    an optional list of {@link AbstractPluginParam}
      * @return a plugin instance
      * @throws ModuleException                          thrown if an error occurs
-     * @throws NotAvailablePluginConfigurationException
+     * @throws NotAvailablePluginConfigurationException see {@link IPluginService#getPlugin(String, IPluginParam...)}
      */
     <T> T getFirstPluginByType(Class<?> interfacePluginType, IPluginParam... pluginParameters)
         throws ModuleException, NotAvailablePluginConfigurationException;
@@ -181,18 +167,6 @@ public interface IPluginService {
 
     /**
      * Get the {@link PluginConfiguration}.
-     * Use {@link #getPluginConfiguration(String)} with business identifier to be instance independent.
-     *
-     * @param id business identifier of the {@link PluginConfiguration}.
-     * @return a specific configuration
-     * @throws EntityNotFoundException thrown if we cannot find any PluginConfiguration corresponding to pId
-     * @deprecated use {@link #getPluginConfiguration(String)} instead
-     */
-    @Deprecated
-    PluginConfiguration getPluginConfiguration(Long id) throws EntityNotFoundException;
-
-    /**
-     * Get the {@link PluginConfiguration}.
      *
      * @param businessId business identifier of the {@link PluginConfiguration}.
      * @return a specific configuration
@@ -211,20 +185,12 @@ public interface IPluginService {
     void setMetadata(PluginConfiguration... pluginConfigurations);
 
     /**
-     * Does given PluginConfiguration exist ?
+     * Does PluginConfiguration with given businessId exist ?
      *
      * @param businessId business identifier of the {@link PluginConfiguration}.
      * @return true or false (it's a boolean !!!)
      */
     boolean exists(String businessId);
-
-    /**
-     * Does given PluginConfiguration exist ?
-     *
-     * @param pluginConfLabel PluginConfiguration label to test
-     * @return true or false (it's a boolean !!!)
-     */
-    boolean existsByLabel(String pluginConfLabel);
 
     /**
      * Get all plugin's configuration for a specific plugin type.
@@ -242,10 +208,10 @@ public interface IPluginService {
     List<PluginConfiguration> getAllPluginConfigurations();
 
     /**
-     * Get all plugin's configuration for a specific plugin Id.
+     * Get all plugin's configuration for a specific pluginId.
      *
      * @param pluginId a specific plugin Id
-     * @return all the {@link PluginConfiguration} for a specific plugin Id
+     * @return all the {@link PluginConfiguration} for a specific pluginId
      */
     List<PluginConfiguration> getPluginConfigurations(String pluginId);
 
@@ -285,14 +251,6 @@ public interface IPluginService {
     Optional<PluginConfiguration> findPluginConfigurationByLabel(String configurationLabel);
 
     /**
-     * Check if plugin is cached (resolving tenant internally)
-     *
-     * @param businessId business identifier
-     * @return {@link boolean}
-     */
-    boolean isPluginCached(String businessId);
-
-    /**
      * Remove plugin instance cache with specified configuration identifier (resolving tenant internally)
      *
      * @param businessId business identifier
@@ -305,18 +263,7 @@ public interface IPluginService {
     void cleanPluginCache();
 
     /**
-     * @return tenant plugin cache
-     */
-    Map<String, Object> getPluginCache();
-
-    /**
-     * @param businessId business identifier
-     * @return tenant plugin instance
-     */
-    Object getCachedPlugin(String businessId);
-
-    /**
-     * Prepare {@link PluginConfiguration} by decrypting all crypted values.
+     * Prepare {@link PluginConfiguration} by decrypting all encrypted values.
      * A clone is return only if values are mutated! It may be a shallow clone so only use it for configuration export.
      *
      * @param pluginConf {@link PluginConfiguration} to export

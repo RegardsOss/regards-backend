@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.notifier.mock;
 
-import fr.cnes.regards.framework.encryption.exception.EncryptionException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -29,7 +27,10 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import org.apache.commons.lang3.NotImplementedException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 public class InMemoryPluginService implements IPluginService {
 
@@ -60,36 +61,28 @@ public class InMemoryPluginService implements IPluginService {
     }
 
     @Override
-    public boolean canInstantiate(Long id) throws ModuleException, NotAvailablePluginConfigurationException {
+    public boolean canInstantiate(String businessId) {
         throw new NotImplementedException("tbd");
     }
 
     @Override
-    public boolean canInstantiate(String businessId) throws ModuleException, NotAvailablePluginConfigurationException {
+    public <T> T getPlugin(String businessId, IPluginParam... dynamicPluginParameters) {
         throw new NotImplementedException("tbd");
     }
 
     @Override
-    public <T> T getPlugin(Long id, IPluginParam... dynamicPluginParameters)
+    public <T> T getPlugin(PluginConfiguration plgConf, IPluginParam... dynamicPluginParameters)
         throws ModuleException, NotAvailablePluginConfigurationException {
         throw new NotImplementedException("tbd");
     }
 
     @Override
-    public <T> T getPlugin(String businessId, IPluginParam... dynamicPluginParameters)
-        throws ModuleException, NotAvailablePluginConfigurationException {
+    public <T> Optional<T> getOptionalPlugin(String businessId, IPluginParam... dynamicPluginParameters) {
         throw new NotImplementedException("tbd");
     }
 
     @Override
-    public <T> Optional<T> getOptionalPlugin(String businessId, IPluginParam... dynamicPluginParameters)
-        throws NotAvailablePluginConfigurationException {
-        throw new NotImplementedException("tbd");
-    }
-
-    @Override
-    public <T> T getFirstPluginByType(Class<?> interfacePluginType, IPluginParam... pluginParameters)
-        throws ModuleException, NotAvailablePluginConfigurationException {
+    public <T> T getFirstPluginByType(Class<?> interfacePluginType, IPluginParam... pluginParameters) {
         throw new NotImplementedException("tbd");
     }
 
@@ -99,8 +92,7 @@ public class InMemoryPluginService implements IPluginService {
     }
 
     @Override
-    public PluginConfiguration savePluginConfiguration(PluginConfiguration pluginConf)
-        throws EntityInvalidException, EncryptionException, EntityNotFoundException {
+    public PluginConfiguration savePluginConfiguration(PluginConfiguration pluginConf) {
         pluginConf.setId(1L);
         try {
             deletePluginConfiguration(pluginConf.getBusinessId());
@@ -117,13 +109,8 @@ public class InMemoryPluginService implements IPluginService {
     }
 
     @Override
-    public PluginConfiguration updatePluginConfiguration(PluginConfiguration plugin) throws ModuleException {
+    public PluginConfiguration updatePluginConfiguration(PluginConfiguration plugin) {
         return savePluginConfiguration(plugin);
-    }
-
-    @Override
-    public PluginConfiguration getPluginConfiguration(Long id) throws EntityNotFoundException {
-        throw new NotImplementedException("tbd");
     }
 
     @Override
@@ -150,11 +137,6 @@ public class InMemoryPluginService implements IPluginService {
     }
 
     @Override
-    public boolean existsByLabel(String pluginConfLabel) {
-        throw new NotImplementedException("tbd");
-    }
-
-    @Override
     public List<PluginConfiguration> getPluginConfigurationsByType(Class<?> interfacePluginType) {
         // No need to filter for tests
         // Improve if necessary (not that easy)
@@ -177,22 +159,17 @@ public class InMemoryPluginService implements IPluginService {
     }
 
     @Override
-    public PluginMetaData checkPluginClassName(Class<?> clazz, String pluginClassName) throws EntityInvalidException {
+    public PluginMetaData checkPluginClassName(Class<?> clazz, String pluginClassName) {
         throw new NotImplementedException("tbd");
     }
 
     @Override
-    public PluginConfiguration getPluginConfigurationByLabel(String configurationLabel) throws EntityNotFoundException {
+    public PluginConfiguration getPluginConfigurationByLabel(String configurationLabel) {
         throw new NotImplementedException("tbd");
     }
 
     @Override
     public Optional<PluginConfiguration> findPluginConfigurationByLabel(String configurationLabel) {
-        throw new NotImplementedException("tbd");
-    }
-
-    @Override
-    public boolean isPluginCached(String businessId) {
         throw new NotImplementedException("tbd");
     }
 
@@ -203,16 +180,6 @@ public class InMemoryPluginService implements IPluginService {
 
     @Override
     public void cleanPluginCache() {
-        throw new NotImplementedException("tbd");
-    }
-
-    @Override
-    public Map<String, Object> getPluginCache() {
-        throw new NotImplementedException("tbd");
-    }
-
-    @Override
-    public Object getCachedPlugin(String businessId) {
         throw new NotImplementedException("tbd");
     }
 

@@ -163,7 +163,7 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
         throws ModuleException {
         SearchEngineConfiguration conf = searchEngineService.retrieveConf(datasetUrn, engineType);
         try {
-            return pluginService.getPlugin(conf.getConfiguration().getId());
+            return pluginService.getPlugin(conf.getConfiguration().getBusinessId());
         } catch (NotAvailablePluginConfigurationException e) {
             throw new ModuleException(e.getMessage(), e);
         }

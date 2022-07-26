@@ -95,7 +95,10 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         // Instanciate plugin
         resolver.forceTenant(getDefaultTenant());
         IParamTestPlugin plugin = pluginService.getFirstPluginByType(IParamTestPlugin.class);
+        IParamTestPlugin plugin2 = pluginService.getFirstPluginByType(IParamTestPlugin.class);
         Assert.assertNotNull(plugin);
+        Assert.assertNotNull(plugin2);
+        Assert.assertEquals("Should be the same instance ", plugin, plugin2);
 
         // With dynamic parameter
         String dynValue = "toto";

@@ -40,9 +40,9 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Class LdapAuthenticationPluginTest
@@ -85,7 +85,7 @@ public class LdapAuthenticationPluginTest {
         try {
             PluginConfiguration conf = PluginConfiguration.build(LdapAuthenticationPlugin.class, "", parameters);
             // instantiate plugin
-            plugin = PluginUtils.getPlugin(conf, new HashMap<>());
+            plugin = PluginUtils.getPlugin(conf, new ConcurrentHashMap<>());
             Assert.assertNotNull(plugin);
         } catch (final PluginUtilsRuntimeException | NotAvailablePluginConfigurationException e) {
             Assert.fail();
@@ -93,9 +93,9 @@ public class LdapAuthenticationPluginTest {
     }
 
     /**
-     * Test valid authentication throught LDAP plugin
+     * Test valid authentication through LDAP plugin
      */
-    @Purpose("Test valid authentication throught LDAP plugin")
+    @Purpose("Test valid authentication through LDAP plugin")
     @Test
     public void testLdapAuthentication() {
 
@@ -109,17 +109,17 @@ public class LdapAuthenticationPluginTest {
         final AuthenticationPluginResponse response = spy.authenticate("login", "password", "project");
         Assert.assertNotNull("Response should not be null", response);
         Assert.assertTrue("Error authentication. Access should be granted.", response.isAccessGranted());
-        Assert.assertEquals("Error authentication. Email is not valid", response.getEmail(), EMAIL);
+        Assert.assertEquals("Error authentication. Email is not valid", EMAIL, response.getEmail());
 
     }
 
     /**
-     * Test error authentication throught LDAP plugin
+     * Test error authentication through LDAP plugin
      *
      * @throws LdapException test error.
      * @throws IOException   test error.
      */
-    @Purpose("Test error authentication throught LDAP plugin")
+    @Purpose("Test error authentication through LDAP plugin")
     @Test
     public void testErrorConnection() throws LdapException, IOException {
         final LdapConnection mockedConnection = Mockito.mock(LdapConnection.class);
@@ -131,16 +131,16 @@ public class LdapAuthenticationPluginTest {
 
         final AuthenticationPluginResponse response = spy.authenticate("login", "password", "project");
         Assert.assertNotNull("Response should not be null", response);
-        Assert.assertTrue("The authentication shoul not be granted.", !response.isAccessGranted());
+        Assert.assertFalse("The authentication should not be granted.", response.isAccessGranted());
     }
 
     /**
-     * Test error authentication throught LDAP plugin
+     * Test error authentication through LDAP plugin
      *
      * @throws LdapException test error.
      * @throws IOException   test error.
      */
-    @Purpose("Test error authentication throught LDAP plugin")
+    @Purpose("Test error authentication through LDAP plugin")
     @Test
     public void testErrorAuthentication() throws LdapException, IOException {
         final LdapConnection mockedConnection = Mockito.mock(LdapConnection.class);
@@ -153,13 +153,13 @@ public class LdapAuthenticationPluginTest {
 
         final AuthenticationPluginResponse response = spy.authenticate("login", "password", "project");
         Assert.assertNotNull("Response should not be null", response);
-        Assert.assertTrue("The authentication shoul not be granted.", !response.isAccessGranted());
+        Assert.assertFalse("The authentication should not be granted.", response.isAccessGranted());
     }
 
     /**
-     * Test error authentication throught LDAP plugin
+     * Test error authentication through LDAP plugin
      */
-    @Purpose("Test error authentication throught LDAP plugin")
+    @Purpose("Test error authentication through LDAP plugin")
     @Test
     public void testErrorInvalidEmail() {
         Mockito.mock(LdapNetworkConnection.class);
@@ -171,16 +171,16 @@ public class LdapAuthenticationPluginTest {
 
         final AuthenticationPluginResponse response = spy.authenticate("login", "password", "project");
         Assert.assertNotNull("Response should not be null", response);
-        Assert.assertTrue("The authentication shoul not be granted.", !response.isAccessGranted());
+        Assert.assertFalse("The authentication should not be granted.", response.isAccessGranted());
     }
 
     /**
-     * Test error authentication throught LDAP plugin
+     * Test error authentication through LDAP plugin
      *
      * @throws LdapException test error.
      * @throws IOException   test error.
      */
-    @Purpose("Test error authentication throught LDAP plugin")
+    @Purpose("Test error authentication through LDAP plugin")
     @Test
     public void testErrorLdapException() throws LdapException, IOException {
         final LdapConnection mockedConnection = Mockito.mock(LdapConnection.class);
@@ -192,17 +192,17 @@ public class LdapAuthenticationPluginTest {
 
         final AuthenticationPluginResponse response = spy.authenticate("login", "password", "project");
         Assert.assertNotNull("Response should not be null", response);
-        Assert.assertTrue("The authentication shoul not be granted.", !response.isAccessGranted());
+        Assert.assertFalse("The authentication should not be granted.", response.isAccessGranted());
 
     }
 
     /**
-     * Test error authentication throught LDAP plugin
+     * Test error authentication through LDAP plugin
      *
      * @throws LdapException test error.
      * @throws IOException   test error.
      */
-    @Purpose("Test error authentication throught LDAP plugin")
+    @Purpose("Test error authentication through LDAP plugin")
     @Test
     public void testErrorLdapException2() throws LdapException, IOException {
         final LdapConnection mockedConnection = Mockito.mock(LdapConnection.class);
@@ -214,7 +214,7 @@ public class LdapAuthenticationPluginTest {
 
         final AuthenticationPluginResponse response = spy.authenticate("login", "password", "project");
         Assert.assertNotNull("Response should not be null", response);
-        Assert.assertTrue("The authentication shoul not be granted.", !response.isAccessGranted());
+        Assert.assertFalse("The authentication should not be granted.", response.isAccessGranted());
 
     }
 

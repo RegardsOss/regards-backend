@@ -42,6 +42,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * This class contains all the utilities to create a {@link Plugin} instance, to retrieve all annotated plugins and to
@@ -126,7 +127,7 @@ public final class PluginUtils {
         } else {
             StringJoiner customPackages = new StringJoiner(",");
             reflectionPackages.forEach(customPackages::add);
-            LOGGER.info("System will look for plugins in custom package(s): {}", customPackages.toString());
+            LOGGER.info("System will look for plugins in custom package(s): {}", customPackages);
             Configuration configuration = ConfigurationBuilder.build(reflectionPackages.toArray(new Object[0]));
             reflections = new Reflections(configuration);
         }
@@ -162,9 +163,9 @@ public final class PluginUtils {
             // Store plugin reference
             pluginMetadataCache.put(plugin.getPluginId(), plugin);
 
-            LOGGER.info(String.format("Plugin \"%s\" with identifier \"%s\" loaded.",
-                                      plugin.getPluginClassName(),
-                                      plugin.getPluginId()));
+            LOGGER.info("Plugin \"{}\" with identifier \"{}\" loaded.",
+                        plugin.getPluginClassName(),
+                        plugin.getPluginId());
         }
         LOGGER.info("{} Plugins loaded!", HR);
     }
@@ -231,7 +232,7 @@ public final class PluginUtils {
     }
 
     public static <T> T getPlugin(PluginConfiguration conf,
-                                  Map<String, Object> instantiatedPlugins,
+                                  ConcurrentMap<String, Object> instantiatedPlugins,
                                   IPluginParam... dynamicParams) throws NotAvailablePluginConfigurationException {
         return getPlugin(conf, pluginMetadataCache.get(conf.getPluginId()), instantiatedPlugins, dynamicParams);
     }
@@ -248,13 +249,13 @@ public final class PluginUtils {
      */
     public static <T> T getPlugin(PluginConfiguration conf,
                                   PluginMetaData pluginMetadata,
-                                  Map<String, Object> instantiatedPlugins,
+                                  ConcurrentMap<String, Object> instantiatedPlugins,
                                   IPluginParam... dynamicParams) throws NotAvailablePluginConfigurationException {
         if (pluginMetadata == null) {
             throw new IllegalArgumentException(String.format("Plugin metadata are required for plugin \"%s\"",
                                                              conf.getPluginId()));
         }
-        if (!conf.isActive()) {
+        if (Boolean.FALSE.equals(conf.isActive())) {
             throw new NotAvailablePluginConfigurationException(String.format(
                 "Plugin configuration <%d - %s> is not active.",
                 conf.getId(),
@@ -275,9 +276,9 @@ public final class PluginUtils {
     @SuppressWarnings("unchecked")
     public static <T> T getPlugin(PluginConfiguration conf,
                                   String pluginClass,
-                                  Map<String, Object> instantiatedPlugins,
+                                  ConcurrentMap<String, Object> instantiatedPlugins,
                                   IPluginParam... dynamicParams) {
-        T returnPlugin = null;
+        T returnPlugin;
 
         try {
             // Make a new instance
@@ -350,8 +351,8 @@ public final class PluginUtils {
                 } catch (final IllegalAccessException | IllegalArgumentException e) {
                     LOGGER.error(String.format("Exception while invoking init method on plugin class <%s>.",
                                                plugin.getClass()), e);
-                    if (e.getCause() instanceof PluginUtilsRuntimeException) {
-                        throw (PluginUtilsRuntimeException) e.getCause();
+                    if (e.getCause() instanceof PluginUtilsRuntimeException cause) {
+                        throw cause;
                     } else {
                         throw new PluginUtilsRuntimeException(e);
                     }
@@ -438,9 +439,9 @@ public final class PluginUtils {
         // lets check that all remaining parameters are correctly given
         for (PluginParamDescriptor plgParamMeta : pluginParametersFromMeta) {
             IPluginParam parameterFromConf = conf.getParameter(plgParamMeta.getName());
-            if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable() && (parameterFromConf == null) && (
-                plgParamMeta.getDefaultValue()
-                == null)) {
+            if (Boolean.TRUE.equals(!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable() && (
+                parameterFromConf
+                == null)) && (plgParamMeta.getDefaultValue() == null)) {
                 validationErrors.add(String.format("Plugin Parameter %s is missing.", plgParamMeta.getName()));
             }
         }

@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
@@ -30,13 +29,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Test scanning plugin
@@ -53,53 +51,52 @@ public class DiskScanningTest {
     }
 
     @Test
-    public void testDirectoryScanningWithoutGlobber()
-        throws ModuleException, IOException, NotAvailablePluginConfigurationException {
+    public void testDirectoryScanningWithoutGlobber() throws NotAvailablePluginConfigurationException {
 
         PluginConfiguration pluginConf = PluginConfiguration.build(GlobDiskScanning.class, null, null);
         // Instantiate plugin
-        IScanPlugin plugin = PluginUtils.getPlugin(pluginConf, new HashMap<String, Object>());
+        IScanPlugin plugin = PluginUtils.getPlugin(pluginConf, new ConcurrentHashMap<>());
         Assert.assertNotNull(plugin);
 
         // Run plugin
         List<Path> scannedFiles = plugin.scan(searchDir, (Optional.empty()));
         Assert.assertNotNull(scannedFiles);
-        Assert.assertTrue(scannedFiles.size() == 4);
+        Assert.assertEquals(4, scannedFiles.size());
     }
 
     @Test
-    public void testDirectoryScanningWithGlobber() throws ModuleException, NotAvailablePluginConfigurationException {
+    public void testDirectoryScanningWithGlobber() throws NotAvailablePluginConfigurationException {
 
         // Plugin parameters
         Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(GlobDiskScanning.FIELD_GLOB, "*_0[12].md"));
 
         PluginConfiguration pluginConf = PluginConfiguration.build(GlobDiskScanning.class, null, parameters);
         // Instantiate plugin
-        IScanPlugin plugin = PluginUtils.getPlugin(pluginConf, new HashMap<String, Object>());
+        IScanPlugin plugin = PluginUtils.getPlugin(pluginConf, new ConcurrentHashMap<>());
         Assert.assertNotNull(plugin);
 
         // Run plugin
         List<Path> scannedFiles = plugin.scan(searchDir, Optional.empty());
         Assert.assertNotNull(scannedFiles);
-        Assert.assertTrue(scannedFiles.size() == 2);
+        Assert.assertEquals(2, scannedFiles.size());
     }
 
     @Test
-    public void testDirectoryScanningWithoutRegex() throws ModuleException, NotAvailablePluginConfigurationException {
+    public void testDirectoryScanningWithoutRegex() throws NotAvailablePluginConfigurationException {
 
         PluginConfiguration pluginConf = PluginConfiguration.build(RegexDiskScanning.class, null, null);
         // Instantiate plugin
-        IScanPlugin plugin = PluginUtils.getPlugin(pluginConf, new HashMap<String, Object>());
+        IScanPlugin plugin = PluginUtils.getPlugin(pluginConf, new ConcurrentHashMap<>());
         Assert.assertNotNull(plugin);
 
         // Run plugin
         List<Path> scannedFiles = plugin.scan(searchDir, Optional.empty());
         Assert.assertNotNull(scannedFiles);
-        Assert.assertTrue(scannedFiles.size() == 4);
+        Assert.assertEquals(4, scannedFiles.size());
     }
 
     @Test
-    public void testDirectoryScanningWithRegex() throws ModuleException, NotAvailablePluginConfigurationException {
+    public void testDirectoryScanningWithRegex() throws NotAvailablePluginConfigurationException {
 
         // Plugin parameters
         Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(RegexDiskScanning.FIELD_REGEX,
@@ -107,12 +104,12 @@ public class DiskScanningTest {
 
         PluginConfiguration pluginConf = PluginConfiguration.build(RegexDiskScanning.class, null, parameters);
         // Instantiate plugin
-        IScanPlugin plugin = PluginUtils.getPlugin(pluginConf, new HashMap<String, Object>());
+        IScanPlugin plugin = PluginUtils.getPlugin(pluginConf, new ConcurrentHashMap<>());
         Assert.assertNotNull(plugin);
 
         // Run plugin
         List<Path> scannedFiles = plugin.scan(searchDir, Optional.empty());
         Assert.assertNotNull(scannedFiles);
-        Assert.assertTrue(scannedFiles.size() == 2);
+        Assert.assertEquals(2, scannedFiles.size());
     }
 }

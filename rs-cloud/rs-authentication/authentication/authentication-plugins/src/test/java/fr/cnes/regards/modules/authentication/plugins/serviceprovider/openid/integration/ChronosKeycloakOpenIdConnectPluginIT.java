@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.integration;
 
-import com.google.gson.Gson;
 import fr.cnes.regards.framework.encryption.IEncryptionService;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -39,8 +38,8 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
-import java.util.HashMap;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -51,9 +50,6 @@ public class ChronosKeycloakOpenIdConnectPluginIT extends AbstractRegardsService
     @Autowired
     private IEncryptionService encryptionService;
 
-    @Autowired
-    private Gson gson;
-
     @Before
     public void setUp() {
         PluginUtils.setup();
@@ -63,7 +59,7 @@ public class ChronosKeycloakOpenIdConnectPluginIT extends AbstractRegardsService
     // 1. Go to https://chronos-valid-dev.cloud-espace.si.c-s.fr:8443/auth/realms/chronos/protocol/openid-connect/auth?client_id=regards&redirect_uri=http://plop.com&response_mode=fragment&response_type=code&scope=openid
     // 2. Enter login / password : uvalidation/password
     // 3. After redirect, get query param "code" in URL
-    // 4 Copy paste in OpenIdAuthenticationParams below
+    // 4 Copy and paste in OpenIdAuthenticationParams below
     // 5. Run test, quickly before the token is invalidated.
     // NB: After each failure, a new code is required.
     @Ignore("Uncomment when testing manually.")
@@ -88,7 +84,7 @@ public class ChronosKeycloakOpenIdConnectPluginIT extends AbstractRegardsService
                                                         IPluginParam.build(OpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT,
                                                                            (String) null));
         PluginConfiguration conf = PluginConfiguration.build(OpenIdConnectPlugin.class, "", parameters);
-        OpenIdConnectPlugin plugin = PluginUtils.getPlugin(conf, new HashMap<>());
+        OpenIdConnectPlugin plugin = PluginUtils.getPlugin(conf, new ConcurrentHashMap<>());
 
         Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> result = plugin.authenticate(new OpenIdAuthenticationParams(
             "281e2396-455f-4158-9a27-4c5348f19e4d.0d070daa-c132-4b76-b099-74c09ab5ea34.fd522e1f-281d-41c9-b0ad-911ea074365a"));

@@ -37,6 +37,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Post process plugin instances to inject annotated parameters.
@@ -152,16 +153,13 @@ public final class PluginParameterUtils {
             String name = getFieldName(field, pluginParameter);
 
             // Lets restrict @PluginParameter#sensitive() usage to strings.
-            if (pluginParameter.sensitive()) {
-                if (!String.class.isAssignableFrom(field.getType())) {
-                    String msg = String.format(
-                        "Sensible parameters must be of type %s. Faulty parameter: %s in plugin: %s",
-                        String.class.getName(),
-                        field.getName(),
-                        pluginClass.getName());
-                    LOGGER.error(msg);
-                    throw new PluginUtilsRuntimeException(msg);
-                }
+            if (pluginParameter.sensitive() && !String.class.isAssignableFrom(field.getType())) {
+                String msg = String.format("Sensible parameters must be of type %s. Faulty parameter: %s in plugin: %s",
+                                           String.class.getName(),
+                                           field.getName(),
+                                           pluginClass.getName());
+                LOGGER.error(msg);
+                throw new PluginUtilsRuntimeException(msg);
             }
 
             result = PluginParamDescriptor.create(name,
@@ -387,13 +385,13 @@ public final class PluginParameterUtils {
      */
     public static <T> void postProcess(T plugin,
                                        PluginConfiguration conf,
-                                       Map<String, Object> instantiatedPlugins,
+                                       ConcurrentMap<String, Object> instantiatedPlugins,
                                        IPluginParam... dynamicParams) {
 
         LOGGER.debug("Post processing plugin \"{}\"", plugin.getClass().getSimpleName());
 
         // Test if the plugin configuration is active
-        if (!conf.isActive()) {
+        if (Boolean.FALSE.equals(conf.isActive())) {
             throw new PluginUtilsRuntimeException(String.format("The plugin configuration <%s-%s> is not active.",
                                                                 conf.getId(),
                                                                 conf.getLabel()));
@@ -425,7 +423,7 @@ public final class PluginParameterUtils {
                                                    PluginConfiguration conf,
                                                    Field field,
                                                    PluginParameter paramAnnotation,
-                                                   Map<String, Object> instantiatedPlugins,
+                                                   ConcurrentMap<String, Object> instantiatedPlugins,
                                                    IPluginParam... dynamicParams) {
 
         // Inject value
@@ -433,14 +431,7 @@ public final class PluginParameterUtils {
 
         PluginParamType paramType = getFieldParameterType(field);
         switch (paramType) {
-            case STRING:
-            case BYTE:
-            case SHORT:
-            case INTEGER:
-            case LONG:
-            case FLOAT:
-            case DOUBLE:
-            case BOOLEAN:
+            case STRING, BYTE, SHORT, INTEGER, LONG, FLOAT, DOUBLE, BOOLEAN -> {
                 LOGGER.debug("primitive parameter : {} --> {}", field.getName(), field.getType());
                 postProcessPrimitiveType(plugin,
                                          conf,
@@ -448,19 +439,16 @@ public final class PluginParameterUtils {
                                          findPrimitiveObject(field.getType()).get(),
                                          paramAnnotation,
                                          dynamicParams);
-                break;
-            case PLUGIN:
+            }
+            case PLUGIN -> {
                 LOGGER.debug("interface parameter : {} --> {}", field.getName(), field.getType());
                 postProcessInterface(plugin, conf, field, paramAnnotation, instantiatedPlugins);
-                break;
-            case POJO:
-            case COLLECTION:
-            case MAP:
+            }
+            case POJO, COLLECTION, MAP -> {
                 LOGGER.debug("object parameter {} : {} --> {}", paramType, field.getName(), field.getType());
                 postProcessObjectType(plugin, conf, field, paramAnnotation, paramType, dynamicParams);
-                break;
-            default:
-                throw new PluginUtilsRuntimeException(String.format("Type parameter <%s> is unknown.", field));
+            }
+            default -> throw new PluginUtilsRuntimeException(String.format("Type parameter <%s> is unknown.", field));
         }
     }
 
@@ -472,56 +460,35 @@ public final class PluginParameterUtils {
      * @param value
      * @return new created {@link IPluginParam}
      */
-    @SuppressWarnings({ "serial", "unchecked" })
+    @SuppressWarnings({ "unchecked" })
     public static IPluginParam forType(PluginParamType paramType, String paramName, String value, boolean isDynamic) {
-        AbstractPluginParam<?> param = null;
+        AbstractPluginParam<?> param;
         switch (paramType) {
-            case STRING:
-                param = IPluginParam.build(paramName, value);
-                break;
-            case BYTE:
-                param = IPluginParam.build(paramName, Byte.valueOf(value));
-                break;
-            case SHORT:
-                param = IPluginParam.build(paramName, Short.valueOf(value));
-                break;
-            case INTEGER:
-                param = IPluginParam.build(paramName, Integer.valueOf(value));
-                break;
-            case LONG:
-                param = IPluginParam.build(paramName, Long.valueOf(value));
-                break;
-            case FLOAT:
-                param = IPluginParam.build(paramName, Float.valueOf(value));
-                break;
-            case DOUBLE:
-                param = IPluginParam.build(paramName, Double.valueOf(value));
-                break;
-            case BOOLEAN:
-                param = IPluginParam.build(paramName, Boolean.valueOf(value));
-                break;
-            case POJO:
-                param = IPluginParam.build(paramName, new JsonParser().parse(value).getAsJsonObject());
-                break;
-            case COLLECTION:
+            case STRING -> param = IPluginParam.build(paramName, value);
+            case BYTE -> param = IPluginParam.build(paramName, Byte.valueOf(value));
+            case SHORT -> param = IPluginParam.build(paramName, Short.valueOf(value));
+            case INTEGER -> param = IPluginParam.build(paramName, Integer.valueOf(value));
+            case LONG -> param = IPluginParam.build(paramName, Long.valueOf(value));
+            case FLOAT -> param = IPluginParam.build(paramName, Float.valueOf(value));
+            case DOUBLE -> param = IPluginParam.build(paramName, Double.valueOf(value));
+            case BOOLEAN -> param = IPluginParam.build(paramName, Boolean.valueOf(value));
+            case POJO -> param = IPluginParam.build(paramName, new JsonParser().parse(value).getAsJsonObject());
+            case COLLECTION -> {
                 Type type = new TypeToken<Collection<JsonElement>>() {
 
                 }.getType();
                 param = IPluginParam.build(paramName, (Collection<JsonElement>) gson.fromJson(value, type));
-                break;
-            case MAP:
+            }
+            case MAP -> {
                 Type typeMap = new TypeToken<Map<String, JsonElement>>() {
 
                 }.getType();
                 param = IPluginParam.build(paramName, (Map<String, JsonElement>) gson.fromJson(value, typeMap));
-                break;
-            case PLUGIN:
-                param = IPluginParam.plugin(paramName, value);
-                break;
-            default:
-                throw new PluginUtilsRuntimeException(String.format(
-                    "Type parameter <%s> cannot be handled. Complex types are not supported yet.",
-                    paramType));
+            }
+            case PLUGIN -> param = IPluginParam.plugin(paramName, value);
+            default -> throw new PluginUtilsRuntimeException(String.format(
+                "Type parameter <%s> cannot be handled. Complex types are not supported yet.",
+                paramType));
         }
         param.setDynamic(isDynamic);
         return param;
@@ -563,8 +530,7 @@ public final class PluginParameterUtils {
                     }
                     if (!staticParam.isDynamic()) {
                         throw new PluginUtilsRuntimeException(String.format("Param %s is not allowed to be dynamic",
-                                                                            dynamicParam,
-                                                                            staticParam));
+                                                                            dynamicParam));
                     }
                 }
                 return dynamicParam;
@@ -734,8 +700,7 @@ public final class PluginParameterUtils {
             if (paramAnnotation.sensitive()) {
                 // Only available for string parameter
                 // FIXME : vérifier le fonctionnement en profondeur
-                if (StringPluginParam.class.isInstance(param)) {
-                    StringPluginParam spp = (StringPluginParam) param;
+                if (param instanceof StringPluginParam spp) {
                     field.set(plugin, spp.getDecryptedValue());
                 } else {
                     // Propagate exception
@@ -772,7 +737,7 @@ public final class PluginParameterUtils {
                                                  PluginConfiguration conf,
                                                  Field field,
                                                  PluginParameter paramAnnotation,
-                                                 Map<String, Object> instantiatedPlugins) {
+                                                 ConcurrentMap<String, Object> instantiatedPlugins) {
 
         LOGGER.debug("Injecting nested plugin parameter \"{}\"", paramAnnotation.label());
 
@@ -811,7 +776,7 @@ public final class PluginParameterUtils {
                                                              parameterName));
         }
 
-        if (!NestedPluginParam.class.isInstance(param)) {
+        if (!(param instanceof NestedPluginParam npp)) {
             // Propagate exception
             throw new PluginUtilsRuntimeException(String.format(
                 "Exception while processing param <%s> in plugin class <%s> with param <%s>. Wrong plugin parameter type!",
@@ -820,17 +785,18 @@ public final class PluginParameterUtils {
                 param));
         } else {
 
-            NestedPluginParam npp = (NestedPluginParam) param;
-            try {
-                Object nestedPlugin = instantiatedPlugins.get(npp.getValue());
-                field.set(plugin, nestedPlugin);
-            } catch (IllegalArgumentException | IllegalAccessException e) {
-                // Propagate exception
-                throw new PluginUtilsRuntimeException(String.format(EXCEPTION_WHILE_PROCESSING_PARAM_IN_PLUGIN,
-                                                                    paramAnnotation.label(),
-                                                                    plugin.getClass(),
-                                                                    param), e);
-            }
+            instantiatedPlugins.computeIfPresent(npp.getValue(), (plgBusinessId, nestedPlugin) -> {
+                try {
+                    field.set(plugin, nestedPlugin);
+                    return nestedPlugin;
+                } catch (IllegalArgumentException | IllegalAccessException e) {
+                    // Propagate exception
+                    throw new PluginUtilsRuntimeException(String.format(EXCEPTION_WHILE_PROCESSING_PARAM_IN_PLUGIN,
+                                                                        paramAnnotation.label(),
+                                                                        plugin.getClass(),
+                                                                        param), e);
+                }
+            });
             LOGGER.debug(PLUGIN_PARAMETER_INJECTED, paramAnnotation.label());
         }
     }

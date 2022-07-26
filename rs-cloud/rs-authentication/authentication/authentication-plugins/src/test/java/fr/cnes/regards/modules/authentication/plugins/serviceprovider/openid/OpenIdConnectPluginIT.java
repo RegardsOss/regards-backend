@@ -43,6 +43,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.util.HashMap;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
@@ -80,7 +81,7 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
         try {
             // Set all parameters
             Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_ID,
-                                                                               "I don't feel like dancin'"),
+                                                                               "I don't feel like dancing'"),
                                                             IPluginParam.build(OpenIdConnectPlugin.OPENID_CLIENT_SECRET,
                                                                                "Rather be home with no-one if I can't get down with you-ou-ou"),
                                                             IPluginParam.build(OpenIdConnectPlugin.OPENID_REDIRECT_URI,
@@ -103,7 +104,7 @@ public class OpenIdConnectPluginIT extends AbstractRegardsServiceIT {
                                                                                (String) null));
 
             PluginConfiguration conf = PluginConfiguration.build(OpenIdConnectPlugin.class, "", parameters);
-            OpenIdConnectPlugin plugin = PluginUtils.getPlugin(conf, new HashMap<>());
+            OpenIdConnectPlugin plugin = PluginUtils.getPlugin(conf, new ConcurrentHashMap<>());
             Assert.assertNotNull(plugin);
             return plugin;
         } catch (Exception e) {

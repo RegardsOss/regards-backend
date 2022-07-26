@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.dam.service.entities;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -125,6 +126,7 @@ public class CollectionServiceTest {
         collectionServiceMocked = new CollectionService(Mockito.mock(IModelFinder.class),
                                                         entitiesRepositoryMocked,
                                                         pModelService,
+                                                        Mockito.mock(IPluginService.class),
                                                         damSettingsService,
                                                         deletedEntityRepositoryMocked,
                                                         collectionRepositoryMocked,

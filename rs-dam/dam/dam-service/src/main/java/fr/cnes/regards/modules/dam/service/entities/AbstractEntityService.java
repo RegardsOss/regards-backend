@@ -28,6 +28,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
@@ -100,7 +101,7 @@ import java.util.stream.Collectors;
 public abstract class AbstractEntityService<F extends EntityFeature, U extends AbstractEntity<F>>
     extends AbstractEntityValidationService<F, U> implements IEntityService<U> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractEntityValidationService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractEntityService.class);
 
     private static final String CATALOG_DOWNLOAD_PATH = "/downloads/{aip_id}/files/{checksum}";
 
@@ -124,6 +125,8 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     @Autowired
     private INotificationClient notificationClient;
+
+    private final IPluginService pluginService;
 
     protected final IDamSettingsService damSettingsService;
 
@@ -167,23 +170,26 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     @Value("${regards.dam.store.files.plugin:fr.cnes.regards.modules.dam.service.entities.plugins.StoragePlugin}")
     private String storeEntityFilesPlugin;
 
+    private PluginConfiguration storeEntityPluginConf;
+
     @Value("${prefix.path}")
     private String urlPrefix;
 
     private final IAbstractEntityRequestRepository abstractEntityRequestRepo;
 
-    public AbstractEntityService(IModelFinder modelFinder,
-                                 IAbstractEntityRepository<AbstractEntity<?>> entityRepository,
-                                 IModelService modelService,
-                                 IDamSettingsService damSettingsService,
-                                 IDeletedEntityRepository deletedEntityRepository,
-                                 ICollectionRepository collectionRepository,
-                                 IDatasetRepository datasetRepository,
-                                 IAbstractEntityRepository<U> repository,
-                                 EntityManager em,
-                                 IPublisher publisher,
-                                 IRuntimeTenantResolver runtimeTenantResolver,
-                                 IAbstractEntityRequestRepository abstractEntityRequestRepo) {
+    protected AbstractEntityService(IModelFinder modelFinder,
+                                    IAbstractEntityRepository<AbstractEntity<?>> entityRepository,
+                                    IModelService modelService,
+                                    IPluginService pluginService,
+                                    IDamSettingsService damSettingsService,
+                                    IDeletedEntityRepository deletedEntityRepository,
+                                    ICollectionRepository collectionRepository,
+                                    IDatasetRepository datasetRepository,
+                                    IAbstractEntityRepository<U> repository,
+                                    EntityManager em,
+                                    IPublisher publisher,
+                                    IRuntimeTenantResolver runtimeTenantResolver,
+                                    IAbstractEntityRequestRepository abstractEntityRequestRepo) {
         super(modelFinder);
         this.entityRepository = entityRepository;
         this.modelService = modelService;
@@ -192,6 +198,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         this.collectionRepository = collectionRepository;
         this.datasetRepository = datasetRepository;
         this.repository = repository;
+        this.pluginService = pluginService;
         this.em = em;
         this.publisher = publisher;
         this.runtimeTenantResolver = runtimeTenantResolver;
@@ -211,7 +218,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     public U load(Long id) throws ModuleException {
         Assert.notNull(id, "Entity identifier is required");
         Optional<U> entityOpt = repository.findById(id);
-        if (!entityOpt.isPresent()) {
+        if (entityOpt.isEmpty()) {
             throw new EntityNotFoundException(id, this.getClass());
         }
         return entityOpt.get();
@@ -288,11 +295,11 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         // Check alterable attribute
         // Update mode only :
         if (ValidationMode.UPDATE.equals(mode) && !attModel.isAlterable()) {
-            // lets retrieve the value of the property from db and check if its the same value.
+            // let's retrieve the value of the property from db and check if it's the same value.
             AbstractEntity<?> fromDb = entityRepository.findByIpId(feature.getId());
             IProperty<?> valueFromDb = extractProperty(fromDb.getFeature(), attModel);
             IProperty<?> valueFromEntity = extractProperty(feature, attModel);
-            // retrieve entity from db, and then update the new one, but i do not have the entity here....
+            // retrieve entity from db, and then update the new one, but I do not have the entity here....
             validators.add(new NotAlterableAttributeValidator(attributeKey, attModel, valueFromDb, valueFromEntity));
         }
         return validators;
@@ -325,7 +332,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
                     if (!namespace.equals(Fragment.getDefaultName())) {
                         key = namespace.concat(".").concat(key);
                     }
-                    LOGGER.debug(String.format("Key \"%s\" -> \"%s\".", key, att));
+                    LOGGER.debug("Key \"{}\" -> \"{}\".", key, att);
                     attMap.put(key, att);
                 }
             }
@@ -341,7 +348,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     @Override
     public void associate(Long entityId, Set<String> tagList) throws EntityNotFoundException {
         Optional<U> entityOpt = repository.findById(entityId);
-        if (!entityOpt.isPresent()) {
+        if (entityOpt.isEmpty()) {
             throw new EntityNotFoundException(entityId, this.getClass());
         }
         // Adding new tags to detached entity
@@ -369,7 +376,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
                                                        null));
         }
 
-        // As long as their is no way to create new entity version thanks to dam,
+        // As long as there is no way to create new entity version thanks to dam,
         // we set last flag and virtualId unconditionally
         entity.setLast(true);
         entity.setVirtualId();
@@ -416,7 +423,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     @Override
     public void dissociate(Long entityId, Set<String> ipIds) throws EntityNotFoundException {
         Optional<U> entityOpt = repository.findById(entityId);
-        if (!entityOpt.isPresent()) {
+        if (entityOpt.isEmpty()) {
             throw new EntityNotFoundException(entityId, this.getClass());
         }
         U entity = entityOpt.get();
@@ -492,7 +499,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     }
 
     /**
-     * checks if the entity requested exists and that it is modified according to one of it's former version( pEntity's
+     * checks if the entity requested exists and that it is modified according to one of its former version( pEntity's
      * id is pEntityId)
      *
      * @return current entity
@@ -504,7 +511,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
             em.detach(entity);
         }
         Optional<U> entityInDbOpt = repository.findById(entityId);
-        if (!entityInDbOpt.isPresent()) {
+        if (entityInDbOpt.isEmpty()) {
             throw new EntityNotFoundException(entityId, this.getClass());
         }
         U entityInDb = entityInDbOpt.get();
@@ -540,7 +547,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
      *
      * @param entity     updated entity to be saved
      * @param entityInDb only there for comparison for group management
-     * @return updated entity with group set correclty
+     * @return updated entity with group set correctly
      */
     private U updateWithoutCheck(U entity, U entityInDb) {
         Set<UniformResourceName> oldLinks = extractUrns(entityInDb.getTags());
@@ -549,7 +556,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         Set<String> newGroups = entity.getGroups();
         // IpId URNs of updated entities (those which need an AMQP event publish)
         Set<UniformResourceName> updatedIpIds = new HashSet<>();
-        // Update entity, checks already assures us that everything which is updated can be updated so we can just put
+        // Update entity, checks already assures us that everything which is updated can be updated, so we can just put
         // pEntity into the DB.
         entity.setLastUpdate(OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC));
 
@@ -816,27 +823,40 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     }
 
     /**
+     * Initiate new plugin configuration for {@link IStorageService} used to store entities associated files.
+     * The used plugin is defined by the plugin class name set in the storeEntityFilesPlugin property.
+     *
+     * @throws NotAvailablePluginConfigurationException Plugin not available or not found.
+     */
+    private void initStoragePluginConfiguration() throws NotAvailablePluginConfigurationException {
+        try {
+            storeEntityPluginConf = PluginConfiguration.build(Class.forName(storeEntityFilesPlugin),
+                                                              null,
+                                                              IPluginParam.set());
+            storeEntityPluginConf.setMetaData(PluginUtils.getPlugins().get(storeEntityPluginConf.getPluginId()));
+            storeEntityPluginConf.setVersion(storeEntityPluginConf.getMetaData().getVersion());
+        } catch (ClassNotFoundException e) {
+            throw new NotAvailablePluginConfigurationException(e.getMessage(), e);
+        }
+    }
+
+    /**
      * @return a {@link Plugin} implementation of {@link IStorageService}
      */
     private IStorageService getStorageService() throws NotAvailablePluginConfigurationException {
-
-        Class<?> ttt;
-        try {
-            ttt = Class.forName(storeEntityFilesPlugin);
-            return PluginUtils.getPlugin(PluginConfiguration.build(ttt, null, IPluginParam.set()), new HashMap<>());
-        } catch (ClassNotFoundException e) {
-            LOGGER.error(e.getMessage(), e);
+        if (storeEntityPluginConf == null) {
+            initStoragePluginConfiguration();
         }
-
-        return null;
+        try {
+            return pluginService.getPlugin(storeEntityPluginConf);
+        } catch (ModuleException e) {
+            throw new NotAvailablePluginConfigurationException(e.getMessage(), e);
+        }
     }
 
     private void deleteAipStorage(U entity) throws NotAvailablePluginConfigurationException {
         if (damSettingsService.isStoreFiles()) {
-            IStorageService storageService = getStorageService();
-            if (storageService != null) {
-                storageService.delete(entity);
-            }
+            getStorageService().delete(entity);
         }
     }
 

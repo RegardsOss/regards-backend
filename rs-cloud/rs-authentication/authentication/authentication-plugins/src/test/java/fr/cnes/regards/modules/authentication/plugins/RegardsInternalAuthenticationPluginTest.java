@@ -39,8 +39,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Class RegardsInternalAuthenticationPluginTest
@@ -69,7 +69,7 @@ public class RegardsInternalAuthenticationPluginTest {
                                                                  "",
                                                                  parameters);
             // instantiate plugin
-            plugin = PluginUtils.getPlugin(conf, new HashMap<>());
+            plugin = PluginUtils.getPlugin(conf, new ConcurrentHashMap<>());
             Assert.assertNotNull(plugin);
         } catch (final PluginUtilsRuntimeException | IllegalArgumentException | SecurityException |
                        NotAvailablePluginConfigurationException e) {
@@ -79,12 +79,12 @@ public class RegardsInternalAuthenticationPluginTest {
     }
 
     /**
-     * Check a valid authentication throught the Regards internal authentication system
+     * Check a valid authentication through the Regards internal authentication system
      */
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Requirement("REGARDS_DSL_ADM_ADM_620")
     @Requirement("REGARDS_DSL_ADM_PLG_200")
-    @Purpose("Check a valid authentication throught the Regards internal authentication system")
+    @Purpose("Check a valid authentication through the Regards internal authentication system")
     @Test
     public void testValidAuthentication() {
 
@@ -150,9 +150,9 @@ public class RegardsInternalAuthenticationPluginTest {
     }
 
     /**
-     * Check a authentication throught the Regards internal authentication system with error
+     * Check an authentication through the Regards internal authentication system with error
      */
-    @Purpose("Check a authentication throught the Regards internal authentication system with error")
+    @Purpose("Check a authentication through the Regards internal authentication system with error")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Requirement("REGARDS_DSL_ADM_ADM_620")
     @Requirement("REGARDS_DSL_ADM_PLG_200")
@@ -182,9 +182,9 @@ public class RegardsInternalAuthenticationPluginTest {
     }
 
     /**
-     * Check a authentication throught the Regards internal authentication system with error
+     * Check an authentication through the Regards internal authentication system with error
      */
-    @Purpose("Check a authentication throught the Regards internal authentication system with error")
+    @Purpose("Check a authentication through the Regards internal authentication system with error")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Requirement("REGARDS_DSL_ADM_ADM_620")
     @Requirement("REGARDS_DSL_ADM_PLG_200")
@@ -214,9 +214,9 @@ public class RegardsInternalAuthenticationPluginTest {
     }
 
     /**
-     * Check a authentication throught the Regards internal authentication system with error
+     * Check an authentication through the Regards internal authentication system with error
      */
-    @Purpose("Check a authentication throught the Regards internal authentication system with error")
+    @Purpose("Check a authentication through the Regards internal authentication system with error")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Requirement("REGARDS_DSL_ADM_ADM_620")
     @Requirement("REGARDS_DSL_ADM_PLG_200")

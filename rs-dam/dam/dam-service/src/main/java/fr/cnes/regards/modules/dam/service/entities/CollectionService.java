@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.dam.service.entities;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.dam.dao.entities.*;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
@@ -46,6 +47,7 @@ public class CollectionService extends AbstractEntityService<CollectionFeature, 
     public CollectionService(IModelFinder modelFinder,
                              IAbstractEntityRepository<AbstractEntity<?>> pEntityRepository,
                              IModelService pModelService,
+                             IPluginService pluginService,
                              IDamSettingsService damSettingsService,
                              IDeletedEntityRepository pDeletedEntityRepository,
                              ICollectionRepository pCollectionRepository,
@@ -57,6 +59,7 @@ public class CollectionService extends AbstractEntityService<CollectionFeature, 
         super(modelFinder,
               pEntityRepository,
               pModelService,
+              pluginService,
               damSettingsService,
               pDeletedEntityRepository,
               pCollectionRepository,

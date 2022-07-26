@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.dam.dao.dataaccess.IAccessRightRepository;
 import fr.cnes.regards.modules.dam.dao.entities.IAbstractEntityRepository;
 import fr.cnes.regards.modules.dam.dao.entities.IAbstractEntityRequestRepository;
 import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
@@ -46,6 +47,7 @@ import fr.cnes.regards.modules.model.service.exception.ImportException;
 import fr.cnes.regards.modules.model.service.validation.IModelFinder;
 import fr.cnes.regards.modules.model.service.xml.XmlImportHelper;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
+import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -164,9 +166,11 @@ public class DatasetServiceTest {
 
         publisherMocked = Mockito.mock(IPublisher.class);
         dataSetServiceMocked = new DatasetService(Mockito.mock(IModelFinder.class),
+                                                  Mockito.mock(IAttributeFinder.class),
                                                   dataSetRepositoryMocked,
-                                                  pAttributeModelService,
                                                   pModelAttributeService,
+                                                  Mockito.mock(IAccessRightRepository.class),
+                                                  Mockito.mock(IPluginService.class),
                                                   entitiesRepositoryMocked,
                                                   modelService,
                                                   deletedEntityRepositoryMocked,
@@ -175,7 +179,6 @@ public class DatasetServiceTest {
                                                   publisherMocked,
                                                   runtimeTenantResolver,
                                                   Mockito.mock(IOpenSearchService.class),
-                                                  Mockito.mock(IPluginService.class),
                                                   Mockito.mock(IAbstractEntityRequestRepository.class),
                                                   damSettingsService);
 

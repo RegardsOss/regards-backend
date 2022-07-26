@@ -22,7 +22,7 @@ public class DataObjectGroupJsoniterDecoder implements NullSafeDecoderBuilder {
         return new DataObjectGroup(group.toString("groupName"),
                                    group.toBoolean("datasetAccess"),
                                    group.toBoolean("dataObjectAccess"),
-                                   group.toLong("metaDataObjectAccessFilterPluginId"),
-                                   group.toLong("dataObjectAccessFilterPluginId"));
+                                   group.toString("metaDataObjectAccessFilterPluginId"),
+                                   group.toString("dataObjectAccessFilterPluginId"));
     }
 }

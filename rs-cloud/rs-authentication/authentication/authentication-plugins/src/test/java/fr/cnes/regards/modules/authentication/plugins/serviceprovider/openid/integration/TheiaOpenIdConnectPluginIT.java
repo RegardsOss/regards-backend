@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.authentication.plugins.serviceprovider.openid.integration;
 
-import com.google.gson.Gson;
 import fr.cnes.regards.framework.encryption.IEncryptionService;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -43,8 +42,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
-import java.util.HashMap;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -57,9 +56,6 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
     @Autowired
     private IEncryptionService encryptionService;
 
-    @Autowired
-    private Gson gson;
-
     @Before
     public void setUp() {
         PluginUtils.setup();
@@ -69,7 +65,7 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
     // 1. Go to https://sso.theia-land.fr/oauth2/authorize?redirect_uri=http://vm-perf.cloud-espace.si.c-s.fr/authenticate/perf/theia&response_type=code&scope=openid&client_id=rRLGfEh6jtXjiiGUf53UOdmJLXga
     // 2. Enter your login / password
     // 3. After redirect, get query param "code" in URL
-    // 4. Copy paste in OpenIdAuthenticationParams below
+    // 4. Copy and paste in OpenIdAuthenticationParams below
     // 5. Paste client secret into secretStr variable
     // 6. Run test, quickly before the token is invalidated.
     // NB: After each failure/success, a new code is required.
@@ -104,7 +100,7 @@ public class TheiaOpenIdConnectPluginIT extends AbstractRegardsServiceIT {
                                                         IPluginParam.build(OpenIdConnectPlugin.OPENID_REVOKE_ENDPOINT,
                                                                            (String) null));
         PluginConfiguration conf = PluginConfiguration.build(OpenIdConnectPlugin.class, "", parameters);
-        OpenIdConnectPlugin plugin = PluginUtils.getPlugin(conf, new HashMap<>());
+        OpenIdConnectPlugin plugin = PluginUtils.getPlugin(conf, new ConcurrentHashMap<>());
 
         Try<ServiceProviderAuthenticationInfo<OpenIdConnectToken>> result = plugin.authenticate(new OpenIdAuthenticationParams(
             "f4136307-1223-353c-9fdc-87bfe5c10be4"));

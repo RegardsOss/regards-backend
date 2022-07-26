@@ -161,48 +161,40 @@ public class AccessRightService implements IAccessRightService {
 
         retrieveAccessRightsByDataset(datasetIpId, PageRequest.of(0, Integer.MAX_VALUE)).getContent()
                                                                                         .forEach(accessRight -> {
-                                                                                            Long metadataPluginId = null;
-                                                                                            Long pluginId = null;
+                                                                                            String metadataPluginId = null;
                                                                                             if (accessRight.getDataAccessPlugin()
                                                                                                 != null) {
                                                                                                 metadataPluginId = accessRight.getDataAccessPlugin()
-                                                                                                                              .getId();
+                                                                                                                              .getBusinessId();
                                                                                             }
 
                                                                                             boolean datasetAccess = false;
                                                                                             boolean dataAccess = false;
 
                                                                                             switch (accessRight.getAccessLevel()) {
-                                                                                                case CUSTOM_ACCESS:
-                                                                                                case FULL_ACCESS:
+                                                                                                case CUSTOM_ACCESS, FULL_ACCESS -> {
                                                                                                     datasetAccess = true;
                                                                                                     dataAccess = true;
-                                                                                                    break;
-                                                                                                case RESTRICTED_ACCESS:
+                                                                                                }
+                                                                                                case RESTRICTED_ACCESS ->
                                                                                                     datasetAccess = true;
-                                                                                                    break;
-                                                                                                case NO_ACCESS:
-                                                                                                default:
-                                                                                                    break;
+                                                                                                default -> {
+                                                                                                }
                                                                                             }
 
                                                                                             switch (accessRight.getDataAccessLevel()) {
-                                                                                                case NO_ACCESS:
+                                                                                                case NO_ACCESS ->
                                                                                                     dataAccess = false;
-                                                                                                    break;
-                                                                                                case CUSTOM_ACCESS:
-                                                                                                case INHERITED_ACCESS:
-                                                                                                default:
-                                                                                                    break;
+                                                                                                default -> {
+                                                                                                }
                                                                                             }
-
                                                                                             metadata.addDataObjectGroup(
                                                                                                 accessRight.getAccessGroup()
                                                                                                            .getName(),
                                                                                                 datasetAccess,
                                                                                                 dataAccess,
                                                                                                 metadataPluginId,
-                                                                                                pluginId);
+                                                                                                null);
                                                                                         });
         return metadata;
 

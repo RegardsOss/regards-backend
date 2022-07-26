@@ -485,9 +485,9 @@ public class EntityIndexerService implements IEntityIndexerService {
         // handle association between dataobjects and groups for all access rights set by plugin
         for (DataObjectGroup group : dataset.getMetadata().getDataObjectsGroupsMap().values()) {
             // If access to the dataset is allowed and a plugin access filter is set on dataobject metadata, calculate which dataObjects are in the given group
-            if (group.getDatasetAccess() && (group.getMetaDataObjectAccessFilterPluginId() != null)) {
+            if (group.getDatasetAccess() && (group.getMetaDataObjectAccessFilterPluginBusinessId() != null)) {
                 try {
-                    IDataObjectAccessFilterPlugin plugin = pluginService.getPlugin(group.getMetaDataObjectAccessFilterPluginId());
+                    IDataObjectAccessFilterPlugin plugin = pluginService.getPlugin(group.getMetaDataObjectAccessFilterPluginBusinessId());
                     ICriterion searchFilter = plugin.getSearchFilter();
                     if (searchFilter != null) {
                         removeOldDataObjectsGroupAssoc(dataset,

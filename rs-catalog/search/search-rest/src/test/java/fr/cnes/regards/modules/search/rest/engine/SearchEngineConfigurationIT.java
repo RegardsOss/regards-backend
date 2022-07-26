@@ -124,6 +124,14 @@ public class SearchEngineConfigurationIT extends AbstractEngineIT {
     public void deleteConf() {
         RequestBuilderCustomizer customizer = customizer();
         customizer.expect(MockMvcResultMatchers.status().isOk());
+        performDefaultGet(SearchEngineConfigurationController.TYPE_MAPPING
+                          + SearchEngineConfigurationController.CONF_ID_PATH,
+                          customizer,
+                          "Conf should exist",
+                          openSearchEngineConf.getId());
+
+        customizer = customizer();
+        customizer.expect(MockMvcResultMatchers.status().isOk());
         performDefaultDelete(SearchEngineConfigurationController.TYPE_MAPPING
                              + SearchEngineConfigurationController.CONF_ID_PATH,
                              customizer,
@@ -138,13 +146,37 @@ public class SearchEngineConfigurationIT extends AbstractEngineIT {
                           "Conf should deleted",
                           openSearchEngineConf.getId());
 
+        // Check plugin configuration always exists as another search engine is associated to
+        try {
+            pluginService.getPluginConfiguration(openSearchEngineConf.getConfiguration().getBusinessId());
+        } catch (EntityNotFoundException e) {
+            Assert.fail("Plugin Configuration should not be deleted as another SearchEngine is associated to");
+        }
+
+        customizer = customizer();
+        customizer.expect(MockMvcResultMatchers.status().isOk());
+        performDefaultDelete(SearchEngineConfigurationController.TYPE_MAPPING
+                             + SearchEngineConfigurationController.CONF_ID_PATH,
+                             customizer,
+                             "Search all error",
+                             openSearchEngineConfForOneDataset.getId());
+
+        customizer = customizer();
+        customizer.expect(MockMvcResultMatchers.status().isNotFound());
+        performDefaultGet(SearchEngineConfigurationController.TYPE_MAPPING
+                          + SearchEngineConfigurationController.CONF_ID_PATH,
+                          customizer,
+                          "Conf should deleted",
+                          openSearchEngineConfForOneDataset.getId());
+
         // Check plugin configuration is also delete
         try {
-            pluginService.getPluginConfiguration(openSearchEngineConf.getId());
+            pluginService.getPluginConfiguration(openSearchEngineConfForOneDataset.getConfiguration().getBusinessId());
             Assert.fail("Plugin Configuration should be deleted as no other SearchEngine is associated to");
         } catch (EntityNotFoundException e) {
             // Nothing to do.
         }
+
     }
 
     @Override

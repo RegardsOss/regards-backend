@@ -32,8 +32,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.HashMap;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Christophe Mertz
@@ -50,14 +50,9 @@ public final class PluginInterfaceBeanFactoryIT extends PluginUtilsTestConstants
     @Autowired
     private ISampleBeanService sampleBeanService;
 
-    /**
-     * Load a plugins
-     *
-     * @throws NotAvailablePluginConfigurationException
-     */
     @Test
     public void loadPlugin() throws NotAvailablePluginConfigurationException {
-        SampleBeanFactoryPlugin samplePlugin = null;
+        SampleBeanFactoryPlugin samplePlugin;
         Assert.assertNotNull(sampleBeanService);
 
         Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SampleBeanFactoryPlugin.FIELD_NAME_SUFFIX,
@@ -65,7 +60,7 @@ public final class PluginInterfaceBeanFactoryIT extends PluginUtilsTestConstants
 
         PluginUtils.setup(SampleBeanFactoryPlugin.class.getPackage().getName());
         samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SampleBeanFactoryPlugin.class, "", parameters),
-                                             new HashMap<>());
+                                             new ConcurrentHashMap<>());
 
         Assert.assertNotNull(samplePlugin);
         final String toulouse = "Toulouse";

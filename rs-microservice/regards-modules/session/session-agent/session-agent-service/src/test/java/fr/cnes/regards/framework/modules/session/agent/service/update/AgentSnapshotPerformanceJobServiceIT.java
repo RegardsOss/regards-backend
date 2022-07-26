@@ -45,7 +45,8 @@ import java.util.List;
  *
  * @author Iliana Ghazali
  **/
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=agent_performance_it" })
+@TestPropertySource(
+    properties = { "spring.jpa.properties.hibernate.default_schema=agent_performance_it", "regards.jobs.pool.size=5" })
 @ActiveProfiles({ "testAmqp", "noscheduler" })
 public class AgentSnapshotPerformanceJobServiceIT extends AbstractAgentServiceUtilsIT {
 
@@ -81,7 +82,7 @@ public class AgentSnapshotPerformanceJobServiceIT extends AbstractAgentServiceUt
 
         // Schedule jobs
         long start = System.currentTimeMillis();
-        long timeout = 20000L;
+        long timeout = 20_000L;
         LOGGER.info("Launching performance test to create SessionSteps from {} step requests from {} different "
                     + "source", nbStepRequests, nbSources);
         agentJobSnapshotService.scheduleJob();

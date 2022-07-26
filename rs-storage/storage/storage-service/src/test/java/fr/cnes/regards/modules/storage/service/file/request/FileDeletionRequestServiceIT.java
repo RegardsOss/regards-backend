@@ -78,8 +78,6 @@ public class FileDeletionRequestServiceIT extends AbstractStorageIT {
     @Override
     public void init() throws ModuleException {
         super.init();
-        simulateApplicationStartedEvent();
-        simulateApplicationReadyEvent();
         // we override cache setting values for tests
         dynamicTenantSettingService.update(StorageSetting.CACHE_MAX_SIZE_NAME, 5L);
     }

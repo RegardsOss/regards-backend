@@ -223,16 +223,15 @@ public abstract class AbstractAgentServiceUtilsIT extends AbstractMultitenantSer
     }
 
     protected boolean waitForJobSuccesses(String jobName, int nbJobs, long timeout) throws InterruptedException {
-        long count, now = System.currentTimeMillis(), end = now + timeout;
+        long count, start = System.currentTimeMillis();
         LOGGER.info("Waiting for jobs to be in success state ...");
         do {
             count = jobInfoService.retrieveJobsCount(jobName, JobStatus.SUCCEEDED);
             LOGGER.info("{} / {} jobs SUCCEEDED ({})", count, nbJobs, jobName);
-            now = System.currentTimeMillis();
-            if (count != nbJobs) {
+            if (count < nbJobs) {
                 Thread.sleep(5000L);
             }
-        } while (count != nbJobs && now <= end);
+        } while (count < nbJobs && System.currentTimeMillis() <= start + timeout);
         return count == nbJobs;
     }
 }

@@ -46,7 +46,6 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterionVisitor;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.model.service.IAttributeModelService;
 import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
 import fr.cnes.regards.modules.model.service.IModelService;
 import fr.cnes.regards.modules.model.service.validation.IModelFinder;
@@ -55,7 +54,6 @@ import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -82,29 +80,22 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DatasetService.class);
 
-    /**
-     * {@link IOpenSearchService} instance
-     */
     private final IOpenSearchService openSearchService;
 
     private final IPluginService pluginService;
 
-    @Autowired
-    private IDatasetRepository datasetRepository;
-
-    @Autowired
     private IAttributeFinder finder;
 
-    @Autowired
     private IAccessRightRepository accessRightRepository;
 
-    @Autowired
     private IModelAttrAssocService modelAttributeService;
 
     public DatasetService(IModelFinder modelFinder,
+                          IAttributeFinder attributeFinder,
                           IDatasetRepository repository,
-                          IAttributeModelService attributeService,
                           IModelAttrAssocService modelAttributeService,
+                          IAccessRightRepository accessRightRepository,
+                          IPluginService pluginService,
                           IAbstractEntityRepository<AbstractEntity<?>> entityRepository,
                           IModelService modelService,
                           IDeletedEntityRepository deletedEntityRepository,
@@ -113,12 +104,12 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
                           IPublisher publisher,
                           IRuntimeTenantResolver runtimeTenantResolver,
                           IOpenSearchService openSearchService,
-                          IPluginService pluginService,
                           IAbstractEntityRequestRepository abstractEntityRequestRepo,
                           IDamSettingsService damSettingsService) {
         super(modelFinder,
               entityRepository,
               modelService,
+              pluginService,
               damSettingsService,
               deletedEntityRepository,
               collectionRepository,
@@ -130,6 +121,9 @@ public class DatasetService extends AbstractEntityService<DatasetFeature, Datase
               abstractEntityRequestRepo);
         this.openSearchService = openSearchService;
         this.pluginService = pluginService;
+        this.finder = attributeFinder;
+        this.accessRightRepository = accessRightRepository;
+        this.modelAttributeService = modelAttributeService;
     }
 
     @Override

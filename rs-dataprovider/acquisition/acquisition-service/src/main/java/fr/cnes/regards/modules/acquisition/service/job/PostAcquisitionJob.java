@@ -107,7 +107,7 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
         try {
             ISipPostProcessingPlugin postProcessPlugin = pluginService.getPlugin(acqProcessingChain.getPostProcessSipPluginConf()
                                                                                                    .get()
-                                                                                                   .getId());
+                                                                                                   .getBusinessId());
             postProcessPlugin.postProcess(product);
         } catch (NotAvailablePluginConfigurationException e) {
             logger.warn("Unable to run postprocess plugin as it is disabled");

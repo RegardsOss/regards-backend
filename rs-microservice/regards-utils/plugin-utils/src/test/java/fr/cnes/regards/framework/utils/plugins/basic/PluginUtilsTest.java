@@ -34,9 +34,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Unit testing of {@link PluginUtils}.
@@ -59,7 +59,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
     @Requirement("REGARDS_DSL_SYS_PLG_010")
     @Purpose("A plugin is defined with mate-data like, a name, a description, the author, the version, the licence...")
     public void loadPlugins() {
-        LOGGER.debug(STARTING + toString());
+        LOGGER.debug(STARTING + this);
 
         // Get all the plugins
         Map<String, PluginMetaData> maps = PluginUtils.getPlugins();
@@ -79,7 +79,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         Assert.assertNotNull(pluginMetaData.getVersion());
         Assert.assertNotNull(pluginMetaData.getLicense());
 
-        LOGGER.debug(ENDING + toString());
+        LOGGER.debug(ENDING + this);
     }
 
     @Test
@@ -99,16 +99,10 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         }
     }
 
-    /**
-     * Get a {@link SamplePlugin} with a specific parameters
-     *
-     * @throws NotAvailablePluginConfigurationException
-     */
     @Test
     public void getSamplePlugin() throws NotAvailablePluginConfigurationException {
-        SamplePlugin samplePlugin = null;
 
-        LOGGER.debug(STARTING + toString());
+        LOGGER.debug(STARTING + this);
 
         Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE,
                                                                            PluginUtilsTest.TRUE),
@@ -118,8 +112,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                                                                            "chris_test_1"));
 
         // instantiate plugin
-        samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
-                                             new HashMap<>());
+        SamplePlugin samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
+                                                          new ConcurrentHashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -129,19 +123,13 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         Assert.assertEquals(PluginUtilsTest.TROIS * (PluginUtilsTest.QUATRE + PluginUtilsTest.CINQ),
                             samplePlugin.add(PluginUtilsTest.QUATRE, PluginUtilsTest.CINQ));
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.HELLO));
-        LOGGER.debug(ENDING + toString());
+        LOGGER.debug(ENDING + this);
     }
 
-    /**
-     * Get a {@link SamplePlugin} with a specific parameters
-     *
-     * @throws NotAvailablePluginConfigurationException
-     */
     @Test
     public void getSamplePluginWithOneDynamicParameter() throws NotAvailablePluginConfigurationException {
-        SamplePlugin samplePlugin = null;
 
-        LOGGER.debug(STARTING + toString());
+        LOGGER.debug(STARTING + this);
 
         Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE,
                                                                            PluginUtilsTest.TRUE),
@@ -152,23 +140,22 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         IPluginParam dynParam = IPluginParam.build(SamplePlugin.FIELD_NAME_COEF, -1);
 
         // instantiate plugin
-        samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
-                                             new HashMap<>(),
-                                             dynParam);
+        SamplePlugin samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
+                                                          new ConcurrentHashMap<>(),
+                                                          dynParam);
 
         Assert.assertNotNull(samplePlugin);
 
         // Use plugin
         Assert.assertTrue(0 > samplePlugin.add(PluginUtilsTest.QUATRE, PluginUtilsTest.CINQ));
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.HELLO));
-        LOGGER.debug(ENDING + toString());
+        LOGGER.debug(ENDING + this);
     }
 
     @Test
     public void getSamplePluginDynamicParameterNull() throws NotAvailablePluginConfigurationException {
-        SamplePlugin samplePlugin = null;
 
-        LOGGER.debug(STARTING + toString());
+        LOGGER.debug(STARTING + this);
 
         Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE,
                                                                            PluginUtilsTest.TRUE),
@@ -177,8 +164,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                                                         IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, "a suffix"));
 
         // instantiate plugin
-        samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
-                                             new HashMap<>());
+        SamplePlugin samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
+                                                          new ConcurrentHashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -187,19 +174,13 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
          */
         Assert.assertTrue(0 < samplePlugin.add(PluginUtilsTest.QUATRE, PluginUtilsTest.CINQ));
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.HELLO));
-        LOGGER.debug(ENDING + toString());
+        LOGGER.debug(ENDING + this);
     }
 
-    /**
-     * Get a {@link SamplePlugin} with a specific parameters
-     *
-     * @throws NotAvailablePluginConfigurationException
-     */
     @Test
     public void getSamplePluginWithOneDynamicParameterWithValues() throws NotAvailablePluginConfigurationException {
-        SamplePlugin samplePlugin = null;
 
-        LOGGER.debug(STARTING + toString());
+        LOGGER.debug(STARTING + this);
 
         Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE,
                                                                            PluginUtilsTest.TRUE),
@@ -214,9 +195,9 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         IPluginParam dyn = IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.BLUE);
 
         // instantiate plugin
-        samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
-                                             new HashMap<>(),
-                                             dyn);
+        SamplePlugin samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
+                                                          new ConcurrentHashMap<>(),
+                                                          dyn);
 
         Assert.assertNotNull(samplePlugin);
 
@@ -224,19 +205,13 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
          * Use the plugin
          */
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.BLUE));
-        LOGGER.debug(ENDING + toString());
+        LOGGER.debug(ENDING + this);
     }
 
-    /**
-     * Get a {@link SamplePlugin} with a specific parameters
-     *
-     * @throws NotAvailablePluginConfigurationException
-     */
     @Test
     public void getSamplePluginWithoutDynamicParameterWithValues() throws NotAvailablePluginConfigurationException {
-        SamplePlugin samplePlugin = null;
 
-        LOGGER.debug(STARTING + toString());
+        LOGGER.debug(STARTING + this);
 
         Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE,
                                                                            PluginUtilsTest.TRUE),
@@ -249,8 +224,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                                                                              PluginUtilsTest.GREEN));
 
         // instantiate plugin
-        samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
-                                             new HashMap<>());
+        SamplePlugin samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
+                                                          new ConcurrentHashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -258,17 +233,12 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
          * Use the plugin
          */
         Assert.assertTrue(samplePlugin.echo(PluginUtilsTest.HELLO).contains(PluginUtilsTest.RED));
-        LOGGER.debug(ENDING + toString());
+        LOGGER.debug(ENDING + this);
     }
 
-    /**
-     * Get a {@link SamplePlugin} with a specific parameters @ An error occurs
-     *
-     * @throws NotAvailablePluginConfigurationException
-     */
     @Test(expected = PluginUtilsRuntimeException.class)
     public void getSamplePluginWithUnknownDynamicParameterWithValues() throws NotAvailablePluginConfigurationException {
-        LOGGER.debug(STARTING + toString());
+        LOGGER.debug(STARTING + this);
 
         Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE,
                                                                            PluginUtilsTest.TRUE),
@@ -284,19 +254,15 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         IPluginParam dyn = IPluginParam.build(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.CINQ);
 
         // instantiate plugin
-        PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters), new HashMap<>(), dyn);
+        PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
+                              new ConcurrentHashMap<>(),
+                              dyn);
     }
 
-    /**
-     * Used the default parameter value when the Integer parameter is missing
-     *
-     * @throws NotAvailablePluginConfigurationException
-     */
     @Test
     public void getSamplePluginMissingIntegerParameter() throws NotAvailablePluginConfigurationException {
-        SamplePlugin samplePlugin = null;
 
-        LOGGER.debug(STARTING + toString());
+        LOGGER.debug(STARTING + this);
 
         // Set parameters : Missing coeff parameter
         Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE,
@@ -306,8 +272,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
         // instantiate plugin
         PluginUtils.setup(SamplePlugin.class.getPackage().getName());
-        samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
-                                             new HashMap<>());
+        SamplePlugin samplePlugin = PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters),
+                                                          new ConcurrentHashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -319,7 +285,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
     @Test(expected = PluginUtilsRuntimeException.class)
     public void getSamplePluginMissingStringParameter() throws NotAvailablePluginConfigurationException {
 
-        LOGGER.debug(STARTING + toString());
+        LOGGER.debug(STARTING + this);
 
         // Set parameters : Missing suffix parameter
         Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE,
@@ -327,20 +293,15 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                                                         IPluginParam.build(SamplePlugin.FIELD_NAME_COEF,
                                                                            PluginUtilsTest.CINQ));
 
-        PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters), new HashMap<>());
+        PluginUtils.getPlugin(PluginConfiguration.build(SamplePlugin.class, "", parameters), new ConcurrentHashMap<>());
 
         // Use the plugin
         Assert.fail();
     }
 
-    /**
-     * Unable to get {@link SamplePlugin} an Integer parameter is missing
-     *
-     * @throws NotAvailablePluginConfigurationException
-     */
     @Test(expected = PluginUtilsRuntimeException.class)
     public void getSamplePluginWithErrorInitMethod() throws NotAvailablePluginConfigurationException {
-        LOGGER.debug(STARTING + toString());
+        LOGGER.debug(STARTING + this);
 
         // Set parameters
         Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(SamplePlugin.FIELD_NAME_ACTIVE,
@@ -351,7 +312,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                                                                            PluginUtilsTest.CINQ));
 
         // instantiate plugin
-        PluginUtils.getPlugin(PluginConfiguration.build(SampleErrorPlugin.class, "", parameters), new HashMap<>());
+        PluginUtils.getPlugin(PluginConfiguration.build(SampleErrorPlugin.class, "", parameters),
+                              new ConcurrentHashMap<>());
     }
 
     @Test

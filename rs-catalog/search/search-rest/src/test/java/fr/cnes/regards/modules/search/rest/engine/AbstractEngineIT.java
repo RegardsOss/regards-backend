@@ -215,6 +215,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
     protected SearchEngineConfiguration openSearchEngineConf;
 
+    protected SearchEngineConfiguration openSearchEngineConfForOneDataset;
+
     protected PluginConfiguration openSearchPluginConf;
 
     protected Dataset solarSystem;
@@ -462,7 +464,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
                                       + ":PROJECT:"
                                       + UUID.randomUUID()
                                       + ":V1");
-        searchEngineService.createConf(seConfOSdataset);
+        openSearchEngineConfForOneDataset = searchEngineService.createConf(seConfOSdataset);
     }
 
     /**

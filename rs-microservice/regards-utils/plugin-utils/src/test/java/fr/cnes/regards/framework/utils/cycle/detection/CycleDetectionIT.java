@@ -39,9 +39,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Unit testing of {@link PluginUtils}.
@@ -80,7 +80,7 @@ public class CycleDetectionIT {
                                                                            "chris_test_1"));
 
         PluginConfiguration conf = PluginConfiguration.build(SamplePluginWithPojo.class, "", parameters);
-        SamplePluginWithPojo samplePlugin = PluginUtils.getPlugin(conf, new HashMap<>());
+        SamplePluginWithPojo samplePlugin = PluginUtils.getPlugin(conf, new ConcurrentHashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -94,7 +94,7 @@ public class CycleDetectionIT {
     }
 
     @Test(expected = PluginUtilsRuntimeException.class)
-    public void cycleDetectedWithTwoLevel() throws NotAvailablePluginConfigurationException {
+    public void cycleDetectedWithTwoLevel() {
         PluginUtils.setup(SamplePluginWithPojoCycleDetected.class.getPackage().getName());
         Assert.fail();
     }
@@ -127,7 +127,7 @@ public class CycleDetectionIT {
         // instantiate plugin
 
         PluginConfiguration conf = PluginConfiguration.build(SamplePluginWithPojoWithSet.class, "", parameters);
-        SamplePluginWithPojoWithSet samplePlugin = PluginUtils.getPlugin(conf, new HashMap<>());
+        SamplePluginWithPojoWithSet samplePlugin = PluginUtils.getPlugin(conf, new ConcurrentHashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -138,7 +138,7 @@ public class CycleDetectionIT {
     }
 
     @Test(expected = PluginUtilsRuntimeException.class)
-    public void cycleDetectedWithThreeLevel() throws NotAvailablePluginConfigurationException {
+    public void cycleDetectedWithThreeLevel() {
         PluginUtils.setup(SamplePluginWithPojoCycleDetectedLevelThree.class.getPackage().getName());
         Assert.fail();
     }
