@@ -558,6 +558,7 @@ public class PluginService implements IPluginService, InitializingBean {
         ConcurrentMap<String, Object> newCacheForThisTenant = pluginCacheTenant == null ?
             new ConcurrentHashMap<>() :
             pluginCacheTenant;
+        instantiateInnerPlugins(plgConf, newCacheForThisTenant);
         newCacheForThisTenant.computeIfAbsent(plgConf.getBusinessId(), bid -> {
             try {
                 return instantiatePlugin(plgConf, newCacheForThisTenant);
@@ -566,6 +567,52 @@ public class PluginService implements IPluginService, InitializingBean {
             }
         });
         return newCacheForThisTenant;
+    }
+
+    /**
+     * retreive Plugin type parameters from given plugin conf and instantiate the plugin if not already in cache.
+     *
+     * @param plgConf           {@link PluginConfiguration} to check and instantiate missing inner parameter plugins
+     * @param pluginCacheTenant Cache of already instantiated plugin conf for the current tenant
+     */
+    private void instantiateInnerPlugins(PluginConfiguration plgConf, ConcurrentMap<String, Object> pluginCacheTenant) {
+        Iterator<PluginConfiguration> it = getInnerPluginsConf(plgConf).descendingIterator();
+        while (it.hasNext()) {
+            PluginConfiguration innerConf = it.next();
+            pluginCacheTenant.computeIfAbsent(innerConf.getBusinessId(), bid -> {
+                try {
+                    return instantiatePlugin(innerConf, pluginCacheTenant);
+                } catch (ModuleException | NotAvailablePluginConfigurationException e) {
+                    throw new RsRuntimeException(e);
+                }
+            });
+        }
+    }
+
+    /**
+     * Retrieve ordered list of {@link PluginConfiguration} matching all the given plugin inner plugin parameters.
+     *
+     * @param pluginConf {@link PluginConfiguration} to check
+     * @return Ordered list of inner plugin configuration of the fiven plugin configuration
+     */
+    private LinkedList<PluginConfiguration> getInnerPluginsConf(PluginConfiguration pluginConf) {
+        LinkedList<PluginConfiguration> innerConfList = new LinkedList<>();
+
+        for (PluginParamDescriptor paramType : getPluginMetadata(pluginConf.getPluginId()).getParameters()) {
+            if (paramType.getType() == PluginParamType.PLUGIN) {
+                NestedPluginParam pluginParam = (NestedPluginParam) pluginConf.getParameter(paramType.getName());
+                if ((pluginParam != null) && pluginParam.hasValue() && !pluginParam.getValue()
+                                                                                   .equals(pluginConf.getBusinessId())) {
+                    PluginConfiguration innerPluginConf = loadPluginConfiguration(pluginParam.getValue());
+                    // Add inner plugin to result list
+                    innerConfList.add(innerPluginConf);
+                    // Check if inner plugin contains other inner plugins and add them to result list
+                    innerConfList.addAll(getInnerPluginsConf(innerPluginConf));
+                }
+            }
+        }
+        LOGGER.debug("Found {} inner plugin(s) for : {}", innerConfList.size(), pluginConf.getBusinessId());
+        return innerConfList;
     }
 
     @Override
@@ -593,6 +640,7 @@ public class PluginService implements IPluginService, InitializingBean {
                 throw new CannotInstanciatePluginException(e.getMessage());
             }
         } else {
+            instantiateInnerPlugins(plgConf, instantiatePluginMap.get(tenant));
             return instantiatePlugin(plgConf, instantiatePluginMap.get(tenant), dynamicParameters);
         }
     }
@@ -626,6 +674,23 @@ public class PluginService implements IPluginService, InitializingBean {
     }
 
     /**
+     * Retrieve plugin {@link PluginMetaData} or raise a {@link PluginMetadataNotFoundRuntimeException} if not found.
+     *
+     * @param pluginId Plugin identifier to load
+     * @return PluginMetaData
+     */
+    private PluginMetaData getPluginMetadata(String pluginId) {
+        PluginMetaData pluginMetadata = PluginUtils.getPluginMetadata(pluginId);
+        if (pluginMetadata == null) {
+            LOGGER.debug("No plugin metadata found for plugin configuration id {}", pluginId);
+            logPluginMetadataScanned();
+            throw new PluginMetadataNotFoundRuntimeException("Metadata not found for plugin configuration identifier "
+                                                             + pluginId);
+        }
+        return pluginMetadata;
+    }
+
+    /**
      * Instantiate a plugin.
      *
      * @param pluginConf        {@link PluginConfiguration} plugin configuration
@@ -651,14 +716,7 @@ public class PluginService implements IPluginService, InitializingBean {
         }
 
         // Get the plugin implementation associated
-        PluginMetaData pluginMetadata = PluginUtils.getPluginMetadata(pluginConf.getPluginId());
-
-        if (pluginMetadata == null) {
-            LOGGER.debug("No plugin metadata found for plugin configuration id {}", pluginConf.getPluginId());
-            logPluginMetadataScanned();
-            throw new PluginMetadataNotFoundRuntimeException("Metadata not found for plugin configuration identifier "
-                                                             + pluginConf.getPluginId());
-        }
+        PluginMetaData pluginMetadata = getPluginMetadata(pluginConf.getPluginId());
 
         if (!Objects.equals(pluginMetadata.getVersion(), pluginConf.getVersion())) {
             throw new CannotInstanciatePluginException(String.format(
@@ -667,22 +725,12 @@ public class PluginService implements IPluginService, InitializingBean {
                 pluginMetadata.getVersion()));
         }
 
-        // When pluginMap are loaded from database, maybe dependant pluginMap aren't yet loaded
-        // So :
-        // For all pluginMetadata parameters, find PLUGIN ones, get key
-        for (PluginParamDescriptor paramType : pluginMetadata.getParameters()) {
-            if (paramType.getType() == PluginParamType.PLUGIN) {
-                NestedPluginParam pluginParam = (NestedPluginParam) pluginConf.getParameter(paramType.getName());
-                if ((pluginParam != null) && pluginParam.hasValue() && !pluginParam.getValue()
-                                                                                   .equals(pluginConf.getBusinessId())) {
-                    // LOAD embedded plugin from its business identifier
-                    // To avoid recursive endless plugin relation, avoid embedded plugin to be the same plugin as the parent one.
-                    this.getPluginForTenant(loadPluginConfiguration(pluginParam.getValue()), tenantPluginCache);
-                }
-            }
-        }
-
         decryptSensibleParameter(pluginMetadata, pluginConf);
+
+        LOGGER.info("New plugin instantiation for {}configuration {} of plugin {}",
+                    dynamicParameters.length > 0 ? "dynamic " : "",
+                    pluginConf.getBusinessId(),
+                    pluginMetadata.getPluginId());
 
         return PluginUtils.getPlugin(pluginConf, pluginMetadata, tenantPluginCache, dynamicParameters);
     }
