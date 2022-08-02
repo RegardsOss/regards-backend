@@ -55,6 +55,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 
 import static fr.cnes.regards.modules.processing.utils.LogUtils.setOrderIdInMdc;
 import static fr.cnes.regards.modules.processing.utils.ReactorErrorTransformers.addInContext;
@@ -69,9 +70,9 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractBaseForecastedStorageAwareProcessPlugin.class);
 
-    private static final String METADATA_DIR_PATH = "metadata";
+    protected static final String METADATA_DIR_PATH = "metadata";
 
-    private static final String METADATA_FILE_EXT = ".json";
+    protected static final String METADATA_FILE_NAME = "metadata.json";
 
     @Autowired
     protected IExecutionLocalWorkdirService workdirService;
@@ -107,7 +108,7 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
                                  })
                                  .map(wd -> context.withParam(ExecutionLocalWorkdir.class, wd))
                                  .subscribeOn(Schedulers.boundedElastic())
-                                 .subscriberContext(addInContext(PExecution.class, exec))
+                                 .contextWrite(addInContext(PExecution.class, exec))
                                  .switchIfEmpty(Mono.error(new WorkdirPreparationException(exec, "Unknown error")));
         };
     }
@@ -126,7 +127,7 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
                           .map(out -> context.withParam(CumulativeOutputFiles.class,
                                                         new CumulativeOutputFiles(out),
                                                         CumulativeOutputFiles::merge))
-                          .subscriberContext(addInContext(PExecution.class, exec));
+                          .contextWrite(addInContext(PExecution.class, exec));
         };
     }
 
@@ -164,7 +165,6 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
      * Add metadata file for each features. Metadata are retrieved from catalog service with feature id (urn)
      *
      * @param inputFiles {@link PInputFile}s
-     * @return
      */
     private Mono<ExecutionLocalWorkdir> addMetadataInWorkdir(ExecutionLocalWorkdir wd,
                                                              Seq<PInputFile> inputFiles,
@@ -197,18 +197,13 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
             ResponseEntity<JsonObject> response = searchClient.getDataobject(urn,
                                                                              SearchEngineMappings.getJsonHeaders());
             if (response.getStatusCode().is2xxSuccessful() && response.hasBody()) {
-                JsonObject feature = response.getBody();
-                String featureName = urn.toString();
+                JsonObject feature = Objects.requireNonNull(response.getBody());
                 JsonElement featureContent = feature.get("content");
                 if ((featureContent != null) && featureContent.isJsonObject()) {
-                    JsonElement el = featureContent.getAsJsonObject().get("providerId");
-                    if ((el != null) && (el.getAsString() != null)) {
-                        featureName = el.getAsString();
-                    }
                     Path mfPath = Paths.get(wd.inputFolder().toString(),
                                             urn.toString(),
                                             METADATA_DIR_PATH,
-                                            featureName.replace(" ", "_") + METADATA_FILE_EXT);
+                                            METADATA_FILE_NAME);
                     Files.createDirectories(mfPath.getParent());
                     try (FileWriter writer = new FileWriter(Files.createFile(mfPath).toFile())) {
                         gson.toJson(featureContent, writer);
