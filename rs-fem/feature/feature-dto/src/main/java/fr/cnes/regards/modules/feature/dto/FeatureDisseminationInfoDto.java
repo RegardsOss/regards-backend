@@ -23,6 +23,17 @@ import java.time.OffsetDateTime;
 /**
  * @author Léo Mieulet
  */
-public record FeatureDisseminationInfoDto(String label, OffsetDateTime requestDate, OffsetDateTime ackDate) {
+public class FeatureDisseminationInfoDto {
 
+    private String label;
+
+    private OffsetDateTime requestDate;
+
+    private OffsetDateTime ackDate;
+
+    public FeatureDisseminationInfoDto(String label, OffsetDateTime requestDate, OffsetDateTime ackDate) {
+        this.label = label;
+        this.requestDate = requestDate;
+        this.ackDate = ackDate;
+    }
 }
