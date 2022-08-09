@@ -1,6 +1,8 @@
 package fr.cnes.regards.framework.s3.utils;
 
+import fr.cnes.regards.framework.s3.exception.S3ClientException;
 import io.vavr.collection.List;
+import io.vavr.control.Option;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -24,23 +26,18 @@ public class FluxByteBufferHarmonizer {
      * @param fixedSize the size of each outputted byte buffer
      * @return an harmonious flux
      */
-    public static Function<Flux<ByteBuffer>, Flux<ByteBuffer>> harmonize(int fixedSize) {
+    public static Function<Flux<ByteBuffer>, Flux<ByteBuffer>> harmonize(int fixedSize, int prefetch) {
         return bbs -> {
             AtomicReference<ByteBuffer> fixedSizeBufferRef = new AtomicReference<>(ByteBuffer.allocate(fixedSize));
             return bbs.materialize()
                       .filter(s -> List.of(ON_NEXT, ON_COMPLETE, ON_ERROR).contains(s.getType()))
-                      .concatMap(s -> {
-                          switch (s.getType()) {
-                              case ON_NEXT:
-                                  return processNextByteBuffer(fixedSize, fixedSizeBufferRef, s);
-                              case ON_COMPLETE:
-                                  return processComplete(fixedSizeBufferRef.get());
-                              case ON_ERROR:
-                                  return Mono.error(s.getThrowable());
-                              default:
-                                  return Mono.empty();
-                          }
-                      });
+                      .concatMap(s -> switch (s.getType()) {
+                          case ON_NEXT -> processNextByteBuffer(fixedSize, fixedSizeBufferRef, s);
+                          case ON_COMPLETE -> processComplete(fixedSizeBufferRef.get());
+                          case ON_ERROR -> Mono.error(Option.of(s.getThrowable())
+                                                            .getOrElse(new S3ClientException("Unhanded error")));
+                          default -> Mono.empty();
+                      }, 0);
         };
     }
 

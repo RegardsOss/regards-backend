@@ -43,14 +43,22 @@ public class S3HighLevelReactiveClient {
 
     protected final int maxBytesPerPart;
 
+    /**
+     * Number of reactor flux message handles in a batch for multipart uploads.
+     * Increase memory usage as each part is read in memory.
+     * maxBytesPerPart is the amount a bytes in memory for each part.
+     */
+    private final int reactorPreFetch;
+
     private final Cache<StorageConfig, S3AsyncClientReactorWrapper> configManagers = Caffeine.newBuilder()
                                                                                              .expireAfterAccess(Duration.ofMinutes(
                                                                                                  30))
                                                                                              .build();
 
-    public S3HighLevelReactiveClient(Scheduler scheduler, int maxBytesPerPart) {
+    public S3HighLevelReactiveClient(Scheduler scheduler, int maxBytesPerPart, int reactorPreFetch) {
         this.scheduler = scheduler;
         this.maxBytesPerPart = maxBytesPerPart;
+        this.reactorPreFetch = reactorPreFetch;
     }
 
     protected S3AsyncClientReactorWrapper getClient(StorageConfig config) {
@@ -173,10 +181,11 @@ public class S3HighLevelReactiveClient {
                                                           String key,
                                                           String uploadId) {
         return entry.getData()
+                    .limitRate(reactorPreFetch)
                     .publishOn(scheduler)
-                    .transform(harmonize(maxBytesPerPart))
+                    .transform(harmonize(maxBytesPerPart, reactorPreFetch))
                     .zipWithIterable(Stream.range(1, Integer.MAX_VALUE))
-                    .flatMap(part -> uploadPart(config, bucket, key, uploadId, part))
+                    .concatMap(part -> uploadPart(config, bucket, key, uploadId, part), reactorPreFetch)
                     .reduce(new MultipartReport(), MultipartReport::accumulate)
                     .flatMap(report -> completeMultipartEntry(config, bucket, key, uploadId, report))
                     .onErrorResume(t -> getClient(config).abortMultipartUpload(bucket, key, uploadId)
