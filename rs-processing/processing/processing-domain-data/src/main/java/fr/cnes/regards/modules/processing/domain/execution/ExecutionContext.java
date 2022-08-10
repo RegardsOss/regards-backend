@@ -1,4 +1,4 @@
-/* Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+/* Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -24,14 +24,15 @@ import fr.cnes.regards.modules.processing.domain.engine.ExecutionEvent;
 import fr.cnes.regards.modules.processing.domain.engine.IExecutionEventNotifier;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingException;
 import fr.cnes.regards.modules.processing.exceptions.ProcessingExceptionType;
-import io.vavr.collection.HashMap;
-import io.vavr.collection.Map;
+import io.vavr.control.Try;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Value;
+import lombok.Data;
 import lombok.With;
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.BiFunction;
 
 /**
@@ -44,7 +45,7 @@ import java.util.function.BiFunction;
  *
  * @author gandrieu
  */
-@Value
+@Data
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ExecutionContext {
 
@@ -57,11 +58,10 @@ public class ExecutionContext {
 
     IExecutionEventNotifier eventNotifier;
 
-    @With
     Map<Class<?>, Object> params;
 
     public ExecutionContext(PExecution exec, PBatch batch, PProcess process, IExecutionEventNotifier notifierFor) {
-        this(exec, batch, process, notifierFor, HashMap.empty());
+        this(exec, batch, process, notifierFor, new HashMap<>());
     }
 
     public Mono<ExecutionContext> sendEvent(ExecutionEvent event) {
@@ -69,28 +69,32 @@ public class ExecutionContext {
     }
 
     public <T> ExecutionContext withParam(Class<T> type, T newValue, BiFunction<T, T, T> mergeFn) {
-        return withParam(type, params.get(type).map(t -> {
-            try {
-                T t1 = (T) t;
-                return mergeFn.apply(t1, newValue);
-            } catch (Exception e) {
-                return newValue;
-            }
-        }).getOrElse(newValue));
+        T mergedValue;
+        if (params.containsKey(type)) {
+            mergedValue = Try.of(() -> (T) params.get(type))
+                             .map(oldValue -> mergeFn.apply(oldValue, newValue))
+                             .getOrElse(newValue);
+
+        } else {
+            mergedValue = newValue;
+        }
+        params.put(type, mergedValue);
+        return this;
     }
 
     public <T> ExecutionContext withParam(Class<T> type, T value) {
-        return withParams(params.put(type, value));
+        params.put(type, value);
+        return this;
     }
 
     @SuppressWarnings("unchecked")
     public <T> Mono<T> getParam(Class<T> type) {
-        return params.get(type)
-                     .map(o -> (T) o)
-                     .map(Mono::just)
-                     .getOrElse(() -> Mono.error(new MissingExecutionContextParameterException("Param for type '"
-                                                                                               + type.getSimpleName()
-                                                                                               + "' not found")));
+        return Try.of(() -> params.get(type))
+                  .map(o -> (T) o)
+                  .map(Mono::just)
+                  .getOrElse(() -> Mono.error(new MissingExecutionContextParameterException("Param for type '"
+                                                                                            + type.getSimpleName()
+                                                                                            + "' not found")));
     }
 
     @SuppressWarnings("serial")
