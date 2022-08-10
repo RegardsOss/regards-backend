@@ -22,7 +22,6 @@ import fr.cnes.regards.framework.feign.FeignContractSupplier;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
@@ -46,9 +45,9 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -70,8 +69,8 @@ public class ProcessPluginConfigControllerIT extends AbstractProcessingIT {
 
         pluginMetaData.forEach(md -> LOGGER.info("Found md {}: {}", md.getPluginId(), md));
 
-        assertThat(pluginMetaData.size()).isGreaterThan(1);
-        assertThat(pluginMetaData).anyMatch(md -> md.getPluginClassName().equals(UselessProcessPlugin.class.getName()));
+        assertThat(pluginMetaData).hasSize(1)
+                                  .anyMatch(md -> md.getPluginClassName().equals(UselessProcessPlugin.class.getName()));
 
         // LIST AVAILABLE CONFIGURATIONS: NOTHING YET...
         FeignSecurityManager.asUser("regards@cnes.fr", DefaultRole.ADMIN.name());
@@ -88,14 +87,14 @@ public class ProcessPluginConfigControllerIT extends AbstractProcessingIT {
         useless1Config.setParameters(IPluginParam.set(IPluginParam.build("processName", "useless-processName-1")));
         useless1Config.setBusinessId(null);
         io.vavr.collection.List<String> datasets = list(randomDataset(), randomDataset());
-        ProcessPluginConfigurationRightsDTO created = client.create(new ProcessPluginConfigurationRightsDTO(
+        ProcessPluginConfigurationRightsDTO created = Objects.requireNonNull(client.create(new ProcessPluginConfigurationRightsDTO(
             useless1Config,
-            new ProcessPluginConfigurationRightsDTO.Rights("EXPLOIT", datasets, false))).getContent();
+            new ProcessPluginConfigurationRightsDTO.Rights("EXPLOIT", datasets, false))).getContent());
 
         // THERE IS THE CONFIG IN THE DATABASE!
-        ProcessPluginConfigurationRightsDTO fetched = client.findByBusinessId(UUID.fromString(created.getPluginConfiguration()
+        ProcessPluginConfigurationRightsDTO fetched =  Objects.requireNonNull(client.findByBusinessId(UUID.fromString(created.getPluginConfiguration()
                                                                                                      .getBusinessId()))
-                                                            .getContent();
+                                                            .getContent());
         assertThat(fetched.getPluginConfiguration().getParameter("processName").getValue()).isEqualTo(
             "useless-processName-1");
 
@@ -107,9 +106,9 @@ public class ProcessPluginConfigControllerIT extends AbstractProcessingIT {
                                                                                                       "ADMIN",
                                                                                                       datasets,
                                                                                                       false));
-        ProcessPluginConfigurationRightsDTO updated = client.update(UUID.fromString(toBeUpdated.getPluginConfiguration()
+        ProcessPluginConfigurationRightsDTO updated =  Objects.requireNonNull(client.update(UUID.fromString(toBeUpdated.getPluginConfiguration()
                                                                                                .getBusinessId()),
-                                                                    toBeUpdated).getContent();
+                                                                    toBeUpdated).getContent());
         assertThat(updated.getRights().getRole()).isEqualTo("ADMIN");
         assertThat(updated.getRights().getDatasets()).hasSameElementsAs(datasets);
         assertThat(updated.getPluginConfiguration().getParameter("processName").getValue()).isEqualTo(
@@ -218,13 +217,14 @@ public class ProcessPluginConfigControllerIT extends AbstractProcessingIT {
     }
 
     private static List<UUID> extractIds(Collection<ProcessLabelDTO> datasetAssociatedProcesses) {
-        return datasetAssociatedProcesses.stream().map(dto -> dto.getProcessBusinessId()).collect(Collectors.toList());
+        return datasetAssociatedProcesses.stream().map(ProcessLabelDTO::getProcessBusinessId).collect(Collectors.toList());
     }
 
     private static List<UUID> extractIds(ProcessPluginConfigurationRightsDTO... dtos) {
         return list(dtos).map(rpc -> rpc.getPluginConfiguration().getBusinessId()).map(UUID::fromString).toJavaList();
     }
 
+    @SafeVarargs
     private static <T> io.vavr.collection.List<T> list(T... ts) {
         return io.vavr.collection.List.of(ts);
     }
@@ -246,7 +246,7 @@ public class ProcessPluginConfigControllerIT extends AbstractProcessingIT {
     }
 
     @Before
-    public void init() throws IOException, ModuleException {
+    public void init() {
         client = Feign.builder()
                       .contract(new FeignContractSupplier().get())
                       .decoder(new GsonLoggingDecoder(gson))
@@ -264,61 +264,61 @@ public class ProcessPluginConfigControllerIT extends AbstractProcessingIT {
 
         @RequestMapping(method = RequestMethod.GET,
             path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.CONFIG_SUFFIX,
-            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE },
-            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE })
+            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
+            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
         List<EntityModel<ProcessPluginConfigurationRightsDTO>> findAll();
 
         @RequestMapping(method = RequestMethod.GET,
             path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.METADATA_SUFFIX,
-            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE },
-            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE })
+            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
+            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
         List<PluginMetaData> listAllDetectedMetadata();
 
         @RequestMapping(method = RequestMethod.GET,
             path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.CONFIG_BID_SUFFIX,
-            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE },
-            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE })
+            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
+            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
         EntityModel<ProcessPluginConfigurationRightsDTO> findByBusinessId(
             @PathVariable(ProcessingConstants.Path.Param.PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId);
 
         @RequestMapping(method = RequestMethod.POST,
             path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.CONFIG_SUFFIX,
-            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE },
-            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE })
+            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
+            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
         EntityModel<ProcessPluginConfigurationRightsDTO> create(
             @RequestBody ProcessPluginConfigurationRightsDTO rightsDto);
 
         @RequestMapping(method = RequestMethod.PUT,
             path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.CONFIG_BID_SUFFIX,
-            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE },
-            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE })
+            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
+            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
         EntityModel<ProcessPluginConfigurationRightsDTO> update(
             @PathVariable(ProcessingConstants.Path.Param.PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId,
             @RequestBody ProcessPluginConfigurationRightsDTO rightsDto);
 
         @RequestMapping(method = RequestMethod.DELETE,
             path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.CONFIG_BID_SUFFIX,
-            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE },
-            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE })
+            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
+            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
         EntityModel<ProcessPluginConfigurationRightsDTO> delete(
             @PathVariable(ProcessingConstants.Path.Param.PROCESS_BUSINESS_ID_PARAM) UUID processBusinessId);
 
         @RequestMapping(method = RequestMethod.GET,
             path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.LINKDATASET_SUFFIX,
-            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE },
-            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE })
+            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
+            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
         Collection<ProcessLabelDTO> findProcessesByDataset(
             @PathVariable(ProcessingConstants.Path.Param.DATASET_PARAM) String dataset);
 
         @RequestMapping(method = RequestMethod.POST,
             path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.BY_DATASETS_SUFFIX,
-            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE },
-            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE })
+            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE },
+            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
         Map<String, Collection<ProcessLabelDTO>> findProcessesByDatasets(@RequestBody List<String> datasets);
 
         @RequestMapping(method = RequestMethod.PUT,
             path = ProcessingConstants.Path.PROCESSPLUGIN_PATH + ProcessingConstants.Path.LINKDATASET_SUFFIX,
-            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_UTF8_VALUE })
+            consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE })
         void attachDatasetToProcesses(@RequestBody List<UUID> processBusinessIds,
                                       @PathVariable(ProcessingConstants.Path.Param.DATASET_PARAM) String dataset);
 
