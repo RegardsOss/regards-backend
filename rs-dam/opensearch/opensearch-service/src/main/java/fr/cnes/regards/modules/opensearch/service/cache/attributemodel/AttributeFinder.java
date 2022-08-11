@@ -31,6 +31,8 @@ import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModelBuilder;
 import fr.cnes.regards.modules.model.domain.event.AttributeModelCreated;
 import fr.cnes.regards.modules.model.domain.event.AttributeModelDeleted;
+import fr.cnes.regards.modules.model.domain.event.AttributeModelUpdated;
+import fr.cnes.regards.modules.model.dto.event.AttributeCacheRefreshEvent;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.gson.IAttributeHelper;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
@@ -301,6 +303,8 @@ public class AttributeFinder implements IAttributeFinder, ApplicationListener<Ap
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(AttributeModelCreated.class, new CreatedHandler());
         subscriber.subscribeTo(AttributeModelDeleted.class, new DeletedHandler());
+        subscriber.subscribeTo(AttributeModelUpdated.class, new UpdateHandler());
+        subscriber.subscribeTo(AttributeCacheRefreshEvent.class, new CleanCache());
     }
 
     protected Map<String, Map<String, AttributeModel>> getPropertyMap() {
@@ -319,6 +323,38 @@ public class AttributeFinder implements IAttributeFinder, ApplicationListener<Ap
             try {
                 runtimeTenantResolver.forceTenant(pWrapper.getTenant());
                 LOGGER.info("Invalidates attributes cache for current tenant as there is a new attribute model {}",
+                            pWrapper.getContent().getAttributeName());
+                computePropertyMap(pWrapper.getTenant());
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        }
+    }
+
+    private class CleanCache implements IHandler<AttributeCacheRefreshEvent> {
+
+        @Override
+        public void handle(TenantWrapper<AttributeCacheRefreshEvent> pWrapper) {
+            try {
+                runtimeTenantResolver.forceTenant(pWrapper.getTenant());
+                LOGGER.info("Clear attributes cache");
+                computePropertyMap(pWrapper.getTenant());
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        }
+    }
+
+    /**
+     * Handle {@link AttributeModel} update
+     */
+    private class UpdateHandler implements IHandler<AttributeModelUpdated> {
+
+        @Override
+        public void handle(TenantWrapper<AttributeModelUpdated> pWrapper) {
+            try {
+                runtimeTenantResolver.forceTenant(pWrapper.getTenant());
+                LOGGER.info("Invalidates attributes cache for current tenant as the attribute model {} is updated",
                             pWrapper.getContent().getAttributeName());
                 computePropertyMap(pWrapper.getTenant());
             } finally {
