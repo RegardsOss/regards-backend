@@ -113,9 +113,9 @@ public class S3HighLevelReactiveClient {
         String bucket = config.getBucket();
         String entryKey = readCmd.getEntryKey();
         return getClient(config).readContentFlux(bucket, entryKey, true)
-                                .retryWhen(Retry.backoff(5, Duration.ofSeconds(5))
-                                                .jitter(0.2d)
-                                                .maxBackoff(Duration.ofMinutes(5)))
+                                .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
+                                                .doBeforeRetry(x -> LOGGER.info("Retrying read entry {}", entryKey))
+                                                .maxBackoff(Duration.ofSeconds(3)))
                                 .map(ras -> {
                                     Long size = ras.getResponse().contentLength();
                                     String etag = ras.getResponse().eTag();
