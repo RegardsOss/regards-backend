@@ -109,6 +109,11 @@ pipeline {
                                 runMavenDockerImgParallelOne("sonarTests", "rs-worker-manager")
                             }
                         }
+                        stage('Lta manager') {
+                            steps {
+                                runMavenDockerImgParallelOne("sonarTests", "rs-lta-manager")
+                            }
+                        }
                     }
                 }
                 stage('-2-') {

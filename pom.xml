@@ -216,6 +216,7 @@
 		<module>rs-processing</module>
 		<module>rs-storage</module>
 		<module>rs-worker-manager</module>
+		<module>rs-lta-manager</module>
 	</modules>
 
 	<dependencies>
@@ -1697,6 +1698,32 @@
 				<artifactId>worker-manager-rest</artifactId>
 				<version>${revision}</version>
 			</dependency>
+			<!--LtaManager -->
+			<dependency>
+				<groupId>fr.cnes.regards.modules.ltamanager</groupId>
+				<artifactId>lta-manager-domain</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.ltamanager</groupId>
+				<artifactId>lta-manager-dto</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.ltamanager</groupId>
+				<artifactId>lta-manager-dao</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.ltamanager</groupId>
+				<artifactId>lta-manager-service</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.ltamanager</groupId>
+				<artifactId>lta-manager-rest</artifactId>
+				<version>${revision}</version>
+			</dependency>
 			<!-- CNES REMOTE STORAGES -->
 			<dependency>
 				<groupId>fr.cnes.regards.modules.storage</groupId>
@@ -2121,6 +2148,11 @@
 			<dependency>
 				<groupId>fr.cnes.regards.microservices.workermanager</groupId>
 				<artifactId>bootstrap-worker-manager</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.microservices.workermanager</groupId>
+				<artifactId>bootstrap-lta-manager</artifactId>
 				<version>${revision}</version>
 			</dependency>
 			<dependency>
