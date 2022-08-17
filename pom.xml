@@ -57,7 +57,7 @@
 		<java.version>17</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven-deploy.skip>true</maven-deploy.skip>
-		<regards.version>1.10.1-SNAPSHOT</regards.version>
+		<regards.version>1.11.0-SNAPSHOT</regards.version>
 		<revision>${regards.version}</revision>
 
 		<!-- COTS -->
