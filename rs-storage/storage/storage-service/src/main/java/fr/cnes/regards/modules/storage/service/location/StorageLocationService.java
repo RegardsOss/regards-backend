@@ -138,14 +138,14 @@ public class StorageLocationService {
         return storageLocationRepo.findByName(storage);
     }
 
-    public StorageLocationDTO getById(String storageId) throws ModuleException {
-        Optional<StorageLocation> oLoc = storageLocationRepo.findByName(storageId);
-        Optional<StorageLocationConfiguration> oConf = pLocationConfService.search(storageId);
-        Long nbStorageError = storageService.count(storageId, FileRequestStatus.ERROR);
-        Long nbDeletionError = deletionReqService.count(storageId, FileRequestStatus.ERROR);
-        boolean deletionRunning = deletionReqService.isDeletionRunning(storageId);
-        boolean copyRunning = copyService.isCopyRunning(storageId);
-        boolean storageRunning = storageService.isStorageRunning(storageId);
+    public StorageLocationDTO getByName(String storageName) throws ModuleException {
+        Optional<StorageLocation> oLoc = storageLocationRepo.findByName(storageName);
+        Optional<StorageLocationConfiguration> oConf = pLocationConfService.search(storageName);
+        Long nbStorageError = storageService.count(storageName, FileRequestStatus.ERROR);
+        Long nbDeletionError = deletionReqService.count(storageName, FileRequestStatus.ERROR);
+        boolean deletionRunning = deletionReqService.isDeletionRunning(storageName);
+        boolean copyRunning = copyService.isCopyRunning(storageName);
+        boolean storageRunning = storageService.isStorageRunning(storageName);
         Long nbReferencedFiles = null;
         Long totalSizeOfReferencedFiles = null;
         Long nbPendingFiles = null;
@@ -165,9 +165,9 @@ public class StorageLocationService {
             nbReferencedFiles = loc.getNumberOfReferencedFiles();
             totalSizeOfReferencedFiles = loc.getTotalSizeOfReferencedFilesInKo();
         } else {
-            throw new EntityNotFoundException(storageId, StorageLocation.class);
+            throw new EntityNotFoundException(storageName, StorageLocation.class);
         }
-        return new StorageLocationDTO(storageId,
+        return new StorageLocationDTO(storageName,
                                       nbReferencedFiles,
                                       nbPendingFiles,
                                       totalSizeOfReferencedFiles,
@@ -361,72 +361,72 @@ public class StorageLocationService {
     /**
      * Up (if possible), the priority of the given storage location configuration
      *
-     * @param storageLocationId storage location id
+     * @param storageName storage location id
      * @throws EntityNotFoundException if corresponding storage location cannot be found
      */
-    public void increasePriority(String storageLocationId) throws EntityNotFoundException {
-        pLocationConfService.increasePriority(storageLocationId);
+    public void increasePriority(String storageName) throws EntityNotFoundException {
+        pLocationConfService.increasePriority(storageName);
     }
 
     /**
      * Down (if possible), the priority of the given storage location configuration
      *
-     * @param storageLocationId storage location id
+     * @param storageName storage location id
      * @throws EntityNotFoundException if corresponding storage location cannot be found
      */
-    public void decreasePriority(String storageLocationId) throws EntityNotFoundException {
-        pLocationConfService.decreasePriority(storageLocationId);
+    public void decreasePriority(String storageName) throws EntityNotFoundException {
+        pLocationConfService.decreasePriority(storageName);
     }
 
     /**
      * Delete the given storage location information. <br/>
      * Files reference are not deleted, to do so, use {@link #deleteFiles(String, Boolean, String, String)}
      *
-     * @param storageLocationId storage location id
+     * @param storageLocationName storage location id
      * @throws ModuleException
      */
-    public void delete(String storageLocationId) throws ModuleException {
+    public void delete(String storageLocationName) throws ModuleException {
         // Delete storage location plugin configuration
-        Optional<StorageLocationConfiguration> pStorageLocation = pLocationConfService.search(storageLocationId);
+        Optional<StorageLocationConfiguration> pStorageLocation = pLocationConfService.search(storageLocationName);
         if (pStorageLocation.isPresent()) {
             // If a storage configuration is associated, delete it.
             pLocationConfService.delete(pStorageLocation.get().getId());
         }
         // Delete informations in storage locations
-        storageLocationRepo.deleteByName(storageLocationId);
+        storageLocationRepo.deleteByName(storageLocationName);
         storageMonitoringRepo.deleteAll();
         // Delete requests
-        storageService.deleteByStorage(storageLocationId, Optional.empty());
-        deletionReqService.deleteByStorage(storageLocationId, Optional.empty());
-        cacheReqService.deleteByStorage(storageLocationId, Optional.empty());
+        storageService.deleteByStorage(storageLocationName, Optional.empty());
+        deletionReqService.deleteByStorage(storageLocationName, Optional.empty());
+        cacheReqService.deleteByStorage(storageLocationName, Optional.empty());
     }
 
     /**
      * Delete all referenced files of the given storage location
      *
-     * @param storageLocationId storage location id
-     * @param forceDelete       remove reference if physical file deletion fails.
-     * @param sessionOwner      the user who has requested the deletion of files
-     * @param session           tags the deletion files requests with a session name
+     * @param storageName  storage location name
+     * @param forceDelete  remove reference if physical file deletion fails.
+     * @param sessionOwner the user who has requested the deletion of files
+     * @param session      tags the deletion files requests with a session name
      * @throws ModuleException
      */
-    public void deleteFiles(String storageLocationId, Boolean forceDelete, String sessionOwner, String session)
+    public void deleteFiles(String storageName, Boolean forceDelete, String sessionOwner, String session)
         throws ModuleException {
-        if (storageLocationId.equals(CacheService.CACHE_NAME)) {
+        if (storageName.equals(CacheService.CACHE_NAME)) {
             cacheService.scheduleCacheCleanUp(authResolver.getUser());
         } else {
-            deletionService.scheduleJob(storageLocationId, forceDelete, sessionOwner, session);
+            deletionService.scheduleJob(storageName, forceDelete, sessionOwner, session);
         }
     }
 
-    public void copyFiles(String storageLocationId,
+    public void copyFiles(String storageName,
                           String sourcePath,
                           String destinationStorageId,
                           Optional<String> destinationPath,
                           Collection<String> types,
                           String sessionOwner,
                           String session) {
-        copyService.scheduleJob(storageLocationId,
+        copyService.scheduleJob(storageName,
                                 sourcePath,
                                 destinationStorageId,
                                 destinationPath,
@@ -438,25 +438,25 @@ public class StorageLocationService {
     /**
      * Retry all requests in error for the given storage location.
      *
-     * @param storageLocationId
+     * @param storageName
      * @param type
      * @throws EntityOperationForbiddenException
      */
-    public void retryErrors(String storageLocationId, FileRequestType type) throws EntityOperationForbiddenException {
+    public void retryErrors(String storageName, FileRequestType type) throws EntityOperationForbiddenException {
         switch (type) {
             case DELETION:
-                deletionReqService.scheduleJobs(FileRequestStatus.ERROR, Lists.newArrayList(storageLocationId));
+                deletionReqService.scheduleJobs(FileRequestStatus.ERROR, Lists.newArrayList(storageName));
                 break;
             case STORAGE:
                 storageService.scheduleJobs(FileRequestStatus.ERROR,
-                                            Lists.newArrayList(storageLocationId),
+                                            Lists.newArrayList(storageName),
                                             Lists.newArrayList());
                 break;
             case AVAILABILITY:
             case COPY:
             case REFERENCE:
             default:
-                throw new EntityOperationForbiddenException(storageLocationId,
+                throw new EntityOperationForbiddenException(storageName,
                                                             StorageLocation.class,
                                                             String.format("Retry for type %s is forbidden", type));
         }
@@ -534,12 +534,12 @@ public class StorageLocationService {
      * @param storageLocation
      * @throws ModuleException
      */
-    public StorageLocationDTO updateLocationConfiguration(String storageId, StorageLocationDTO storageLocation)
+    public StorageLocationDTO updateLocationConfiguration(String storageName, StorageLocationDTO storageLocation)
         throws ModuleException {
         Assert.notNull(storageLocation, "Storage location to configure can not be null");
         Assert.notNull(storageLocation.getName(), "Storage location name to update can not be null");
         Assert.notNull(storageLocation.getConfiguration(), "Storage location / Configuration can not be null");
-        StorageLocationConfiguration newConf = pLocationConfService.update(storageId,
+        StorageLocationConfiguration newConf = pLocationConfService.update(storageName,
                                                                            storageLocation.getConfiguration());
         return new StorageLocationDTO(storageLocation.getName(),
                                       0L,
@@ -554,28 +554,28 @@ public class StorageLocationService {
                                       pLocationConfService.allowPhysicalDeletion(newConf));
     }
 
-    public void deleteRequests(String storageLocationId, FileRequestType type, Optional<FileRequestStatus> status) {
+    public void deleteRequests(String storageName, FileRequestType type, Optional<FileRequestStatus> status) {
         switch (type) {
             case AVAILABILITY:
-                cacheReqService.deleteByStorage(storageLocationId, status);
+                cacheReqService.deleteByStorage(storageName, status);
                 break;
             case COPY:
-                copyService.deleteByStorage(storageLocationId, status);
+                copyService.deleteByStorage(storageName, status);
                 break;
             case DELETION:
-                deletionReqService.deleteByStorage(storageLocationId, status);
+                deletionReqService.deleteByStorage(storageName, status);
                 break;
             case REFERENCE:
                 break;
             case STORAGE:
-                storageService.deleteByStorage(storageLocationId, status);
+                storageService.deleteByStorage(storageName, status);
                 break;
             default:
                 break;
         }
     }
 
-    public Page<FileRequestInfoDTO> getRequestInfos(String storageLocationId,
+    public Page<FileRequestInfoDTO> getRequestInfos(String storageName,
                                                     FileRequestType type,
                                                     Optional<FileRequestStatus> status,
                                                     Pageable page) {
@@ -588,9 +588,9 @@ public class StorageLocationService {
             case DELETION:
                 Page<FileDeletionRequest> delRequests;
                 if (status.isPresent()) {
-                    delRequests = deletionReqService.search(storageLocationId, status.get(), page);
+                    delRequests = deletionReqService.search(storageName, status.get(), page);
                 } else {
-                    delRequests = deletionReqService.search(storageLocationId, page);
+                    delRequests = deletionReqService.search(storageName, page);
                 }
                 results = new PageImpl<>(delRequests.getContent()
                                                     .stream()
@@ -604,9 +604,9 @@ public class StorageLocationService {
             case STORAGE:
                 Page<FileStorageRequest> requests;
                 if (status.isPresent()) {
-                    requests = storageService.search(storageLocationId, status.get(), page);
+                    requests = storageService.search(storageName, status.get(), page);
                 } else {
-                    requests = storageService.search(storageLocationId, page);
+                    requests = storageService.search(storageName, page);
                 }
                 results = new PageImpl<>(requests.getContent()
                                                  .stream()

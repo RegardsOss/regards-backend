@@ -31,22 +31,22 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * REST Client to to access storage microservice
+ * REST Client to access storage microservice
  *
  * @author Sébastien Binda
  */
 @RestClient(name = "rs-storage", contextId = "rs-storage.rest.client")
 public interface IStorageRestClient extends IStorageDownloadQuotaRestClient {
 
-    public static final String FILE_PATH = "/files";
+    String FILE_PATH = "/files";
 
-    public static final String DOWNLOAD_PATH = "/{checksum}/download";
+    String DOWNLOAD_PATH = "/{checksum}/download";
 
-    public static final String STORAGES_PATH = "/storages";
+    String STORAGES_PATH = "/storages";
 
-    public static final String EXPORT_PATH = "/csv";
+    String EXPORT_PATH = "/csv";
 
-    public static final String LOCATIONS_PATH = "/{storage}/locations";
+    String LOCATIONS_PATH = "/{storage}/locations";
 
     /**
      * Download a file by his checksum.

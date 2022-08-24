@@ -163,7 +163,7 @@ public class StorageLocationControllerIT extends AbstractRegardsTransactionalIT 
                            "Should be created");
 
         tenantResolver.forceTenant(getDefaultTenant());
-        StorageLocationDTO loc = storageLocService.getById(name);
+        StorageLocationDTO loc = storageLocService.getByName(name);
         loc.getConfiguration().setAllocatedSizeInKo(10_000L);
         requestBuilderCustomizer = customizer().expectStatusOk()
                                                .expectValue("content.configuration.allocatedSizeInKo", 10_000L);

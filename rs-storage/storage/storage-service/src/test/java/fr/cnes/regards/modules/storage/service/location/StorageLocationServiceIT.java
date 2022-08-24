@@ -208,7 +208,7 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
         createFileReference(storage, 2048L);
         createFileReference(storage, 2048L);
         storageLocationService.monitorStorageLocations(false);
-        StorageLocationDTO loc = storageLocationService.getById(storage);
+        StorageLocationDTO loc = storageLocationService.getByName(storage);
         Assert.assertNotNull("A location should be retrieved", loc);
         Assert.assertNull("No configuration should be set for the location", loc.getConfiguration());
         Assert.assertEquals("There should be 2 files referenced", 2L, loc.getNbFilesStored().longValue());
@@ -292,26 +292,26 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
         createFileReference(storage, 2L);
         createFileReference(storage, 2L);
         storageLocationService.monitorStorageLocations(false);
-        Assert.assertNotNull("Location should exists", storageLocationService.getById(storage));
+        Assert.assertNotNull("Location should exists", storageLocationService.getByName(storage));
         storageLocationService.delete(storage);
         try {
-            Assert.assertNull("Location should exists", storageLocationService.getById(storage));
+            Assert.assertNull("Location should exists", storageLocationService.getByName(storage));
             Assert.fail("Location should not exists anymore");
         } catch (EntityNotFoundException e) {
             // Nothing to do
         }
         // As files as referenced after monitoring location should be recreated
         storageLocationService.monitorStorageLocations(false);
-        Assert.assertNotNull("Location should exists", storageLocationService.getById(storage));
+        Assert.assertNotNull("Location should exists", storageLocationService.getByName(storage));
     }
 
     @Test
     public void delete_without_files() throws ModuleException {
         storageLocationService.monitorStorageLocations(false);
-        Assert.assertNotNull("Location should exists", storageLocationService.getById(ONLINE_CONF_LABEL));
+        Assert.assertNotNull("Location should exists", storageLocationService.getByName(ONLINE_CONF_LABEL));
         storageLocationService.delete(ONLINE_CONF_LABEL);
         try {
-            Assert.assertNull("Location should exists", storageLocationService.getById(ONLINE_CONF_LABEL));
+            Assert.assertNull("Location should exists", storageLocationService.getByName(ONLINE_CONF_LABEL));
             Assert.fail("Location should not exists anymore");
         } catch (EntityNotFoundException e) {
             // Nothing to do
@@ -319,7 +319,7 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
         // As no files as referenced after monitoring location should not be recreated
         storageLocationService.monitorStorageLocations(false);
         try {
-            Assert.assertNull("Location should exists", storageLocationService.getById(ONLINE_CONF_LABEL));
+            Assert.assertNull("Location should exists", storageLocationService.getByName(ONLINE_CONF_LABEL));
             Assert.fail("Location should not exists anymore");
         } catch (EntityNotFoundException e) {
             // Nothing to do

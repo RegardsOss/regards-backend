@@ -78,12 +78,12 @@ public class FileRequestsController implements IResourceController<FileRequestIn
     @RequestMapping(method = RequestMethod.GET, path = STORAGE_PATH + TYPE_PATH)
     @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.ADMIN)
     public ResponseEntity<PagedModel<EntityModel<FileRequestInfoDTO>>> search(
-        @PathVariable(name = "storage") String storageLocationId,
+        @PathVariable(name = "storage") String storageName,
         @PathVariable(name = "type") FileRequestType type,
         @RequestParam(name = STATUS_PARAM, required = false) FileRequestStatus status,
         Pageable page,
         PagedResourcesAssembler<FileRequestInfoDTO> assembler) {
-        return new ResponseEntity<>(toPagedResources(service.getRequestInfos(storageLocationId,
+        return new ResponseEntity<>(toPagedResources(service.getRequestInfos(storageName,
                                                                              type,
                                                                              Optional.ofNullable(status),
                                                                              page), assembler), HttpStatus.OK);
@@ -91,11 +91,11 @@ public class FileRequestsController implements IResourceController<FileRequestIn
 
     @RequestMapping(method = RequestMethod.DELETE, path = STORAGE_PATH + TYPE_PATH)
     @ResourceAccess(description = "Delete storage location", role = DefaultRole.ADMIN)
-    public ResponseEntity<Void> delete(@PathVariable(name = "storage") String storageLocationId,
+    public ResponseEntity<Void> delete(@PathVariable(name = "storage") String storageName,
                                        @PathVariable(name = "type") FileRequestType type,
                                        @RequestParam(name = STATUS_PARAM, required = false) FileRequestStatus status,
                                        Pageable page) throws ModuleException {
-        service.deleteRequests(storageLocationId, type, Optional.ofNullable(status));
+        service.deleteRequests(storageName, type, Optional.ofNullable(status));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
