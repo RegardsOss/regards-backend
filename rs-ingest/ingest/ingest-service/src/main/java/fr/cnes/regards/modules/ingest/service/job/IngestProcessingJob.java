@@ -163,7 +163,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
             try {
                 long start2 = System.currentTimeMillis();
                 List<AIP> aips;
-                // retry the process only from the the step needed
+                // retry the process only from the step needed
                 switch (request.getStep()) {
                     case LOCAL_SCHEDULED:
                     case LOCAL_INIT:

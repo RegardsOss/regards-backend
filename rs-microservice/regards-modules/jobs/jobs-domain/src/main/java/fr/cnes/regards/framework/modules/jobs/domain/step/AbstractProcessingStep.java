@@ -44,21 +44,21 @@ public abstract class AbstractProcessingStep<I, O, J extends IJob<?>> implements
 
     @Override
     public O execute(I in) throws ProcessingStepException {
-        boolean error = true;
-        Exception exception = null;
+        ProcessingStepException processingException = null;
         try {
             O out = doExecute(in);
             job.advanceCompletion();
-            error = false;
             return out;
-        } catch (Exception e) { // NOSONAR
-            LOGGER.error(e.getMessage(), e);
-            exception = e;
+        } catch (ProcessingStepException e) {
+            processingException = e;
+            throw e;
+        } catch (RuntimeException e) {
+            // ignore the doAfterError mechanism, as the runtime will kill the job anyway
             throw e;
         } finally {
-            if (error) {
-                // Always run this method even if exception occurs
-                doAfterError(in, Optional.ofNullable(exception));
+            if (processingException != null) {
+                // Always run this method even if processingException occurs
+                doAfterError(in, Optional.ofNullable(processingException));
             }
         }
     }
@@ -76,5 +76,5 @@ public abstract class AbstractProcessingStep<I, O, J extends IJob<?>> implements
      *
      * @param in input object
      */
-    protected abstract void doAfterError(I in, Optional<Exception> e);
+    protected abstract void doAfterError(I in, Optional<ProcessingStepException> e);
 }

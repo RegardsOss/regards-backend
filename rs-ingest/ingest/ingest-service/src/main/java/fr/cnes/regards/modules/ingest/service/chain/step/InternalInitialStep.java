@@ -122,7 +122,7 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
     }
 
     @Override
-    protected void doAfterError(IngestRequest request, Optional<Exception> e) {
+    protected void doAfterError(IngestRequest request, Optional<ProcessingStepException> e) {
         if ((request.getState() != InternalRequestState.WAITING_VERSIONING_MODE) && (request.getState()
                                                                                      != InternalRequestState.IGNORED)) {
             String error = "unknown cause";

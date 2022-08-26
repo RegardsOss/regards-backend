@@ -144,7 +144,7 @@ public class IngestRequestService implements IIngestRequestService {
         // Schedule jobs
         LOGGER.debug("Scheduling job to handle {} ingest request(s) on chain {}", requests.size(), chainName);
 
-        Set<Long> ids = requests.stream().map(r -> r.getId()).collect(Collectors.toSet());
+        Set<Long> ids = requests.stream().map(AbstractRequest::getId).collect(Collectors.toSet());
 
         Set<JobParameter> jobParameters = Sets.newHashSet();
         jobParameters.add(new JobParameter(IngestProcessingJob.IDS_PARAMETER, ids));
@@ -167,10 +167,11 @@ public class IngestRequestService implements IIngestRequestService {
     }
 
     @Override
-    public void handleJobCrash(JobEvent jobEvent) {
+    public boolean handleJobCrash(JobEvent jobEvent) {
 
         JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
-        if (IngestProcessingJob.class.getName().equals(jobInfo.getClassName())) {
+        boolean isIngestProcessingJob = IngestProcessingJob.class.getName().equals(jobInfo.getClassName());
+        if (isIngestProcessingJob) {
 
             // Load ingest requests
             try {
@@ -189,6 +190,7 @@ public class IngestRequestService implements IIngestRequestService {
                 notificationClient.notify(message, "Ingest job failure", NotificationLevel.ERROR, DefaultRole.ADMIN);
             }
         }
+        return isIngestProcessingJob;
     }
 
     @Override

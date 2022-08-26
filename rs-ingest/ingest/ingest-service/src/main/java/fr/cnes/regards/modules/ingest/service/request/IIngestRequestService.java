@@ -51,8 +51,11 @@ public interface IIngestRequestService {
 
     /**
      * Handle job error
+     * All requests from that job failed
+     *
+     * @return true when the job type is managed by this service
      */
-    void handleJobCrash(JobEvent jobEvent);
+    boolean handleJobCrash(JobEvent jobEvent);
 
     /**
      * Load a collection of requests

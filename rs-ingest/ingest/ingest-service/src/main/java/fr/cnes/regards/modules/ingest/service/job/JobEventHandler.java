@@ -19,13 +19,9 @@
 package fr.cnes.regards.modules.ingest.service.job;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.notification.NotificationLevel;
-import fr.cnes.regards.framework.notification.client.INotificationClient;
-import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,20 +29,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
+
+import java.util.List;
 
 /**
- * Listen for Jobs events
+ * Job handler on ingest
  *
  * @author Marc SORDI
+ * @author Léo Mieulet
  */
 @Component
-public class JobEventHandler implements ApplicationListener<ApplicationReadyEvent> {
+public class JobEventHandler implements ApplicationListener<ApplicationReadyEvent>, IBatchHandler<JobEvent> {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(JobEventHandler.class);
-
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
     private ISubscriber subscriber;
@@ -54,47 +51,35 @@ public class JobEventHandler implements ApplicationListener<ApplicationReadyEven
     @Autowired
     private IIngestRequestService ingestRequestService;
 
-    @Autowired
-    private INotificationClient notificationClient;
-
     @Override
-    public void onApplicationEvent(ApplicationReadyEvent pEvent) {
-        subscriber.subscribeTo(JobEvent.class, new JobHandler());
+    public void onApplicationEvent(ApplicationReadyEvent event) {
+        subscriber.subscribeTo(JobEvent.class, this);
     }
 
-    /**
-     * Job handler
-     *
-     * @author Marc Sordi
-     */
-    private class JobHandler implements IHandler<JobEvent> {
+    @Override
+    public Errors validate(JobEvent message) {
+        return null;
+    }
 
-        @Override
-        public void handle(TenantWrapper<JobEvent> wrapper) {
-            try {
-                runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                JobEvent jobEvent = wrapper.getContent();
-                switch (jobEvent.getJobEventType()) {
-                    case ABORTED:
-                    case FAILED:
-                        ingestRequestService.handleJobCrash(jobEvent);
-                        break;
-                    default:
-                        break;
+    @Override
+    public void handleBatch(List<JobEvent> jobEvents) {
+        long start = System.currentTimeMillis();
+        LOGGER.warn("[INGEST JOB EVENT HANDLER] Handling {} JobEvents...", jobEvents.size());
+        long nbJobError = 0;
+        for (JobEvent jobEvent : jobEvents) {
+            if (jobEvent.getJobEventType() == JobEventType.FAILED
+                || jobEvent.getJobEventType() == JobEventType.ABORTED) {
+                // Keep in mind a single request that fail does not mean the job will have the FAILED state
+                // we receive here events when the job raises an exception on boot / end (issue with params, plugin init ...)
+                // so all requests are dead
+                boolean isHandled = ingestRequestService.handleJobCrash(jobEvent);
+                if (isHandled) {
+                    nbJobError++;
                 }
-            } catch (Exception e) {
-                String message = String.format(
-                    "Ingest job with id \"%s\" and status \"%s\" causes exception during its processing",
-                    wrapper.getContent().getJobId(),
-                    wrapper.getContent().getJobEventType());
-                LOGGER.error(message, e);
-                notificationClient.notify(message,
-                                          "Ingest job event failure",
-                                          NotificationLevel.ERROR,
-                                          DefaultRole.ADMIN);
-            } finally {
-                runtimeTenantResolver.clearTenant();
             }
         }
+        LOGGER.warn("[INGEST JOB EVENT HANDLER] {} JobEvents in error handled in {} ms",
+                    nbJobError,
+                    System.currentTimeMillis() - start);
     }
 }

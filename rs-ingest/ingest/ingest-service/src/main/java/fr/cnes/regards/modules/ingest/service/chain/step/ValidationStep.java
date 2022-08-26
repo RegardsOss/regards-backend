@@ -74,7 +74,7 @@ public class ValidationStep extends AbstractIngestStep<SIP, Void> {
     }
 
     @Override
-    protected void doAfterError(SIP sip, Optional<Exception> e) {
+    protected void doAfterError(SIP sip, Optional<ProcessingStepException> e) {
         String error = "unknown cause";
         if (e.isPresent()) {
             error = e.get().getMessage();
