@@ -416,7 +416,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
 
         Assert.assertNotNull(sipCaptor.getValue());
 
-        // Not sip ingested
+        // No sip ingested
         ingestServiceTest.waitForIngestion(0, FIVE_SECONDS);
     }
 

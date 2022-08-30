@@ -125,7 +125,7 @@ public class GenerationStep extends AbstractIngestStep<SIPEntity, List<AIP>> {
     }
 
     @Override
-    protected void doAfterError(SIPEntity sip, Optional<Exception> e) {
+    protected void doAfterError(SIPEntity sip, Optional<ProcessingStepException> e) {
         String error = "unknown cause";
         if (e.isPresent()) {
             error = e.get().getMessage();

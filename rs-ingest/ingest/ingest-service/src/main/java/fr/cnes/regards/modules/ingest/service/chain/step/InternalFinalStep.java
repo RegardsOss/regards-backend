@@ -48,7 +48,7 @@ public class InternalFinalStep extends AbstractIngestStep<List<AIP>, List<AIPEnt
     }
 
     @Override
-    protected void doAfterError(List<AIP> in, Optional<Exception> e) {
+    protected void doAfterError(List<AIP> in, Optional<ProcessingStepException> e) {
         String error = "unknown cause";
         if (e.isPresent()) {
             error = e.get().getMessage();

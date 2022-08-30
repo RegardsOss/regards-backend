@@ -61,7 +61,7 @@ public class TaggingStep extends AbstractIngestStep<List<AIP>, Void> {
     }
 
     @Override
-    protected void doAfterError(List<AIP> pIn, Optional<Exception> e) {
+    protected void doAfterError(List<AIP> pIn, Optional<ProcessingStepException> e) {
         String error = "unknown cause";
         if (e.isPresent()) {
             error = e.get().getMessage();

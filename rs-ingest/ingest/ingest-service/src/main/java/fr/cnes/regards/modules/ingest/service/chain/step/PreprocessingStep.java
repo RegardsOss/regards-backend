@@ -69,7 +69,7 @@ public class PreprocessingStep extends AbstractIngestStep<SIP, SIP> {
     }
 
     @Override
-    protected void doAfterError(SIP sip, Optional<Exception> e) {
+    protected void doAfterError(SIP sip, Optional<ProcessingStepException> e) {
         String error = "unknown cause";
         if (e.isPresent()) {
             error = e.get().getMessage();

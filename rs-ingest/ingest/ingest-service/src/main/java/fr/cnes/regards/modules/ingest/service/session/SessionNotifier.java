@@ -55,6 +55,10 @@ public class SessionNotifier {
         incrementCount(request, SessionNotifierPropertyEnum.TOTAL_REQUESTS, 1);
     }
 
+    public void decrementRequestCount(IngestRequest request) {
+        decrementCount(request, SessionNotifierPropertyEnum.TOTAL_REQUESTS, 1);
+    }
+
     // AIP generation
 
     public void incrementProductGenerationPending(IngestRequest request) {
@@ -180,9 +184,17 @@ public class SessionNotifier {
     }
 
     /**
-     * Decrement product store errors or product generation errors
+     * Decrement product request error and one request from the total request
      */
     public void ingestRequestErrorDeleted(IngestRequest request) {
+        decrementRequestCount(request);
+        decrementProductRequestError(request);
+    }
+
+    /**
+     * Decrement product store error or product generation error
+     */
+    public void decrementProductRequestError(IngestRequest request) {
         if (request.getState() == InternalRequestState.ERROR) {
             switch (request.getStep()) {
                 case LOCAL_DENIED:
