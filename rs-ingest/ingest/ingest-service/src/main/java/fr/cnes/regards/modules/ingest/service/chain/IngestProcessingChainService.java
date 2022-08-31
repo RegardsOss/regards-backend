@@ -154,6 +154,9 @@ public class IngestProcessingChainService implements IIngestProcessingChainServi
         if (newChain.getTagPlugin().isPresent()) {
             createPluginConfiguration(newChain.getTagPlugin().get());
         }
+        if (newChain.getAipStorageMetadataPlugin().isPresent()) {
+            createPluginConfiguration(newChain.getAipStorageMetadataPlugin().get());
+        }
         if (newChain.getPostProcessingPlugin().isPresent()) {
             createPluginConfiguration(newChain.getPostProcessingPlugin().get());
         }
@@ -230,6 +233,9 @@ public class IngestProcessingChainService implements IIngestProcessingChainServi
         // Tag plugin
         existing = ingestChainRepository.findOneTagPluginByName(chainToUpdate.getName());
         confsToRemove.add(updatePluginConfiguration(chainToUpdate.getTagPlugin(), existing));
+        // Aip Storage Metadata plugin
+        existing = ingestChainRepository.findOneAIPStorageMetadataPluginByName(chainToUpdate.getName());
+        confsToRemove.add(updatePluginConfiguration(chainToUpdate.getAipStorageMetadataPlugin(), existing));
         // Post-processing plugin
         existing = ingestChainRepository.findOnePostProcessingPluginByName(chainToUpdate.getName());
         confsToRemove.add(updatePluginConfiguration(chainToUpdate.getPostProcessingPlugin(), existing));

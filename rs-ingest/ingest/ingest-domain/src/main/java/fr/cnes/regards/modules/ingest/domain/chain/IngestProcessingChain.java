@@ -41,7 +41,8 @@ import java.util.Optional;
 @NamedEntityGraph(name = "graph.ingest.processing.chain.complete",
     attributeNodes = { @NamedAttributeNode(value = "preProcessingPlugin"),
         @NamedAttributeNode(value = "validationPlugin"), @NamedAttributeNode(value = "generationPlugin"),
-        @NamedAttributeNode(value = "tagPlugin"), @NamedAttributeNode(value = "postProcessingPlugin") })
+        @NamedAttributeNode(value = "aipStorageMetadataPlugin"), @NamedAttributeNode(value = "tagPlugin"),
+        @NamedAttributeNode(value = "postProcessingPlugin") })
 public class IngestProcessingChain {
 
     public static final String DEFAULT_INGEST_CHAIN_LABEL = "DefaultProcessingChain";
@@ -81,6 +82,11 @@ public class IngestProcessingChain {
     @ManyToOne(optional = false)
     @JoinColumn(name = "generation_conf_id", nullable = false, foreignKey = @ForeignKey(name = "fk_generation_conf_id"))
     private PluginConfiguration generationPlugin;
+
+    @ManyToOne
+    @JoinColumn(name = "aip_storage_metadata_conf_id",
+        foreignKey = @ForeignKey(name = "fk_aip_storage_metadata_conf_id"))
+    private PluginConfiguration aipStorageMetadataPlugin;
 
     @ManyToOne
     @JoinColumn(name = "tag_conf_id", foreignKey = @ForeignKey(name = "fk_tag_conf_id"))
@@ -169,6 +175,14 @@ public class IngestProcessingChain {
         this.postProcessingPlugin = postProcessingPlugin;
     }
 
+    public Optional<PluginConfiguration> getAipStorageMetadataPlugin() {
+        return Optional.ofNullable(aipStorageMetadataPlugin);
+    }
+
+    public void setAipStorageMetadataPlugin(PluginConfiguration aipStorageMetadataPlugin) {
+        this.aipStorageMetadataPlugin = aipStorageMetadataPlugin;
+    }
+
     /**
      * @return list of the really configured plugins for the current chain
      */
@@ -179,6 +193,9 @@ public class IngestProcessingChain {
         }
         confs.add(validationPlugin);
         confs.add(generationPlugin);
+        if (aipStorageMetadataPlugin != null) {
+            confs.add(aipStorageMetadataPlugin);
+        }
         if (tagPlugin != null) {
             confs.add(tagPlugin);
         }

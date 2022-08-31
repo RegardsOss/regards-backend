@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2021 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,27 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.plugin;
-
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.ingest.domain.exception.TagAIPException;
-import fr.cnes.regards.modules.ingest.dto.aip.AIP;
-
-import java.util.List;
+package fr.cnes.regards.framework.modules.plugins.domain.exception;
 
 /**
- * Fifth <b>optional</b> step of the SIP processing chain.
- *
- * @author Marc Sordi
+ * @author Léo Mieulet
  */
-@FunctionalInterface
-@PluginInterface(description = "AIP tag plugin contract")
-public interface IAipTagging {
+public class PluginInitException extends Exception {
 
-    /**
-     * Tag AIP
-     *
-     * @param aips {@link AIP} to tag
-     */
-    void tag(List<AIP> aips) throws TagAIPException;
+    public PluginInitException(String message) {
+        super(message);
+    }
 }

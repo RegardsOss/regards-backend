@@ -203,12 +203,17 @@ public final class PluginParameterUtils {
             ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
             // Get single parameter type
             Class<?> argType = (Class<?>) parameterizedType.getActualTypeArguments()[0];
-            // Propagate discovery
-            PluginParamType subParamType = tryPropagatingDiscovery(field.getType(),
-                                                                   argType,
-                                                                   alreadyManagedTypeNames,
-                                                                   result);
-            result.setParameterizedSubTypes(subParamType);
+            if (Enum.class.isAssignableFrom(argType)) {
+                // Handle enumeration as string
+                result.setParameterizedSubTypes(PluginParamType.STRING);
+            } else {
+                // Propagate discovery
+                PluginParamType subParamType = tryPropagatingDiscovery(field.getType(),
+                                                                       argType,
+                                                                       alreadyManagedTypeNames,
+                                                                       result);
+                result.setParameterizedSubTypes(subParamType);
+            }
         }
 
         // Do in depth discovery for MAP and register parameterized sub types

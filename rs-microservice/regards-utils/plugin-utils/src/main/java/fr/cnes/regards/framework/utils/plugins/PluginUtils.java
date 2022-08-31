@@ -29,6 +29,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParamDescriptor;
+import fr.cnes.regards.framework.modules.plugins.domain.exception.PluginInitException;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.bean.PluginUtilsBean;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
@@ -282,7 +283,7 @@ public final class PluginUtils {
 
         try {
             // Make a new instance
-            returnPlugin = (T) Class.forName(pluginClass).newInstance();
+            returnPlugin = (T) Class.forName(pluginClass).getDeclaredConstructor().newInstance();
             // Post process parameters
             PluginParameterUtils.postProcess(returnPlugin, conf, instantiatedPlugins, dynamicParams);
             // Autowire beans
@@ -292,7 +293,7 @@ public final class PluginUtils {
             doInitPlugin(returnPlugin);
 
         } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException |
-                 SecurityException | ClassNotFoundException e) {
+                 SecurityException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException e) {
             throw new PluginUtilsRuntimeException(String.format("Cannot instantiate <%s>", pluginClass), e);
         }
 
@@ -347,7 +348,13 @@ public final class PluginUtils {
                 try {
                     method.invoke(plugin);
                 } catch (InvocationTargetException e) {
-                    throw new PluginUtilsRuntimeException(e.getTargetException());
+                    if (e.getCause() instanceof PluginInitException) {
+                        throw new PluginUtilsRuntimeException(String.format(
+                            "Plugin %s raised a PluginInitException during its initialization",
+                            plugin.getClass().getName()), e.getTargetException());
+                    } else {
+                        throw new PluginUtilsRuntimeException(e.getTargetException());
+                    }
                 } catch (final IllegalAccessException | IllegalArgumentException e) {
                     LOGGER.error(String.format("Exception while invoking init method on plugin class <%s>.",
                                                plugin.getClass()), e);

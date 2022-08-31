@@ -24,7 +24,8 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -35,8 +36,6 @@ import java.util.Set;
 public class StorageMetadata {
 
     private static final String MISSING_STORAGE_ERROR = "Storage identifier is required";
-
-    private static final String MISSING_TARGET_TYPES = "Data type list should be provided";
 
     /**
      * Storage identifier.
@@ -53,8 +52,7 @@ public class StorageMetadata {
     /**
      * List of data object types accepted by this storage location (when storing AIPs)
      */
-    @NotNull(message = MISSING_TARGET_TYPES)
-    private Set<DataType> targetTypes;
+    private Set<DataType> targetTypes = new HashSet<>();
 
     public String getPluginBusinessId() {
         return pluginBusinessId;
@@ -112,4 +110,34 @@ public class StorageMetadata {
         return m;
     }
 
+    @Override
+    public String toString() {
+        return "StorageMetadata{"
+               + "pluginBusinessId='"
+               + pluginBusinessId
+               + '\''
+               + ", storePath='"
+               + storePath
+               + '\''
+               + ", targetTypes="
+               + targetTypes.toString()
+               + '}';
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pluginBusinessId);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        StorageMetadata that = (StorageMetadata) o;
+        return pluginBusinessId.equals(that.pluginBusinessId);
+    }
 }

@@ -21,8 +21,11 @@ package fr.cnes.regards.framework.utils.plugins.basic;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.utils.cycle.detection.SomeEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Set;
 
 /**
  * SamplePlugin
@@ -65,6 +68,10 @@ public class SamplePlugin implements ISamplePlugin {
      */
     @PluginParameter(description = "boolean parameter", label = "Enabled")
     private Boolean isActive;
+
+    @PluginParameter(description = "a list of enumerated values", label = "An enumerated inside a list",
+        optional = true)
+    private Set<SomeEnum> someEnums;
 
     @Override
     public String echo(final String pMessage) {

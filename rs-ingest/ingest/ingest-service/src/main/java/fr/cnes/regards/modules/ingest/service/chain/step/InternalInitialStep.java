@@ -102,8 +102,7 @@ public class InternalInitialStep extends AbstractIngestStep<IngestRequest, SIPEn
                         sip.getId()));
                 }
                 break;
-            case INC_VERSION:
-            case REPLACE:
+            case INC_VERSION, REPLACE:
                 // in these cases, there is nothing to do right now
                 break;
             default:

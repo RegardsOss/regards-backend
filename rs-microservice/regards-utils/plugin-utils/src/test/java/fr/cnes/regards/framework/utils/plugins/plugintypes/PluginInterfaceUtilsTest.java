@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -205,6 +206,17 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
         // instantiate plugin
         PluginUtils.setup(PLUGIN_CURRENT_PACKAGE);
         PluginUtils.getPlugin(PluginConfiguration.build(ComplexErrorPlugin.class, "", complexParameters),
+                              new ConcurrentHashMap<>());
+    }
+
+    @Test(expected = PluginUtilsRuntimeException.class)
+    public void catchingPluginInitExceptionIntoPluginUtilsRuntimeException()
+        throws NotAvailablePluginConfigurationException {
+        LOGGER.debug(STARTING + this);
+
+        // instantiate plugin
+        PluginUtils.setup(PLUGIN_CURRENT_PACKAGE);
+        PluginUtils.getPlugin(PluginConfiguration.build(PluginInitErrorPlugin.class, "", Collections.emptyList()),
                               new ConcurrentHashMap<>());
     }
 

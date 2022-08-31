@@ -37,6 +37,7 @@ import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import fr.cnes.regards.modules.ingest.service.chain.step.*;
 import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationService;
@@ -141,10 +142,14 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         // Step 3 : required AIP generation
         IProcessingStep<SIPEntity, List<AIP>> generationStep = new GenerationStep(this, ingestChain);
         beanFactory.autowireBean(generationStep);
-        // Step 4 : optional AIP tagging
+        // Step 4 : optional AIP update storage metadata
+        IProcessingStep<Set<StorageMetadata>, Void> aipStorageMetadataUpdateStep = new AipStorageMetadataUpdateStep(this,
+                                                                                                                    ingestChain);
+        beanFactory.autowireBean(aipStorageMetadataUpdateStep);
+        // Step 5 : optional AIP tagging
         IProcessingStep<List<AIP>, Void> taggingStep = new TaggingStep(this, ingestChain);
         beanFactory.autowireBean(taggingStep);
-        /** Step 5 : optional postprocessing has to be run after storage ends. See {@link IngestPostProcessingJob}.  */
+        /** Step 6 : optional postprocessing has to be run after storage ends. See {@link IngestPostProcessingJob}.  */
 
         // Internal final step
         IProcessingStep<List<AIP>, List<AIPEntity>> finalStep = new InternalFinalStep(this, ingestChain);
@@ -165,13 +170,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                 List<AIP> aips;
                 // retry the process only from the step needed
                 switch (request.getStep()) {
-                    case LOCAL_SCHEDULED:
-                    case LOCAL_INIT:
-                    case LOCAL_PRE_PROCESSING:
-                    case LOCAL_VALIDATION:
-                    case LOCAL_GENERATION:
-                    case LOCAL_TAGGING:
-                    case LOCAL_POST_PROCESSING:
+                    case LOCAL_SCHEDULED, LOCAL_INIT, LOCAL_PRE_PROCESSING, LOCAL_VALIDATION, LOCAL_GENERATION, LOCAL_AIP_STORAGE_METADATA_UPDATE, LOCAL_TAGGING, LOCAL_POST_PROCESSING -> {
                         ingestRequestService.handleIngestJobStart(request);
                         // Internal preparation step (no plugin involved)
                         currentEntity = initStep.execute(request);
@@ -183,30 +182,25 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                         validationStep.execute(sip);
                         // Step 3 : required AIP generation
                         aips = generationStep.execute(currentEntity);
-                        // Step 4 : optional AIP tagging
+                        // Step 4 : optional AIP update storage metadata
+                        aipStorageMetadataUpdateStep.execute(request.getMetadata().getStorages());
+                        // Step 5 : optional AIP tagging
                         taggingStep.execute(aips);
                         // Internal finalization step (no plugin involved)
                         // Do all persistence actions in this step
                         finalStep.execute(aips);
-                        break;
-                    case LOCAL_FINAL:
-                    case REMOTE_STORAGE_REQUESTED:
-                    case REMOTE_STORAGE_ERROR:
-                    case REMOTE_STORAGE_DENIED:
+                    }
+                    case LOCAL_FINAL, REMOTE_STORAGE_REQUESTED, REMOTE_STORAGE_ERROR, REMOTE_STORAGE_DENIED ->
                         // According to storage dev, it is better to simply request a new storage,
                         // if request already exists anyway it will be retried
                         ingestRequestService.requestRemoteStorage(request);
-
-                        break;
-                    case REMOTE_NOTIFICATION_ERROR:
+                    case REMOTE_NOTIFICATION_ERROR ->
                         // add request to list of requests to be notified again
                         notificationRequests.add(request);
-                        break;
-                    default:
-                        logger.debug("{}SIP \"{}\" ingestion has been retried and nothing had to be done in local",
-                                     INFO_TAB,
-                                     request.getSip().getId());
-                        break;
+                    default -> logger.debug(
+                        "{}SIP \"{}\" ingestion has been retried and nothing had to be done in local",
+                        INFO_TAB,
+                        request.getSip().getId());
                 }
                 sipIngested++;
                 logger.debug("{}SIP \"{}\" ingested in {} ms",
@@ -255,7 +249,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
     @Override
     public int getCompletionCount() {
-        return 7;
+        return 8;
     }
 
     public SIPEntity getCurrentEntity() {

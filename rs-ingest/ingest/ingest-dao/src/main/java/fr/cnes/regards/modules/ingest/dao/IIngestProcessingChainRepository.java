@@ -70,6 +70,10 @@ public interface IIngestProcessingChainRepository
     Optional<PluginConfiguration> findOneTagPluginByName(String name);
 
     @Query(
+        "select chain.tagPlugin from IngestProcessingChain chain,PluginConfiguration conf where chain.name = ?1 and chain.aipStorageMetadataPlugin.id = conf.id")
+    Optional<PluginConfiguration> findOneAIPStorageMetadataPluginByName(String name);
+
+    @Query(
         "select chain.postProcessingPlugin from IngestProcessingChain chain,PluginConfiguration conf where chain.name = ?1 and chain.postProcessingPlugin.id = conf.id")
     Optional<PluginConfiguration> findOnePostProcessingPluginByName(String name);
 

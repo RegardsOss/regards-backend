@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParamDescriptor;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.PluginParamType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginParameterUtils.PrimitiveObject;
@@ -326,6 +327,18 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         PrimitiveObject.valueOf(PrimitiveObject.LONG.name());
         PrimitiveObject.valueOf(PrimitiveObject.DOUBLE.name());
         PrimitiveObject.valueOf(PrimitiveObject.BYTE.name());
+    }
+
+    @Test
+    public void testPluginMetaDataOnEnumCollection() {
+        PluginMetaData mtd = PluginUtils.createPluginMetaData(SamplePlugin.class);
+        PluginParamDescriptor pluginParamDesc = mtd.getParameters()
+                                                   .stream()
+                                                   .filter(param -> param.getName().equals("someEnums"))
+                                                   .findFirst()
+                                                   .get();
+        Assert.assertEquals(PluginParamType.COLLECTION, pluginParamDesc.getType());
+        Assert.assertEquals(PluginParamType.STRING, pluginParamDesc.getParameterizedSubTypes()[0]);
     }
 
 }

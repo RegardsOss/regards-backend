@@ -203,6 +203,7 @@ public class SessionNotifier {
                 case LOCAL_INIT:
                 case LOCAL_POST_PROCESSING:
                 case LOCAL_PRE_PROCESSING:
+                case LOCAL_AIP_STORAGE_METADATA_UPDATE:
                 case LOCAL_SCHEDULED:
                 case LOCAL_TAGGING:
                 case LOCAL_VALIDATION:

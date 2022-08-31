@@ -152,6 +152,11 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
                                                                            Plugin.class).id());
         pluginService.savePluginConfiguration(generationPlugin);
 
+        PluginConfiguration aipStorageMetadataPlugin = new PluginConfiguration("aipStorageMetadataPlugin",
+                                                                               AIPStorageMetadataTestPlugin.class.getAnnotation(
+                                                                                   Plugin.class).id());
+        pluginService.savePluginConfiguration(aipStorageMetadataPlugin);
+
         PluginConfiguration taggingPlugin = new PluginConfiguration("taggingPlugin",
                                                                     AIPTaggingTestPlugin.class.getAnnotation(Plugin.class)
                                                                                               .id());
@@ -169,6 +174,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         fullChain.setPreProcessingPlugin(preProcessingPlugin);
         fullChain.setGenerationPlugin(generationPlugin);
         fullChain.setTagPlugin(taggingPlugin);
+        fullChain.setAipStorageMetadataPlugin(aipStorageMetadataPlugin);
         fullChain.setPostProcessingPlugin(postProcessingPlugin);
         processingChainRepository.save(fullChain);
     }
@@ -366,6 +372,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
         simulateProcessingError(sips, PreprocessingTestPlugin.class);
         simulateProcessingError(sips, ValidationTestPlugin.class);
         simulateProcessingError(sips, AIPGenerationTestPlugin.class);
+        simulateProcessingError(sips, AIPStorageMetadataTestPlugin.class);
         simulateProcessingError(sips, AIPTaggingTestPlugin.class);
 
         // Simulate a full process without error
