@@ -1107,11 +1107,14 @@ public class OrderControllerIT extends AbstractRegardsIT {
     @Test
     public void testFindAll() {
         createSeveralOrdersWithDifferentOwners();
+
         RequestBuilderCustomizer requestBuilderCustomizer = customizer();
         requestBuilderCustomizer.expectStatusOk();
         requestBuilderCustomizer.expectIsArray(JSON_PATH_CONTENT);
         requestBuilderCustomizer.expectToHaveSize(JSON_PATH_CONTENT, 3);
+
         SearchRequestParameters body = new SearchRequestParameters();
+
         performDefaultPost(OrderController.SEARCH_ORDER_PATH,
                            body,
                            requestBuilderCustomizer,
@@ -1241,7 +1244,6 @@ public class OrderControllerIT extends AbstractRegardsIT {
         order2.setLabel("order2");
         order2.setCreationDate(OffsetDateTime.now());
         order2.setExpirationDate(order2.getCreationDate().plus(3, ChronoUnit.DAYS));
-
         orderRepository.save(order2);
 
         Order order3 = new Order();
