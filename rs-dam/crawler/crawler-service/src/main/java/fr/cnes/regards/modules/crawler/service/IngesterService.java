@@ -173,7 +173,7 @@ public class IngesterService implements IHandler<PluginConfEvent> {
         try {
             summary = datasourceIngester.ingest(dsId);
         } catch (InactiveDatasourceException ide) {
-            LOGGER.error(ide.getMessage(), ide);
+            LOGGER.warn(ide.getMessage());
             dsIngestionService.setInactive(dsId, ide.getMessage());
         } catch (ModuleException | FirstFindException e) {
             // ModuleException can only be thrown before we start reading the datasource so it's simply an error

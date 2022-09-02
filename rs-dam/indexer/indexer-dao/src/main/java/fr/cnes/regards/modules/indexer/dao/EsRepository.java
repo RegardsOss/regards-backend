@@ -87,6 +87,7 @@ import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
@@ -323,6 +324,8 @@ public class EsRepository implements IEsRepository {
                                                                                                                                 key.getFacetsMap());
                                                                                                                         }
                                                                                                                     });
+
+    private DefaultScrollClearResponseActionListener scrollClearListener = new DefaultScrollClearResponseActionListener();
 
     public EsRepository(@Autowired Gson gson,
                         @Value("${regards.elasticsearch.host:}") String inEsHost,
@@ -921,18 +924,31 @@ public class EsRepository implements IEsRepository {
             request.source(builder);
             request.scroll(TimeValue.timeValueMinutes(KEEP_ALIVE_SCROLLING_TIME_MN));
             SearchResponse scrollResp = getSearchResponse(request);
+            ClearScrollRequest clearRequest = new ClearScrollRequest();
 
             // Scroll until no hits are returned
             do {
+                String scrollId = scrollResp.getScrollId();
                 for (final SearchHit hit : scrollResp.getHits().getHits()) {
                     action.accept(deserializeHitsStrategy.deserializeJson(hit.getSourceAsString(),
                                                                           (Class<T>) IIndexable.class));
                 }
-
-                SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollResp.getScrollId());
+                // Add new scroll context in list of context to delete after process done.
+                // There should be only one context as it is the same after each search with scroll api.
+                if (clearRequest.getScrollIds() == null || !clearRequest.getScrollIds().contains(scrollId)) {
+                    clearRequest.addScrollId(scrollId);
+                }
+                SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollId);
                 scrollRequest.scroll(TimeValue.timeValueMinutes(KEEP_ALIVE_SCROLLING_TIME_MN));
                 scrollResp = client.scroll(scrollRequest, RequestOptions.DEFAULT);
+                if (scrollResp.getHits().getHits().length == 0) {
+                    clearRequest.addScrollId(scrollResp.getScrollId());
+                }
             } while (scrollResp.getHits().getHits().length != 0); // Zero hits mark the end of the scroll and the while
+            // Delete scroll context to avoid too many scroll context stored in Elasticsearch (limit 500)
+            if (clearRequest.getScrollIds() != null && clearRequest.getScrollIds().size() > 0) {
+                client.clearScrollAsync(clearRequest, RequestOptions.DEFAULT, scrollClearListener);
+            }
             // loop.
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
