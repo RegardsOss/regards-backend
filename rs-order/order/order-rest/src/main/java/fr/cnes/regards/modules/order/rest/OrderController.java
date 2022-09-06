@@ -50,7 +50,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -254,10 +253,11 @@ public class OrderController implements IResourceController<OrderDto> {
         role = DefaultRole.EXPLOIT)
     @RequestMapping(method = RequestMethod.POST, path = SEARCH_ORDER_PATH)
     public ResponseEntity<PagedModel<EntityModel<OrderDto>>> findAllAdmin(
-        @PageableDefault(sort = "creationDate", direction = Sort.Direction.ASC) Pageable pageRequest,
+        @PageableDefault(sort = "creationDate", direction = Sort.Direction.DESC) Pageable pageRequest,
         @RequestBody SearchRequestParameters filters) {
-        Page<Order> orderPage = orderService.searchOrders(filters, pageRequest);
-        return ResponseEntity.ok(toPagedResources(orderPage.map(OrderDto::fromOrder), orderDtoPagedResourcesAssembler));
+        return ResponseEntity.ok(toPagedResources(orderService.searchOrders(filters, pageRequest)
+                                                              .map(OrderDto::fromOrder),
+                                                  orderDtoPagedResourcesAssembler));
     }
 
     @ResourceAccess(description = "Generate a CSV file with all orders", role = DefaultRole.EXPLOIT)
