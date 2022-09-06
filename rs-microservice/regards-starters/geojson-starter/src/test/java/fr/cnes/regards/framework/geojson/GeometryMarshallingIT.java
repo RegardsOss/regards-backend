@@ -20,18 +20,17 @@ package fr.cnes.regards.framework.geojson;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import fr.cnes.regards.framework.geojson.geometry.*;
+import fr.cnes.regards.framework.geojson.deserializers.GeometryDeserializerModule;
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,7 +40,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -79,10 +77,11 @@ public class GeometryMarshallingIT {
                 });
             }
         });
+        objectMapper.registerModule(new GeometryDeserializerModule());
     }
 
     @Test
-    public void unlocated() throws JsonProcessingException {
+    public void featureWithoutGeometry() throws JsonProcessingException {
         // Given
         String id = "myId";
 
@@ -90,7 +89,12 @@ public class GeometryMarshallingIT {
         feature.setId(id);
 
         // When, then
-        checkMarshalling(feature);
+        checkMarshallingFeature(feature);
+    }
+
+    @Test
+    public void unlocated() throws JsonProcessingException {
+        checkMarshallingGeometry(IGeometry.unlocated());
     }
 
     @Test
@@ -133,24 +137,26 @@ public class GeometryMarshallingIT {
         Feature feature = new Feature();
         feature.setGeometry(geometry);
 
-        // use IGeometry Jackson Deserialization
-        objectMapper.registerModule(new SimpleModule().addDeserializer(IGeometry.class, new GeometryDeserializer()));
-
         // When, then
-        checkMarshalling(feature);
+        checkMarshallingFeature(feature);
     }
 
-    private void checkMarshalling(Feature feature) throws JsonProcessingException {
+    private void checkMarshallingFeature(Feature feature) throws JsonProcessingException {
+        // Given
         // When
         // Serialize Gson -> deserialize Jackson
         String featureStringGson = gson.toJson(feature);
 
         Feature featureJackson = objectMapper.readValue(featureStringGson, Feature.class);
 
+        Assert.assertNotNull(featureJackson.getGeometry());
+
         // Serialize Jackson -> deserialize Gson
         String featureStringJackson = objectMapper.writeValueAsString(feature);
 
         Feature featureGson = gson.fromJson(featureStringJackson, Feature.class);
+
+        Assert.assertNotNull(featureGson.getGeometry());
 
         Map<String, Object> mapGson = gson.fromJson(featureStringGson, new TypeToken<Map<String, Object>>() {
 
@@ -192,31 +198,4 @@ public class GeometryMarshallingIT {
             }
         }
     }
-
-    /**
-     * Custom deserialzer for Jackson
-     */
-    static class GeometryDeserializer extends StdDeserializer<IGeometry> {
-
-        private final Map<String, Class> map = new HashMap<String, Class>() {{
-            put(GeoJsonType.POINT, Point.class);
-            put(GeoJsonType.MULTIPOINT, MultiPoint.class);
-            put(GeoJsonType.LINESTRING, LineString.class);
-            put(GeoJsonType.MULTILINESTRING, MultiLineString.class);
-            put(GeoJsonType.POLYGON, Polygon.class);
-            put(GeoJsonType.MULTIPOLYGON, MultiPolygon.class);
-            put(GeoJsonType.GEOMETRY_COLLECTION, GeometryCollection.class);
-        }};
-
-        public GeometryDeserializer() {
-            super(IGeometry.class);
-        }
-
-        public IGeometry deserialize(JsonParser jsonParser, DeserializationContext context) throws IOException {
-            JsonNode node = jsonParser.readValueAsTree();
-
-            return (IGeometry) jsonParser.readValueAs(map.get(node.get("type").textValue()));
-        }
-    }
-
 }

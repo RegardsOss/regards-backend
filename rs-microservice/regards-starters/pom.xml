@@ -17,7 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.cnes.regards.framework</groupId>
@@ -88,6 +89,7 @@
         <module>geojson-starter</module>
         <module>geojson-docs</module>
         <module>geojson-regards</module>
+        <module>geojson-regards-jackson</module>
         <module>microservice-core-starter</module>
         <module>authentication-regards</module>
         <module>authentication-regards-starter</module>
@@ -95,7 +97,7 @@
         <module>jpa-data-regards</module>
         <module>encryption-starter</module>
         <module>microservice-logger</module>
-	    <module>proxy-starter</module>
+        <module>proxy-starter</module>
         <module>notification-regards</module>
         <module>notification-regards-starter</module>
         <module>metric-regards-starter</module>

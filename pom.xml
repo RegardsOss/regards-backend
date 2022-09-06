@@ -321,6 +321,11 @@
 				<artifactId>geojson-docs</artifactId>
 				<version>${revision}</version>
 			</dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework</groupId>
+                <artifactId>geojson-regards-jackson</artifactId>
+                <version>${revision}</version>
+            </dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.framework</groupId>
 				<artifactId>geojson-regards</artifactId>

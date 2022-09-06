@@ -21,8 +21,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>geojson-starter</artifactId>
-    <description>GeoJson - RFC 7946 extensible model - auto configuration (starter)</description>
+    <artifactId>geojson-regards-jackson</artifactId>
+    <description>Jackson adaptation to GeoJson model - RFC 7946 extensible model</description>
 
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>
@@ -54,28 +54,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>geojson-regards</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>gson-regards-starter</artifactId>
-        </dependency>
-        <!-- Tests -->
-        <dependency>
-            <groupId>fr.cnes.regards.framework.test</groupId>
-            <artifactId>regards-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jdk8</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>geojson-regards-jackson</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
