@@ -21,14 +21,23 @@ package fr.cnes.regards.cloud.gateway.filters;
 /**
  * @author Iliana Ghazali
  **/
-public class FilterConstants {
+public final class FilterConstants {
 
-    public static final String COMMA = ", ";
+    public static final String COMMA_WHITESPACE = ", ";
 
+    /**
+     * Header name
+     */
     public static final String CORRELATION_ID = "correlation-id";
 
+    /**
+     * Header name
+     */
     public static final String X_FORWARDED_FOR = "X-Forwarded-For";
 
+    /**
+     * Header name
+     */
     public static final String AUTHORIZATION = "Authorization";
 
     public static final String BEARER = "Bearer";

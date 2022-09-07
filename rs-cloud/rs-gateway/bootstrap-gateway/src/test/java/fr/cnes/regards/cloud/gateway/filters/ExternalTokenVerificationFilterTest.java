@@ -31,7 +31,9 @@ import static org.mockito.Mockito.*;
 
 class ExternalTokenVerificationFilterTest {
 
-    static final String TENANT = "DEFAULT";
+    private final static String TENANT = "DEFAULT";
+
+    private final static String DUMMY_URL = "http://dummyUrl.com";
 
     @InjectMocks
     @Spy
@@ -52,8 +54,6 @@ class ExternalTokenVerificationFilterTest {
     private ServerWebExchange exchange;
 
     private final ArgumentCaptor<ServerWebExchange> captor = ArgumentCaptor.forClass(ServerWebExchange.class);
-
-    private final String DUMMY_URL = "http://dummyUrl.com";
 
     private AutoCloseable closeable;
 
