@@ -176,6 +176,7 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService, 
                         deleteLink(link);
                     }
                 }
+                runtimeTenantResolver.clearTenant();
             }
         }
 

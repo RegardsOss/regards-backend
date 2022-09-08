@@ -387,6 +387,7 @@ public class JobService implements IJobService, InitializingBean, DisposableBean
             if (wrapper.getContent() != null) {
                 runtimeTenantResolver.forceTenant(wrapper.getTenant());
                 jobService.abort(wrapper.getContent().getJobId());
+                runtimeTenantResolver.clearTenant();
             }
         }
     }

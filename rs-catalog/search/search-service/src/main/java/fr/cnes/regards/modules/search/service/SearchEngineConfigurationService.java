@@ -276,6 +276,7 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
                         confs.forEach(repository::delete);
                     }
                 }
+                runtimeTenantResolver.clearTenant();
             }
         }
     }

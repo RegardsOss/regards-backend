@@ -62,6 +62,8 @@ public class FeatureEventHandler implements IHandler<FeatureEvent> {
             } catch (RsRuntimeException e) {
                 String msg = String.format("Cannot delete Feature (%s)", event.getFeatureId());
                 LOGGER.error(msg, e);
+            } finally {
+                runtimeTenantResolver.clearTenant();
             }
         }
     }

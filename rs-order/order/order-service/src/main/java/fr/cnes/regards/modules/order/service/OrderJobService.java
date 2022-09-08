@@ -161,6 +161,7 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent>, Di
                 if (endedJobInfo.isPresent()) {
                     self.manageUserOrderStorageFilesJobInfos(endedJobInfo.get().getOwner());
                 }
+                tenantResolver.clearTenant();
                 break;
             default:
         }
