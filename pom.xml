@@ -49,10 +49,6 @@
 	</developers>
 
 	<properties>
-
-		<surefire.jacoco.args/>
-		<failsafe.jacoco.args/>
-
 		<!-- REGARDS -->
 		<java.version>17</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -176,18 +172,9 @@
 		<docker.registry.baseImage>regards-java-alpine</docker.registry.baseImage>
 		<docker.registry.tagImage>17</docker.registry.tagImage>
 		<sonar.language>java</sonar.language>
-		<sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
-		<jacoco.outputDir>target/coverage-reports</jacoco.outputDir>
-		<!-- Jacoco output file for UTs -->
-		<jacoco.out.ut.file>jacoco-ut.exec</jacoco.out.ut.file>
-		<!-- Tells Sonar where the Jacoco coverage result file is located for UT -->
-		<sonar.jacoco.reportPath>${jacoco.outputDir}/${jacoco.out.ut.file}</sonar.jacoco.reportPath>
-		<!-- Jacoco output file for ITs -->
-		<jacoco.out.it.file>jacoco-it.exec</jacoco.out.it.file>
-		<!-- Tells Sonar where the Jacoco coverage result file is located for IT -->
-		<sonar.jacoco.itReportPath>${jacoco.outputDir}/${jacoco.out.it.file}</sonar.jacoco.itReportPath>
+
 		<!-- Test properties -->
-		<regards.maven.test.env>-Duser.timezone=GMT0</regards.maven.test.env>
+		<regards.maven.test.env>-Duser.timezone=GMT0 -Dfile.encoding=UTF-8</regards.maven.test.env>
 		<regards.cots.properties>LT.properties</regards.cots.properties>
 		<!-- FIXME temporary JVM options because jdk internals are inaccessible by reflection during gson serialization. See if gson fix this problem in a later version-->
 		<jvm.opens.packages>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED</jvm.opens.packages>
@@ -2388,13 +2375,6 @@
 							<dependencyManagement>keep</dependencyManagement>
 							<build>keep</build>
 							<profiles>expand</profiles>
-							<!--
-                            <parent>keep</parent>
-                            <properties>keep</properties>
-                            <modules>keep</modules>
-                            <build>keep</build>
-                            <reporting>keep</reporting>
-                            -->
 						</pomElements>
 					</configuration>
 					<executions>
@@ -2485,93 +2465,93 @@
 					<artifactId>jacoco-maven-plugin</artifactId>
 					<version>${org.jacoco.jacoco-maven-plugin.version}</version>
 					<executions>
-						<!-- Prepares the property pointing to the JaCoCo runtime agent which
-							is passed as VM argument when Maven the Surefire plugin is executed. -->
-						<execution>
-							<id>pre-unit-test</id>
-							<goals>
-								<goal>prepare-agent</goal>
-							</goals>
-							<configuration>
-								<!-- Sets the path to the file which contains the execution data. -->
-								<destFile>${sonar.jacoco.reportPath}</destFile>
-								<!-- Sets the name of the property containing the settings for JaCoCo
-									runtime agent. -->
-								<propertyName>surefire.jacoco.args</propertyName>
-							</configuration>
-						</execution>
-						<!-- Prepares the property pointing to the JaCoCo runtime agent which
-							is passed as VM argument when Maven the Failsafe plugin is executed. -->
-						<execution>
-							<id>pre-integration-test</id>
-							<phase>pre-integration-test</phase>
-							<goals>
-								<goal>prepare-agent</goal>
-							</goals>
-							<configuration>
-								<!-- Sets the path to the file which contains the execution data. -->
-								<destFile>${sonar.jacoco.itReportPath}</destFile>
-								<!-- Sets the name of the property containing the settings for JaCoCo
-									runtime agent. -->
-								<propertyName>failsafe.jacoco.args</propertyName>
-							</configuration>
-						</execution>
+							<!-- Prepares the property pointing to the JaCoCo runtime agent which
+											is passed as VM argument when Maven the Surefire plugin is executed. -->
+							<execution>
+									<id>pre-unit-test</id>
+									<goals>
+											<goal>prepare-agent</goal>
+									</goals>
+									<configuration>
+											<!-- Sets the path to the file which contains the execution data. -->
+											<destFile>${sonar.jacoco.reportPath}</destFile>
+											<!-- Sets the name of the property containing the settings for JaCoCo
+															runtime agent. -->
+											<propertyName>surefire.jacoco.args</propertyName>
+									</configuration>
+							</execution>
+							<!-- Prepares the property pointing to the JaCoCo runtime agent which
+											is passed as VM argument when Maven the Failsafe plugin is executed. -->
+							<execution>
+									<id>pre-integration-test</id>
+									<phase>pre-integration-test</phase>
+									<goals>
+											<goal>prepare-agent</goal>
+									</goals>
+									<configuration>
+											<!-- Sets the path to the file which contains the execution data. -->
+											<destFile>${sonar.jacoco.itReportPath}</destFile>
+											<!-- Sets the name of the property containing the settings for JaCoCo
+															runtime agent. -->
+											<propertyName>failsafe.jacoco.args</propertyName>
+									</configuration>
+							</execution>
 					</executions>
-				</plugin>
-				<plugin>
+			</plugin>
+			<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>${org.apache.maven.plugins.maven-surefire-plugin.version}</version>
 					<configuration>
-						<skipTests>${skipTests}</skipTests>
-						<!-- Sets the VM argument line used when unit tests are run. -->
-						<argLine>${regards.maven.test.env} ${jvm.opens.packages} ${surefire.jacoco.args}</argLine>
-						<properties>
-							<property>
-								<name>listener</name>
-								<value>fr.cnes.regards.framework.test.report.RequirementMatrixReportListener</value>
-							</property>
-						</properties>
-						<includes>
-							<include>**/*Tests.java</include>
-							<include>**/*Test.java</include>
-						</includes>
-						<excludes>
-							<exclude>**/Abstract*.java</exclude>
-						</excludes>
+							<skipTests>${skipTests}</skipTests>
+							<!-- Sets the VM argument line used when unit tests are run. -->
+							<argLine>${regards.maven.test.env} ${jvm.opens.packages} ${surefire.jacoco.args}</argLine>
+							<properties>
+									<property>
+											<name>listener</name>
+											<value>fr.cnes.regards.framework.test.report.RequirementMatrixReportListener</value>
+									</property>
+							</properties>
+							<includes>
+									<include>**/*Tests.java</include>
+									<include>**/*Test.java</include>
+							</includes>
+							<excludes>
+									<exclude>**/Abstract*.java</exclude>
+							</excludes>
 					</configuration>
-				</plugin>
-				<plugin>
+			</plugin>
+			<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-failsafe-plugin</artifactId>
 					<version>${org.apache.maven.plugins.maven-failsafe-plugin.version}</version>
 					<configuration>
-						<skipTests>${skipTests}</skipTests>
-						<!-- Sets the VM argument line used when integration tests are run. -->
-						<argLine>${failsafe.jacoco.args} ${regards.maven.test.env} ${jvm.opens.packages}</argLine>
-						<properties>
-							<property>
-								<name>listener</name>
-								<value>fr.cnes.regards.framework.test.report.RequirementMatrixReportListener</value>
-							</property>
-						</properties>
-						<!-- Let's put failsafe reports with surefire to have access to tests
-							failures/success reports in sonar -->
-						<reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+							<skipTests>${skipTests}</skipTests>
+							<!-- Sets the VM argument line used when integration tests are run. -->
+							<argLine>${failsafe.jacoco.args} ${regards.maven.test.env} ${jvm.opens.packages}</argLine>
+							<properties>
+									<property>
+											<name>listener</name>
+											<value>fr.cnes.regards.framework.test.report.RequirementMatrixReportListener</value>
+									</property>
+							</properties>
+							<!-- Let's put failsafe reports with surefire to have access to tests
+											failures/success reports in sonar -->
+							<reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
 					</configuration>
 					<executions>
-						<execution>
-							<goals>
-								<goal>integration-test</goal>
-								<goal>verify</goal>
-							</goals>
-							<configuration>
-								<!-- Sets the VM argument line used when integration tests are run. -->
-								<argLine>${failsafe.jacoco.args} ${regards.maven.test.env} ${jvm.opens.packages}</argLine>
-							</configuration>
-						</execution>
+							<execution>
+									<goals>
+											<goal>integration-test</goal>
+											<goal>verify</goal>
+									</goals>
+									<configuration>
+											<!-- Sets the VM argument line used when integration tests are run. -->
+											<argLine>${failsafe.jacoco.args} ${regards.maven.test.env} ${jvm.opens.packages}</argLine>
+									</configuration>
+							</execution>
 					</executions>
-				</plugin>
+			</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
