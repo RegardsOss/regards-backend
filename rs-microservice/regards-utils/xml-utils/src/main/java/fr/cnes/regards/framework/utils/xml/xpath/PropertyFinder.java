@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.utils.xml.xpath;
 
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.utils.GeometryConverterUtils;
 import fr.cnes.regards.framework.utils.xml.xpath.function.CustomXPathFunctionResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,6 +90,24 @@ public class PropertyFinder {
         if (nodes != null) {
             for (int index = 0; index < nodes.getLength(); index++) {
                 result.add(nodes.item(index).getTextContent());
+            }
+        }
+        return result;
+    }
+
+    public List<IGeometry> extractGeometryByXPath(InputStream is, String xPathValue, int pointSampling, boolean lenient)
+        throws IOException, SAXException, XPathExpressionException {
+
+        List<IGeometry> result = new ArrayList<>();
+
+        NodeList nodes = extractByXPath(is, xPathValue, lenient);
+        if (nodes != null) {
+            GeometryConverterUtils geometryConverterUtils = new GeometryConverterUtils(pointSampling);
+            for (int index = 0; index < nodes.getLength(); index++) {
+                IGeometry geometry = geometryConverterUtils.convert(nodes.item(index));
+                if (geometry != null) {
+                    result.add(geometry);
+                }
             }
         }
         return result;

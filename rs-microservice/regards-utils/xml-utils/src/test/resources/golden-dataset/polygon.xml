@@ -1,0 +1,33 @@
+<gml:Polygon gml:id="d11e79" xmlns:gml="http://www.opengis.net/gml/3.2">
+    <gml:exterior>
+        <!-- latitude first then longitude for every point - no commas just spaces - so latitude1 longitude1 latitude2 longitude2 ...
+             The points must be in counter clockwise order and closed (first point must match the last point). -->
+        <gml:LinearRing>
+            <gml:posList>2.219238281249998 48.1367666796927 8.063964843750005 47.60616304386872 9.51416015625
+                46.07323062540834 10.349121093750002 43.9295499356146 9.689941406250002 42.09822241118974
+                6.481933593749999 40.245991504199026 1.0327148437500053 39.707186656826565 -4.59228515625
+                41.77131167976407 -5.383300781249999 45.08903556483102 -3.8891601562499982 47.546871598922365
+                -2.3950195312499973 49.2104204456503 -0.0659179687499982 51.261914853084505 2.219238281249998
+                48.1367666796927
+            </gml:posList>
+        </gml:LinearRing>
+    </gml:exterior>
+    <!-- This section lists the holes within the polygon. -->
+    <!-- This is the GPolygon ExclusiveZone - there are 2 of them. -->
+    <gml:interior>
+        <gml:LinearRing>
+            <gml:posList>-1.6918945312499998 47.39834920035926 -3.1860351562499964 45.49094569262732 -2.3950195312499973
+                44.68427737181224 -1.1645507812499976 44.71551373202132 -0.41748046874999695 46.13417004624324
+                -1.4282226562499984 46.34692761055675 -1.6918945312499998 47.39834920035926
+            </gml:posList>
+        </gml:LinearRing>
+    </gml:interior>
+    <gml:interior>
+        <gml:LinearRing>
+            <gml:posList>0.8129882812499987 44.18220395771567 0.5493164062499976 42.261049162113835 1.9995117187499996
+                41.86956082699456 3.7573242187500018 42.42345651793829 3.6254882812499973 43.54854811091286
+                0.8129882812499987 44.18220395771567
+            </gml:posList>
+        </gml:LinearRing>
+    </gml:interior>
+</gml:Polygon>

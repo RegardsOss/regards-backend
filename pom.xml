@@ -124,10 +124,11 @@
 		<wiremock.version>2.27.2</wiremock.version>
 		<com.jcraft.jsch.version>0.1.55</com.jcraft.jsch.version>
 		<!-- geo -->
-		<org.locationtech.jts.version>1.16.0</org.locationtech.jts.version>
+		<org.locationtech.jts.version>1.18.2</org.locationtech.jts.version>
 		<org.locationtech.spatial4j.version>0.7</org.locationtech.spatial4j.version>
 		<org.geotools.version>19.1</org.geotools.version>
 		<org.hipparchus.version>1.3</org.hipparchus.version>
+		<nl.pdok.gml3-jts.version>17.0.0</nl.pdok.gml3-jts.version>
 		<!-- json -->
 		<com.jsoniter.version>0.9.23</com.jsoniter.version>
 		<com.networknt.json.schema.validation>1.0.49</com.networknt.json.schema.validation>
@@ -1978,6 +1979,12 @@
 				<artifactId>spatial4j</artifactId>
 				<version>${org.locationtech.spatial4j.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>nl.pdok</groupId>
+				<artifactId>gml3-jts</artifactId>
+				<version>${nl.pdok.gml3-jts.version}</version>
+			</dependency>
+
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>

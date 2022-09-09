@@ -51,6 +51,18 @@
     </developers>
 
     <dependencies>
+        <!-- Regards -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>geojson-regards</artifactId>
+        </dependency>
+        <!-- External -->
+        <dependency>
+            <groupId>nl.pdok</groupId>
+            <artifactId>gml3-jts</artifactId>
+        </dependency>
+
+        <!--Test -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-test</artifactId>

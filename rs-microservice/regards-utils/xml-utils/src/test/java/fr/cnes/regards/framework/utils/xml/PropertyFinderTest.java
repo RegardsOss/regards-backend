@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.framework.utils.xml;
 
+import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.utils.xml.xpath.PropertyFinder;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -41,6 +43,13 @@ public class PropertyFinderTest {
 
     private static final String GOLDEN_DATA_FILE = "SWOT_L1B_HR_SLC_003_096_212L_20220722T090107_20220722T090137_PG99_01.nc.iso.xml";
 
+    private PropertyFinder finder;
+
+    @Before
+    public void setUp() throws Exception {
+        finder = new PropertyFinder();
+    }
+
     @Test
     public void test_extract_node()
         throws XPathExpressionException, IOException, SAXException, ParserConfigurationException {
@@ -50,8 +59,6 @@ public class PropertyFinderTest {
         List<String> result = null;
 
         // When
-        PropertyFinder finder = new PropertyFinder();
-
         try (InputStream is = Files.newInputStream(GOLDEN_DATASET.resolve(GOLDEN_DATA_FILE))) {
             result = finder.extractTextByXPath(is, xPath, true);
         }
@@ -71,8 +78,6 @@ public class PropertyFinderTest {
         List<String> result = null;
 
         // When
-        PropertyFinder finder = new PropertyFinder();
-
         try (InputStream is = Files.newInputStream(GOLDEN_DATASET.resolve(GOLDEN_DATA_FILE))) {
             result = finder.extractTextByXPath(is, xPath, true);
         }
@@ -93,8 +98,6 @@ public class PropertyFinderTest {
         List<String> result = null;
 
         // When
-        PropertyFinder finder = new PropertyFinder();
-
         try (InputStream is = Files.newInputStream(GOLDEN_DATASET.resolve(GOLDEN_DATA_FILE))) {
             result = finder.extractTextByXPath(is, xPath, true);
         }
@@ -115,8 +118,6 @@ public class PropertyFinderTest {
         List<String> result = null;
 
         // When
-        PropertyFinder finder = new PropertyFinder();
-
         try (InputStream is = Files.newInputStream(GOLDEN_DATASET.resolve(GOLDEN_DATA_FILE))) {
             result = finder.extractTextByXPath(is, xPath, true);
         }
@@ -138,8 +139,6 @@ public class PropertyFinderTest {
         List<String> result = null;
 
         // When
-        PropertyFinder finder = new PropertyFinder();
-
         try (InputStream is = Files.newInputStream(GOLDEN_DATASET.resolve(GOLDEN_DATA_FILE))) {
             result = finder.extractTextByXPath(is, xPath, true);
         }
@@ -160,8 +159,6 @@ public class PropertyFinderTest {
         List<String> result = null;
 
         // When
-        PropertyFinder finder = new PropertyFinder();
-
         try (InputStream is = Files.newInputStream(GOLDEN_DATASET.resolve(GOLDEN_DATA_FILE))) {
             result = finder.extractTextByXPath(is, xPath, true);
         }
@@ -173,6 +170,93 @@ public class PropertyFinderTest {
             "https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#MD_ScopeCode"));
         Assert.assertTrue(result.contains(
             "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_ScopeCode"));
+    }
+
+    @Test
+    public void test_extract_multiple_IGeometry()
+        throws XPathExpressionException, IOException, SAXException, ParserConfigurationException {
+        // Given
+        String xPath = "//gmd:EX_BoundingPolygon";
+        // When
+        List<IGeometry> result = extract_IGeometry_without_sampling(xPath);
+
+        // Then
+        Assert.assertNotNull(result);
+        Assert.assertTrue(result.size() == 3);
+        Assert.assertEquals(result.get(0), GeometryFactory.createPoint());
+        Assert.assertEquals(result.get(1), GeometryFactory.createLineString());
+        Assert.assertEquals(result.get(2), GeometryFactory.createPolygon());
+    }
+
+    @Test
+    public void test_extract_IGeometry_Polygon()
+        throws XPathExpressionException, IOException, SAXException, ParserConfigurationException {
+        // Given
+        String xPath = "//gml:Polygon";
+        // When
+        List<IGeometry> result = extract_IGeometry_without_sampling(xPath);
+
+        // Then
+        Assert.assertNotNull(result);
+        Assert.assertTrue(result.size() == 1);
+        Assert.assertEquals(result.get(0), GeometryFactory.createPolygon());
+    }
+
+    private List<IGeometry> extract_IGeometry_without_sampling(String xpath)
+        throws XPathExpressionException, IOException, SAXException, ParserConfigurationException {
+        // Given
+        String xPath = xpath;
+
+        List<IGeometry> result = null;
+
+        // When
+        try (InputStream is = Files.newInputStream(GOLDEN_DATASET.resolve(GOLDEN_DATA_FILE))) {
+            result = finder.extractGeometryByXPath(is, xPath, 0, true);
+        }
+        return result;
+    }
+
+    @Test
+    public void test_extract_multiple_IGeometry_with_sampling_10()
+        throws XPathExpressionException, IOException, SAXException, ParserConfigurationException {
+        // Given
+        String xPath = "//gmd:EX_BoundingPolygon";
+        int pointSampling = 10;
+
+        List<IGeometry> result = null;
+
+        // When
+        try (InputStream is = Files.newInputStream(GOLDEN_DATASET.resolve(GOLDEN_DATA_FILE))) {
+            result = finder.extractGeometryByXPath(is, xPath, pointSampling, true);
+        }
+
+        // Then
+        Assert.assertNotNull(result);
+        Assert.assertTrue(result.size() == 3);
+        Assert.assertEquals(result.get(0), GeometryFactory.createPoint());
+        Assert.assertEquals(result.get(1), GeometryFactory.createLineString());
+        Assert.assertEquals(result.get(2), GeometryFactory.createPolygon_with_sampling_10());
+    }
+
+    @Test
+    public void test_extract_IGeometry_Polygon_with_sampling_10()
+        throws XPathExpressionException, IOException, SAXException, ParserConfigurationException {
+        // Given
+        String xPath = "//gml:Polygon";
+        int pointSampling = 10;
+        String xmlTestFile = "polygon.xml";
+
+        List<IGeometry> result = null;
+
+        // When
+        try (InputStream is = Files.newInputStream(GOLDEN_DATASET.resolve(xmlTestFile))) {
+            result = finder.extractGeometryByXPath(is, xPath, pointSampling, true);
+        }
+
+        // Then
+        Assert.assertNotNull(result);
+        Assert.assertTrue(result.size() == 1);
+        Assert.assertEquals(result.get(0), GeometryFactory.createPolygon_with_sampling_10());
     }
 
 }
