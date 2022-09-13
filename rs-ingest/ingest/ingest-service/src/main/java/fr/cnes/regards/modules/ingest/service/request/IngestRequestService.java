@@ -440,16 +440,13 @@ public class IngestRequestService implements IIngestRequestService {
                                            boolean afterStorage,
                                            Map<String, Optional<IngestProcessingChain>> chains,
                                            Map<String, AIPEntity> lastVersions) {
-
-        long start = System.currentTimeMillis();
-
         if (requests.isEmpty()) {
             return;
         }
 
+        long start = System.currentTimeMillis();
         List<AbstractRequest> toSchedule = Lists.newArrayList();
         Map<IngestProcessingChain, Set<AIPEntity>> postProcessToSchedule = Maps.newHashMap();
-        SIPEntity sipEntity;
         List<IngestRequestEvent> listIngestRequestEvents = new ArrayList<>();
 
         for (IngestRequest request : requests) {
@@ -483,15 +480,22 @@ public class IngestRequestService implements IIngestRequestService {
             sessionNotifier.incrementProductStoreSuccess(request);
 
             // Update SIP state
-            sipEntity = aips.get(0).getSip();
-            sipEntity.setState(SIPState.STORED);
-            sipService.save(sipEntity);
+            if (!aips.isEmpty()) {
+                SIPEntity sipEntity = aips.get(0).getSip();
+                sipEntity.setState(SIPState.STORED);
+                sipService.save(sipEntity);
 
-            // add ingest request event to list of ingest request events to publish
-            listIngestRequestEvents.add(IngestRequestEvent.build(request.getRequestId(),
-                                                                 request.getSip().getId(),
-                                                                 sipEntity.getSipId(),
-                                                                 RequestState.SUCCESS));
+                // add ingest request event to list of ingest request events to publish
+                listIngestRequestEvents.add(IngestRequestEvent.build(request.getRequestId(),
+                                                                     request.getSip().getId(),
+                                                                     sipEntity.getSipId(),
+                                                                     RequestState.SUCCESS));
+            } else {
+                // Should never happen.  A successfully ingest request is always associated to at least one AIP.
+                LOGGER.warn("Finalized IngestRequest ({} / {}) is not associated to any AIP",
+                            request.getRequestId(),
+                            request.getId());
+            }
         }
 
         // NOTIFICATIONS
