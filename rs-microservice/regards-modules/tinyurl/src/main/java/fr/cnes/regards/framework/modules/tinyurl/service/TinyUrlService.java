@@ -118,6 +118,7 @@ public class TinyUrlService {
      * @param <T>     target type
      * @return a loaded context
      */
+    @MultitenantTransactional(readOnly = true)
     public <T> T loadContext(TinyUrl tinyUrl, Type type) {
         return gson.fromJson(tinyUrl.getContext(), type);
     }

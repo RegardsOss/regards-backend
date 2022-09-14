@@ -47,4 +47,5 @@ public @interface MultitenantTransactional {
      */
     @AliasFor(annotation = Transactional.class) Propagation propagation() default Propagation.REQUIRED;
 
+    @AliasFor(annotation = Transactional.class) boolean readOnly() default false;
 }
