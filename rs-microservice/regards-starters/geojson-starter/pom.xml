@@ -68,11 +68,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jdk8</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>geojson-regards-jackson</artifactId>
             <scope>test</scope>

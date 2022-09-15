@@ -18,28 +18,21 @@
  */
 package fr.cnes.regards.framework.geojson;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import fr.cnes.regards.framework.geojson.deserializers.GeometryDeserializerModule;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -54,31 +47,6 @@ public class GeometryMarshallingIT {
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @Before
-    public void setUp() throws Exception {
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_ABSENT);
-        objectMapper.registerModule(new SimpleModule() {
-
-            @Override
-            public void setupModule(SetupContext context) {
-                super.setupModule(context);
-                context.addBeanSerializerModifier(new BeanSerializerModifier() {
-
-                    @Override
-                    public JsonSerializer<?> modifySerializer(SerializationConfig config,
-                                                              BeanDescription desc,
-                                                              JsonSerializer<?> serializer) {
-                        if (IGeometry.class.isAssignableFrom(desc.getBeanClass())) {
-                            return new GeometryCustomSerializer((JsonSerializer<Object>) serializer);
-                        }
-                        return serializer;
-                    }
-                });
-            }
-        });
-        objectMapper.registerModule(new GeometryDeserializerModule());
-    }
 
     @Test
     public void featureWithoutGeometry() throws JsonProcessingException {
@@ -100,6 +68,13 @@ public class GeometryMarshallingIT {
     @Test
     public void point() throws JsonProcessingException {
         checkMarshallingGeometry(GeometryFactory.createPoint());
+    }
+
+    @Test
+    public void pointWithCRS() throws JsonProcessingException {
+        IGeometry point = GeometryFactory.createPoint();
+        point.setCrs("WGS84");
+        checkMarshallingGeometry(point);
     }
 
     @Test
@@ -175,27 +150,5 @@ public class GeometryMarshallingIT {
 
         Assert.assertTrue("The provided JSONs are different (difference number=" + entriesDiffering.size() + ")",
                           diffMap.areEqual());
-    }
-
-    /**
-     * Custom serialzer for Jackson
-     */
-    static class GeometryCustomSerializer extends JsonSerializer<IGeometry> {
-
-        private final JsonSerializer<Object> defaultSerializer;
-
-        public GeometryCustomSerializer(JsonSerializer<Object> serializer) {
-            defaultSerializer = serializer;
-        }
-
-        @Override
-        public void serialize(IGeometry geometry, JsonGenerator jsonGenerator, SerializerProvider serializerProvider)
-            throws IOException {
-            if (geometry.getType() == GeoJsonType.UNLOCATED) {
-                jsonGenerator.writeObject(null);
-            } else {
-                defaultSerializer.serialize(geometry, jsonGenerator, serializerProvider);
-            }
-        }
     }
 }
