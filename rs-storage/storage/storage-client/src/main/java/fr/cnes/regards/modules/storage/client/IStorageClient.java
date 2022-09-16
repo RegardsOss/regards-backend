@@ -73,7 +73,7 @@ public interface IStorageClient {
     /**
      * Retry all registered request in error associated to the given owners.
      *
-     * @param requestInfo containing a unique request id.
+     * @param owners containing a unique request id.
      */
     void storeRetry(Collection<String> owners);
 

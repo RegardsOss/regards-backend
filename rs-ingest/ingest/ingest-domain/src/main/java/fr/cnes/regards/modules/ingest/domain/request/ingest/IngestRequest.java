@@ -90,6 +90,7 @@ public class IngestRequest extends AbstractRequest {
         request.setSession(metadata.getSession());
         request.setErrors(errors);
         request.setCreationDate(OffsetDateTime.now());
+
         return request;
     }
 
@@ -163,5 +164,21 @@ public class IngestRequest extends AbstractRequest {
         if (aips.contains(a)) {
             aips.remove(a);
         }
+    }
+
+    public void addErrorInformation(IngestRequestError error) {
+        config.getRequestErrors().add(error);
+    }
+
+    public boolean isErrorInformation() {
+        return config.getRequestErrors() != null && !config.getRequestErrors().isEmpty();
+    }
+
+    public Set<IngestRequestError> getErrorInformation() {
+        return config.getRequestErrors();
+    }
+
+    public void clearErrorInformation() {
+        config.getRequestErrors().clear();
     }
 }
