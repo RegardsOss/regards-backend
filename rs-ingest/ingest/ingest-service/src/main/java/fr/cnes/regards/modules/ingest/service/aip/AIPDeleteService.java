@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
@@ -89,13 +90,43 @@ public class AIPDeleteService implements IAIPDeleteService {
     }
 
     @Override
+    public void cancelStorageRequests(Collection<IngestRequest> requests) {
+        List<String> storageGroupIds = requests.stream()
+                                               .filter(r -> r.getRemoteStepGroupIds() != null
+                                                            && !r.getRemoteStepGroupIds().isEmpty())
+                                               .flatMap(r -> r.getRemoteStepGroupIds().stream())
+                                               .toList();
+        storageClient.cancelRequests(storageGroupIds);
+    }
+
+    @Override
+    public void deleteAll(Set<AIPEntity> aipIds) {
+        aipRepository.deleteAll(aipIds);
+    }
+
+    @Override
     public void scheduleLinkedFilesDeletion(OAISDeletionRequest request) {
         String sipId = request.getAip().getSip().getSipId();
-        List<FileDeletionRequestDTO> filesToDelete = new ArrayList<>();
 
         // Retrieve all AIP relative to this SIP id
         Set<AIPEntity> aips = aipRepository.findBySipSipId(sipId);
 
+        // Send deletion requests to storage
+        Collection<RequestInfo> deleteRequestInfos = sendLinkedFilesDeletionRequest(aips);
+
+        // Add deletion requests info to current request
+        request.setRemoteStepGroupIds(deleteRequestInfos.stream()
+                                                        .map(RequestInfo::getGroupId)
+                                                        .collect(Collectors.toList()));
+        // Put the request as un-schedule.
+        // The answering event from storage will put again the request to be executed
+        request.setState(InternalRequestState.TO_SCHEDULE);
+        oaisDeletionRequestRepository.save(request);
+    }
+
+    @Override
+    public Collection<RequestInfo> sendLinkedFilesDeletionRequest(Collection<AIPEntity> aips) {
+        List<FileDeletionRequestDTO> filesToDelete = new ArrayList<>();
         for (AIPEntity aipEntity : aips) {
             String aipId = aipEntity.getAipId();
             // Retrieve all linked files
@@ -110,15 +141,7 @@ public class AIPDeleteService implements IAIPDeleteService {
         }
 
         // Publish event to delete AIP files and AIPs itself
-        Collection<RequestInfo> deleteRequestInfos = storageClient.delete(filesToDelete);
-
-        request.setRemoteStepGroupIds(deleteRequestInfos.stream()
-                                                        .map(RequestInfo::getGroupId)
-                                                        .collect(Collectors.toList()));
-        // Put the request as un-schedule.
-        // The answering event from storage will put again the request to be executed
-        request.setState(InternalRequestState.TO_SCHEDULE);
-        oaisDeletionRequestRepository.save(request);
+        return storageClient.delete(filesToDelete);
     }
 
     private List<FileDeletionRequestDTO> getFileDeletionEvents(String owner,
@@ -128,7 +151,7 @@ public class AIPDeleteService implements IAIPDeleteService {
                                                                Set<OAISDataObjectLocation> locations) {
         List<FileDeletionRequestDTO> events = new ArrayList<>();
         for (OAISDataObjectLocation location : locations) {
-            // Ignore if the file is yet stored
+            // Ignore if the file is not yet stored
             if (location.getStorage() != null) {
                 // Create the storage delete event
                 events.add(FileDeletionRequestDTO.build(fileChecksum,
@@ -163,6 +186,7 @@ public class AIPDeleteService implements IAIPDeleteService {
             }
             // Remove last flag entry
             aipsRelatedToSip.forEach(aip -> removeLastFlag(aip));
+
             // Send notification to data mangement for feature deleted
             aipsRelatedToSip.forEach(aip -> publisher.publish(FeatureEvent.buildFeatureDeleted(aip.getAipId())));
         }

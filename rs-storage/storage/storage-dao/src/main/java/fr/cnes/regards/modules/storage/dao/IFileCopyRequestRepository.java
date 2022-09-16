@@ -73,6 +73,7 @@ public interface IFileCopyRequestRepository
     boolean existsByMetaInfoChecksumAndStatusIn(String checksum, Collection<FileRequestStatus> status);
 
     boolean existsByMetaInfoChecksumInAndStatusIn(Collection<String> cheksums,
-                                                  Collection<FileRequestStatus> runningStatus);
+                                                  Collection<FileRequestStatus> runningStatuses);
 
+    Set<FileCopyRequest> findByGroupIdAndStatusNotIn(String group, Set<FileRequestStatus> runningStatuses);
 }

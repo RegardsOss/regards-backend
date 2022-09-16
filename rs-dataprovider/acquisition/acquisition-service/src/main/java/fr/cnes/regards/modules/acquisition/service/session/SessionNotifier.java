@@ -274,6 +274,8 @@ public class SessionNotifier {
             property = Optional.of(SessionProductPropertyEnum.PROPERTY_INGESTION_FAILED);
         } else if (sipState == SIPState.INGESTED) {
             property = Optional.of(SessionProductPropertyEnum.PROPERTY_INGESTED);
+        } else if (sipState == SIPState.DELETED) {
+            property = Optional.of(SessionProductPropertyEnum.PROPERTY_INGESTION_CANCELED);
         }
         return property;
     }
@@ -291,6 +293,9 @@ public class SessionNotifier {
                 break;
             case INVALID:
                 property = SessionProductPropertyEnum.PROPERTY_INVALID;
+                break;
+            case CANCELED:
+                property = SessionProductPropertyEnum.PROPERTY_INGESTION_CANCELED;
                 break;
             default:
                 property = null;

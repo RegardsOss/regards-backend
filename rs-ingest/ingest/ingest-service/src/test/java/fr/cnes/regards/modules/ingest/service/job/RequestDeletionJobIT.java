@@ -40,9 +40,11 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
+import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
@@ -175,11 +177,13 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceIT {
         updateRequest.get(0).setState(InternalRequestState.ERROR);
         aipUpdateRequestRepository.saveAll(updateRequest);
 
-        ingestRequestRepository.save(IngestRequest.build(null,
-                                                         mapper.dtoToMetadata(mtd),
-                                                         InternalRequestState.ERROR,
-                                                         IngestRequestStep.REMOTE_STORAGE_ERROR,
-                                                         aips.get(0).getSip().getSip()));
+        IngestRequest ingestRequest = IngestRequest.build(null,
+                                                          mapper.dtoToMetadata(mtd),
+                                                          InternalRequestState.ERROR,
+                                                          IngestRequestStep.REMOTE_STORAGE_ERROR,
+                                                          aips.get(0).getSip().getSip());
+        ingestRequest.setAips(List.of(aips.get(0)));
+        ingestRequestRepository.save(ingestRequest);
         OAISDeletionCreatorRequest deletionRequest = new OAISDeletionCreatorRequest();
         deletionRequest.setCreationDate(OffsetDateTime.now());
         deletionRequest.setState(InternalRequestState.ERROR);
@@ -238,6 +242,12 @@ public class RequestDeletionJobIT extends IngestMultitenantServiceIT {
 
         requestService.scheduleRequestDeletionJob(SearchRequestsParameters.build());
         waitForRequestReach(0, 10_000);
+
+        List<IngestRequestEvent> events = getPublishedEvents(IngestRequestEvent.class);
+        Assert.assertEquals("There sould be one ingestion event sent to inform deletion", 1, events.size());
+        Assert.assertEquals("The ingest event should be deletion information event",
+                            RequestState.DELETED,
+                            events.get(0).getState());
     }
 
 }

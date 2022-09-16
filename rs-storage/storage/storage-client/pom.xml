@@ -25,11 +25,11 @@
     <artifactId>storage-client</artifactId>
     <packaging>jar</packaging>
 
-	<parent>
-		<groupId>fr.cnes.regards.modules</groupId>
-		<artifactId>storage</artifactId>
+    <parent>
+        <groupId>fr.cnes.regards.modules</groupId>
+        <artifactId>storage</artifactId>
         <version>${revision}</version>
-	</parent>
+    </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>
@@ -59,10 +59,10 @@
             <artifactId>storage-domain</artifactId>
         </dependency>
         <dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>feign-regards-starter</artifactId>
-			<scope>provided</scope>
-		</dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>feign-regards-starter</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
             <artifactId>tenant-settings-client</artifactId>
@@ -74,14 +74,14 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-multitenant-regards-test</artifactId>
-			<scope>test</scope>
-		</dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>jpa-multitenant-regards-test</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
-			<groupId>fr.cnes.regards.modules.storage</groupId>
-			<artifactId>storage-rest</artifactId>
-			<scope>test</scope>
-		</dependency>
+            <groupId>fr.cnes.regards.modules.storage</groupId>
+            <artifactId>storage-rest</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

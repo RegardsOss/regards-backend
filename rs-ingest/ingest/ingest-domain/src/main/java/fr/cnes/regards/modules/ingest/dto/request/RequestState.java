@@ -48,5 +48,10 @@ public enum RequestState {
     /**
      * Request error during its processing
      */
-    ERROR;
+    ERROR,
+
+    /**
+     * Not persisted state, only used to inform external system for a deleted request
+     */
+    DELETED;
 }

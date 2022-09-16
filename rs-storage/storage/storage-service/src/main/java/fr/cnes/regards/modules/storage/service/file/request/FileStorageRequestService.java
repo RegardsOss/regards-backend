@@ -978,11 +978,37 @@ public class FileStorageRequestService {
      * Delete all requests for the given storage identifier
      */
     public void deleteByStorage(String storageLocationId, Optional<FileRequestStatus> status) {
+        decrementSessionBeforeDeletion(storageLocationId, status);
         if (status.isPresent()) {
             fileStorageRequestRepo.deleteByStorageAndStatus(storageLocationId, status.get());
         } else {
             fileStorageRequestRepo.deleteByStorage(storageLocationId);
         }
+    }
+
+    /**
+     * Decrement session counts before deletion of storage requests.
+     *
+     * @param storageLocationId storage identifier of requests to delete
+     * @param status            Optional status of requests to delete
+     */
+    private void decrementSessionBeforeDeletion(String storageLocationId, Optional<FileRequestStatus> status) {
+        Pageable page = PageRequest.ofSize(100);
+        Page<FileStorageRequest> pageRequests;
+        do {
+            if (status.isPresent()) {
+                pageRequests = fileStorageRequestRepo.findAllByStorageAndStatus(storageLocationId, status.get(), page);
+            } else {
+                pageRequests = fileStorageRequestRepo.findAllByStorage(storageLocationId, page);
+            }
+            pageRequests.stream().forEach(r -> {
+                sessionNotifier.decrementStoreRequests(r.getSessionOwner(), r.getSession());
+                if (r.getStatus() == FileRequestStatus.ERROR) {
+                    sessionNotifier.decrementErrorRequests(r.getSessionOwner(), r.getSession());
+                }
+            });
+            page = page.next();
+        } while (pageRequests.hasNext());
     }
 
     public boolean isStorageRunning(String storageId) {

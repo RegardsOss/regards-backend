@@ -232,6 +232,10 @@ public class FeatureCopyService extends AbstractFeatureService<FeatureCopyReques
                      System.currentTimeMillis() - processStart);
     }
 
+    protected void postRequestDeleted(Collection<FeatureCopyRequest> deletedRequests) {
+        // Nothing to do
+    }
+
     /**
      * Add the copied file to the files of the {@link Feature}
      *

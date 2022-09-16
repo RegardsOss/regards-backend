@@ -180,17 +180,19 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceI
         // Compute Session step
         // for each product 4 events : 1request + 1 requestRunning + 1 referencedProduct  -1 requestRunning
         // for storage error : 1 inErrorReferencingRequest
-        // for in error delete request : -1 request -1inErrorReferencingRequest
-        computeSessionStep((requestCount * 4) + 1 + 2, 1);
+        // for delete referenceRequest : -1inErrorReferencingRequest -1request +1 deleteRequest
+        // The additional request is done to delete feature associated to the request in error deleted.
+        computeSessionStep((requestCount * 4) + 1 + 3, 1);
 
         // Check Session step values
         List<StepPropertyUpdateRequest> requests = stepPropertyUpdateRequestRepository.findAll();
-        checkRequests((requestCount * 3) + 1, type(StepPropertyEventTypeEnum.INC), requests);
+        checkRequests((requestCount * 3) + 1 + 1, type(StepPropertyEventTypeEnum.INC), requests);
         checkRequests(requestCount + 2, type(StepPropertyEventTypeEnum.DEC), requests);
         checkRequests(requestCount + 1, property("referencingRequests"), requests);
         checkRequests(requestCount, property("referencedProducts"), requests);
         checkRequests(requestCount * 2, property("runningReferencingRequests"), requests);
         checkRequests(2, property("inErrorReferencingRequests"), requests);
+        checkRequests(1, property("deleteRequests"), requests);
         checkRequests(requestCount + 1, inputRelated(), requests);
         checkRequests(requestCount, outputRelated(), requests);
 
@@ -200,8 +202,9 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceI
         Assertions.assertEquals(requestCount - 1, sessionStep.getInputRelated());
         Assertions.assertEquals(requestCount, sessionStep.getOutputRelated());
         SessionStepProperties sessionStepProperties = sessionStep.getProperties();
-        Assertions.assertEquals(4, sessionStepProperties.size());
+        Assertions.assertEquals(5, sessionStepProperties.size());
         checkKey(requestCount - 1, "referencingRequests", sessionStepProperties);
+        checkKey(1, "deleteRequests", sessionStepProperties);
         checkKey(requestCount, "referencedProducts", sessionStepProperties);
         checkKey(0, "runningReferencingRequests", sessionStepProperties);
         checkKey(0, "inErrorReferencingRequests", sessionStepProperties);
@@ -268,6 +271,9 @@ public class FeatureCreationSessionIT extends AbstractFeatureMultitenantServiceI
         checkRequests(2, property("runningReferencingRequests"), requests);
         checkRequests(2, property("inErrorReferencingRequests"), requests);
         checkRequests(1, property("referencedProducts"), requests);
+        // No deletion request should be created to delete the feature assoiated to the product when the request
+        // error is remote notification.
+        checkRequests(0, property("deleteRequests"), requests);
         checkRequests(2, inputRelated(), requests);
         checkRequests(1, outputRelated(), requests);
 

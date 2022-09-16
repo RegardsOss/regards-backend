@@ -153,6 +153,10 @@ public class StorageClientMock implements IStorageClient {
         return groupIds.stream().map(RequestInfo::build).collect(Collectors.toSet());
     }
 
+    @Override
+    public void cancelRequests(Collection<String> requestGroups) {
+    }
+
     public boolean isWaitMode() {
         return waitMode;
     }

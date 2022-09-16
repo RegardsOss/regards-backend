@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.storage.service;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -99,9 +98,6 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
 
     @SpyBean
     protected FileReferenceEventPublisher fileEventPublisher;
-
-    @SpyBean
-    protected IPublisher publisher;
 
     @Autowired
     protected FileReferenceEventHandler fileRefEventHandler;
@@ -605,6 +601,63 @@ public abstract class AbstractStorageIT extends AbstractMultitenantServiceIT {
         Assert.assertEquals("This session was not expected. Check the StepPropertyUpdateRequestEvent workflow.",
                             expectedSession,
                             stepProperty.getSession());
+    }
+
+    public void checkSessionEvents(int total,
+                                   int incStore,
+                                   int decStore,
+                                   int incRun,
+                                   int decRun,
+                                   int stored,
+                                   int incErrors,
+                                   int decErrors) {
+        List<StepPropertyUpdateRequestEvent> stepEventList = getPublishedEvents(StepPropertyUpdateRequestEvent.class);
+        Assert.assertEquals(total, stepEventList.size());
+        checkPropertyCount(stepEventList,
+                           incStore,
+                           SessionNotifierPropertyEnum.STORE_REQUESTS.getName(),
+                           StepPropertyEventTypeEnum.INC);
+        checkPropertyCount(stepEventList,
+                           decStore,
+                           SessionNotifierPropertyEnum.STORE_REQUESTS.getName(),
+                           StepPropertyEventTypeEnum.DEC);
+
+        checkPropertyCount(stepEventList,
+                           incRun,
+                           SessionNotifierPropertyEnum.REQUESTS_RUNNING.getName(),
+                           StepPropertyEventTypeEnum.INC);
+        checkPropertyCount(stepEventList,
+                           decRun,
+                           SessionNotifierPropertyEnum.REQUESTS_RUNNING.getName(),
+                           StepPropertyEventTypeEnum.DEC);
+
+        checkPropertyCount(stepEventList,
+                           stored,
+                           SessionNotifierPropertyEnum.STORED_FILES.getName(),
+                           StepPropertyEventTypeEnum.INC);
+
+        checkPropertyCount(stepEventList,
+                           incErrors,
+                           SessionNotifierPropertyEnum.REQUESTS_ERRORS.getName(),
+                           StepPropertyEventTypeEnum.INC);
+        checkPropertyCount(stepEventList,
+                           decErrors,
+                           SessionNotifierPropertyEnum.REQUESTS_ERRORS.getName(),
+                           StepPropertyEventTypeEnum.DEC);
+    }
+
+    private void checkPropertyCount(List<StepPropertyUpdateRequestEvent> stepEventList,
+                                    int count,
+                                    String property,
+                                    StepPropertyEventTypeEnum type) {
+        Assert.assertEquals(count,
+                            stepEventList.stream()
+                                         .filter(s -> s.getStepProperty()
+                                                       .getStepPropertyInfo()
+                                                       .getProperty()
+                                                       .equals(property))
+                                         .filter(s -> s.getType() == type)
+                                         .count());
     }
 
     protected void simulateFileInCache(String checksum) {

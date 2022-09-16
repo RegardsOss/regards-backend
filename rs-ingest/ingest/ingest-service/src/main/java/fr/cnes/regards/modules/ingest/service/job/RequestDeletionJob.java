@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
+import fr.cnes.regards.modules.ingest.service.request.RequestDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,6 +49,9 @@ public class RequestDeletionJob extends AbstractJob<Void> {
 
     @Autowired
     private RequestService requestService;
+
+    @Autowired
+    private RequestDeletionService requestDeletionService;
 
     /**
      * Limit number of requests to retrieve in one page.
@@ -82,7 +86,7 @@ public class RequestDeletionJob extends AbstractJob<Void> {
             if (totalPages < requestsPage.getTotalPages()) {
                 totalPages = requestsPage.getTotalPages();
             }
-            requestService.deleteRequests(requestsPage.getContent());
+            requestDeletionService.deleteRequests(requestsPage.getContent());
             advanceCompletion();
             nbRequestsDeleted += requestsPage.getNumberOfElements();
         } while (requestsPage.hasNext());

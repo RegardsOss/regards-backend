@@ -22,13 +22,12 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.storage.dao.*;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
-import fr.cnes.regards.modules.storage.domain.database.request.FileRequestStatus;
-import fr.cnes.regards.modules.storage.domain.database.request.RequestGroup;
-import fr.cnes.regards.modules.storage.domain.database.request.RequestResultInfo;
+import fr.cnes.regards.modules.storage.domain.database.request.*;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestsGroupEvent;
 import fr.cnes.regards.modules.storage.domain.flow.FlowItemStatus;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
+import fr.cnes.regards.modules.storage.service.session.SessionNotifier;
 import org.apache.commons.compress.utils.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,6 +95,9 @@ public class RequestsGroupService {
 
     @Autowired
     private IRequestGroupRepository reqGroupRepository;
+
+    @Autowired
+    private SessionNotifier sessionNotifier;
 
     /**
      * Handle new request success for the given groupId.<br>
@@ -208,6 +210,50 @@ public class RequestsGroupService {
             }
         }
         reqGroupRepository.saveAll(toSave);
+    }
+
+    /**
+     * Delete all requests associated to the given group ids if not running.
+     *
+     * @param group group identifier
+     */
+    public void cancelRequestGroup(String group) {
+        // Cancel storage requests
+        List<FileStorageRequest> storageRequests = storageReqRepository.findByGroupIdsAndStatusNotIn(group,
+                                                                                                     FileRequestStatus.RUNNING_STATUS);
+        storageRequests.forEach(r -> {
+            sessionNotifier.decrementStoreRequests(r.getSessionOwner(), r.getSession());
+            if (r.getStatus() == FileRequestStatus.ERROR) {
+                sessionNotifier.decrementErrorRequests(r.getSessionOwner(), r.getSession());
+            }
+        });
+        storageReqRepository.deleteAll(storageRequests);
+
+        // Cancel deletion requests
+        Set<FileDeletionRequest> delRequests = delReqRepository.findByGroupIdAndStatusNotIn(group,
+                                                                                            FileRequestStatus.RUNNING_STATUS);
+        delRequests.forEach(r -> {
+            sessionNotifier.decrementDeleteRequests(r.getSessionOwner(), r.getSession());
+            if (r.getStatus() == FileRequestStatus.ERROR) {
+                sessionNotifier.decrementErrorRequests(r.getSessionOwner(), r.getSession());
+            }
+        });
+        delReqRepository.deleteAll(delRequests);
+
+        // Cancel copy requests
+        Set<FileCopyRequest> copyRequests = copyReqRepository.findByGroupIdAndStatusNotIn(group,
+                                                                                          FileRequestStatus.RUNNING_STATUS);
+        copyRequests.forEach(r -> {
+            sessionNotifier.decrementCopyRequests(r.getSessionOwner(), r.getSession());
+            if (r.getStatus() == FileRequestStatus.ERROR) {
+                sessionNotifier.decrementErrorRequests(r.getSessionOwner(), r.getSession());
+            }
+        });
+        copyReqRepository.deleteAll(copyRequests);
+
+        // Cancel cache requests
+        cacheReqRepository.deleteByGroupIdAndStatusNotIn(group, FileRequestStatus.RUNNING_STATUS);
+
     }
 
     /**

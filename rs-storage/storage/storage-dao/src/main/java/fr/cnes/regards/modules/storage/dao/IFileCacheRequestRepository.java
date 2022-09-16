@@ -79,4 +79,6 @@ public interface IFileCacheRequestRepository extends JpaRepository<FileCacheRequ
     Long getPendingFileSize();
 
     void deleteByExpirationDateBefore(OffsetDateTime limitExpirationDate);
+
+    void deleteByGroupIdAndStatusNotIn(String group, Set<FileRequestStatus> runningStatus);
 }

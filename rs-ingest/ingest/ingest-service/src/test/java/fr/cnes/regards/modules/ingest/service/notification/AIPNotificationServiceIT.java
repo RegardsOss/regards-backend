@@ -22,7 +22,6 @@ package fr.cnes.regards.modules.ingest.service.notification;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
@@ -52,7 +51,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
@@ -77,9 +75,6 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
 
     @Autowired
     private StorageClientMock storageClient;
-
-    @SpyBean
-    private IPublisher publisherSpy;
 
     /**
      * Repositories
@@ -115,7 +110,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
         storageClient.setBehavior(true, true);
 
         // mock the publish method to not broke other tests in notifier manager
-        Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationRequestEvent.class));
+        Mockito.doNothing().when(publisher).publish(Mockito.any(NotificationRequestEvent.class));
 
         // ---------------------------------- INGEST REQUESTS ----------------------------------
         int nbSIP = 3;
@@ -147,7 +142,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
     @Purpose("Test aip requests are not deleted and in error state after a notification error")
     public void testNotificationError() {
         // mock the publish method to not broke other tests in notifier manager
-        Mockito.doNothing().when(publisherSpy).publish(Mockito.any(NotificationRequestEvent.class));
+        Mockito.doNothing().when(publisher).publish(Mockito.any(NotificationRequestEvent.class));
 
         // ---------------------------------- INGEST REQUESTS ----------------------------------
         int nbSIP = 3;

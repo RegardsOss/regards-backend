@@ -103,4 +103,5 @@ public interface IFileDeletetionRequestRepository extends JpaRepository<FileDele
 
     Optional<FileDeletionRequest> findByStorageAndFileReferenceMetaInfoChecksum(String checksum, String storage);
 
+    Set<FileDeletionRequest> findByGroupIdAndStatusNotIn(String group, Set<FileRequestStatus> runningStatus);
 }

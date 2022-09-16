@@ -141,6 +141,9 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
     @Autowired
     private FeatureFilesService featureFilesService;
 
+    @Autowired
+    private FeatureDeletionService featureDeletionService;
+
     @PersistenceContext
     private EntityManager em;
 
@@ -596,6 +599,24 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
                       FeatureCreationState.FEATURE_INITIALIZED);
 
         return featureEntity;
+    }
+
+    /**
+     * After creation requests has been deleted, we have to delete all feature created.
+     * Indeed, if a creation request is not completed then the associated feature is not valid.
+     *
+     * @param deletedRequests deleted {@link FeatureCreationRequest} requests
+     */
+    protected void postRequestDeleted(Collection<FeatureCreationRequest> deletedRequests) {
+        // NOTE : Do not delete feature associated to creation request in error if the error is REMOTE_NOTIFICATION_ERROR
+        // For all other errors during creation, the deletion of the request means deletion of the feature if exists.
+        List<FeatureUniformResourceName> urnToDelete = deletedRequests.stream()
+                                                                      .filter(r -> r.getFeatureEntity() != null)
+                                                                      .filter(r -> r.getStep()
+                                                                                   != FeatureRequestStep.REMOTE_NOTIFICATION_ERROR)
+                                                                      .map(r -> r.getFeatureEntity().getUrn())
+                                                                      .toList();
+        featureDeletionService.registerRequests(FeatureDeletionCollection.build(urnToDelete, PriorityLevel.NORMAL));
     }
 
     /**

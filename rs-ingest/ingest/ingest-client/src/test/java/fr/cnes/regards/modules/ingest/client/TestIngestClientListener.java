@@ -42,6 +42,8 @@ public class TestIngestClientListener implements IIngestClientListener {
 
     private final Set<RequestInfo> success = Sets.newHashSet();
 
+    private final Set<RequestInfo> deleted = Sets.newHashSet();
+
     private final Set<RequestInfo> errors = Sets.newHashSet();
 
     public void clear() {
@@ -77,6 +79,12 @@ public class TestIngestClientListener implements IIngestClientListener {
     public void onSuccess(Collection<RequestInfo> infos) {
         infos.forEach(info -> LOGGER.debug("SUCCEED ------------- {}", info.getRequestId(), info.getSipId()));
         success.addAll(infos);
+    }
+
+    @Override
+    public void onDeleted(Set<RequestInfo> infos) {
+        infos.forEach(info -> LOGGER.debug("DELETED ------------- {}", info.getRequestId(), info.getSipId()));
+        deleted.addAll(infos);
     }
 
     /**

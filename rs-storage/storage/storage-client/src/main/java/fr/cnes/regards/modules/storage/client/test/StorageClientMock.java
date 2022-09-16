@@ -255,4 +255,8 @@ public class StorageClientMock implements IStorageClient {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public void cancelRequests(Collection<String> requestGroups) {
+    }
+
 }

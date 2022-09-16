@@ -22,6 +22,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -42,12 +43,11 @@ import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProce
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequestStep;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdatesCreatorRequest;
-import fr.cnes.regards.modules.ingest.dto.request.RequestDto;
-import fr.cnes.regards.modules.ingest.dto.request.RequestTypeConstant;
-import fr.cnes.regards.modules.ingest.dto.request.RequestTypeEnum;
-import fr.cnes.regards.modules.ingest.dto.request.SearchRequestsParameters;
+import fr.cnes.regards.modules.ingest.dto.request.*;
+import fr.cnes.regards.modules.ingest.dto.request.event.IngestRequestEvent;
 import fr.cnes.regards.modules.ingest.service.job.*;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
+import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,6 +103,12 @@ public class RequestService implements IRequestService {
     private SessionNotifier sessionNotifier;
 
     @Autowired
+    private IStorageClient storageClient;
+
+    @Autowired
+    private IPublisher publisher;
+
+    @Autowired
     @Lazy
     private IRequestService self;
 
@@ -154,7 +160,21 @@ public class RequestService implements IRequestService {
         List<Long> aipIds = aipEntities.stream().map(AIPEntity::getId).collect(Collectors.toList());
 
         List<IngestRequest> requests = ingestRequestRepository.findAllByAipsIdIn(aipIds);
-        requests.forEach(sessionNotifier::ingestRequestErrorDeleted);
+        requests.forEach(r -> {
+            sessionNotifier.ingestRequestErrorDeleted(r);
+            // Inform request canceled
+            publisher.publish(IngestRequestEvent.build(r.getRequestId(),
+                                                       r.getProviderId(),
+                                                       null,
+                                                       RequestState.DELETED,
+                                                       r.getErrors()));
+        });
+        // Cancel associated request on storage
+        storageClient.cancelRequests(requests.stream()
+                                             .filter(r -> r.getRemoteStepGroupIds() != null)
+                                             .flatMap(r -> r.getRemoteStepGroupIds().stream())
+                                             .collect(Collectors.toSet()));
+
         ingestRequestRepository.deleteAll(requests);
 
         List<AIPUpdateRequest> updateRequests = aipUpdateRequestRepository.findAllByAipIdIn(aipIds);

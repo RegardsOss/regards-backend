@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -106,9 +105,6 @@ public class ProductAcquisitionServiceIT extends AbstractMultitenantServiceIT {
 
     @Autowired
     private IJobInfoService jobInfoService;
-
-    @SpyBean
-    private IPublisher publisher;
 
     @Before
     public void before() throws ModuleException {

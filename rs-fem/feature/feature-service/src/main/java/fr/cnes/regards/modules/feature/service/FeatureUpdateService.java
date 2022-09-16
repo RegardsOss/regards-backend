@@ -459,6 +459,11 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
     }
 
     @Override
+    protected void postRequestDeleted(Collection<FeatureUpdateRequest> deletedRequests) {
+        // Nothing to do
+    }
+
+    @Override
     public FeatureRequestType getRequestType() {
         return FeatureRequestType.PATCH;
     }

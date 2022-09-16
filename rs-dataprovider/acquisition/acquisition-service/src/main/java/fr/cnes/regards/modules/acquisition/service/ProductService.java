@@ -621,6 +621,22 @@ public class ProductService implements IProductService {
     }
 
     @Override
+    public void handleIngestedSIPDeleted(Collection<RequestInfo> infos) {
+        // If ingestion request has been deleted or canceled, the product acquisition is canceled too.
+        // Update product state and notify session.
+        Set<Product> products = productRepository.findByProductNameIn(infos.stream()
+                                                                           .map(RequestInfo::getProviderId)
+                                                                           .collect(Collectors.toSet()));
+        products.stream().forEach(product -> {
+            sessionNotifier.notifyChangeProductState(product, SIPState.DELETED, true);
+            product.setSipState(SIPState.DELETED);
+            product.setLastUpdate(OffsetDateTime.now());
+            product.setState(ProductState.CANCELED);
+        });
+        productRepository.saveAll(products);
+    }
+
+    @Override
     public void handleIngestedSIPSuccess(Collection<RequestInfo> infos) {
         Set<Product> products = productRepository.findByProductNameIn(infos.stream()
                                                                            .map(RequestInfo::getProviderId)
