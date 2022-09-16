@@ -35,7 +35,7 @@ public class IngestRequestError {
      * Checksum of the requested file
      */
     @NotBlank(message = "Request checksum is required for IngestRequestError")
-    private String requestChecksum;
+    private String requestFileChecksum;
 
     /**
      * Storage of the requested file
@@ -45,7 +45,7 @@ public class IngestRequestError {
 
     public IngestRequestError(StorageType storageType, String requestChecksum, String requestStorage) {
         this.storageType = storageType;
-        this.requestChecksum = requestChecksum;
+        this.requestFileChecksum = requestChecksum;
         this.requestStorage = requestStorage;
     }
 
@@ -53,8 +53,8 @@ public class IngestRequestError {
         return storageType;
     }
 
-    public String getRequestChecksum() {
-        return requestChecksum;
+    public String getRequestFileChecksum() {
+        return requestFileChecksum;
     }
 
     public String getRequestStorage() {

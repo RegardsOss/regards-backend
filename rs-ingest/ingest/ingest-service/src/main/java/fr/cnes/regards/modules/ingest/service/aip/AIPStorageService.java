@@ -90,7 +90,7 @@ public class AIPStorageService implements IAIPStorageService {
         Collection<FileReferenceRequestDTO> filesToRefer = new ArrayList<>();
 
         Set<StorageMetadata> storages = request.getMetadata().getStorages();
-        // Nothing error during the storage of file or the referencing of file
+        // Check if request contains errors. If true retry error requests, else create new storage requests
         if (!request.isErrorInformation()) {
             // Iterate over AIPs
             for (AIPEntity aipEntity : request.getAips()) {
@@ -218,7 +218,7 @@ public class AIPStorageService implements IAIPStorageService {
             return;
         }
         // Check the checksum of file in error
-        if (error.getRequestChecksum().equals(dataObject.getChecksum())) {
+        if (error.getRequestFileChecksum().equals(dataObject.getChecksum())) {
             RepresentationInformation representationInformation = contentInformation.getRepresentationInformation();
 
             for (OAISDataObjectLocation location : dataObject.getLocations()) {

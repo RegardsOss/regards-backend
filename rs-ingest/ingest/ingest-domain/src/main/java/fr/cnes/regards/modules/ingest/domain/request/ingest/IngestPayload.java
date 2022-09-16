@@ -31,6 +31,9 @@ import java.util.Set;
  */
 public class IngestPayload {
 
+    /**
+     * Set of errors for terminated storage request
+     */
     private Set<IngestRequestError> RequestErrors = new HashSet<>();
 
     private IngestMetadata metadata;

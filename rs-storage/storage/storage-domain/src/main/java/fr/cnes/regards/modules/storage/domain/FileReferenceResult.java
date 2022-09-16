@@ -22,6 +22,13 @@ import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.plugin.FileReferenceResultStatusEnum;
 
 /**
+ * POJO to represent a reference action result. A reference action can result with 3 types :
+ * <ul>
+ * <li>new reference is created</li>
+ * <li>existing reference updated</li>
+ * <li>existing reference not modified</li>
+ * </ul>
+ *
  * @author Stephane Cortine
  **/
 public final class FileReferenceResult {
