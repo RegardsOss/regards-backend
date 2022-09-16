@@ -24,7 +24,6 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
@@ -238,13 +237,14 @@ public class AttributeFinder implements IAttributeFinder, ApplicationListener<Ap
      * "getAttributeModels" method.
      */
     protected void computePropertyMap(String tenant) {
-
-        // Enable system call as follow (thread safe action)
-        FeignSecurityManager.asSystem();
-
-        // Retrieve the list of attribute models
-        List<AttributeModel> attModels = attributeHelper.getAllAttributes(tenant);
-
+        List<AttributeModel> attributeModels = null;
+        try {
+            runtimeTenantResolver.forceTenant(tenant);
+            // Retrieve the list of attribute models
+            attributeModels = attributeHelper.getAllAttributes();
+        } finally {
+            runtimeTenantResolver.clearTenant();
+        }
         // Build or rebuild the maps
         Map<String, AttributeModel> tenantMap = new HashMap<>();
         Multimap<PropertyType, AttributeModel> tenantTypeMap = ArrayListMultimap.create();
@@ -260,16 +260,16 @@ public class AttributeFinder implements IAttributeFinder, ApplicationListener<Ap
         List<String> conflictualKeys = new ArrayList<>();
 
         // Build intelligent map preventing conflicts
-        for (AttributeModel attModel : attModels) {
+        for (AttributeModel attributeModel : attributeModels) {
 
             // Register properties by types
-            tenantTypeMap.put(attModel.getType(), attModel);
+            tenantTypeMap.put(attributeModel.getType(), attributeModel);
 
             // - Add mapping between short property name and attribute if no conflict detected
-            String key = attModel.getName();
+            String key = attributeModel.getName();
             if (!tenantMap.containsKey(key) && !conflictualKeys.contains(key)) {
                 // Bind short property name to attribute
-                tenantMap.put(key, attModel);
+                tenantMap.put(key, attributeModel);
             } else {
                 // Conflictual dynamic property detected
                 if (!conflictualKeys.contains(key)) {
@@ -282,20 +282,20 @@ public class AttributeFinder implements IAttributeFinder, ApplicationListener<Ap
             }
 
             // - Add mapping between fragment qualified property and attribute
-            if (attModel.hasFragment()) {
-                String fragment = attModel.getFragment().getName();
+            if (attributeModel.hasFragment()) {
+                String fragment = attributeModel.getFragment().getName();
                 // Prevent conflicts with static properties
                 if (!StaticProperties.FEATURES_STATICS.contains(fragment)) {
                     // Bind fragment qualified property name to attribute
-                    tenantMap.put(attModel.getJsonPathForNamespace(""), attModel);
+                    tenantMap.put(attributeModel.getJsonPathForNamespace(""), attributeModel);
                 }
             }
 
             // - Add mapping between public json path and attribute model
-            tenantMap.put(attModel.getJsonPathForNamespace(StaticProperties.FEATURE_PROPERTIES), attModel);
+            tenantMap.put(attributeModel.getJsonPathForNamespace(StaticProperties.FEATURE_PROPERTIES), attributeModel);
 
             // - Add mapping between fully qualified property and attribute
-            tenantMap.put(attModel.getFullJsonPath(), attModel);
+            tenantMap.put(attributeModel.getFullJsonPath(), attributeModel);
         }
     }
 

@@ -32,7 +32,7 @@ import java.util.Set;
  */
 public interface IAttributeHelper {
 
-    List<AttributeModel> getAllAttributes(String tenant);
+    List<AttributeModel> getAllAttributes();
 
     Set<AttributeModel> getAllCommonAttributes(Collection<String> modelNames) throws ModuleException;
 }

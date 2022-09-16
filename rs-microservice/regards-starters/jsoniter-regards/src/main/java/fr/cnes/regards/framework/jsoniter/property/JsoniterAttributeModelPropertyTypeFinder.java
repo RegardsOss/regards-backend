@@ -20,6 +20,7 @@
 package fr.cnes.regards.framework.jsoniter.property;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -51,6 +52,7 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
 
 @Component
 public class JsoniterAttributeModelPropertyTypeFinder
@@ -128,7 +130,7 @@ public class JsoniterAttributeModelPropertyTypeFinder
             try {
                 LOGGER.info("Registering already configured attributes and fragments for jsoniter decoders");
                 // Register for tenant
-                final List<AttributeModel> atts = List.ofAll(attributeHelper.getAllAttributes(tenant));
+                final List<AttributeModel> atts = List.ofAll(attributeHelper.getAllAttributes());
                 attributes = attributes.merge(multimapOf(tenant, atts));
                 LOGGER.info("Registering attributes for jsoniter decoders for tenant {} done", tenant);
             } finally {
@@ -192,13 +194,20 @@ public class JsoniterAttributeModelPropertyTypeFinder
         }
     }
 
-    private class AttributeCacheRefreshHandler implements IHandler<AttributeCacheRefreshEvent> {
+    private class AttributeCacheRefreshHandler implements IBatchHandler<AttributeCacheRefreshEvent> {
 
         @Override
-        public void handle(TenantWrapper<AttributeCacheRefreshEvent> wrapper) {
-            String tenant = wrapper.getTenant();
-            final List<AttributeModel> atts = List.ofAll(attributeHelper.getAllAttributes(tenant));
-            attributes = attributes.merge(multimapOf(tenant, atts));
+        public Errors validate(AttributeCacheRefreshEvent message) {
+            return null;
+        }
+
+        @Override
+        public void handleBatch(java.util.List<AttributeCacheRefreshEvent> messages) {
+            String tenant = runtimeTenantResolver.getTenant();
+
+            final List<AttributeModel> attributeModels = List.ofAll(attributeHelper.getAllAttributes());
+            attributes = attributes.merge(multimapOf(tenant, attributeModels));
+
             notifClient.notify(String.format(
                                    "Attribute cache refresh finished for microservice %s on project %s. %s attributes detected",
                                    microserviceName,

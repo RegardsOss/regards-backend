@@ -51,18 +51,17 @@ public abstract class AbstractAttributeHelper implements IAttributeHelper {
     private static ObjectMapper mapper = new ObjectMapper();
 
     @Override
-    public List<AttributeModel> getAllAttributes(String tenant) {
-        List<AttributeModel> attributes = doGetAllAttributes(tenant);
+    public List<AttributeModel> getAllAttributes() {
+        List<AttributeModel> attributes = doGetAllAttributes();
         return computeAttributes(attributes);
     }
 
     /**
-     * Retrieve all {@link AttributeModel}s for the given tenant from database
+     * Retrieve all {@link AttributeModel}s
      *
-     * @param tenant
      * @return {@link AttributeModel}s
      */
-    protected abstract List<AttributeModel> doGetAllAttributes(String tenant);
+    protected abstract List<AttributeModel> doGetAllAttributes();
 
     /**
      * Compute attributes generated from {@link PropertyType#JSON} attributes.
