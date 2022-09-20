@@ -18,61 +18,61 @@
  along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.modules.ingest</groupId>
-	<artifactId>ingest-rest</artifactId>
+    <groupId>fr.cnes.regards.modules.ingest</groupId>
+    <artifactId>ingest-rest</artifactId>
 
-	<parent>
-		<groupId>fr.cnes.regards.modules</groupId>
-		<artifactId>ingest</artifactId>
-		<version>${revision}</version>
-	</parent>
+    <parent>
+        <groupId>fr.cnes.regards.modules</groupId>
+        <artifactId>ingest</artifactId>
+        <version>${revision}</version>
+    </parent>
 
-	<dependencies>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>module-regards-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>hateoas-regards-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-regards-starter</artifactId>
-		</dependency>
-		<!-- Module dependencies -->
-		<dependency>
-			<groupId>fr.cnes.regards.modules.ingest</groupId>
-			<artifactId>ingest-service</artifactId>
-		</dependency>
-		<!-- dump dependency -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework.modules.dump</groupId>
-			<artifactId>dump-rest</artifactId>
-		</dependency>
-		<!-- Test -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-integration-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>geojson-docs</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>oais-docs</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.ingest</groupId>
-			<artifactId>ingest-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>module-regards-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>hateoas-regards-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>security-regards-starter</artifactId>
+        </dependency>
+        <!-- Module dependencies -->
+        <dependency>
+            <groupId>fr.cnes.regards.modules.ingest</groupId>
+            <artifactId>ingest-service</artifactId>
+        </dependency>
+        <!-- dump dependency -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.dump</groupId>
+            <artifactId>dump-rest</artifactId>
+        </dependency>
+        <!-- Test -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework.test</groupId>
+            <artifactId>regards-integration-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>geojson-docs</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>oais-docs</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.ingest</groupId>
+            <artifactId>ingest-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>

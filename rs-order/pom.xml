@@ -18,24 +18,24 @@
  along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.microservices</groupId>
-	<artifactId>rs-order</artifactId>
-	<packaging>pom</packaging>
+    <groupId>fr.cnes.regards.microservices</groupId>
+    <artifactId>rs-order</artifactId>
+    <packaging>pom</packaging>
 
-	<parent>
-		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-aggregator-parent</artifactId>
-		<version>${revision}</version>
-		<relativePath>../rs-bom/regards-aggregator-parent</relativePath>
-	</parent>
+    <parent>
+        <groupId>fr.cnes.regards</groupId>
+        <artifactId>regards-aggregator-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../rs-bom/regards-aggregator-parent</relativePath>
+    </parent>
 
-	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
+    <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 
-	<modules>
-		<module>bootstrap-order</module>
-		<module>order</module>
-	</modules>
+    <modules>
+        <module>bootstrap-order</module>
+        <module>order</module>
+    </modules>
 </project>

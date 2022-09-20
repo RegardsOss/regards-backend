@@ -25,27 +25,27 @@
     <artifactId>toponyms-domain</artifactId>
     <packaging>jar</packaging>
 
-	<description>Toponyms domain</description>
-	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
-	<inceptionYear>2021</inceptionYear>
-	<licenses>
-		<license>
-			<name>GNU General Public License (GNU GPL)</name>
-			<url>http://www.gnu.org/licenses/gpl.html</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-	<organization>
-		<name>CNES</name>
-		<url>https://cnes.fr/fr</url>
-	</organization>
-	<developers>
-		<developer>
-			<name>REGARDS Team</name>
-			<organization>CS Systèmes d'Information</organization>
-			<organizationUrl>http://www.c-s.fr</organizationUrl>
-		</developer>
-	</developers>
+    <description>Toponyms domain</description>
+    <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
+    <inceptionYear>2021</inceptionYear>
+    <licenses>
+        <license>
+            <name>GNU General Public License (GNU GPL)</name>
+            <url>http://www.gnu.org/licenses/gpl.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <organization>
+        <name>CNES</name>
+        <url>https://cnes.fr/fr</url>
+    </organization>
+    <developers>
+        <developer>
+            <name>REGARDS Team</name>
+            <organization>CS Systèmes d'Information</organization>
+            <organizationUrl>http://www.c-s.fr</organizationUrl>
+        </developer>
+    </developers>
 
     <parent>
         <groupId>fr.cnes.regards.modules</groupId>
@@ -65,24 +65,24 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-spatial</artifactId>
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <artifactId>org.geolatte</artifactId>-->
-<!--                    <groupId>geolatte-geom</groupId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
+            <!--            <exclusions>-->
+            <!--                <exclusion>-->
+            <!--                    <artifactId>org.geolatte</artifactId>-->
+            <!--                    <groupId>geolatte-geom</groupId>-->
+            <!--                </exclusion>-->
+            <!--            </exclusions>-->
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.geolatte</groupId>-->
-<!--            <artifactId>geolatte-geom</artifactId>-->
-<!--            <version>1.8.0</version>-->
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <artifactId>xml-apis</artifactId>-->
-<!--                    <groupId>xml-apis</groupId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.geolatte</groupId>-->
+        <!--            <artifactId>geolatte-geom</artifactId>-->
+        <!--            <version>1.8.0</version>-->
+        <!--            <exclusions>-->
+        <!--                <exclusion>-->
+        <!--                    <artifactId>xml-apis</artifactId>-->
+        <!--                    <groupId>xml-apis</groupId>-->
+        <!--                </exclusion>-->
+        <!--            </exclusions>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>org.geolatte</groupId>
             <artifactId>geolatte-geojson</artifactId>

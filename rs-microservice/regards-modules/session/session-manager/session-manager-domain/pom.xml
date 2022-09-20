@@ -52,20 +52,20 @@
         </developer>
     </developers>
 
-	<dependencies>
+    <dependencies>
         <dependency>
             <groupId>fr.cnes.regards.framework.modules.session.session-commons</groupId>
             <artifactId>session-commons-dao</artifactId>
         </dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-commons-regards</artifactId>
-		</dependency>
-		<!-- Test -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-test</artifactId>
-			<scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>jpa-commons-regards</artifactId>
+        </dependency>
+        <!-- Test -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework.test</groupId>
+            <artifactId>regards-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

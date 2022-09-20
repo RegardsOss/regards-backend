@@ -16,55 +16,56 @@
  
  You should have received a copy of the GNU General Public License
  along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
---><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.microservices</groupId>
-	<artifactId>administration</artifactId>
-	<packaging>pom</packaging>
+    <groupId>fr.cnes.regards.microservices</groupId>
+    <artifactId>administration</artifactId>
+    <packaging>pom</packaging>
 
-	<description>Aggregator project for system's administration features</description>
-	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
-	<inceptionYear>2016</inceptionYear>
-	<licenses>
-		<license>
-			<name>GNU General Public License (GNU GPL)</name>
-			<url>http://www.gnu.org/licenses/gpl.html</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-	<organization>
-		<name>CNES</name>
-		<url>https://cnes.fr/fr</url>
-	</organization>
-	<developers>
-		<developer>
-			<name>REGARDS Team</name>
-			<organization>CS Systèmes d'Information</organization>
-			<organizationUrl>http://www.c-s.fr</organizationUrl>
-		</developer>
-	</developers>
+    <description>Aggregator project for system's administration features</description>
+    <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
+    <inceptionYear>2016</inceptionYear>
+    <licenses>
+        <license>
+            <name>GNU General Public License (GNU GPL)</name>
+            <url>http://www.gnu.org/licenses/gpl.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <organization>
+        <name>CNES</name>
+        <url>https://cnes.fr/fr</url>
+    </organization>
+    <developers>
+        <developer>
+            <name>REGARDS Team</name>
+            <organization>CS Systèmes d'Information</organization>
+            <organizationUrl>http://www.c-s.fr</organizationUrl>
+        </developer>
+    </developers>
 
-	<parent>
-		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-aggregator-parent</artifactId>
-		<version>${revision}</version>
-		<relativePath>../rs-bom/regards-aggregator-parent</relativePath>
-	</parent>
+    <parent>
+        <groupId>fr.cnes.regards</groupId>
+        <artifactId>regards-aggregator-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../rs-bom/regards-aggregator-parent</relativePath>
+    </parent>
 
-	<modules>
-		<module>project</module>
-		<module>bootstrap-administration</module>
-		<module>bootstrap-administration-instance</module>
-		<module>accessrights</module>
-		<module>accessrights-instance</module>	
-		<module>emails</module>
-		<module>notification</module>
-		<module>notification-instance</module>
-		<module>local-tenant-resolver</module>
-		<module>local-authorities-provider</module>
-		<module>remote-tenant-resolver</module>
-		<module>remote-authorities-provider</module>
-	</modules>
+    <modules>
+        <module>project</module>
+        <module>bootstrap-administration</module>
+        <module>bootstrap-administration-instance</module>
+        <module>accessrights</module>
+        <module>accessrights-instance</module>
+        <module>emails</module>
+        <module>notification</module>
+        <module>notification-instance</module>
+        <module>local-tenant-resolver</module>
+        <module>local-authorities-provider</module>
+        <module>remote-tenant-resolver</module>
+        <module>remote-authorities-provider</module>
+    </modules>
 
 </project>

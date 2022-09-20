@@ -91,7 +91,7 @@
             <artifactId>hibernate-validator</artifactId>
         </dependency>
         <!-- Gson -->
- 		<dependency>
+        <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>gson-regards</artifactId>
         </dependency>

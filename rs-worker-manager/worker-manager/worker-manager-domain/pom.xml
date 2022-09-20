@@ -52,11 +52,11 @@
         </developer>
     </developers>
 
-	<dependencies>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-commons-regards</artifactId>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>jpa-commons-regards</artifactId>
+        </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>amqp-regards</artifactId>

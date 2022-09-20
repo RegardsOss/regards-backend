@@ -126,13 +126,13 @@
             <build>
                 <resources>
                     <resource>
-						<directory>src/main/resources</directory>
-						<filtering>false</filtering>
-					</resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>false</filtering>
+                    </resource>
                     <resource>
-						<directory>src/main/resources-filtered</directory>
-						<filtering>true</filtering>
-					</resource>
+                        <directory>src/main/resources-filtered</directory>
+                        <filtering>true</filtering>
+                    </resource>
                 </resources>
                 <filters>
                     <filter>src/main/filters/${filter.name}.properties</filter>
@@ -148,13 +148,13 @@
             <build>
                 <resources>
                     <resource>
-						<directory>src/main/resources</directory>
-						<filtering>false</filtering>
-					</resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>false</filtering>
+                    </resource>
                     <resource>
-						<directory>src/main/resources-filtered</directory>
-						<filtering>true</filtering>
-					</resource>
+                        <directory>src/main/resources-filtered</directory>
+                        <filtering>true</filtering>
+                    </resource>
                 </resources>
                 <filters>
                     <filter>src/main/filters/${filter.name}.properties</filter>

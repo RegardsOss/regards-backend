@@ -18,122 +18,122 @@
  along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.microservices.administration</groupId>
-	<artifactId>bootstrap-administration</artifactId>
+    <groupId>fr.cnes.regards.microservices.administration</groupId>
+    <artifactId>bootstrap-administration</artifactId>
 
-	<parent>
-		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-boot-parent</artifactId>
-		<version>${revision}</version>
-		<relativePath>../../rs-bom/regards-boot-parent</relativePath>
-	</parent>
+    <parent>
+        <groupId>fr.cnes.regards</groupId>
+        <artifactId>regards-boot-parent</artifactId>
+        <version>${revision}</version>
+        <relativePath>../../rs-bom/regards-boot-parent</relativePath>
+    </parent>
 
-	<properties>
-		<microservice.heap.size>512m</microservice.heap.size>
-		<fr.cnes.regards.docker.image.name>rs-admin</fr.cnes.regards.docker.image.name>
-		<docker.entryPoint>["./wait-for-it.sh", "rs-config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs-registry:9032", "-t", "0", "--","./wait-for-it.sh", "rs-rabbitmq:15672", "-t", "0", "--", "./wait-for-it.sh", "rs-admin-instance:9037", "-t", "0", "--", "./start.sh","${project.build.finalName}.${project.packaging}","-Xmx${microservice.heap.size}"]</docker.entryPoint>
-		<docker.guest.port>9033</docker.guest.port>
-	</properties>
+    <properties>
+        <microservice.heap.size>512m</microservice.heap.size>
+        <fr.cnes.regards.docker.image.name>rs-admin</fr.cnes.regards.docker.image.name>
+        <docker.entryPoint>["./wait-for-it.sh", "rs-config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs-registry:9032", "-t", "0", "--","./wait-for-it.sh", "rs-rabbitmq:15672", "-t", "0", "--", "./wait-for-it.sh", "rs-admin-instance:9037", "-t", "0", "--", "./start.sh","${project.build.finalName}.${project.packaging}","-Xmx${microservice.heap.size}"]</docker.entryPoint>
+        <docker.guest.port>9033</docker.guest.port>
+    </properties>
 
-	<dependencies>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>microservice-core-starter</artifactId>
-		</dependency>
-		<!-- Spring bootstrap -->
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-bootstrap</artifactId>
-		</dependency>
-		<!-- Framework Starters dependencies -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-multitenant-regards-starter</artifactId>
-		</dependency>
-		<!-- Module dependencies -->
-		<dependency>
-			<groupId>fr.cnes.regards.microservices.administration</groupId>
-			<artifactId>remote-tenant-resolver</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.microservices.administration</groupId>
-			<artifactId>local-authorities-provider</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.emails</groupId>
-			<artifactId>emails-rest</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.notification</groupId>
-			<artifactId>notification-rest</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.accessrights</groupId>
-			<artifactId>accessrights-rest</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework.modules.session.session-manager</groupId>
-			<artifactId>session-manager-rest</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
-			<artifactId>tenant-settings-rest</artifactId>
-		</dependency>
-	</dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>microservice-core-starter</artifactId>
+        </dependency>
+        <!-- Spring bootstrap -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-bootstrap</artifactId>
+        </dependency>
+        <!-- Framework Starters dependencies -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>jpa-multitenant-regards-starter</artifactId>
+        </dependency>
+        <!-- Module dependencies -->
+        <dependency>
+            <groupId>fr.cnes.regards.microservices.administration</groupId>
+            <artifactId>remote-tenant-resolver</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.microservices.administration</groupId>
+            <artifactId>local-authorities-provider</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.emails</groupId>
+            <artifactId>emails-rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.notification</groupId>
+            <artifactId>notification-rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.accessrights</groupId>
+            <artifactId>accessrights-rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.session.session-manager</groupId>
+            <artifactId>session-manager-rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+            <artifactId>tenant-settings-rest</artifactId>
+        </dependency>
+    </dependencies>
 
-	<profiles>
-		<profile>
-			<id>default</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<properties>
-				<!-- Default properties -->
-				<filter.name>development</filter.name>
-			</properties>
-			<build>
-				<resources>
-					<resource>
-						<directory>src/main/resources</directory>
-						<filtering>false</filtering>
-					</resource>
-					<resource>
-						<directory>src/main/resources-filtered</directory>
-						<filtering>true</filtering>
-					</resource>
-				</resources>
-				<filters>
-					<filter>src/main/filters/${filter.name}.properties</filter>
-				</filters>
-			</build>
-		</profile>
-		<profile>
-			<id>docker</id>
-			<properties>
-				<!-- Default properties -->
-				<filter.name>docker</filter.name>
-			</properties>
-			<build>
-				<resources>
-					<resource>
-						<directory>src/main/resources</directory>
-						<filtering>false</filtering>
-					</resource>
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <!-- Default properties -->
+                <filter.name>development</filter.name>
+            </properties>
+            <build>
+                <resources>
                     <resource>
-						<directory>src/main/resources-filtered</directory>
-						<filtering>true</filtering>
-					</resource>
-				</resources>
-				<filters>
-					<filter>src/main/filters/${filter.name}.properties</filter>
-				</filters>
-			</build>
-		</profile>
-		<profile>
-			<id>delivery</id>
-		</profile>
-	</profiles>
+                        <directory>src/main/resources</directory>
+                        <filtering>false</filtering>
+                    </resource>
+                    <resource>
+                        <directory>src/main/resources-filtered</directory>
+                        <filtering>true</filtering>
+                    </resource>
+                </resources>
+                <filters>
+                    <filter>src/main/filters/${filter.name}.properties</filter>
+                </filters>
+            </build>
+        </profile>
+        <profile>
+            <id>docker</id>
+            <properties>
+                <!-- Default properties -->
+                <filter.name>docker</filter.name>
+            </properties>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>false</filtering>
+                    </resource>
+                    <resource>
+                        <directory>src/main/resources-filtered</directory>
+                        <filtering>true</filtering>
+                    </resource>
+                </resources>
+                <filters>
+                    <filter>src/main/filters/${filter.name}.properties</filter>
+                </filters>
+            </build>
+        </profile>
+        <profile>
+            <id>delivery</id>
+        </profile>
+    </profiles>
 </project>

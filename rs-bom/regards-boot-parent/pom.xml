@@ -56,7 +56,7 @@
     <properties>
         <microservice.heap.size>256m</microservice.heap.size>
         <!-- Default entrypoint for microservices, it should be overridden if needed -->
-		<docker.entryPoint>["./wait-for-it.sh", "rs-config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs-registry:9032", "-t", "0", "--","./wait-for-it.sh", "rs-admin:9033", "-t", "0", "--", "./start.sh","${project.build.finalName}.${project.packaging}","-Xmx${microservice.heap.size}"]
+        <docker.entryPoint>["./wait-for-it.sh", "rs-config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs-registry:9032", "-t", "0", "--","./wait-for-it.sh", "rs-admin:9033", "-t", "0", "--", "./start.sh","${project.build.finalName}.${project.packaging}","-Xmx${microservice.heap.size}"]
         </docker.entryPoint>
     </properties>
 
@@ -94,8 +94,8 @@
                     <groupId>org.owasp</groupId>
                     <artifactId>dependency-check-maven</artifactId>
                     <version>5.2.1</version>
-		            <configuration>
-			            <skip>true</skip>
+                    <configuration>
+                        <skip>true</skip>
                         <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
                         <suppressionFiles>
                             <!-- This file is located into regards-suppress-cve dependency -->
@@ -133,14 +133,14 @@
                 <artifactId>dependency-check-maven</artifactId>
             </plugin>
         </plugins>
-</build>
+    </build>
 
-<dependencies>
-	<dependency>
+    <dependencies>
+        <dependency>
             <groupId>fr.cnes.regards</groupId>
             <artifactId>regards-suppress-cve</artifactId>
             <version>${revision}</version>
         </dependency>
-</dependencies>
+    </dependencies>
 
 </project>

@@ -44,18 +44,18 @@
         </developer>
     </developers>
 
-	<dependencies>
-		<!-- Framework core dependencies -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>microservice-core-starter</artifactId>
-		</dependency>
-		<!-- Module to retrieve tenant information from remote admin-instance microservice -->
-		<dependency>
-			<groupId>fr.cnes.regards.microservices.administration</groupId>
-			<artifactId>remote-tenant-resolver</artifactId>
-		</dependency>
-		<!-- Module dependencies -->
-	</dependencies>
+    <dependencies>
+        <!-- Framework core dependencies -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>microservice-core-starter</artifactId>
+        </dependency>
+        <!-- Module to retrieve tenant information from remote admin-instance microservice -->
+        <dependency>
+            <groupId>fr.cnes.regards.microservices.administration</groupId>
+            <artifactId>remote-tenant-resolver</artifactId>
+        </dependency>
+        <!-- Module dependencies -->
+    </dependencies>
 
 </project>

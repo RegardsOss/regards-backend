@@ -61,13 +61,13 @@
 
         <!-- Libraries -->
         <dependency>
-        	<groupId>io.netty</groupId>
-        	<artifactId>netty-all</artifactId>
-    	</dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+        </dependency>
         <dependency>
-		  <groupId>io.r2dbc</groupId>
-		  <artifactId>r2dbc-postgresql</artifactId>
-		</dependency>
+            <groupId>io.r2dbc</groupId>
+            <artifactId>r2dbc-postgresql</artifactId>
+        </dependency>
         <dependency>
             <groupId>name.nkonev.r2dbc-migrate</groupId>
             <artifactId>r2dbc-migrate-spring-boot-starter</artifactId>

@@ -62,9 +62,9 @@
             <artifactId>gson-regards</artifactId>
         </dependency>
         <dependency>
-			<groupId>jakarta.servlet</groupId>
-			<artifactId>jakarta.servlet-api</artifactId>
-  		</dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+        </dependency>
         <!-- little trick for tests in jpa-regards-data, will that work? -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -80,10 +80,10 @@
 
             <!-- Libraries -->
             <dependency>
-	        	<groupId>io.netty</groupId>
-	        	<artifactId>netty-all</artifactId>
-	        	<version>${io.netty.version}</version>
-	    	</dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>${io.netty.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.springframework.batch</groupId>
                 <artifactId>spring-batch-core</artifactId>

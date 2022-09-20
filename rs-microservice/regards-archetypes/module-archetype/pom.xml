@@ -21,10 +21,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-	<artifactId>module-archetype</artifactId>
-	<packaging>maven-archetype</packaging>
+    <artifactId>module-archetype</artifactId>
+    <packaging>maven-archetype</packaging>
 
-	<name>module-archetype</name>
+    <name>module-archetype</name>
 
     <parent>
         <groupId>fr.cnes.regards.framework.archetypes</groupId>

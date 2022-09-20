@@ -18,26 +18,26 @@
  along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.modules</groupId>
-	<artifactId>ingest</artifactId>
-	<packaging>pom</packaging>
+    <groupId>fr.cnes.regards.modules</groupId>
+    <artifactId>ingest</artifactId>
+    <packaging>pom</packaging>
 
-	<parent>
-		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-oss-backend</artifactId>
-		<version>${revision}</version>
-		<relativePath>../../pom.xml</relativePath>
-	</parent>
+    <parent>
+        <groupId>fr.cnes.regards</groupId>
+        <artifactId>regards-oss-backend</artifactId>
+        <version>${revision}</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
 
-	<modules>
-		<module>ingest-domain</module>
-		<module>ingest-client</module>
-		<module>ingest-dao</module>
-		<module>ingest-rest</module>
-		<module>ingest-service</module>
-		<module>ingest-test</module>
-	</modules>
+    <modules>
+        <module>ingest-domain</module>
+        <module>ingest-client</module>
+        <module>ingest-dao</module>
+        <module>ingest-rest</module>
+        <module>ingest-service</module>
+        <module>ingest-test</module>
+    </modules>
 </project>

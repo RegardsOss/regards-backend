@@ -53,7 +53,7 @@
     </developers>
 
     <dependencies>
-    	<dependency>
+        <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>module-regards</artifactId>
         </dependency>

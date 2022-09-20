@@ -71,7 +71,7 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>encryption-starter</artifactId>
         </dependency>
-		<dependency>
+        <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>gson-regards-starter</artifactId>
         </dependency>
@@ -89,7 +89,7 @@
             <artifactId>module-regards</artifactId>
         </dependency>
         <!-- COTS -->
-		 <dependency>
+        <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.el</artifactId>
         </dependency>
@@ -120,13 +120,13 @@
             <build>
                 <resources>
                     <resource>
-						<directory>src/main/resources</directory>
-						<filtering>false</filtering>
-					</resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>false</filtering>
+                    </resource>
                     <resource>
-						<directory>src/main/resources-filtered</directory>
-						<filtering>true</filtering>
-					</resource>
+                        <directory>src/main/resources-filtered</directory>
+                        <filtering>true</filtering>
+                    </resource>
                 </resources>
                 <filters>
                     <filter>src/main/filters/${filter.name}.properties</filter>

@@ -18,52 +18,52 @@
  along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.modules.ingest</groupId>
-	<artifactId>ingest-client</artifactId>
+    <groupId>fr.cnes.regards.modules.ingest</groupId>
+    <artifactId>ingest-client</artifactId>
 
-	<parent>
-		<groupId>fr.cnes.regards.modules</groupId>
-		<artifactId>ingest</artifactId>
-		<version>${revision}</version>
-	</parent>
+    <parent>
+        <groupId>fr.cnes.regards.modules</groupId>
+        <artifactId>ingest</artifactId>
+        <version>${revision}</version>
+    </parent>
 
-	<dependencies>
-		<dependency>
+    <dependencies>
+        <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>gson-regards-starter</artifactId>
         </dependency>
         <dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>feign-regards-starter</artifactId>
-		</dependency>
-		<!-- Module domain -->
-		<dependency>
-			<groupId>fr.cnes.regards.modules.ingest</groupId>
-			<artifactId>ingest-domain</artifactId>
-		</dependency>
-		<!-- Tests -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-integration-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.storage</groupId>
-			<artifactId>storage-client</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.ingest</groupId>
-			<artifactId>ingest-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.ingest</groupId>
-			<artifactId>ingest-rest</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>feign-regards-starter</artifactId>
+        </dependency>
+        <!-- Module domain -->
+        <dependency>
+            <groupId>fr.cnes.regards.modules.ingest</groupId>
+            <artifactId>ingest-domain</artifactId>
+        </dependency>
+        <!-- Tests -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework.test</groupId>
+            <artifactId>regards-integration-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.storage</groupId>
+            <artifactId>storage-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.ingest</groupId>
+            <artifactId>ingest-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.ingest</groupId>
+            <artifactId>ingest-rest</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>

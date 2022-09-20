@@ -77,17 +77,17 @@
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>swagger-regards-starter</artifactId>
-         </dependency>
+        </dependency>
         <!-- Enable cloud features -->
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>cloud-regards-starter</artifactId>
-	    </dependency>
-		<!-- Micrometer Prometheus registry -->
-		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-registry-prometheus</artifactId>
-		</dependency>        
+        </dependency>
+        <!-- Micrometer Prometheus registry -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

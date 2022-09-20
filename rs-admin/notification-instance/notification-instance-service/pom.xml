@@ -18,44 +18,44 @@
  along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.modules.notification-instance</groupId>
-	<artifactId>notification-instance-service</artifactId>
-	<packaging>jar</packaging>
+    <groupId>fr.cnes.regards.modules.notification-instance</groupId>
+    <artifactId>notification-instance-service</artifactId>
+    <packaging>jar</packaging>
 
-	<parent>
-		<groupId>fr.cnes.regards.modules</groupId>
-		<artifactId>notification-instance</artifactId>
-		<version>${revision}</version>
-	</parent>
+    <parent>
+        <groupId>fr.cnes.regards.modules</groupId>
+        <artifactId>notification-instance</artifactId>
+        <version>${revision}</version>
+    </parent>
 
-	<dependencies>
-		<!-- Microservice internal dependencies -->
-		<dependency>
-			<groupId>fr.cnes.regards.modules.notification</groupId>
-			<artifactId>notification-dao</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>security-regards-starter</artifactId>
-		</dependency>
-		<!-- for emails -->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context-support</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>jakarta.mail</groupId>
-			<artifactId>jakarta.mail-api</artifactId>
-		</dependency>
-		<!-- Tests -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+    <dependencies>
+        <!-- Microservice internal dependencies -->
+        <dependency>
+            <groupId>fr.cnes.regards.modules.notification</groupId>
+            <artifactId>notification-dao</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>security-regards-starter</artifactId>
+        </dependency>
+        <!-- for emails -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.mail</groupId>
+            <artifactId>jakarta.mail-api</artifactId>
+        </dependency>
+        <!-- Tests -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework.test</groupId>
+            <artifactId>regards-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 </project>

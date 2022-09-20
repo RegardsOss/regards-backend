@@ -65,9 +65,9 @@
 
         <!-- Libraries -->
         <dependency>
-        	<groupId>io.netty</groupId>
-        	<artifactId>netty-all</artifactId>
-    	</dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+        </dependency>
         <!-- Forces compile scope for assertJ in test project -->
         <dependency>
             <groupId>org.assertj</groupId>

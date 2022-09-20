@@ -66,10 +66,10 @@
             <artifactId>security-regards-starter</artifactId>
         </dependency>
         <dependency>
-    		<groupId>org.apache.commons</groupId>
-    		<artifactId>commons-csv</artifactId>
-    		<version>1.4</version>
-		</dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.4</version>
+        </dependency>
         <!-- Module dependencies -->
         <dependency>
             <groupId>fr.cnes.regards.modules.storage</groupId>

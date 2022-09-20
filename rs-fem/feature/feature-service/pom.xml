@@ -47,11 +47,11 @@
         </developer>
     </developers>
 
-	<parent>
-		<groupId>fr.cnes.regards.modules</groupId>
-		<artifactId>feature</artifactId>
+    <parent>
+        <groupId>fr.cnes.regards.modules</groupId>
+        <artifactId>feature</artifactId>
         <version>${revision}</version>
-	</parent>
+    </parent>
 
     <dependencies>
         <dependency>

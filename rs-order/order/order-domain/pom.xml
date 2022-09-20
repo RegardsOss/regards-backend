@@ -18,68 +18,68 @@
  along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.modules.order</groupId>
-	<artifactId>order-domain</artifactId>
+    <groupId>fr.cnes.regards.modules.order</groupId>
+    <artifactId>order-domain</artifactId>
 
-	<parent>
-		<groupId>fr.cnes.regards.modules</groupId>
-		<artifactId>order</artifactId>
-		<version>${revision}</version>
-	</parent>
+    <parent>
+        <groupId>fr.cnes.regards.modules</groupId>
+        <artifactId>order</artifactId>
+        <version>${revision}</version>
+    </parent>
 
-	<dependencies>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-commons-regards</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
-			<artifactId>jobs-domain</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.indexer</groupId>
-			<artifactId>indexer-domain</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>oais-regards</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
-			<artifactId>tenant-settings-domain</artifactId>
-		</dependency>
-		<!-- Test -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>jpa-commons-regards</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
+            <artifactId>jobs-domain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.indexer</groupId>
+            <artifactId>indexer-domain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>oais-regards</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+            <artifactId>tenant-settings-domain</artifactId>
+        </dependency>
+        <!-- Test -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework.test</groupId>
+            <artifactId>regards-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>jaxb2-maven-plugin</artifactId>
-				<version>2.5.0</version>
-				<executions>
-					<execution>
-						<id>xjc</id>
-						<goals>
-							<goal>xjc</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<packageName>fr.cnes.regards.modules.order.metalink.schema</packageName>
-					<sources>
-						<source>src/main/resources</source>
-					</sources>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
+                <version>2.5.0</version>
+                <executions>
+                    <execution>
+                        <id>xjc</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <packageName>fr.cnes.regards.modules.order.metalink.schema</packageName>
+                    <sources>
+                        <source>src/main/resources</source>
+                    </sources>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -18,24 +18,24 @@
  along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.microservices.administration</groupId>
-	<artifactId>local-tenant-resolver</artifactId>
+    <groupId>fr.cnes.regards.microservices.administration</groupId>
+    <artifactId>local-tenant-resolver</artifactId>
 
-	<parent>
-		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-oss-backend</artifactId>
-		<version>${revision}</version>
-		<relativePath>../../pom.xml</relativePath>
-	</parent>
+    <parent>
+        <groupId>fr.cnes.regards</groupId>
+        <artifactId>regards-oss-backend</artifactId>
+        <version>${revision}</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
 
-	<dependencies>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.project</groupId>
-			<artifactId>project-service</artifactId>
-		</dependency>
-	</dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.project</groupId>
+            <artifactId>project-service</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

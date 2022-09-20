@@ -35,12 +35,12 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        
+
         <sonar.language>java</sonar.language>
         <sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
         <fr.cnes.regards.docker.image.name>rs-config</fr.cnes.regards.docker.image.name>
         <docker.entryPoint>["java", "-Xmx128m", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/${project.build.finalName}.${project.packaging}"]</docker.entryPoint>
-    	<docker.guest.port>9031</docker.guest.port>
+        <docker.guest.port>9031</docker.guest.port>
     </properties>
 
     <dependencies>
@@ -49,19 +49,19 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-config-server</artifactId>
         </dependency>
-		<!-- Spring boot config -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-			<exclusions>
-				<!-- Exclude the Tomcat dependency -->
-				<exclusion>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-starter-tomcat</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<!-- Use Jetty instead -->
+        <!-- Spring boot config -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <!-- Exclude the Tomcat dependency -->
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-tomcat</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- Use Jetty instead -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jetty</artifactId>
@@ -95,13 +95,13 @@
             <build>
                 <resources>
                     <resource>
-						<directory>src/main/resources</directory>
-						<filtering>false</filtering>
-					</resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>false</filtering>
+                    </resource>
                     <resource>
-						<directory>src/main/resources-filtered</directory>
-						<filtering>true</filtering>
-					</resource>
+                        <directory>src/main/resources-filtered</directory>
+                        <filtering>true</filtering>
+                    </resource>
                 </resources>
                 <filters>
                     <filter>src/main/filters/${filter.name}.properties</filter>
@@ -117,13 +117,13 @@
             <build>
                 <resources>
                     <resource>
-						<directory>src/main/resources</directory>
-						<filtering>false</filtering>
-					</resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>false</filtering>
+                    </resource>
                     <resource>
-						<directory>src/main/resources-filtered</directory>
-						<filtering>true</filtering>
-					</resource>
+                        <directory>src/main/resources-filtered</directory>
+                        <filtering>true</filtering>
+                    </resource>
                 </resources>
                 <filters>
                     <filter>src/main/filters/${filter.name}.properties</filter>
@@ -135,13 +135,13 @@
             <build>
                 <resources>
                     <resource>
-						<directory>src/main/resources</directory>
-						<filtering>false</filtering>
-					</resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>false</filtering>
+                    </resource>
                     <resource>
-						<directory>src/main/resources-filtered</directory>
-						<filtering>true</filtering>
-					</resource>
+                        <directory>src/main/resources-filtered</directory>
+                        <filtering>true</filtering>
+                    </resource>
                 </resources>
                 <filters>
                     <filter>src/main/filters/delivery.properties</filter>
