@@ -22,5 +22,10 @@ package fr.cnes.regards.modules.feature.dto;
  * @author kevin
  */
 public enum FeatureManagementAction {
-    CREATED, UPDATED, DELETED, ALREADY_DELETED, NOTIFIED, COPY;
+    CREATED,
+    UPDATED,
+    DELETED,
+    ALREADY_DELETED,
+    NOTIFIED,
+    COPY;
 }

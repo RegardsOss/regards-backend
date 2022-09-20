@@ -26,5 +26,6 @@ package fr.cnes.regards.framework.jpa.utils;
  * @author Marc Sordi
  */
 public enum MigrationTool {
-    HBM2DDL, FLYWAYDB
+    HBM2DDL,
+    FLYWAYDB
 }

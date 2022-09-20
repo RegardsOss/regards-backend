@@ -24,5 +24,6 @@ package fr.cnes.regards.framework.jpa.restriction;
  * @author Théo Lasserre
  */
 public enum ValuesRestrictionMode {
-    INCLUDE, EXCLUDE;
+    INCLUDE,
+    EXCLUDE;
 }

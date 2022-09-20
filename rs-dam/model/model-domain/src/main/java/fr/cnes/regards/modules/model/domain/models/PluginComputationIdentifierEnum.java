@@ -25,9 +25,11 @@ package fr.cnes.regards.modules.model.domain.models;
  */
 public enum PluginComputationIdentifierEnum {
 
-    COUNT(PluginComputationIdentifierEnum.COUNT_VALUE), MAX_DATE(PluginComputationIdentifierEnum.MAX_DATE_VALUE), MIN_DATE(
-        PluginComputationIdentifierEnum.MIN_DATE_VALUE), LONG_SUM_COUNT(PluginComputationIdentifierEnum.LONG_SUM_COUNT_VALUE), INT_SUM_COUNT(
-        PluginComputationIdentifierEnum.INT_SUM_COUNT_VALUE);
+    COUNT(PluginComputationIdentifierEnum.COUNT_VALUE),
+    MAX_DATE(PluginComputationIdentifierEnum.MAX_DATE_VALUE),
+    MIN_DATE(PluginComputationIdentifierEnum.MIN_DATE_VALUE),
+    LONG_SUM_COUNT(PluginComputationIdentifierEnum.LONG_SUM_COUNT_VALUE),
+    INT_SUM_COUNT(PluginComputationIdentifierEnum.INT_SUM_COUNT_VALUE);
 
     public final static String COUNT_VALUE = "CountPlugin";
 

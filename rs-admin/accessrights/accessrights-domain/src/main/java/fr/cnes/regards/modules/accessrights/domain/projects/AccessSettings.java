@@ -65,7 +65,8 @@ public final class AccessSettings {
 
     public enum AcceptanceMode {
 
-        MANUAL("manual"), AUTO_ACCEPT("auto-accept");
+        MANUAL("manual"),
+        AUTO_ACCEPT("auto-accept");
 
         private final String name;
 

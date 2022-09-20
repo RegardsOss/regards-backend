@@ -515,10 +515,13 @@ public class OrderService implements IOrderService {
     @AllArgsConstructor
     public enum Action {
 
-        PAUSE(CannotPauseOrderException.class), RESUME(CannotResumeOrderException.class), DELETE(
-            CannotDeleteOrderException.class), REMOVE(CannotRemoveOrderException.class), RESTART(
-            CannotRestartOrderException.class), RETRY(CannotRetryOrderException.class), DOWNLOAD(
-            NotYetAvailableException.class);
+        PAUSE(CannotPauseOrderException.class),
+        RESUME(CannotResumeOrderException.class),
+        DELETE(CannotDeleteOrderException.class),
+        REMOVE(CannotRemoveOrderException.class),
+        RESTART(CannotRestartOrderException.class),
+        RETRY(CannotRetryOrderException.class),
+        DOWNLOAD(NotYetAvailableException.class);
 
         private final Class<? extends ModuleException> exceptionClass;
 

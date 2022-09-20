@@ -30,37 +30,44 @@ public enum FacetType {
         public <T> T accept(IFacetTypeVisitor<T> visitor, Object... args) {
             return visitor.visitDateFacet(args);
         }
-    }, NUMERIC {
+    },
+    NUMERIC {
         @Override
         public <T> T accept(IFacetTypeVisitor<T> visitor, Object... args) {
             return visitor.visitNumericFacet(args);
         }
-    }, RANGE_DATE {
+    },
+    RANGE_DATE {
         @Override
         public <T> T accept(IFacetTypeVisitor<T> visitor, Object... args) {
             return visitor.visitRangeDateFacet(args);
         }
-    }, RANGE_DOUBLE {
+    },
+    RANGE_DOUBLE {
         @Override
         public <T> T accept(IFacetTypeVisitor<T> visitor, Object... args) {
             return visitor.visitRangeDoubleFacet(args);
         }
-    }, STRING {
+    },
+    STRING {
         @Override
         public <T> T accept(IFacetTypeVisitor<T> visitor, Object... args) {
             return visitor.visitStringFacet(args);
         }
-    }, BOOLEAN {
+    },
+    BOOLEAN {
         @Override
         public <T> T accept(IFacetTypeVisitor<T> visitor, Object... args) {
             return visitor.visitBooleanFacet(args);
         }
-    }, MIN {
+    },
+    MIN {
         @Override
         public <T> T accept(IFacetTypeVisitor<T> visitor, Object... args) {
             return visitor.visitMinFacet(args);
         }
-    }, MAX {
+    },
+    MAX {
         @Override
         public <T> T accept(IFacetTypeVisitor<T> visitor, Object... args) {
             return visitor.visitMaxFacet(args);

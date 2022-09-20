@@ -28,5 +28,7 @@ public enum Target {
     /**
      * Available values for event target restriction
      */
-    ALL, MICROSERVICE, ONE_PER_MICROSERVICE_TYPE
+    ALL,
+    MICROSERVICE,
+    ONE_PER_MICROSERVICE_TYPE
 }

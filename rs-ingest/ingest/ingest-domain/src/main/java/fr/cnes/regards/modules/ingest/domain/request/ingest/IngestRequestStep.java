@@ -53,12 +53,20 @@ public enum IngestRequestStep {
      * |
      * {@link #LOCAL_FINAL}
      */
-    LOCAL_INIT, LOCAL_PRE_PROCESSING, LOCAL_VALIDATION, LOCAL_GENERATION, LOCAL_AIP_STORAGE_METADATA_UPDATE, LOCAL_TAGGING, LOCAL_POST_PROCESSING, LOCAL_FINAL,
+    LOCAL_INIT,
+    LOCAL_PRE_PROCESSING,
+    LOCAL_VALIDATION,
+    LOCAL_GENERATION,
+    LOCAL_AIP_STORAGE_METADATA_UPDATE,
+    LOCAL_TAGGING,
+    LOCAL_POST_PROCESSING,
+    LOCAL_FINAL,
 
     /**
      * Notification
      */
-    LOCAL_TO_BE_NOTIFIED, REMOTE_NOTIFICATION_ERROR,
+    LOCAL_TO_BE_NOTIFIED,
+    REMOTE_NOTIFICATION_ERROR,
 
     /**
      * Remote and asynchronous storage steps
@@ -72,7 +80,9 @@ public enum IngestRequestStep {
      */
 
     // For AIP files
-    REMOTE_STORAGE_REQUESTED(true, true), REMOTE_STORAGE_DENIED(true), REMOTE_STORAGE_ERROR(true);
+    REMOTE_STORAGE_REQUESTED(true, true),
+    REMOTE_STORAGE_DENIED(true),
+    REMOTE_STORAGE_ERROR(true);
 
     private boolean remote = false;
 

@@ -7,5 +7,6 @@ package fr.cnes.regards.modules.notification.domain;
  * @author Sylvain VISSIERE-GUERINET
  */
 public enum NotificationMode {
-    INSTANCE, MULTITENANT
+    INSTANCE,
+    MULTITENANT
 }

@@ -18,5 +18,6 @@ package fr.cnes.regards.framework.utils.cycle.detection;/*
  */
 
 public enum SomeEnum {
-    VAL1, VAL2;
+    VAL1,
+    VAL2;
 }

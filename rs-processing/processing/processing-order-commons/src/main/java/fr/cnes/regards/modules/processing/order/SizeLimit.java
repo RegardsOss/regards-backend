@@ -32,7 +32,10 @@ import lombok.With;
 public class SizeLimit {
 
     public enum Type {
-        NO_LIMIT, FILES, FEATURES, BYTES;
+        NO_LIMIT,
+        FILES,
+        FEATURES,
+        BYTES;
     }
 
     Type type;

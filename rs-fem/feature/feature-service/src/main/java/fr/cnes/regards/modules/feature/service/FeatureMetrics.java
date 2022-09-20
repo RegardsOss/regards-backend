@@ -70,10 +70,13 @@ public class FeatureMetrics implements InitializingBean {
 
     public static enum FeatureCreationState {
 
-        CREATION_REQUEST_GRANTED("granted.creation.requests"), CREATION_REQUEST_DENIED("denied.creation.requests"), CREATION_REQUEST_ERROR(
-            "error.creation.requests"), CREATION_REQUEST_SUCCESS("successful.creation.requests"), CREATION_REQUEST_SCHEDULED(
-            "scheduled.creation.requests"), FEATURE_INITIALIZED("initialized.features"), FEATURE_CREATED(
-            "created.features");
+        CREATION_REQUEST_GRANTED("granted.creation.requests"),
+        CREATION_REQUEST_DENIED("denied.creation.requests"),
+        CREATION_REQUEST_ERROR("error.creation.requests"),
+        CREATION_REQUEST_SUCCESS("successful.creation.requests"),
+        CREATION_REQUEST_SCHEDULED("scheduled.creation.requests"),
+        FEATURE_INITIALIZED("initialized.features"),
+        FEATURE_CREATED("created.features");
 
         private final String name;
 
@@ -91,9 +94,13 @@ public class FeatureMetrics implements InitializingBean {
 
     public static enum FeatureUpdateState {
 
-        UPDATE_REQUEST_GRANTED("granted.update.requests"), UPDATE_REQUEST_DENIED("denied.update.requests"), UPDATE_REQUEST_ERROR(
-            "error.update.requests"), UPDATE_REQUEST_SUCCESS("successful.update.requests"), UPDATE_REQUEST_SCHEDULED(
-            "scheduled.update.requests"), FEATURE_MERGED("merged.features"), FEATURE_UPDATED("updated.features");
+        UPDATE_REQUEST_GRANTED("granted.update.requests"),
+        UPDATE_REQUEST_DENIED("denied.update.requests"),
+        UPDATE_REQUEST_ERROR("error.update.requests"),
+        UPDATE_REQUEST_SUCCESS("successful.update.requests"),
+        UPDATE_REQUEST_SCHEDULED("scheduled.update.requests"),
+        FEATURE_MERGED("merged.features"),
+        FEATURE_UPDATED("updated.features");
 
         private final String name;
 

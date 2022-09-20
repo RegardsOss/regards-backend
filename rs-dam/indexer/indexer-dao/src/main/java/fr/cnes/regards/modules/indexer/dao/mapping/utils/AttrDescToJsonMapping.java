@@ -203,7 +203,8 @@ public class AttrDescToJsonMapping {
                 return merge(nestedPropertiesStructure(fullLowPath(path), type),
                              nestedPropertiesStructure(fullHighPath(path), type));
             }
-        }, GTELTE {
+        },
+        GTELTE {
             @Override
             JsonObject nestedSimpleRange(AttributeDescription attrDesc, JsonObject type) {
                 String path = attrDesc.getPath();

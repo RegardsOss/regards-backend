@@ -25,5 +25,8 @@ package fr.cnes.regards.framework.jpa.multitenant.properties;
  */
 public enum TenantConnectionState {
 
-    ENABLED, DISABLED, CONNECTING, ERROR
+    ENABLED,
+    DISABLED,
+    CONNECTING,
+    ERROR
 }

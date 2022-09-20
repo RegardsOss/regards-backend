@@ -24,5 +24,6 @@ package fr.cnes.regards.framework.utils.parser.rule;
  * @author Marc SORDI
  */
 public enum MatchType {
-    EQUALS, REGEXP
+    EQUALS,
+    REGEXP
 }

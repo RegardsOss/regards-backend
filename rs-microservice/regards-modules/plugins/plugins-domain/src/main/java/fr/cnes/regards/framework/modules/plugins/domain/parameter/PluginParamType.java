@@ -25,5 +25,16 @@ package fr.cnes.regards.framework.modules.plugins.domain.parameter;
  */
 public enum PluginParamType {
 
-    STRING, BYTE, SHORT, INTEGER, LONG, FLOAT, DOUBLE, BOOLEAN, MAP, COLLECTION, POJO, PLUGIN
+    STRING,
+    BYTE,
+    SHORT,
+    INTEGER,
+    LONG,
+    FLOAT,
+    DOUBLE,
+    BOOLEAN,
+    MAP,
+    COLLECTION,
+    POJO,
+    PLUGIN
 }

@@ -7,6 +7,9 @@ package fr.cnes.regards.framework.modules.jobs.domain.event;
  */
 public enum JobEventType {
 
-    ABORTED, FAILED, RUNNING, SUCCEEDED
+    ABORTED,
+    FAILED,
+    RUNNING,
+    SUCCEEDED
 
 }

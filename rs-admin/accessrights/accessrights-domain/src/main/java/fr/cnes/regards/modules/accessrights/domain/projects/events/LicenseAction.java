@@ -24,5 +24,6 @@ package fr.cnes.regards.modules.accessrights.domain.projects.events;
  * @author Thomas Fache
  **/
 public enum LicenseAction {
-    ACCEPT, RESET
+    ACCEPT,
+    RESET
 }

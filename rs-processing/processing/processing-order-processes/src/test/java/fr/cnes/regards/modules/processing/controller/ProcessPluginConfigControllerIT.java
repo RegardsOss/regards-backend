@@ -92,9 +92,8 @@ public class ProcessPluginConfigControllerIT extends AbstractProcessingIT {
             new ProcessPluginConfigurationRightsDTO.Rights("EXPLOIT", datasets, false))).getContent());
 
         // THERE IS THE CONFIG IN THE DATABASE!
-        ProcessPluginConfigurationRightsDTO fetched =  Objects.requireNonNull(client.findByBusinessId(UUID.fromString(created.getPluginConfiguration()
-                                                                                                     .getBusinessId()))
-                                                            .getContent());
+        ProcessPluginConfigurationRightsDTO fetched = Objects.requireNonNull(client.findByBusinessId(UUID.fromString(
+            created.getPluginConfiguration().getBusinessId())).getContent());
         assertThat(fetched.getPluginConfiguration().getParameter("processName").getValue()).isEqualTo(
             "useless-processName-1");
 
@@ -106,9 +105,9 @@ public class ProcessPluginConfigControllerIT extends AbstractProcessingIT {
                                                                                                       "ADMIN",
                                                                                                       datasets,
                                                                                                       false));
-        ProcessPluginConfigurationRightsDTO updated =  Objects.requireNonNull(client.update(UUID.fromString(toBeUpdated.getPluginConfiguration()
-                                                                                               .getBusinessId()),
-                                                                    toBeUpdated).getContent());
+        ProcessPluginConfigurationRightsDTO updated = Objects.requireNonNull(client.update(UUID.fromString(toBeUpdated.getPluginConfiguration()
+                                                                                                                      .getBusinessId()),
+                                                                                           toBeUpdated).getContent());
         assertThat(updated.getRights().getRole()).isEqualTo("ADMIN");
         assertThat(updated.getRights().getDatasets()).hasSameElementsAs(datasets);
         assertThat(updated.getPluginConfiguration().getParameter("processName").getValue()).isEqualTo(
@@ -217,7 +216,9 @@ public class ProcessPluginConfigControllerIT extends AbstractProcessingIT {
     }
 
     private static List<UUID> extractIds(Collection<ProcessLabelDTO> datasetAssociatedProcesses) {
-        return datasetAssociatedProcesses.stream().map(ProcessLabelDTO::getProcessBusinessId).collect(Collectors.toList());
+        return datasetAssociatedProcesses.stream()
+                                         .map(ProcessLabelDTO::getProcessBusinessId)
+                                         .collect(Collectors.toList());
     }
 
     private static List<UUID> extractIds(ProcessPluginConfigurationRightsDTO... dtos) {

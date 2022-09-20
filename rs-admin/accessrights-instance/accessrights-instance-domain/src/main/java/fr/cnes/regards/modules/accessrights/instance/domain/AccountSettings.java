@@ -22,7 +22,8 @@ public final class AccountSettings {
 
     public enum ValidationMode {
 
-        MANUAL("manual"), AUTO_ACCEPT("auto-accept");
+        MANUAL("manual"),
+        AUTO_ACCEPT("auto-accept");
 
         private final String name;
 

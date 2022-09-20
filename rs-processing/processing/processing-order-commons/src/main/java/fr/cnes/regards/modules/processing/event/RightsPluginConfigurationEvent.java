@@ -33,7 +33,9 @@ import fr.cnes.regards.modules.processing.dto.ProcessPluginConfigurationRightsDT
 public class RightsPluginConfigurationEvent implements ISubscribable {
 
     public enum Type {
-        CREATE, UPDATE, DELETE
+        CREATE,
+        UPDATE,
+        DELETE
     }
 
     Type type;

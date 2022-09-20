@@ -25,5 +25,6 @@ package fr.cnes.regards.framework.amqp.event;
  */
 public enum JsonMessageConverter {
 
-    JACKSON, GSON;
+    JACKSON,
+    GSON;
 }

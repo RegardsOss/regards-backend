@@ -44,5 +44,7 @@ public enum InternalRequestState {
     /**
      * When the request stopped with an error
      */
-    ERROR, ABORTED, IGNORED;
+    ERROR,
+    ABORTED,
+    IGNORED;
 }

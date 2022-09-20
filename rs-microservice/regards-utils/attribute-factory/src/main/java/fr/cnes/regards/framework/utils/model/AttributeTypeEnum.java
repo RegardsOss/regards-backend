@@ -25,9 +25,16 @@ package fr.cnes.regards.framework.utils.model;
  */
 public enum AttributeTypeEnum {
 
-    TYPE_UNKNOWN("UNKNOWN"), TYPE_REAL("REAL"), TYPE_INTEGER("INTEGER"), TYPE_STRING("STRING"), TYPE_DATE_TIME(
-        "DATE_TIME"), TYPE_DATE("DATE"), TYPE_CLOB("CLOB"), TYPE_URL("URL"), TYPE_LONG_STRING("LONG_STRING"), TYPE_GEO_LOCATION(
-        "GEO_LOCATION");
+    TYPE_UNKNOWN("UNKNOWN"),
+    TYPE_REAL("REAL"),
+    TYPE_INTEGER("INTEGER"),
+    TYPE_STRING("STRING"),
+    TYPE_DATE_TIME("DATE_TIME"),
+    TYPE_DATE("DATE"),
+    TYPE_CLOB("CLOB"),
+    TYPE_URL("URL"),
+    TYPE_LONG_STRING("LONG_STRING"),
+    TYPE_GEO_LOCATION("GEO_LOCATION");
 
     /**
      * Type de flux

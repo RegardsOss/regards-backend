@@ -28,7 +28,11 @@ import org.slf4j.LoggerFactory;
  */
 public enum CompressionTypeEnum {
 
-    ZIP("zip"), GZIP("gz"), TAR("tar"), UNKNOWN(""), Z("z");
+    ZIP("zip"),
+    GZIP("gz"),
+    TAR("tar"),
+    UNKNOWN(""),
+    Z("z");
 
     /**
      * Attribut permettant la journalisation.

@@ -23,5 +23,6 @@ package fr.cnes.regards.modules.order.domain.exception;
  * @author Raphaël Mechali
  */
 public enum OrderLabelErrorEnum {
-    TOO_MANY_CHARACTERS_IN_LABEL, LABEL_NOT_UNIQUE_FOR_OWNER,
+    TOO_MANY_CHARACTERS_IN_LABEL,
+    LABEL_NOT_UNIQUE_FOR_OWNER,
 }

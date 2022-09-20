@@ -65,7 +65,11 @@ public class CatalogPluginResponseFactory {
      * @author Sébastien Binda
      */
     public enum CatalogPluginResponseType {
-        XML, JSON, FILE_IMG_PNG, FILE_IMG_JPG, FILE_DOWNLOAD;
+        XML,
+        JSON,
+        FILE_IMG_PNG,
+        FILE_IMG_JPG,
+        FILE_DOWNLOAD;
     }
 
     /**

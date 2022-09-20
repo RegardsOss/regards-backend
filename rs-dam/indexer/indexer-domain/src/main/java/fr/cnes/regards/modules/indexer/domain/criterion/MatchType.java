@@ -24,5 +24,10 @@ package fr.cnes.regards.modules.indexer.domain.criterion;
  * @author oroussel
  */
 public enum MatchType {
-    EQUALS, STARTS_WITH, ENDS_WITH, CONTAINS, CONTAINS_ANY, REGEXP
+    EQUALS,
+    STARTS_WITH,
+    ENDS_WITH,
+    CONTAINS,
+    CONTAINS_ANY,
+    REGEXP
 }

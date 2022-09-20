@@ -128,9 +128,8 @@ public class StorageLocationController implements IResourceController<StorageLoc
      */
     @PostMapping
     @ResourceAccess(description = "Configure a storage location by his name", role = DefaultRole.ADMIN)
-    public ResponseEntity<EntityModel<StorageLocationDTO>> configureLocation(@Valid @RequestBody
-                                                                             StorageLocationDTO storageLocation)
-        throws ModuleException {
+    public ResponseEntity<EntityModel<StorageLocationDTO>> configureLocation(
+        @Valid @RequestBody StorageLocationDTO storageLocation) throws ModuleException {
         if (storageLocation.getName().equals(CacheService.CACHE_NAME)) {
             throw new EntityInvalidException(String.format("Storage location %s is a reserved name.",
                                                            CacheService.CACHE_NAME));
@@ -237,7 +236,7 @@ public class StorageLocationController implements IResourceController<StorageLoc
         // initialize sessionOwner and session
         // By default, sessionOwner is the user requesting the deletion of the files
         String sessionOwner = authenticationResolver.getUser();
-        String session = String.format("Delete %s files %s", storageName, OffsetDateTime.now().toString());
+        String session = String.format("Delete %s files %s", storageName, OffsetDateTime.now());
         // order deletion of files
         if (forceDelete != null) {
             storageLocationService.deleteFiles(storageName, forceDelete, sessionOwner, session);

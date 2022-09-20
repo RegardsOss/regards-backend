@@ -31,5 +31,6 @@ public enum WorkerMode {
     /**
      * Available worker mode
      */
-    UNICAST, BROADCAST
+    UNICAST,
+    BROADCAST
 }
