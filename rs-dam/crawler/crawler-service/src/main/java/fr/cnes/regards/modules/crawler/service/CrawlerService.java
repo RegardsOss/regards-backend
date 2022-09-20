@@ -185,28 +185,33 @@ public class CrawlerService extends AbstractCrawlerService<NotDatasetEntityEvent
                                                                dsPlugin,
                                                                datasourceId,
                                                                ingestionStart), dsi, mergeNeeded);
-            // In case Dataset associated with datasourceId already exists (or had been created between datasource creation
-            // and its ingestion), we must search for it and do as it has been updated (to update all associated data
-            // objects which have a lastUpdate date >= now)
-            SimpleSearchKey<Dataset> searchKey = new SimpleSearchKey<>(EntityType.DATASET.toString(), Dataset.class);
-            searchKey.setSearchIndex(tenant);
-            searchKey.setCrs(projectGeoSettings.getCrs());
-            Set<Dataset> datasetsToUpdate = new HashSet<>();
-            esRepos.searchAll(searchKey, datasetsToUpdate::add, ICriterion.eq("plgConfDataSource.id", datasourceId));
-            if (!datasetsToUpdate.isEmpty()) {
-                sendMessage("Start updating datasets associated to datasource...", datasourceIngestionId);
-                try {
-                    entityIndexerService.updateDatasets(tenant,
-                                                        datasetsToUpdate,
-                                                        lastUpdateDate,
-                                                        ingestionStart,
-                                                        true,
-                                                        datasourceIngestionId);
-                } catch (ModuleException e) {
-                    sendMessage(String.format("Error updating datasets associated to datasource. Cause : %s.",
-                                              e.getMessage()), datasourceIngestionId);
+
+            // Only update dataset if new docs are indexed
+            if (saveResult.getSavedDocsCount() > 0) {
+                // In case Dataset associated with datasourceId already exists (or had been created between datasource creation
+                // and its ingestion), we must search for it and do as it has been updated (to update all associated data
+                // objects which have a lastUpdate date >= now)
+                SimpleSearchKey<Dataset> searchKey = new SimpleSearchKey<>(EntityType.DATASET.toString(), Dataset.class);
+                searchKey.setSearchIndex(tenant);
+                searchKey.setCrs(projectGeoSettings.getCrs());
+                Set<Dataset> datasetsToUpdate = new HashSet<>();
+                esRepos.searchAll(searchKey, datasetsToUpdate::add, ICriterion.eq("plgConfDataSource.id", datasourceId));
+                if (!datasetsToUpdate.isEmpty()) {
+                    sendMessage("Start updating datasets associated to datasource...", datasourceIngestionId);
+                    try {
+                        entityIndexerService.updateDatasets(tenant,
+                                                            datasetsToUpdate,
+                                                            lastUpdateDate,
+                                                            ingestionStart,
+                                                            true,
+                                                            datasourceIngestionId);
+                    } catch (ModuleException e) {
+                        sendMessage(String.format("Error updating datasets associated to datasource. Cause : %s.", e.getMessage()), datasourceIngestionId);
+                    }
+                    sendMessage("...End updating datasets.", datasourceIngestionId);
                 }
-                sendMessage("...End updating datasets.", datasourceIngestionId);
+            } else {
+                sendMessage("No new data indexed. Dataset update skipped.", datasourceIngestionId);
             }
 
             return Optional.of(new IngestionResult(ingestionStart,

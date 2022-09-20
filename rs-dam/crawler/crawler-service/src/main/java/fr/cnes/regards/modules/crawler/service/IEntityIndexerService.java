@@ -29,6 +29,7 @@ import fr.cnes.regards.modules.indexer.dao.BulkSaveResult;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Entity domain indexer service interface. This is on top of indexerService to manage domain specific objects.
@@ -159,10 +160,19 @@ public interface IEntityIndexerService {
     boolean deleteDataObject(String tenant, String ipId);
 
     /**
+     * Delete given data objects by id from elasticsearch
+     * and update related dataset computed attributes.
+     * @param tenant concerned tenant
+     * @param ipIds id of data to delete
+     * @return URN of all concerned datasets
+     */
+    Set<UniformResourceName> deleteDataObjectsAndUpdate(String tenant, Set<String> ipIds);
+
+    /**
      * Delete given data object from Elasticsearch
      *
      * @param tenant concerned tenant
-     * @param ipId   id of Data object
+     * @param datasourceId   id of datasource
      * @return number of deleted objects
      */
     long deleteDataObjectsFromDatasource(String tenant, Long datasourceId);

@@ -244,16 +244,8 @@ public class EntityIndexerService implements IEntityIndexerService {
             // Remove parameters of dataset datasource to avoid expose security values
             if (entity instanceof Dataset) {
                 Dataset dataset = (Dataset) entity;
-                // entity must be detached else Hibernate tries to commit update (datasource is cascade.DETACHED)
-                em.detach(entity);
-                if (dataset.getDataSource() != null) {
-                    dataset.getDataSource().getParameters().clear();
-                }
-                // Subsetting clause must not be jsonify into Elasticsearch
                 savedSubsettingClause = dataset.getSubsettingClause();
-                dataset.setSubsettingClause(null);
-                // Retrieve dataset metadata information for indexer
-                dataset.setMetadata(accessRightService.retrieveDatasetMetadata(dataset.getIpId()));
+                prepareDatasetForEs(dataset);
                 // update dataset groups
                 for (Entry<String, DataObjectGroup> entry : dataset.getMetadata()
                                                                    .getDataObjectsGroupsMap()
@@ -298,6 +290,18 @@ public class EntityIndexerService implements IEntityIndexerService {
             }
         }
         LOGGER.info(ipId.toString() + " managed into Elasticsearch");
+    }
+
+    private void prepareDatasetForEs(Dataset dataset) throws ModuleException {
+        // entity must be detached else Hibernate tries to commit update (datasource is cascade.DETACHED)
+        em.detach(dataset);
+        if (dataset.getDataSource() != null) {
+            dataset.getDataSource().getParameters().clear();
+        }
+        // Subsetting clause must not be jsonify into Elasticsearch
+        dataset.setSubsettingClause(null);
+        // Retrieve dataset metadata information for indexer
+        dataset.setMetadata(accessRightService.retrieveDatasetMetadata(dataset.getIpId()));
     }
 
     /**
@@ -1143,6 +1147,100 @@ public class EntityIndexerService implements IEntityIndexerService {
     @Override
     public long deleteDataObjectsFromDatasource(String tenant, Long datasourceId) {
         return esRepos.deleteByDatasource(tenant, datasourceId);
+    }
+
+    @Override
+    public Set<UniformResourceName> deleteDataObjectsAndUpdate(String tenant, Set<String> ipIds) {
+        Set<UniformResourceName> allDatasetUrns = new HashSet<>();
+        LOGGER.info("Deleting {} data object(s) for tenant {}", ipIds.size(), tenant);
+        // Delete data and collect datasets to update
+        for (String ipId : ipIds) {
+            try {
+                Set<String> tags = deleteDataObjectReturningTags(tenant, ipId);
+                // Extract datasets from tags
+                allDatasetUrns.addAll(extractDatasetsFromTags(tags));
+            } catch (RsRuntimeException e) {
+                String msg = String.format("Cannot delete feature (%s)", ipId);
+                LOGGER.error(msg, e);
+            }
+        }
+
+        if (!allDatasetUrns.isEmpty()) {
+            // Make change available
+            esRepos.refresh(tenant);
+            updateDatasetComputedProperties(tenant, allDatasetUrns);
+        }
+
+        return allDatasetUrns;
+    }
+
+    /**
+     * Delete given data object from Elasticsearch
+     *
+     * @param tenant concerned tenant
+     * @param ipId   id of Data object
+     * @return if data object properly deleted, return tags else null
+     */
+    private Set<String> deleteDataObjectReturningTags(String tenant, String ipId) {
+        // get object deleted
+        LOGGER.debug("[DELETE] Loading data to delete : {}", ipId);
+        DataObject obj = esRepos.get(Optional.of(tenant), EntityType.DATA.toString(), ipId, DataObject.class);
+        // decrement the related session
+        if (obj != null && obj.getFeature() != null) {
+            sessionNotifier.notifyIndexDeletion(obj.getFeature().getSessionOwner(), obj.getFeature().getSession());
+        }
+        // delete object
+        LOGGER.debug("[DELETE] Deleting data {}", ipId);
+        return esRepos.delete(tenant, EntityType.DATA.toString(), ipId) ? obj.getTags() : null;
+    }
+
+    private Set<UniformResourceName> extractDatasetsFromTags(Set<String> tags) {
+        Set<UniformResourceName> datasetURNs;
+        if (tags != null) {
+            datasetURNs = new HashSet<>();
+            for (String tag : tags) {
+                try {
+                    UniformResourceName urn = UniformResourceName.fromString(tag);
+                    if (EntityType.DATASET.equals(urn.getEntityType())) {
+                        datasetURNs.add(urn);
+                    }
+                } catch (IllegalArgumentException e) {
+                    LOGGER.debug("Skipping tag {} : not in URN format", tag);
+                }
+            }
+        } else {
+            datasetURNs = Collections.EMPTY_SET;
+        }
+        return datasetURNs;
+    }
+
+    /**
+     * Update computed properties on specified datasets
+     *
+     * @param tenant      concerned tenant
+     * @param datasetURNs list of dataset to update
+     */
+    private void updateDatasetComputedProperties(String tenant, Set<UniformResourceName> datasetURNs) {
+        // Update datasets
+        if (!datasetURNs.isEmpty()) {
+            try {
+                // Load datasets
+                List<Dataset> datasets = datasetService.loadAllWithRelations(datasetURNs.toArray(new UniformResourceName[0]));
+                datasets.forEach(dataset -> {
+                    try {
+                        computeComputedAttributes(dataset, null, tenant);
+                        prepareDatasetForEs(dataset);
+                        esRepos.save(tenant, dataset);
+                        LOGGER.info("Dataset {} updated", dataset.getId());
+                    } catch (ModuleException e) {
+                        String message = String.format("Dataset %s cannot be updated!", dataset.getId());
+                        LOGGER.error(message, e);
+                    }
+                });
+            } catch (ModuleException e) {
+                LOGGER.error("Cannot update datasets after feature deletion", e);
+            }
+        }
     }
 
     @Override

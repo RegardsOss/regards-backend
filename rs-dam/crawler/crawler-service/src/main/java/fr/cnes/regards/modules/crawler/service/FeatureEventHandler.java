@@ -19,24 +19,28 @@
 package fr.cnes.regards.modules.crawler.service;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.dam.dto.FeatureEvent;
 import fr.cnes.regards.modules.dam.dto.FeatureEventType;
 import fr.cnes.regards.modules.model.gson.ModelJsonReadyEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Handle {@link FeatureEvent}s to delete features from index.
  *
  * @author Sébastien Binda
+ * @author Marc Sordi
  */
 @Component
-public class FeatureEventHandler implements IHandler<FeatureEvent> {
+public class FeatureEventHandler implements IBatchHandler<FeatureEvent> {
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -53,18 +57,17 @@ public class FeatureEventHandler implements IHandler<FeatureEvent> {
     }
 
     @Override
-    public void handle(TenantWrapper<FeatureEvent> wrapper) {
-        FeatureEvent event = wrapper.getContent();
-        if (event.getType() == FeatureEventType.DELETE) {
-            runtimeTenantResolver.forceTenant(wrapper.getTenant());
-            try {
-                entityIndexerService.deleteDataObject(wrapper.getTenant(), event.getFeatureId());
-            } catch (RsRuntimeException e) {
-                String msg = String.format("Cannot delete Feature (%s)", event.getFeatureId());
-                LOGGER.error(msg, e);
-            } finally {
-                runtimeTenantResolver.clearTenant();
-            }
-        }
+    public Errors validate(FeatureEvent message) {
+        // Nothing to do
+        return null;
+    }
+
+    @Override
+    public void handleBatch(List<FeatureEvent> messages) {
+        Set<String> ipIds = messages.stream()
+                                    .filter(f -> FeatureEventType.DELETE.equals(f.getType()))
+                                    .map(f -> f.getFeatureId())
+                                    .collect(Collectors.toUnmodifiableSet());
+        entityIndexerService.deleteDataObjectsAndUpdate(runtimeTenantResolver.getTenant(), ipIds);
     }
 }
