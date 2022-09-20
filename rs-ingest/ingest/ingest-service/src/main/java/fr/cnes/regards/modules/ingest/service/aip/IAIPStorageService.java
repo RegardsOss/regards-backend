@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.ingest.service.aip;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 
@@ -35,14 +35,13 @@ import java.util.List;
 public interface IAIPStorageService {
 
     /**
-     * Store AIPs Files
+     * Store or reference AIPs Files with taking into account of retry action by user
      *
-     * @param aips
-     * @param metadata
+     * @param request
      * @return file storage event group_id list
      * @throws ModuleException
      */
-    List<String> storeAIPFiles(List<AIPEntity> aips, IngestMetadata metadata) throws ModuleException;
+    List<String> storeAIPFiles(IngestRequest request) throws ModuleException;
 
     /**
      * Update provided {@link AIPEntity} aips content info with files metadata

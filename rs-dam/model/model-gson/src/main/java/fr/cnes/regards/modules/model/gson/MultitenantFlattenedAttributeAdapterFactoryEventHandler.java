@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.model.gson;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -41,6 +42,7 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.Errors;
 
 import java.util.List;
 
@@ -105,7 +107,7 @@ public class MultitenantFlattenedAttributeAdapterFactoryEventHandler
             runtimeTenantResolver.forceTenant(tenant);
             try {
                 // Register for tenant
-                final List<AttributeModel> atts = attributeHelper.getAllAttributes(tenant);
+                final List<AttributeModel> atts = attributeHelper.getAllAttributes();
                 LOGGER.info("Registering already configured attributes and fragments");
                 // Use factory algorithm
                 factory.registerAttributes(tenant, atts);
@@ -183,26 +185,28 @@ public class MultitenantFlattenedAttributeAdapterFactoryEventHandler
         }
     }
 
-    private class AttributeCacheRefreshHandler implements IHandler<AttributeCacheRefreshEvent> {
+    private class AttributeCacheRefreshHandler implements IBatchHandler<AttributeCacheRefreshEvent> {
 
         @Override
-        public void handle(TenantWrapper<AttributeCacheRefreshEvent> wrapper) {
-            String tenant = wrapper.getTenant();
-            List<AttributeModel> attributes = attributeHelper.getAllAttributes(tenant);
+        public Errors validate(AttributeCacheRefreshEvent message) {
+            return null;
+        }
+
+        @Override
+        public void handleBatch(List<AttributeCacheRefreshEvent> messages) {
+            String tenant = runtimeTenantResolver.getTenant();
+
+            List<AttributeModel> attributes = attributeHelper.getAllAttributes();
             factory.refresh(tenant, attributes);
-            runtimeTenantResolver.forceTenant(tenant);
-            try {
-                notifClient.notify(String.format(
-                                       "Attribute cache refresh finished for microservice %s on project %s. %s attributes detected",
-                                       microserviceName,
-                                       tenant,
-                                       attributes.size()),
-                                   String.format("[%s] Attribute cache refresh done", microserviceName),
-                                   NotificationLevel.INFO,
-                                   DefaultRole.ADMIN);
-            } finally {
-                runtimeTenantResolver.clearTenant();
-            }
+
+            notifClient.notify(String.format(
+                                   "Attribute cache refresh finished for microservice %s on project %s. %s attributes detected",
+                                   microserviceName,
+                                   tenant,
+                                   attributes.size()),
+                               String.format("[%s] Attribute cache refresh done", microserviceName),
+                               NotificationLevel.INFO,
+                               DefaultRole.ADMIN);
         }
     }
 

@@ -76,7 +76,7 @@ public class FileRequestsController implements IResourceController<FileRequestIn
     private IResourceService resourceService;
 
     @RequestMapping(method = RequestMethod.GET, path = STORAGE_PATH + TYPE_PATH)
-    @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.ADMIN)
+    @ResourceAccess(description = "Retrieve list of all storage requests", role = DefaultRole.ADMIN)
     public ResponseEntity<PagedModel<EntityModel<FileRequestInfoDTO>>> search(
         @PathVariable(name = "storage") String storageName,
         @PathVariable(name = "type") FileRequestType type,
@@ -90,17 +90,17 @@ public class FileRequestsController implements IResourceController<FileRequestIn
     }
 
     @RequestMapping(method = RequestMethod.DELETE, path = STORAGE_PATH + TYPE_PATH)
-    @ResourceAccess(description = "Delete storage location", role = DefaultRole.ADMIN)
-    public ResponseEntity<Void> delete(@PathVariable(name = "storage") String storageName,
+    @ResourceAccess(description = "Delete storage requests", role = DefaultRole.ADMIN)
+    public ResponseEntity<Void> delete(@PathVariable(name = "storage") String storageLocationId,
                                        @PathVariable(name = "type") FileRequestType type,
-                                       @RequestParam(name = STATUS_PARAM, required = false) FileRequestStatus status,
-                                       Pageable page) throws ModuleException {
-        service.deleteRequests(storageName, type, Optional.ofNullable(status));
+                                       @RequestParam(name = STATUS_PARAM, required = false) FileRequestStatus status)
+        throws ModuleException {
+        service.deleteRequests(storageLocationId, type, Optional.ofNullable(status));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.GET, path = STOP_PATH)
-    @ResourceAccess(description = "Delete storage location", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Stop all pending requests", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Void> stop() {
         reqService.stopCacheRequests();
         reqService.stopDeletionRequests();

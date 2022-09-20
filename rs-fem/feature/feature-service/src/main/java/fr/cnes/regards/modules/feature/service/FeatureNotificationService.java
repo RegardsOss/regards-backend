@@ -257,6 +257,11 @@ public class FeatureNotificationService extends AbstractFeatureService<FeatureNo
         return requestsToSend.size();
     }
 
+    @Override
+    protected void postRequestDeleted(Collection<FeatureNotificationRequest> deletedRequests) {
+        // Nothing to do
+    }
+
     private void effectivelySend(long scheduleStart, List<NotificationRequestEvent> toSend) {
         notifierClient.sendNotifications(toSend);
 

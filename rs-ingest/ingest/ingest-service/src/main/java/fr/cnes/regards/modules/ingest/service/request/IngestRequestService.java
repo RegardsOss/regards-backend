@@ -45,7 +45,9 @@ import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestError;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestStep;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.StorageType;
 import fr.cnes.regards.modules.ingest.domain.request.postprocessing.AIPPostProcessRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.ISipIdAndVersion;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
@@ -321,7 +323,7 @@ public class IngestRequestService implements IIngestRequestService {
 
         try {
             // Send AIP files storage events, keep these events ids in a list
-            List<String> remoteStepGroupIds = aipStorageService.storeAIPFiles(request.getAips(), request.getMetadata());
+            List<String> remoteStepGroupIds = aipStorageService.storeAIPFiles(request);
 
             if (!remoteStepGroupIds.isEmpty()) {
                 // Register request info to identify storage callback events
@@ -440,16 +442,13 @@ public class IngestRequestService implements IIngestRequestService {
                                            boolean afterStorage,
                                            Map<String, Optional<IngestProcessingChain>> chains,
                                            Map<String, AIPEntity> lastVersions) {
-
-        long start = System.currentTimeMillis();
-
         if (requests.isEmpty()) {
             return;
         }
 
+        long start = System.currentTimeMillis();
         List<AbstractRequest> toSchedule = Lists.newArrayList();
         Map<IngestProcessingChain, Set<AIPEntity>> postProcessToSchedule = Maps.newHashMap();
-        SIPEntity sipEntity;
         List<IngestRequestEvent> listIngestRequestEvents = new ArrayList<>();
 
         for (IngestRequest request : requests) {
@@ -483,15 +482,22 @@ public class IngestRequestService implements IIngestRequestService {
             sessionNotifier.incrementProductStoreSuccess(request);
 
             // Update SIP state
-            sipEntity = aips.get(0).getSip();
-            sipEntity.setState(SIPState.STORED);
-            sipService.save(sipEntity);
+            if (!aips.isEmpty()) {
+                SIPEntity sipEntity = aips.get(0).getSip();
+                sipEntity.setState(SIPState.STORED);
+                sipService.save(sipEntity);
 
-            // add ingest request event to list of ingest request events to publish
-            listIngestRequestEvents.add(IngestRequestEvent.build(request.getRequestId(),
-                                                                 request.getSip().getId(),
-                                                                 sipEntity.getSipId(),
-                                                                 RequestState.SUCCESS));
+                // add ingest request event to list of ingest request events to publish
+                listIngestRequestEvents.add(IngestRequestEvent.build(request.getRequestId(),
+                                                                     request.getSip().getId(),
+                                                                     sipEntity.getSipId(),
+                                                                     RequestState.SUCCESS));
+            } else {
+                // Should never happen.  A successfully ingest request is always associated to at least one AIP.
+                LOGGER.warn("Finalized IngestRequest ({} / {}) is not associated to any AIP",
+                            request.getRequestId(),
+                            request.getId());
+            }
         }
 
         // NOTIFICATIONS
@@ -530,7 +536,10 @@ public class IngestRequestService implements IIngestRequestService {
         requestInfo.getErrorRequests().forEach(e -> request.addError(e.getErrorCause()));
         if (request.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
             // Update AIP and SIP with current error
-            updateRequestWithErrors(request, requestInfo.getErrorRequests(), "Error occurred while storing AIP files");
+            updateRequestWithErrors(request,
+                                    requestInfo.getErrorRequests(),
+                                    "Error occurred while storing AIP files",
+                                    StorageType.STORED_FILE);
             // Update AIPs with success response returned by storage
             aipStorageService.updateAIPsContentInfosAndLocations(request.getAips(), requestInfo.getSuccessRequests());
             // Save error in request status
@@ -554,8 +563,8 @@ public class IngestRequestService implements IIngestRequestService {
         Set<IngestRequest> requestsToFinilized = Sets.newHashSet();
         for (AbstractRequest request : requestService.getRequests(requests)) {
             IngestRequest iReq = (IngestRequest) request;
-            if (iReq.getStep()
-                == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {// Check if there is another storage request we're waiting for
+            // Check if there is another storage request we're waiting for
+            if (iReq.getStep() == IngestRequestStep.REMOTE_STORAGE_REQUESTED) {
                 for (RequestInfo ri : requests.stream()
                                               .filter(r -> request.getRemoteStepGroupIds().contains(r.getGroupId()))
                                               .collect(Collectors.toSet())) {
@@ -588,7 +597,10 @@ public class IngestRequestService implements IIngestRequestService {
                 if (ri.getErrorRequests() != null) {
                     ri.getErrorRequests().forEach(e -> request.addError(e.getErrorCause()));
                 }
-                updateRequestWithErrors(request, ri.getErrorRequests(), "Error occurred while storing AIP references");
+                updateRequestWithErrors(request,
+                                        ri.getErrorRequests(),
+                                        "Error occurred while storing AIP references",
+                                        StorageType.REFERENCED_FILE);
                 saveAndPublishErrorRequest(request, null);
                 // Monitoring
                 // Decrement from #requestRemoteStorage
@@ -690,7 +702,8 @@ public class IngestRequestService implements IIngestRequestService {
 
     private void updateRequestWithErrors(IngestRequest request,
                                          Collection<RequestResultInfoDTO> errors,
-                                         String errorCause) {
+                                         String errorCause,
+                                         StorageType type) {
         List<AIPEntity> aips = request.getAips();
         // Iterate overs AIPs and errors
         for (AIPEntity aipEntity : aips) {
@@ -698,8 +711,11 @@ public class IngestRequestService implements IIngestRequestService {
                 // Check using owner property if the AIP contains the file that was not properly saved
                 if (error.getRequestOwners().contains(aipEntity.getAipId())) {
                     // Add the cause to this AIP
-                    String errorMessage = errorCause + ": " + error.getErrorCause();
-                    request.addError(errorMessage);
+                    request.addError(errorCause + ": " + error.getErrorCause());
+                    // Add the error information (for STORED_FILE or REFERENCED_FILE for retry action by user)
+                    request.addErrorInformation(new IngestRequestError(type,
+                                                                       error.getRequestChecksum(),
+                                                                       error.getRequestStorage()));
                 }
             }
         }

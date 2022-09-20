@@ -18,10 +18,6 @@
  */
 package fr.cnes.regards.framework.modules.session.agent.service;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.integration.test.job.JobTestCleaner;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -38,7 +34,6 @@ import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
@@ -62,19 +57,6 @@ public abstract class AbstractAgentServiceUtilsIT extends AbstractMultitenantSer
     // JOBS
     @Autowired
     private IJobInfoService jobInfoService;
-
-    // AMQP
-    @Autowired
-    private IRabbitVirtualHostAdmin vhostAdmin;
-
-    @Autowired
-    private IAmqpAdmin amqpAdmin;
-
-    @SpyBean
-    protected IPublisher publisher;
-
-    @Autowired
-    private ISubscriber subscriber;
 
     // SESSION AGENT
 

@@ -25,6 +25,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileCopyRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
+import fr.cnes.regards.modules.storage.domain.event.CancelRequestEvent;
 import fr.cnes.regards.modules.storage.domain.flow.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -140,6 +141,11 @@ public class StorageClient implements IStorageClient {
             }
         }
         return requestInfos;
+    }
+
+    @Override
+    public void cancelRequests(Collection<String> requestGroups) {
+        publisher.publish(new CancelRequestEvent(requestGroups));
     }
 
     private <T> Collection<RequestInfo> publish(BiFunction<Collection<T>, String, ISubscribable> func,

@@ -64,14 +64,26 @@ public class SessionNotifier {
         incrementCount(sessionOwner, session, SessionNotifierPropertyEnum.STORE_REQUESTS, 1);
     }
 
+    public void decrementStoreRequests(String sessionOwner, String session) {
+        decrementCount(sessionOwner, session, SessionNotifierPropertyEnum.STORE_REQUESTS, 1);
+    }
+
     // copy requests
     public void incrementCopyRequests(String sessionOwner, String session) {
         incrementCount(sessionOwner, session, SessionNotifierPropertyEnum.COPY_REQUESTS, 1);
     }
 
+    public void decrementCopyRequests(String sessionOwner, String session) {
+        decrementCount(sessionOwner, session, SessionNotifierPropertyEnum.COPY_REQUESTS, 1);
+    }
+
     // deletion requests
     public void incrementDeleteRequests(String sessionOwner, String session) {
         incrementCount(sessionOwner, session, SessionNotifierPropertyEnum.DELETE_REQUESTS, 1);
+    }
+
+    public void decrementDeleteRequests(String sessionOwner, String session) {
+        decrementCount(sessionOwner, session, SessionNotifierPropertyEnum.DELETE_REQUESTS, 1);
     }
 
     // running requests
@@ -181,4 +193,5 @@ public class SessionNotifier {
             sessionNotificationClient.decrement(step);
         }
     }
+
 }

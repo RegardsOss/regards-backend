@@ -24,7 +24,8 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.*;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.sip.IngestMetadata;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestError;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
@@ -82,40 +83,171 @@ public class AIPStorageService implements IAIPStorageService {
     private IRuntimeTenantResolver tenantResolver;
 
     @Override
-    public List<String> storeAIPFiles(List<AIPEntity> aipEntities, IngestMetadata metadata) throws ModuleException {
+    public List<String> storeAIPFiles(IngestRequest request) throws ModuleException {
         // Build file storage requests
         Collection<FileStorageRequestDTO> filesToStore = new ArrayList<>();
-
         // Build file reference requests
         Collection<FileReferenceRequestDTO> filesToRefer = new ArrayList<>();
 
-        // Iterate over AIPs
-        for (AIPEntity aipEntity : aipEntities) {
-            AIP aip = aipEntity.getAip();
-            Set<StorageMetadata> storages = metadata.getStorages();
-            // Iterate over Data Objects
-            for (ContentInformation ci : aip.getProperties().getContentInformations()) {
-                dispatchOAISDataObjectForStorage(ci, aipEntity, storages, filesToStore, filesToRefer);
+        Set<StorageMetadata> storages = request.getMetadata().getStorages();
+        // Check if request contains errors. If true retry error requests, else create new storage requests
+        if (!request.isErrorInformation()) {
+            // Iterate over AIPs
+            for (AIPEntity aipEntity : request.getAips()) {
+                AIP aip = aipEntity.getAip();
+                // Iterate over Data Objects
+                for (ContentInformation contentInformation : aip.getProperties().getContentInformations()) {
+                    dispatchOAISDataObjectForStorage(contentInformation,
+                                                     aipEntity,
+                                                     storages,
+                                                     filesToStore,
+                                                     filesToRefer);
+                }
             }
+        } else {
+            // Iterate over list of errors
+            for (IngestRequestError error : request.getErrorInformation()) {
+                // Get the storage in error in the available list of storage in request
+                StorageMetadata storageError = storages.stream()
+                                                       .filter(storage -> storage.getPluginBusinessId()
+                                                                                 .equals(error.getRequestStorage()))
+                                                       .findFirst()
+                                                       .orElseThrow(() -> new IllegalArgumentException(
+                                                           "List of storage in ingest request doesn't contain the request storage in error : "
+                                                           + error.getRequestStorage()));
+                // Iterate over AIPs
+                for (AIPEntity aipEntity : request.getAips()) {
+                    AIP aip = aipEntity.getAip();
+                    // Iterate over Data Objects
+                    for (ContentInformation contentInformation : aip.getProperties().getContentInformations()) {
+                        dispatchOAISDataObjectForStorageInError(error,
+                                                                contentInformation,
+                                                                aipEntity,
+                                                                storageError,
+                                                                filesToStore,
+                                                                filesToRefer);
+                    }
+                }
+            }
+            // Clear errors after processed them
+            request.clearErrorInformation();
         }
         // Keep reference to requests sent to Storage
         List<String> remoteStepGroupIds = new ArrayList<>();
-
         // Send storage request
         if (!filesToStore.isEmpty()) {
-            Collection<RequestInfo> infos = storageClient.store(filesToStore);
-            remoteStepGroupIds.addAll(infos.stream().map(RequestInfo::getGroupId).collect(Collectors.toList()));
+            remoteStepGroupIds.addAll(storageClient.store(filesToStore).stream().map(RequestInfo::getGroupId).toList());
         }
         // Send reference request
         if (!filesToRefer.isEmpty()) {
-            Collection<RequestInfo> infos = storageClient.reference(filesToRefer);
-            remoteStepGroupIds.addAll(infos.stream().map(RequestInfo::getGroupId).collect(Collectors.toList()));
+            remoteStepGroupIds.addAll(storageClient.reference(filesToRefer)
+                                                   .stream()
+                                                   .map(RequestInfo::getGroupId)
+                                                   .toList());
         }
         return remoteStepGroupIds;
     }
 
+    private FileStorageRequestDTO createFileStorageRequestDTO(OAISDataObject dataObject,
+                                                              RepresentationInformation representationInformation,
+                                                              AIPEntity aipEntity,
+                                                              OAISDataObjectLocation location,
+                                                              StorageMetadata storage) {
+        FileStorageRequestDTO storageRequest = FileStorageRequestDTO.build(dataObject.getFilename(),
+                                                                           dataObject.getChecksum(),
+                                                                           dataObject.getAlgorithm(),
+                                                                           representationInformation.getSyntax()
+                                                                                                    .getMimeType()
+                                                                                                    .toString(),
+                                                                           aipEntity.getAip().getId().toString(),
+                                                                           aipEntity.getSessionOwner(),
+                                                                           aipEntity.getSession(),
+                                                                           location.getUrl(),
+                                                                           storage.getPluginBusinessId(),
+                                                                           Optional.ofNullable(storage.getStorePath()));
+        storageRequest.withType(dataObject.getRegardsDataType().toString());
+
+        return storageRequest;
+    }
+
+    private FileReferenceRequestDTO createFileReferenceRequestDTO(OAISDataObject dataObject,
+                                                                  RepresentationInformation representationInformation,
+                                                                  AIPEntity aipEntity,
+                                                                  OAISDataObjectLocation location)
+        throws ModuleException {
+        validateForReference(dataObject);
+
+        FileReferenceRequestDTO referenceRequest = FileReferenceRequestDTO.build(dataObject.getFilename(),
+                                                                                 dataObject.getChecksum(),
+                                                                                 dataObject.getAlgorithm(),
+                                                                                 representationInformation.getSyntax()
+                                                                                                          .getMimeType()
+                                                                                                          .toString(),
+                                                                                 dataObject.getFileSize(),
+                                                                                 aipEntity.getAip().getId().toString(),
+                                                                                 location.getStorage(),
+                                                                                 location.getUrl(),
+                                                                                 aipEntity.getSessionOwner(),
+                                                                                 aipEntity.getSession());
+        referenceRequest.withType(dataObject.getRegardsDataType().toString());
+
+        return referenceRequest;
+    }
+
+    /**
+     * Dispatch for the given {@link ContentInformation} the files to store and the files to reference on storage microservice when an error occurs (useful for the Retry action by user).
+     * Update the list of files to store or the list of files to reference.
+     *
+     * @param error              {@link IngestRequestError}
+     * @param contentInformation {@link ContentInformation}
+     * @param aipEntity          {@link AIPEntity} associated to the {@link ContentInformation}
+     * @param storageError       storage in error where to store/reference files
+     * @param filesToStore       dispatched files to store
+     * @param filesToRefer       dispatched files to reference
+     * @throws ModuleException
+     */
+    private void dispatchOAISDataObjectForStorageInError(IngestRequestError error,
+                                                         ContentInformation contentInformation,
+                                                         AIPEntity aipEntity,
+                                                         StorageMetadata storageError,
+                                                         Collection<FileStorageRequestDTO> filesToStore,
+                                                         Collection<FileReferenceRequestDTO> filesToRefer)
+        throws ModuleException {
+        OAISDataObject dataObject = contentInformation.getDataObject();
+        if (dataObject == null) {
+            return;
+        }
+        // Check the checksum of file in error
+        if (error.getRequestFileChecksum().equals(dataObject.getChecksum())) {
+            RepresentationInformation representationInformation = contentInformation.getRepresentationInformation();
+
+            for (OAISDataObjectLocation location : dataObject.getLocations()) {
+                // Check if error occured during the storage of file ou the referencing of file
+                switch (error.getStorageType()) {
+                    case STORED_FILE:
+                        filesToStore.add(createFileStorageRequestDTO(dataObject,
+                                                                     representationInformation,
+                                                                     aipEntity,
+                                                                     location,
+                                                                     storageError));
+                        break;
+                    case REFERENCED_FILE:
+                        filesToRefer.add(createFileReferenceRequestDTO(dataObject,
+                                                                       representationInformation,
+                                                                       aipEntity,
+                                                                       location));
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Ingest request error doesn't contain a known storage type :"
+                                                           + error.getStorageType());
+                }
+            }
+        }
+    }
+
     /**
      * Dispatch for the given {@link ContentInformation} the files to store and the files to reference on storage microservice.
+     * Update the list of files to store or the list of files to reference.
      *
      * @param contentInformation {@link ContentInformation}
      * @param aipEntity          {@link AIPEntity} associated to the {@link ContentInformation}
@@ -131,72 +263,49 @@ public class AIPStorageService implements IAIPStorageService {
                                                   Collection<FileReferenceRequestDTO> filesToRefer)
         throws ModuleException {
         OAISDataObject dataObject = contentInformation.getDataObject();
+        if (dataObject == null) {
+            return;
+        }
         RepresentationInformation representationInformation = contentInformation.getRepresentationInformation();
-        AIP aip = aipEntity.getAip();
-        if (dataObject != null) {
-            // At this step, locations can be in 2 situations
-            // Either its storage is empty, which means it's a file that should be store on each storage location
-            // Either its storage is defined, the file should only be referenced
 
-            // Let's check if the AIP is correct, with at least 1 location of file to store/refer
-            if (dataObject.getLocations().isEmpty()) {
-                throw new ModuleException(String.format(
-                    "No location provided in the AIP (location of dataobject empty) for aip id[%s]",
-                    aipEntity.getAipId()));
-            }
-            // Check if the AIP have only one location to store
-            long nbLocationWithNoStorage = dataObject.getLocations()
-                                                     .stream()
-                                                     .filter(l -> l.getStorage() == null)
-                                                     .count();
-            if (nbLocationWithNoStorage > 1) {
-                throw new ModuleException(String.format("Too many files to store in a single dataobject for aip id[%s]",
-                                                        aipEntity.getAipId()));
-            }
+        // At this step, locations can be in 2 situations
+        // Either its storage is empty, which means it's a file that should be store on each storage location
+        // Either its storage is defined, the file should only be referenced
 
-            for (OAISDataObjectLocation l : dataObject.getLocations()) {
-                if (l.getStorage() == null) {
-                    // Storage is empty for this dataobject, create a storage request for each storage
-                    for (StorageMetadata storage : requestedStorages) {
-                        // Check if this storage contains this target type or is empty, which means
-                        // this storage accepts everything
-                        if (storage.getTargetTypes().isEmpty() || storage.getTargetTypes()
-                                                                         .contains(dataObject.getRegardsDataType())) {
-                            FileStorageRequestDTO storageRequest = FileStorageRequestDTO.build(dataObject.getFilename(),
-                                                                                               dataObject.getChecksum(),
-                                                                                               dataObject.getAlgorithm(),
-                                                                                               representationInformation.getSyntax()
-                                                                                                                        .getMimeType()
-                                                                                                                        .toString(),
-                                                                                               aip.getId().toString(),
-                                                                                               aipEntity.getSessionOwner(),
-                                                                                               aipEntity.getSession(),
-                                                                                               l.getUrl(),
-                                                                                               storage.getPluginBusinessId(),
-                                                                                               Optional.ofNullable(
-                                                                                                   storage.getStorePath()));
-                            storageRequest.withType(dataObject.getRegardsDataType().toString());
-                            filesToStore.add(storageRequest);
-                        }
+        // Let's check if the AIP is correct, with at least 1 location of file to store/refer
+        if (dataObject.getLocations().isEmpty()) {
+            throw new ModuleException(String.format(
+                "No location provided in the AIP (location of dataobject empty) for aip id[%s]",
+                aipEntity.getAipId()));
+        }
+        // Check if the AIP have only one location to store
+        long nbLocationWithNoStorage = dataObject.getLocations().stream().filter(l -> l.getStorage() == null).count();
+        if (nbLocationWithNoStorage > 1) {
+            throw new ModuleException(String.format("Too many files to store in a single dataobject for aip id[%s]",
+                                                    aipEntity.getAipId()));
+        }
+
+        for (OAISDataObjectLocation location : dataObject.getLocations()) {
+            // Check : should be store on each storage location or should only be referenced
+            if (location.getStorage() == null) {
+                // Storage is empty for this dataobject, create a storage request for each storage
+                for (StorageMetadata storage : requestedStorages) {
+                    // Check if this storage contains this target type or is empty, which means
+                    // this storage accepts everything
+                    if (storage.getTargetTypes().isEmpty() || storage.getTargetTypes()
+                                                                     .contains(dataObject.getRegardsDataType())) {
+                        filesToStore.add(createFileStorageRequestDTO(dataObject,
+                                                                     representationInformation,
+                                                                     aipEntity,
+                                                                     location,
+                                                                     storage));
                     }
-                } else {
-                    // Create a storage reference
-                    validateForReference(dataObject);
-                    FileReferenceRequestDTO referenceRequest = FileReferenceRequestDTO.build(dataObject.getFilename(),
-                                                                                             dataObject.getChecksum(),
-                                                                                             dataObject.getAlgorithm(),
-                                                                                             representationInformation.getSyntax()
-                                                                                                                      .getMimeType()
-                                                                                                                      .toString(),
-                                                                                             dataObject.getFileSize(),
-                                                                                             aip.getId().toString(),
-                                                                                             l.getStorage(),
-                                                                                             l.getUrl(),
-                                                                                             aipEntity.getSessionOwner(),
-                                                                                             aipEntity.getSession());
-                    referenceRequest.withType(dataObject.getRegardsDataType().toString());
-                    filesToRefer.add(referenceRequest);
                 }
+            } else {
+                filesToRefer.add(createFileReferenceRequestDTO(dataObject,
+                                                               representationInformation,
+                                                               aipEntity,
+                                                               location));
             }
         }
     }

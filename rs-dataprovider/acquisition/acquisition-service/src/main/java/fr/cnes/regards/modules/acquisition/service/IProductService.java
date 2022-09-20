@@ -182,6 +182,13 @@ public interface IProductService {
     void handleIngestedSIPSuccess(Collection<RequestInfo> infos);
 
     /**
+     * Handle canceled sip. Occurs when a SIP is deleted before completion.
+     *
+     * @param infos
+     */
+    void handleIngestedSIPDeleted(Collection<RequestInfo> infos);
+
+    /**
      * Handle failure SIP submission
      */
     void handleIngestedSIPFailed(Collection<RequestInfo> infos);

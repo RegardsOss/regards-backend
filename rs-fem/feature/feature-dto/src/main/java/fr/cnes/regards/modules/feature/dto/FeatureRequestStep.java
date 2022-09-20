@@ -38,17 +38,28 @@ public enum FeatureRequestStep {
 
     // ERROR
     // - update cannot be done because feature doesn't exist anymore
-    LOCAL_ERROR(false), LOCAL_NOTIFICATION_ERROR(false),
+    LOCAL_ERROR(false),
+
+    LOCAL_NOTIFICATION_ERROR(false),
 
     // Delete files
     REMOTE_STORAGE_DELETION_REQUESTED(true, true, true), // Store files
     REMOTE_STORAGE_REQUESTED(true, true, true),
 
     // this request handling still needs to be notified
-    LOCAL_TO_BE_NOTIFIED(false), REMOTE_NOTIFICATION_REQUESTED(true,
-                                                               true,
-                                                               true), REMOTE_NOTIFICATION_SUCCESS(false), REMOTE_NOTIFICATION_ERROR(
-        false), REMOTE_CREATION_REQUESTED(true), REMOTE_CREATION_ERROR(false), REMOTE_STORAGE_ERROR(false);
+    LOCAL_TO_BE_NOTIFIED(false),
+
+    REMOTE_NOTIFICATION_REQUESTED(true, true, true),
+
+    REMOTE_NOTIFICATION_SUCCESS(false),
+
+    REMOTE_NOTIFICATION_ERROR(false),
+
+    REMOTE_CREATION_REQUESTED(true),
+
+    REMOTE_CREATION_ERROR(false),
+
+    REMOTE_STORAGE_ERROR(false);
 
     private boolean remote = false;
 

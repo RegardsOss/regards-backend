@@ -22,7 +22,6 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.session.commons.domain.events.SourceDeleteEvent;
 import fr.cnes.regards.framework.modules.session.manager.dao.ISourceManagerRepository;
 import fr.cnes.regards.framework.modules.session.manager.domain.Source;
-import fr.cnes.regards.framework.modules.session.manager.service.controllers.SourceManagerService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
@@ -53,9 +52,6 @@ public class SourceManagerControllerIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private ISourceManagerRepository sourceRepo;
-
-    @Autowired
-    private SourceManagerService sourceManagerService;
 
     @SpyBean
     protected IPublisher publisher;

@@ -32,6 +32,7 @@ import fr.cnes.regards.modules.feature.dto.event.out.FeatureRequestType;
 import fr.cnes.regards.modules.feature.dto.event.out.RequestState;
 import fr.cnes.regards.modules.feature.dto.hateoas.RequestHandledResponse;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
+import fr.cnes.regards.modules.storage.client.IStorageClient;
 import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -61,6 +62,9 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
 
     @Autowired
     private IPublisher publisher;
+
+    @Autowired
+    private IStorageClient storageClient;
 
     @Autowired
     private IFeatureEntityRepository featureEntityRepository;
@@ -121,7 +125,15 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
                 total = requestsPage.getTotalElements();
             }
             sessionInfoUpdateForDelete(requestsPage.toList());
+            List<String> storageRequestToCancel = requestsPage.stream()
+                                                              .filter(r -> r.getGroupId() != null)
+                                                              .map(r -> r.getGroupId())
+                                                              .toList();
+            if (!storageRequestToCancel.isEmpty()) {
+                storageClient.cancelRequests(storageRequestToCancel);
+            }
             getRequestsRepository().deleteAll(requestsPage);
+            postRequestDeleted(requestsPage.getContent());
             nbHandled += requestsPage.getNumberOfElements();
             if (!requestsPage.hasNext() || (cpt >= MAX_PAGE_TO_DELETE)) {
                 stop = true;
@@ -137,6 +149,13 @@ public abstract class AbstractFeatureService<R extends AbstractFeatureRequest> i
         }
         return RequestHandledResponse.build(total, nbHandled, message);
     }
+
+    /**
+     * Specific action to do after deletion of a list of requests.
+     *
+     * @param requests
+     */
+    protected abstract void postRequestDeleted(Collection<R> requests);
 
     @Override
     public RequestHandledResponse retryRequests(FeatureRequestsSelectionDTO selection) {

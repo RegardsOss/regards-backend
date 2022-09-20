@@ -195,11 +195,11 @@ public class StorageResponseFlowHandler implements IStorageRequestListener {
     public void onStoreError(Set<RequestInfo> requestInfos) {
         LOGGER.debug(HANDLER_NAME + "Handling {} storage error group requests", requestInfos.size());
         List<AbstractRequest> requests = requestService.getRequests(requestInfos);
-        for (RequestInfo ri : requestInfos) {
+        for (RequestInfo requestInfo : requestInfos) {
             for (AbstractRequest request : requests) {
-                if (request.getRemoteStepGroupIds().contains(ri.getGroupId())) {
-                    if (request instanceof IngestRequest) {
-                        ingestRequestService.handleRemoteStoreError((IngestRequest) request, ri);
+                if (request.getRemoteStepGroupIds().contains(requestInfo.getGroupId())) {
+                    if (request instanceof IngestRequest ingestRequest) {
+                        ingestRequestService.handleRemoteStoreError(ingestRequest, requestInfo);
                     } else {
                         requestService.handleRemoteStoreError(request);
                     }

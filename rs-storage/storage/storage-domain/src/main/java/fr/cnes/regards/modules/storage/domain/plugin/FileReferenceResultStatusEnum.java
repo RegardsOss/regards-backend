@@ -16,23 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.model.gson;
-
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+package fr.cnes.regards.modules.storage.domain.plugin;
 
 /**
- * Helper class to retrieve attribute list from different microservices with different implementations
- *
- * @author Marc Sordi
- */
-public interface IAttributeHelper {
+ * @author Stephane Cortine
+ **/
+public enum FileReferenceResultStatusEnum {
 
-    List<AttributeModel> getAllAttributes();
+    CREATED,
 
-    Set<AttributeModel> getAllCommonAttributes(Collection<String> modelNames) throws ModuleException;
+    UPDATED,
+
+    UNMODIFIED;
 }

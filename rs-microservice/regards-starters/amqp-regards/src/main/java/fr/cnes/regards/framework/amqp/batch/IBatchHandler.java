@@ -30,9 +30,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ * Interface identifying classes that can handle message from the broker
+ *
  * @param <M> Type of messages you are handling
- *            <p>
- *            Interface identifying classes that can handle message from the broker
  * @author svissier
  */
 public interface IBatchHandler<M> extends IHandler<M> {

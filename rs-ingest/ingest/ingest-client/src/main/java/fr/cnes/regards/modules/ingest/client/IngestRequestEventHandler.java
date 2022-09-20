@@ -74,26 +74,20 @@ public class IngestRequestEventHandler
         Set<RequestInfo> errors = Sets.newHashSet();
         Set<RequestInfo> granted = Sets.newHashSet();
         Set<RequestInfo> denied = Sets.newHashSet();
+        Set<RequestInfo> deleted = Sets.newHashSet();
         for (IngestRequestEvent event : events) {
             RequestInfo info = RequestInfo.build(event.getRequestId(),
                                                  event.getProviderId(),
                                                  event.getSipId(),
                                                  event.getErrors());
             switch (event.getState()) {
-                case SUCCESS:
-                    success.add(info);
-                    break;
-                case ERROR:
-                    errors.add(info);
-                    break;
-                case GRANTED:
-                    granted.add(info);
-                    break;
-                case DENIED:
-                    denied.add(info);
-                    break;
-                default:
-                    break;
+                case SUCCESS -> success.add(info);
+                case ERROR -> errors.add(info);
+                case GRANTED -> granted.add(info);
+                case DENIED -> denied.add(info);
+                case DELETED -> deleted.add(info);
+                default ->
+                    throw new IllegalArgumentException(String.format("Invalid event state %s", event.getState()));
             }
         }
         if (!denied.isEmpty()) {
@@ -111,6 +105,10 @@ public class IngestRequestEventHandler
         if (!success.isEmpty()) {
             listener.onSuccess(success);
             success.clear();
+        }
+        if (!deleted.isEmpty()) {
+            listener.onDeleted(deleted);
+            deleted.clear();
         }
         LOGGER.info("[INGEST RESPONSES HANDLER] {} IngestRequestEvent handled in {} ms",
                     events.size(),

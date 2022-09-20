@@ -20,7 +20,12 @@ package fr.cnes.regards.modules.ingest.service.aip;
 
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.deletion.OAISDeletionRequest;
+import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
+import fr.cnes.regards.modules.storage.client.RequestInfo;
+
+import java.util.Collection;
+import java.util.Set;
 
 /**
  * AIP Service interface. Service to handle business around {@link AIPEntity}s
@@ -37,6 +42,14 @@ public interface IAIPDeleteService {
     void scheduleLinkedFilesDeletion(OAISDeletionRequest request);
 
     /**
+     * Allow to send deletion request to storage microservice for given aips
+     *
+     * @param aips {@link AIPEntity}s to request deletion to storage for associated files
+     * @return RequestInfo of sent requests
+     */
+    Collection<RequestInfo> sendLinkedFilesDeletionRequest(Collection<AIPEntity> aips);
+
+    /**
      * Remove all {@link AIPEntity} linked to an {@link SIPEntity#getSipId()}
      */
     void processDeletion(String sipId, boolean deleteIrrevocably);
@@ -49,4 +62,17 @@ public interface IAIPDeleteService {
      */
     boolean deletionAlreadyPending(AIPEntity aip);
 
+    /**
+     * Send cancel request to storage microservice for given requests
+     *
+     * @param requests
+     */
+    void cancelStorageRequests(Collection<IngestRequest> requests);
+
+    /**
+     * Delete all given {@link AIPEntity}s
+     *
+     * @param aipIds
+     */
+    void deleteAll(Set<AIPEntity> aipIds);
 }

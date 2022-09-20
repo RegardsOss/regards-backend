@@ -65,29 +65,8 @@ public class DamAttributeHelper extends AbstractAttributeHelper {
     }
 
     @Override
-    protected List<AttributeModel> doGetAllAttributes(String pTenant) {
-        // Do not alter tenant context if already forced
-        String current = runtimeTenantResolver.getTenant();
-        boolean forceIt = current == null;
-        // Prevent inconsistent context
-        if ((current != null) && !current.equals(pTenant)) {
-            String errorMessage = String.format("Inconsistent tenant context. Expected %s but already on %s",
-                                                pTenant,
-                                                current);
-            LOGGER.error(errorMessage);
-            throw new IllegalArgumentException(errorMessage);
-        }
-
-        try {
-            if (forceIt) {
-                runtimeTenantResolver.forceTenant(pTenant);
-            }
-            return attributeModelService.getAttributes(null, null, null);
-        } finally {
-            if (forceIt) {
-                runtimeTenantResolver.clearTenant();
-            }
-        }
+    protected List<AttributeModel> doGetAllAttributes() {
+        return attributeModelService.getAttributes(null, null, null);
     }
 
     @Override

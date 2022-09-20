@@ -18,12 +18,15 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.test;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.util.JUnitLogRule;
 import org.junit.After;
 import org.junit.Rule;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -38,6 +42,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.transaction.BeforeTransaction;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Multitenant test utility class for testing service layer. This class starts up an integration test context enabling
@@ -95,6 +102,9 @@ public abstract class AbstractMultitenantServiceIT extends AbstractDaoIT {
     @Autowired
     private ApplicationEventPublisher springPublisher;
 
+    @SpyBean
+    protected IPublisher publisher;
+
     @Rule
     public JUnitLogRule rule = new JUnitLogRule();
 
@@ -148,6 +158,36 @@ public abstract class AbstractMultitenantServiceIT extends AbstractDaoIT {
     @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
     public static class ScanningConfiguration {
 
+    }
+
+    protected void clearPublishedEvents() {
+        Mockito.clearInvocations(publisher);
+    }
+
+    protected <T extends ISubscribable> List<T> getPublishedEvents(Class<T> type) {
+        ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
+        List<T> events = getEvents(argumentCaptor.getAllValues(), type);
+        Mockito.clearInvocations(publisher);
+        return events;
+    }
+
+    protected <T extends ISubscribable> List<T> getPublishedEvents(int expectedNbInvocations, Class<T> type) {
+        ArgumentCaptor<ISubscribable> argumentCaptor = ArgumentCaptor.forClass(ISubscribable.class);
+        Mockito.verify(publisher, Mockito.times(expectedNbInvocations)).publish(argumentCaptor.capture());
+        List<T> events = getEvents(argumentCaptor.getAllValues(), type);
+        Mockito.clearInvocations(publisher);
+        return events;
+    }
+
+    protected <T extends ISubscribable> List<T> getEvents(List<ISubscribable> events, Class<T> type) {
+        List<T> returnedEvents = new ArrayList<>();
+        for (ISubscribable e : events) {
+            if (e.getClass().isAssignableFrom(type)) {
+                returnedEvents.add((T) e);
+            }
+        }
+        return returnedEvents;
     }
 
 }

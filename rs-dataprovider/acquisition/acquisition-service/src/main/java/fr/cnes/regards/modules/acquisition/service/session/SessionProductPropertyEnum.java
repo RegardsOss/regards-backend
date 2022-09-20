@@ -75,7 +75,12 @@ public enum SessionProductPropertyEnum {
     /**
      * Name of the property indicating the sip has been successfully ingested
      */
-    PROPERTY_INGESTED("ingested", StepPropertyStateEnum.INFO, false, false);
+    PROPERTY_INGESTED("ingested", StepPropertyStateEnum.INFO, false, false),
+
+    /**
+     * Name of the property indicating the sip ingestion has been canceled.
+     */
+    PROPERTY_INGESTION_CANCELED("canceled", StepPropertyStateEnum.INFO, false, true);
 
     private String name;
 

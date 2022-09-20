@@ -73,9 +73,8 @@ public class AttributeHelper extends AbstractAttributeHelper {
     }
 
     @Override
-    public List<AttributeModel> doGetAllAttributes(String pTenant) {
+    public List<AttributeModel> doGetAllAttributes() {
         try {
-            runtimeTenantResolver.forceTenant(pTenant);
             FeignSecurityManager.asSystem();
 
             ResponseEntity<List<EntityModel<AttributeModel>>> resources = attributeModelClient.getAttributes(null,
@@ -84,7 +83,6 @@ public class AttributeHelper extends AbstractAttributeHelper {
                 return HateoasUtils.unwrapList(resources.getBody());
             }
         } finally {
-            runtimeTenantResolver.clearTenant();
             FeignSecurityManager.reset();
         }
         return Collections.emptyList();

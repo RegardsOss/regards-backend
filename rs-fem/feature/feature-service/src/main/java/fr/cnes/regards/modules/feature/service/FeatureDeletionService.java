@@ -78,8 +78,6 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureDeletionService.class);
 
-    private static final String ONLINE_CONF = "ONLINE_CONF";
-
     @Autowired
     private IFeatureDeletionRequestRepository deletionRepo;
 
@@ -300,6 +298,10 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
         manageRequestsWithoutFile(requestsWithoutFiles, isToNotify, featureDeletionJob);
     }
 
+    protected void postRequestDeleted(Collection<FeatureDeletionRequest> deletedRequests) {
+        // Nothing to do
+    }
+
     private void manageRequestsAlreadyDeleted(Set<FeatureDeletionRequest> requestsAlreadyDeleted,
                                               boolean isToNotify,
                                               FeatureDeletionJob featureDeletionJob) {
@@ -428,17 +430,31 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
      */
     private FeatureDeletionRequest publishFiles(FeatureDeletionRequest fdr, FeatureEntity feature) {
         fdr.setStep(FeatureRequestStep.REMOTE_STORAGE_DELETION_REQUESTED);
+        List<FileDeletionRequestDTO> storageRequests = new ArrayList<>();
         for (FeatureFile file : feature.getFeature().getFiles()) {
             FeatureFileAttributes attribute = file.getAttributes();
-            fdr.setGroupId(this.storageClient.delete(FileDeletionRequestDTO.build(attribute.getChecksum(),
-                                                                                  ONLINE_CONF,
-                                                                                  feature.getFeature()
-                                                                                         .getUrn()
-                                                                                         .toString(),
-                                                                                  feature.getSessionOwner(),
-                                                                                  feature.getSession(),
-                                                                                  false)).getGroupId());
+            for (FeatureFileLocation location : file.getLocations()) {
+                // Create a storage request for each location of the file
+                storageRequests.add(FileDeletionRequestDTO.build(attribute.getChecksum(),
+                                                                 location.getStorage(),
+                                                                 feature.getFeature().getUrn().toString(),
+                                                                 feature.getSessionOwner(),
+                                                                 feature.getSession(),
+                                                                 false));
+            }
         }
+        // If multiple group is returned we only save the first one.
+        // Multiple groups can be returned if the number of requests is over the limit in one group
+        Collection<fr.cnes.regards.modules.storage.client.RequestInfo> responseInfos = this.storageClient.delete(
+            storageRequests);
+        if (responseInfos.size() > 1) {
+            LOGGER.warn(
+                "Multiple storage request group created for a single FeatureDeletionRequest. Only the first one will be monitored by deletion process");
+        }
+        responseInfos.stream().findFirst().ifPresent(responseInfo -> {
+            fdr.setGroupId(responseInfo.getGroupId());
+        });
+
         return fdr;
     }
 

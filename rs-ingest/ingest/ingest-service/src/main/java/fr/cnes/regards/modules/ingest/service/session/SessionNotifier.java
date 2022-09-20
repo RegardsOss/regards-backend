@@ -232,7 +232,6 @@ public class SessionNotifier {
      * @param aips         {@link AIPEntity}s of the deleted product
      */
     public void productDeleted(String sessionOwner, String session, Collection<AIPEntity> aips) {
-        int nbGenerated = 0;
         int nbStored = 0;
         int nbStorePending = 0;
         for (AIPEntity aip : aips) {
@@ -243,7 +242,6 @@ public class SessionNotifier {
                     if (!ingestRequestRepository.existsByAipsIdAndState(aip.getId(), InternalRequestState.ERROR)) {
                         nbStorePending++;
                     }
-                    nbGenerated++;
                     break;
                 case STORED:
                     nbStored++;
@@ -257,10 +255,9 @@ public class SessionNotifier {
             // -x product_storing
             decrementCount(sessionOwner, session, SessionNotifierPropertyEnum.REQUESTS_RUNNING, nbStorePending);
         }
-
-        int nbDeletedProducts = nbGenerated + nbStored;
-        decrementCount(sessionOwner, session, SessionNotifierPropertyEnum.REFERENCED_PRODUCTS, nbDeletedProducts);
-        incrementCount(sessionOwner, session, SessionNotifierPropertyEnum.DELETED_PRODUCTS, nbDeletedProducts);
+        
+        decrementCount(sessionOwner, session, SessionNotifierPropertyEnum.REFERENCED_PRODUCTS, nbStored);
+        incrementCount(sessionOwner, session, SessionNotifierPropertyEnum.DELETED_PRODUCTS, nbStored);
     }
 
     // ----------- UTILS -----------

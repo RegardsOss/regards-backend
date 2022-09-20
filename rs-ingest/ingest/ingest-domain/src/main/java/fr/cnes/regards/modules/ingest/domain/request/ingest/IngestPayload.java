@@ -23,11 +23,18 @@ import fr.cnes.regards.modules.ingest.dto.request.RequestState;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 
 import javax.validation.constraints.NotNull;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Léo Mieulet
  */
 public class IngestPayload {
+
+    /**
+     * Set of errors for terminated storage request
+     */
+    private Set<IngestRequestError> RequestErrors = new HashSet<>();
 
     private IngestMetadata metadata;
 
@@ -99,6 +106,10 @@ public class IngestPayload {
 
     public IngestRequestStep getStep() {
         return step;
+    }
+
+    public Set<IngestRequestError> getRequestErrors() {
+        return RequestErrors;
     }
 
 }

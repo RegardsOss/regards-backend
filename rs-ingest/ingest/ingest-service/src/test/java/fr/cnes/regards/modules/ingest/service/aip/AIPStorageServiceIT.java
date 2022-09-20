@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.ingest.service.aip;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObjectLocation;
@@ -45,7 +44,6 @@ import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
@@ -61,9 +59,6 @@ import java.util.*;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=aip_storage_service" },
     locations = { "classpath:application-test.properties" })
 public class AIPStorageServiceIT extends AbstractMultitenantServiceIT {
-
-    @SpyBean
-    private IPublisher publisher;
 
     private static String sessionOwner = "NAASA";
 

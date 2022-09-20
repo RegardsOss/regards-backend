@@ -50,10 +50,10 @@ public enum ProductState {
      * Product was already finished or completed when we acquired a new file.
      * This state is temporary and used to avoid generating multiple version of the same SIP
      */
-    UPDATED;
+    UPDATED,
 
-    @Override
-    public String toString() {
-        return this.name();
-    }
+    /**
+     * Product acquisition has been canceled.
+     */
+    CANCELED;
 }

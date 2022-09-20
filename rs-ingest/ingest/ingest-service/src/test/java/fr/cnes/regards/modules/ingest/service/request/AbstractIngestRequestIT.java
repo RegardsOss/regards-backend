@@ -34,7 +34,6 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
-import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsService;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
@@ -77,9 +76,6 @@ public abstract class AbstractIngestRequestIT extends AbstractMultitenantService
 
     @Autowired
     IngestServiceIT ingestServiceTest;
-
-    @Autowired
-    private IAIPNotificationSettingsService notificationSettingsService;
 
     @Before
     public void init() throws InterruptedException {

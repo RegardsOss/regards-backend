@@ -35,18 +35,9 @@ public class JobSchedulerCleanerIT {
     @SpyBean
     private IJobInfoService jobInfoService;
 
-    @SpyBean
-    private IJobService jobService;
-
     // number of time slots after that we consider a job is dead
     @Value("${regards.jobs.slot.number:2}")
     private int timeSlotNumber;
-
-    @Value("${regards.jobs.completion.update.rate.ms}")
-    private int updateCompletionPeriod;
-
-    @Value("${regards.tenant}")
-    private String tenant;
 
     @Before
     public void setUp() {

@@ -22,7 +22,6 @@ import com.google.common.io.CharStreams;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
@@ -110,9 +109,6 @@ public abstract class AbstractNotificationMultitenantServiceIT extends AbstractM
 
     @Autowired
     protected NotificationConfigurationProperties configuration;
-
-    @SpyBean
-    protected IPublisher publisher;
 
     @Autowired
     protected Gson gson;

@@ -344,10 +344,12 @@ public class FileReferenceService {
      * @param id
      * @param owner
      */
-    public void addOwner(Long id, String owner) {
+    public boolean addOwner(Long id, String owner) {
         if (!fileRefRepo.isOwnedBy(id, owner)) {
             fileRefRepo.addOwner(id, owner);
+            return true;
         }
+        return false;
     }
 
     public boolean hasOwner(Long id) {

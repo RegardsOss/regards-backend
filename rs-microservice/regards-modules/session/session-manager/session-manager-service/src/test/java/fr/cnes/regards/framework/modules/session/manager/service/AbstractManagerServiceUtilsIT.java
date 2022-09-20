@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.framework.modules.session.manager.service;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.AmqpChannel;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
@@ -45,7 +43,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpIOException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
@@ -96,9 +93,6 @@ public abstract class AbstractManagerServiceUtilsIT extends AbstractMultitenantS
     @Autowired
     protected IJobInfoService jobInfoService;
 
-    @SpyBean
-    protected IPublisher publisher;
-
     // SESSION
     @Autowired
     protected ManagerCleanSnapshotProcessService managerCleanService;
@@ -133,9 +127,6 @@ public abstract class AbstractManagerServiceUtilsIT extends AbstractMultitenantS
 
     @Autowired
     private IAmqpAdmin amqpAdmin;
-
-    @Autowired
-    private ISubscriber subscriber;
 
     @Autowired
     private JobTestCleaner jobTestCleaner;

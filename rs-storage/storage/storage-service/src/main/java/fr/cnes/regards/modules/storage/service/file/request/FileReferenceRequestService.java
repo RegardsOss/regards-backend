@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
+import fr.cnes.regards.modules.storage.domain.FileReferenceResult;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
@@ -36,6 +37,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileReferenceRequestDT
 import fr.cnes.regards.modules.storage.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storage.domain.flow.ReferenceFlowItem;
+import fr.cnes.regards.modules.storage.domain.plugin.FileReferenceResultStatusEnum;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceEventPublisher;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
@@ -172,12 +174,13 @@ public class FileReferenceRequestService {
                                                                                                       .equals(file.getStorage()))
                                                                                      .findFirst();
             try {
-                FileReference fileRef = reference(file,
-                                                  oFileRef,
-                                                  oFileDeletionReq,
-                                                  Sets.newHashSet(groupId),
-                                                  true,
-                                                  false);
+                FileReferenceResult fileRefResult = reference(file,
+                                                              oFileRef,
+                                                              oFileDeletionReq,
+                                                              Sets.newHashSet(groupId),
+                                                              true,
+                                                              false);
+                FileReference fileRef = fileRefResult.getFileReference();
                 reqGrpService.requestSuccess(groupId,
                                              FileRequestType.REFERENCE,
                                              fileRef.getMetaInfo().getChecksum(),
@@ -190,7 +193,9 @@ public class FileReferenceRequestService {
                 existingOnes.add(fileRef);
                 // Notify reference success to session agent
                 this.sessionNotifier.decrementRunningRequests(sessionOwner, session);
-                this.sessionNotifier.incrementReferencedFiles(sessionOwner, session);
+                if (fileRefResult.getStatus() != FileReferenceResultStatusEnum.UNMODIFIED) {
+                    this.sessionNotifier.incrementReferencedFiles(sessionOwner, session);
+                }
             } catch (ModuleException e) {
                 LOGGER.error(e.getMessage(), e);
                 fileRefEventPublisher.storeError(file.getChecksum(),
@@ -229,12 +234,12 @@ public class FileReferenceRequestService {
      * @return {@link FileReference}
      * @throws ModuleException if the file reference can not be created.
      */
-    public FileReference reference(String owner,
-                                   FileReferenceMetaInfo metaInfo,
-                                   FileLocation location,
-                                   Collection<String> groupIds,
-                                   String sessionOwner,
-                                   String session) throws ModuleException {
+    public FileReferenceResult reference(String owner,
+                                         FileReferenceMetaInfo metaInfo,
+                                         FileLocation location,
+                                         Collection<String> groupIds,
+                                         String sessionOwner,
+                                         String session) throws ModuleException {
         Optional<FileReference> oFileRef = fileRefService.search(location.getStorage(), metaInfo.getChecksum());
         Optional<FileDeletionRequest> oFileDelReq = Optional.empty();
         if (oFileRef.isPresent()) {
@@ -267,12 +272,12 @@ public class FileReferenceRequestService {
      * @return {@link FileReference}
      * @throws ModuleException if the file reference can not be created.
      */
-    private FileReference reference(FileReferenceRequestDTO request,
-                                    Optional<FileReference> fileRef,
-                                    Optional<FileDeletionRequest> fileDelReq,
-                                    Collection<String> groupIds,
-                                    boolean isReferenced,
-                                    boolean pendingActionRemaining) throws ModuleException {
+    private FileReferenceResult reference(FileReferenceRequestDTO request,
+                                          Optional<FileReference> fileRef,
+                                          Optional<FileDeletionRequest> fileDelReq,
+                                          Collection<String> groupIds,
+                                          boolean isReferenced,
+                                          boolean pendingActionRemaining) throws ModuleException {
         if (fileRef.isPresent()) {
             return handleAlreadyExists(fileRef.get(), fileDelReq, request, groupIds);
         } else {
@@ -289,7 +294,7 @@ public class FileReferenceRequestService {
                                            newFileRef.getLocation().toString(),
                                            newFileRef.getMetaInfo().getChecksum());
             fileRefEventPublisher.storeSuccess(newFileRef, message, groupIds, Lists.newArrayList(request.getOwner()));
-            return newFileRef;
+            return FileReferenceResult.build(newFileRef, FileReferenceResultStatusEnum.CREATED);
         }
     }
 
@@ -326,13 +331,13 @@ public class FileReferenceRequestService {
      * <li>4. Send a {@link FileReferenceEvent} as STORED with the new owners</li>
      * </ul>
      *
-     * @return {@link FileReference} if the file reference is updated. Null if a new store request is created.
+     * @return {@link FileReferenceResult} file reference and update status. Update is false if file reference has not been updated.
      * @throws ModuleException If file reference can not be created
      */
-    private FileReference handleAlreadyExists(FileReference fileReference,
-                                              Optional<FileDeletionRequest> deletionRequest,
-                                              FileReferenceRequestDTO request,
-                                              Collection<String> groupIds) throws ModuleException {
+    private FileReferenceResult handleAlreadyExists(FileReference fileReference,
+                                                    Optional<FileDeletionRequest> deletionRequest,
+                                                    FileReferenceRequestDTO request,
+                                                    Collection<String> groupIds) throws ModuleException {
         if (deletionRequest.isPresent() && (deletionRequest.get().getStatus() == FileRequestStatus.PENDING)) {
             // A deletion is pending on the existing file reference but the new reference request does not indicates the new file location
             String message = String.format("File %s is being deleted. Please try later.", request.getChecksum());
@@ -361,8 +366,11 @@ public class FileReferenceRequestService {
                                                message,
                                                groupIds,
                                                Lists.newArrayList(request.getOwner()));
-            fileRefService.addOwner(fileReference.getId(), request.getOwner());
-            return fileReference;
+            FileReferenceResultStatusEnum status = FileReferenceResultStatusEnum.UNMODIFIED;
+            if (fileRefService.addOwner(fileReference.getId(), request.getOwner())) {
+                status = FileReferenceResultStatusEnum.UPDATED;
+            }
+            return FileReferenceResult.build(fileReference, status);
         }
     }
 

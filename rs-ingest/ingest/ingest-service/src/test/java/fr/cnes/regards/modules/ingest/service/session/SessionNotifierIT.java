@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.session;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyEventTypeEnum;
 import fr.cnes.regards.framework.modules.session.agent.domain.events.StepPropertyUpdateRequestEvent;
@@ -39,10 +38,7 @@ import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
@@ -58,9 +54,6 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
 
     @Autowired
     private SessionNotifier sessionNotifier;
-
-    @SpyBean
-    private IPublisher publisher;
 
     private static String sessionOwner = "NASA";
 
@@ -115,7 +108,7 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
                                                sipEntity.getVersion()));
         aips.add(aipEntity1);
         aips.add(aipEntity2);
-        Mockito.clearInvocations(publisher);
+        clearPublishedEvents();
 
         // init ingest request
         ingestRequest = new IngestRequest();
@@ -147,10 +140,7 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
         sessionNotifier.incrementRequestCount(sessionOwner, session, 1);
         sessionNotifier.incrementProductGenerationPending(ingestRequest);
         // check results
-        ArgumentCaptor<StepPropertyUpdateRequestEvent> argumentCaptor = ArgumentCaptor.forClass(
-            StepPropertyUpdateRequestEvent.class);
-        Mockito.verify(publisher, Mockito.times(2)).publish(argumentCaptor.capture());
-        Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
+        Map<String, Long> result = getResultUsingNotifs(getPublishedEvents(2, StepPropertyUpdateRequestEvent.class));
         Assert.assertEquals(1, (long) result.get(SessionNotifierPropertyEnum.TOTAL_REQUESTS.getName()));
         Assert.assertEquals(1, (long) result.get(SessionNotifierPropertyEnum.REQUESTS_RUNNING.getName()));
     }
@@ -162,10 +152,7 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
         sessionNotifier.decrementProductGenerationPending(ingestRequest);
         sessionNotifier.incrementProductStoreSuccess(ingestRequest);
 
-        ArgumentCaptor<StepPropertyUpdateRequestEvent> argumentCaptor = ArgumentCaptor.forClass(
-            StepPropertyUpdateRequestEvent.class);
-        Mockito.verify(publisher, Mockito.times(4)).publish(argumentCaptor.capture());
-        Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
+        Map<String, Long> result = getResultUsingNotifs(getPublishedEvents(4, StepPropertyUpdateRequestEvent.class));
         Assert.assertEquals(1, (long) result.get(SessionNotifierPropertyEnum.TOTAL_REQUESTS.getName()));
         Assert.assertEquals(0, (long) result.get(SessionNotifierPropertyEnum.REQUESTS_RUNNING.getName()));
         Assert.assertEquals(aips.size(), (long) result.get(SessionNotifierPropertyEnum.REFERENCED_PRODUCTS.getName()));
@@ -178,10 +165,7 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
         sessionNotifier.decrementProductGenerationPending(ingestRequest);
         sessionNotifier.incrementProductGenerationError(ingestRequest);
 
-        ArgumentCaptor<StepPropertyUpdateRequestEvent> argumentCaptor = ArgumentCaptor.forClass(
-            StepPropertyUpdateRequestEvent.class);
-        Mockito.verify(publisher, Mockito.times(4)).publish(argumentCaptor.capture());
-        Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
+        Map<String, Long> result = getResultUsingNotifs(getPublishedEvents(4, StepPropertyUpdateRequestEvent.class));
         Assert.assertEquals(1, (long) result.get(SessionNotifierPropertyEnum.TOTAL_REQUESTS.getName()));
         Assert.assertEquals(0, (long) result.get(SessionNotifierPropertyEnum.REQUESTS_RUNNING.getName()));
         Assert.assertEquals(1, (long) result.get(SessionNotifierPropertyEnum.REQUESTS_ERRORS.getName()));
@@ -196,10 +180,7 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
         sessionNotifier.decrementProductStorePending(ingestRequest);
         sessionNotifier.incrementProductStoreError(ingestRequest);
 
-        ArgumentCaptor<StepPropertyUpdateRequestEvent> argumentCaptor = ArgumentCaptor.forClass(
-            StepPropertyUpdateRequestEvent.class);
-        Mockito.verify(publisher, Mockito.times(6)).publish(argumentCaptor.capture());
-        Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
+        Map<String, Long> result = getResultUsingNotifs(getPublishedEvents(6, StepPropertyUpdateRequestEvent.class));
         Assert.assertEquals(1, (long) result.get(SessionNotifierPropertyEnum.TOTAL_REQUESTS.getName()));
         Assert.assertEquals(0, (long) result.get(SessionNotifierPropertyEnum.REQUESTS_RUNNING.getName()));
         Assert.assertEquals(1, (long) result.get(SessionNotifierPropertyEnum.REQUESTS_ERRORS.getName()));
@@ -214,10 +195,7 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
         sessionNotifier.decrementProductStorePending(ingestRequest);
         sessionNotifier.incrementProductStoreSuccess(ingestRequest);
 
-        ArgumentCaptor<StepPropertyUpdateRequestEvent> argumentCaptor = ArgumentCaptor.forClass(
-            StepPropertyUpdateRequestEvent.class);
-        Mockito.verify(publisher, Mockito.times(6)).publish(argumentCaptor.capture());
-        Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
+        Map<String, Long> result = getResultUsingNotifs(getPublishedEvents(6, StepPropertyUpdateRequestEvent.class));
         Assert.assertEquals(1, (long) result.get(SessionNotifierPropertyEnum.TOTAL_REQUESTS.getName()));
         Assert.assertEquals(0, (long) result.get(SessionNotifierPropertyEnum.REQUESTS_RUNNING.getName()));
         Assert.assertEquals(aips.size(), (long) result.get(SessionNotifierPropertyEnum.REFERENCED_PRODUCTS.getName()));
@@ -238,10 +216,7 @@ public class SessionNotifierIT extends AbstractMultitenantServiceIT {
         sipEntity.setState(SIPState.STORED);
         sessionNotifier.productDeleted(sessionOwner, session, aips);
 
-        ArgumentCaptor<StepPropertyUpdateRequestEvent> argumentCaptor = ArgumentCaptor.forClass(
-            StepPropertyUpdateRequestEvent.class);
-        Mockito.verify(publisher, Mockito.times(8)).publish(argumentCaptor.capture());
-        Map<String, Long> result = getResultUsingNotifs(argumentCaptor.getAllValues());
+        Map<String, Long> result = getResultUsingNotifs(getPublishedEvents(8, StepPropertyUpdateRequestEvent.class));
         Assert.assertEquals(1, (long) result.get(SessionNotifierPropertyEnum.TOTAL_REQUESTS.getName()));
         Assert.assertEquals(0, (long) result.get(SessionNotifierPropertyEnum.REQUESTS_RUNNING.getName()));
         Assert.assertEquals(0, (long) result.get(SessionNotifierPropertyEnum.REFERENCED_PRODUCTS.getName()));

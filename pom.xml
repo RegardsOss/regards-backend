@@ -158,7 +158,7 @@
 		<lucene.queryparser.version>8.8.2</lucene.queryparser.version>
 
 		<!-- amazon -->
-		<software.amazon.awssdk.s3.version>2.17.46</software.amazon.awssdk.s3.version>
+		<software.amazon.awssdk.s3.version>2.17.267</software.amazon.awssdk.s3.version>
 
 		<!-- Default compilation parameters -->
 		<!-- Skip executing tests -->

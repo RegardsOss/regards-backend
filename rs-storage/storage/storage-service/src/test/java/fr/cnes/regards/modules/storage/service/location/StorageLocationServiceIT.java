@@ -129,7 +129,7 @@ public class StorageLocationServiceIT extends AbstractStorageIT {
                                             location,
                                             Sets.newHashSet(UUID.randomUUID().toString()),
                                             "defaultSessionOwner",
-                                            "defaultSession");
+                                            "defaultSession").getFileReference();
         } catch (ModuleException e) {
             Assert.fail(e.getMessage());
             return null;

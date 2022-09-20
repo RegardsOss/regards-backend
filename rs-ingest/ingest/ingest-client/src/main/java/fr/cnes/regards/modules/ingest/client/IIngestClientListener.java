@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.ingest.client;
 
 import java.util.Collection;
+import java.util.Set;
 
 /**
  * Callback listener for ingestion request : {@link IIngestClient#ingest(fr.cnes.regards.modules.ingest.dto.sip.IngestMetadataDto, fr.cnes.regards.modules.ingest.dto.sip.SIP)}
@@ -54,4 +55,11 @@ public interface IIngestClientListener {
      * @param infos {@link RequestInfo}s to track request
      */
     void onSuccess(Collection<RequestInfo> infos);
+
+    /**
+     * Callback on request deleted
+     *
+     * @param deleted
+     */
+    void onDeleted(Set<RequestInfo> deleted);
 }

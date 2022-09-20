@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.Set;
 
 /**
  * Custom acquisition ingest client listener
@@ -56,6 +57,11 @@ public class AcquisitionIngestClientListener implements IIngestClientListener {
     @Override
     public void onSuccess(Collection<RequestInfo> infos) {
         productService.handleIngestedSIPSuccess(infos);
+    }
+
+    @Override
+    public void onDeleted(Set<RequestInfo> infos) {
+        productService.handleIngestedSIPDeleted(infos);
     }
 
 }

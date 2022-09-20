@@ -73,7 +73,7 @@ public interface IStorageClient {
     /**
      * Retry all registered request in error associated to the given owners.
      *
-     * @param requestInfo containing a unique request id.
+     * @param owners containing a unique request id.
      */
     void storeRetry(Collection<String> owners);
 
@@ -161,4 +161,11 @@ public interface IStorageClient {
      * in {@link IStorageRequestListener} implementation.
      */
     Collection<RequestInfo> makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate);
+
+    /**
+     * Sumbmit a cancel request to storage microservice. The cancel request remove all requests associated to the given request group ids.
+     *
+     * @param requestGroups {@link String} list of group ids to cancel requests from.
+     */
+    void cancelRequests(Collection<String> requestGroups);
 }

@@ -16,31 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.model.gson;
+package fr.cnes.regards.modules.indexer.dao;
 
-import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
-import org.junit.Test;
+import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.search.ClearScrollResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
 /**
  * @author Sébastien Binda
- */
-public class AtttributeHelperTest {
+ **/
+public class DefaultScrollClearResponseActionListener implements ActionListener<ClearScrollResponse> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AtttributeHelperTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EsRepository.class);
 
-    @Test
-    public void test() {
-
-        TestAttributeHelper helper = new TestAttributeHelper();
-
-        List<AttributeModel> atts = helper.getAllAttributes("toto");
-
-        atts.forEach(a -> LOGGER.info("Attribute {}", a.getJsonPath()));
-
+    @Override
+    public void onResponse(ClearScrollResponse clearScrollResponse) {
+        LOGGER.debug("Elasticsearch scroll request cleared successfully");
     }
 
-}
+    @Override
+    public void onFailure(Exception e) {
+        LOGGER.error(String.format("Elasticsearch scroll request clear error. Cause : %s", e.getMessage()), e);
+    }
+};

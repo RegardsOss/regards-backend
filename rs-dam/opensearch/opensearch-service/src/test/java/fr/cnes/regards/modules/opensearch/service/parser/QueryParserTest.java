@@ -75,7 +75,7 @@ public class QueryParserTest {
         IRuntimeTenantResolver runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(TENANT);
         IAttributeHelper attributeModelClient = Mockito.mock(IAttributeHelper.class);
-        Mockito.when(attributeModelClient.getAllAttributes(Mockito.anyString())).thenReturn(SampleDataUtils.LIST);
+        Mockito.when(attributeModelClient.getAllAttributes()).thenReturn(SampleDataUtils.LIST);
         IAttributeFinder finder = new AttributeFinder(attributeModelClient, subscriber, runtimeTenantResolver);
 
         parser = new QueryParser(finder);

@@ -37,6 +37,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storage.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storage.dao.IFileStorageRequestRepository;
+import fr.cnes.regards.modules.storage.domain.FileReferenceResult;
 import fr.cnes.regards.modules.storage.domain.database.FileLocation;
 import fr.cnes.regards.modules.storage.domain.database.FileReference;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
@@ -47,6 +48,7 @@ import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestDTO;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileStorageRequestResultDTO;
 import fr.cnes.regards.modules.storage.domain.event.FileRequestType;
 import fr.cnes.regards.modules.storage.domain.flow.StorageFlowItem;
+import fr.cnes.regards.modules.storage.domain.plugin.FileReferenceResultStatusEnum;
 import fr.cnes.regards.modules.storage.domain.plugin.FileStorageWorkingSubset;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.domain.plugin.PreparationResponse;
@@ -808,15 +810,20 @@ public class FileStorageRequestService {
                     fileMeta.setHeight(reqMetaInfos.getHeight());
                     fileMeta.setWidth(reqMetaInfos.getWidth());
                     fileMeta.setType(reqMetaInfos.getType());
-                    fileRefs.add(fileRefReqService.reference(owner,
-                                                             fileMeta,
-                                                             new FileLocation(request.getStorage(),
-                                                                              result.getStoredUrl(),
-                                                                              result.isPendingActionRemaining()),
-                                                             request.getGroupIds(),
-                                                             sessionOwner,
-                                                             session));
-                    nbFilesStored++;
+                    FileReferenceResult fileReferenceResult = fileRefReqService.reference(owner,
+                                                                                          fileMeta,
+                                                                                          new FileLocation(request.getStorage(),
+                                                                                                           result.getStoredUrl(),
+                                                                                                           result.isPendingActionRemaining()),
+                                                                                          request.getGroupIds(),
+                                                                                          sessionOwner,
+                                                                                          session);
+                    fileRefs.add(fileReferenceResult.getFileReference());
+                    if (fileReferenceResult.getStatus() != FileReferenceResultStatusEnum.UNMODIFIED) {
+                        // Only increment count of stored files if referenced file is new or updated.
+                        // If reference file already exists for the given owner (unmodified), total of stored files already contains this one.
+                        nbFilesStored++;
+                    }
                 } catch (ModuleException e) {
                     LOGGER.error(e.getMessage(), e);
                     handleError(request, e.getMessage());
@@ -978,11 +985,37 @@ public class FileStorageRequestService {
      * Delete all requests for the given storage identifier
      */
     public void deleteByStorage(String storageLocationId, Optional<FileRequestStatus> status) {
+        decrementSessionBeforeDeletion(storageLocationId, status);
         if (status.isPresent()) {
             fileStorageRequestRepo.deleteByStorageAndStatus(storageLocationId, status.get());
         } else {
             fileStorageRequestRepo.deleteByStorage(storageLocationId);
         }
+    }
+
+    /**
+     * Decrement session counts before deletion of storage requests.
+     *
+     * @param storageLocationId storage identifier of requests to delete
+     * @param status            Optional status of requests to delete
+     */
+    private void decrementSessionBeforeDeletion(String storageLocationId, Optional<FileRequestStatus> status) {
+        Pageable page = PageRequest.ofSize(100);
+        Page<FileStorageRequest> pageRequests;
+        do {
+            if (status.isPresent()) {
+                pageRequests = fileStorageRequestRepo.findAllByStorageAndStatus(storageLocationId, status.get(), page);
+            } else {
+                pageRequests = fileStorageRequestRepo.findAllByStorage(storageLocationId, page);
+            }
+            pageRequests.stream().forEach(r -> {
+                sessionNotifier.decrementStoreRequests(r.getSessionOwner(), r.getSession());
+                if (r.getStatus() == FileRequestStatus.ERROR) {
+                    sessionNotifier.decrementErrorRequests(r.getSessionOwner(), r.getSession());
+                }
+            });
+            page = page.next();
+        } while (pageRequests.hasNext());
     }
 
     public boolean isStorageRunning(String storageId) {
