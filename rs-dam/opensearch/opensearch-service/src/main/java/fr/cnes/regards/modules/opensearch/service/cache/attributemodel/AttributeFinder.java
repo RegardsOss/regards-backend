@@ -167,6 +167,17 @@ public class AttributeFinder implements IAttributeFinder, ApplicationListener<Ap
     private void initStaticProperties(Map<String, AttributeModel> tenantMap,
                                       Multimap<PropertyType, AttributeModel> tenantTypeMap) {
 
+        // Feature creationDate
+        tenantMap.put(StaticProperties.CREATION_DATE,
+                      new AttributeModelBuilder(StaticProperties.CREATION_DATE_PATH,
+                                                PropertyType.DATE_ISO8601,
+                                                null).setStatic(true).setIndexed(true).setInternal(true).build());
+
+        tenantMap.put(StaticProperties.LAST_UPDATE,
+                      new AttributeModelBuilder(StaticProperties.LAST_UPDATE_PATH,
+                                                PropertyType.DATE_ISO8601,
+                                                null).setStatic(true).setIndexed(true).setInternal(true).build());
+
         // Unique identifier
         tenantMap.put(StaticProperties.FEATURE_ID,
                       new AttributeModelBuilder(StaticProperties.FEATURE_ID, PropertyType.STRING, null).setStatic(true)

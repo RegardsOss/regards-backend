@@ -197,7 +197,8 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
         // Date criterion
         if (searchRequest.getSearchDateLimit() != null) {
             reqCrit = ICriterion.and(reqCrit,
-                                     ICriterion.lt(StaticProperties.CREATION_DATE, searchRequest.getSearchDateLimit()));
+                                     ICriterion.lt(StaticProperties.CREATION_DATE_PATH,
+                                                   searchRequest.getSearchDateLimit()));
         }
 
         // Include ids criterion
