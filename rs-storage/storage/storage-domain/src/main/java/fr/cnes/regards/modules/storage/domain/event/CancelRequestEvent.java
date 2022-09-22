@@ -36,7 +36,9 @@ import java.util.HashSet;
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class CancelRequestEvent implements ISubscribable {
 
-    @NotNull @NotEmpty Collection<String> groupsToCancel = new HashSet<>();
+    @NotNull
+    @NotEmpty
+    private Collection<String> groupsToCancel = new HashSet<>();
 
     public CancelRequestEvent(Collection<String> groupsToCancel) {
         this.groupsToCancel.addAll(groupsToCancel);

@@ -163,7 +163,7 @@ public interface IStorageClient {
     Collection<RequestInfo> makeAvailable(Collection<String> checksums, OffsetDateTime expirationDate);
 
     /**
-     * Sumbmit a cancel request to storage microservice. The cancel request remove all requests associated to the given request group ids.
+     * Submit a cancel request to storage microservice. The cancel request remove all requests associated to the given request group ids.
      *
      * @param requestGroups {@link String} list of group ids to cancel requests from.
      */
