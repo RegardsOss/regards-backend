@@ -143,16 +143,18 @@ public class AgentSnapshotService {
      * @return nextPageable if present
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Pageable updateOnePageStepRequests(SnapshotProcess snapshotProcess,
+    public Pageable updateOnePageStepRequests(SnapshotProcess previousSnapshotProcess,
                                               OffsetDateTime startDate,
                                               OffsetDateTime endDate,
                                               Pageable pageToRequest) {
         Map<String, Map<String, SessionStep>> sessionStepsBySession = new HashMap<>();
-        String source = snapshotProcess.getSource();
+        String source = previousSnapshotProcess.getSource();
         Page<StepPropertyUpdateRequest> stepPropertyPage = getStepPropertiesByPage(startDate,
                                                                                    endDate,
                                                                                    pageToRequest,
                                                                                    source);
+        // Update snapshot process that should have been updated in previous page
+        SnapshotProcess snapshotProcess = snapshotProcessRepo.findBySource(source).orElse(previousSnapshotProcess);
 
         // loop on every stepPropertyUpdateRequest to create or update SessionSteps
         List<StepPropertyUpdateRequest> stepPropertyUpdateRequests = stepPropertyPage.getContent();
