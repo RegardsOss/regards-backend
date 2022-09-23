@@ -44,7 +44,7 @@ public class PropertyMapCheckerTest {
 
     private static final String TENANT = "tenant";
 
-    private static final int STATIC_ATTRIBUTE_MODELS_NB = 10;
+    private static final int STATIC_ATTRIBUTE_MODELS_NB = 12;
 
     private AttributeFinder finder;
 

@@ -169,16 +169,18 @@ public class RequestService implements IRequestService {
                                                        RequestState.DELETED,
                                                        r.getErrors()));
         });
-        // Cancel associated request on storage
-        storageClient.cancelRequests(requests.stream()
-                                             .filter(r -> r.getRemoteStepGroupIds() != null)
-                                             .flatMap(r -> r.getRemoteStepGroupIds().stream())
-                                             .collect(Collectors.toSet()));
+        // Check in order to evict the publishing of empty request
+        if (!requests.isEmpty()) {
+            // Cancel associated request on storage
+            storageClient.cancelRequests(requests.stream()
+                                                 .filter(r -> r.getRemoteStepGroupIds() != null)
+                                                 .flatMap(r -> r.getRemoteStepGroupIds().stream())
+                                                 .collect(Collectors.toSet()));
 
-        ingestRequestRepository.deleteAll(requests);
+            ingestRequestRepository.deleteAll(requests);
+        }
 
-        List<AIPUpdateRequest> updateRequests = aipUpdateRequestRepository.findAllByAipIdIn(aipIds);
-        aipUpdateRequestRepository.deleteAll(updateRequests);
+        aipUpdateRequestRepository.deleteAll(aipUpdateRequestRepository.findAllByAipIdIn(aipIds));
     }
 
     @Override

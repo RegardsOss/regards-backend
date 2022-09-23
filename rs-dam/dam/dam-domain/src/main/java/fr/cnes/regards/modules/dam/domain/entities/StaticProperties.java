@@ -45,11 +45,17 @@ public final class StaticProperties {
     // String
     public static final String MODEL_VERSION = MODEL_TYPE + ".version";
 
-    // Date
-    public static final String LAST_UPDATE = "lastUpdate";
+    // Last update search attribute name. To avoid concurrency with possible dynamic attribute model, prefix with _
+    public static final String LAST_UPDATE = "_lastUpdate";
 
-    // Date
-    public static final String CREATION_DATE = "creationDate";
+    // Last update path in entities.
+    public static final String LAST_UPDATE_PATH = "lastUpdate";
+
+    // Creation date search attribute name. To avoid concurrency with possible dynamic attribute model, prefix with _
+    public static final String CREATION_DATE = "_creationDate";
+
+    // Creation date path in entities.
+    public static final String CREATION_DATE_PATH = "creationDate";
 
     // Long
     public static final String ID = "id";

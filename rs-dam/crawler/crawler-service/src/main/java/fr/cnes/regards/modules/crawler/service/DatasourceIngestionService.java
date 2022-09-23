@@ -249,7 +249,12 @@ public class DatasourceIngestionService {
         Optional<DatasourceIngestion> dsiOpt = dsIngestionRepos.findById(dsId);
         if (dsiOpt.isPresent()) {
             DatasourceIngestion dsi = dsiOpt.get();
-            dsi.setStackTrace(dsi.getStackTrace() == null ? newMessage : dsi.getStackTrace() + "\n" + newMessage);
+            // Limit stack trace size in database
+            if (dsi.getStackTrace() != null && dsi.getStackTrace().length() < 10_000) {
+                dsi.setStackTrace(dsi.getStackTrace() == null ? newMessage : dsi.getStackTrace() + "\n" + newMessage);
+            } else {
+                dsi.setStackTrace(newMessage);
+            }
             dsIngestionRepos.save(dsi);
         }
     }
