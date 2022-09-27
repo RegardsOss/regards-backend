@@ -145,7 +145,9 @@ public class StorageClient implements IStorageClient {
 
     @Override
     public void cancelRequests(Collection<String> requestGroups) {
-        publisher.publish(new CancelRequestEvent(requestGroups));
+        if (!requestGroups.isEmpty()) {
+            publisher.publish(new CancelRequestEvent(requestGroups));
+        }
     }
 
     private <T> Collection<RequestInfo> publish(BiFunction<Collection<T>, String, ISubscribable> func,
