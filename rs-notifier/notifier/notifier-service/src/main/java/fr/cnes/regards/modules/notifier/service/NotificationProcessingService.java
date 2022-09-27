@@ -261,12 +261,16 @@ public class NotificationProcessingService {
             publisher.publish(completedRequests.stream().map(this::mapRequestToEvent).collect(Collectors.toList()));
 
             // Delete all successful requests
-            notificationRequestRepository.deleteAllInBatch(successRequests);
+            notificationRequestRepository.deleteByRequestIdIn(successRequests.stream()
+                                                                             .map(NotificationRequest::getId)
+                                                                             .toList());
             // Update state to ERROR for all completed request in error
-            notificationRequestRepository.updateState(NotificationState.ERROR,
-                                                      errorRequests.stream()
-                                                                   .map(r -> r.getId())
-                                                                   .collect(Collectors.toSet()));
+            if (!errorRequests.isEmpty()) {
+                notificationRequestRepository.updateState(NotificationState.ERROR,
+                                                          errorRequests.stream()
+                                                                       .map(r -> r.getId())
+                                                                       .collect(Collectors.toSet()));
+            }
 
             result = Pair.of(successRequests.size(), errorRequests.size());
 

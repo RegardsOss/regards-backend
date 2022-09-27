@@ -169,7 +169,7 @@ public class NotifierTaskScheduler extends AbstractTaskScheduler {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 traceScheduling(tenant, type);
-                lockingTaskExecutors.executeWithLock(task, new LockConfiguration(lock, Instant.now().plusSeconds(60)));
+                lockingTaskExecutors.executeWithLock(task, new LockConfiguration(lock, Instant.now().plusSeconds(300)));
             } catch (Throwable e) {
                 handleSchedulingError(type, NOTIFICATION_TITLE, e);
             } finally {
