@@ -22,9 +22,11 @@ import fr.cnes.regards.framework.modules.session.commons.domain.SnapshotProcess;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import javax.persistence.LockModeType;
 import java.time.OffsetDateTime;
 import java.util.*;
 
@@ -39,8 +41,14 @@ public interface ISnapshotProcessRepository extends JpaRepository<SnapshotProces
 
     Set<SnapshotProcess> findBySourceIn(Collection<String> sources);
 
+    @Lock(LockModeType.PESSIMISTIC_READ)
     Set<SnapshotProcess> findByJobIdIn(List<UUID> jobIds);
 
+    @Modifying
+    @Query("UPDATE SnapshotProcess p SET p.jobId = null WHERE p.jobId IN (?1)")
+    void removeTerminatedJobsById(List<UUID> jobIds);
+
+    @Lock(LockModeType.PESSIMISTIC_READ)
     Page<SnapshotProcess> findByJobIdIsNull(Pageable pageable);
 
     @Modifying

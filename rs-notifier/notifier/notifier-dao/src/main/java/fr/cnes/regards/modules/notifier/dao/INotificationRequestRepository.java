@@ -116,4 +116,8 @@ public interface INotificationRequestRepository extends JpaRepository<Notificati
         type = EntityGraph.EntityGraphType.LOAD)
     Set<NotificationRequest> findAllByRequestIdIn(Set<String> requestsIds);
 
+    @Modifying
+    @Query("DELETE FROM NotificationRequest nr WHERE nr.id IN (?1)")
+    void deleteByRequestIdIn(List<Long> requestIds);
+
 }
