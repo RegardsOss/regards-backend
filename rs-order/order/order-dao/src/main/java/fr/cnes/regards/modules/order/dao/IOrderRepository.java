@@ -138,12 +138,12 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
                                                                                                              OrderStatus... statuses);
 
     @EntityGraph(value = "graph.order.simple", type = EntityGraph.EntityGraphType.LOAD)
-    Optional<Order> findOneByAvailableFilesCountGreaterThanAndExpirationDateLessThanAndStatusIn(int count,
-                                                                                                OffsetDateTime date,
-                                                                                                OrderStatus... statuses);
+    Optional<Order> findFirstByAvailableFilesCountGreaterThanAndExpirationDateLessThanAndStatusIn(int count,
+                                                                                                  OffsetDateTime date,
+                                                                                                  OrderStatus... statuses);
 
     @EntityGraph(value = "graph.order.simple", type = EntityGraph.EntityGraphType.LOAD)
-    Optional<Order> findOneByExpirationDateLessThanAndStatusIn(OffsetDateTime date, OrderStatus... statuses);
+    Optional<Order> findFirstByExpirationDateLessThanAndStatusIn(OffsetDateTime date, OrderStatus... statuses);
 
     /**
      * Find all orders considered as "aside" ie whom no associated data files have been downloaded since specified
@@ -163,19 +163,20 @@ public interface IOrderRepository extends JpaRepository<Order, Long>, JpaSpecifi
     /**
      * Find one expired order.
      */
-    default Optional<Order> findOneExpiredOrder() {
+    default Optional<Order> findFirstExpiredOrder() {
         // Expired orders can be running ones
-        Optional<Order> expiredOrder = findOneByExpirationDateLessThanAndStatusIn(OffsetDateTime.now(),
-                                                                                  OrderStatus.PENDING,
-                                                                                  OrderStatus.RUNNING,
-                                                                                  OrderStatus.PAUSED);
+        Optional<Order> expiredOrder = findFirstByExpirationDateLessThanAndStatusIn(OffsetDateTime.now(),
+                                                                                    OrderStatus.PENDING,
+                                                                                    OrderStatus.RUNNING,
+                                                                                    OrderStatus.PAUSED);
         // Or terminated one with remaining files to download
         if (!expiredOrder.isPresent()) {
-            expiredOrder = findOneByAvailableFilesCountGreaterThanAndExpirationDateLessThanAndStatusIn(0,
-                                                                                                       OffsetDateTime.now(),
-                                                                                                       OrderStatus.DONE,
-                                                                                                       OrderStatus.DONE_WITH_WARNING);
+            expiredOrder = findFirstByAvailableFilesCountGreaterThanAndExpirationDateLessThanAndStatusIn(0,
+                                                                                                         OffsetDateTime.now(),
+                                                                                                         OrderStatus.DONE,
+                                                                                                         OrderStatus.DONE_WITH_WARNING);
         }
+
         return expiredOrder;
     }
 

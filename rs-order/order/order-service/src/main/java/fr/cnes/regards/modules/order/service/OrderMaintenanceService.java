@@ -195,36 +195,26 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
     public void cleanExpiredOrders() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            // In a transaction
-            Optional<Order> optional = findOneOrderAndMarkAsExpired();
-            while (optional.isPresent()) {
-                // in another transaction
-                self.cleanExpiredOrder(optional.get());
-                // and again
-                optional = findOneOrderAndMarkAsExpired();
-            }
+            self.cleanExpiredOrdersForTenant();
+            runtimeTenantResolver.clearTenant();
         }
     }
 
-    @Override
-    public Optional<Order> findOneOrderAndMarkAsExpired() {
-        Optional<Order> optional = orderRepository.findOneExpiredOrder();
-        optional.ifPresent(order -> {
-            order.setStatus(OrderStatus.EXPIRED);
-            orderRepository.save(order);
-        });
-        return optional;
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void cleanExpiredOrdersForTenant() {
+        Optional<Order> optional = orderRepository.findFirstExpiredOrder();
+        while (optional.isPresent()) {
+            handleExpiredOrder(optional.get());
+            optional = orderRepository.findFirstExpiredOrder();
+        }
     }
 
-    @Override
-    @Transactional(propagation = Propagation.NEVER)
-    // No transaction because :
-    // - loadComplete use a new one and so when delete is called, order state is at start of transaction (so with state
-    // EXPIRED)
-    // - loadComplete needs a new transaction each time it is called. If nothing is specified, it seems that the same
-    // transaction is used each time loadComplete is called (I think it is due to Hibernate Flush mode set as NEVER
-    // specified by Spring so it is cached in first level)
-    public void cleanExpiredOrder(Order order) {
+    /**
+     * Clean expired order (pause, wait for end of pause then delete it)
+     *
+     * @param order
+     */
+    private void handleExpiredOrder(Order order) {
         // Ask for all jobInfos abortion (don't call self.pause() because of status, order must stay EXPIRED)
         order.getDatasetTasks()
              .stream()
@@ -252,6 +242,9 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
         }
         // Deactivate waitingForUser tag
         order.setWaitingForUser(false);
+        order.setAvailableFilesCount(0);
+        // Set status to expired
+        order.setStatus(OrderStatus.EXPIRED);
         // Order is already at EXPIRED state so let it be
         orderRepository.save(order);
     }
