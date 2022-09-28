@@ -189,8 +189,6 @@ pipeline {
             runMavenDockerImgWithoutCoTS('POST-ALWAYS-TASK -- Send new successfull modules hashes to nexus', "updateHashes")
         }
         failure {
-            tuleapNotifyCommitStatus status: 'failure', repositoryId: '875', credentialId: 'tuleap-ci-token'
-            mattermostSend color: 'danger', message: "Build Failed - ${env.JOB_NAME}#${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)", text: "Changes: \n"+getChangeString()
             echo 'POST-FAILURE-TASK -- The build FAILED, let\'s print all COTS logs'
 
             // Log COTS only if they are existing
@@ -209,9 +207,6 @@ pipeline {
             sh label: "POST-FAILURE-TASK -- Print S3 Minio logs", script: 'cd ' + CI_DIR + ' \
                 && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-s3-minio', returnStatus:true
         }
-        success {
-            tuleapNotifyCommitStatus status: 'success', repositoryId: '875', credentialId: 'tuleap-ci-token'
-        }
         cleanup {
             sh label: 'POST-CLEANUP-TASK -- Stop CoTs', script: 'docker-compose -f ' + CI_DIR + '/docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' down'
             sh label: 'POST-CLEANUP-TASK -- Rewrire owner and access rights, to avoid future build having files issues', script: 'chown -R jenkins:jenkins . \
@@ -219,26 +214,6 @@ pipeline {
                 && chmod -R g+rwx .'
         }
     }
-}
-
-@NonCPS
-def getChangeString() {
-    def changeString = ""
-
-    echo "Gathering SCM changes"
-    def changeLogSets = currentBuild.changeSets
-    for (int i = 0; i < changeLogSets.size(); i++) {
-        def entries = changeLogSets[i].items
-        for (int j = 0; j < entries.length; j++) {
-            def entry = entries[j]
-            changeString += " - ${entry.msg} [@${entry.author}]\n"
-        }
-    }
-
-    if (!changeString) {
-        changeString = " - No new changes"
-    }
-    return changeString
 }
 
 // Return the shell to execute to run a docker container using rs-maven-ci image
