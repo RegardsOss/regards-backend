@@ -288,4 +288,10 @@ public interface IProductService {
      */
     void handleGeneratedProducts(AcquisitionProcessingChain processingChain, Set<Product> success, Set<Product> errors);
 
+    /**
+     * Return bulk limit for acquisition process
+     *
+     * @return bulk limit for acquisition process
+     */
+    Integer getBulkAcquisitionLimit();
 }

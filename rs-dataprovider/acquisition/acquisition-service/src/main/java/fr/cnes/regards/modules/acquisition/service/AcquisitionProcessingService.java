@@ -974,7 +974,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         Page<AcquisitionFile> page = acqFileRepository.findByStateAndFileInfoInOrderByAcqDateAsc(AcquisitionFileState.IN_PROGRESS,
                                                                                                  processingChain.getFileInfos(),
                                                                                                  PageRequest.of(0,
-                                                                                                                AcquisitionProperties.WORKING_UNIT));
+                                                                                                                productService.getBulkAcquisitionLimit()));
         LOGGER.debug("Managing next new {} registered files (of {})",
                      page.getNumberOfElements(),
                      page.getTotalElements());
@@ -1119,7 +1119,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         Page<AcquisitionFile> page = acqFileRepository.findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS,
                                                                                           fileInfo,
                                                                                           PageRequest.of(0,
-                                                                                                         AcquisitionProperties.WORKING_UNIT));
+                                                                                                         productService.getBulkAcquisitionLimit()));
         for (AcquisitionFile acqFile : page) {
             // set error message in case there was none (more specific)
             if (Strings.isNullOrEmpty(acqFile.getError())) {
