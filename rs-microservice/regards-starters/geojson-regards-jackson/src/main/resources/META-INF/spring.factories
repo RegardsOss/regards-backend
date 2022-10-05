@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-fr.cnes.regards.framework.geojson.GeojsonJacksonAutoconfiguration
+fr.cnes.regards.framework.geojson.CustomJacksonAutoconfiguration

@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.geojson;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import fr.cnes.regards.framework.geojson.deserializers.GeometryDeserializerModule;
 import fr.cnes.regards.framework.geojson.serializers.GeometrySerializerModule;
 import org.springframework.context.annotation.Bean;
@@ -29,17 +30,24 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
  * @author Thomas GUILLOU
  **/
 @Configuration
-public class GeojsonJacksonAutoconfiguration {
+public class CustomJacksonAutoconfiguration {
 
+    /**
+     * Create an ObjectMapperBuilder.
+     * The default ObjectMapper configuration will be overridden
+     */
     @Bean
     public Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder() {
         // Spring Boot actually uses this builder by default when building the ObjectMapper
-        // it will also register automatically jackson-datatype-jdk8 modules because it's present on the classpath
+        // it will also register automatically some modules because they are present on the classpath :
         // jackson-datatype-jdk8: support for other Java 8 types like Optional
+        // jackson-datatype-jsr310: support for Java 8 Date & Time API types
         return new Jackson2ObjectMapperBuilder().modulesToInstall(new GeometrySerializerModule(),
                                                                   new GeometryDeserializerModule())
                                                 .serializationInclusion(JsonInclude.Include.NON_ABSENT)
-                                                .failOnUnknownProperties(false);
+                                                .failOnUnknownProperties(false)
+                                                // Spring Cloud default config has disable WRITE_DATES_AS_TIMESTAMPS
+                                                .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
 }
