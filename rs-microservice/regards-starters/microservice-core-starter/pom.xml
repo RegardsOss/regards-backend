@@ -23,6 +23,7 @@
 
     <artifactId>microservice-core-starter</artifactId>
     <description>Convenient starter for microservice basic starters dependencies</description>
+    <packaging>pom</packaging>
 
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>

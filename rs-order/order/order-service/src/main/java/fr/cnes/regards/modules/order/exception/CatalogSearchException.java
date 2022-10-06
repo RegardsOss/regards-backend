@@ -28,6 +28,10 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  */
 public class CatalogSearchException extends ModuleException {
 
+    public CatalogSearchException(String cause) {
+        super(cause);
+    }
+
     public CatalogSearchException(String cause, Exception exception) {
         super(cause, exception);
     }

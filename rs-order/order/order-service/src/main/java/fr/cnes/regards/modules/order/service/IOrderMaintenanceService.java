@@ -18,10 +18,6 @@
  */
 package fr.cnes.regards.modules.order.service;
 
-import fr.cnes.regards.modules.order.domain.Order;
-
-import java.util.Optional;
-
 public interface IOrderMaintenanceService {
 
     /**
@@ -50,18 +46,5 @@ public interface IOrderMaintenanceService {
      */
     void cleanExpiredOrders();
 
-    /**
-     * Search for ONE order that has reached its expiration date and change sets its status to EXPIRED.
-     *
-     * @return {@link Order}
-     */
-    Optional<Order> findOneOrderAndMarkAsExpired();
-
-    /**
-     * Clean expired order (pause, wait for end of pause then delete it)
-     *
-     * @param order
-     */
-    void cleanExpiredOrder(Order order);
-
+    void cleanExpiredOrdersForTenant();
 }

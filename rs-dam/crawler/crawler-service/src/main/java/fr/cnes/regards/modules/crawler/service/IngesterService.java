@@ -120,7 +120,7 @@ public class IngesterService implements IHandler<PluginConfEvent> {
      * By default, launched 5 mn after last one. BUT this method is also executed each time a datasource is created
      * Initial delay of 2 mn to avoid been launched too soon.
      */
-    @Scheduled(initialDelay = 300000, fixedDelayString = "${regards.ingester.rate.ms:300000}")
+    @Scheduled(initialDelay = 300000, fixedDelayString = "${regards.ingester.rate.ms:60000}")
     public void manage() {
         LOGGER.info("IngesterService.manage() called...");
         try {

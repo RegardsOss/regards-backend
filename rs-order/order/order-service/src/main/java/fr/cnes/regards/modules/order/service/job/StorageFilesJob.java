@@ -98,9 +98,6 @@ public class StorageFilesJob extends AbstractJob<Void> {
     @Autowired
     private IOrderDataFileRepository orderDataFileRepository;
 
-    @Autowired
-    private IOrderDataFileService orderDataFileService;
-
     @Override
     public void setParameters(Map<String, JobParameter> parameters) throws JobParameterInvalidException {
         if ((parameters.size() < 4) || (parameters.size() > 5)) {

@@ -105,11 +105,15 @@ public class ProductService implements IProductService {
 
     private SessionNotifier sessionNotifier;
 
-    @Value("${regards.acquisition.product.bulk.request.limit:2000}")
-    private Integer bulkRequestLimit;
+    @Value("${regards.acquisition.product.bulk.deletion.limit:100}")
+    private Integer bulkDeletionLimit;
 
-    @Value("${spring.application.name}")
-    private String appName;
+    /**
+     * All transactions only manage at most {@link #WORKING_UNIT} entities at a time
+     * in order to take care of the memory consumption and potential tenant starvation.
+     */
+    @Value("${regards.acquisition.batch.size:100}")
+    private Integer bulkAcquisitionLimit;
 
     public ProductService(IPluginService pluginService,
                           IProductRepository productRepository,
@@ -237,7 +241,7 @@ public class ProductService implements IProductService {
     @Override
     public void deleteBySession(AcquisitionProcessingChain chain, String session) {
         // lets try to handle products per 5 time the ordinary bulk
-        Pageable page = PageRequest.of(0, bulkRequestLimit, Sort.by("id"));
+        Pageable page = PageRequest.of(0, bulkDeletionLimit, Sort.by("id"));
         while (!Thread.currentThread().isInterrupted() && self.deleteProducts(chain, Optional.of(session), page)) {
             // do not call page.next() here. We are asking for deletion of the products so we have to only request the first page at each iteration.
         }
@@ -245,7 +249,7 @@ public class ProductService implements IProductService {
 
     @Override
     public void deleteByProcessingChain(AcquisitionProcessingChain chain) {
-        Pageable page = PageRequest.of(0, bulkRequestLimit, Sort.by("id"));
+        Pageable page = PageRequest.of(0, bulkDeletionLimit, Sort.by("id"));
         while (!Thread.currentThread().isInterrupted() && self.deleteProducts(chain, Optional.empty(), page)) {
             // do not call page.next() here. We are asking for deletion of the products so we have to only request the first page at each iteration.
         }
@@ -777,7 +781,7 @@ public class ProductService implements IProductService {
     public boolean isProductJobStoppedAndCleaned(AcquisitionProcessingChain processingChain) throws ModuleException {
         // Handle SIP generation jobs
         Page<Product> products;
-        Pageable pageable = PageRequest.of(0, AcquisitionProperties.WORKING_UNIT);
+        Pageable pageable = PageRequest.of(0, bulkAcquisitionLimit);
         do {
             products = productRepository.findWithLockByProcessingChainAndSipStateOrderByIdAsc(processingChain,
                                                                                               ProductSIPState.SCHEDULED,
@@ -802,7 +806,7 @@ public class ProductService implements IProductService {
         Page<Product> products = productRepository.findByProcessingChainAndSipStateOrderByIdAsc(processingChain,
                                                                                                 ProductSIPState.SCHEDULED_INTERRUPTED,
                                                                                                 PageRequest.of(0,
-                                                                                                               AcquisitionProperties.WORKING_UNIT));
+                                                                                                               bulkAcquisitionLimit));
         // Schedule SIP generation
         if (products.hasContent()) {
             LOGGER.debug("Restarting interrupted SIP generation for {} product(s)", products.getContent().size());
@@ -821,7 +825,7 @@ public class ProductService implements IProductService {
                                                                                         Arrays.asList(ProductSIPState.GENERATION_ERROR,
                                                                                                       ProductSIPState.INGESTION_FAILED),
                                                                                         PageRequest.of(0,
-                                                                                                       AcquisitionProperties.WORKING_UNIT));
+                                                                                                       bulkAcquisitionLimit));
         } else {
             products = productRepository.findByProcessingChainAndSessionAndSipStateInOrderByIdAsc(processingChain,
                                                                                                   sessionToRetry.get(),
@@ -829,7 +833,7 @@ public class ProductService implements IProductService {
                                                                                                       ProductSIPState.GENERATION_ERROR,
                                                                                                       ProductSIPState.INGESTION_FAILED),
                                                                                                   PageRequest.of(0,
-                                                                                                                 AcquisitionProperties.WORKING_UNIT));
+                                                                                                                 bulkAcquisitionLimit));
         }
 
         // Schedule SIP generation
@@ -873,7 +877,7 @@ public class ProductService implements IProductService {
         Page<Product> page = productRepository.findByProcessingChainAndStateOrderByIdAsc(processingChain,
                                                                                          ProductState.UPDATED,
                                                                                          PageRequest.of(0,
-                                                                                                        AcquisitionProperties.WORKING_UNIT));
+                                                                                                        bulkAcquisitionLimit));
         Set<Product> productsToSchedule = new HashSet<>();
         for (Product currentProduct : page.getContent()) {
             computeProductState(currentProduct);
@@ -930,7 +934,9 @@ public class ProductService implements IProductService {
         jobInfo.setOwner(authResolver.getUser());
         jobInfo = jobInfoService.createAsQueued(jobInfo);
         return jobInfo;
-
     }
 
+    public Integer getBulkAcquisitionLimit() {
+        return bulkAcquisitionLimit;
+    }
 }
