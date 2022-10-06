@@ -283,7 +283,11 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
         }
         InputStream stream;
         try {
-            stream = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy, noProxyHosts, 10_000);
+            stream = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()),
+                                                              proxy,
+                                                              noProxyHosts,
+                                                              10_000,
+                                                              Collections.emptyList());
             return new ResponseEntity<>(new InputStreamResource(stream), headers, HttpStatus.OK);
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);

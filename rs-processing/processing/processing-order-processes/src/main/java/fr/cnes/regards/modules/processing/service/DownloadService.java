@@ -53,6 +53,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Collections;
 import java.util.concurrent.Callable;
 
 import static fr.cnes.regards.modules.processing.exceptions.ProcessingException.mustWrap;
@@ -175,7 +176,8 @@ public class DownloadService implements IDownloadService {
                        try (InputStream is = DownloadUtils.getInputStreamThroughProxy(url,
                                                                                       proxy,
                                                                                       nonProxyHosts.toJavaSet(),
-                                                                                      10_000)) {
+                                                                                      10_000,
+                                                                                      Collections.emptyList())) {
                            FileUtils.copyToFile(is, dest.toFile());
                        }
                        return dest;

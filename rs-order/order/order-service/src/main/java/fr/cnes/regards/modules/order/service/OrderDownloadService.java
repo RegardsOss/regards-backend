@@ -244,7 +244,8 @@ public class OrderDownloadService implements IOrderDownloadService, Initializing
         try (InputStream is = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()),
                                                                        proxy,
                                                                        noProxyHosts,
-                                                                       timeout)) {
+                                                                       timeout,
+                                                                       Collections.emptyList())) {
             readInputStreamAndAddToZip(downloadErrorFiles, zos, dataFiles, i, dataFile, dataObjectIpId, is);
         } catch (IOException e) {
             String stack = getStack(e);

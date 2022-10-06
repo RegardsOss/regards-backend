@@ -1,16 +1,44 @@
+/*
+ * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package fr.cnes.regards.framework.utils.file;
 
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.s3.client.S3HighLevelReactiveClient;
+import fr.cnes.regards.framework.s3.domain.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferFactory;
+import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.Proxy;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -18,6 +46,10 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -25,22 +57,30 @@ import java.util.regex.Pattern;
  */
 public final class DownloadUtils {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DownloadUtils.class);
+
     private DownloadUtils() {
     }
 
     /**
      * Get an InputStream on a source URL with no proxy used
      */
-    public static InputStream getInputStream(URL source) throws IOException {
-        return getInputStreamThroughProxy(source, Proxy.NO_PROXY, Sets.newHashSet());
+    public static InputStream getInputStream(URL source, List<S3Server> knownS3Server) throws IOException {
+        return getInputStreamThroughProxy(source, Proxy.NO_PROXY, Sets.newHashSet(), knownS3Server);
     }
 
     /**
      * works as {@link DownloadUtils#downloadThroughProxy} without proxy.
      */
-    public static String download(URL source, Path destination, String checksumAlgorithm)
+    public static String download(URL source, Path destination, String checksumAlgorithm, List<S3Server> knownS3Servers)
         throws IOException, NoSuchAlgorithmException {
-        return downloadThroughProxy(source, destination, checksumAlgorithm, Proxy.NO_PROXY, Sets.newHashSet(), null);
+        return downloadThroughProxy(source,
+                                    destination,
+                                    checksumAlgorithm,
+                                    Proxy.NO_PROXY,
+                                    Sets.newHashSet(),
+                                    null,
+                                    knownS3Servers);
     }
 
     /**
@@ -50,19 +90,28 @@ public final class DownloadUtils {
                                   Path destination,
                                   String checksumAlgorithm,
                                   Collection<String> nonProxyHosts,
-                                  Integer pConnectTimeout) throws IOException, NoSuchAlgorithmException {
+                                  Integer pConnectTimeout,
+                                  List<S3Server> knownS3Servers) throws IOException, NoSuchAlgorithmException {
         return downloadThroughProxy(source,
                                     destination,
                                     checksumAlgorithm,
                                     Proxy.NO_PROXY,
                                     nonProxyHosts,
-                                    pConnectTimeout);
+                                    pConnectTimeout,
+                                    knownS3Servers);
     }
 
     /**
      * Download from the source and write it onto the file system at the destination provided.
      * Use the provided checksumAlgorithm to calculate the checksum at the end for further verification
      *
+     * @param source            the url of the file to download
+     * @param destination       the path where to store the downloaded file
+     * @param checksumAlgorithm the algorithm used to compute the checksum of the downloaded file
+     * @param proxy             the proxy to use if needed
+     * @param nonProxyHosts     the list of hosts for which the proxy is not needed
+     * @param pConnectTimeout   the time the process will wait while trying to connect, can be null
+     * @param knownS3Servers    the list of known S3 hosts, the process will use the specific s3 download algorithm if the downloaded file belong to one of these hosts
      * @return checksum, computed using the provided algorithm, of the file created at destination
      */
     public static String downloadThroughProxy(URL source,
@@ -70,12 +119,15 @@ public final class DownloadUtils {
                                               String checksumAlgorithm,
                                               Proxy proxy,
                                               Collection<String> nonProxyHosts,
-                                              Integer pConnectTimeout) throws NoSuchAlgorithmException, IOException {
+                                              Integer pConnectTimeout,
+                                              List<S3Server> knownS3Servers)
+        throws NoSuchAlgorithmException, IOException {
         try (OutputStream os = Files.newOutputStream(destination, StandardOpenOption.CREATE);
             InputStream sourceStream = DownloadUtils.getInputStreamThroughProxy(source,
                                                                                 proxy,
                                                                                 nonProxyHosts,
-                                                                                pConnectTimeout);
+                                                                                pConnectTimeout,
+                                                                                knownS3Servers);
             // lets compute the checksum during the copy!
             DigestInputStream dis = new DigestInputStream(sourceStream, MessageDigest.getInstance(checksumAlgorithm))) {
             ByteStreams.copy(dis, os);
@@ -84,13 +136,14 @@ public final class DownloadUtils {
     }
 
     /**
-     * same than {@link DownloadUtils#downloadAndCheckChecksum(URL, Path, String, String, Proxy, Collection, Integer)} with {@link Proxy#NO_PROXY} as proxy
+     * same than {@link DownloadUtils#downloadAndCheckChecksum(URL, Path, String, String, Proxy, Collection, Integer, List<S3Server>)} with {@link Proxy#NO_PROXY} as proxy
      */
     public static boolean downloadAndCheckChecksum(URL source,
                                                    Path destination,
                                                    String checksumAlgorithm,
                                                    String expectedChecksum,
-                                                   Integer pConnectionTimeout)
+                                                   Integer pConnectionTimeout,
+                                                   List<S3Server> knownS3Servers)
         throws IOException, NoSuchAlgorithmException {
         return downloadAndCheckChecksum(source,
                                         destination,
@@ -98,16 +151,18 @@ public final class DownloadUtils {
                                         expectedChecksum,
                                         Proxy.NO_PROXY,
                                         Sets.newHashSet(),
-                                        pConnectionTimeout);
+                                        pConnectionTimeout,
+                                        knownS3Servers);
     }
 
     /**
-     * same than {@link DownloadUtils#downloadAndCheckChecksum(URL, Path, String, String, Proxy, Collection, Integer)} with {@link Proxy#NO_PROXY} as proxy and default timeout
+     * same than {@link DownloadUtils#downloadAndCheckChecksum(URL, Path, String, String, Proxy, Collection, Integer, List<S3Server>)} with {@link Proxy#NO_PROXY} as proxy and default timeout
      */
     public static boolean downloadAndCheckChecksum(URL source,
                                                    Path destination,
                                                    String checksumAlgorithm,
-                                                   String expectedChecksum)
+                                                   String expectedChecksum,
+                                                   List<S3Server> knownS3Servers)
         throws IOException, NoSuchAlgorithmException {
         return downloadAndCheckChecksum(source,
                                         destination,
@@ -115,7 +170,8 @@ public final class DownloadUtils {
                                         expectedChecksum,
                                         Proxy.NO_PROXY,
                                         Sets.newHashSet(),
-                                        null);
+                                        null,
+                                        knownS3Servers);
     }
 
     /**
@@ -130,28 +186,24 @@ public final class DownloadUtils {
                                                    String expectedChecksum,
                                                    Proxy proxy,
                                                    Collection<String> nonProxyHosts,
-                                                   Integer pConnectionTimeout)
+                                                   Integer pConnectionTimeout,
+                                                   List<S3Server> knownS3Servers)
         throws IOException, NoSuchAlgorithmException {
         String checksum = downloadThroughProxy(source,
                                                destination,
                                                checksumAlgorithm,
                                                proxy,
                                                nonProxyHosts,
-                                               pConnectionTimeout);
+                                               pConnectionTimeout,
+                                               knownS3Servers);
         return checksum.toLowerCase().equals(expectedChecksum.toLowerCase());
     }
 
-    public static InputStream getInputStreamThroughProxy(URL source, Proxy proxy, Collection<String> nonProxyHosts)
-        throws IOException {
-        URLConnection connection;
-        if (needProxy(source, nonProxyHosts)) {
-            connection = source.openConnection(proxy);
-        } else {
-            connection = source.openConnection();
-        }
-        connection.setDoInput(true); //that's the default but lets set it explicitly for understanding
-        connection.connect();
-        return connection.getInputStream();
+    public static InputStream getInputStreamThroughProxy(URL source,
+                                                         Proxy proxy,
+                                                         Collection<String> nonProxyHosts,
+                                                         List<S3Server> knownS3Servers) throws IOException {
+        return getInputStreamThroughProxy(source, proxy, nonProxyHosts, null, knownS3Servers);
     }
 
     /**
@@ -160,7 +212,128 @@ public final class DownloadUtils {
     public static InputStream getInputStreamThroughProxy(URL source,
                                                          Proxy proxy,
                                                          Collection<String> nonProxyHosts,
-                                                         Integer pConnectTimeout) throws IOException {
+                                                         Integer pConnectTimeout,
+                                                         List<S3Server> knownS3Servers) throws IOException {
+        Optional<S3Server> s3Server = isUrlFromS3Host(source, knownS3Servers);
+        if (s3Server.isPresent()) {
+            String bucket;
+            Pattern pattern = Pattern.compile(s3Server.get().getPattern());
+            Matcher matcher = pattern.matcher(source.toString());
+            matcher.find();
+            String filePath = matcher.group(2);
+            if (s3Server.get().getBucket() != null && !s3Server.get().getBucket().isBlank()) {
+                bucket = s3Server.get().getBucket();
+            } else {
+                bucket = matcher.group(1);
+            }
+            StorageConfig storageConfig = StorageConfig.builder()
+                                                       .endpoint(s3Server.get().getEndpoint())
+                                                       .bucket(bucket)
+                                                       .key(s3Server.get().getKey())
+                                                       .secret(s3Server.get().getSecret())
+                                                       .region(s3Server.get().getRegion())
+                                                       .rootPath("")
+                                                       .build();
+            StorageCommandID cmdId = new StorageCommandID(filePath, UUID.randomUUID());
+            return getInputStreamFromS3Source(filePath, storageConfig, cmdId);
+        } else {
+            return getInputStreamThroughProxyFromRegularSource(source, proxy, nonProxyHosts, pConnectTimeout);
+        }
+
+    }
+
+    /**
+     * Get an InputStream of the file to download using an s3 source
+     *
+     * @param entryKey      the file to download on the s3 server
+     * @param storageConfig the storageConfiguration
+     * @return an InputStream of the file
+     * @throws IOException
+     */
+    public static InputStream getInputStreamFromS3Source(String entryKey,
+                                                         StorageConfig storageConfig,
+                                                         StorageCommandID cmdId) {
+        Scheduler scheduler = Schedulers.newParallel("s3-reactive-client", 10);
+        int maxBytesPerPart = 5 * 1024 * 1024;
+        S3HighLevelReactiveClient client = new S3HighLevelReactiveClient(scheduler, maxBytesPerPart, 10);
+
+        StorageCommand.Read readCmd = StorageCommand.read(storageConfig, cmdId, entryKey);
+        return client.read(readCmd)
+                     .flatMap(readResult -> readResult.matchReadResult(r -> toInputStream(r),
+                                                                       unreachable -> Mono.error(new ModuleException(
+                                                                           "Unreachable server: "
+                                                                           + unreachable.toString())),
+                                                                       notFound -> Mono.error(new FileNotFoundException(
+                                                                           "Entry not found"))))
+                     .block();
+
+    }
+
+    private static Mono<InputStream> toInputStream(StorageCommandResult.ReadingPipe pipe) {
+        DataBufferFactory dbf = new DefaultDataBufferFactory();
+        return pipe.getEntry()
+                   .flatMap(entry -> DataBufferUtils.join(entry.getData().map(dbf::wrap)))
+                   .map(DataBuffer::asInputStream);
+    }
+
+    public static Long getContentLength(URL source, Integer pConnectTimeout) throws IOException {
+        URLConnection connection = source.openConnection();
+        connection.setConnectTimeout(pConnectTimeout);
+        return connection.getContentLengthLong();
+    }
+
+    /**
+     * Check if proxy is needed for given url
+     *
+     * @param url           the url to check
+     * @param nonProxyHosts the list of hosts for which a proxy is not needed
+     * @return true if you need a proxy to reach the url
+     */
+    public static boolean needProxy(URL url, Collection<String> nonProxyHosts) {
+        if (nonProxyHosts != null && !nonProxyHosts.isEmpty()) {
+            return !nonProxyHosts.stream().anyMatch(host -> Pattern.matches(host, url.getHost()));
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * Return the S3Server the URL belong to or null if there is no corresponding server
+     *
+     * @param url       the url to check
+     * @param s3Servers the list of servers to check
+     * @return the server hosting the file at the url if it's present.
+     */
+    private static Optional<S3Server> isUrlFromS3Host(URL url, List<S3Server> s3Servers) {
+        return s3Servers == null ?
+            Optional.empty() :
+            s3Servers.stream().filter(s -> isTheSameHost(s.getEndpoint(), url.getHost())).findAny();
+    }
+
+    private static boolean isTheSameHost(String endPoint, String hostUrl) {
+        try {
+            String endPointUrl = new URL(endPoint).getHost();
+            return endPointUrl.equals(hostUrl);
+        } catch (MalformedURLException e) {
+            LOGGER.error("The url {} is invalid", endPoint, e);
+            return false;
+        }
+    }
+
+    /**
+     * Get an InputStream of the file to download
+     *
+     * @param source          the file to download
+     * @param proxy           the proxy to use if needed
+     * @param nonProxyHosts   the list of hosts for which the proxy is not needed
+     * @param pConnectTimeout the time the process will wait while trying to connect, can be null
+     * @return an InputStream of the file
+     * @throws IOException
+     */
+    private static InputStream getInputStreamThroughProxyFromRegularSource(URL source,
+                                                                           Proxy proxy,
+                                                                           Collection<String> nonProxyHosts,
+                                                                           Integer pConnectTimeout) throws IOException {
         URLConnection connection;
         if (needProxy(source, nonProxyHosts)) {
             connection = source.openConnection(proxy);
@@ -180,25 +353,11 @@ public final class DownloadUtils {
                 conn.disconnect();
                 throw new FileNotFoundException(String.format(
                     "Error during http/https access for URL %s, got response code : %d",
-                    source.toString(),
+                    source,
                     conn.getResponseCode()));
             }
         }
         return connection.getInputStream();
-    }
-
-    public static Long getContentLength(URL source, Integer pConnectTimeout) throws IOException {
-        URLConnection connection = source.openConnection();
-        connection.setConnectTimeout(pConnectTimeout);
-        return connection.getContentLengthLong();
-    }
-
-    public static boolean needProxy(URL url, Collection<String> nonProxyHosts) {
-        if (nonProxyHosts != null && !nonProxyHosts.isEmpty()) {
-            return !nonProxyHosts.stream().anyMatch(host -> Pattern.matches(host, url.getHost()));
-        } else {
-            return true;
-        }
     }
 
 }

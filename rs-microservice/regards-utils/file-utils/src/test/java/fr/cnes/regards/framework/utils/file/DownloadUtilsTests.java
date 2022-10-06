@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -33,7 +34,7 @@ public class DownloadUtilsTests {
     public void testDownloadWithFileProtocolWithoutProxy() throws IOException, NoSuchAlgorithmException {
         String fileLocation = "src/test/resources/data.txt";
         URL source = new URL("file", "localhost", fileLocation);
-        InputStream is = DownloadUtils.getInputStream(source);
+        InputStream is = DownloadUtils.getInputStream(source, Collections.emptyList());
         DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"));
         while (dis.read() != -1) {
         }
@@ -60,7 +61,7 @@ public class DownloadUtilsTests {
         String fileLocation = "src/test/resources/data.txt";
         URL source = new URL("file", "localhost", fileLocation);
         Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("proxy2.si.c-s.fr", 3128));
-        InputStream is = DownloadUtils.getInputStreamThroughProxy(source, proxy, null);
+        InputStream is = DownloadUtils.getInputStreamThroughProxy(source, proxy, null, Collections.emptyList());
         DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"));
         while (dis.read() != -1) {
         }
@@ -82,7 +83,7 @@ public class DownloadUtilsTests {
     @Test
     public void testDownloadWithHttpProtocolWithoutProxy() throws IOException, NoSuchAlgorithmException {
         URL source = new URL("http://172.26.47.107:9020/conf/staticConfiguration.js");
-        InputStream is = DownloadUtils.getInputStream(source);
+        InputStream is = DownloadUtils.getInputStream(source, Collections.emptyList());
         DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"));
         while (dis.read() != -1) {
         }
@@ -96,7 +97,7 @@ public class DownloadUtilsTests {
     public void testDownloadWithHttpProtocolWithProxy() throws IOException, NoSuchAlgorithmException {
         URL source = new URL("http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-3");
         Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("proxy2.si.c-s.fr", 3128));
-        InputStream is = DownloadUtils.getInputStreamThroughProxy(source, proxy, null);
+        InputStream is = DownloadUtils.getInputStreamThroughProxy(source, proxy, null, Collections.emptyList());
         DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"));
         while (dis.read() != -1) {
         }

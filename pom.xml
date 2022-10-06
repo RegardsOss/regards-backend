@@ -1206,6 +1206,16 @@
                 <artifactId>storage-dao</artifactId>
                 <version>${revision}</version>
             </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework.utils</groupId>
+                <artifactId>s3-storage-utils</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework.test</groupId>
+                <artifactId>regards-s3-test</artifactId>
+                <version>${revision}</version>
+            </dependency>
             <!-- Authentication -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.authentication</groupId>
