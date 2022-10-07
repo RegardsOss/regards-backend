@@ -32,6 +32,7 @@ public class DataSourceDTO extends PluginConfiguration {
     public DataSourceDTO(Long associatedDatasets, PluginConfiguration dataSourceConf) {
         super();
         this.associatedDatasets = associatedDatasets;
+
         this.setId(dataSourceConf.getId());
         this.setBusinessId(dataSourceConf.getBusinessId());
         this.setPluginId(dataSourceConf.getPluginId());

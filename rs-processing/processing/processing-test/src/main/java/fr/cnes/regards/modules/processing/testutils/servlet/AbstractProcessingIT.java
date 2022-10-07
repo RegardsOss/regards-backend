@@ -78,6 +78,8 @@ public abstract class AbstractProcessingIT implements InitializingBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractProcessingIT.class);
 
+    private static final String CREATE_DB = "createdb";
+
     protected static final String R2DBCDB_NAME = "r2dbcdb";
 
     protected static final String TENANT_PROJECTA = "projecta";
@@ -150,7 +152,7 @@ public abstract class AbstractProcessingIT implements InitializingBean {
             if (onLocal) {
                 Try.run(() -> {
                     LOGGER.info("################## Creating DB for tenant {}", TENANT_PROJECTA);
-                    Container.ExecResult resultA = postgreSQLContainer.execInContainer("createdb",
+                    Container.ExecResult resultA = postgreSQLContainer.execInContainer(CREATE_DB,
                                                                                        "-U",
                                                                                        PGSQL_USER,
                                                                                        TENANT_PROJECTA);
@@ -161,7 +163,7 @@ public abstract class AbstractProcessingIT implements InitializingBean {
                                 resultA.getStderr());
 
                     LOGGER.info("################## Creating DB for tenant " + TENANT_PROJECTB);
-                    Container.ExecResult resultB = postgreSQLContainer.execInContainer("createdb",
+                    Container.ExecResult resultB = postgreSQLContainer.execInContainer(CREATE_DB,
                                                                                        "-U",
                                                                                        PGSQL_USER,
                                                                                        TENANT_PROJECTB);
@@ -172,7 +174,7 @@ public abstract class AbstractProcessingIT implements InitializingBean {
                                 resultB.getStderr());
 
                     LOGGER.info("################## Creating DB for r2dbc");
-                    Container.ExecResult r2dbc = postgreSQLContainer.execInContainer("createdb",
+                    Container.ExecResult r2dbc = postgreSQLContainer.execInContainer(CREATE_DB,
                                                                                      "-U",
                                                                                      PGSQL_USER,
                                                                                      R2DBCDB_NAME);

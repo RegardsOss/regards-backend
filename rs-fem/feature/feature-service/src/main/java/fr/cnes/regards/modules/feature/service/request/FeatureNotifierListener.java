@@ -85,6 +85,7 @@ public class FeatureNotifierListener implements INotifierRequestListener {
 
     @Override
     public void onRequestGranted(List<NotifierEvent> granted) {
+        // Do nothing
     }
 
     @Override

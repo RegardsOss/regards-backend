@@ -66,10 +66,12 @@ public class Recipient {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (!(o instanceof Recipient))
+        }
+        if (!(o instanceof Recipient)) {
             return false;
+        }
         Recipient recipient = (Recipient) o;
         return Objects.equals(label, recipient.label);
     }

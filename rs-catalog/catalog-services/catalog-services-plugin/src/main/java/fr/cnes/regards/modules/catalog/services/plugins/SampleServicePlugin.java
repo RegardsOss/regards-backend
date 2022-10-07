@@ -59,6 +59,8 @@ public class SampleServicePlugin extends AbstractCatalogServicePlugin implements
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(SampleServicePlugin.class);
 
+    private static final String IMG_CNES_LOGO = "LogoCnes.png";
+
     public static final String PLUGIN_ID = "aSampleServicePlugin";
 
     /**
@@ -101,7 +103,7 @@ public class SampleServicePlugin extends AbstractCatalogServicePlugin implements
      */
     @PluginInit
     private void aInit() {
-        LOGGER.info("Init method call : " + this.getClass().getName() + RESPONSE_TYPE_PARAMETER + ":" + responseType);
+        LOGGER.info("Init method call : {} {}:{}", this.getClass().getName(), RESPONSE_TYPE_PARAMETER, responseType);
     }
 
     @Override
@@ -153,17 +155,17 @@ public class SampleServicePlugin extends AbstractCatalogServicePlugin implements
                 LOGGER.info("[Sample plugin] Applying for IMG format response");
                 InputStreamResource resource = new InputStreamResource(this.getClass()
                                                                            .getClassLoader()
-                                                                           .getResourceAsStream("LogoCnes.png"));
+                                                                           .getResourceAsStream(IMG_CNES_LOGO));
                 try {
                     streamResponse = CatalogPluginResponseFactory.createSuccessResponseFromInputStream(response,
                                                                                                        CatalogPluginResponseType.FILE_IMG_PNG,
                                                                                                        resource.getInputStream(),
-                                                                                                       "LogoCnes.png",
+                                                                                                       IMG_CNES_LOGO,
                                                                                                        Optional.of(Long.valueOf(
                                                                                                            this.getClass()
                                                                                                                .getClassLoader()
                                                                                                                .getResource(
-                                                                                                                   "LogoCnes.png")
+                                                                                                                   IMG_CNES_LOGO)
                                                                                                                .getFile()
                                                                                                                .length())));
                 } catch (IOException e) {
@@ -185,7 +187,7 @@ public class SampleServicePlugin extends AbstractCatalogServicePlugin implements
                                                                                                            this.getClass()
                                                                                                                .getClassLoader()
                                                                                                                .getResource(
-                                                                                                                   "LogoCnes.png")
+                                                                                                                   IMG_CNES_LOGO)
                                                                                                                .getFile()
                                                                                                                .length())));
                 } catch (IOException e) {

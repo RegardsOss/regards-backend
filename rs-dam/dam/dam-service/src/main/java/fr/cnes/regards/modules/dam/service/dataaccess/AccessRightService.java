@@ -253,46 +253,38 @@ public class AccessRightService implements IAccessRightService {
      */
     private void logForSecurity(AccessRight accessRight) {
         // Access rights have diferent method of being configured, each one should has its own log format to be understandable.
+        String message = String.format("%sDataset %s access right has been modified.",
+                                       LogConstants.SECURITY_MARKER,
+                                       accessRight.getConstrained().getLabel());
         switch (accessRight.getAccessLevel()) {
             case FULL_ACCESS:
-                LOGGER.info("{}Dataset {} access right has been modified."
+                LOGGER.info(message
                             + " Users from group {} has access to this dataset metadata and its data metadata."
                             + " Access to physical data is: {}",
-                            LogConstants.SECURITY_MARKER,
-                            accessRight.getConstrained().getLabel(),
                             accessRight.getAccessGroup().getName(),
                             accessRight.getDataAccessLevel());
                 break;
             case RESTRICTED_ACCESS:
-                LOGGER.info("{}Dataset {} access right has been modified."
+                LOGGER.info(message
                             + " Users from group {} has access to this dataset."
                             + " This means they can only see its metadata and no information about its data.",
-                            LogConstants.SECURITY_MARKER,
-                            accessRight.getConstrained().getLabel(),
                             accessRight.getAccessGroup().getName());
                 break;
             case CUSTOM_ACCESS:
-                LOGGER.info("{}Dataset {} access right has been modified."
+                LOGGER.info(message
                             + " Users from group {} has access to this dataset metadata"
                             + " and its data access is decided by the plugin {}.",
-                            LogConstants.SECURITY_MARKER,
-                            accessRight.getConstrained().getLabel(),
                             accessRight.getAccessGroup().getName(),
                             accessRight.getDataAccessPlugin().getLabel());
                 break;
             case NO_ACCESS:
-                LOGGER.info("{}Dataset {} access right has been modified."
-                            + " Users from group {} has no access to this dataset metadata and its data.",
-                            LogConstants.SECURITY_MARKER,
-                            accessRight.getConstrained().getLabel(),
+                LOGGER.info(message + " Users from group {} has no access to this dataset metadata and its data.",
                             accessRight.getAccessGroup().getName());
                 break;
             default:
-                LOGGER.error("{}Dataset {} access right has been modified with an undocumented access level {}.",
-                             LogConstants.SECURITY_MARKER,
-                             accessRight.getConstrained().getLabel(),
-                             accessRight.getAccessLevel());
-                break;
+                throw new IllegalArgumentException(message
+                                                   + " with an undocumented access level : "
+                                                   + accessRight.getAccessLevel());
         }
     }
 

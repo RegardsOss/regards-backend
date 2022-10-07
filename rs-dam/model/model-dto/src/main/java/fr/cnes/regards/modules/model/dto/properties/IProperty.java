@@ -42,6 +42,10 @@ import java.util.function.Function;
  */
 public interface IProperty<T> extends Comparable<IProperty<T>> {
 
+    static String DOT = ".";
+
+    String ILLEGAL_ARG_EXCEPTION_MSG = " is not a handled value of ";
+
     /**
      * Get attribute name
      *
@@ -320,7 +324,7 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 return buildUrl(name, toURLValue(value));
             default:
                 throw new IllegalArgumentException(attributeType
-                                                   + " is not a handled value of "
+                                                   + ILLEGAL_ARG_EXCEPTION_MSG
                                                    + PropertyType.class.getName()
                                                    + " in "
                                                    + IProperty.class.getName());
@@ -457,7 +461,7 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 break;
             default:
                 throw new IllegalArgumentException(property.getType()
-                                                   + " is not a handled value of "
+                                                   + ILLEGAL_ARG_EXCEPTION_MSG
                                                    + PropertyType.class.getName()
                                                    + " in "
                                                    + IProperty.class.getName());
@@ -519,7 +523,7 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
                 return (T) buildUrl(name);
             default:
                 throw new IllegalArgumentException(attributeType
-                                                   + " is not a handled value of "
+                                                   + ILLEGAL_ARG_EXCEPTION_MSG
                                                    + PropertyType.class.getName()
                                                    + " in "
                                                    + IProperty.class.getName());
@@ -574,7 +578,7 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
         try {
             att.setValue(MarkdownURL.build(value));
         } catch (MalformedURLException e) {
-            throw new IllegalArgumentException(name + " is not a handled value of " + URL.class.getName());
+            throw new IllegalArgumentException(name + ILLEGAL_ARG_EXCEPTION_MSG + URL.class.getName());
         }
         return att;
     }
@@ -889,5 +893,4 @@ public interface IProperty<T> extends Comparable<IProperty<T>> {
         }
     }
 
-    static final String DOT = ".";
 }

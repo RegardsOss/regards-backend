@@ -35,14 +35,14 @@ import java.util.function.Function;
  */
 public class PluginConfigurationDto extends PluginConfiguration {
 
-    private final Set<ServiceScope> applicationModes;
-
-    private final Set<EntityType> entityTypes;
-
     /**
      * Finds the application mode of the given plugin configuration
      */
     private static final Function<PluginConfiguration, CatalogServicePlugin> GET_CATALOG_SERVICE_PLUGIN_ANNOTATION = new GetCatalogServicePluginAnnotation();
+
+    private final Set<ServiceScope> applicationModes;
+
+    private final Set<EntityType> entityTypes;
 
     /**
      * For a {@link PluginConfiguration}, return its corresponding DTO, in which we have added fields <code>applicationModes</code>

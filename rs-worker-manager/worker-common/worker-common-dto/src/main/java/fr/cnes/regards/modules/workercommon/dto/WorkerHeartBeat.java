@@ -46,7 +46,7 @@ public abstract class WorkerHeartBeat {
         return id;
     }
 
-    public void setId(String id) {
+    public final void setId(String id) {
         this.id = id;
     }
 
@@ -54,7 +54,7 @@ public abstract class WorkerHeartBeat {
         return type;
     }
 
-    public void setType(String type) {
+    public final void setType(String type) {
         this.type = type;
     }
 
@@ -62,7 +62,7 @@ public abstract class WorkerHeartBeat {
         return heartBeatDate;
     }
 
-    public void setHeartBeatDate(OffsetDateTime heartBeatDate) {
+    public final void setHeartBeatDate(OffsetDateTime heartBeatDate) {
         this.heartBeatDate = heartBeatDate;
     }
 }

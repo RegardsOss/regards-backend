@@ -19,9 +19,23 @@ import static fr.cnes.regards.modules.model.dto.properties.adapter.IntervalMappi
 
 public class AttrDescToJsonMapping {
 
-    public static final String ELASTICSEARCH_MAPPING_PROP_NAME = "ELASTICSEARCH_MAPPING";
-
     private static final Logger LOGGER = LoggerFactory.getLogger(AttrDescToJsonMapping.class);
+
+    private static final String INDEX_KEY = "index";
+
+    private static final String TYPE_KEY = "type";
+
+    private static final String FORMAT_KEY = "format";
+
+    private static final String PATH_KEY = "path";
+
+    private static final String FIELDDATA_KEY = "fielddata";
+
+    private static final String FIELDS_KEY = "fields";
+
+    private static final String KEYWORD_KEY = "keyword";
+
+    public static final String ELASTICSEARCH_MAPPING_PROP_NAME = "ELASTICSEARCH_MAPPING";
 
     private static final JsonMerger MERGER = new JsonMerger();
 
@@ -42,7 +56,7 @@ public class AttrDescToJsonMapping {
     }
 
     private static JsonObject type(String type, boolean indexed) {
-        return object(kv("type", type), kv("index", indexed));
+        return object(kv(TYPE_KEY, type), kv(INDEX_KEY, indexed));
     }
 
     private static JsonObject merge(JsonObject... objs) {
@@ -55,9 +69,9 @@ public class AttrDescToJsonMapping {
     }
 
     public static JsonObject stringMapping(boolean indexed) {
-        return object(kv("type", "text"),
-                      kv("fielddata", true),
-                      kv("fields", object("keyword", object(kv("type", "keyword"), kv("index", indexed)))));
+        return object(kv(TYPE_KEY, "text"),
+                      kv(FIELDDATA_KEY, true),
+                      kv(FIELDS_KEY, object(KEYWORD_KEY, object(kv(TYPE_KEY, "keyword"), kv(INDEX_KEY, indexed)))));
     }
 
     public JsonObject toJsonMapping(AttributeDescription attrDescOrNull) {
@@ -178,16 +192,16 @@ public class AttrDescToJsonMapping {
 
     private JsonObject toDateJsonMapping(AttributeDescription attrDesc) {
         return nestedPropertiesStructure(attrDesc.getPath(),
-                                         object(kv("type", "date"),
-                                                kv("index", attrDesc.isIndexed()),
-                                                kv("format", "date_optional_time")));
+                                         object(kv(TYPE_KEY, "date"),
+                                                kv(INDEX_KEY, attrDesc.isIndexed()),
+                                                kv(FORMAT_KEY, "date_optional_time")));
     }
 
     private JsonObject toDateIntervalJsonMapping(AttributeDescription attrDesc) {
         return nestedSimpleRange(attrDesc,
-                                 object(kv("type", "date"),
-                                        kv("index", attrDesc.isIndexed()),
-                                        kv("format", "date_optional_time")));
+                                 object(kv(TYPE_KEY, "date"),
+                                        kv(INDEX_KEY, attrDesc.isIndexed()),
+                                        kv(FORMAT_KEY, "date_optional_time")));
     }
 
     private JsonObject nestedSimpleRange(AttributeDescription attrDesc, JsonObject type) {
@@ -210,9 +224,10 @@ public class AttrDescToJsonMapping {
                 String path = attrDesc.getPath();
                 return merge(NO_ALIAS.nestedSimpleRange(attrDesc, type),
                              nestedPropertiesStructure(attrDesc.getPath() + ".gte",
-                                                       object(kv("type", "alias"), kv("path", fullLowPath(path)))),
+                                                       object(kv(TYPE_KEY, "alias"), kv(PATH_KEY, fullLowPath(path)))),
                              nestedPropertiesStructure(attrDesc.getPath() + ".lte",
-                                                       object(kv("type", "alias"), kv("path", fullHighPath(path)))));
+                                                       object(kv(TYPE_KEY, "alias"),
+                                                              kv(PATH_KEY, fullHighPath(path)))));
             }
         };
 

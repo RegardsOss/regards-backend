@@ -435,7 +435,6 @@ public class OrderService implements IOrderService {
             writer.append(Integer.toString(order.getFilesInErrorCount())).append(';');
             writer.append(String.valueOf(order.getDatasetTasks().stream().mapToLong(dt -> dt.getFilesSize()).sum()))
                   .append(';');
-            ;
             writer.append(String.valueOf(order.getDatasetTasks().stream().mapToLong(dt -> dt.getFilesCount()).sum()));
             writer.newLine();
         }

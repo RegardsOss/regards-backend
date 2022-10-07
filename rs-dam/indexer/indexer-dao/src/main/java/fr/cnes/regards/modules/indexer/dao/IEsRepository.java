@@ -212,8 +212,6 @@ public interface IEsRepository {
         return get(Optional.empty(), docType, docId, clazz);
     }
 
-    ;
-
     <T extends IIndexable> T getByVirtualId(String docType, String virtualId, Class<? extends IIndexable> clazz);
 
     /**

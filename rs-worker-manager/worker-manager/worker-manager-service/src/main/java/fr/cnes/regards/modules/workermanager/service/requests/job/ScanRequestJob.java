@@ -55,13 +55,13 @@ public class ScanRequestJob extends AbstractJob<Void> {
 
     private RequestStatus newStatus;
 
-    private SearchRequestParameters filters;
+    private SearchRequestParameters searchRequestFilters;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
         throws JobParameterMissingException, JobParameterInvalidException {
         // lets instantiate plugin parameters
-        filters = parameters.get(FILTERS).getValue();
+        searchRequestFilters = parameters.get(FILTERS).getValue();
         newStatus = parameters.get(REQUEST_NEW_STATUS).getValue();
     }
 
@@ -72,7 +72,7 @@ public class ScanRequestJob extends AbstractJob<Void> {
 
         // Run scan
         try {
-            requestScanService.scanUsingFilters(filters, newStatus, MAX_TASK_WAIT_DURING_JOB);
+            requestScanService.scanUsingFilters(searchRequestFilters, newStatus, MAX_TASK_WAIT_DURING_JOB);
         } catch (Throwable e) {
             logger.error("Business error", e);
             throw new JobRuntimeException(e);

@@ -162,29 +162,38 @@ public class FeatureEntityDto {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
-
+        }
         FeatureEntityDto that = (FeatureEntityDto) o;
 
-        if (disseminationPending != that.disseminationPending)
+        if (disseminationPending != that.disseminationPending) {
             return false;
-        if (!id.equals(that.id))
+        }
+        if (!id.equals(that.id)) {
             return false;
-        if (!urn.equals(that.urn))
+        }
+        if (!urn.equals(that.urn)) {
             return false;
-        if (!source.equals(that.source))
+        }
+        if (!source.equals(that.source)) {
             return false;
-        if (!session.equals(that.session))
+        }
+        if (!session.equals(that.session)) {
             return false;
-        if (!providerId.equals(that.providerId))
+        }
+        if (!providerId.equals(that.providerId)) {
             return false;
-        if (!version.equals(that.version))
+        }
+        if (!version.equals(that.version)) {
             return false;
-        if (!Objects.equals(feature, that.feature))
+        }
+        if (!Objects.equals(feature, that.feature)) {
             return false;
+        }
         return Objects.equals(disseminationsInfo, that.disseminationsInfo);
     }
 

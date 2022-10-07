@@ -27,8 +27,6 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storage.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storage.service.file.FileReferenceService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
@@ -36,8 +34,6 @@ import java.util.Map;
 public class PeriodicStorageLocationJob extends AbstractJob<Void> {
 
     public static final String DATA_STORAGE_CONF_BUSINESS_ID = "storage";
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(PeriodicStorageLocationJob.class);
 
     private String storageLocation;
 
@@ -56,7 +52,7 @@ public class PeriodicStorageLocationJob extends AbstractJob<Void> {
             storagePlugin.runPeriodicAction(progressManager);
             progressManager.bulkSavePendings();
             progressManager.notifyPendingActionErrors();
-            LOGGER.info("Periodic task on storage {} done in {}ms",
+            logger.info("Periodic task on storage {} done in {}ms",
                         storageLocation,
                         System.currentTimeMillis() - startTime);
         } catch (ModuleException e) {

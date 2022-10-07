@@ -81,7 +81,7 @@ public class FeatureDisseminationInfo {
      *
      * @param ackRequired
      */
-    public void setAckDateByAckRequired(boolean ackRequired) {
+    public final void setAckDateByAckRequired(boolean ackRequired) {
         if (ackRequired) {
             this.ackDate = null;
         } else {

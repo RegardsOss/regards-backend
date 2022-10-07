@@ -542,15 +542,20 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
             //    existing edge along the dateline - this is necessary due to a logic change in
             //    ShapeBuilder.intersection that computes dateline edges as valid intersect points
             //    in support of OGC standards
-            if (e1.intersect != Edge.MAX_COORDINATE
-                && e2.intersect != Edge.MAX_COORDINATE
-                && (e1.next.next.coordinate.equals3D(e2.coordinate)
-                    && Math.abs(e1.next.coordinate.x) == DATELINE
-                    && Math.abs(e2.coordinate.x) == DATELINE) == false) {
+            if (checkIntersectEdge(e1, e2)
+                && (e1.next.next.coordinate.equals3D(e2.coordinate) && checkCoordinateEdge(e1, e2)) == false) {
                 connect(e1, e2);
             }
         }
         return numHoles;
+    }
+
+    private static boolean checkIntersectEdge(Edge e1, Edge e2) {
+        return e1.intersect != Edge.MAX_COORDINATE && e2.intersect != Edge.MAX_COORDINATE;
+    }
+
+    private static boolean checkCoordinateEdge(Edge e1, Edge e2) {
+        return Math.abs(e1.next.coordinate.x) == DATELINE && Math.abs(e2.coordinate.x) == DATELINE;
     }
 
     private static void connect(Edge in, Edge out) {
@@ -657,7 +662,7 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
         //       (translation would result in a collapsed poly)
         //   2.  the shell of the candidate hole has been translated (to preserve the coordinate system)
         boolean incorrectOrientation = component == 0 && handedness != orientation;
-        if ((incorrectOrientation && (rng > DATELINE && rng != 2 * DATELINE)) || (translated.get() && component != 0)) {
+        if ((incorrectOrientation && checkRange(rng)) || (translated.get() && component != 0)) {
             translate(points);
             // flip the translation bit if the shell is being translated
             if (component == 0) {
@@ -669,6 +674,10 @@ public class PolygonBuilder extends ShapeBuilder<JtsGeometry, org.elasticsearch.
             }
         }
         return concat(component, direction ^ orientation, points, offset, edges, toffset, length);
+    }
+
+    private static boolean checkRange(double range) {
+        return range > DATELINE && range != 2 * DATELINE;
     }
 
     /**

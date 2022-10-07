@@ -96,6 +96,10 @@ public class FileStorageRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileStorageRequestService.class);
 
+    private static final List<FileRequestStatus> STORED_REQUEST_STATUSES = List.of(FileRequestStatus.TO_DO,
+                                                                                   FileRequestStatus.ERROR,
+                                                                                   FileRequestStatus.PENDING);
+
     private final IPluginService pluginService;
 
     private final IFileStorageRequestRepository fileStorageRequestRepo;
@@ -226,12 +230,8 @@ public class FileStorageRequestService {
                                                                                               && fileStorageRequest.getStorage()
                                                                                                                    .equals(
                                                                                                                        request.getStorage())
-                                                                                              && ((fileStorageRequest.getStatus()
-                                                                                                   == FileRequestStatus.TO_DO)
-                                                                                                  || (fileStorageRequest.getStatus()
-                                                                                                      == FileRequestStatus.ERROR)
-                                                                                                  || fileStorageRequest.getStatus()
-                                                                                                     == FileRequestStatus.PENDING))
+                                                                                              && (checkStorageRequestStatus(
+                                                                    fileStorageRequest.getStatus())))
                                                                 .findFirst();
             Optional<FileDeletionRequest> oDelReq = existingDeletionRequests.stream()
                                                                             .filter(f -> f.getFileReference()
@@ -262,6 +262,16 @@ public class FileStorageRequestService {
                          request.getFileName(),
                          System.currentTimeMillis() - start);
         }
+    }
+
+    /**
+     * Check the status of the storage request.
+     *
+     * @param status the status of the storage request
+     * @return true if status = TO_DO or ERROR or PENDING; otherwise false
+     */
+    private boolean checkStorageRequestStatus(FileRequestStatus status) {
+        return STORED_REQUEST_STATUSES.contains(status);
     }
 
     /**

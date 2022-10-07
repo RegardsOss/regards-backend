@@ -44,6 +44,8 @@ public class DamComputationPluginService implements IComputationPluginService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DamComputationPluginService.class);
 
+    private static final String ATTRIBUTE_WITH_TYPE = " (attribute %s with type %s)";
+
     @Override
     public PluginConfiguration getPlugin(Attribute xmlAtt, PropertyType type) throws ImportException {
 
@@ -70,7 +72,7 @@ public class DamComputationPluginService implements IComputationPluginService {
                 default:
                     String message = String.format(
                         "Only LONG and INTEGER attribute types are supported for sum_compute plugin"
-                        + " (attribute %s with type %s)",
+                        + ATTRIBUTE_WITH_TYPE,
                         xmlAtt.getName(),
                         xmlAtt.getType());
                     LOGGER.error(message);
@@ -86,9 +88,7 @@ public class DamComputationPluginService implements IComputationPluginService {
                     break;
                 default:
                     String message = String.format("Only DATE attribute types are supported for min_compute plugin"
-                                                   + " (attribute %s with type %s)",
-                                                   xmlAtt.getName(),
-                                                   xmlAtt.getType());
+                                                   + ATTRIBUTE_WITH_TYPE, xmlAtt.getName(), xmlAtt.getType());
                     LOGGER.error(message);
                     throw new ImportException(message);
             }
@@ -102,9 +102,7 @@ public class DamComputationPluginService implements IComputationPluginService {
                     break;
                 default:
                     String message = String.format("Only DATE attribute types are supported for max_compute plugin"
-                                                   + " (attribute %s with type %s)",
-                                                   xmlAtt.getName(),
-                                                   xmlAtt.getType());
+                                                   + ATTRIBUTE_WITH_TYPE, xmlAtt.getName(), xmlAtt.getType());
                     LOGGER.error(message);
                     throw new ImportException(message);
             }

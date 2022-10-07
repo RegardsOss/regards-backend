@@ -335,7 +335,8 @@ public class DataFile {
         }
         if (uri == null) {
             return other.uri == null;
-        } else
+        } else {
             return uri.equals(other.uri);
+        }
     }
 }

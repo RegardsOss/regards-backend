@@ -67,6 +67,8 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProcessingExecutionResultEventHandler.class);
 
+    private static final String WARNING_MSG = "{} expected to find exactly one OrderDataFile with temporary URL set to {}, but found {}";
+
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
     private final ISubscriber subscriber;
@@ -203,10 +205,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
             List<OrderDataFile> orderDataFiles = getOrderDataFilesInSuborder(orderDataFileUrl);
             int orderDataFileCount = orderDataFiles.size();
             if (orderDataFileCount != 1) {
-                LOGGER.warn("{} expected to find exactly one OrderDataFile with temporary URL set to {}, but found {}",
-                            logPrefix(evt),
-                            orderDataFileUrl,
-                            orderDataFileCount);
+                LOGGER.warn(WARNING_MSG, logPrefix(evt), orderDataFileUrl, orderDataFileCount);
             }
             OrderDataFile odf = orderDataFiles.get(0);
             String url = outputFile.getUrl().toString();
@@ -251,11 +250,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
                 List<OrderDataFile> orderDataFiles = getOrderDataFilesInSuborder(orderDataFileUrl);
                 int orderDataFileCount = orderDataFiles.size();
                 if (orderDataFileCount != 1) {
-                    LOGGER.warn(
-                        "{} expected to find exactly one OrderDataFile with temporary URL set to {}, but found {}",
-                        logPrefix(evt),
-                        orderDataFileUrl,
-                        orderDataFileCount);
+                    LOGGER.warn(WARNING_MSG, logPrefix(evt), orderDataFileUrl, orderDataFileCount);
                 }
                 OrderDataFile odf = orderDataFiles.get(0);
                 String url = outputFile.getUrl().toString();
@@ -295,10 +290,7 @@ public class ProcessingExecutionResultEventHandler implements IProcessingExecuti
         List<OrderDataFile> orderDataFiles = getOrderDataFilesInSuborder(orderDataFileUrl);
         int orderDataFileCount = orderDataFiles.size();
         if (orderDataFileCount != 1) {
-            LOGGER.warn("{} expected to find exactly one OrderDataFile with temporary URL set to {}, but found {}",
-                        logPrefix(evt),
-                        orderDataFileUrl,
-                        orderDataFileCount);
+            LOGGER.warn(WARNING_MSG, logPrefix(evt), orderDataFileUrl, orderDataFileCount);
         }
         for (OrderDataFile odf : orderDataFiles) {
             String url = outputFile.getUrl().toString();

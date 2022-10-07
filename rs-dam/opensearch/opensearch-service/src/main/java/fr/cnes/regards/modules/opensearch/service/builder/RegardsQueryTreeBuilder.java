@@ -41,19 +41,18 @@ public class RegardsQueryTreeBuilder extends QueryTreeBuilder implements ICriter
      * @param finder attribute finder
      */
     public RegardsQueryTreeBuilder(IAttributeFinder finder) {
-
         // Register builder
-        setBuilder(QuotedFieldQueryNode.class, new QuotedFieldQueryNodeBuilder(finder));
-        setBuilder(FieldQueryNode.class, new FieldQueryNodeBuilder(finder));
-        setBuilder(AndQueryNode.class, new AndQueryNodeBuilder());
-        setBuilder(OrQueryNode.class, new OrQueryNodeBuilder());
-        setBuilder(ModifierQueryNode.class, new ModifierQueryNodeBuilder());
-        setBuilder(TermRangeQueryNode.class, new TermRangeQueryNodeBuilder(finder));
-        setBuilder(WildcardQueryNode.class, new WildcardQueryNodeBuilder(finder));
-        setBuilder(GroupQueryNode.class, new GroupQueryNodeBuilder());
-        setBuilder(FuzzyQueryNode.class, new UnsupportedQueryNodeBuilder());
-        setBuilder(BooleanQueryNode.class, new BooleanNodeQueryBuilder());
-        setBuilder(RegexpQueryNode.class, new RegexpQueryNodeBuilder(finder));
+        super.setBuilder(QuotedFieldQueryNode.class, new QuotedFieldQueryNodeBuilder(finder));
+        super.setBuilder(FieldQueryNode.class, new FieldQueryNodeBuilder(finder));
+        super.setBuilder(AndQueryNode.class, new AndQueryNodeBuilder());
+        super.setBuilder(OrQueryNode.class, new OrQueryNodeBuilder());
+        super.setBuilder(ModifierQueryNode.class, new ModifierQueryNodeBuilder());
+        super.setBuilder(TermRangeQueryNode.class, new TermRangeQueryNodeBuilder(finder));
+        super.setBuilder(WildcardQueryNode.class, new WildcardQueryNodeBuilder(finder));
+        super.setBuilder(GroupQueryNode.class, new GroupQueryNodeBuilder());
+        super.setBuilder(FuzzyQueryNode.class, new UnsupportedQueryNodeBuilder());
+        super.setBuilder(BooleanQueryNode.class, new BooleanNodeQueryBuilder());
+        super.setBuilder(RegexpQueryNode.class, new RegexpQueryNodeBuilder(finder));
     }
 
     @Override

@@ -51,8 +51,6 @@ public class CreateIndexConfiguration {
     public CreateIndexConfiguration() {
     }
 
-    ;
-
     public long getNumberOfShards() {
         return numberOfShards;
     }

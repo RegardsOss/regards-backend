@@ -53,7 +53,7 @@ public class SessionsRequestsInfo {
         return this.infosPerSession.getOrDefault(key, new RequestsInfo());
     }
 
-    public void addRequests(Collection<RequestDTO> requests) {
+    public final void addRequests(Collection<RequestDTO> requests) {
         requests.forEach(this::addRequest);
     }
 
