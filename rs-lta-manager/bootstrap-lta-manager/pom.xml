@@ -68,6 +68,8 @@
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>microservice-core-starter</artifactId>
+            <version>${revision}</version>
+            <type>pom</type>
         </dependency>
         <!-- Module to retrieve tenant information from remote admin-instance microservice -->
         <dependency>

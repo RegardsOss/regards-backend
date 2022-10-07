@@ -54,6 +54,8 @@
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>microservice-core-starter</artifactId>
+            <version>${revision}</version>
+            <type>pom</type>
             <exclusions>
                 <exclusion>
                     <groupId>fr.cnes.regards.framework</groupId>
