@@ -96,10 +96,10 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
         return withClient(client -> {
             HeadObjectRequest request = HeadObjectRequest.builder().bucket(bucket).key(key).build();
             return fromFutureSupplier(() -> client.headObject(request)).map(any -> {
-                LOGGER.info("File ({}) in bucket ({}) exists", key, bucket);
+                LOGGER.debug("File ({}) in bucket ({}) exists", key, bucket);
                 return true;
             }).onErrorResume(NoSuchKeyException.class, t -> {
-                LOGGER.error("File ({}) in bucket ({}) does not exist", key, bucket, t);
+                LOGGER.debug("File ({}) in bucket ({}) does not exist", key, bucket, t);
                 return Mono.just(false);
             }).onErrorMap(SdkClientException.class, S3ClientException::new);
         });

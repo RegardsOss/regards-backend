@@ -76,8 +76,9 @@
             <artifactId>s3-storage-utils</artifactId>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>module-regards</artifactId>
+            <groupId>io.vavr</groupId>
+            <artifactId>vavr</artifactId>
+            <version>${vavr.version}</version>
         </dependency>
         <!-- for validation purpose -->
         <dependency>
@@ -104,6 +105,10 @@
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-integration-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
         </dependency>
     </dependencies>
 </project>

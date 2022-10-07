@@ -18,6 +18,7 @@
  */
 
 package fr.cnes.regards.framework.utils.file;
+
 import fr.cnes.regards.framework.s3.domain.S3Server;
 import fr.cnes.regards.framework.s3.test.FileIdentificationEnum;
 import fr.cnes.regards.framework.s3.test.S3FileTestUtils;
@@ -32,12 +33,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.util.MimeType;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -56,19 +60,42 @@ import java.util.List;
 @SpringBootConfiguration
 public class DownloadUtilsIT {
 
+    @Value("${regards.IT.s3.protocol}")
+    private String s3Protocol;
+
+    @Value("${regards.IT.s3.host}")
+    private String s3Host;
+
+    @Value("${regards.IT.s3.port}")
+    private int s3Port;
+
+    @Value("${regards.IT.s3.key}")
+    private String key;
+
+    @Value("${regards.IT.s3.secret}")
+    private String secret;
+
+    @Value("${regards.IT.s3.region}")
+    private String region;
+
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     // Storage used for this test
-    private final S3Server testServer = new S3Server("http://rs-s3-minio:9000",
-                                                     "fr-regards-1",
-                                                     "regards",
-                                                     "regardspwd",
-                                                     "bucket-test-download-utils",
-                                                     "http[s]{0,1}://(?:.*?)/(?:.*?)/(.*?)/(.*)");
+    private S3Server testServer;
+
+    public DownloadUtilsIT() {
+
+    }
 
     @Before
-    public void setUp() {
+    public void setUp() throws MalformedURLException {
+        this.testServer = new S3Server(new URL(s3Protocol, s3Host, s3Port, "").toString(),
+                                       region,
+                                       key,
+                                       secret,
+                                       "bucket-test-download-utils",
+                                       "http[s]{0,1}://(?:.*?)/(?:.*?)/(.*?)/(.*)");
         S3FileTestUtils.createBucket(testServer);
         createTestFileOnServer();
         createDeepTestFileOnServer();
@@ -77,7 +104,7 @@ public class DownloadUtilsIT {
     @Test
     public void testS3DownloadThroughInputStream() throws IOException {
 
-        URL url = new URL("http", "rs-s3-minio", "/buckets/bucket-test-download-utils/file1.txt");
+        URL url = new URL(s3Protocol, s3Host, s3Port, "/buckets/bucket-test-download-utils/file1.txt");
 
         List<S3Server> knownStorages = Arrays.asList(testServer);
 
@@ -90,7 +117,7 @@ public class DownloadUtilsIT {
 
     @Test
     public void testS3DownloadThroughFileCopy() throws IOException, NoSuchAlgorithmException {
-        URL url = new URL("http", "rs-s3-minio", "/buckets/bucket-test-download-utils/file1.txt");
+        URL url = new URL(s3Protocol, s3Host, s3Port, "/buckets/bucket-test-download-utils/file1.txt");
 
         List<S3Server> knownStorages = Arrays.asList(testServer);
 
@@ -107,8 +134,9 @@ public class DownloadUtilsIT {
 
     @Test
     public void testS3DownloadDeepFile() throws IOException {
-        URL url = new URL("http",
-                          "rs-s3-minio",
+        URL url = new URL(s3Protocol,
+                          s3Host,
+                          s3Port,
                           "/buckets/bucket-test-download-utils/test/deep/file/sub/directory/file2.txt");
 
         List<S3Server> knownStorages = Arrays.asList(testServer);
@@ -124,44 +152,39 @@ public class DownloadUtilsIT {
     @Test
     public void testS3DownloadFileUsingPattern() throws IOException {
 
-        S3Server testServerWithoutBucket = new S3Server("http://rs-s3-minio:9000",
-                                                        "fr-regards-1",
-                                                        "regards",
-                                                        "regardspwd",
+        S3Server testServerWithoutBucket = new S3Server(new URL(s3Protocol, s3Host, s3Port, "").toString(),
+                                                        region,
+                                                        key,
+                                                        secret,
                                                         "",
                                                         "http[s]{0,1}://(?:.*?)/(?:.*?)/(.*?)/(.*)");
 
         List<S3Server> knownStorages = Arrays.asList(testServerWithoutBucket);
 
-        URL url = new URL("http", "rs-s3-minio", "/buckets/bucket-test-download-utils/file1.txt");
+        URL url = new URL(s3Protocol, s3Host, s3Port, "/buckets/bucket-test-download-utils/file1.txt");
         InputStream stream = DownloadUtils.getInputStream(url, knownStorages);
         Assert.assertNotNull(stream);
 
         String expected = "mundi placet et spiritus minima";
 
         Assert.assertEquals(expected, new String(stream.readAllBytes(), StandardCharsets.UTF_8));
-
-        URL urlFromString = new URL("http://rs-s3-minio:9000/buckets/bucket-test-download-utils/file1.txt");
-        stream = DownloadUtils.getInputStream(urlFromString, knownStorages);
-        Assert.assertNotNull(stream);
-        Assert.assertEquals(expected, new String(stream.readAllBytes(), StandardCharsets.UTF_8));
-
     }
 
     @Test
     public void testS3DownloadDeepFileUsingPattern() throws IOException {
 
-        S3Server testServerWithoutBucket = new S3Server("http://rs-s3-minio:9000",
-                                                        "fr-regards-1",
-                                                        "regards",
-                                                        "regardspwd",
+        S3Server testServerWithoutBucket = new S3Server(new URL(s3Protocol, s3Host, s3Port, "").toString(),
+                                                        region,
+                                                        key,
+                                                        secret,
                                                         "",
                                                         "http[s]{0,1}://(?:.*?)/(?:.*?)/(.*?)/(.*)");
 
         List<S3Server> knownStorages = Arrays.asList(testServerWithoutBucket);
 
-        URL url = new URL("http",
-                          "rs-s3-minio",
+        URL url = new URL(s3Protocol,
+                          s3Host,
+                          s3Port,
                           "/buckets/bucket-test-download-utils/test/deep/file/sub/directory/file2.txt");
         InputStream stream = DownloadUtils.getInputStream(url, knownStorages);
         Assert.assertNotNull(stream);
@@ -170,6 +193,16 @@ public class DownloadUtilsIT {
 
         Assert.assertEquals(expected, new String(stream.readAllBytes(), StandardCharsets.UTF_8));
 
+    }
+
+    @Test
+    public void testS3Exists() throws IOException {
+        URL url = new URL(s3Protocol, s3Host, s3Port, "/buckets/bucket-test-download-utils/file1.txt");
+        List<S3Server> knownStorages = Arrays.asList(testServer);
+        Assert.assertTrue(DownloadUtils.exists(url, Proxy.NO_PROXY, knownStorages, null, null));
+
+        URL url2 = new URL(s3Protocol, s3Host, s3Port, "/buckets/bucket-test-download-utils/file11.txt");
+        Assert.assertFalse(DownloadUtils.exists(url2, Proxy.NO_PROXY, knownStorages, null, null));
     }
 
     private void createTestFileOnServer() {

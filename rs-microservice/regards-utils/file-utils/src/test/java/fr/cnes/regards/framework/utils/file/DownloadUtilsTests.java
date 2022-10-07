@@ -2,6 +2,7 @@ package fr.cnes.regards.framework.utils.file;
 
 import com.google.common.collect.Sets;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -17,6 +18,7 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
+import java.util.Properties;
 import java.util.Set;
 
 /**
@@ -25,6 +27,19 @@ import java.util.Set;
 @Ignore("those tests are ignored for now because it would need a lot of work to make all of them work all the time and"
         + " they just are tests of java")
 public class DownloadUtilsTests {
+
+    private String proxyHost;
+
+    private int proxyPort;
+
+    @Before
+    public void initProxy() throws IOException {
+        InputStream proxyInput = getClass().getClassLoader().getResourceAsStream("proxy.properties");
+        Properties proxyProperties = new Properties();
+        proxyProperties.load(proxyInput);
+        proxyHost = proxyProperties.getProperty("proxyHost");
+        proxyPort = Integer.parseInt(proxyProperties.getProperty("proxyPort"));
+    }
 
     /**
      * For this test, lets get a file throw URL possibilities on one hand and directly thanks to Files on the other hand.
@@ -60,7 +75,7 @@ public class DownloadUtilsTests {
     public void testDownloadWithFileProtocolWithProxy() throws IOException, NoSuchAlgorithmException {
         String fileLocation = "src/test/resources/data.txt";
         URL source = new URL("file", "localhost", fileLocation);
-        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("proxy2.si.c-s.fr", 3128));
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
         InputStream is = DownloadUtils.getInputStreamThroughProxy(source, proxy, null, Collections.emptyList());
         DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"));
         while (dis.read() != -1) {
@@ -96,7 +111,7 @@ public class DownloadUtilsTests {
     @Test
     public void testDownloadWithHttpProtocolWithProxy() throws IOException, NoSuchAlgorithmException {
         URL source = new URL("http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-3");
-        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("proxy2.si.c-s.fr", 3128));
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
         InputStream is = DownloadUtils.getInputStreamThroughProxy(source, proxy, null, Collections.emptyList());
         DigestInputStream dis = new DigestInputStream(is, MessageDigest.getInstance("MD5"));
         while (dis.read() != -1) {
@@ -113,5 +128,76 @@ public class DownloadUtilsTests {
         Assert.assertFalse(DownloadUtils.needProxy(new URL("http://plop.com/files/myFile.txt"), nonProxyHosts));
 
         Assert.assertTrue(DownloadUtils.needProxy(new URL("http://plip.com/files/myFile.txt"), nonProxyHosts));
+    }
+
+    @Test
+    public void testExistsWithHttpProtocolWithProxy() {
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+        try {
+            Assert.assertTrue(DownloadUtils.exists(new URL("http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-3"),
+                                                   proxy,
+                                                   null,
+                                                   null,
+                                                   null));
+        } catch (IOException e) {
+            Assert.fail();
+        }
+
+        try {
+            Assert.assertFalse(DownloadUtils.exists(new URL("http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-33"),
+                                                    proxy,
+                                                    null,
+                                                    null,
+                                                    null));
+        } catch (IOException e) {
+            Assert.fail();
+        }
+    }
+
+    @Test
+    public void testExistsWithHttpProtocolWithoutProxy() {
+        try {
+            Assert.assertTrue(DownloadUtils.exists(new URL("http://172.26.47.107:9020/conf/staticConfiguration.js"),
+                                                   Proxy.NO_PROXY,
+                                                   null,
+                                                   null,
+                                                   null));
+        } catch (IOException e) {
+            Assert.fail();
+        }
+
+        try {
+            Assert.assertFalse(DownloadUtils.exists(new URL("http://172.26.47.107:9020/conf/staticConfiguration.jss"),
+                                                    Proxy.NO_PROXY,
+                                                    null,
+                                                    null,
+                                                    null));
+        } catch (IOException e) {
+            Assert.fail();
+        }
+    }
+
+    @Test
+    public void testExistsWithFileProtocolWithProxy() {
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+        try {
+            Assert.assertTrue(DownloadUtils.exists(new URL("file", "localhost", "src/test/resources/data.txt"),
+                                                   proxy,
+                                                   null,
+                                                   null,
+                                                   null));
+        } catch (IOException e) {
+            Assert.fail();
+        }
+
+        try {
+            Assert.assertFalse(DownloadUtils.exists(new URL("file", "localhost", "src/test/resources/dataa.txt"),
+                                                    proxy,
+                                                    null,
+                                                    null,
+                                                    null));
+        } catch (IOException e) {
+            Assert.fail();
+        }
     }
 }
