@@ -20,6 +20,7 @@
 package fr.cnes.regards.framework.utils.file;
 
 import fr.cnes.regards.framework.s3.domain.S3Server;
+import fr.cnes.regards.framework.s3.exception.S3ClientException;
 import fr.cnes.regards.framework.s3.test.FileIdentificationEnum;
 import fr.cnes.regards.framework.s3.test.S3FileTestUtils;
 import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
@@ -38,6 +39,7 @@ import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.util.MimeType;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -203,6 +205,39 @@ public class DownloadUtilsIT {
 
         URL url2 = new URL(s3Protocol, s3Host, s3Port, "/buckets/bucket-test-download-utils/file11.txt");
         Assert.assertFalse(DownloadUtils.exists(url2, Proxy.NO_PROXY, knownStorages, null, null));
+    }
+
+    @Test
+    public void testMissingS3File() throws IOException {
+        URL url = new URL(s3Protocol, s3Host, s3Port, "/buckets/bucket-test-download-utils/file11.txt");
+
+        List<S3Server> knownStorages = Arrays.asList(testServer);
+
+        try {
+            InputStream stream = DownloadUtils.getInputStream(url, knownStorages);
+            Assert.fail();
+        } catch (FileNotFoundException e) {
+        }
+    }
+
+    @Test
+    public void testUnreachableS3() throws IOException {
+        S3Server testUnreachableServer = new S3Server(new URL(s3Protocol, s3Host, s3Port, "").toString(),
+                                                      "bad-region",
+                                                      key,
+                                                      secret,
+                                                      "bucket-test-download-utils",
+                                                      "http[s]{0,1}://(?:.*?)/(?:.*?)/(.*?)/(.*)");
+
+        List<S3Server> knownStorages = Arrays.asList(testUnreachableServer);
+
+        URL url = new URL(s3Protocol, s3Host, s3Port, "/buckets/bucket-test-download-utils/file1.txt");
+        try {
+            InputStream stream = DownloadUtils.getInputStream(url, knownStorages);
+            Assert.fail();
+        } catch (S3ClientException e) {
+        }
+
     }
 
     private void createTestFileOnServer() {

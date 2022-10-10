@@ -27,19 +27,18 @@ import fr.cnes.regards.framework.s3.exception.S3ClientException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
+import reactor.core.Exceptions;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.*;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -60,6 +59,8 @@ import java.util.regex.Pattern;
 public final class DownloadUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DownloadUtils.class);
+
+    public static final int PIPE_SIZE = 1024 * 10;
 
     private DownloadUtils() {
     }
@@ -93,17 +94,8 @@ public final class DownloadUtils {
             Optional<S3Server> s3Server = isUrlFromS3Host(source, knownS3Servers);
             if (s3Server.isPresent()) {
                 //S3
-                S3HighLevelReactiveClient client = getS3HighLevelReactiveClient();
                 KeyAndStorage keyAndStorage = getKeyAndStorage(source, s3Server.get());
-                StorageCommandID cmdId = new StorageCommandID(keyAndStorage.key, UUID.randomUUID());
-                StorageCommand.Check check = StorageCommand.check(keyAndStorage.storageConfig,
-                                                                  cmdId,
-                                                                  keyAndStorage.key);
-                return client.check(check)
-                             .block()
-                             .matchCheckResult(present -> true, absent -> false, unreachableStorage -> {
-                                 throw new S3ClientException(unreachableStorage.getThrowable());
-                             });
+                return existsS3(keyAndStorage.key, keyAndStorage.storageConfig);
             } else {
                 //Regular download
                 HttpURLConnection conn = (HttpURLConnection) connection;
@@ -128,6 +120,22 @@ public final class DownloadUtils {
                                                               source.getProtocol(),
                                                               source));
 
+    }
+
+    /**
+     * Check if file exist on s3 sotrage
+     *
+     * @param key           the file to check
+     * @param storageConfig the StorageConfig of the sterver
+     * @return true if the file exists
+     */
+    private static boolean existsS3(String key, StorageConfig storageConfig) {
+        S3HighLevelReactiveClient client = getS3HighLevelReactiveClient();
+        StorageCommandID cmdId = new StorageCommandID(key, UUID.randomUUID());
+        StorageCommand.Check check = StorageCommand.check(storageConfig, cmdId, key);
+        return client.check(check).block().matchCheckResult(present -> true, absent -> false, unreachableStorage -> {
+            throw new S3ClientException(unreachableStorage.getThrowable());
+        });
     }
 
     /**
@@ -306,18 +314,29 @@ public final class DownloadUtils {
      */
     public static InputStream getInputStreamFromS3Source(String entryKey,
                                                          StorageConfig storageConfig,
-                                                         StorageCommandID cmdId) {
+                                                         StorageCommandID cmdId) throws IOException {
         S3HighLevelReactiveClient client = getS3HighLevelReactiveClient();
 
         StorageCommand.Read readCmd = StorageCommand.read(storageConfig, cmdId, entryKey);
-        return client.read(readCmd)
-                     .flatMap(readResult -> readResult.matchReadResult(r -> toInputStream(r),
-                                                                       unreachable -> Mono.error(new S3ClientException(
-                                                                           "Unreachable server: "
-                                                                           + unreachable.toString())),
-                                                                       notFound -> Mono.error(new FileNotFoundException(
-                                                                           "Entry not found"))))
-                     .block();
+        try {
+            return client.read(readCmd)
+                         .flatMap(readResult -> readResult.matchReadResult(r -> toInputStream(r),
+                                                                           unreachable -> Mono.error(new S3ClientException(
+                                                                               "Unreachable server: "
+                                                                               + unreachable.toString())),
+                                                                           notFound -> Mono.error(new FileNotFoundException(
+                                                                               "Entry not found"))))
+                         .block();
+        } catch (Exception e) {
+            Throwable unwrappedException = Exceptions.unwrap(e);
+            if (unwrappedException instanceof S3ClientException s3ClientException) {
+                throw s3ClientException;
+            }
+            if (unwrappedException instanceof FileNotFoundException fileNotFoundException) {
+                throw fileNotFoundException;
+            }
+            throw e;
+        }
 
     }
 
@@ -335,10 +354,29 @@ public final class DownloadUtils {
 
     private static Mono<InputStream> toInputStream(StorageCommandResult.ReadingPipe pipe) {
         DataBufferFactory dbf = new DefaultDataBufferFactory();
-        //List<ByteBuffer> buffers = pipe.getEntry().block().getData().toStream().toList();
-        return pipe.getEntry()
-                   .flatMap(entry -> DataBufferUtils.join(entry.getData().map(dbf::wrap)))
-                   .map(DataBuffer::asInputStream);
+        Flux<ByteBuffer> buffers = pipe.getEntry().flatMapMany(e -> e.getData());
+        PipedOutputStream outputStream = new PipedOutputStream();
+        PipedInputStream inputStream = new PipedInputStream(PIPE_SIZE);
+        try {
+            inputStream.connect(outputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(
+                "This should never happen, the input stream was created 1 line before we tried connecting it, it cannot be already connected",
+                e);
+        }
+        DataBufferUtils.write(buffers.map(dbf::wrap), outputStream).onErrorResume(throwable -> {
+            try {
+                outputStream.close();
+            } catch (IOException ioe) {
+            }
+            return Flux.error(throwable);
+        }).doOnComplete(() -> {
+            try {
+                outputStream.close();
+            } catch (IOException ioe) {
+            }
+        }).subscribe();
+        return Mono.just(inputStream);
     }
 
     public static Long getContentLength(URL source, Integer pConnectTimeout) throws IOException {
@@ -477,7 +515,6 @@ public final class DownloadUtils {
                                                    .key(s3Server.getKey())
                                                    .secret(s3Server.getSecret())
                                                    .region(s3Server.getRegion())
-                                                   .rootPath("")
                                                    .build();
         KeyAndStorage keyAndStorage = new KeyAndStorage(filePath, storageConfig);
         return keyAndStorage;
