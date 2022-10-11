@@ -222,7 +222,7 @@ public class FileReferenceController {
                                                                       Boolean isContentInline,
                                                                       HttpServletResponse response) {
         return Try.of(() -> {
-            response.setContentLength(downloadFile.getRealFileSize().intValue());
+            response.setContentLengthLong(downloadFile.getRealFileSize());
             response.setContentType(downloadFile.getMimeType().toString());
             // By default, return the attachment header, forcing browser to download the file
             if (isContentInline == null || !isContentInline) {
