@@ -88,6 +88,11 @@ public final class GsonUtil {
         return gson.toJsonTree(object);
     }
 
+    public static <T> T fromJson(Object value, Type type) {
+        JsonElement jsonElement = toJsonNode(value);
+        return gson.fromJson(jsonElement, type);
+    }
+
     /**
      * Clone a java object
      *

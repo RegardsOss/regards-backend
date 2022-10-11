@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
  Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  
@@ -58,6 +58,7 @@
         <module>lta-manager-dto</module>
         <module>lta-manager-dao</module>
         <module>lta-manager-rest</module>
+        <module>lta-manager-amqp</module>
         <module>lta-manager-service</module>
     </modules>
 </project>

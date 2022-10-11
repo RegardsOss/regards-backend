@@ -53,15 +53,34 @@
     </developers>
 
     <dependencies>
+        <!-- Regards -->
+        <dependency>
+            <groupId>fr.cnes.regards.modules.ltamanager</groupId>
+            <artifactId>lta-manager-dto</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.model</groupId>
+            <artifactId>model-domain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+            <artifactId>tenant-settings-domain</artifactId>
+        </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>jpa-commons-regards</artifactId>
         </dependency>
-        <!-- Test -->
         <dependency>
-            <groupId>fr.cnes.regards.framework.test</groupId>
-            <artifactId>regards-test</artifactId>
-            <scope>test</scope>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>module-regards</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.workermanager</groupId>
+            <artifactId>worker-manager-dto</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
         </dependency>
     </dependencies>
 </project>

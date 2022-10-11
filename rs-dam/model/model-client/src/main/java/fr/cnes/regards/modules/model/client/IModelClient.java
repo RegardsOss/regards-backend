@@ -23,8 +23,7 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.model.domain.Model;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -40,6 +39,11 @@ public interface IModelClient {
     String TYPE_MAPPING = "/models";
 
     /**
+     * Model management mapping
+     */
+    String MODEL_MAPPING = "/{modelName}";
+
+    /**
      * Retrieve the models of a given type (optional)
      *
      * @return the models
@@ -47,4 +51,7 @@ public interface IModelClient {
     @GetMapping(path = IModelClient.TYPE_MAPPING)
     ResponseEntity<List<EntityModel<Model>>> getModels(
         @RequestParam(value = "type", required = false) EntityType pType);
+
+    @GetMapping(value = TYPE_MAPPING + MODEL_MAPPING)
+    ResponseEntity<EntityModel<Model>> getModel(@PathVariable(name="modelName") String model);
 }

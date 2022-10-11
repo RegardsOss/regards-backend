@@ -53,6 +53,27 @@
     </developers>
 
     <dependencies>
-        <!-- TODO -->
+        <!-- Regards -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>urn-regards</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>geojson-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.workermanager</groupId>
+            <artifactId>worker-manager-dto</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>swagger-regards-starter</artifactId>
+        </dependency>
+        <!-- COTS -->
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+        </dependency>
     </dependencies>
 </project>

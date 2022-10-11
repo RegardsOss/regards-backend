@@ -55,28 +55,42 @@
     <properties>
         <fr.cnes.regards.docker.image.name>rs-lta-manager</fr.cnes.regards.docker.image.name>
         <docker.entryPoint>["./wait-for-it.sh", "rs-config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs-registry:9032", "-t", "0", "--","./wait-for-it.sh", "rs-admin:9033", "-t", "0", "--", "./wait-for-it.sh", "rs-dam:9035", "-t", "0", "--", "./start.sh","${project.build.finalName}.${project.packaging}","-Xmx2048m"]</docker.entryPoint>
-        <docker.guest.port>9046</docker.guest.port>
+        <docker.guest.port>9048</docker.guest.port>
     </properties>
 
     <dependencies>
-        <!-- Spring bootstrap -->
+        <!-- Regards -->
+        <!-- module dependency -->
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-bootstrap</artifactId>
+            <groupId>fr.cnes.regards.modules.ltamanager</groupId>
+            <artifactId>lta-manager-rest</artifactId>
         </dependency>
-        <!-- Framework core dependencies -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+            <artifactId>tenant-settings-rest</artifactId>
+        </dependency>
+        <!-- core dependencies -->
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>microservice-core-starter</artifactId>
-            <version>${revision}</version>
-            <type>pom</type>
         </dependency>
-        <!-- Module to retrieve tenant information from remote admin-instance microservice -->
         <dependency>
             <groupId>fr.cnes.regards.microservices.administration</groupId>
             <artifactId>remote-tenant-resolver</artifactId>
         </dependency>
-        <!-- Module dependencies -->
+        <dependency>
+            <groupId>fr.cnes.regards.microservices.administration</groupId>
+            <artifactId>remote-authorities-provider</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>microservice-logger</artifactId>
+        </dependency>
+        <!-- COTS -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-bootstrap</artifactId>
+        </dependency>
     </dependencies>
 
     <profiles>

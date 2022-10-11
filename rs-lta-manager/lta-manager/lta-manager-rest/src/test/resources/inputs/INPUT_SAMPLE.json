@@ -1,0 +1,24 @@
+{
+  "id": "317d977f-a2f7-40ce-ae41-8ba68435d5e1",
+  "datatype": "DatatypeTest",
+  "geometry": {
+    "coordinates": [
+      10.0,
+      20.0
+    ],
+    "type": "Point"
+  },
+  "files": [
+    {
+      "type": "RAWDATA",
+      "url": "http://localhost/notexisting",
+      "filename": "example.raw",
+      "checksumMd5": "f016852239a8a919f05f6d2225c5aaca",
+      "mimeType": "application/octet-stream"
+    }
+  ],
+  "tags": [
+    "tag1",
+    "tag2"
+  ]
+}

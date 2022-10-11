@@ -25,6 +25,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Root;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,61 +51,70 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         return this.toSpecification();
     }
 
-    protected Specification<T> equals(String field, Long value) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get(field), value);
+    protected Specification<T> equals(String pathToField, Long value) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(getPath(root, pathToField), value);
     }
 
-    protected Specification<T> equals(String field, String value) {
-        if (StringUtils.isEmpty(value)) {
+    protected Specification<T> equals(String pathToField, String value) {
+        if (!StringUtils.hasLength(value)) {
             return null;
         } else {
-            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get(field), value);
+            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(getPath(root, pathToField), value);
+
         }
     }
 
-    protected Specification<T> equalsIgnoreCase(String field, String value) {
-        if (StringUtils.isEmpty(value)) {
+    @SuppressWarnings("unchecked")
+    protected Specification<T> equalsIgnoreCase(String pathToField, String value) {
+        if (!StringUtils.hasLength(value)) {
             return null;
         } else {
-            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(criteriaBuilder.upper(root.get(field)),
-                                                                           value.toUpperCase());
+            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(criteriaBuilder.upper((Expression<String>) getPath(
+                root,
+                pathToField)), value.toUpperCase());
         }
     }
 
-    protected Specification<T> equals(String field, Enum<?> value) {
+    protected Specification<T> equals(String pathToField, Enum<?> value) {
         if (value == null) {
             return null;
         } else {
-            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get(field), value);
+            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(getPath(root, pathToField), value);
         }
     }
 
-    protected Specification<T> equals(String field, Boolean value) {
+    protected Specification<T> equals(String pathToField, Boolean value) {
         if (value == null) {
             return null;
         } else {
-            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get(field), value);
+            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(getPath(root, pathToField), value);
         }
     }
 
-    protected Specification<T> like(String field, String value) {
-        if (StringUtils.isEmpty(value)) {
+    @SuppressWarnings("unchecked")
+    protected Specification<T> like(String pathToField, String value) {
+        if (!StringUtils.hasLength(value)) {
             return null;
         } else {
-            return (root, query, criteriaBuilder) -> criteriaBuilder.like(root.get(field), "%" + value + "%");
+            return (root, query, criteriaBuilder) -> criteriaBuilder.like((Expression<String>) getPath(root,
+                                                                                                       pathToField),
+                                                                          "%" + value + "%");
         }
     }
 
-    protected Specification<T> likeIgnoreCase(String field, String value) {
-        if (StringUtils.isEmpty(value)) {
+    @SuppressWarnings("unchecked")
+    protected Specification<T> likeIgnoreCase(String pathToField, String value) {
+        if (!StringUtils.hasLength(value)) {
             return null;
         } else {
-            return (root, query, criteriaBuilder) -> criteriaBuilder.like(criteriaBuilder.upper(root.get(field)),
-                                                                          ("%" + value + "%").toUpperCase());
+            return (root, query, criteriaBuilder) -> criteriaBuilder.like(criteriaBuilder.upper((Expression<String>) getPath(
+                root,
+                pathToField)), ("%" + value + "%").toUpperCase());
         }
     }
 
-    protected Specification<T> useDatesRestriction(String field, DatesRangeRestriction datesRangeRestriction) {
+    @SuppressWarnings("unchecked")
+    protected Specification<T> useDatesRestriction(String pathToField, DatesRangeRestriction datesRangeRestriction) {
         if (datesRangeRestriction == null) {
             return null;
         }
@@ -112,47 +124,60 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
             return null;
         }
         if (dateAfter == null) {
-            return before(field, dateBefore);
+            return before(pathToField, dateBefore);
         }
         if (dateBefore == null) {
-            return after(field, dateAfter);
+            return after(pathToField, dateAfter);
         }
-        return ((root, query, criteriaBuilder) -> criteriaBuilder.between(root.get(field), dateAfter, dateBefore));
+        return ((root, query, criteriaBuilder) -> criteriaBuilder.between((Expression<OffsetDateTime>) getPath(root,
+                                                                                                               pathToField),
+                                                                          dateAfter,
+                                                                          dateBefore));
     }
 
-    protected Specification<T> before(String field, OffsetDateTime date) {
+    @SuppressWarnings("unchecked")
+    protected Specification<T> before(String pathToField, OffsetDateTime date) {
         if (date == null) {
             return null;
         } else {
-            return ((root, query, criteriaBuilder) -> criteriaBuilder.lessThanOrEqualTo(root.get(field), date));
+            return ((root, query, criteriaBuilder) -> criteriaBuilder.lessThanOrEqualTo((Expression<OffsetDateTime>) getPath(
+                root,
+                pathToField), date));
         }
     }
 
-    protected Specification<T> after(String field, OffsetDateTime date) {
+    @SuppressWarnings("unchecked")
+    protected Specification<T> after(String pathToField, OffsetDateTime date) {
         if (date == null) {
             return null;
         } else {
-            return ((root, query, criteriaBuilder) -> criteriaBuilder.greaterThanOrEqualTo(root.get(field), date));
+            return ((root, query, criteriaBuilder) -> criteriaBuilder.greaterThanOrEqualTo((Expression<OffsetDateTime>) getPath(
+                root,
+                pathToField), date));
         }
     }
 
-    protected Specification<T> joinedEquals(String join, String field, String value) {
-        if (StringUtils.isEmpty(value)) {
+    protected Specification<T> joinedEquals(String join, String pathToField, String value) {
+        if (!StringUtils.hasLength(value)) {
             return null;
         } else {
-            return ((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.join(join).get(field), value));
+            return ((root, query, criteriaBuilder) -> criteriaBuilder.equal(root.join(join).get(pathToField), value));
         }
     }
 
-    protected Specification<T> isMember(String field, String value) {
-        if (StringUtils.isEmpty(value)) {
+    @SuppressWarnings("unchecked")
+    protected Specification<T> isMember(String pathToField, String value) {
+        if (!StringUtils.hasLength(value)) {
             return null;
         } else {
-            return ((root, query, criteriaBuilder) -> criteriaBuilder.isMember(value, root.get(field)));
+            return ((root, query, criteriaBuilder) -> criteriaBuilder.isMember(value,
+                                                                               (Expression<Collection<Object>>) getPath(
+                                                                                   root,
+                                                                                   pathToField)));
         }
     }
 
-    protected Specification<T> useValuesRestriction(String field, ValuesRestriction<?> valuesRestriction) {
+    protected Specification<T> useValuesRestriction(String pathToField, ValuesRestriction<?> valuesRestriction) {
         if (valuesRestriction == null) {
             return null;
         }
@@ -161,25 +186,33 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
             return null;
         }
         if (valuesRestriction.getMode() == ValuesRestrictionMode.INCLUDE) {
-            return isIncluded(field, values);
+            return isIncluded(pathToField, values);
         }
-        return isExcluded(field, values);
+        return isExcluded(pathToField, values);
     }
 
-    protected Specification<T> isIncluded(String field, Collection<?> values) {
+    protected Specification<T> isIncluded(String pathToField, Collection<?> values) {
         if (values == null || values.isEmpty()) {
             return null;
         } else {
-            return (root, query, criteriaBuilder) -> root.get(field).in(values);
+            return (root, query, criteriaBuilder) -> getPath(root, pathToField).in(values);
         }
     }
 
-    protected Specification<T> isExcluded(String field, Collection<?> values) {
+    protected Specification<T> isExcluded(String pathToField, Collection<?> values) {
         if (values == null || values.isEmpty()) {
             return null;
         } else {
-            return (root, query, criteriaBuilder) -> root.get(field).in(values).not();
+            return (root, query, criteriaBuilder) -> getPath(root, pathToField).in(values).not();
         }
+    }
+
+    private Path<T> getPath(Root<T> root, String attributeName) {
+        Path<T> path = root;
+        for (String part : attributeName.split("\\.")) {
+            path = path.get(part);
+        }
+        return path;
     }
 
     protected Specification<T> toSpecification() {

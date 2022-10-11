@@ -53,18 +53,59 @@
     </developers>
 
     <dependencies>
+        <!-- Regards -->
         <dependency>
             <groupId>fr.cnes.regards.modules.ltamanager</groupId>
             <artifactId>lta-manager-dao</artifactId>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>module-regards</artifactId>
+            <groupId>fr.cnes.regards.modules.ltamanager</groupId>
+            <artifactId>lta-manager-amqp</artifactId>
         </dependency>
-        <!-- Test dependencies -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.tenant-settings</groupId>
+            <artifactId>tenant-settings-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>authentication-regards</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.ingest</groupId>
+            <artifactId>ingest-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
+            <artifactId>jobs-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>feign-regards-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.model</groupId>
+            <artifactId>model-client</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>fr.cnes.regards.modules.model</groupId>
+                    <artifactId>model-gson</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- COTS -->
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+        </dependency>
+        <!-- Tests -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
-            <artifactId>regards-test</artifactId>
+            <artifactId>regards-integration-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.test</groupId>
+            <artifactId>regards-job-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -1,23 +1,46 @@
+/*
+ * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.microservices.ltamanager;
 
 import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * Start microservice rs-lta-manager
+ * Start microservice lta manager
+ *
+ * @author Iliana Ghazali
  */
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
-@MicroserviceInfo(name = "lta-manager", version = "1.11.0-SNAPSHOT")
+@MicroserviceInfo(name = "lta-manager", version = "1.12.0")
 public class Application {
 
-    /**
-     * Microservice bootstrap method
-     *
-     * @param pArgs microservice bootstrap arguments
-     */
-    public static void main(final String[] pArgs) {
-        SpringApplication.run(Application.class, pArgs); // NOSONAR
-    }
+    private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
 
+    public static void main(final String[] args) {
+        try {
+            SpringApplication.run(Application.class, args); // NOSONAR
+        } catch (Exception e) {
+            LOGGER.error("Going to exit", e);
+            System.exit(1);
+        }
+    }
 }

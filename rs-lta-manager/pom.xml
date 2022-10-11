@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
  Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
 
@@ -23,6 +23,7 @@
 
     <groupId>fr.cnes.regards.microservices</groupId>
     <artifactId>rs-lta-manager</artifactId>
+    <description>Long-term archival system manager</description>
     <packaging>pom</packaging>
 
     <parent>
@@ -31,7 +32,6 @@
         <version>${revision}</version>
         <relativePath>../rs-bom/regards-aggregator-parent</relativePath>
     </parent>
-
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>

@@ -53,9 +53,10 @@
     </developers>
 
     <dependencies>
+        <!-- Regards -->
         <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>module-regards-starter</artifactId>
+            <groupId>fr.cnes.regards.modules.ltamanager</groupId>
+            <artifactId>lta-manager-service</artifactId>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
@@ -63,14 +64,9 @@
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>security-regards-starter</artifactId>
+            <artifactId>swagger-regards-starter</artifactId>
         </dependency>
-        <!-- Module dependencies -->
-        <dependency>
-            <groupId>fr.cnes.regards.modules.ltamanager</groupId>
-            <artifactId>lta-manager-service</artifactId>
-        </dependency>
-        <!-- Test -->
+        <!-- Tests -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-integration-test</artifactId>
