@@ -174,7 +174,7 @@ public class AttributeModelService implements IAttributeModelService {
         publisher.publish(new AttributeModelUpdated(result));
         // Check if model is associated to this updated attribute. If so send an model changed event
         modelAttrAssocRepository.findAllByAttributeId(result.getId())
-                                .forEach(a -> publisher.publish(ModelChangeEvent.build(a.getModel().getName())));
+                                .forEach(a -> publisher.publish(new ModelChangeEvent(a.getModel().getName())));
         return result;
     }
 

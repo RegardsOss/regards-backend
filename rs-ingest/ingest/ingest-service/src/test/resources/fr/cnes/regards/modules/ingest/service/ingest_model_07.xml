@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://regardsoss.github.io/xsd/model_V1.10.0.xsd">
+    <name>INGEST07</name>
+    <description>Test model 7</description>
+    <version>0.0.1</version>
+    <type>DATA</type>
+    <attribute alterable="false">
+        <label>Integer in range with excluded bounds</label>
+        <name>strict_integer_field</name>
+        <type>INTEGER</type>
+        <restriction>
+            <integer_range>
+                <min excluded="true">5</min>
+                <max excluded="true">10</max>
+            </integer_range>
+        </restriction>
+    </attribute>
+    <attribute alterable="false">
+        <label>Integer in range with included bounds</label>
+        <name>integer_field</name>
+        <type>INTEGER</type>
+        <restriction>
+            <integer_range>
+                <min>5</min>
+                <max>10</max>
+            </integer_range>
+        </restriction>
+    </attribute>
+    <attribute alterable="false">
+        <label>Double in range with excluded bounds</label>
+        <name>strict_double_field</name>
+        <type>DOUBLE</type>
+        <restriction>
+            <double_range>
+                <min excluded="true">5.5</min>
+                <max excluded="true">10.5</max>
+            </double_range>
+        </restriction>
+    </attribute>
+    <attribute alterable="false">
+        <label>Double in range with included bounds</label>
+        <name>double_field</name>
+        <type>DOUBLE</type>
+        <restriction>
+            <double_range>
+                <min>5.5</min>
+                <max>10.5</max>
+            </double_range>
+        </restriction>
+    </attribute>
+</model>

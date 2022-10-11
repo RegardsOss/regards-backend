@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.model.service.validation.validator.restriction;
+package fr.cnes.regards.modules.model.service.validation.validator.common.restriction;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,8 +25,7 @@ import com.networknt.schema.JsonSchemaException;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.JsonSchemaRestriction;
-import fr.cnes.regards.modules.model.dto.properties.JsonProperty;
-import fr.cnes.regards.modules.model.service.validation.validator.AbstractPropertyValidator;
+import fr.cnes.regards.modules.model.service.validation.validator.common.AbstractValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.validation.Errors;
@@ -34,11 +33,13 @@ import org.springframework.validation.Errors;
 import java.io.IOException;
 
 /**
- * @author Sébastien Binda
- */
-public class JsonSchemaValidator extends AbstractPropertyValidator {
+ * Validates à Json object against a JsonSchema using {@link JsonSchemaRestriction}
+ *
+ * @author Thibaud Michaudel
+ **/
+public abstract class AbstractJsonSchemaValidator extends AbstractValidator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JsonSchemaValidator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJsonSchemaValidator.class);
 
     public static final String ERROR_VALUE_NOT_CONFORM_TO_JSON_SCHEMA = "error.value.not.conform.to.json.schema";
 
@@ -51,15 +52,19 @@ public class JsonSchemaValidator extends AbstractPropertyValidator {
      */
     private final JsonSchemaRestriction restriction;
 
-    public JsonSchemaValidator(JsonSchemaRestriction pRestriction, String pAttributeKey) {
+    public AbstractJsonSchemaValidator(JsonSchemaRestriction pRestriction, String pAttributeKey) {
         super(pAttributeKey);
         this.restriction = pRestriction;
     }
 
+    protected abstract String getJsonValue(Object target);
+
+    protected abstract boolean isJson(Class<?> clazz);
+
     @Override
     public void validate(Object target, Errors errors) {
-        if (target instanceof JsonProperty) {
-            validate((JsonProperty) target, errors);
+        if (isJson(target.getClass())) {
+            validate(getJsonValue(target), errors);
         } else {
             rejectUnsupported(errors);
         }
@@ -67,15 +72,15 @@ public class JsonSchemaValidator extends AbstractPropertyValidator {
 
     @Override
     public boolean supports(Class<?> clazz) {
-        return (clazz == JsonProperty.class);
+        return isJson(clazz);
     }
 
-    public void validate(JsonProperty ppt, Errors errors) {
+    public void validate(String jsonString, Errors errors) {
         try {
-            getJsonSchema().validate(getJsonNode(ppt.getValue().toString())).forEach(e -> {
+            getJsonSchema().validate(getJsonNode(jsonString)).forEach(e -> {
                 errors.reject(ERROR_VALUE_NOT_CONFORM_TO_JSON_SCHEMA,
                               String.format("Attribute %s.%s not valid with jsonSchema. Cause : %s",
-                                            ppt.getName(),
+                                            attributeKey,
                                             e.getPath(),
                                             e.getMessage()));
             });
@@ -86,7 +91,7 @@ public class JsonSchemaValidator extends AbstractPropertyValidator {
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
             errors.rejectValue(ERROR_VALUE_NOT_CONFORM_TO_JSON_SCHEMA,
-                               String.format("Attribute %s  not valid with given json schema", ppt.getName()));
+                               String.format("Attribute %s not valid with given json schema", attributeKey));
         }
     }
 

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.model.service.validation.validator.restriction;
+package fr.cnes.regards.modules.model.service.validation.validator.iproperty.restriction;
 
 import fr.cnes.regards.modules.model.domain.attributes.restriction.*;
 import org.slf4j.Logger;
@@ -61,23 +61,23 @@ public final class RestrictionValidatorFactory {
         throw new UnsupportedOperationException(errorMessage);
     }
 
-    public static Validator getValidator(EnumerationRestriction pRestriction, String pAttributeKey) {
-        return new EnumerationValidator(pRestriction, pAttributeKey);
+    private static Validator getValidator(EnumerationRestriction pRestriction, String pAttributeKey) {
+        return new EnumerationPropertyValidator(pRestriction, pAttributeKey);
     }
 
-    public static Validator getValidator(DoubleRangeRestriction pRestriction, String pAttributeKey) {
-        return new DoubleRangeValidator(pRestriction, pAttributeKey);
+    private static Validator getValidator(DoubleRangeRestriction pRestriction, String pAttributeKey) {
+        return new DoubleRangePropertyValidator(pRestriction, pAttributeKey);
     }
 
-    public static Validator getValidator(IntegerRangeRestriction pRestriction, String pAttributeKey) {
-        return new IntegerRangeValidator(pRestriction, pAttributeKey);
+    private static Validator getValidator(IntegerRangeRestriction pRestriction, String pAttributeKey) {
+        return new IntegerRangePropertyValidator(pRestriction, pAttributeKey);
     }
 
-    public static Validator getValidator(PatternRestriction pRestriction, String pAttributeKey) {
-        return new PatternValidator(pRestriction, pAttributeKey);
+    private static Validator getValidator(PatternRestriction pRestriction, String pAttributeKey) {
+        return new PatternPropertyValidator(pRestriction, pAttributeKey);
     }
 
-    public static Validator getValidator(JsonSchemaRestriction pRestriction, String pAttributeKey) {
-        return new JsonSchemaValidator(pRestriction, pAttributeKey);
+    private static Validator getValidator(JsonSchemaRestriction pRestriction, String pAttributeKey) {
+        return new JsonSchemaPropertyValidator(pRestriction, pAttributeKey);
     }
 }

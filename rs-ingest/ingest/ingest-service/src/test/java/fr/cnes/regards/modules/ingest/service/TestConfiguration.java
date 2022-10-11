@@ -20,6 +20,11 @@ package fr.cnes.regards.modules.ingest.service;
 
 import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.integration.test.job.JobTestCleaner;
+import fr.cnes.regards.modules.model.client.IAttributeModelClient;
+import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
+import fr.cnes.regards.modules.model.client.IModelClient;
+import fr.cnes.regards.modules.model.gson.IAttributeHelper;
+import fr.cnes.regards.modules.model.service.xml.IComputationPluginService;
 import org.mockito.Mockito;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -54,6 +59,31 @@ public class TestConfiguration {
     @Bean
     public JobTestCleaner getJobTestCleaner() {
         return new JobTestCleaner();
+    }
+
+    @Bean
+    public IModelAttrAssocClient modelAttrAssocClient() {
+        return Mockito.mock(IModelAttrAssocClient.class);
+    }
+
+    @Bean // Used in model service
+    public IComputationPluginService computationPluginService() {
+        return Mockito.mock(IComputationPluginService.class);
+    }
+
+    @Bean
+    public IAttributeModelClient attributeModelClient() {
+        return Mockito.mock(IAttributeModelClient.class);
+    }
+
+    @Bean
+    public IModelClient modelClient() {
+        return Mockito.mock(IModelClient.class);
+    }
+
+    @Bean
+    public IAttributeHelper attributeHelper() {
+        return Mockito.mock(IAttributeHelper.class);
     }
 
 }

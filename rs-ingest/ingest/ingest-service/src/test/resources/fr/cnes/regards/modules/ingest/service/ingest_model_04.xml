@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://regardsoss.github.io/xsd/model_V1.10.0.xsd">
+    <name>INGEST04</name>
+    <description>Test model 4</description>
+    <version>0.0.1</version>
+    <type>DATA</type>
+    <attribute alterable="false">
+        <label>integer_interval</label>
+        <name>integer_interval_field</name>
+        <type>INTEGER_INTERVAL</type>
+    </attribute>
+    <attribute alterable="false">
+        <label>long_interval</label>
+        <name>long_interval_field</name>
+        <type>LONG_INTERVAL</type>
+    </attribute>
+    <attribute alterable="false">
+        <label>double_interval</label>
+        <name>double_interval_field</name>
+        <type>DOUBLE_INTERVAL</type>
+    </attribute>
+    <attribute alterable="false">
+        <label>date_interval</label>
+        <name>date_interval_field</name>
+        <type>DATE_INTERVAL</type>
+    </attribute>
+</model>

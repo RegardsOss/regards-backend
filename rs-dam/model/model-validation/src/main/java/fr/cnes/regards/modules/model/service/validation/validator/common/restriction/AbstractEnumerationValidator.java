@@ -1,4 +1,4 @@
-/*
+package fr.cnes.regards.modules.model.service.validation.validator.common.restriction;/*
  * Copyright 2017-2022 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
@@ -16,55 +16,57 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.model.service.validation.validator.restriction;
 
 import fr.cnes.regards.modules.model.domain.attributes.restriction.EnumerationRestriction;
-import fr.cnes.regards.modules.model.dto.properties.StringArrayProperty;
-import fr.cnes.regards.modules.model.dto.properties.StringProperty;
-import fr.cnes.regards.modules.model.service.validation.validator.AbstractPropertyValidator;
+import fr.cnes.regards.modules.model.service.validation.validator.common.AbstractValidator;
 import org.springframework.validation.Errors;
 
 /**
- * Validate {@link StringProperty} or {@link StringArrayProperty} value with an {@link EnumerationRestriction}
+ * Validate a string or string array with an {@link EnumerationRestriction}
  *
- * @author Marc Sordi
- */
-public class EnumerationValidator extends AbstractPropertyValidator {
+ * @author Thibaud Michaudel
+ **/
+public abstract class AbstractEnumerationValidator extends AbstractValidator {
 
-    /**
-     * Configured restriction
-     */
     private final EnumerationRestriction restriction;
 
-    public EnumerationValidator(EnumerationRestriction pRestriction, String pAttributeKey) {
+    public AbstractEnumerationValidator(EnumerationRestriction pRestriction, String pAttributeKey) {
         super(pAttributeKey);
-        this.restriction = pRestriction;
+        restriction = pRestriction;
     }
+
+    protected abstract String getStringValue(Object pTarget);
+
+    protected abstract String[] getStringArrayValue(Object pTarget);
+
+    protected abstract boolean isString(Class<?> clazz);
+
+    protected abstract boolean isStringArray(Class<?> clazz);
 
     @Override
     public boolean supports(Class<?> clazz) {
-        return clazz == StringProperty.class || clazz == StringArrayProperty.class;
+        return isString(clazz) || isStringArray(clazz);
     }
 
     @Override
     public void validate(Object pTarget, Errors pErrors) {
-        if (pTarget instanceof StringProperty) {
-            validate((StringProperty) pTarget, pErrors);
-        } else if (pTarget instanceof StringArrayProperty) {
-            validate((StringArrayProperty) pTarget, pErrors);
+        if (isString(pTarget.getClass())) {
+            validate(getStringValue(pTarget), pErrors);
+        } else if (isStringArray(pTarget.getClass())) {
+            validate(getStringArrayValue(pTarget), pErrors);
         } else {
             rejectUnsupported(pErrors);
         }
     }
 
-    public void validate(StringProperty pTarget, Errors pErrors) {
-        if (!restriction.getAcceptableValues().contains(pTarget.getValue())) {
+    public void validate(String pTarget, Errors pErrors) {
+        if (!restriction.getAcceptableValues().contains(pTarget)) {
             reject(pErrors);
         }
     }
 
-    public void validate(StringArrayProperty pTarget, Errors pErrors) {
-        for (String val : pTarget.getValue()) {
+    public void validate(String[] pTarget, Errors pErrors) {
+        for (String val : pTarget) {
             if (!restriction.getAcceptableValues().contains(val)) {
                 reject(pErrors);
             }
@@ -75,4 +77,5 @@ public class EnumerationValidator extends AbstractPropertyValidator {
         pErrors.reject("error.enum.value.does.not.exist",
                        String.format("Value not acceptable for attribute \"%s\".", attributeKey));
     }
+
 }

@@ -95,6 +95,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                                                                                SESSION,
                                                                                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                                                CATEGORIES,
+                                                                               null,
                                                                                STORAGE_METADATA));
 
         SIP firstSIPwithGeometry = buildSipOne("SIP_001", "data1.fits");
@@ -154,6 +155,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                                                                                SESSION,
                                                                                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                                                Sets.newHashSet("CAT"),
+                                                                               null,
                                                                                STORAGE_METADATA));
 
         collection.add(buildSipOne("SIP_001", "data1.fits"));
@@ -238,6 +240,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                                                                                SESSION,
                                                                                IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                                                Sets.newHashSet("CAT"),
+                                                                               null,
                                                                                STORAGE_METADATA));
 
         // SIP 1

@@ -47,7 +47,7 @@ public class SIPCollection extends AbstractFeatureCollection<SIP> {
      * Create a new {@link SIPCollection} with a generated unique request id.<br/>
      * An {@link IngestRequestEvent} including this request id will be sent to monitor the progress of the request.
      *
-     * @param metadata metadata built with {@link IngestMetadataDto#build(String, String, String, java.util.Set, fr.cnes.regards.modules.ingest.domain.sip.VersioningMode, java.util.List)}
+     * @param metadata metadata built with {@link IngestMetadataDto#build(String, String, String, java.util.Set, fr.cnes.regards.modules.ingest.domain.sip.VersioningMode, String, java.util.List)}
      * @return a {@link SIPCollection}
      */
     public static SIPCollection build(IngestMetadataDto metadata) {

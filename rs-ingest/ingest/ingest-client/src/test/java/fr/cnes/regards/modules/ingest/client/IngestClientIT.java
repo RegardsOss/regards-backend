@@ -109,6 +109,7 @@ public class IngestClientIT extends AbstractRegardsWebIT {
                                                                              "session",
                                                                              IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                                              Sets.newHashSet("cat 1"),
+                                                                             null,
                                                                              StorageMetadata.build("disk")),
                                                      create(providerId));
         ingestServiceTest.waitForIngestion(1, 15_000, SIPState.STORED);

@@ -101,6 +101,7 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
                                                                          SESSION,
                                                                          IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                                          Sets.newHashSet("CAT"),
+                                                                         null,
                                                                          StorageMetadata.build("disk")));
 
         sips.add(SIP.build(EntityType.DATA, providerId)
@@ -121,6 +122,7 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
                                                                          SESSION,
                                                                          CHAIN_PP_LABEL,
                                                                          Sets.newHashSet("CAT"),
+                                                                         null,
                                                                          StorageMetadata.build("disk")));
         sips.add(SIP.build(EntityType.DATA, providerId));
         ingestService.handleSIPCollection(sips);
@@ -154,6 +156,7 @@ public class IngestServiceIT extends IngestMultitenantServiceIT {
                                                                          SESSION,
                                                                          IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                                          Sets.newHashSet("CAT"),
+                                                                         null,
                                                                          StorageMetadata.build("disk")));
         sips.add(SIP.build(EntityType.DATA, providerId));
         ingestService.handleSIPCollection(sips);

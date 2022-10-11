@@ -16,33 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.model.service.validation.validator;
+package fr.cnes.regards.modules.model.service.validation.validator.iproperty;
 
 import fr.cnes.regards.modules.model.dto.properties.AbstractProperty;
-import fr.cnes.regards.modules.model.dto.properties.PropertyType;
-import org.springframework.validation.Errors;
+import fr.cnes.regards.modules.model.service.validation.validator.common.AbstractValidator;
 
 /**
- * Validate attribute type
+ * Abstract validator for properties
  *
  * @author Marc Sordi
  */
-public class PropertyTypeValidator extends AbstractPropertyValidator {
+public abstract class AbstractPropertyValidator extends AbstractValidator {
 
-    private final PropertyType propertyType;
-
-    public PropertyTypeValidator(PropertyType PropertyType, String attributeKey) {
+    public AbstractPropertyValidator(String attributeKey) {
         super(attributeKey);
-        this.propertyType = PropertyType;
     }
 
     @Override
-    public void validate(Object target, Errors errors) {
-        AbstractProperty<?> att = (AbstractProperty<?>) target;
-        if (!att.represents(propertyType)) {
-            errors.reject("error.inconsistent.property.type.message",
-                          String.format("Property \"%s\" not consistent with model attribute type.", attributeKey));
-
-        }
+    public boolean supports(Class<?> clazz) {
+        return AbstractProperty.class.isAssignableFrom(clazz);
     }
 }

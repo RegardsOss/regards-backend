@@ -188,6 +188,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
                                                                          SESSION,
                                                                          IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                                          CATEGORIES,
+                                                                         null,
                                                                          STORAGE_METADATA));
 
         Path filePath = Paths.get("data1.fits");
@@ -277,6 +278,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
                                                                          SESSION,
                                                                          IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                                          CATEGORIES,
+                                                                         null,
                                                                          STORAGE_METADATA));
 
         Path filePath = Paths.get("data1.fits");
@@ -358,6 +360,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
                                                                          SESSION,
                                                                          PROCESSING_CHAIN_TEST,
                                                                          CATEGORIES,
+                                                                         null,
                                                                          STORAGE_METADATA));
 
         SIP sip = SIP.build(EntityType.DATA, SIP_ID_TEST);
@@ -436,6 +439,7 @@ public class IngestProcessingJobIT extends IngestMultitenantServiceIT {
                                                                          SESSION,
                                                                          PROCESSING_CHAIN_TEST,
                                                                          CATEGORIES,
+                                                                         null,
                                                                          STORAGE_METADATA));
 
         SIP sip = SIP.buildReference(EntityType.DATA,

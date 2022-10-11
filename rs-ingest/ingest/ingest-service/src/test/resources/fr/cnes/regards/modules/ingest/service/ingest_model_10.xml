@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://regardsoss.github.io/xsd/model_V1.10.0.xsd">
+    <name>INGEST10</name>
+    <description>Test model 10</description>
+    <version>0.0.1</version>
+    <type>DATA</type>
+    <fragment>
+        <name>TimePeriod</name>
+        <description>Période temporelle (date début - date fin) au format YYYY-MM-DDThh:mm:ss</description>
+        <version>1</version>
+        <attribute alterable="true" optional="false" indexed="true">
+            <label>Date et temps début</label>
+            <name>startDate</name>
+            <description>Date et temps début</description>
+            <type unit="unitless">DATE_ISO8601</type>
+        </attribute>
+        <attribute alterable="true" optional="false" indexed="true">
+            <label>Date et temps fin</label>
+            <name>stopDate</name>
+            <description>Date et temps fin</description>
+            <type unit="unitless">DATE_ISO8601</type>
+        </attribute>
+    </fragment>
+</model>

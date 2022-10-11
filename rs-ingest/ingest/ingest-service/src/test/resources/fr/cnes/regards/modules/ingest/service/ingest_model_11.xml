@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://regardsoss.github.io/xsd/model_V1.10.0.xsd">
+    <name>INGEST11</name>
+    <description>Test model 11</description>
+    <version>0.0.1</version>
+    <type>DATA</type>
+    <attribute alterable="false">
+        <label>integer</label>
+        <name>integer_field</name>
+        <type>INTEGER</type>
+        <restriction>
+            <integer_range>
+                <min excluded="true">5</min>
+                <max excluded="true">10</max>
+            </integer_range>
+        </restriction>
+    </attribute>
+    <attribute alterable="false">
+        <label>integer_array</label>
+        <name>integer_array_field</name>
+        <type>INTEGER_ARRAY</type>
+        <restriction>
+            <integer_range>
+                <min excluded="true">5</min>
+                <max excluded="true">10</max>
+            </integer_range>
+        </restriction>
+    </attribute>
+    <attribute alterable="false">
+        <label>integer_interval</label>
+        <name>integer_interval_field</name>
+        <type>INTEGER_INTERVAL</type>
+        <restriction>
+            <integer_range>
+                <min excluded="true">5</min>
+                <max excluded="true">10</max>
+            </integer_range>
+        </restriction>
+    </attribute>
+</model>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://regardsoss.github.io/xsd/model_V1.10.0.xsd">
+    <name>INGEST05</name>
+    <description>Test model 5</description>
+    <version>0.0.1</version>
+    <type>DATA</type>
+    <attribute alterable="false">
+        <label>json</label>
+        <name>json_field</name>
+        <type>JSON</type>
+    </attribute>
+</model>

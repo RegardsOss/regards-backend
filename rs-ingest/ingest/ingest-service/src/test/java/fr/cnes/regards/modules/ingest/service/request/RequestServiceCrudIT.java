@@ -151,6 +151,7 @@ public class RequestServiceCrudIT extends IngestMultitenantServiceIT {
                                                         SESSION_0,
                                                         IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                         Sets.newHashSet(CATEGORIES_0),
+                                                        null,
                                                         StorageMetadata.build(STORAGE_0));
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 1000);

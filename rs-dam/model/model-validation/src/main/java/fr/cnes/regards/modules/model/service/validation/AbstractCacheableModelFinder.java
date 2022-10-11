@@ -22,8 +22,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.dto.event.ModelChangeEvent;
@@ -32,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.validation.Errors;
 
 import java.util.List;
 import java.util.Map;
@@ -45,7 +45,7 @@ import java.util.concurrent.TimeUnit;
  * @author Marc SORDI
  */
 public abstract class AbstractCacheableModelFinder
-    implements IModelFinder, ApplicationListener<ApplicationReadyEvent>, IHandler<ModelChangeEvent> {
+    implements IModelFinder, ApplicationListener<ApplicationReadyEvent>, IBatchHandler<ModelChangeEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractCacheableModelFinder.class);
 
@@ -108,10 +108,16 @@ public abstract class AbstractCacheableModelFinder
     protected abstract List<ModelAttrAssoc> loadAttributesByModel(String modelName);
 
     @Override
-    public void handle(TenantWrapper<ModelChangeEvent> pWrapper) {
-        String tenant = pWrapper.getTenant();
-        String model = pWrapper.getContent().getModel();
-        LOGGER.info("Change detected for model \"{}\" of tenant \"{}\"", model, tenant);
-        cleanTenantCache(tenant, model);
+    public Errors validate(ModelChangeEvent message) {
+        return null;
+    }
+
+    @Override
+    public void handleBatch(List<ModelChangeEvent> messages) {
+        String tenant = runtimeTenantResolver.getTenant();
+        messages.stream().map(ModelChangeEvent::getModel).distinct().forEach(model -> {
+            LOGGER.info("Change detected for model \"{}\" of tenant \"{}\"", model, tenant);
+            cleanTenantCache(tenant, model);
+        });
     }
 }

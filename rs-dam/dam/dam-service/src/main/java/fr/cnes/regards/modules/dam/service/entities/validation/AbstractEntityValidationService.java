@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.module.validation.ErrorTranslator;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.model.domain.Model;
-import fr.cnes.regards.modules.model.service.validation.AbstractValidationService;
+import fr.cnes.regards.modules.model.service.validation.AbstractFeatureValidationService;
 import fr.cnes.regards.modules.model.service.validation.IModelFinder;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
 import org.slf4j.Logger;
@@ -36,10 +36,12 @@ import java.util.Set;
 import java.util.StringJoiner;
 
 /**
+ * Abstract service for entity validation
+ *
  * @author Marc SORDI
  */
 public abstract class AbstractEntityValidationService<F extends EntityFeature, U extends AbstractEntity<F>>
-    extends AbstractValidationService<F> implements IEntityValidationService<U> {
+    extends AbstractFeatureValidationService<F> implements IEntityValidationService<U> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractEntityValidationService.class);
 

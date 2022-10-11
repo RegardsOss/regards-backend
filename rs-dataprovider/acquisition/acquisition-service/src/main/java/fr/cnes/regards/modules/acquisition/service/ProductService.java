@@ -194,6 +194,7 @@ public class ProductService implements IProductService {
                                                                    product.getProcessingChain().getIngestChain(),
                                                                    acquisitionChain.getCategories(),
                                                                    product.getProcessingChain().getVersioningMode(),
+                                                                   null,
                                                                    storageList);
         try {
             ingestClient.ingest(ingestMetadata, product.getSip());

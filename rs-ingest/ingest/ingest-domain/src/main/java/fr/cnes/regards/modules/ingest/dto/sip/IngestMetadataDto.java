@@ -67,20 +67,31 @@ public class IngestMetadataDto {
     @NotNull(message = IngestValidationMessages.MISSING_VERSIONING_MODE)
     private VersioningMode versioningMode = VersioningMode.INC_VERSION;
 
+    @Size(max = 128)
+    private String model;
+
     /**
      * Build ingest metadata
      *
      * @param sessionOwner Owner of the session
      * @param session      session
      * @param ingestChain  ingest processing chain name
+     * @param model        the model to be used for DescriptiveInformation validation
      * @param storages     storage metadata
      */
     public static IngestMetadataDto build(String sessionOwner,
                                           String session,
                                           String ingestChain,
                                           Set<String> categories,
+                                          String model,
                                           StorageMetadata... storages) {
-        return IngestMetadataDto.build(sessionOwner, session, ingestChain, categories, null, Arrays.asList(storages));
+        return IngestMetadataDto.build(sessionOwner,
+                                       session,
+                                       ingestChain,
+                                       categories,
+                                       null,
+                                       model,
+                                       Arrays.asList(storages));
     }
 
     /**
@@ -90,6 +101,7 @@ public class IngestMetadataDto {
      * @param session        session
      * @param ingestChain    ingest processing chain name
      * @param versioningMode
+     * @param model          the model to be used for DescriptiveInformation validation
      * @param storages       storage metadata
      */
     public static IngestMetadataDto build(String sessionOwner,
@@ -97,6 +109,7 @@ public class IngestMetadataDto {
                                           String ingestChain,
                                           Set<String> categories,
                                           VersioningMode versioningMode,
+                                          String model,
                                           List<StorageMetadata> storages) {
         Assert.hasLength(ingestChain, IngestValidationMessages.MISSING_INGEST_CHAIN);
         Assert.hasLength(sessionOwner, IngestValidationMessages.MISSING_SESSION_OWNER);
@@ -107,6 +120,7 @@ public class IngestMetadataDto {
         m.setSessionOwner(sessionOwner);
         m.setSession(session);
         m.setCategories(categories);
+        m.setModel(model);
         m.setStorages(storages);
         m.setVersioningMode(versioningMode == null ? VersioningMode.INC_VERSION : versioningMode);
         return m;
@@ -158,5 +172,13 @@ public class IngestMetadataDto {
 
     public void setCategories(Set<String> categories) {
         this.categories = categories;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
     }
 }

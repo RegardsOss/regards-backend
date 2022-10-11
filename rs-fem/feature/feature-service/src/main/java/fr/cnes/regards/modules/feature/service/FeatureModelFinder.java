@@ -26,12 +26,17 @@ import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.service.validation.AbstractCacheableModelFinder;
 import fr.cnes.regards.modules.model.service.validation.IModelFinder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -39,6 +44,8 @@ import java.util.List;
  */
 @Service
 public class FeatureModelFinder extends AbstractCacheableModelFinder implements IModelFinder {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeatureModelFinder.class);
 
     @Autowired
     private IModelAttrAssocClient modelAttrAssocClient;
@@ -67,6 +74,9 @@ public class FeatureModelFinder extends AbstractCacheableModelFinder implements 
                 attModelAssocs = HateoasUtils.unwrapCollection(response.getBody());
             }
             return attModelAssocs;
+        } catch (HttpServerErrorException | HttpClientErrorException e) {
+            LOGGER.error("Error while loading the Attributes for the model {}", modelName, e);
+            return Collections.emptyList();
         } finally {
             FeignSecurityManager.reset();
         }

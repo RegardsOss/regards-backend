@@ -16,65 +16,63 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.model.service.validation.validator.restriction;
+package fr.cnes.regards.modules.model.service.validation.validator.common.restriction;
 
 import fr.cnes.regards.modules.model.domain.attributes.restriction.PatternRestriction;
-import fr.cnes.regards.modules.model.dto.properties.StringArrayProperty;
-import fr.cnes.regards.modules.model.dto.properties.StringProperty;
-import fr.cnes.regards.modules.model.service.validation.validator.AbstractPropertyValidator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import fr.cnes.regards.modules.model.service.validation.validator.common.AbstractValidator;
 import org.springframework.validation.Errors;
 
 import java.util.regex.Pattern;
 
 /**
- * Validate {@link StringProperty} or {@link StringArrayProperty} value with a {@link PatternRestriction}
+ * Validates à String against a pattern
  *
- * @author Marc Sordi
- */
-public class PatternValidator extends AbstractPropertyValidator {
-
-    /**
-     * Class logger
-     */
-    @SuppressWarnings("unused")
-    private static final Logger LOGGER = LoggerFactory.getLogger(PatternValidator.class);
+ * @author Thibaud Michaudel
+ **/
+public abstract class AbstractPatternValidator extends AbstractValidator {
 
     /**
      * Configured restriction
      */
     private final PatternRestriction restriction;
 
-    public PatternValidator(PatternRestriction pRestriction, String pAttributeKey) {
+    public AbstractPatternValidator(PatternRestriction pRestriction, String pAttributeKey) {
         super(pAttributeKey);
         this.restriction = pRestriction;
     }
 
+    protected abstract String getStringValue(Object pTarget);
+
+    protected abstract String[] getStringArrayValue(Object pTarget);
+
+    protected abstract boolean isString(Class<?> clazz);
+
+    protected abstract boolean isStringArray(Class<?> clazz);
+
     @Override
     public boolean supports(Class<?> clazz) {
-        return clazz == StringProperty.class || clazz == StringArrayProperty.class;
+        return isString(clazz) || isStringArray(clazz);
     }
 
     @Override
     public void validate(Object pTarget, Errors pErrors) {
-        if (pTarget instanceof StringProperty) {
-            validate((StringProperty) pTarget, pErrors);
-        } else if (pTarget instanceof StringArrayProperty) {
-            validate((StringArrayProperty) pTarget, pErrors);
+        if (isString(pTarget.getClass())) {
+            validate(getStringValue(pTarget), pErrors);
+        } else if (isStringArray(pTarget.getClass())) {
+            validate(getStringArrayValue(pTarget), pErrors);
         } else {
             rejectUnsupported(pErrors);
         }
     }
 
-    public void validate(StringProperty pTarget, Errors pErrors) {
-        if (!Pattern.matches(restriction.getPattern(), pTarget.getValue())) {
+    public void validate(String pTarget, Errors pErrors) {
+        if (!Pattern.matches(restriction.getPattern(), pTarget)) {
             reject(pErrors);
         }
     }
 
-    public void validate(StringArrayProperty pTarget, Errors pErrors) {
-        for (String val : pTarget.getValue()) {
+    public void validate(String[] pTarget, Errors pErrors) {
+        for (String val : pTarget) {
             if (!Pattern.matches(restriction.getPattern(), val)) {
                 reject(pErrors);
             }

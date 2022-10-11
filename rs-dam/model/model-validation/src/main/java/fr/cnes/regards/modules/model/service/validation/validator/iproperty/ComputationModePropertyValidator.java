@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.model.service.validation.validator;
+package fr.cnes.regards.modules.model.service.validation.validator.iproperty;
 
 import fr.cnes.regards.modules.model.domain.ComputationMode;
 import org.springframework.validation.Errors;
@@ -26,21 +26,21 @@ import org.springframework.validation.Errors;
  *
  * @author Marc Sordi
  */
-public class ComputationModeValidator extends AbstractPropertyValidator {
+public class ComputationModePropertyValidator extends AbstractPropertyValidator {
 
     /**
      * {@link ComputationMode}
      */
     private final ComputationMode computationMode;
 
-    public ComputationModeValidator(ComputationMode computationMode, String attributeKey) {
+    public ComputationModePropertyValidator(ComputationMode computationMode, String attributeKey) {
         super(attributeKey);
         this.computationMode = computationMode;
     }
 
     @Override
     public void validate(Object target, Errors errors) {
-        if (!ComputationMode.GIVEN.equals(computationMode)) {
+        if (ComputationMode.GIVEN != computationMode) {
             errors.reject("error.computed.property.given.message",
                           String.format("Computed value for property \"%s\" must not be set.", attributeKey));
         }

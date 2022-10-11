@@ -77,6 +77,9 @@ public class IngestMetadata {
     @Enumerated(EnumType.STRING)
     private VersioningMode versioningMode = VersioningMode.INC_VERSION;
 
+    @Column(length = 128, name = "model")
+    private String model;
+
     @Column(columnDefinition = "jsonb", nullable = false)
     @Type(type = "jsonb", parameters = { @Parameter(name = JsonTypeDescriptor.ARG_TYPE, value = "java.lang.String") })
     private Set<String> categories;
@@ -121,6 +124,14 @@ public class IngestMetadata {
         this.storages = storages;
     }
 
+    public String getModel() {
+        return model;
+    }
+
+    public void setModel(String model) {
+        this.model = model;
+    }
+
     public Set<String> getCategories() {
         return categories;
     }
@@ -130,7 +141,7 @@ public class IngestMetadata {
     }
 
     /**
-     * Build ingest metadata with default versioning mode: {@link VersioningMode#INC_VERSION}
+     * Build ingest metadata with default versioning mode: {@link VersioningMode#INC_VERSION} and no model
      *
      * @param sessionOwner Owner of the session
      * @param session      session
@@ -143,11 +154,30 @@ public class IngestMetadata {
                                        String ingestChain,
                                        Set<String> categories,
                                        StorageMetadata... storages) {
-        return build(sessionOwner, session, ingestChain, categories, VersioningMode.INC_VERSION, storages);
+        return build(sessionOwner, session, ingestChain, categories, VersioningMode.INC_VERSION, null, storages);
     }
 
     /**
-     * Build ingest metadata
+     * Build ingest metadata with default versioning mode: {@link VersioningMode#INC_VERSION}
+     *
+     * @param sessionOwner Owner of the session
+     * @param session      session
+     * @param categories   category list
+     * @param ingestChain  ingest processing chain name
+     * @param model        the model to be used for DescriptiveInformation validation
+     * @param storages     storage metadata
+     */
+    public static IngestMetadata build(String sessionOwner,
+                                       String session,
+                                       String ingestChain,
+                                       Set<String> categories,
+                                       String model,
+                                       StorageMetadata... storages) {
+        return build(sessionOwner, session, ingestChain, categories, VersioningMode.INC_VERSION, model, storages);
+    }
+
+    /**
+     * Build ingest metadata with no model
      *
      * @param sessionOwner   Owner of the session
      * @param session        session
@@ -162,6 +192,27 @@ public class IngestMetadata {
                                        Set<String> categories,
                                        VersioningMode versioningMode,
                                        StorageMetadata... storages) {
+        return build(sessionOwner, session, ingestChain, categories, versioningMode, null, storages);
+    }
+
+    /**
+     * Build ingest metadata
+     *
+     * @param sessionOwner   Owner of the session
+     * @param session        session
+     * @param categories     category list
+     * @param ingestChain    ingest processing chain name
+     * @param versioningMode versioning mode
+     * @param model          the model to be used for DescriptiveInformation validation
+     * @param storages       storage metadata
+     */
+    public static IngestMetadata build(String sessionOwner,
+                                       String session,
+                                       String ingestChain,
+                                       Set<String> categories,
+                                       VersioningMode versioningMode,
+                                       String model,
+                                       StorageMetadata... storages) {
         Assert.hasLength(ingestChain, IngestValidationMessages.MISSING_INGEST_CHAIN);
         Assert.hasLength(sessionOwner, IngestValidationMessages.MISSING_SESSION_OWNER);
         Assert.hasLength(session, IngestValidationMessages.MISSING_SESSION);
@@ -174,6 +225,7 @@ public class IngestMetadata {
         m.setCategories(categories);
         m.setStorages(Sets.newHashSet(storages));
         m.setVersioningMode(versioningMode);
+        m.setModel(model);
         return m;
     }
 }

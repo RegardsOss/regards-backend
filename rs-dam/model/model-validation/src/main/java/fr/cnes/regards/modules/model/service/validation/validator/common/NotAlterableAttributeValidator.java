@@ -16,10 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.model.service.validation.validator;
+package fr.cnes.regards.modules.model.service.validation.validator.common;
 
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
+import fr.cnes.regards.modules.model.service.validation.validator.iproperty.AbstractPropertyValidator;
 import org.springframework.validation.Errors;
 
 import java.util.Objects;
@@ -37,12 +38,12 @@ public class NotAlterableAttributeValidator extends AbstractPropertyValidator {
     private final AttributeModel attribute;
 
     /**
-     * old attribute
+     * old attribute value
      */
     private final IProperty<?> oldValue;
 
     /**
-     * new attribute
+     * new attribute value
      */
     private final IProperty<?> newValue;
 

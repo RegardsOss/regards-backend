@@ -216,6 +216,8 @@ public class SIPValidationIT {
                                                                                "session",
                                                                                "ingestChain",
                                                                                Sets.newHashSet("cat 1"),
+                                                                               null,
+                                                                               null,
                                                                                StorageMetadata.build("test")));
 
         validator.validate(collection, errors);

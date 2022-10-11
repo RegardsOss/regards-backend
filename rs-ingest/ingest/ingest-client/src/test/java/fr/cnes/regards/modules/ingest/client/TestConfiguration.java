@@ -19,6 +19,10 @@
 package fr.cnes.regards.modules.ingest.client;
 
 import com.google.common.collect.Lists;
+import fr.cnes.regards.modules.model.client.IAttributeModelClient;
+import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
+import fr.cnes.regards.modules.model.client.IModelClient;
+import fr.cnes.regards.modules.model.service.validation.IModelFinder;
 import org.mockito.Mockito;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -48,5 +52,25 @@ public class TestConfiguration {
         Mockito.when(client.getInstances(Mockito.anyString())).thenReturn(response);
         return client;
 
+    }
+
+    @Bean
+    public IModelAttrAssocClient modelAttrAssocClient() {
+        return Mockito.mock(IModelAttrAssocClient.class);
+    }
+
+    @Bean
+    public IAttributeModelClient attributeModelClient() {
+        return Mockito.mock(IAttributeModelClient.class);
+    }
+
+    @Bean
+    public IModelClient modelClient() {
+        return Mockito.mock(IModelClient.class);
+    }
+
+    @Bean
+    public IModelFinder modelFinder() {
+        return Mockito.mock(IModelFinder.class);
     }
 }

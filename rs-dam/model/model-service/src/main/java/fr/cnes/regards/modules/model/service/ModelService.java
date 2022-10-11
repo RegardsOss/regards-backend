@@ -139,6 +139,8 @@ public class ModelService implements IModelService, IModelAttrAssocService {
             throw new EntityAlreadyExistsException(String.format("Model with name \"%s\" already exists!",
                                                                  model.getName()));
         }
+        // Publish model change
+        publisher.publish(new ModelChangeEvent(model.getName()));
         return modelRepository.save(model);
     }
 
@@ -183,6 +185,8 @@ public class ModelService implements IModelService, IModelAttrAssocService {
         List<ModelAttrAssoc> modelAttrAssocs = modelAttributeRepository.findByModelId(model.getId());
         modelAttributeRepository.deleteAll(modelAttrAssocs);
         modelRepository.deleteById(model.getId());
+        // Publish model change
+        publisher.publish(new ModelChangeEvent(model.getName()));
     }
 
     @Override
@@ -242,7 +246,7 @@ public class ModelService implements IModelService, IModelAttrAssocService {
 
         modelAttrAssoc.setModel(model);
         // Publish model change
-        publisher.publish(ModelChangeEvent.build(model.getName()));
+        publisher.publish(new ModelChangeEvent(model.getName()));
         return modelAttributeRepository.save(modelAttrAssoc);
     }
 
@@ -277,7 +281,8 @@ public class ModelService implements IModelService, IModelAttrAssocService {
             throw new EntityNotFoundException(attributeId, ModelAttrAssoc.class);
         }
         // Publish model change
-        publisher.publish(ModelChangeEvent.build(modelAttrAssoc.getModel().getName()));
+        publisher.publish(new ModelChangeEvent(modelAttrAssoc.getModel().getName()));
+
         modelAttributeRepository.save(modelAttrAssoc);
         // If associated attribute is a computed one, send and event (to compute all datasets values)
         if (modelAttrAssoc.getComputationConf() != null) {
@@ -295,7 +300,7 @@ public class ModelService implements IModelService, IModelAttrAssocService {
         }
         modelAttributeRepository.deleteById(attributeId);
         // Publish model change
-        publisher.publish(ModelChangeEvent.build(modelName));
+        publisher.publish(new ModelChangeEvent(modelName));
     }
 
     @Override
@@ -326,7 +331,7 @@ public class ModelService implements IModelService, IModelAttrAssocService {
         }
 
         // Publish model change
-        publisher.publish(ModelChangeEvent.build(modelName));
+        publisher.publish(new ModelChangeEvent(modelName));
         return modAtts;
     }
 
@@ -359,7 +364,7 @@ public class ModelService implements IModelService, IModelAttrAssocService {
             }
         }
         // Publish model change
-        publisher.publish(ModelChangeEvent.build(modelName));
+        publisher.publish(new ModelChangeEvent(modelName));
     }
 
     @Override
@@ -375,7 +380,7 @@ public class ModelService implements IModelService, IModelAttrAssocService {
             modelAtt.setModel(model);
             modelAttributeRepository.save(modelAtt);
             // Publish model change
-            publisher.publish(ModelChangeEvent.build(model.getName()));
+            publisher.publish(new ModelChangeEvent(model.getName()));
         }
     }
 
@@ -400,6 +405,8 @@ public class ModelService implements IModelService, IModelAttrAssocService {
                 }
             }
         }
+        // Publish model change
+        publisher.publish(new ModelChangeEvent(targetModel.getName()));
         return targetModel;
     }
 

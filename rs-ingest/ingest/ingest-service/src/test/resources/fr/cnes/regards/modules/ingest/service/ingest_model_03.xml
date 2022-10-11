@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://regardsoss.github.io/xsd/model_V1.10.0.xsd">
+    <name>INGEST03</name>
+    <description>Test model 3</description>
+    <version>0.0.1</version>
+    <type>DATA</type>
+    <attribute alterable="false">
+        <label>String_array</label>
+        <name>string_array_field</name>
+        <type>STRING_ARRAY</type>
+    </attribute>
+    <attribute alterable="false">
+        <label>integer_array</label>
+        <name>integer_array_field</name>
+        <type>INTEGER_ARRAY</type>
+    </attribute>
+    <attribute alterable="false">
+        <label>long_array</label>
+        <name>long_array_field</name>
+        <type>LONG_ARRAY</type>
+    </attribute>
+    <attribute alterable="false">
+        <label>double_array</label>
+        <name>double_array_field</name>
+        <type>DOUBLE_ARRAY</type>
+    </attribute>
+    <attribute alterable="false">
+        <label>date_array</label>
+        <name>date_array_field</name>
+        <type>DATE_ARRAY</type>
+    </attribute>
+</model>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://regardsoss.github.io/xsd/model_V1.10.0.xsd">
+    <name>INGEST09</name>
+    <description>Test model 9</description>
+    <version>0.0.1</version>
+    <type>DATA</type>
+    <attribute alterable="false">
+        <label>Json with json_schema restriction</label>
+        <name>json_field</name>
+        <type>JSON</type>
+        <restriction>
+            <json_schema>{ "type": "object", "properties": { "name": { "type": "string" }, "city": { "type": "object", "properties": { "name": { "type": "string" }, "country": { "type": "string" } }, "additionalProperties":false } } }</json_schema>
+        </restriction>
+    </attribute>
+</model>

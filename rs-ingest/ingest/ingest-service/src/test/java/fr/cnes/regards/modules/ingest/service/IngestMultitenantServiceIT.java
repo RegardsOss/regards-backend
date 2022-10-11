@@ -265,6 +265,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
                                                         chainLabel.orElse(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL),
                                                         Sets.newHashSet(categories),
                                                         versioningMode,
+                                                        null,
                                                         storagesMeta);
         ingestServiceTest.sendIngestRequestEvent(sips, mtd);
     }

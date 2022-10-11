@@ -17,8 +17,8 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * Restriction validator package
+ * Attribute level validator package
  *
  * @author Marc Sordi
  */
-package fr.cnes.regards.modules.model.service.validation.validator.restriction;
+package fr.cnes.regards.modules.model.service.validation.validator.iproperty;

@@ -63,7 +63,7 @@ import fr.cnes.regards.modules.model.dto.properties.ObjectProperty;
 import fr.cnes.regards.modules.model.service.IModelService;
 import fr.cnes.regards.modules.model.service.validation.IModelFinder;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
-import fr.cnes.regards.modules.model.service.validation.validator.NotAlterableAttributeValidator;
+import fr.cnes.regards.modules.model.service.validation.validator.common.NotAlterableAttributeValidator;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.storage.client.RequestInfo;

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://regardsoss.github.io/xsd/model_V1.10.0.xsd">
+    <name>INGEST02</name>
+    <description>Test model 2</description>
+    <version>0.0.1</version>
+    <type>DATA</type>
+    <attribute alterable="false">
+        <label>Url</label>
+        <name>url_field</name>
+        <type>URL</type>
+    </attribute>
+    <attribute alterable="false">
+        <label>Date</label>
+        <name>date_field</name>
+        <type>DATE_ISO8601</type>
+    </attribute>
+</model>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://regardsoss.github.io/xsd/model_V1.10.0.xsd">
+    <name>INGEST06</name>
+    <description>Test model 6</description>
+    <version>0.0.1</version>
+    <type>DATA</type>
+    <attribute alterable="false">
+        <label>String with enum restriction</label>
+        <name>enum_field</name>
+        <type>STRING</type>
+        <restriction>
+            <enumeration>
+                <value>Toulouse</value>
+                <value>Bordeaux</value>
+                <value>Montpellier</value>
+            </enumeration>
+        </restriction>
+    </attribute>
+    <attribute alterable="false">
+        <label>String array with enum restriction</label>
+        <name>enum_array_field</name>
+        <type>STRING_ARRAY</type>
+        <restriction>
+            <enumeration>
+                <value>Toulouse</value>
+                <value>Bordeaux</value>
+                <value>Montpellier</value>
+            </enumeration>
+        </restriction>
+    </attribute>
+</model>

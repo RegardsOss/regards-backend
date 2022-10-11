@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.feature.dto.Feature;
 import fr.cnes.regards.modules.feature.dto.FeatureFile;
 import fr.cnes.regards.modules.feature.dto.FeatureFileLocation;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
-import fr.cnes.regards.modules.model.service.validation.AbstractValidationService;
+import fr.cnes.regards.modules.model.service.validation.AbstractFeatureValidationService;
 import fr.cnes.regards.modules.model.service.validation.IModelFinder;
 import fr.cnes.regards.modules.model.service.validation.IValidationService;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
@@ -47,7 +47,7 @@ import java.util.HashMap;
  * @author Sébastien Binda
  */
 @Service
-public class FeatureValidationService extends AbstractValidationService<Feature>
+public class FeatureValidationService extends AbstractFeatureValidationService<Feature>
     implements IFeatureValidationService, IValidationService<Feature> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureValidationService.class);

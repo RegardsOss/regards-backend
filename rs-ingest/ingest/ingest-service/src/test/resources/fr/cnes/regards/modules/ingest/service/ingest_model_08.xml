@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<model xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://regardsoss.github.io/xsd/model_V1.10.0.xsd">
+    <name>INGEST08</name>
+    <description>Test model 8</description>
+    <version>0.0.1</version>
+    <type>DATA</type>
+    <attribute alterable="false">
+        <label>String with pattern restriction</label>
+        <name>string_field</name>
+        <type>STRING</type>
+        <restriction>
+            <pattern>^[a-zA-Z]+</pattern>
+        </restriction>
+    </attribute>
+    <attribute alterable="false">
+        <label>String Array with pattern restriction</label>
+        <name>string_array_field</name>
+        <type>STRING_ARRAY</type>
+        <restriction>
+            <pattern>^[A-Z]+</pattern>
+        </restriction>
+    </attribute>
+</model>

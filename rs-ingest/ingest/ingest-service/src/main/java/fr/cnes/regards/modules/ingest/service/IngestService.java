@@ -46,6 +46,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.flow.IngestRequestFlowItem;
 import fr.cnes.regards.modules.ingest.service.conf.IngestConfigurationProperties;
 import fr.cnes.regards.modules.ingest.service.request.IIngestRequestService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,6 +96,9 @@ public class IngestService implements IIngestService {
 
     @Autowired
     private SessionNotifier sessionNotifier;
+
+    @Autowired
+    private IngestValidationService validationService;
 
     /**
      * Middleware method extracted for test simulation and also used by operational code.
@@ -146,6 +150,12 @@ public class IngestService implements IIngestService {
         Errors errors = new MapBindingResult(new HashMap<>(), SIP.class.getName());
         validator.validate(sip, errors);
 
+        // Validate DescriptiveInformation against given regards model if present
+        if (StringUtils.isNotBlank(ingestMetadata.getModel())) {
+            errors.addAllErrors(validationService.validate(ingestMetadata.getModel(),
+                                                           sip.getProperties().getDescriptiveInformation(),
+                                                           SIP.class.getName()));
+        }
         if (errors.hasErrors()) {
             Set<String> errs = ErrorTranslator.getErrors(errors);
             // Publish DENIED request (do not persist it in DB) / Warning : request id cannot be known

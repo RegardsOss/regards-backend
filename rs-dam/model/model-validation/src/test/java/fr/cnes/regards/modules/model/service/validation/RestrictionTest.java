@@ -23,7 +23,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonReader;
 import fr.cnes.regards.modules.model.domain.attributes.restriction.JsonSchemaRestriction;
 import fr.cnes.regards.modules.model.dto.properties.IProperty;
-import fr.cnes.regards.modules.model.service.validation.validator.restriction.RestrictionValidatorFactory;
+import fr.cnes.regards.modules.model.service.validation.validator.iproperty.restriction.RestrictionValidatorFactory;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;

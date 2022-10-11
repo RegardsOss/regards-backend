@@ -81,6 +81,8 @@ public class SIPBuilderIT {
                                                                                session,
                                                                                ingestChain,
                                                                                CATEGORIES,
+                                                                               null,
+                                                                               null,
                                                                                StorageMetadata.build("test")));
 
         // Create a SIP builder

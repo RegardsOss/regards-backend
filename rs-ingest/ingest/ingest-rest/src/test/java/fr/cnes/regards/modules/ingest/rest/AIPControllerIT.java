@@ -152,6 +152,7 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
                                                         session,
                                                         IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL,
                                                         categories,
+                                                        null,
                                                         StorageMetadata.build(storage));
 
         ingestServiceTest.sendIngestRequestEvent(sip, mtd);
