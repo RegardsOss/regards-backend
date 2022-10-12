@@ -49,6 +49,22 @@
             <artifactId>microservice-logger</artifactId>
         </dependency>
         <dependency>
+            <groupId>fr.cnes.regards.modules.authentication</groupId>
+            <artifactId>authentication-domain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>security-regards</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>spring-webmvc</artifactId>
+                    <groupId>org.springframework</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Spring cloud -->
+        <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-config</artifactId>
         </dependency>
@@ -60,11 +76,6 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.modules.authentication</groupId>
-            <artifactId>authentication-domain</artifactId>
-        </dependency>
-
         <!-- Spring boot config -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -95,16 +106,6 @@
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-test</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>security-regards</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>spring-webmvc</artifactId>
-                    <groupId>org.springframework</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.projectreactor</groupId>
