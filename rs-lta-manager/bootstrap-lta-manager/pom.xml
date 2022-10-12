@@ -72,9 +72,9 @@
         <!-- core dependencies -->
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
-	    <artifactId>microservice-core-starter</artifactId>
-	    <version>${revision}</version>
-	    <type>pom</type>
+            <artifactId>microservice-core-starter</artifactId>
+            <version>${revision}</version>
+            <type>pom</type>
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.microservices.administration</groupId>
