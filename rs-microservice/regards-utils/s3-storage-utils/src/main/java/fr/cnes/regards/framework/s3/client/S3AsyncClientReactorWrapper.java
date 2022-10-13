@@ -210,8 +210,12 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
                      bucket,
                      path);
 
+        byte[] md5 = DigestUtils.md5(partBytes);
+        String md5b64 = new String(Base64.encodeBase64(md5));
+
         UploadPartRequest uploadRequest = UploadPartRequest.builder()
                                                            .bucket(bucket)
+                                                           .contentMD5(md5b64)
                                                            .key(path)
                                                            .uploadId(uploadId)
                                                            .partNumber(partId)

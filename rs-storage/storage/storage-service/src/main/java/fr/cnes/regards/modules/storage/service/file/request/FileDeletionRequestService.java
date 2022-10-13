@@ -274,7 +274,7 @@ public class FileDeletionRequestService {
                                                              Page<FileDeletionRequest> deletionRequestPage,
                                                              FileRequestStatus requestStatus) {
         LOGGER.debug("[DELETION REQUESTS] scheduling {} deletion jobs for storage {} ... ",
-                     deletionRequestPage.get(),
+                     deletionRequestPage.getSize(),
                      storage);
         // SESSION HANDLING
         List<FileDeletionRequest> storageReqList = deletionRequestPage.getContent();
