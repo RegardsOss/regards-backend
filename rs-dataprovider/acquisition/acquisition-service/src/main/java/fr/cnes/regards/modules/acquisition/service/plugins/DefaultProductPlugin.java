@@ -22,6 +22,9 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -73,9 +76,9 @@ public class DefaultProductPlugin implements IProductPlugin {
         String productName = filePath.getFileName().toString();
 
         // Remove extension
-        if ((removeExtension != null) && removeExtension) {
+        if (BooleanUtils.isTrue(removeExtension)) {
             int indexExtension = -1;
-            if ((extensions != null) && extensions.isEmpty()) {
+            if (!CollectionUtils.isEmpty(extensions)) {
                 for (String extension : extensions) {
                     indexExtension = productName.lastIndexOf(extension);
                     if (indexExtension > 0) {
@@ -91,7 +94,7 @@ public class DefaultProductPlugin implements IProductPlugin {
         }
 
         // Prefix
-        if ((prefix != null) && !prefix.isEmpty()) {
+        if (!StringUtils.isBlank(prefix)) {
             productName = prefix + productName;
         }
 
@@ -101,11 +104,12 @@ public class DefaultProductPlugin implements IProductPlugin {
                 productName = productName.substring(0, maxLength);
             } else {
                 if (maxLengthRequired) {
-                    String message = String.format("Product name \"%s\" is shorted than max length", productName);
-                    throw new ModuleException(message);
+                    throw new ModuleException(String.format("Product name \"%s\" is shorted than max length",
+                                                            productName));
                 }
             }
         }
         return productName;
     }
+
 }
