@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ltamanager.rest.submission;
 
-import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.jpa.restriction.DatesRangeRestriction;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
@@ -26,28 +25,22 @@ import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMode;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
-import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionProduct;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
-import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionStatus;
 import fr.cnes.regards.modules.ltamanager.domain.submission.search.SubmissionRequestSearchParameters;
-import fr.cnes.regards.modules.ltamanager.dto.submission.input.ProductFileDto;
-import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
+import fr.cnes.regards.modules.ltamanager.rest.submission.utils.SubmissionInfo;
+import fr.cnes.regards.modules.ltamanager.rest.submission.utils.SubmissionRequestHelper;
 import fr.cnes.regards.modules.model.client.IModelClient;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import javax.validation.constraints.NotNull;
-import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -60,7 +53,7 @@ import static org.hamcrest.Matchers.equalTo;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(locations = { "classpath:application-test.properties" },
-    properties = { "spring.jpa.properties.hibernate.default_schema=submission_read_controller_it" })
+                    properties = { "spring.jpa.properties.hibernate.default_schema=submission_read_controller_it" })
 public class SubmissionReadControllerIT extends AbstractRegardsIT {
 
     private static final String OWNER_1 = "Owner 1";
@@ -76,6 +69,9 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
 
     @Autowired
     private ISubmissionRequestRepository requestRepository;
+
+    @Autowired
+    private SubmissionRequestHelper submissionRequestHelper;
 
     @MockBean
     private IModelClient modelClient;
@@ -94,16 +90,17 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
     @Purpose("Test if state info of an existing request is successfully returned")
     public void read_request_state_success() throws Exception {
         // GIVEN
-        SubmissionRequest submissionRequest = createAndSaveSubmissionRequest(new SubmissionInfo("ownerInfo",
-                                                                                                "sessionInfo",
-                                                                                                EntityType.DATA.toString(),
-                                                                                                OffsetDateTime.now(),
-                                                                                                OffsetDateTime.now(),
-                                                                                                SubmissionRequestState.GENERATION_ERROR));
+        SubmissionRequest submissionRequest = submissionRequestHelper.createAndSaveSubmissionRequest(new SubmissionInfo(
+            "ownerInfo",
+            "sessionInfo",
+            EntityType.DATA.toString(),
+            OffsetDateTime.now(),
+            OffsetDateTime.now(),
+            SubmissionRequestState.GENERATION_ERROR));
 
         // WHEN
         ResultActions response = performDefaultGet(AbstractSubmissionController.ROOT_PATH
-                                                   + SubmissionReadController.INFO_MAPPING,
+                                                   + SubmissionReadController.REQUEST_INFO_MAPPING,
                                                    customizer().expectStatusOk(),
                                                    "State should be returned",
                                                    submissionRequest.getRequestId());
@@ -132,7 +129,7 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
 
         // WHEN / THEN
         // expect status not found
-        performDefaultGet(AbstractSubmissionController.ROOT_PATH + SubmissionReadController.INFO_MAPPING,
+        performDefaultGet(AbstractSubmissionController.ROOT_PATH + SubmissionReadController.REQUEST_INFO_MAPPING,
                           customizer().expectStatusNotFound(),
                           "404 not found should be returned",
                           UUID.randomUUID());
@@ -175,13 +172,13 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
                                                                                                            null,
                                                                                                            null,
                                                                                                            new DatesRangeRestriction(
-                                                                                                             now.plusSeconds(
-                                                                                                                 1),
-                                                                                                             now),
+                                                                                                               now.plusSeconds(
+                                                                                                                   1),
+                                                                                                               now),
                                                                                                            new DatesRangeRestriction(
-                                                                                                             now.plusSeconds(
-                                                                                                                 3),
-                                                                                                             now),
+                                                                                                               now.plusSeconds(
+                                                                                                                   3),
+                                                                                                               now),
                                                                                                            null,
                                                                                                            null);
 
@@ -212,9 +209,9 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
                                                                                                             null,
                                                                                                             null,
                                                                                                             new ValuesRestriction<>(
-                                                                                                              List.of(
-                                                                                                                  SubmissionRequestState.INGESTION_ERROR),
-                                                                                                              ValuesRestrictionMode.INCLUDE),
+                                                                                                                List.of(
+                                                                                                                    SubmissionRequestState.INGESTION_ERROR),
+                                                                                                                ValuesRestrictionMode.INCLUDE),
                                                                                                             null);
 
         ResultActions response = performDefaultPost(AbstractSubmissionController.ROOT_PATH
@@ -243,11 +240,11 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
                                                                                                          null,
                                                                                                          null,
                                                                                                          new ValuesRestriction<>(
-                                                                                                           List.of(
-                                                                                                               requests.get(
-                                                                                                                           1)
-                                                                                                                       .getRequestId()),
-                                                                                                           ValuesRestrictionMode.EXCLUDE));
+                                                                                                             List.of(
+                                                                                                                 requests.get(
+                                                                                                                             1)
+                                                                                                                         .getRequestId()),
+                                                                                                             ValuesRestrictionMode.EXCLUDE));
 
         ResultActions response = performDefaultPost(AbstractSubmissionController.ROOT_PATH
                                                     + SubmissionReadController.SEARCH_MAPPING,
@@ -272,27 +269,14 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
         OffsetDateTime now = OffsetDateTime.now();
         List<SubmissionRequest> requests = initSearchCriterionData(now);
         // WHEN
-        SubmissionRequestSearchParameters searchCriterionWithAllCriterion = new SubmissionRequestSearchParameters(OWNER_1,
-                                                                                                                  SESSION_1,
-                                                                                                                  EntityType.DATA.toString(),
-                                                                                                                  new DatesRangeRestriction(
-                                                                                                                    now.plusSeconds(
-                                                                                                                        10),
-                                                                                                                    now),
-                                                                                                                  new DatesRangeRestriction(
-                                                                                                                    now.plusSeconds(
-                                                                                                                        10),
-                                                                                                                    now),
-                                                                                                                  new ValuesRestriction<>(
-                                                                                                                    List.of(
-                                                                                                                        SubmissionRequestState.GENERATED),
-                                                                                                                    ValuesRestrictionMode.INCLUDE),
-                                                                                                                  new ValuesRestriction<>(
-                                                                                                                    List.of(
-                                                                                                                        requests.get(
-                                                                                                                                    0)
-                                                                                                                                .getRequestId()),
-                                                                                                                    ValuesRestrictionMode.EXCLUDE));
+        SubmissionRequestSearchParameters searchCriterionWithAllCriterion = new SubmissionRequestSearchParameters(
+            OWNER_1,
+            SESSION_1,
+            EntityType.DATA.toString(),
+            new DatesRangeRestriction(now.plusSeconds(10), now),
+            new DatesRangeRestriction(now.plusSeconds(10), now),
+            new ValuesRestriction<>(List.of(SubmissionRequestState.GENERATED), ValuesRestrictionMode.INCLUDE),
+            new ValuesRestriction<>(List.of(requests.get(0).getRequestId()), ValuesRestrictionMode.EXCLUDE));
 
         ResultActions response = performDefaultPost(AbstractSubmissionController.ROOT_PATH
                                                     + SubmissionReadController.SEARCH_MAPPING,
@@ -343,63 +327,37 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
     }
 
     private List<SubmissionRequest> initSearchCriterionData(OffsetDateTime now) {
-        SubmissionRequest reqGenerated = createAndSaveSubmissionRequest(new SubmissionInfo(OWNER_1,
-                                                                                           SESSION_1,
-                                                                                           EntityType.DATA.toString(),
-                                                                                           now,
-                                                                                           now.plusSeconds(1),
-                                                                                           SubmissionRequestState.GENERATED));
+        SubmissionRequest reqGenerated = submissionRequestHelper.createAndSaveSubmissionRequest(new SubmissionInfo(
+            OWNER_1,
+            SESSION_1,
+            EntityType.DATA.toString(),
+            now,
+            now.plusSeconds(1),
+            SubmissionRequestState.GENERATED));
 
-        SubmissionRequest reqGenerated2 = createAndSaveSubmissionRequest(new SubmissionInfo(OWNER_1,
-                                                                                            SESSION_1,
-                                                                                            EntityType.DATA.toString(),
-                                                                                            now.plusSeconds(2),
-                                                                                            now.plusSeconds(3),
-                                                                                            SubmissionRequestState.GENERATED));
+        SubmissionRequest reqGenerated2 = submissionRequestHelper.createAndSaveSubmissionRequest(new SubmissionInfo(
+            OWNER_1,
+            SESSION_1,
+            EntityType.DATA.toString(),
+            now.plusSeconds(2),
+            now.plusSeconds(3),
+            SubmissionRequestState.GENERATED));
 
-        SubmissionRequest reqPending = createAndSaveSubmissionRequest(new SubmissionInfo(OWNER_2,
-                                                                                         SESSION_1,
-                                                                                         EntityType.DATA.toString(),
-                                                                                         now,
-                                                                                         now.plusSeconds(3),
-                                                                                         SubmissionRequestState.INGESTION_PENDING));
+        SubmissionRequest reqPending = submissionRequestHelper.createAndSaveSubmissionRequest(new SubmissionInfo(OWNER_2,
+                                                                                                                 SESSION_1,
+                                                                                                                 EntityType.DATA.toString(),
+                                                                                                                 now,
+                                                                                                                 now.plusSeconds(
+                                                                                                                     3),
+                                                                                                                 SubmissionRequestState.INGESTION_PENDING));
 
-        SubmissionRequest reqError = createAndSaveSubmissionRequest(new SubmissionInfo(OWNER_2,
-                                                                                       SESSION_1,
-                                                                                       DATATYPE_ERROR,
-                                                                                       now,
-                                                                                       now.plusSeconds(6),
-                                                                                       SubmissionRequestState.INGESTION_ERROR));
+        SubmissionRequest reqError = submissionRequestHelper.createAndSaveSubmissionRequest(new SubmissionInfo(OWNER_2,
+                                                                                                               SESSION_1,
+                                                                                                               DATATYPE_ERROR,
+                                                                                                               now,
+                                                                                                               now.plusSeconds(
+                                                                                                                   6),
+                                                                                                               SubmissionRequestState.INGESTION_ERROR));
         return List.of(reqGenerated, reqGenerated2, reqPending, reqError);
     }
-
-    @NotNull
-    private SubmissionRequest createAndSaveSubmissionRequest(SubmissionInfo info) {
-
-        SubmissionStatus status = new SubmissionStatus(info.creationDate(),
-                                                       info.statusDate(),
-                                                       info.state(),
-                                                       "sample message");
-        SubmissionProduct product = new SubmissionProduct(info.datatype(),
-                                                          "model",
-                                                          Paths.get("/path/example"),
-                                                          new SubmissionRequestDto(UUID.randomUUID().toString(),
-                                                                                   EntityType.DATA.toString(),
-                                                                                   IGeometry.point(IGeometry.position(
-                                                                                       10.0,
-                                                                                       20.0)),
-                                                                                   List.of(new ProductFileDto(DataType.RAWDATA,
-                                                                                                              "http://localhost/notexisting",
-                                                                                                              "example.raw",
-                                                                                                              "f016852239a8a919f05f6d2225c5aaca",
-                                                                                                              MediaType.APPLICATION_OCTET_STREAM))));
-
-        return requestRepository.save(new SubmissionRequest(info.owner(), info.session(), false, status, product));
-    }
-
-    private record SubmissionInfo(String owner, String session, String datatype, OffsetDateTime creationDate,
-                                  OffsetDateTime statusDate, SubmissionRequestState state) {
-
-    }
-
 }

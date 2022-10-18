@@ -61,6 +61,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -75,7 +76,7 @@ import java.util.*;
 @MultitenantTransactional
 public class IngestService implements IIngestService {
 
-    public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
+    public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestService.class);
 

@@ -57,7 +57,7 @@ public class SubmissionReadController extends AbstractSubmissionController
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SubmissionReadController.class);
 
-    public static final String INFO_MAPPING = "/{requestId}/info";
+    public static final String REQUEST_INFO_MAPPING = "/{requestId}/info";
 
     public static final String SEARCH_MAPPING = "/search";
 
@@ -77,7 +77,7 @@ public class SubmissionReadController extends AbstractSubmissionController
         @ApiResponse(responseCode = "404", description = "Associated submission request was not found.",
                      useReturnTypeSchema = true, content = {
             @Content(mediaType = "application/json") }) })
-    @GetMapping(path = INFO_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = REQUEST_INFO_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to check the progress of a submission request.", role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<SubmissionRequestInfoDto>> checkSubmissionRequestStatus(
