@@ -29,6 +29,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -134,10 +135,29 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
                                                    .collect(Collectors.toList());
     }
 
-    @Query(value = "select version from SIPEntity where provider_id = :providerId")
+    @Query(value = "select version from SIPEntity where providerId = :providerId")
     List<Integer> findVersionByProviderId(@Param("providerId") String providerId);
 
     @Modifying
     @Query(value = "UPDATE SIPEntity SET last = :last WHERE id = :id")
     int updateLast(@Param("id") Long id, @Param("last") boolean last);
+
+    /**
+     * Remove rawsip value of SIP where lowerDate < SIP.lastUpdate <= upperDate
+     */
+    @Modifying
+    @Query(value = "UPDATE SIPEntity SET sip = null "
+                   + "WHERE state IN (:states) "
+                   + "AND (lastUpdate > :lowerDate AND lastUpdate <= :upperDate)")
+    int updateRawSIPOutdatedForLastUpdateBetween(@Param("states") Collection<SIPState> states,
+                                                 @Param("lowerDate") OffsetDateTime lowerDate,
+                                                 @Param("upperDate") OffsetDateTime upperDate);
+
+    default int removeSIPContent(OffsetDateTime lowerDate, OffsetDateTime upperDate) {
+        return updateRawSIPOutdatedForLastUpdateBetween(List.of(SIPState.STORED, SIPState.DELETED),
+                                                        lowerDate,
+                                                        upperDate);
+    }
+
+    List<SIPEntity> findAllByOrderByLastUpdateAsc();
 }

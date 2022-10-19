@@ -30,6 +30,7 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -46,17 +47,21 @@ public class TestConfiguration {
     @Bean
     public DiscoveryClient discoveryClient() throws URISyntaxException {
 
-        DiscoveryClient client = Mockito.mock(DiscoveryClient.class);
-        List<ServiceInstance> response = Lists.newArrayList();
         ServiceInstance service = Mockito.mock(ServiceInstance.class);
         Mockito.when(service.getUri()).thenReturn(new URI("http://localhost:7777"));
+
+        List<ServiceInstance> response = Lists.newArrayList();
         response.add(service);
+
+        DiscoveryClient client = Mockito.mock(DiscoveryClient.class);
         Mockito.when(client.getInstances(Mockito.anyString())).thenReturn(response);
+
         return client;
 
     }
 
     @Bean
+    @Profile("!nojobs")
     public JobTestCleaner getJobTestCleaner() {
         return new JobTestCleaner();
     }

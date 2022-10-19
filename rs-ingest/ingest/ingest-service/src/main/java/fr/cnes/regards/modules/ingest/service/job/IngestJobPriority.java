@@ -46,6 +46,8 @@ public final class IngestJobPriority {
 
     public static int POST_PROCESSING_JOB = 0;
 
+    public static int DELETE_SIP_BODY_JOB_PRIORITY = 0;
+
     private IngestJobPriority() {
     }
 }

@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.ingest.service.IngestMultitenantServiceIT;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.IOAISDeletionService;
 import fr.cnes.regards.modules.ingest.service.request.RequestService;
-import fr.cnes.regards.modules.ingest.service.settings.AIPNotificationSettingsService;
+import fr.cnes.regards.modules.ingest.service.settings.IngestSettingsService;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import fr.cnes.regards.modules.storage.client.test.StorageClientMock;
 import org.junit.Assert;
@@ -84,7 +84,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
     private IAbstractRequestRepository abstractRequestRepository;
 
     @Autowired
-    private AIPNotificationSettingsService notificationSettingsService;
+    private IngestSettingsService ingestSettingsService;
 
     /**
      * Services
@@ -330,7 +330,7 @@ public class AIPNotificationServiceIT extends IngestMultitenantServiceIT {
      * Change state of notification settings
      */
     private void initNotificationSettings(boolean state) throws EntityException {
-        notificationSettingsService.setActiveNotification(state);
+        ingestSettingsService.setActiveNotification(state);
     }
 
 }

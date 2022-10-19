@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSetting;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
+import fr.cnes.regards.modules.ingest.domain.settings.IngestSettings;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +37,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * Test for {@link AIPNotificationSettingsService}
+ * Test for {@link IngestSettingsService}
  *
  * @author Iliana Ghazali
  */
@@ -45,10 +45,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
     properties = { "spring.jpa.properties.hibernate.default_schema=aip_notification_settings_service_it" },
     locations = { "classpath:application-test.properties" })
 @ActiveProfiles(value = { "noscheduler" })
-public class AIPNotificationSettingsServiceIT extends AbstractMultitenantServiceIT {
+public class IngestSettingsServiceIT extends AbstractMultitenantServiceIT {
 
     @Autowired
-    AIPNotificationSettingsService notificationSettingsService;
+    IngestSettingsService notificationSettingsService;
 
     @Autowired
     IRuntimeTenantResolver runtimeTenantResolver;
@@ -64,11 +64,11 @@ public class AIPNotificationSettingsServiceIT extends AbstractMultitenantService
     @Purpose("Check notification settings are retrieved")
     public void testRetrieve() {
         Set<DynamicTenantSetting> notificationSettings = notificationSettingsService.retrieve();
-        assertEquals(1, notificationSettings.size());
+        assertEquals(2, notificationSettings.size());
         DynamicTenantSetting setting = notificationSettings.stream().findFirst().get();
-        assertEquals(AIPNotificationSettings.ACTIVE_NOTIFICATION, setting.getName());
-        assertEquals(AIPNotificationSettings.DEFAULT_ACTIVE_NOTIFICATION, setting.getDefaultValue());
-        assertEquals(AIPNotificationSettings.DEFAULT_ACTIVE_NOTIFICATION, setting.getValue());
+        assertEquals(IngestSettings.ACTIVE_NOTIFICATION, setting.getName());
+        assertEquals(IngestSettings.DEFAULT_ACTIVE_NOTIFICATION, setting.getDefaultValue());
+        assertEquals(IngestSettings.DEFAULT_ACTIVE_NOTIFICATION, setting.getValue());
     }
 
     @Test

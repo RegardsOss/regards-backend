@@ -6,7 +6,7 @@ import fr.cnes.regards.modules.ingest.domain.settings.IngestSettings;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ActiveNotificationSettingCustomizer implements IDynamicTenantSettingCustomizer {
+public class SipBodyTimeToLiveSettingCustomizer implements IDynamicTenantSettingCustomizer {
 
     @Override
     public boolean isValid(DynamicTenantSetting dynamicTenantSetting) {
@@ -17,11 +17,11 @@ public class ActiveNotificationSettingCustomizer implements IDynamicTenantSettin
 
     @Override
     public boolean appliesTo(DynamicTenantSetting dynamicTenantSetting) {
-        return IngestSettings.ACTIVE_NOTIFICATION.equals(dynamicTenantSetting.getName());
+        return IngestSettings.SIP_BODY_TIME_TO_LIVE.equals(dynamicTenantSetting.getName());
     }
 
     private boolean isProperValue(Object value) {
-        return value instanceof Boolean;
+        return value instanceof Integer;
     }
 
 }

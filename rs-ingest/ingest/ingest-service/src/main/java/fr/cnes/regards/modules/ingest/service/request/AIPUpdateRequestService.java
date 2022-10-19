@@ -23,12 +23,12 @@ import com.google.common.collect.Multimap;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.ingest.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.ingest.dao.IAbstractRequestRepository;
+import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.request.AbstractRequest;
 import fr.cnes.regards.modules.ingest.domain.request.InternalRequestState;
 import fr.cnes.regards.modules.ingest.domain.request.update.AIPUpdateRequest;
 import fr.cnes.regards.modules.ingest.domain.request.update.AbstractAIPUpdateTask;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -48,14 +48,23 @@ import java.util.stream.Collectors;
 @MultitenantTransactional
 public class AIPUpdateRequestService {
 
-    @Autowired
     private IAIPUpdateRequestRepository aipUpdateRequestRepository;
 
-    @Autowired
     private IAbstractRequestRepository abstractRequestRepository;
 
-    @Autowired
     private IRequestService requestService;
+
+    private ISIPRepository sipRepository;
+
+    public AIPUpdateRequestService(IAIPUpdateRequestRepository aipUpdateRequestRepository,
+                                   IAbstractRequestRepository abstractRequestRepository,
+                                   IRequestService requestService,
+                                   ISIPRepository sipRepository) {
+        this.aipUpdateRequestRepository = aipUpdateRequestRepository;
+        this.abstractRequestRepository = abstractRequestRepository;
+        this.requestService = requestService;
+        this.sipRepository = sipRepository;
+    }
 
     /**
      * Creates new {@link AIPUpdateRequest}s for the given {@link AIPEntity}s and each given {@link AbstractAIPUpdateTask}

@@ -30,6 +30,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 /**
@@ -120,4 +121,13 @@ public interface ISIPService {
      *  only required non-concurrent properties specifically.
      */
     ISipIdAndVersion getLatestSip(String providerId);
+
+    /**
+     * Delete the column rawsip of all SIP when these two conditions are met :
+     * <li> condition 1 : lastUpdate date is between lowerDate (excluded) and upperDate (included)</li>
+     * <li> condition 2 : state is STORED or DELETED</li>
+     *
+     * @return the number of sip updated
+     */
+    int cleanOldRawSip(OffsetDateTime lowerDate, OffsetDateTime upperDate);
 }

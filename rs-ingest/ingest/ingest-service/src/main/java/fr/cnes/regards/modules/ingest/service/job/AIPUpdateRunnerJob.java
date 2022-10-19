@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.ingest.service.job.step.UpdateAIPSimpleProperty;
 import fr.cnes.regards.modules.ingest.service.job.step.UpdateAIPStorage;
 import fr.cnes.regards.modules.ingest.service.notification.AIPNotificationService;
 import fr.cnes.regards.modules.ingest.service.request.IRequestService;
-import fr.cnes.regards.modules.ingest.service.settings.AIPNotificationSettingsService;
+import fr.cnes.regards.modules.ingest.service.settings.IngestSettingsService;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.domain.dto.request.FileDeletionRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,7 +82,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
     private AIPNotificationService aipNotificationService;
 
     @Autowired
-    private AIPNotificationSettingsService aipNotificationSettingsService;
+    private IngestSettingsService ingestSettingsService;
 
     private static int compareUpdateRequests(AIPUpdateRequest r1, AIPUpdateRequest r2) {
         // sort by type of task
@@ -153,7 +153,7 @@ public class AIPUpdateRunnerJob extends AbstractJob<Void> {
         long numberOfDeletionRequest = 0L;
 
         // See if notifications are required
-        boolean isToNotify = aipNotificationSettingsService.isActiveNotification();
+        boolean isToNotify = ingestSettingsService.isActiveNotification();
 
         for (String aipId : requestByAIP.keySet()) {
             // Get the ordered list of task to execute on this AIP

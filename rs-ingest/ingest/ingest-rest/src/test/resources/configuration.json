@@ -80,7 +80,7 @@
                     }
                 },
                 {
-                    "key": "fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings",
+                    "key": "fr.cnes.regards.modules.ingest.domain.settings.IngestSettings",
                     "value": {
                         "activeNotification": false
                     }

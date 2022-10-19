@@ -22,7 +22,6 @@ import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.AbstractOAISEntity;
-import fr.cnes.regards.modules.ingest.domain.IngestValidationMessages;
 import fr.cnes.regards.modules.ingest.dto.sip.SIP;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -86,8 +85,7 @@ public class SIPEntity extends AbstractOAISEntity {
     @NotBlank(message = "Checksum is required")
     @Column(length = CHECKSUM_MAX_LENGTH)
     private String checksum;
-
-    @NotNull(message = IngestValidationMessages.MISSING_SIP)
+    
     @Column(columnDefinition = "jsonb", name = "rawsip")
     @Type(type = "jsonb")
     private SIP sip;

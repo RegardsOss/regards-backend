@@ -86,4 +86,13 @@ public class SchedulerConstant {
     public static final String AIP_SAVE_METADATA_REQUEST_LOCK = "scheduledAIPSaveMetadata";
 
     public static final String AIP_SAVE_METADATA_TITLE = "AIP save metadata scheduling";
+
+    /**
+     * For SIP body deletion
+     */
+    public static final String SIP_BODY_DELETION_REQUESTS = "SIP BODY DELETION REQUESTS";
+
+    public static final String SIP_BODY_DELETION_REQUEST_LOCK = "scheduledSipBodyDeletion";
+
+    public static final String SIP_BODY_DELETION_TITLE = "SIP body deletion scheduling";
 }

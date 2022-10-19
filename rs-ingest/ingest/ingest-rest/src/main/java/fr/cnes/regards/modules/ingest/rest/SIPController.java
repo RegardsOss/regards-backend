@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.ingest.dto.sip.SIPCollection;
 import fr.cnes.regards.modules.ingest.dto.sip.SearchSIPsParameters;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
+import fr.cnes.regards.modules.ingest.service.sip.scheduler.SipBodyDeletetionScheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +72,8 @@ public class SIPController implements IResourceController<SIPEntity> {
 
     public static final String IMPORT_PATH = "/import";
 
+    public static final String LAUNCH_SIP_DELETION_JOB_PATH = "/launchDeletionJob";
+
     public static final String REQUEST_PARAM_PROVIDER_ID = "providerId";
 
     public static final String REQUEST_PARAM_FROM = "from";
@@ -96,6 +99,10 @@ public class SIPController implements IResourceController<SIPEntity> {
      */
     @Autowired
     private IResourceService resourceService;
+
+    // optional : profile "noscheduler may be activated (during tests), and instance will not be created.
+    @Autowired(required = false)
+    private SipBodyDeletetionScheduler sipBodyDeletetionScheduler;
 
     /**
      * Manage SIP bulk request
@@ -151,6 +158,18 @@ public class SIPController implements IResourceController<SIPEntity> {
         SIPEntity sip = sipService.getEntity(sipId)
                                   .orElseThrow(() -> new EntityNotFoundException(sipId, SIPEntity.class));
         return new ResponseEntity<>(toResource(sip), HttpStatus.OK);
+    }
+
+    @ResourceAccess(description = "Launch sip deletion job", role = DefaultRole.PROJECT_ADMIN)
+    @RequestMapping(method = RequestMethod.POST, value = LAUNCH_SIP_DELETION_JOB_PATH)
+    public ResponseEntity<Void> launchSipDeletionJob() {
+        if (sipBodyDeletetionScheduler != null) {
+            sipBodyDeletetionScheduler.scheduleSIPBodyDeletionJob();
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            // the scheduler can be null only if "noscheduler" profile is active
+            return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+        }
     }
 
     @Override

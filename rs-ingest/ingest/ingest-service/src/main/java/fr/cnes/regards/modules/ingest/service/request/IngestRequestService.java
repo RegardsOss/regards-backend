@@ -65,7 +65,7 @@ import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationService;
 import fr.cnes.regards.modules.ingest.service.session.SessionNotifier;
-import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsService;
+import fr.cnes.regards.modules.ingest.service.settings.IIngestSettingsService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.domain.dto.request.RequestResultInfoDTO;
@@ -135,7 +135,7 @@ public class IngestRequestService implements IIngestRequestService {
     private IAIPPostProcessRequestRepository aipPostProcessRequestRepository;
 
     @Autowired
-    private IAIPNotificationSettingsService aipNotificationSettingsService;
+    private IIngestSettingsService ingestSettingsService;
 
     @Autowired
     private IAIPNotificationService aipNotificationService;
@@ -502,7 +502,7 @@ public class IngestRequestService implements IIngestRequestService {
 
         // NOTIFICATIONS
         // check if notifications are required - if true send to notifier, if false publish events and delete requests
-        if (aipNotificationSettingsService.isActiveNotification()) {
+        if (ingestSettingsService.isActiveNotification()) {
             // Change the step of the request
             aipNotificationService.sendRequestsToNotifier(Sets.newHashSet(requests));
         } else {

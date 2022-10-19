@@ -177,4 +177,9 @@ public class SIPService implements ISIPService {
             return lastversion;
         }
     }
+
+    @Override
+    public int cleanOldRawSip(OffsetDateTime lowerDate, OffsetDateTime upperDate) {
+        return sipRepository.removeSIPContent(lowerDate, upperDate);
+    }
 }

@@ -36,7 +36,7 @@ import fr.cnes.regards.modules.ingest.dto.request.SessionDeletionMode;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPDeleteService;
 import fr.cnes.regards.modules.ingest.service.job.OAISDeletionJob;
 import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationService;
-import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsService;
+import fr.cnes.regards.modules.ingest.service.settings.IIngestSettingsService;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import org.slf4j.Logger;
@@ -83,7 +83,7 @@ public class OAISDeletionService implements IOAISDeletionService {
     private IAIPNotificationService aipNotificationService;
 
     @Autowired
-    private IAIPNotificationSettingsService aipNotificationSettingsService;
+    private IIngestSettingsService ingestSettingsService;
 
     @Override
     public Optional<OAISDeletionCreatorRequest> searchCreator(Long requestId) {
@@ -138,7 +138,7 @@ public class OAISDeletionService implements IOAISDeletionService {
         Set<OAISDeletionRequest> success = new HashSet<>();
 
         // See if notifications are required
-        boolean isToNotify = aipNotificationSettingsService.isActiveNotification();
+        boolean isToNotify = ingestSettingsService.isActiveNotification();
 
         // Handle deletion requests
         while (requestIter.hasNext() && !interrupted) {

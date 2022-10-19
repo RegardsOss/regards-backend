@@ -22,10 +22,14 @@ package fr.cnes.regards.modules.ingest.service.settings;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 
-public interface IAIPNotificationSettingsService {
+public interface IIngestSettingsService {
 
     boolean isActiveNotification();
 
     void setActiveNotification(Boolean isActiveNotification) throws EntityException;
+
+    void setSipBodyTimeToLive(int sipBodyTimeToLive) throws EntityException;
+
+    int getSipBodyTimeToLive();
 
 }

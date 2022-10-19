@@ -50,7 +50,7 @@ import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainServic
 import fr.cnes.regards.modules.ingest.service.notification.IAIPNotificationService;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
-import fr.cnes.regards.modules.ingest.service.settings.IAIPNotificationSettingsService;
+import fr.cnes.regards.modules.ingest.service.settings.IIngestSettingsService;
 import fr.cnes.regards.modules.test.IngestServiceIT;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionTimeoutException;
@@ -122,7 +122,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
     protected IIngestProcessingChainService ingestProcessingService;
 
     @Autowired
-    protected IAIPNotificationSettingsService notificationSettingsService;
+    protected IIngestSettingsService ingestSettingsService;
 
     @Autowired
     protected IAIPNotificationService notificationService;
@@ -133,7 +133,10 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
     @Autowired
     protected IJobService jobService;
 
-    @Autowired
+    /**
+     * Can be null if profile nojobs
+     */
+    @Autowired(required = false)
     private JobTestCleaner jobTestCleaner;
 
     @Before
@@ -164,7 +167,9 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
 
     @After
     public void after() throws Exception {
-        jobTestCleaner.cleanJob();
+        if (jobTestCleaner != null) {
+            jobTestCleaner.cleanJob();
+        }
         // override this method to custom action performed after
         doAfter();
     }
@@ -271,7 +276,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
     }
 
     public boolean initDefaultNotificationSettings() {
-        return notificationSettingsService.isActiveNotification();
+        return ingestSettingsService.isActiveNotification();
     }
 
     public void initRandomData(int nbSIP) {

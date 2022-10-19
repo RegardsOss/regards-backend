@@ -28,7 +28,8 @@ import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractSetting
 import fr.cnes.regards.framework.modules.tenant.settings.service.IDynamicTenantSettingService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.ingest.domain.settings.AIPNotificationSettings;
+import fr.cnes.regards.modules.ingest.domain.settings.IngestSettings;
+import org.apache.commons.lang.BooleanUtils;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -40,7 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * see {@link IAIPNotificationSettingsService}
+ * see {@link IIngestSettingsService}
  *
  * @author Iliana Ghazali
  */
@@ -48,22 +49,22 @@ import java.util.List;
 @Service
 @MultitenantTransactional
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
-public class AIPNotificationSettingsService extends AbstractSettingService implements IAIPNotificationSettingsService {
+public class IngestSettingsService extends AbstractSettingService implements IIngestSettingsService {
 
     private final ITenantResolver tenantsResolver;
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    private AIPNotificationSettingsService self;
+    private IngestSettingsService self;
 
-    public AIPNotificationSettingsService(IDynamicTenantSettingService dynamicTenantSettingService,
-                                          ITenantResolver tenantsResolver,
-                                          IRuntimeTenantResolver runtimeTenantResolver,
-                                          AIPNotificationSettingsService aipNotificationSettingsService) {
+    public IngestSettingsService(IDynamicTenantSettingService dynamicTenantSettingService,
+                                 ITenantResolver tenantsResolver,
+                                 IRuntimeTenantResolver runtimeTenantResolver,
+                                 IngestSettingsService ingestSettingsService) {
         super(dynamicTenantSettingService);
         this.tenantsResolver = tenantsResolver;
         this.runtimeTenantResolver = runtimeTenantResolver;
-        this.self = aipNotificationSettingsService;
+        this.self = ingestSettingsService;
     }
 
     @EventListener
@@ -93,18 +94,27 @@ public class AIPNotificationSettingsService extends AbstractSettingService imple
 
     @Override
     public boolean isActiveNotification() {
-        Boolean isActiveNotification = getValue(AIPNotificationSettings.ACTIVE_NOTIFICATION);
-        return isActiveNotification != null && isActiveNotification;
+        return BooleanUtils.isTrue(getValue(IngestSettings.ACTIVE_NOTIFICATION));
     }
 
     @Override
     public void setActiveNotification(Boolean isActiveNotification) throws EntityException {
-        dynamicTenantSettingService.update(AIPNotificationSettings.ACTIVE_NOTIFICATION, isActiveNotification);
+        dynamicTenantSettingService.update(IngestSettings.ACTIVE_NOTIFICATION, isActiveNotification);
+    }
+
+    @Override
+    public void setSipBodyTimeToLive(int sipBodyTimeToLive) throws EntityException {
+        dynamicTenantSettingService.update(IngestSettings.SIP_BODY_TIME_TO_LIVE, sipBodyTimeToLive);
+    }
+
+    @Override
+    public int getSipBodyTimeToLive() {
+        return getValue(IngestSettings.SIP_BODY_TIME_TO_LIVE);
     }
 
     @Override
     protected List<DynamicTenantSetting> getSettingList() {
-        return AIPNotificationSettings.SETTING_LIST;
+        return IngestSettings.SETTING_LIST;
     }
 
 }
