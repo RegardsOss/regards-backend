@@ -428,6 +428,9 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                     } else {
                         storagePendingRequests.add(request);
                     }
+                    // Register
+                    metrics.count(request.getProviderId(), request.getUrn(), FeatureUpdateState.FEATURE_MERGED);
+                    entities.add(entity);
                 } catch (ModuleException e) {
                     LOGGER.error(e.getMessage(), e);
                     request.setState(RequestState.ERROR);
@@ -436,11 +439,6 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
                     errorRequests.add(request);
                 }
             }
-
-            // Register
-            metrics.count(request.getProviderId(), request.getUrn(), FeatureUpdateState.FEATURE_MERGED);
-            entities.add(entity);
-
             featureUpdateJob.advanceCompletion();
         }
 

@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.feature.service.job;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -91,12 +90,11 @@ public class FeatureJobFailedEventHandler implements IHandler<JobEvent>, Applica
                 Type type = new TypeToken<Set<Long>>() {
 
                 }.getType();
-                List<Long> requestIds = job.getParametersAsMap().get(AbstractFeatureJob.IDS_PARAMETER).getValue(type);
-                Set<Long> ids = Sets.newHashSet(requestIds);
+                Set<Long> requestIds = job.getParametersAsMap().get(AbstractFeatureJob.IDS_PARAMETER).getValue(type);
                 LOGGER.error("Job {} failed detected. Updating associated {} requests to ERROR status",
                              job.getId().toString(),
-                             ids.size());
-                featureRequestService.updateRequestsStatus(ids, RequestState.ERROR);
+                             requestIds.size());
+                featureRequestService.updateRequestsStatus(requestIds, RequestState.ERROR);
             }
         }
     }
