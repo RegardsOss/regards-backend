@@ -20,11 +20,14 @@ package fr.cnes.regards.modules.ltamanager.rest.submission;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ltamanager.domain.submission.search.SubmissionRequestSearchParameters;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionRequestInfoDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmittedSearchResponseDto;
+import fr.cnes.regards.modules.ltamanager.dto.submission.session.SessionInfoDTO;
+import fr.cnes.regards.modules.ltamanager.service.session.SubmissionSessionService;
 import fr.cnes.regards.modules.ltamanager.service.submission.reading.SubmissionReadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -59,24 +62,28 @@ public class SubmissionReadController extends AbstractSubmissionController
 
     public static final String REQUEST_INFO_MAPPING = "/{requestId}/info";
 
+    public static final String SESSION_INFO_MAPPING = "/sessions/{session}/info";
+
     public static final String SEARCH_MAPPING = "/search";
 
     private final SubmissionReadService readService;
 
-    protected SubmissionReadController(IResourceService resourceService, SubmissionReadService readService) {
+    private final SubmissionSessionService sessionService;
+
+    protected SubmissionReadController(IResourceService resourceService,
+                                       SubmissionReadService readService,
+                                       SubmissionSessionService sessionService) {
         super(resourceService);
         this.readService = readService;
+        this.sessionService = sessionService;
     }
 
     @Operation(summary = "Check a submission request status.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Returns submission response status."),
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns submission response status."),
         @ApiResponse(responseCode = "403", description = "The endpoint is not accessible for the user.",
-                     useReturnTypeSchema = true, content = {
-            @Content(mediaType = "application/html") }),
+            useReturnTypeSchema = true, content = { @Content(mediaType = "application/html") }),
         @ApiResponse(responseCode = "404", description = "Associated submission request was not found.",
-                     useReturnTypeSchema = true, content = {
-            @Content(mediaType = "application/json") }) })
+            useReturnTypeSchema = true, content = { @Content(mediaType = "application/json") }) })
     @GetMapping(path = REQUEST_INFO_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to check the progress of a submission request.", role = DefaultRole.EXPLOIT)
@@ -92,25 +99,34 @@ public class SubmissionReadController extends AbstractSubmissionController
     }
 
     @Operation(summary = "Search for submission requests with criteria")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Returns submitted requests found.", content = {
-            @Content(mediaType = "application/json") }),
-        @ApiResponse(responseCode = "403", description = "The endpoint is not accessible for the user.", content = {
-            @Content(mediaType = "application/html") }) })
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns submitted requests found.",
+        content = { @Content(mediaType = "application/json") }),
+        @ApiResponse(responseCode = "403", description = "The endpoint is not accessible for the user.",
+            content = { @Content(mediaType = "application/html") }) })
     @PostMapping(path = SEARCH_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to search for submission requests.", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<SubmittedSearchResponseDto>>> findSubmittedRequests(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterion.",
-                                                              content = @Content(schema = @Schema(
-                                                                  implementation = SubmissionRequestSearchParameters.class)))
-        @RequestBody @Valid SubmissionRequestSearchParameters searchCriterion,
+            content = @Content(schema = @Schema(implementation = SubmissionRequestSearchParameters.class))) @RequestBody
+        @Valid SubmissionRequestSearchParameters searchCriterion,
         @PageableDefault(sort = { "submissionStatus_statusDate", "requestId" }, direction = Sort.Direction.DESC)
         Pageable pageable,
         @Parameter(hidden = true) PagedResourcesAssembler<SubmittedSearchResponseDto> assembler) {
         return ResponseEntity.ok(toPagedResources(readService.retrieveSubmittedRequestsByCriteria(searchCriterion,
                                                                                                   pageable),
                                                   assembler));
+    }
+
+    @Operation(summary = "Calculate global state of a session")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns session successfully"),
+        @ApiResponse(responseCode = "404", description = "Cannot find session for the user.") })
+    @GetMapping(path = SESSION_INFO_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    @ResourceAccess(description = "Calculate global state of a session", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<SessionInfoDTO> getSessionGlobalDetails(@PathVariable String session)
+        throws EntityNotFoundException {
+        return ResponseEntity.ok(sessionService.getGlobalSessionInfo(session));
     }
 
     @Override

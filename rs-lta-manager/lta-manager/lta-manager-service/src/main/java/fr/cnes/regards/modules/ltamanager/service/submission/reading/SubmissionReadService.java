@@ -40,29 +40,27 @@ public class SubmissionReadService {
 
     private final ISubmissionRequestRepository requestRepository;
 
-    public SubmissionReadService(ISubmissionRequestRepository requestRepository) {
+    private final SubmissionRequestMapper submissionRequestMapper;
+
+    public SubmissionReadService(ISubmissionRequestRepository requestRepository,
+                                 SubmissionRequestMapper submissionRequestMapper) {
         this.requestRepository = requestRepository;
+        this.submissionRequestMapper = submissionRequestMapper;
     }
 
     public SubmissionRequestInfoDto retrieveRequestStatusInfo(String requestId) {
         return requestRepository.findSubmissionRequestByRequestId(requestId)
-                                .map(req -> new SubmissionRequestInfoDto(req.getRequestId(),
-                                                                         req.getProduct().getId(),
-                                                                         req.getStatus(),
-                                                                         req.getStatusDate(),
-                                                                         req.getSession(),
-                                                                         req.getMessage()))
+                                .map(submissionRequestMapper::convertToSubmissionRequestInfoDto)
                                 .orElse(null);
     }
 
     public Page<SubmittedSearchResponseDto> retrieveSubmittedRequestsByCriteria(SubmissionRequestSearchParameters searchCriterion,
                                                                                 Pageable page) {
-        SubmissionRequestMapper mapperInstance = SubmissionRequestMapper.INSTANCE;
         Page<SubmissionRequest> submissionPage = requestRepository.findAll(new SubmissionRequestSpecificationBuilder().withParameters(
             searchCriterion).build(), page);
-        return new PageImpl<>(submissionPage.stream().map(mapperInstance::convert).toList(),
-                              submissionPage.getPageable(),
-                              submissionPage.getTotalElements());
+        return new PageImpl<>(submissionPage.stream()
+                                            .map(submissionRequestMapper::convertToSubmittedSearchResponseDto)
+                                            .toList(), submissionPage.getPageable(), submissionPage.getTotalElements());
     }
 
 }

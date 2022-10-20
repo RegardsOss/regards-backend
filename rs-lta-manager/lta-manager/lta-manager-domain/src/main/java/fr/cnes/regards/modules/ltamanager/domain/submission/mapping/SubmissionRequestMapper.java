@@ -19,20 +19,32 @@
 package fr.cnes.regards.modules.ltamanager.domain.submission.mapping;
 
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
+import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionRequestInfoDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmittedSearchResponseDto;
 import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
 
 /**
- * Map between {@link SubmissionRequest} and {@link SubmittedSearchResponseDto}
+ * All mappers from {@link SubmissionRequest}
  *
  * @author Iliana Ghazali
  **/
 @Mapper(componentModel = "spring")
 public interface SubmissionRequestMapper {
 
-    SubmissionRequestMapper INSTANCE = Mappers.getMapper(SubmissionRequestMapper.class);
+    /**
+     * Map between {@link SubmissionRequest} and {@link SubmittedSearchResponseDto}
+     */
+    SubmittedSearchResponseDto convertToSubmittedSearchResponseDto(SubmissionRequest submissionRequest);
 
-    SubmittedSearchResponseDto convert(SubmissionRequest submissionRequest);
-
+    /**
+     * Map between {@link SubmissionRequest} and {@link SubmissionRequestInfoDto}
+     */
+    default SubmissionRequestInfoDto convertToSubmissionRequestInfoDto(SubmissionRequest submissionRequest) {
+        return new SubmissionRequestInfoDto(submissionRequest.getRequestId(),
+                                            submissionRequest.getProduct().getId(),
+                                            submissionRequest.getStatus(),
+                                            submissionRequest.getStatusDate(),
+                                            submissionRequest.getSession(),
+                                            submissionRequest.getMessage());
+    }
 }
