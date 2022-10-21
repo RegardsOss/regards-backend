@@ -261,7 +261,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         this.metaData = metaData;
     }
 
-    public final void setMetaDataAndPluginId(PluginMetaData metaData) {
+    public void setMetaDataAndPluginId(PluginMetaData metaData) {
         // For serialization
         Option.of(metaData).peek(m -> pluginId = m.getPluginId());
         // Transient information only useful at runtime
@@ -323,7 +323,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return label;
     }
 
-    public final void setLabel(String pLabel) {
+    public void setLabel(String pLabel) {
         label = pLabel;
     }
 
@@ -331,7 +331,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return version;
     }
 
-    public final void setVersion(String version) {
+    public void setVersion(String version) {
         this.version = version;
     }
 
@@ -339,7 +339,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return pluginId;
     }
 
-    public final void setPluginId(String pluginId) {
+    public void setPluginId(String pluginId) {
         this.pluginId = pluginId;
     }
 
@@ -347,7 +347,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return priorityOrder;
     }
 
-    public final void setPriorityOrder(Integer order) {
+    public void setPriorityOrder(Integer order) {
         priorityOrder = order;
     }
 
@@ -355,7 +355,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return parameters;
     }
 
-    public final void setParameters(Set<IPluginParam> parameters) {
+    public void setParameters(Set<IPluginParam> parameters) {
         this.parameters.clear();
         if ((parameters != null) && !parameters.isEmpty()) {
             this.parameters.addAll(parameters);
@@ -366,7 +366,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return active;
     }
 
-    public final void setIsActive(Boolean pIsActive) {
+    public void setIsActive(Boolean pIsActive) {
         active = pIsActive;
     }
 
@@ -383,7 +383,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return id;
     }
 
-    public final void setId(Long pId) {
+    public void setId(Long pId) {
         id = pId;
     }
 
@@ -397,7 +397,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * @param pIconUrl the iconUrl to set
      */
-    public final void setIconUrl(URL pIconUrl) {
+    public void setIconUrl(URL pIconUrl) {
         iconUrl = pIconUrl;
     }
 
@@ -415,7 +415,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         return businessId;
     }
 
-    public final void setBusinessId(String businessId) {
+    public void setBusinessId(String businessId) {
         this.businessId = businessId;
     }
 
