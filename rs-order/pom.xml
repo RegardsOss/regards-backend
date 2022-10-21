@@ -37,5 +37,6 @@
     <modules>
         <module>bootstrap-order</module>
         <module>order</module>
+        <module>order-code-coverage</module>
     </modules>
 </project>

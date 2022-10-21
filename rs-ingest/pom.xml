@@ -56,5 +56,6 @@
     <modules>
         <module>bootstrap-ingest</module>
         <module>ingest</module>
+        <module>ingest-code-coverage</module>
     </modules>
 </project>

@@ -57,5 +57,6 @@
     <modules>
         <module>bootstrap-dataprovider</module>
         <module>acquisition</module>
+        <module>dataprovider-code-coverage</module>
     </modules>
 </project>

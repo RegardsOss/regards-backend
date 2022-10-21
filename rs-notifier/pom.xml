@@ -57,5 +57,6 @@
     <modules>
         <module>bootstrap-notifier</module>
         <module>notifier</module>
+        <module>notifier-code-coverage</module>
     </modules>
 </project>

@@ -19,6 +19,7 @@
     <modules>
         <module>bootstrap-processing</module>
         <module>processing</module>
+        <module>processing-code-coverage</module>
     </modules>
 
 </project>

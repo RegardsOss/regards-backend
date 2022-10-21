@@ -57,6 +57,7 @@
         <module>worker-manager</module>
         <module>bootstrap-worker-manager</module>
         <module>worker-common</module>
+        <module>worker-manager-code-coverage</module>
     </modules>
 
 </project>

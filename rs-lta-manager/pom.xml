@@ -57,5 +57,6 @@
     <modules>
         <module>bootstrap-lta-manager</module>
         <module>lta-manager</module>
+        <module>lta-manager-code-coverage</module>
     </modules>
 </project>

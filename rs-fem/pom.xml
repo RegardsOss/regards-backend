@@ -57,5 +57,6 @@
     <modules>
         <module>bootstrap-fem</module>
         <module>feature</module>
+        <module>fem-code-coverage</module>
     </modules>
 </project>

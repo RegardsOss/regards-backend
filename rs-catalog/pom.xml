@@ -57,6 +57,7 @@
         <module>bootstrap-catalog</module>
         <module>search</module>
         <module>catalog-services</module>
+        <module>catalog-code-coverage</module>
     </modules>
 
 </project>

@@ -53,6 +53,7 @@
         <module>bootstrap-access-instance</module>
         <module>bootstrap-access-instance-light</module>
         <module>bootstrap-access-project</module>
+        <module>access-code-coverage</module>
     </modules>
 
 </project>

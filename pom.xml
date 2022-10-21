@@ -17,8 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.cnes.regards</groupId>
@@ -166,7 +166,7 @@
         <!-- Generics -->
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <resource.delimiter>@</resource.delimiter> <!-- delimiter that doesn't clash with Spring ${} placeholders -->
+        <resource.delimiter>@</resource.delimiter>        <!-- delimiter that doesn't clash with Spring ${} placeholders -->
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <docker.registry.host>172.26.46.158</docker.registry.host>
@@ -186,6 +186,7 @@
         <org.jeasy.easy-random-core.version>4.2.0</org.jeasy.easy-random-core.version>
         <com.thedeanda.lorem.version>2.1</com.thedeanda.lorem.version>
         <de.sven-jacobs.loremipsum.version>1.0</de.sven-jacobs.loremipsum.version>
+        <sonar.coverage.exclusions>**/.*tests.*/**/*.*, **/.*test.*/**/*.*</sonar.coverage.exclusions>
     </properties>
 
     <modules>
@@ -2372,6 +2373,11 @@
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${org.jacoco.jacoco-maven-plugin.version}</version>
+                </plugin>
                 <!-- docker image generator -->
                 <plugin>
                     <groupId>com.spotify</groupId>
@@ -2487,98 +2493,7 @@
                         <layout>ZIP</layout>
                     </configuration>
                 </plugin>
-                <plugin>
-                    <groupId>org.jacoco</groupId>
-                    <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>${org.jacoco.jacoco-maven-plugin.version}</version>
-                    <executions>
-                        <!-- Prepares the property pointing to the JaCoCo runtime agent which
-                                                        is passed as VM argument when Maven the Surefire plugin is executed. -->
-                        <execution>
-                            <id>pre-unit-test</id>
-                            <goals>
-                                <goal>prepare-agent</goal>
-                            </goals>
-                            <configuration>
-                                <!-- Sets the path to the file which contains the execution data. -->
-                                <destFile>${sonar.jacoco.reportPath}</destFile>
-                                <!-- Sets the name of the property containing the settings for JaCoCo
-                                                                runtime agent. -->
-                                <propertyName>surefire.jacoco.args</propertyName>
-                            </configuration>
-                        </execution>
-                        <!-- Prepares the property pointing to the JaCoCo runtime agent which
-                                                        is passed as VM argument when Maven the Failsafe plugin is executed. -->
-                        <execution>
-                            <id>pre-integration-test</id>
-                            <phase>pre-integration-test</phase>
-                            <goals>
-                                <goal>prepare-agent</goal>
-                            </goals>
-                            <configuration>
-                                <!-- Sets the path to the file which contains the execution data. -->
-                                <destFile>${sonar.jacoco.itReportPath}</destFile>
-                                <!-- Sets the name of the property containing the settings for JaCoCo
-                                                                runtime agent. -->
-                                <propertyName>failsafe.jacoco.args</propertyName>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${org.apache.maven.plugins.maven-surefire-plugin.version}</version>
-                    <configuration>
-                        <skipTests>${skipTests}</skipTests>
-                        <!-- Sets the VM argument line used when unit tests are run. -->
-                        <argLine>${regards.maven.test.env} ${jvm.opens.packages} ${surefire.jacoco.args}</argLine>
-                        <properties>
-                            <property>
-                                <name>listener</name>
-                                <value>fr.cnes.regards.framework.test.report.RequirementMatrixReportListener</value>
-                            </property>
-                        </properties>
-                        <includes>
-                            <include>**/*Tests.java</include>
-                            <include>**/*Test.java</include>
-                        </includes>
-                        <excludes>
-                            <exclude>**/Abstract*.java</exclude>
-                        </excludes>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>${org.apache.maven.plugins.maven-failsafe-plugin.version}</version>
-                    <configuration>
-                        <skipTests>${skipTests}</skipTests>
-                        <!-- Sets the VM argument line used when integration tests are run. -->
-                        <argLine>${failsafe.jacoco.args} ${regards.maven.test.env} ${jvm.opens.packages}</argLine>
-                        <properties>
-                            <property>
-                                <name>listener</name>
-                                <value>fr.cnes.regards.framework.test.report.RequirementMatrixReportListener</value>
-                            </property>
-                        </properties>
-                        <!-- Let's put failsafe reports with surefire to have access to tests
-                                                        failures/success reports in sonar -->
-                        <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>integration-test</goal>
-                                <goal>verify</goal>
-                            </goals>
-                            <configuration>
-                                <!-- Sets the VM argument line used when integration tests are run. -->
-                                <argLine>${failsafe.jacoco.args} ${regards.maven.test.env} ${jvm.opens.packages}</argLine>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
@@ -2667,8 +2582,7 @@
                                 <shadedClassifierName>shaded</shadedClassifierName>
                                 <minimizeJar>true</minimizeJar>
                                 <transformers>
-                                    <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
+                                    <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
                                         <resources>
                                             <resource>.SF</resource>
                                             <resource>.DSA</resource>
@@ -2744,11 +2658,6 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${org.apache.maven.plugins.maven-failsafe-plugin.version}</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>${org.apache.maven.plugins.maven-jar-plugin.version}</version>
             </plugin>
@@ -2756,16 +2665,98 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${org.apache.maven.plugins.maven-surefire-plugin.version}</version>
+                <configuration>
+                    <!-- Sets the VM argument line used when unit tests are run. -->
+                    <argLine>@{surefireArgLine} ${regards.maven.test.env} ${jvm.opens.packages}</argLine>
+                    <skipTests>${skipTests}</skipTests>
+                    <properties>
+                        <property>
+                            <name>listener</name>
+                            <value>fr.cnes.regards.framework.test.report.RequirementMatrixReportListener</value>
+                        </property>
+                    </properties>
+                    <includes>
+                        <include>**/*Tests.java</include>
+                        <include>**/*Test.java</include>
+                    </includes>
+                    <excludes>
+                        <exclude>**/Abstract*.java</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${org.apache.maven.plugins.maven-failsafe-plugin.version}</version>
+                <configuration>
+                    <skipTests>${skipTests}</skipTests>
+                    <!-- Sets the VM argument line used when integration tests are run. -->
+                    <argLine>@{failsafeArgLine} ${regards.maven.test.env} ${jvm.opens.packages}</argLine>
+                    <properties>
+                        <property>
+                            <name>listener</name>
+                            <value>fr.cnes.regards.framework.test.report.RequirementMatrixReportListener</value>
+                        </property>
+                    </properties>
+                    <!-- Let's put failsafe reports with surefire to have access to tests
+                                                        failures/success reports in sonar -->
+                    <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <!-- set arg line property for surefire -->
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <propertyName>surefireArgLine</propertyName>
+                        </configuration>
+                    </execution>
+                    <!-- set arg line property for failsafe -->
+                    <execution>
+                        <id>prepare-agent-integration</id>
+                        <goals>
+                            <goal>prepare-agent-integration</goal>
+                        </goals>
+                        <configuration>
+                            <propertyName>failsafeArgLine</propertyName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report-integration</id>
+                        <goals>
+                            <goal>report-integration</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${org.apache.maven.plugins.maven-compiler-plugin.version}</version>
-            </plugin>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${org.jacoco.jacoco-maven-plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

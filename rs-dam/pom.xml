@@ -61,6 +61,7 @@
         <module>indexer</module>
         <module>opensearch</module>
         <module>model</module>
+        <module>dam-code-coverage</module>
     </modules>
 
 </project>
