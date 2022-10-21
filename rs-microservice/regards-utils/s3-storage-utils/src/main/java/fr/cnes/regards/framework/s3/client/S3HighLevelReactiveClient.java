@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.s3.domain.StorageCommandResult.*;
 import fr.cnes.regards.framework.s3.domain.StorageConfig;
 import fr.cnes.regards.framework.s3.domain.StorageEntry;
 import fr.cnes.regards.framework.s3.domain.multipart.MultipartReport;
+import fr.cnes.regards.framework.s3.domain.multipart.ResponseAndStream;
 import fr.cnes.regards.framework.s3.domain.multipart.UploadedPart;
 import fr.cnes.regards.framework.s3.exception.MultipartException;
 import io.vavr.Tuple;
@@ -44,6 +45,7 @@ import reactor.core.publisher.SignalType;
 import reactor.core.scheduler.Scheduler;
 import reactor.util.function.Tuple2;
 import reactor.util.retry.Retry;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
@@ -131,30 +133,36 @@ public class S3HighLevelReactiveClient {
                                                                                                           t)));
     }
 
-    protected Mono<ReadResult> readingCallableMono(Read readCmd) {
-        return Mono.fromCallable(() -> new ReadingPipe(readCmd, readKeys(readCmd)));
-    }
-
-    private Mono<StorageEntry> readKeys(Read readCmd) {
+    private Mono<ReadResult> readingCallableMono(Read readCmd) {
         StorageConfig config = readCmd.getConfig();
         String bucket = config.getBucket();
         String entryKey = readCmd.getEntryKey();
         return getClient(config).readContentFlux(bucket, entryKey, true)
                                 .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
+                                                .filter(t -> !(t instanceof NoSuchKeyException))
                                                 .doBeforeRetry(x -> LOGGER.info("Retrying read entry {}", entryKey))
                                                 .maxBackoff(Duration.ofSeconds(3)))
-                                .map(ras -> {
-                                    Long size = ras.getResponse().contentLength();
-                                    String etag = ras.getResponse().eTag();
-                                    LOGGER.debug("Reading entry={} size={} eTag={}", entryKey, size, etag);
-                                    return StorageEntry.builder()
-                                                       .config(config)
-                                                       .fullPath(entryKey)
-                                                       .checksum(Option.of(Tuple.of("eTag", etag)))
-                                                       .size(Option.of(size))
-                                                       .data(ras.getStream())
-                                                       .build();
-                                });
+                                .map(ras -> (ReadResult) new ReadingPipe(readCmd,
+                                                                         Mono.just(getStorageEntry(config,
+                                                                                                   entryKey,
+                                                                                                   ras))))
+                                .onErrorResume(t -> t instanceof NoSuchKeyException ?
+                                    Mono.just(new ReadNotFound(readCmd)) :
+                                    Mono.just(new UnreachableStorage(readCmd, t)));
+    }
+
+    private static StorageEntry getStorageEntry(StorageConfig config, String entryKey, ResponseAndStream ras) {
+        Long size = ras.getResponse().contentLength();
+        String etag = ras.getResponse().eTag();
+        LOGGER.debug("Reading entry={} size={} eTag={}", entryKey, size, etag);
+        StorageEntry storageEntry = StorageEntry.builder()
+                                                .config(config)
+                                                .fullPath(entryKey)
+                                                .checksum(Option.of(Tuple.of("eTag", etag)))
+                                                .size(Option.of(size))
+                                                .data(ras.getStream())
+                                                .build();
+        return storageEntry;
     }
 
     public Mono<WriteResult> writeMono(Write writeCmd) {

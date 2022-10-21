@@ -110,7 +110,7 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
             GetObjectRequest request = GetObjectRequest.builder().bucket(bucket).key(key).build();
             return fromFutureSupplier(() -> client.getObject(request, new GetResponseAndStream())).onErrorMap(
                 SdkClientException.class,
-                S3ClientException::new).onErrorMap(S3Exception.class, this::wrapS3Exception);
+                S3ClientException::new);
         });
     }
 
