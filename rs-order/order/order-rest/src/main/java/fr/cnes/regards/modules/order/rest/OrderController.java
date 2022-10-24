@@ -32,7 +32,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
@@ -43,8 +42,9 @@ import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.service.*;
 import fr.cnes.regards.modules.order.service.settings.IOrderSettingsService;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.io.Encoders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -333,10 +333,10 @@ public class OrderController implements IResourceController<OrderDto> {
         throws EntityNotFoundException {
         Long orderId;
         try {
-            Jwts.parser().setSigningKey(Encoders.BASE64.encode(secret.getBytes())).parse(validityToken);
-            Claims claims = jwtService.parseToken(validityToken, secret);
+            JwtParser parser = Jwts.parserBuilder().setSigningKey(Encoders.BASE64.encode(secret.getBytes())).build();
+            Claims claims = parser.parseClaimsJws(validityToken).getBody();
             orderId = Long.parseLong(claims.get(IOrderService.ORDER_ID_KEY, String.class));
-        } catch (InvalidJwtException | MalformedJwtException e) {
+        } catch (JwtException e) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 

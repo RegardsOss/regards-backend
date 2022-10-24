@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.security.utils.jwt;
 
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  * This object store REGARDS security principal<br/>
@@ -53,6 +54,11 @@ public class UserDetails implements Serializable {
      * User role name
      */
     private String role;
+
+    /**
+     * Optional access groups
+     */
+    private Set<String> accessGroups;
 
     public UserDetails(String tenant, String email, String login, String role) {
         super();
@@ -107,4 +113,15 @@ public class UserDetails implements Serializable {
         this.login = login;
     }
 
+    /**
+     * Fluent API to set optional access groups
+     */
+    public UserDetails withAccessGroups(Set<String> accessGroups) {
+        this.accessGroups = accessGroups;
+        return this;
+    }
+
+    public Set<String> getAccessGroups() {
+        return this.accessGroups;
+    }
 }

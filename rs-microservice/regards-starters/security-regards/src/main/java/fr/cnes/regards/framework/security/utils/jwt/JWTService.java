@@ -22,19 +22,18 @@ import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtExceptio
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.security.utils.jwt.exception.MissingClaimException;
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Encoders;
 import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Utility service based on JJWT library to generate or part a JWT based on a secret.
@@ -43,7 +42,7 @@ import java.util.Map;
  * @author Christophe Mertz
  */
 @Service
-public class JWTService {
+public class JWTService implements InitializingBean {
 
     /**
      * Tenant claim
@@ -66,14 +65,19 @@ public class JWTService {
     public static final String CLAIM_EMAIL = "email";
 
     /**
+     * Access group claim : only used for delegated security to filter metadata & data access
+     */
+    static final String CLAIM_ACCESS_GROUPS = "accessGroups";
+
+    /**
      * Encryption algorithm
      */
-    private static final SignatureAlgorithm ALGO = SignatureAlgorithm.HS512;
+    static final SignatureAlgorithm ALGO = SignatureAlgorithm.HS512;
 
     /**
      * Short Encryption algorithm (for user specific token generation)
      */
-    private static final SignatureAlgorithm SHORT_ALGO = SignatureAlgorithm.HS256;
+    static final SignatureAlgorithm SHORT_ALGO = SignatureAlgorithm.HS256;
 
     /**
      * Class logger
@@ -81,16 +85,87 @@ public class JWTService {
     private static final Logger LOG = LoggerFactory.getLogger(JWTService.class);
 
     /**
-     * JWT Secret. Default value is only useful for testing purpose.
-     */
-    @Value("${jwt.secret:!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!}")
-    private String secret;
-
-    /**
-     * validity delay expressed in minutes. Defaults to 120.
+     * Validity delay expressed in minutes. Defaults to 120.
      */
     @Value("${access_token.validity_period:7200}")
     private final long validityDelay = 7200;
+
+    /**
+     * Legacy JWT Secret.
+     * Use exact algorithm properties instead : {@link #keyForHS256} or/and {@link #keyForHS384} or/and {@link #keyForHS512}
+     * At least {@link #keyForHS256} and {@link #keyForHS512} are required!
+     */
+    @Deprecated
+    @Value("${jwt.secret:}")
+    private String secret;
+
+    /**
+     * Default values is only useful for testing purpose.
+     */
+    @Value("${jwt.signing-key.HS256:!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!}")
+    private String keyForHS256;
+
+    @Value("${jwt.signing-key.HS384:}")
+    private String keyForHS384;
+
+    /**
+     * Default values is only useful for testing purpose.
+     */
+    @Value("${jwt.signing-key.HS512:!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!}")
+    private String keyForHS512;
+
+    @Value("${jwt.signing-key.RS256:}")
+    private String keyForRS256;
+
+    @Value("${jwt.signing-key.RS384:}")
+    private String keyForRS384;
+
+    @Value("${jwt.signing-key.RS512:}")
+    private String keyForRS512;
+
+    /**
+     * Key resolver based on algorithm
+     */
+    private JWTSigningKeyResolver signingKeyResolver;
+
+    /**
+     * Key store per algorithm for dynamic resolution
+     * SHORT_ALGO & ALGO must be set for internal use.
+     */
+    private Map<SignatureAlgorithm, String> signingKeys = new HashMap<>();
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        // Initialize store for signing keys
+        if (StringUtils.hasText(keyForHS256)) {
+            signingKeys.put(SHORT_ALGO, keyForHS256);
+        } else {
+            if (StringUtils.hasText(secret)) {
+                // Propagate legacy property
+                signingKeys.put(SHORT_ALGO, secret);
+            }
+        }
+        if (StringUtils.hasText(keyForHS384)) {
+            signingKeys.put(SignatureAlgorithm.HS384, keyForHS384);
+        }
+        if (StringUtils.hasText(keyForHS512)) {
+            signingKeys.put(ALGO, keyForHS512);
+        } else {
+            if (StringUtils.hasText(secret)) {
+                // Propagate legacy property
+                signingKeys.put(ALGO, secret);
+            }
+        }
+        if (StringUtils.hasText(keyForRS256)) {
+            signingKeys.put(SignatureAlgorithm.RS256, keyForRS256);
+        }
+        if (StringUtils.hasText(keyForRS384)) {
+            signingKeys.put(SignatureAlgorithm.RS384, keyForRS384);
+        }
+        if (StringUtils.hasText(keyForRS512)) {
+            signingKeys.put(SignatureAlgorithm.RS512, keyForRS512);
+        }
+    }
 
     /**
      * Inject a generated token in the {@link SecurityContextHolder}
@@ -119,6 +194,13 @@ public class JWTService {
         SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
+    protected JWTSigningKeyResolver getSigningKeyResolver() {
+        if (signingKeyResolver == null) {
+            signingKeyResolver = new JWTSigningKeyResolver(signingKeys);
+        }
+        return signingKeyResolver;
+    }
+
     /**
      * Mock to simulate a token in the {@link SecurityContextHolder}.
      *
@@ -136,56 +218,60 @@ public class JWTService {
     /**
      * Parse JWT to retrieve full user information
      *
-     * @param pAuthentication containing just JWT
+     * @param authentication containing just JWT
      * @return Full user information
      * @throws JwtException Invalid JWT signature
      */
-    public JWTAuthentication parseToken(final JWTAuthentication pAuthentication) throws JwtException {
+    public JWTAuthentication parseToken(final JWTAuthentication authentication) throws JwtException {
 
         Jws<Claims> claims;
         try {
-            claims = Jwts.parser()
-                         .setSigningKey(Encoders.BASE64.encode(secret.getBytes()))
-                         .parseClaimsJws(pAuthentication.getJwt());
+            claims = Jwts.parserBuilder()
+                         .setSigningKeyResolver(getSigningKeyResolver())
+                         .build()
+                         .parseClaimsJws(authentication.getJwt());
             // OK, trusted JWT parsed and validated
         } catch (MalformedJwtException | IllegalArgumentException m) {
             LOG.error("Failed to parse claims");
             throw new InvalidJwtException(m);
         }
 
-        final String tenant = claims.getBody().get(CLAIM_TENANT, String.class);
+        String tenant = claims.getBody().get(CLAIM_TENANT, String.class);
         if (tenant == null) {
             LOG.error("The tenant cannot be null");
             throw new MissingClaimException(CLAIM_TENANT);
         }
 
-        final String login = claims.getBody().getSubject();
+        String login = claims.getBody().getSubject();
         if (login == null) {
             LOG.error("The subject cannot be null");
             throw new MissingClaimException(CLAIM_SUBJECT);
         }
 
-        final String role = claims.getBody().get(CLAIM_ROLE, String.class);
+        String role = claims.getBody().get(CLAIM_ROLE, String.class);
         if (role == null) {
             LOG.error("The role cannot be null");
             throw new MissingClaimException(CLAIM_ROLE);
         }
 
-        final String email = claims.getBody().get(CLAIM_EMAIL, String.class);
+        String email = claims.getBody().get(CLAIM_EMAIL, String.class);
         if (email == null) {
             LOG.error("The email cannot be null");
             throw new MissingClaimException(CLAIM_EMAIL);
         }
 
-        pAuthentication.setUser(new UserDetails(tenant, email, login, role));
+        UserDetails userDetails = new UserDetails(tenant, email, login, role);
 
-        pAuthentication.setRole(role);
+        // Try to retrieve access groups
+        List<String> accessGroups = claims.getBody().get(CLAIM_ACCESS_GROUPS, List.class);
+        if (accessGroups != null) {
+            userDetails.withAccessGroups(new HashSet<>(accessGroups));
+        }
 
-        pAuthentication.setAuthenticated(Boolean.TRUE);
-
-        pAuthentication.setAdditionalParams(claims.getBody());
-
-        return pAuthentication;
+        authentication.setUser(userDetails);
+        authentication.setAuthenticated(Boolean.TRUE);
+        authentication.setAdditionalParams(claims.getBody());
+        return authentication;
     }
 
     /**
@@ -194,13 +280,13 @@ public class JWTService {
      * Generate a JWT handling the tenant name, the user name and its related role
      *
      * @param tenant tenant
-     * @param user   user name
+     * @param user   username
      * @param email  user email
      * @param role   user role
      * @return a Json Web Token
      */
     public String generateToken(String tenant, String user, String email, String role) {
-        return generateToken(tenant, user, email, role, getExpirationDate(OffsetDateTime.now()), null, secret, false);
+        return generateToken(tenant, user, email, role, getExpirationDate(OffsetDateTime.now()), null, null, false);
     }
 
     /**
@@ -209,7 +295,7 @@ public class JWTService {
      * Generate a JWT handling the tenant name, the user name, its related role and additional parameters (user specific)
      *
      * @param tenant           tenant
-     * @param user             user name
+     * @param user             username
      * @param email            user email
      * @param role             user role
      * @param additionalParams additional parameters (user specific)
@@ -226,7 +312,7 @@ public class JWTService {
                              role,
                              getExpirationDate(OffsetDateTime.now()),
                              additionalParams,
-                             secret,
+                             null,
                              false);
     }
 
@@ -236,7 +322,7 @@ public class JWTService {
      * Generate a JWT handling the tenant name, the user name, its related role and additional parameters (user specific)
      *
      * @param tenant           tenant
-     * @param user             user name
+     * @param user             username
      * @param email            user email
      * @param role             user role
      * @param expirationDate   specific expiration date
@@ -249,7 +335,7 @@ public class JWTService {
                                 String role,
                                 OffsetDateTime expirationDate,
                                 Map<String, Object> additionalParams) {
-        return generateToken(tenant, user, email, role, expirationDate, additionalParams, secret, false);
+        return generateToken(tenant, user, email, role, expirationDate, additionalParams, null, false);
     }
 
     /**
@@ -267,16 +353,15 @@ public class JWTService {
     }
 
     /**
-     * Generate a token providing almost all informations
+     * Generate a token providing almost all information
      *
      * @param tenant           tenant
-     * @param user             user who aked for token
+     * @param user             user who asked for token
      * @param email            user email
      * @param role             user role
      * @param expirationDate   specific expiration date
      * @param additionalParams additional parameters (user specific)
-     * @param secret           sec ret phrase (user specific)
-     * @param shorter          if true, use a 256 bits algo instead of 512
+     * @param shorter          if true, use 256 bits algo instead of 512
      * @return a Json Web Token
      */
     public String generateToken(String tenant,
@@ -287,6 +372,10 @@ public class JWTService {
                                 Map<String, Object> additionalParams,
                                 String secret,
                                 boolean shorter) {
+        // Resolve secret if not set
+        if (secret == null) {
+            secret = shorter ? signingKeys.get(SHORT_ALGO) : signingKeys.get(ALGO);
+        }
         // THIS METHOD IS NOT USED BY OAUTH2 AUTHENTICATION
         // I.E. NOT USED TO GENERATE TOKENS FOR AUTHENTICATION ON REGARDS PRIVATE USER BASE
         return Jwts.builder()
@@ -301,13 +390,13 @@ public class JWTService {
     /**
      * Decode token and returns claims
      *
-     * @param token  token to decode
-     * @param secret secret used to generate it
+     * @param token token to decode
      * @return parsed {@link Claims}
      */
-    public Claims parseToken(String token, String secret) throws InvalidJwtException {
-        return Jwts.parser()
-                   .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)))
+    Claims parseClaims(String token) throws InvalidJwtException {
+        return Jwts.parserBuilder()
+                   .setSigningKeyResolver(getSigningKeyResolver())
+                   .build()
                    .parseClaimsJws(token)
                    .getBody();
     }
@@ -328,7 +417,7 @@ public class JWTService {
      *
      * @param tenant tenant
      * @param role   user role
-     * @param login  user name
+     * @param login  username
      * @param email  user email
      * @return claim map
      */
@@ -344,7 +433,7 @@ public class JWTService {
      *
      * @param tenant           tenant
      * @param role             user role
-     * @param login            user name
+     * @param login            username
      * @param email            user email
      * @param additionalParams optional additional parameters (can be null)
      * @return claim map
@@ -365,21 +454,22 @@ public class JWTService {
         return claims;
     }
 
-    /**
-     * @return the secret
-     */
-    public String getSecret() {
-        return secret;
-    }
-
-    /**
-     * @param pSecret the secret to set
-     */
-    public void setSecret(final String pSecret) {
-        secret = pSecret;
-    }
-
     public OffsetDateTime getExpirationDate(OffsetDateTime generationDate) {
         return generationDate.plusSeconds(validityDelay);
+    }
+
+    /**
+     * For test purpose only, allows manipulating signing key map
+     */
+    protected void setSigningKeyFor(SignatureAlgorithm algorithm, String key) {
+        signingKeys.put(algorithm, key);
+    }
+
+    /**
+     * Compatibility method for legacy tests
+     */
+    public void setSecret(String secret) {
+        signingKeys.put(SHORT_ALGO, secret);
+        signingKeys.put(ALGO, secret);
     }
 }

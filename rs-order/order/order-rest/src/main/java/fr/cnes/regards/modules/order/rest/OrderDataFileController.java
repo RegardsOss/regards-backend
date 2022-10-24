@@ -26,7 +26,6 @@ import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
-import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderControllerEndpointConfiguration;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
@@ -35,6 +34,7 @@ import fr.cnes.regards.modules.order.service.IOrderDataFileService;
 import fr.cnes.regards.modules.order.service.IOrderService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Encoders;
 import org.slf4j.Logger;
@@ -140,11 +140,11 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
         String user = null;
         if (validityToken.isPresent()) {
             try {
-                Jwts.parser().setSigningKey(Encoders.BASE64.encode(secret.getBytes())).parse(validityToken.get());
-                Claims claims = jwtService.parseToken(validityToken.get(), secret);
+                JwtParser parser = Jwts.parserBuilder().setSigningKey(Encoders.BASE64.encode(secret.getBytes())).build();
+                Claims claims = parser.parseClaimsJws(validityToken.get()).getBody();
                 Long.parseLong(claims.get(IOrderService.ORDER_ID_KEY, String.class));
                 user = claims.get(JWTService.CLAIM_SUBJECT).toString();
-            } catch (JwtException | InvalidJwtException e) {
+            } catch (JwtException e) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
         }

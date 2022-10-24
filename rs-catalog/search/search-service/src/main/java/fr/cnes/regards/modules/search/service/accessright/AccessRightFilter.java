@@ -31,11 +31,11 @@ import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -46,19 +46,20 @@ import java.util.stream.Collectors;
  * @author Xavier-Alexandre Brochard
  */
 @Service
+@Profile("!delegated-security")
 public class AccessRightFilter implements IAccessRightFilter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessRightFilter.class);
 
     private static final String CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP = "Cannot set access right filter because user %s does not have any access group";
 
-    private final IAccessGroupCache cache;
+    protected final IAccessGroupCache cache;
 
-    private final IRuntimeTenantResolver runtimeTenantResolver;
+    protected final IRuntimeTenantResolver runtimeTenantResolver;
 
     private final IProjectUsersClient projectUserClient;
 
-    private final IAuthenticationResolver authResolver;
+    protected final IAuthenticationResolver authResolver;
 
     public AccessRightFilter(final IAuthenticationResolver authResolver,
                              IAccessGroupCache pCache,
@@ -122,7 +123,7 @@ public class AccessRightFilter implements IAccessRightFilter {
                                                       accessGroupNames);
             searchCriterion.add(groupCriterion);
 
-            // Add user criterion (theorically, userCriterion should not be null at this point but...)
+            // Add user criterion (theoretically, userCriterion should not be null at this point but...)
             if ((userCriterion != null) && !userCriterion.equals(ICriterion.all())) {
                 searchCriterion.add(userCriterion);
             }
@@ -143,15 +144,23 @@ public class AccessRightFilter implements IAccessRightFilter {
     public Set<String> getUserAccessGroups() throws AccessRightFilterException {
         Set<String> userAccessGroups = null;
         if (!isAdmin()) {
-            Set<AccessGroup> accessGroups = getAccessGroups();
-            userAccessGroups = accessGroups.stream().map(AccessGroup::getName).collect(Collectors.toSet());
+            userAccessGroups = getAccessGroups();
+            assertAccessGroups(userAccessGroups);
         }
         return userAccessGroups;
     }
 
-    private Set<AccessGroup> getAccessGroups() throws AccessRightFilterException {
-        Set<AccessGroup> accessGroups = new HashSet<>(cache.getAccessGroups(authResolver.getUser(),
-                                                                            runtimeTenantResolver.getTenant()));
+    /**
+     * @return access groups from data management database
+     */
+    protected Set<String> getAccessGroups() {
+        return cache.getAccessGroups(authResolver.getUser(), runtimeTenantResolver.getTenant())
+                    .stream()
+                    .map(AccessGroup::getName)
+                    .collect(Collectors.toSet());
+    }
+
+    private void assertAccessGroups(Set<String> accessGroups) throws AccessRightFilterException {
         if (accessGroups.isEmpty()) {
             String errorMessage = String.format(
                 CANNOT_SET_ACCESS_RIGHT_FILTER_BECAUSE_USER_DOES_NOT_HAVE_ANY_ACCESS_GROUP,
@@ -159,7 +168,6 @@ public class AccessRightFilter implements IAccessRightFilter {
             LOGGER.error(errorMessage);
             throw new AccessRightFilterException(errorMessage);
         }
-        return accessGroups;
     }
 
 }

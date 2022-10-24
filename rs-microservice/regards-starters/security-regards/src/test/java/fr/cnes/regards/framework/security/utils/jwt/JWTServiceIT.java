@@ -18,10 +18,14 @@
  */
 package fr.cnes.regards.framework.security.utils.jwt;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,19 +34,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
+import java.security.KeyPair;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author msordi
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { JwtTestConfiguration.class })
+@TestPropertySource("classpath:test-keys.properties")
 public class JWTServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JWTServiceIT.class);
@@ -64,7 +73,7 @@ public class JWTServiceIT {
     /**
      * Test JWT generation without group
      *
-     * @throws IOException
+     * @throw IOException
      */
     @Test
     public void generateJWT() throws IOException {
@@ -136,22 +145,27 @@ public class JWTServiceIT {
         };
 
         String secret = "pouet!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!";
-
+        jwtService.setSigningKeyFor(JWTService.SHORT_ALGO, secret);
         String token = jwtService.generateToken(TENANT,
                                                 LOGIN,
                                                 EMAIL,
                                                 ROLE,
                                                 OffsetDateTime.now().plus(3, ChronoUnit.DAYS),
                                                 addParams,
-                                                secret,
+                                                null,
                                                 true);
 
         try {
-            jwtService.parseToken(token, "teuop!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!");
+            // Alter key
+            jwtService.setSigningKeyFor(JWTService.SHORT_ALGO, "teuop!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!");
+            jwtService.parseClaims(token);
             Assert.fail("An exception should have been thrown here caused to an invalid secret key");
         } catch (SignatureException e) {
         }
-        Claims claims = jwtService.parseToken(token, secret);
+
+        // Reset key
+        jwtService.setSigningKeyFor(JWTService.SHORT_ALGO, secret);
+        Claims claims = jwtService.parseClaims(token);
         Assert.assertNotNull(claims.get("toto"));
 
         String expiredToken = jwtService.generateToken(TENANT,
@@ -160,13 +174,61 @@ public class JWTServiceIT {
                                                        ROLE,
                                                        OffsetDateTime.now(),
                                                        addParams,
-                                                       secret,
+                                                       null,
                                                        false);
         Thread.sleep(1_000);
         try {
-            claims = jwtService.parseToken(expiredToken, secret);
+            claims = jwtService.parseClaims(expiredToken);
             Assert.fail("An exception should have been thrown here caused to an expired token");
         } catch (ExpiredJwtException e) {
+        }
+    }
+
+    @Test
+    public void givenInternalToken_thenParseToken() {
+        LOGGER.debug("Parsing internal token");
+        String jwt = jwtService.generateToken(TENANT, LOGIN, EMAIL, ROLE);
+        try {
+            JWTAuthentication authentication = jwtService.parseToken(new JWTAuthentication(jwt));
+            Assert.assertEquals(TENANT, authentication.getUser().getTenant());
+            Assert.assertEquals(LOGIN, authentication.getUser().getLogin());
+            Assert.assertEquals(EMAIL, authentication.getUser().getEmail());
+            Assert.assertEquals(ROLE, authentication.getUser().getRole());
+        } catch (JwtException e) {
+            Assert.fail();
+        }
+    }
+
+    @Test
+    public void givenAsymmetricKey_thenParseToken() {
+        // Require groups
+        Set<String> accessGroups = Sets.newHashSet("GROUP1", "GROUP2");
+        // Generate keys
+        KeyPair keyPair = Keys.keyPairFor(SignatureAlgorithm.RS256);
+        // Generate JWS
+        String jws = Jwts.builder()
+                         .setSubject(LOGIN)
+                         .claim(JWTService.CLAIM_TENANT, TENANT)
+                         .claim(JWTService.CLAIM_EMAIL, EMAIL)
+                         .claim(JWTService.CLAIM_ROLE, ROLE)
+                         .claim(JWTService.CLAIM_ACCESS_GROUPS, accessGroups)
+                         .signWith(keyPair.getPrivate())
+                         .compact();
+        // Parse token
+        try {
+            // Inject public key
+            jwtService.getSigningKeyResolver()
+                      .putKey(SignatureAlgorithm.RS256,
+                              Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()));
+            JWTAuthentication authentication = jwtService.parseToken(new JWTAuthentication(jws));
+            Assert.assertEquals(TENANT, authentication.getUser().getTenant());
+            Assert.assertEquals(LOGIN, authentication.getUser().getLogin());
+            Assert.assertEquals(EMAIL, authentication.getUser().getEmail());
+            Assert.assertEquals(ROLE, authentication.getUser().getRole());
+            accessGroups.forEach(g -> Assert.assertTrue(authentication.getUser().getAccessGroups().contains(g)));
+        } catch (JwtException e) {
+            LOGGER.error("Invalid token", e);
+            Assert.fail();
         }
     }
 }

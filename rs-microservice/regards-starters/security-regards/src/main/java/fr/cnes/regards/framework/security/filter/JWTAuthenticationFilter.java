@@ -39,6 +39,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Enumeration;
 
 /**
  * Stateless JWT filter set in the SPRING security chain to authenticate request issuer.<br/>
@@ -73,6 +74,9 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                                     final FilterChain filterChain) throws ServletException, IOException {
         // Clear forced tenant if any
         runtimeTenantResolver.clearTenant();
+
+        // Dump header for debugging purpose
+        dumpHeaders(request);
 
         // Retrieve authentication header
         String jwt = request.getHeader(HttpConstants.AUTHORIZATION);
@@ -129,6 +133,16 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                     }
                     throw e;
                 }
+            }
+        }
+    }
+
+    private void dumpHeaders(final HttpServletRequest request) {
+        final Enumeration<String> headerNames = request.getHeaderNames();
+        if (headerNames != null) {
+            while (headerNames.hasMoreElements()) {
+                String header = headerNames.nextElement();
+                LOGGER.trace("[HEADER] {} -> {}", header, request.getHeader(header));
             }
         }
     }

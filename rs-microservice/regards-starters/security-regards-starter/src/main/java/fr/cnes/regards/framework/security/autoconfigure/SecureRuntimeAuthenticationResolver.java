@@ -22,8 +22,12 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.Set;
+
 /**
- * Retrieve user and role according to security context
+ * Retrieve user and role according to security context.
+ *
+ * When security is delegated to external component, we allow the control of data access authorizations using security context.
  *
  * @author Marc Sordi
  */
@@ -57,5 +61,14 @@ public class SecureRuntimeAuthenticationResolver implements IAuthenticationResol
         } else {
             return null;
         }
+    }
+
+    @Override
+    public Set<String> getAccessGroups() {
+        JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            return authentication.getUser().getAccessGroups();
+        }
+        return null;
     }
 }

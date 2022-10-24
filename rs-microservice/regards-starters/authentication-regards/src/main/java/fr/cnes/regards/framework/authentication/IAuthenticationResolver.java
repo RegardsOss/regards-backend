@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.framework.authentication;
 
+import java.util.Set;
+
 /**
- * In a request context, this resolver allows to retrieve authentication information. This resolver must be thread safe.
+ * In a request context, this resolver allows retrieving authentication information. This resolver must be thread safe.
  *
  * @author Marc Sordi
  */
@@ -30,4 +32,12 @@ public interface IAuthenticationResolver {
     String getRole();
 
     String getToken();
+
+    /**
+     * @return optional access groups. Only used when security is delegated.
+     */
+    default Set<String> getAccessGroups() {
+        // No group associated
+        return null;
+    }
 }
