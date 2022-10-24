@@ -52,7 +52,7 @@ public class FeaturePerformanceGeodeIT extends AbstractFeatureMultitenantService
     private static final Integer NB_FEATURES = 5_000;
 
     // Expected performance : 10_000 features/min
-    private static final long DURATION = NB_FEATURES * 18;// i set 7 because someties jenkins VM sucks
+    private static final long DURATION = NB_FEATURES * 20;// i set 7 because someties jenkins VM sucks
 
     @Autowired
     private IFeatureCreationService featureService;
