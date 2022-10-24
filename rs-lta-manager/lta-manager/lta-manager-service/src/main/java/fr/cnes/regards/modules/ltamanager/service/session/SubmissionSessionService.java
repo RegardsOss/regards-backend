@@ -23,7 +23,11 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
-import fr.cnes.regards.modules.ltamanager.dto.submission.session.SessionInfoDTO;
+import fr.cnes.regards.modules.ltamanager.domain.submission.mapping.SubmissionRequestMapper;
+import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionRequestInfoDto;
+import fr.cnes.regards.modules.ltamanager.dto.submission.session.SessionInfoGlobalDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -41,10 +45,14 @@ public class SubmissionSessionService {
 
     private final ISubmissionRequestRepository submissionRequestRepository;
 
+    private final SubmissionRequestMapper submissionRequestMapper;
+
     public SubmissionSessionService(IAuthenticationResolver authenticationResolver,
-                                    ISubmissionRequestRepository submissionRequestRepository) {
+                                    ISubmissionRequestRepository submissionRequestRepository,
+                                    SubmissionRequestMapper submissionRequestMapper) {
         this.authenticationResolver = authenticationResolver;
         this.submissionRequestRepository = submissionRequestRepository;
+        this.submissionRequestMapper = submissionRequestMapper;
     }
 
     /**
@@ -52,12 +60,39 @@ public class SubmissionSessionService {
      *
      * @throws EntityNotFoundException if session not exists
      */
-    public SessionInfoDTO getGlobalSessionInfo(String session) throws EntityNotFoundException {
+    public SessionInfoGlobalDTO getGlobalSessionInfo(String session) throws EntityNotFoundException {
         String owner = authenticationResolver.getUser();
         List<String> states = submissionRequestRepository.findStatesBySessionAndOwner(session, owner);
         if (states.isEmpty()) {
             throw new EntityNotFoundException(session, SubmissionRequest.class);
         }
-        return SessionInfoCreator.convert(states);
+        return createSessionInfoGlbal(states);
     }
+
+    private static SessionInfoGlobalDTO createSessionInfoGlbal(List<String> states) {
+        SessionInfoGlobalDTO sessionInfo = new SessionInfoGlobalDTO();
+        sessionInfo.setStatus(SessionInfoUtils.getSessionStatusFromStrings(states));
+        return sessionInfo;
+    }
+
+    public SessionInfoItemized getItemizedSessionInfo(String session, Pageable pageRequest)
+        throws EntityNotFoundException {
+        String owner = authenticationResolver.getUser();
+        // Need to get all states without pagination, to have global status of session
+        List<String> states = submissionRequestRepository.findStatesBySessionAndOwner(session, owner);
+        if (states.isEmpty()) {
+            throw new EntityNotFoundException(session, SubmissionRequest.class);
+        }
+        Page<SubmissionRequest> pageRequests = submissionRequestRepository.findBySessionAndOwner(session,
+                                                                                                 owner,
+                                                                                                 pageRequest);
+        return createSessionInfoItemized(pageRequests, states);
+    }
+
+    private SessionInfoItemized createSessionInfoItemized(Page<SubmissionRequest> pageRequests, List<String> states) {
+        List<SubmissionRequestInfoDto> resources = pageRequests.map(submissionRequestMapper::convertToSubmissionRequestInfoDto)
+                                                               .toList();
+        return new SessionInfoItemized(SessionInfoUtils.getSessionStatusFromStrings(states), resources, pageRequests);
+    }
+
 }

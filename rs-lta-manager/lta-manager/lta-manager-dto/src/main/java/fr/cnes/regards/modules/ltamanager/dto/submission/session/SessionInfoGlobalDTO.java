@@ -23,14 +23,14 @@ import java.util.Objects;
 /**
  * @author Thomas GUILLOU
  **/
-public class SessionInfoDTO {
+public class SessionInfoGlobalDTO {
 
-    SessionStatus status;
+    private SessionStatus status;
 
     public SessionStatus getStatus() {
         return status;
     }
-
+    
     public void setStatus(SessionStatus status) {
         this.status = status;
     }
@@ -43,7 +43,7 @@ public class SessionInfoDTO {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        SessionInfoDTO that = (SessionInfoDTO) o;
+        SessionInfoGlobalDTO that = (SessionInfoGlobalDTO) o;
         return status == that.status;
     }
 

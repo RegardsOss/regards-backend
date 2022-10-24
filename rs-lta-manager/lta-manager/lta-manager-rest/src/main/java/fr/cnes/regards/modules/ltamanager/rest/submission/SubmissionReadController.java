@@ -20,13 +20,11 @@ package fr.cnes.regards.modules.ltamanager.rest.submission;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ltamanager.domain.submission.search.SubmissionRequestSearchParameters;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionRequestInfoDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmittedSearchResponseDto;
-import fr.cnes.regards.modules.ltamanager.dto.submission.session.SessionInfoDTO;
 import fr.cnes.regards.modules.ltamanager.service.session.SubmissionSessionService;
 import fr.cnes.regards.modules.ltamanager.service.submission.reading.SubmissionReadService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -61,8 +59,6 @@ public class SubmissionReadController extends AbstractSubmissionController
     private static final Logger LOGGER = LoggerFactory.getLogger(SubmissionReadController.class);
 
     public static final String REQUEST_INFO_MAPPING = "/{requestId}/info";
-
-    public static final String SESSION_INFO_MAPPING = "/sessions/{session}/info";
 
     public static final String SEARCH_MAPPING = "/search";
 
@@ -116,17 +112,6 @@ public class SubmissionReadController extends AbstractSubmissionController
         return ResponseEntity.ok(toPagedResources(readService.retrieveSubmittedRequestsByCriteria(searchCriterion,
                                                                                                   pageable),
                                                   assembler));
-    }
-
-    @Operation(summary = "Calculate global state of a session")
-    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Returns session successfully"),
-        @ApiResponse(responseCode = "404", description = "Cannot find session for the user.") })
-    @GetMapping(path = SESSION_INFO_MAPPING, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    @ResourceAccess(description = "Calculate global state of a session", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<SessionInfoDTO> getSessionGlobalDetails(@PathVariable String session)
-        throws EntityNotFoundException {
-        return ResponseEntity.ok(sessionService.getGlobalSessionInfo(session));
     }
 
     @Override

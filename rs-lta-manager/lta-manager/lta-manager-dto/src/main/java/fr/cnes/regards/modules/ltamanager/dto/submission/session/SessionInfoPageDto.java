@@ -16,26 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ltamanager.service.session;
+package fr.cnes.regards.modules.ltamanager.dto.submission.session;
 
-import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
-import fr.cnes.regards.modules.ltamanager.dto.submission.session.SessionInfoDTO;
-
-import java.util.List;
+import org.springframework.hateoas.PagedModel;
 
 /**
+ * Override default page model by adding the status attribute.
+ * To get pagination links when encapsulate into Resource, we need to override PageModel
+ *
  * @author Thomas GUILLOU
  **/
-public class SessionInfoCreator {
+public class SessionInfoPageDto<T> extends PagedModel<T> {
 
-    private SessionInfoCreator() {
+    private SessionStatus globalStatus;
+
+    public SessionInfoPageDto(SessionStatus globalStatus, PagedModel<T> pageModel) {
+        super(pageModel.getContent(), pageModel.getMetadata(), pageModel.getLinks());
+        this.globalStatus = globalStatus;
     }
 
-    public static SessionInfoDTO convert(List<String> states) {
-        SessionInfoDTO sessionInfo = new SessionInfoDTO();
-        sessionInfo.setStatus(SessionInfoUtils.getSessionStatus(states.stream()
-                                                                      .map(SubmissionRequestState::valueOf)
-                                                                      .toList()));
-        return sessionInfo;
+    public SessionStatus getGlobalStatus() {
+        return globalStatus;
     }
 }

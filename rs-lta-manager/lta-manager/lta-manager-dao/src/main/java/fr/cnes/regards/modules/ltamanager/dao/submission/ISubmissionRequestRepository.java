@@ -65,6 +65,8 @@ public interface ISubmissionRequestRepository extends JpaRepository<SubmissionRe
     @Query(value = "SELECT DISTINCT status FROM {h-schema}t_submission_requests WHERE session = ?1 AND owner = ?2",
         nativeQuery = true)
     List<String> findStatesBySessionAndOwner(String session, String owner);
+ 
+    Page<SubmissionRequest> findBySessionAndOwner(String session, String owner, Pageable page);
 
     // ------------
     // -- UPDATE --

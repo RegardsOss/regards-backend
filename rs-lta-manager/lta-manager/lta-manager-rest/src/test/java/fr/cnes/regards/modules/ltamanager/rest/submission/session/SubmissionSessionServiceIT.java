@@ -40,14 +40,14 @@ import java.util.stream.IntStream;
 /**
  * @author Thomas GUILLOU
  **/
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=submission_lta_session_it" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=session_lta_it" })
 public class SubmissionSessionServiceIT extends AbstractRegardsIT {
 
     private static final String SESSION_NAME = "sessionInfo";
 
     private static final String ANOTHER_SESSION_NAME = "anotherSessionName";
 
-    private static final String ENDPOINT_FORMAT = "/products/sessions/%s/info";
+    private static final String ENDPOINT_FORMAT = "/sessions/%s/info";
 
     @MockBean
     private IModelClient iModelClient;
@@ -70,7 +70,7 @@ public class SubmissionSessionServiceIT extends AbstractRegardsIT {
     }
 
     @Test
-    public void testSessionDone() throws Exception {
+    public void test_sessionDone() throws Exception {
         // GIVEN
         IntStream.range(0, 3).forEach(i -> createAndSaveSubmissionRequest(SESSION_NAME, SubmissionRequestState.DONE));
         // WHEN
@@ -84,7 +84,7 @@ public class SubmissionSessionServiceIT extends AbstractRegardsIT {
     }
 
     @Test
-    public void testSessionRunning() throws Exception {
+    public void test_sessionRunning() throws Exception {
         // GIVEN
         IntStream.range(0, 3).forEach(i -> createAndSaveSubmissionRequest(SESSION_NAME, SubmissionRequestState.DONE));
         createAndSaveSubmissionRequest(SESSION_NAME, SubmissionRequestState.GENERATION_PENDING);
@@ -99,7 +99,7 @@ public class SubmissionSessionServiceIT extends AbstractRegardsIT {
     }
 
     @Test
-    public void testSessionError() throws Exception {
+    public void test_sessionError() throws Exception {
         // GIVEN
         IntStream.range(0, 3).forEach(i -> createAndSaveSubmissionRequest(SESSION_NAME, SubmissionRequestState.DONE));
         createAndSaveSubmissionRequest(SESSION_NAME, SubmissionRequestState.GENERATION_PENDING);
@@ -115,7 +115,7 @@ public class SubmissionSessionServiceIT extends AbstractRegardsIT {
     }
 
     @Test
-    public void testMultipleSessionDone() throws Exception {
+    public void test_multipleSessionDone() throws Exception {
         // GIVEN
         IntStream.range(0, 3).forEach(i -> createAndSaveSubmissionRequest(SESSION_NAME, SubmissionRequestState.DONE));
         createAndSaveSubmissionRequest(ANOTHER_SESSION_NAME, SubmissionRequestState.GENERATION_PENDING);
@@ -131,7 +131,7 @@ public class SubmissionSessionServiceIT extends AbstractRegardsIT {
     }
 
     @Test
-    public void testSessionNotFound() {
+    public void test_sessionNotFound() {
         // GIVEN
         IntStream.range(0, 3).forEach(i -> createAndSaveSubmissionRequest(SESSION_NAME, SubmissionRequestState.DONE));
         createAndSaveSubmissionRequest(ANOTHER_SESSION_NAME, SubmissionRequestState.GENERATION_PENDING);

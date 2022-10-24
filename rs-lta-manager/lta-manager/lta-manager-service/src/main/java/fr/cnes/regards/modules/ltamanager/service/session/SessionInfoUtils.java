@@ -25,13 +25,22 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
+ * Methods utils that manipulate SessionStatus
+ *
  * @author Thomas GUILLOU
  **/
-public class SessionInfoUtils {
+public final class SessionInfoUtils {
 
     private SessionInfoUtils() {
     }
 
+    public static SessionStatus getSessionStatusFromStrings(List<String> statesAsString) {
+        return getSessionStatus(statesAsString.stream().map(SubmissionRequestState::valueOf).toList());
+    }
+
+    /**
+     * Generate global session status from requests status.
+     */
     public static SessionStatus getSessionStatus(List<SubmissionRequestState> states) {
         SessionStatus sessionStatus;
         boolean anyRequestError = anyRequestHaveStatus(states,
