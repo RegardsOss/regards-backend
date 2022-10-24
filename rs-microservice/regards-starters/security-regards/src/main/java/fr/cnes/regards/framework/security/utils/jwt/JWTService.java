@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.security.utils.jwt.exception.MissingClaimException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -231,7 +232,7 @@ public class JWTService implements InitializingBean {
                          .build()
                          .parseClaimsJws(authentication.getJwt());
             // OK, trusted JWT parsed and validated
-        } catch (MalformedJwtException | IllegalArgumentException m) {
+        } catch (MalformedJwtException | IllegalArgumentException | SignatureException m) {
             LOG.error("Failed to parse claims");
             throw new InvalidJwtException(m);
         }
