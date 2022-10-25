@@ -18,14 +18,22 @@
  */
 package fr.cnes.regards.modules.ltamanager.service.submission.update.ingest;
 
+import com.google.gson.Gson;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.client.RequestInfo;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
+import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
+import fr.cnes.regards.modules.ltamanager.service.submission.update.ingest.notification.SuccessLtaRequestNotification;
+import fr.cnes.regards.modules.notifier.client.INotifierClient;
+import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -54,9 +62,18 @@ public class IngestResponseListenerTest {
     // class under test
     private IngestResponseListener responseListener;
 
+    @Mock
+    private INotifierClient notifierClient;
+
+    @Mock
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
     @Before
     public void init() {
-        IngestResponseService responseService = new IngestResponseService(requestRepository);
+        IngestResponseService responseService = new IngestResponseService(requestRepository,
+                                                                          notifierClient,
+                                                                          runtimeTenantResolver,
+                                                                          new Gson());
         responseListener = new IngestResponseListener(responseService);
     }
 
@@ -133,6 +150,52 @@ public class IngestResponseListenerTest {
         // --- THEN ----
         // Check no submission requests are updated
         Mockito.verify(requestRepository, times(0)).updateRequestState(any(), any(), any(), any());
+    }
+
+    // ACKs tests
+    @Test
+    public void test_ackCorrectlySendToNotifierIfRequestSuccess() {
+        // GIVEN
+        String urnTest = "myUrnTest";
+        String tenantName = "tenantName";
+        String reqId = UUID.randomUUID().toString();
+        RequestInfo event = RequestInfo.build(reqId, reqId, null, null);
+        Mockito.when(requestRepository.findIdsByRequestIdIn(List.of(reqId))).thenReturn(List.of(reqId));
+        SubmissionRequest request = new SubmissionRequest();
+        request.setOriginUrn(urnTest);
+        Mockito.when(requestRepository.findAllByRequestIdIn(List.of(event.getRequestId())))
+               .thenReturn(List.of(request));
+        Mockito.when(runtimeTenantResolver.getTenant()).thenReturn(tenantName);
+        // WHEN
+        responseListener.onSuccess(List.of(event));
+        // THEN
+        ArgumentCaptor<List<NotificationRequestEvent>> eventCaptor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(notifierClient).sendNotifications(eventCaptor.capture());
+        List<NotificationRequestEvent> value = eventCaptor.getValue();
+        Assert.assertEquals(1, value.size());
+        NotificationRequestEvent notif = value.get(0);
+        Assert.assertTrue(notif instanceof NotificationRequestEvent);
+        Assert.assertEquals(urnTest, notif.getPayload().get("urn").getAsString());
+        Assert.assertEquals(SuccessLtaRequestNotification.NOTIF_ACTION,
+                            notif.getMetadata().get("action").getAsString());
+        Assert.assertEquals(tenantName, notif.getMetadata().get("sessionOwner").getAsString());
+        // Only one notification is sent to notifier.
+        Mockito.verify(notifierClient, Mockito.times(1)).sendNotifications(Mockito.any(List.class));
+    }
+
+    @Test
+    public void test_noAckSentIfNotSuccess() {
+        // GIVEN
+        String reqId = UUID.randomUUID().toString();
+        RequestInfo event = RequestInfo.build(reqId, reqId, null, null);
+        Mockito.when(requestRepository.findIdsByRequestIdIn(List.of(reqId))).thenReturn(List.of(reqId));
+        // WHEN
+        responseListener.onGranted(List.of(event));
+        responseListener.onDenied(List.of(event));
+        responseListener.onError(List.of(event));
+        // THEN
+        // No success request so zero notif sent.
+        Mockito.verify(notifierClient, Mockito.times(0)).sendNotifications(Mockito.any(List.class));
     }
 
 }

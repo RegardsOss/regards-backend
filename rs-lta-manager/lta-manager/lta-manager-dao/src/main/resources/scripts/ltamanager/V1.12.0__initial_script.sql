@@ -10,9 +10,9 @@ create table t_submission_requests
     datatype      varchar(255) not null,
     store_path    varchar(255) not null,
     replace_mode  boolean      not null default false,
-    need_ack      boolean      not null default false,
     product       jsonb        not null,
     message       text,
+    origin_urn    varchar(255),
     primary key (request_id)
 );
 

@@ -153,6 +153,7 @@ public class SubmissionCreateService {
         return new SubmissionRequest(owner,
                                      session,
                                      requestDto.isReplaceMode(),
+                                     requestDto.getOriginUrn(),
                                      new SubmissionStatus(currentDateTime,
                                                           currentDateTime,
                                                           SubmissionRequestState.VALIDATED,

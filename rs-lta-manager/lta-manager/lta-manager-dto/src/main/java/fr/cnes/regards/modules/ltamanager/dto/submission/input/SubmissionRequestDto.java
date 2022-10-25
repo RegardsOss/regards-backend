@@ -80,6 +80,17 @@ public class SubmissionRequestDto {
     @Schema(description = "If true, overrides the product if it already exists.", defaultValue = "false")
     private boolean replaceMode;
 
+    public String getOriginUrn() {
+        return originUrn;
+    }
+
+    public void setOriginUrn(String originUrn) {
+        this.originUrn = originUrn;
+    }
+
+    @Schema(description = "The urn of the current catalog", defaultValue = "null")
+    private String originUrn;
+
     // owner is set after the construction of the request
     private String owner;
 
@@ -177,27 +188,37 @@ public class SubmissionRequestDto {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
+        if (this == o)
             return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
+        if (o == null || getClass() != o.getClass())
             return false;
-        }
         SubmissionRequestDto that = (SubmissionRequestDto) o;
         return replaceMode == that.replaceMode
-               && id.equals(that.id)
-               && datatype.equals(that.datatype)
-               && geometry.equals(that.geometry)
-               && files.equals(that.files)
+               && Objects.equals(id, that.id)
+               && Objects.equals(datatype, that.datatype)
+               && Objects.equals(geometry, that.geometry)
+               && Objects.equals(files, that.files)
                && Objects.equals(tags, that.tags)
                && Objects.equals(properties, that.properties)
                && Objects.equals(storePath, that.storePath)
-               && Objects.equals(session, that.session);
+               && Objects.equals(session, that.session)
+               && Objects.equals(originUrn, that.originUrn)
+               && Objects.equals(owner, that.owner);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, datatype, geometry, files, tags, properties, storePath, session, replaceMode);
+        return Objects.hash(id,
+                            datatype,
+                            geometry,
+                            files,
+                            tags,
+                            properties,
+                            storePath,
+                            session,
+                            replaceMode,
+                            originUrn,
+                            owner);
     }
 
     @Override
@@ -217,13 +238,20 @@ public class SubmissionRequestDto {
                + tags
                + ", properties="
                + properties
-               + ", storePath="
+               + ", storePath='"
                + storePath
+               + '\''
                + ", session='"
                + session
                + '\''
                + ", replaceMode="
                + replaceMode
+               + ", originUrn='"
+               + originUrn
+               + '\''
+               + ", owner='"
+               + owner
+               + '\''
                + '}';
     }
 }

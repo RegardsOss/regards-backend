@@ -60,8 +60,9 @@ public class SubmissionRequest {
     @Column(name = "replace_mode", updatable = false)
     private boolean replaceMode;
 
-    @Column(name = "need_ack", updatable = false)
-    private boolean needAck;
+    @Column(name = "origin_urn", updatable = false)
+    @Nullable
+    private String originUrn;
 
     @Embedded
     @Valid
@@ -74,9 +75,11 @@ public class SubmissionRequest {
     public SubmissionRequest() {
         // no-args constructor for jpa
     }
+
     public SubmissionRequest(String owner,
                              String session,
                              boolean replaceMode,
+                             String originUrn,
                              SubmissionStatus submissionStatus,
                              SubmissionProduct submissionProduct) {
         this.owner = owner;
@@ -84,6 +87,15 @@ public class SubmissionRequest {
         this.replaceMode = replaceMode;
         this.submissionStatus = submissionStatus;
         this.submissionProduct = submissionProduct;
+        this.originUrn = originUrn;
+    }
+
+    public SubmissionRequest(String owner,
+                             String session,
+                             boolean replaceMode,
+                             SubmissionStatus submissionStatus,
+                             SubmissionProduct submissionProduct) {
+        this(owner, session, replaceMode, null, submissionStatus, submissionProduct);
     }
 
     public String getRequestId() {
@@ -143,6 +155,15 @@ public class SubmissionRequest {
         return getSubmissionStatus().getMessage();
     }
 
+    @Nullable
+    public String getOriginUrn() {
+        return originUrn;
+    }
+
+    public void setOriginUrn(String originUrn) {
+        this.originUrn = originUrn;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -174,8 +195,9 @@ public class SubmissionRequest {
                + '\''
                + ", replaceMode="
                + replaceMode
-               + ", needAck="
-               + needAck
+               + ", originUrn='"
+               + originUrn
+               + '\''
                + ", submissionStatus="
                + submissionStatus
                + ", submissionProduct="

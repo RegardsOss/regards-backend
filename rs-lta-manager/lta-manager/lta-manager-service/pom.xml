@@ -92,6 +92,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.notifier</groupId>
+            <artifactId>notifier-client</artifactId>
+        </dependency>
         <!-- COTS -->
         <dependency>
             <groupId>commons-beanutils</groupId>
