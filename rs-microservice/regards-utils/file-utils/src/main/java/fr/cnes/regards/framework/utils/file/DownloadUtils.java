@@ -314,7 +314,7 @@ public final class DownloadUtils {
      */
     public static InputStream getInputStreamFromS3Source(String entryKey,
                                                          StorageConfig storageConfig,
-                                                         StorageCommandID cmdId) throws IOException {
+                                                         StorageCommandID cmdId) throws FileNotFoundException {
         S3HighLevelReactiveClient client = getS3HighLevelReactiveClient();
 
         StorageCommand.Read readCmd = StorageCommand.read(storageConfig, cmdId, entryKey);
