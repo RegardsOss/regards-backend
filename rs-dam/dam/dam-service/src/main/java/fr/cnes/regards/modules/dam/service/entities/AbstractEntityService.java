@@ -21,8 +21,10 @@ package fr.cnes.regards.modules.dam.service.entities;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -835,7 +837,8 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
                                                               IPluginParam.set());
             storeEntityPluginConf.setMetaData(PluginUtils.getPlugins().get(storeEntityPluginConf.getPluginId()));
             storeEntityPluginConf.setVersion(storeEntityPluginConf.getMetaData().getVersion());
-        } catch (ClassNotFoundException e) {
+            pluginService.savePluginConfiguration(storeEntityPluginConf);
+        } catch (ClassNotFoundException | EntityInvalidException | EncryptionException | EntityNotFoundException e) {
             throw new NotAvailablePluginConfigurationException(e.getMessage(), e);
         }
     }
