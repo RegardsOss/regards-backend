@@ -128,10 +128,10 @@ public class DownloadService implements IDownloadService {
                        return DataBufferUtils.write(dataBufferFlux, dest, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
                    })
                    .flatMap(voidMono -> voidMono.map(n -> dest))
-                   .onErrorResume(mustWrap(),
-                                  errorWithContextMono(PExecution.class,
+                   .onErrorResume(errorWithContextMono(PExecution.class,
                                                        (exec, t) -> new InternalDownloadException(exec,
-                                                                                                  "Failed to download internal "
+                                                                                                  "Failed to "
+                                                                                                  + "download internal "
                                                                                                   + checksum
                                                                                                   + " into "
                                                                                                   + dest,
