@@ -35,6 +35,8 @@ import java.util.Map;
  */
 public class ProvenanceInformation {
 
+    public static final String ORIGIN_URN = "originUrn";
+
     /**
      * The history
      */
@@ -156,6 +158,14 @@ public class ProvenanceInformation {
 
     public void addEvent(@Nullable String type, String comment) {
         addEvent(type, comment, OffsetDateTime.now());
+    }
+
+    public String getOriginUrn() {
+        return (String) getAdditional().get(ORIGIN_URN);
+    }
+
+    public void setOriginUrn(String originUrn) {
+        getAdditional().put(ORIGIN_URN, originUrn);
     }
 
     @Override

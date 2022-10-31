@@ -60,6 +60,11 @@ public class SubmissionRequestDto {
     private List<String> tags;
 
     @Nullable
+    @Size(max = 255, message = "origin urn is limited to 255 characters.")
+    @Schema(description = "Id of the product in the original catalog.", nullable = true)
+    private String originUrn;
+
+    @Nullable
     @Schema(description = "Map of key/value properties.", nullable = true)
     private Map<String, Object> properties;
 
@@ -80,17 +85,6 @@ public class SubmissionRequestDto {
     @Schema(description = "If true, overrides the product if it already exists.", defaultValue = "false")
     private boolean replaceMode;
 
-    public String getOriginUrn() {
-        return originUrn;
-    }
-
-    public void setOriginUrn(String originUrn) {
-        this.originUrn = originUrn;
-    }
-
-    @Schema(description = "The urn of the current catalog", defaultValue = "null")
-    private String originUrn;
-
     // owner is set after the construction of the request
     private String owner;
 
@@ -106,12 +100,14 @@ public class SubmissionRequestDto {
                                 IGeometry geometry,
                                 List<ProductFileDto> files,
                                 @Nullable List<String> tags,
+                                @Nullable String originUrn,
                                 @Nullable Map<String, Object> properties,
                                 @Nullable String storePath,
                                 @Nullable String session,
                                 boolean replaceMode) {
         this(id, datatype, geometry, files);
         this.tags = tags;
+        this.originUrn = originUrn;
         this.properties = properties;
         this.storePath = storePath;
         this.session = session;
@@ -141,6 +137,15 @@ public class SubmissionRequestDto {
 
     public void setTags(@Nullable List<String> tags) {
         this.tags = tags;
+    }
+
+    @Nullable
+    public String getOriginUrn() {
+        return originUrn;
+    }
+
+    public void setOriginUrn(@Nullable String originUrn) {
+        this.originUrn = originUrn;
     }
 
     @Nullable
@@ -188,10 +193,12 @@ public class SubmissionRequestDto {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
         SubmissionRequestDto that = (SubmissionRequestDto) o;
         return replaceMode == that.replaceMode
                && Objects.equals(id, that.id)

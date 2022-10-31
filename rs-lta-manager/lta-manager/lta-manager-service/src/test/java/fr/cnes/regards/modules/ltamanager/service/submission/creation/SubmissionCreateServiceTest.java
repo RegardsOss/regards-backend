@@ -67,6 +67,14 @@ import static org.mockito.MockitoAnnotations.openMocks;
 @RunWith(MockitoJUnitRunner.class)
 public class SubmissionCreateServiceTest {
 
+    public static final String SIMPLE_STORE_PATH = "/path/subpath";
+
+    public static final String LTA_STORAGE = "ATL";
+
+    public static final String CONFIG_STORE_PATH = "/${YEAR}/${MONTH}/${DAY}/${PROPERTY(key1)}/${PROPERTY(subProperties.subKey1)}/${PROPERTY(subProperties.subKey2)}/pathExample";
+
+    public static final String MODEL_SAMPLE = "modelSample";
+
     private static final String OWNER = "user";
 
     @Mock
@@ -102,27 +110,153 @@ public class SubmissionCreateServiceTest {
     @Test
     public void create_submission_requests_in_success() {
         // ---- GIVEN ----
-        // - SubmissionRequestDtos (product requests to send) -
-        List<ProductFileDto> files = List.of(new ProductFileDto(DataType.RAWDATA,
-                                                                "http://localhost/notexisting",
-                                                                "example.raw",
-                                                                "f016852239a8a919f05f6d2225c5aaca",
-                                                                MediaType.APPLICATION_OCTET_STREAM));
         // Submission request with store path
-        String simpleStorePath = "/path/subpath";
+        SubmissionRequestDto requestDtoWithSimpleStorePath = createRequestWithSimpleStorePath();
+
+        // Submission request without a store path (it will be built via config)
+        SubmissionRequestDto requestDtoWithProperties = createRequestWithProperties();
+
+        // Submission request with replaceMode
+        SubmissionRequestDto requestDtoWithReplace = createRequestWithReplace();
+
+        // - Mocks -
+        // call to database
+        AtomicReference<List<SubmissionRequest>> refRequestsCreated = new AtomicReference<>(new ArrayList<>());
+        Mockito.when(requestRepository.saveAll(any())).thenAnswer(res -> {
+            refRequestsCreated.set(res.getArgument(0));
+            return refRequestsCreated.get();
+        });
+
+        // call to lta datatype settings
+        Mockito.when(settingService.getDatypesConfig(any()))
+               .thenReturn(Map.of(EntityType.DATA.toString(), new DatatypeParameter(MODEL_SAMPLE, CONFIG_STORE_PATH)));
+        // call to lta storage setting
+        Mockito.when(settingService.getStorageConfig(any())).thenReturn(LTA_STORAGE);
+
+        // ---- WHEN ----
+        // main method is called (submission request dtos are sent to save submission requests)
+        List<SubmissionResponseDtoEvent> dtoResponses = createService.handleSubmissionRequestsCreation(List.of(
+            requestDtoWithSimpleStorePath,
+            requestDtoWithProperties,
+            requestDtoWithReplace));
+
+        // ---- THEN ----
+        // - Check that requests have been correctly built -
+        List<SubmissionRequest> requestsCreated = refRequestsCreated.get();
+        Assertions.assertThat(requestsCreated).hasSize(3);
+
+        OffsetDateTime now = OffsetDateTime.now();
+        Path expectedBuiltPath = Paths.get(String.format("/%d/%d/%d/value1/nestedValue1/nestedValue2/pathExample",
+                                                         now.getYear(),
+                                                         now.getMonthValue(),
+                                                         now.getDayOfMonth()));
+
+        checkCreatedRequests(requestDtoWithSimpleStorePath,
+                             requestDtoWithProperties,
+                             requestDtoWithReplace,
+                             requestsCreated,
+                             expectedBuiltPath);
+
+        // - Check all request are in validated status -
+        Assertions.assertThat(Set.of(SubmissionRequestState.VALIDATED))
+                  .isEqualTo(requestsCreated.stream().map(SubmissionRequest::getStatus).collect(Collectors.toSet()));
+        // - Check dto answers -
+        Assertions.assertThat(dtoResponses).hasSize(3);
+
+        String tenant = tenantResolver.getTenant();
+
+        // - Expected worker requests -
+        // worker request with store path
+        Path configStorePath = Paths.get(CONFIG_STORE_PATH);
+        LtaWorkerRequestDtoEvent expectedReqWithPath = createExpectedRequest(requestDtoWithSimpleStorePath,
+                                                                             requestsCreated.get(0),
+                                                                             configStorePath,
+                                                                             tenant,
+                                                                             false);
+        // worker request without store path
+        LtaWorkerRequestDtoEvent expectedReqWithoutPath = createExpectedRequest(requestDtoWithProperties,
+                                                                                requestsCreated.get(1),
+                                                                                expectedBuiltPath,
+                                                                                tenant,
+                                                                                false);
+
+        // worker request with replace mode
+        LtaWorkerRequestDtoEvent expectedReqWithReplace = createExpectedRequest(requestDtoWithReplace,
+                                                                                requestsCreated.get(2),
+                                                                                configStorePath,
+                                                                                tenant,
+                                                                                true);
+
+        // - Expected worker requests -
+        List<LtaWorkerRequestDtoEvent> expectedWorkerReq = new ArrayList<>();
+        expectedWorkerReq.add(expectedReqWithPath);
+        expectedWorkerReq.add(expectedReqWithoutPath);
+        expectedWorkerReq.add(expectedReqWithReplace);
+        // check worker responses have been sent
+        Mockito.verify(publisher)
+               .publish(expectedWorkerReq, "regards.broadcast." + RequestEvent.class.getName(), Optional.empty());
+    }
+
+    @Test
+    public void create_submission_requests_in_error_placeholders() {
+        // ---- GIVEN ----
+        // - SubmissionRequestDtos (product requests to send)
+        SubmissionRequestDto requestDtoWithSimpleStorePath = createRequestWithSimpleStorePath();
+        requestDtoWithSimpleStorePath.setStorePath(null);
+
+        SubmissionRequestDto requestDtoWithProperties = createRequestWithProperties();
+        requestDtoWithProperties.setProperties(new GsonBuilder().create().fromJson("""
+                                                                                       {
+                                                                                         "key1": "value1",
+                                                                                         "subProperties":  {
+                                                                                            "subKey1": "nestedValue1"
+                                                                                         }
+                                                                                       }
+                                                                                       """, Map.class));
+        // - Mocks -
+        // call to lta settings
+        Mockito.when(settingService.getDatypesConfig(any()))
+               .thenReturn(Map.of(EntityType.DATA.toString(),
+                                  new DatatypeParameter("modelSample",
+                                                        "/${YEAR}/${MONTH}/${DAY}/${PROPERTY(key1)}/${PROPERTY"
+                                                        + "(subProperties.subKey1)}/${PROPERTY(subProperties.subKey2)}/pathExample")));
+
+        // ---- WHEN ----
+        // main method is called (submission request dtos are sent to save submission requests)
+        List<SubmissionResponseDtoEvent> dtoResponses = createService.handleSubmissionRequestsCreation(List.of(
+            requestDtoWithSimpleStorePath,
+            requestDtoWithProperties));
+
+        // THEN
+        // check that requests have been correctly built
+        // check dto answers
+        Assertions.assertThat(dtoResponses).hasSize(2);
+        Assertions.assertThat(dtoResponses.stream()
+                                          .map(SubmissionResponseDto::getResponseStatus)
+                                          .collect(Collectors.toSet()))
+                  .isEqualTo(Set.of(SubmissionResponseStatus.DENIED));
+        // check no worker requests have been sent
+        Mockito.verifyNoInteractions(publisher);
+    }
+
+    private SubmissionRequestDto createRequestWithSimpleStorePath() {
         SubmissionRequestDto requestDtoWithSimpleStorePath = new SubmissionRequestDto(UUID.randomUUID().toString(),
                                                                                       EntityType.DATA.toString(),
                                                                                       IGeometry.point(IGeometry.position(
                                                                                           10.0,
                                                                                           20.0)),
-                                                                                      files,
+                                                                                      getProductFileDtos(),
                                                                                       null,
+                                                                                      "URN:AIP:DATA:example:12345678-9abc-def0-1234-56789abcdef0:V1",
                                                                                       null,
-                                                                                      simpleStorePath,
+                                                                                      SIMPLE_STORE_PATH,
                                                                                       "sessionSimpleStore",
                                                                                       false);
+        requestDtoWithSimpleStorePath.setOwner(OWNER);
+        return requestDtoWithSimpleStorePath;
+    }
 
-        // Submission request without a store path (it will be built via config)
+    private SubmissionRequestDto createRequestWithProperties() {
         Map<String, Object> properties = new GsonBuilder().create().fromJson("""
                                                                                  {
                                                                                    "key1": "value1",
@@ -136,67 +270,52 @@ public class SubmissionCreateServiceTest {
                                                                                  EntityType.DATA.toString(),
                                                                                  IGeometry.point(IGeometry.position(10.0,
                                                                                                                     20.0)),
-                                                                                 files,
+                                                                                 getProductFileDtos(),
                                                                                  null,
+                                                                                 "URN:AIP:DATA:example:12345678-9abc-def0-1234-56789abcdef0:V1",
                                                                                  properties,
                                                                                  null,
                                                                                  null,
                                                                                  false);
+        requestDtoWithProperties.setOwner(OWNER);
+        return requestDtoWithProperties;
+    }
 
-        OffsetDateTime now = OffsetDateTime.now();
-        Path expectedBuiltPath = Paths.get(String.format("/%d/%d/%d/value1/nestedValue1/nestedValue2/pathExample",
-                                                         now.getYear(),
-                                                         now.getMonthValue(),
-                                                         now.getDayOfMonth()));
-        // Submission request with replaceMode
+    private SubmissionRequestDto createRequestWithReplace() {
         SubmissionRequestDto requestDtoWithReplace = new SubmissionRequestDto(UUID.randomUUID().toString(),
                                                                               EntityType.DATA.toString(),
                                                                               IGeometry.point(IGeometry.position(10.0,
                                                                                                                  20.0)),
-                                                                              files,
+                                                                              getProductFileDtos(),
                                                                               null,
+                                                                              "URN:AIP:DATA:example:12345678-9abc-def0-1234-56789abcdef0:V1",
                                                                               null,
-                                                                              simpleStorePath,
+                                                                              SIMPLE_STORE_PATH,
                                                                               null,
                                                                               true);
-
-        requestDtoWithSimpleStorePath.setOwner(OWNER);
-        requestDtoWithProperties.setOwner(OWNER);
         requestDtoWithReplace.setOwner(OWNER);
 
-        List<SubmissionRequestDto> requestDtos = List.of(requestDtoWithSimpleStorePath,
-                                                         requestDtoWithProperties,
-                                                         requestDtoWithReplace);
+        return requestDtoWithReplace;
+    }
 
-        // - Mocks -
-        // call to database
-        AtomicReference<List<SubmissionRequest>> refRequestsCreated = new AtomicReference<>(new ArrayList<>());
-        Mockito.when(requestRepository.saveAll(any())).thenAnswer(res -> {
-            refRequestsCreated.set(res.getArgument(0));
-            return refRequestsCreated.get();
-        });
+    private static List<ProductFileDto> getProductFileDtos() {
+        // - SubmissionRequestDtos (product requests to send) -
+        return List.of(new ProductFileDto(DataType.RAWDATA,
+                                          "http://localhost/notexisting",
+                                          "example.raw",
+                                          "f016852239a8a919f05f6d225c5aaca",
+                                          MediaType.APPLICATION_OCTET_STREAM));
+    }
 
-        // call to lta datatype settings
-        String modelSample = "modelSample";
-        String configStorePath = "/${YEAR}/${MONTH}/${DAY}/${PROPERTY(key1)}/${PROPERTY(subProperties.subKey1)}/${PROPERTY(subProperties.subKey2)}/pathExample";
-        Mockito.when(settingService.getDatypesConfig(any()))
-               .thenReturn(Map.of(EntityType.DATA.toString(), new DatatypeParameter(modelSample, configStorePath)));
-        // call to lta storage setting
-        String storage = "ATL";
-        Mockito.when(settingService.getStorageConfig(any())).thenReturn(storage);
-        // ---- WHEN ----
-        // main method is called (submission request dtos are sent to save submission requests)
-        List<SubmissionResponseDtoEvent> dtoResponses = createService.handleSubmissionRequestsCreation(requestDtos);
-
-        // ---- THEN ----
-        // - Check that requests have been correctly built -
-        List<SubmissionRequest> requestsCreated = refRequestsCreated.get();
-        Assertions.assertThat(requestsCreated).hasSize(3);
-
+    private static void checkCreatedRequests(SubmissionRequestDto requestDtoWithSimpleStorePath,
+                                             SubmissionRequestDto requestDtoWithProperties,
+                                             SubmissionRequestDto requestDtoWithReplace,
+                                             List<SubmissionRequest> requestsCreated,
+                                             Path expectedBuiltPath) {
         for (SubmissionRequest requestCreated : requestsCreated) {
             String productId = requestCreated.getProduct().getId();
             if (productId.equals(requestDtoWithSimpleStorePath.getId())) {
-                Assertions.assertThat(requestCreated.getStorePath()).isEqualTo(Paths.get(simpleStorePath));
+                Assertions.assertThat(requestCreated.getStorePath()).isEqualTo(Paths.get(SIMPLE_STORE_PATH));
                 Assertions.assertThat(requestCreated.getSession()).isEqualTo("sessionSimpleStore");
             } else if (productId.equals(requestDtoWithProperties.getId())) {
                 Assertions.assertThat(requestCreated.getStorePath()).isEqualTo(expectedBuiltPath);
@@ -206,128 +325,24 @@ public class SubmissionCreateServiceTest {
                 Assertions.assertThat(requestCreated.isReplaceMode()).isTrue();
             }
         }
-        // - Check all request are in validated status -
-        Assertions.assertThat(Set.of(SubmissionRequestState.VALIDATED))
-                  .isEqualTo(requestsCreated.stream().map(SubmissionRequest::getStatus).collect(Collectors.toSet()));
-        // - Check dto answers -
-        Assertions.assertThat(dtoResponses).hasSize(3);
+    }
 
-        String tenant = tenantResolver.getTenant();
-        // - Expected worker requests -
-        List<LtaWorkerRequestDtoEvent> expectedWorkerReq = new ArrayList<>();
-        // worker request with store path
-        Path dataTypeStorePath = Paths.get(configStorePath);
-        LtaWorkerRequestDtoEvent expectedReqWithPath = new LtaWorkerRequestDtoEvent(storage,
-                                                                                    dataTypeStorePath,
-                                                                                    modelSample,
+    private static LtaWorkerRequestDtoEvent createExpectedRequest(SubmissionRequestDto requestDtoWithSimpleStorePath,
+                                                                  SubmissionRequest reqCreatedWithStorePath,
+                                                                  Path storePath,
+                                                                  String tenant,
+                                                                  boolean replace) {
+        LtaWorkerRequestDtoEvent expectedReqWithPath = new LtaWorkerRequestDtoEvent(LTA_STORAGE,
+                                                                                    storePath,
+                                                                                    MODEL_SAMPLE,
                                                                                     requestDtoWithSimpleStorePath,
-                                                                                    false);
-        SubmissionRequest reqCreatedWithStorePath = requestsCreated.get(0);
+                                                                                    replace);
         expectedReqWithPath.setWorkerHeaders(LTA_CONTENT_TYPE,
                                              tenant,
                                              reqCreatedWithStorePath.getRequestId(),
                                              reqCreatedWithStorePath.getOwner(),
                                              reqCreatedWithStorePath.getSession());
-        // worker request without store path
-        LtaWorkerRequestDtoEvent expectedReqWithoutPath = new LtaWorkerRequestDtoEvent(storage,
-                                                                                       expectedBuiltPath,
-                                                                                       modelSample,
-                                                                                       requestDtoWithProperties,
-                                                                                       false);
-        SubmissionRequest reqCreatedWithoutStorePath = requestsCreated.get(1);
-        expectedReqWithoutPath.setWorkerHeaders(LTA_CONTENT_TYPE,
-                                                tenant,
-                                                reqCreatedWithoutStorePath.getRequestId(),
-                                                reqCreatedWithoutStorePath.getOwner(),
-                                                reqCreatedWithoutStorePath.getSession());
-        // worker request with replace mode
-        SubmissionRequest reqCreatedWithReplace = requestsCreated.get(2);
-        LtaWorkerRequestDtoEvent expectedReqWithReplace = new LtaWorkerRequestDtoEvent(storage,
-                                                                                       dataTypeStorePath,
-                                                                                       modelSample,
-                                                                                       requestDtoWithReplace,
-                                                                                       true);
-        expectedReqWithReplace.setWorkerHeaders(LTA_CONTENT_TYPE,
-                                                tenant,
-                                                reqCreatedWithReplace.getRequestId(),
-                                                reqCreatedWithReplace.getOwner(),
-                                                reqCreatedWithReplace.getSession());
-
-        expectedWorkerReq.add(expectedReqWithPath);
-        expectedWorkerReq.add(expectedReqWithoutPath);
-        expectedWorkerReq.add(expectedReqWithReplace);
-        // check worker responses have been sent
-        Mockito.verify(publisher)
-               .publish(expectedWorkerReq, "regards.broadcast." + RequestEvent.class.getName(), Optional.empty());
-    }
-
-    @Test
-    public void create_submission_requests_in_error_placeholders() {
-        // ---- GIVEN ----
-        // - SubmissionRequestDtos (product requests to send) -
-        List<ProductFileDto> files = List.of(new ProductFileDto(DataType.RAWDATA,
-                                                                "http://localhost/notexisting",
-                                                                "example.raw",
-                                                                "f016852239a8a919f05f6d2225c5aaca",
-                                                                MediaType.APPLICATION_OCTET_STREAM));
-        SubmissionRequestDto requestDtoWithSimpleStorePath = new SubmissionRequestDto(UUID.randomUUID().toString(),
-                                                                                      EntityType.DATA.toString(),
-                                                                                      IGeometry.point(IGeometry.position(
-                                                                                          10.0,
-                                                                                          20.0)),
-                                                                                      files,
-                                                                                      null,
-                                                                                      null,
-                                                                                      null,
-                                                                                      "sessionSimpleStore",
-                                                                                      false);
-
-        Map<String, Object> properties = new GsonBuilder().create().fromJson("""
-                                                                                 {
-                                                                                   "key1": "value1",
-                                                                                   "subProperties":  {
-                                                                                      "subKey1": "nestedValue1"
-                                                                                   }
-                                                                                 }
-                                                                                 """, Map.class);
-        SubmissionRequestDto requestDtoWithProperties = new SubmissionRequestDto(UUID.randomUUID().toString(),
-                                                                                 EntityType.DATA.toString(),
-                                                                                 IGeometry.point(IGeometry.position(10.0,
-                                                                                                                    20.0)),
-                                                                                 files,
-                                                                                 null,
-                                                                                 properties,
-                                                                                 null,
-                                                                                 null,
-                                                                                 false);
-
-        requestDtoWithSimpleStorePath.setOwner(OWNER);
-        requestDtoWithProperties.setOwner(OWNER);
-
-        List<SubmissionRequestDto> requestDtos = List.of(requestDtoWithSimpleStorePath, requestDtoWithProperties);
-
-        // - Mocks -
-        // call to lta settings
-        Mockito.when(settingService.getDatypesConfig(any()))
-               .thenReturn(Map.of(EntityType.DATA.toString(),
-                                  new DatatypeParameter("modelSample",
-                                                        "/${YEAR}/${MONTH}/${DAY}/${PROPERTY(key1)}/${PROPERTY"
-                                                        + "(subProperties.subKey1)}/${PROPERTY(subProperties.subKey2)}/pathExample")));
-
-        // ---- WHEN ----
-        // main method is called (submission request dtos are sent to save submission requests)
-        List<SubmissionResponseDtoEvent> dtoResponses = createService.handleSubmissionRequestsCreation(requestDtos);
-
-        // THEN
-        // check that requests have been correctly built
-        // check dto answers
-        Assertions.assertThat(dtoResponses).hasSize(2);
-        Assertions.assertThat(dtoResponses.stream()
-                                          .map(SubmissionResponseDto::getResponseStatus)
-                                          .collect(Collectors.toSet()))
-                  .isEqualTo(Set.of(SubmissionResponseStatus.DENIED));
-        // check no worker requests have been sent
-        Mockito.verifyNoInteractions(publisher);
+        return expectedReqWithPath;
     }
 
     @After
