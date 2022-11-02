@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPLightParameters;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +38,8 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
+
+import java.util.Arrays;
 
 /**
  * {@link IAIPRestClient} test class
@@ -73,12 +75,8 @@ public class AIPRestClientIT extends AbstractRegardsWebIT {
 
     @Test
     public void searchAips() {
-        ResponseEntity<PagedModel<EntityModel<AIPEntity>>> response = client.searchAIPs(SearchAIPsParameters.build()
-                                                                                                            .withState(
-                                                                                                                AIPState.STORED),
-                                                                                        0,
-                                                                                        100,
-                                                                                        Sort.unsorted());
+        ResponseEntity<PagedModel<EntityModel<AIPEntity>>> response = client.searchAIPs(new SearchAIPLightParameters().withStatesIncluded(
+            Arrays.asList(AIPState.STORED)), 0, 100, Sort.unsorted());
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 

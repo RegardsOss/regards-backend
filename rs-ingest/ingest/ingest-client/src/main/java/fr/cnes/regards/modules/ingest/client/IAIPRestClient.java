@@ -2,7 +2,7 @@ package fr.cnes.regards.modules.ingest.client;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPLightParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.data.domain.PageRequest;
@@ -27,7 +27,7 @@ public interface IAIPRestClient {
 
     String DELETE_BY_SESSION_PATH = "/delete";
 
-    default ResponseEntity<PagedModel<EntityModel<AIPEntity>>> searchAIPs(SearchAIPsParameters filters,
+    default ResponseEntity<PagedModel<EntityModel<AIPEntity>>> searchAIPs(SearchAIPLightParameters filters,
                                                                           int page,
                                                                           int size,
                                                                           Sort sort) {
@@ -35,12 +35,12 @@ public interface IAIPRestClient {
     }
 
     /**
-     * You better use {@link #searchAIPs(SearchAIPsParameters, int, int, Sort)} which explicitly asks for sort parameter
+     * You better use {@link #searchAIPs(SearchAIPLightParameters, int, int, Sort)} which explicitly asks for sort parameter
      */
     @PostMapping(path = ROOT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<AIPEntity>>> searchAIPs(@SpringQueryMap Pageable pageable,
-                                                                  @RequestBody SearchAIPsParameters filters);
+                                                                  @RequestBody SearchAIPLightParameters filters);
 
     @PostMapping(value = ROOT_PATH + DELETE_BY_SESSION_PATH, consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE)

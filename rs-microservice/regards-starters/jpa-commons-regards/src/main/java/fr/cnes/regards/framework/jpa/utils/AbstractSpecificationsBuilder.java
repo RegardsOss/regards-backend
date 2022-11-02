@@ -91,6 +91,14 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         }
     }
 
+    protected Specification<T> notEquals(String pathToField, Enum<?> value) {
+        if (value == null) {
+            return null;
+        } else {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.notEqual(getPath(root, pathToField), value);
+        }
+    }
+
     @SuppressWarnings("unchecked")
     protected Specification<T> like(String pathToField, String value) {
         if (!StringUtils.hasLength(value)) {

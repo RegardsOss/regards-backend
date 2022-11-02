@@ -33,6 +33,7 @@ import fr.cnes.regards.modules.ingest.domain.aip.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPState;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.sip.SIPState;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPLightParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
@@ -69,10 +70,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
 
 /**
  * {@link AIPEntity} REST API testing
@@ -92,11 +90,11 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
 
         @Bean
         public DiscoveryClient discoveryClient() throws URISyntaxException {
+            ServiceInstance service = Mockito.mock(ServiceInstance.class);
+            Mockito.when(service.getUri()).thenReturn(new URI("http://localhost:7777"));
 
             DiscoveryClient client = Mockito.mock(DiscoveryClient.class);
             List<ServiceInstance> response = Lists.newArrayList();
-            ServiceInstance service = Mockito.mock(ServiceInstance.class);
-            Mockito.when(service.getUri()).thenReturn(new URI("http://localhost:7777"));
             response.add(service);
             Mockito.when(client.getInstances(Mockito.anyString())).thenReturn(response);
             return client;
@@ -172,13 +170,12 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         ingestServiceTest.waitAllRequestsFinished(10000);
 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-
-        SearchAIPsParameters body = SearchAIPsParameters.build().withCategory("CAT 1");
-
         // Add request parameters documentation
         requestBuilderCustomizer.documentRequestBody(getSearchBodyDescriptors(""));
         // Add response body documentation
         requestBuilderCustomizer.documentResponseBody(documentResultingAIPEntity());
+
+        SearchAIPLightParameters body = new SearchAIPLightParameters().withCategoriesIncluded(Arrays.asList("CAT 1"));
 
         performDefaultPost(AIPStorageService.AIPS_CONTROLLER_ROOT_PATH,
                            body,
@@ -217,7 +214,8 @@ public class AIPControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.expectIsNotEmpty(
             "$.content[0].content.aip.properties.pdi.provenanceInformation.history");
 
-        SearchAIPsParameters body = SearchAIPsParameters.build().withProviderIds("testRetrieveAIPVersionHistory");
+        SearchAIPLightParameters body = new SearchAIPLightParameters().withProviderIdsIncluded(Arrays.asList(
+            "testRetrieveAIPVersionHistory"));
 
         // Add request parameters documentation
         requestBuilderCustomizer.documentRequestBody(getSearchBodyDescriptors(""));

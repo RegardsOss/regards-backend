@@ -38,6 +38,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPLightParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.SearchSelectionMode;
@@ -202,11 +203,12 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public Page<AIPEntityLight> findLightByFilters(AbstractSearchAIPsParameters<?> filters, Pageable pageable) {
-        LOGGER.debug("Searching AIPS with categories=[{}]...", String.join(",", filters.getCategories()));
+    public Page<AIPEntityLight> findLightByFilters(SearchAIPLightParameters filters, Pageable pageable) {
         long start = System.currentTimeMillis();
-        Page<AIPEntityLight> response = aipLigthRepository.findAll(AIPEntitySpecification.searchAll(filters, pageable),
-                                                                   pageable);
+
+        Page<AIPEntityLight> response = aipLigthRepository.findAll(new AIPSpecificationsBuilder().withParameters(filters)
+                                                                                                 .build(), pageable);
+
         LOGGER.debug("{} AIPS found in  {}ms", response.getSize(), System.currentTimeMillis() - start);
         return response;
     }

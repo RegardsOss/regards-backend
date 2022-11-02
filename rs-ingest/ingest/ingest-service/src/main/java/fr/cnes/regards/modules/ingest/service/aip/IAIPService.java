@@ -26,6 +26,7 @@ import fr.cnes.regards.modules.ingest.domain.sip.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.sip.VersioningMode;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.AbstractSearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPLightParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import org.springframework.data.domain.Page;
@@ -84,11 +85,22 @@ public interface IAIPService {
     String calculateChecksum(AIP aip) throws NoSuchAlgorithmException, IOException;
 
     /**
-     * Retrieve all {@link AIPEntity}s matching parameters.
+     * Retrieve all {@link AIPEntity}s matching filters.
+     *
+     * @param filters
+     * @param pageable
+     * @return page of AIPs
      */
     Page<AIPEntity> findByFilters(AbstractSearchAIPsParameters<?> filters, Pageable pageable);
 
-    Page<AIPEntityLight> findLightByFilters(AbstractSearchAIPsParameters<?> filters, Pageable pageable);
+    /**
+     * Retrieve all {@link AIPEntityLight}s matching filters.
+     *
+     * @param filters
+     * @param pageable
+     * @return page of light AIPs
+     */
+    Page<AIPEntityLight> findLightByFilters(SearchAIPLightParameters filters, Pageable pageable);
 
     /**
      * Retrieve all tags used by a set of AIPS matching provided filters

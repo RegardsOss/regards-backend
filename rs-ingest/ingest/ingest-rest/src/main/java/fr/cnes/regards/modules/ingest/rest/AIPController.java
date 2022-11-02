@@ -25,17 +25,22 @@ import fr.cnes.regards.framework.oais.urn.OaisUniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.domain.aip.AIPEntityLight;
-import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPsParameters;
+import fr.cnes.regards.modules.ingest.dto.aip.SearchAIPLightParameters;
 import fr.cnes.regards.modules.ingest.dto.aip.SearchFacetsAIPsParameters;
 import fr.cnes.regards.modules.ingest.dto.request.OAISDeletionPayloadDto;
 import fr.cnes.regards.modules.ingest.dto.request.update.AIPUpdateParametersDto;
 import fr.cnes.regards.modules.ingest.service.aip.AIPStorageService;
 import fr.cnes.regards.modules.ingest.service.aip.IAIPService;
 import fr.cnes.regards.modules.ingest.service.request.OAISDeletionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -140,22 +145,27 @@ public class AIPController implements IResourceController<AIPEntityLight> {
     private OAISDeletionService oaisDeletionRequestService;
 
     /**
-     * Retrieve a page of aip metadata according to the given filters
+     * Retrieve a page of AIPs metadata according to the given filters
      *
      * @param filters
      * @param pageable
      * @param assembler
      * @return page of aip metadata respecting the constraints
      */
-    @RequestMapping(method = RequestMethod.POST)
-    @ResourceAccess(description = "Return a page of AIPs", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<PagedModel<EntityModel<AIPEntityLight>>> searchAIPs(@RequestBody SearchAIPsParameters filters,
-                                                                              @PageableDefault(sort = "id",
-                                                                                  direction = Sort.Direction.ASC)
-                                                                              Pageable pageable,
-                                                                              PagedResourcesAssembler<AIPEntityLight> assembler) {
-        Page<AIPEntityLight> aips = aipService.findLightByFilters(filters, pageable);
-        return new ResponseEntity<>(toPagedResources(aips, assembler), HttpStatus.OK);
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get AIPs", description = "Return a page of AIPs according criterias.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All AIPs were retrieved.") })
+    @ResourceAccess(description = "Endpoint to retrieve all AIPs according criterias", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<PagedModel<EntityModel<AIPEntityLight>>> searchAIPs(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
+            content = @Content(schema = @Schema(implementation = SearchAIPLightParameters.class)))
+        @Parameter(description = "Filter criterias for AIPs") @RequestBody SearchAIPLightParameters filters,
+        @Parameter(description = "Sorting and page configuration")
+        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        @Parameter(hidden = true) PagedResourcesAssembler<AIPEntityLight> assembler) {
+
+        return new ResponseEntity<>(toPagedResources(aipService.findLightByFilters(filters, pageable), assembler),
+                                    HttpStatus.OK);
     }
 
     /**

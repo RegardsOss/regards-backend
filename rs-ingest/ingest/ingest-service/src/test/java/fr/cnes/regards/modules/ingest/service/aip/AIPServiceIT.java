@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.ingest.service.aip;
 
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
-import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -88,9 +87,6 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
     public static final String SESSION_1 = OffsetDateTime.now().minusDays(4).toString();
 
     @Autowired
-    private ISubscriber subscriber;
-
-    @Autowired
     private IAIPService aipService;
 
     @Autowired
@@ -146,6 +142,7 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
         @Requirement("REGARDS_DSL_STO_AIP_120"), @Requirement("REGARDS_DSL_STO_AIP_560") })
     @Purpose("Check that ingested AIPs are retrievable")
     public void testSearchAIPEntity() throws InterruptedException {
+        // Given
         storageClient.setBehavior(true, true);
         long nbSIP = 7;
         publishSIPEvent(create("provider 1", TAG_0), STORAGE_0, SESSION_0, SESSION_OWNER_0, CATEGORIES_0);
@@ -157,56 +154,79 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
         publishSIPEvent(create("provider 7", TAG_2), STORAGE_0, SESSION_1, SESSION_OWNER_0, CATEGORIES_0);
         // Wait
         ingestServiceTest.waitForIngestion(nbSIP, nbSIP * 5000, SIPState.STORED);
-
+        
+        // When
         Page<AIPEntity> results = aipService.findByFilters(SearchAIPsParameters.build()
                                                                                .withTags(TAG_0)
                                                                                .withStorages(STORAGE_0),
                                                            PageRequest.of(0, 100));
+        // Then
         Assert.assertEquals(2, results.getTotalElements());
 
+        // When
         results = aipService.findByFilters(SearchAIPsParameters.build()
                                                                .withCategories(CATEGORIES_0)
                                                                .withStorages(STORAGE_1), PageRequest.of(0, 100));
+        // Then
         Assert.assertEquals(1, results.getTotalElements());
 
+        // When
         results = aipService.findByFilters(SearchAIPsParameters.build().withCategories(CATEGORIES_0),
                                            PageRequest.of(0, 100));
+        // Then
         Assert.assertEquals(5, results.getTotalElements());
 
+        // When
         results = aipService.findByFilters(SearchAIPsParameters.build().withStorages(STORAGE_1, STORAGE_2),
                                            PageRequest.of(0, 100));
+        // Then
         Assert.assertEquals(4, results.getTotalElements());
 
+        // When
         results = aipService.findByFilters(SearchAIPsParameters.build().withSessionOwner(SESSION_OWNER_1),
                                            PageRequest.of(0, 100));
+        // Then
         Assert.assertEquals(3, results.getTotalElements());
 
+        // When
         results = aipService.findByFilters(SearchAIPsParameters.build()
                                                                .withSessionOwner(SESSION_OWNER_0)
                                                                .withSession(SESSION_1), PageRequest.of(0, 100));
+        // Then
         Assert.assertEquals(2, results.getTotalElements());
 
+        // When
         results = aipService.findByFilters(SearchAIPsParameters.build()
                                                                .withLastUpdateFrom(OffsetDateTime.now().plusDays(50)),
                                            PageRequest.of(0, 100));
+        // Then
         Assert.assertEquals(0, results.getTotalElements());
 
+        // When
         results = aipService.findByFilters(SearchAIPsParameters.build()
                                                                .withLastUpdateFrom(OffsetDateTime.now().minusHours(5))
                                                                .withLastUpdateTo(OffsetDateTime.now().plusDays(5)),
                                            PageRequest.of(0, 100));
+        // Then
         Assert.assertEquals(7, results.getTotalElements());
 
+        // When
         results = aipService.findByFilters(SearchAIPsParameters.build().withTag("toto"), PageRequest.of(0, 100));
+        // Then
         Assert.assertEquals(6, results.getTotalElements());
 
+        // When
         results = aipService.findByFilters(SearchAIPsParameters.build().withTags(TAG_0), PageRequest.of(0, 100));
+        // Then
         Assert.assertEquals(6, results.getTotalElements());
 
+        // When
         results = aipService.findByFilters(SearchAIPsParameters.build().withState(AIPState.STORED),
                                            PageRequest.of(0, 100));
+        // Then
         Assert.assertEquals(7, results.getTotalElements());
 
+        // When
         results = aipService.findByFilters(SearchAIPsParameters.build()
                                                                .withState(AIPState.STORED)
                                                                .withLastUpdateFrom(OffsetDateTime.now().minusHours(5))
@@ -217,6 +237,7 @@ public class AIPServiceIT extends IngestMultitenantServiceIT {
                                                                .withStorages(STORAGE_2)
                                                                .withCategories(CATEGORIES_2)
                                                                .withIpType(EntityType.DATA), PageRequest.of(0, 100));
+        // Then
         Assert.assertEquals(1, results.getTotalElements());
     }
 
