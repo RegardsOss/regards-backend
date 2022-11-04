@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.swagger.autoconfigure;
 
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantAutoConfiguration;
-import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
 import fr.cnes.regards.framework.swagger.autoconfigure.override.ModelResolverCustom;
 import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.core.util.Json;
@@ -83,11 +82,6 @@ public class SwaggerAutoConfiguration {
         registrationBean.setFilter(new OpenApiFilter());
         registrationBean.addUrlPatterns("/v3/api-docs");
         return registrationBean;
-    }
-
-    @Bean
-    public ICustomWebSecurityConfiguration customWebSecurity() {
-        return new SwaggerWebSecurityConfiguration();
     }
 
     @Value("${regards.swagger.host:http\\://127.0.0.1}")

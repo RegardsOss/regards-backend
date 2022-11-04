@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -31,6 +32,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Set;
 
 /**
  * This filter allows to inject a public token before JWT authentication filter if no JWT is found and a tenant is
@@ -52,8 +54,13 @@ public class PublicAuthenticationFilter extends OncePerRequestFilter {
      */
     private final JWTService jwtService;
 
-    public PublicAuthenticationFilter(JWTService jwtService) {
+    private final Set<String> noSecurityRoutes;
+
+    private final AntPathMatcher staticPathMatcher = new AntPathMatcher();
+
+    public PublicAuthenticationFilter(JWTService jwtService, Set<String> noSecurityRoutes) {
         this.jwtService = jwtService;
+        this.noSecurityRoutes = noSecurityRoutes;
     }
 
     @Override
@@ -77,6 +84,12 @@ public class PublicAuthenticationFilter extends OncePerRequestFilter {
             // Nothing to do
             pFilterChain.doFilter(request, response);
         }
+    }
+
+    @Override
+    public boolean shouldNotFilter(HttpServletRequest request) {
+        return noSecurityRoutes.stream()
+                               .anyMatch(staticRoute -> staticPathMatcher.match(staticRoute, request.getRequestURI()));
     }
 
     /**

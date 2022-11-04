@@ -32,6 +32,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -40,6 +41,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.Set;
 
 /**
  * Stateless JWT filter set in the SPRING security chain to authenticate request issuer.<br/>
@@ -62,10 +64,16 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
+    private final Set<String> noSecurityRoutes;
+
+    private final AntPathMatcher staticPathMatcher = new AntPathMatcher();
+
     public JWTAuthenticationFilter(final AuthenticationManager authenticationManager,
-                                   IRuntimeTenantResolver runtimeTenantResolver) {
+                                   IRuntimeTenantResolver runtimeTenantResolver,
+                                   Set<String> noSecurityRoutes) {
         this.authenticationManager = authenticationManager;
         this.runtimeTenantResolver = runtimeTenantResolver;
+        this.noSecurityRoutes = noSecurityRoutes;
     }
 
     @Override
@@ -128,13 +136,19 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                     // Continue the filtering chain
                     filterChain.doFilter(request, response);
                 } catch (AuthenticationException e) {
-                    if (e.getCause() instanceof ExpiredJwtException) {
-                        MDC.put("username", ((ExpiredJwtException) e.getCause()).getClaims().getSubject());
+                    if (e.getCause() instanceof ExpiredJwtException expiredJwtException) {
+                        MDC.put("username", expiredJwtException.getClaims().getSubject());
                     }
                     throw e;
                 }
             }
         }
+    }
+
+    @Override
+    public boolean shouldNotFilter(HttpServletRequest request) {
+        return noSecurityRoutes.stream()
+                               .anyMatch(staticRoute -> staticPathMatcher.match(staticRoute, request.getRequestURI()));
     }
 
     private void dumpHeaders(final HttpServletRequest request) {

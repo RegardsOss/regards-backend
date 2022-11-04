@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -32,6 +33,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Set;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -54,8 +56,13 @@ public class MaintenanceFilter extends OncePerRequestFilter {
 
     private final IRuntimeTenantResolver resolver;
 
-    public MaintenanceFilter(final IRuntimeTenantResolver pResolver) {
+    private final Set<String> noSecurityRoutes;
+
+    private final AntPathMatcher staticPathMatcher = new AntPathMatcher();
+
+    public MaintenanceFilter(final IRuntimeTenantResolver pResolver, Set<String> noSecurityRoutes) {
         resolver = pResolver;
+        this.noSecurityRoutes = noSecurityRoutes;
     }
 
     @Override
@@ -86,4 +93,9 @@ public class MaintenanceFilter extends OncePerRequestFilter {
         }
     }
 
+    @Override
+    public boolean shouldNotFilter(HttpServletRequest request) {
+        return noSecurityRoutes.stream()
+                               .anyMatch(staticRoute -> staticPathMatcher.match(staticRoute, request.getRequestURI()));
+    }
 }

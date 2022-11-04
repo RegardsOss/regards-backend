@@ -40,6 +40,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -103,7 +104,7 @@ public class IPFilterTest {
         final MethodAuthorizationService service = Mockito.mock(MethodAuthorizationService.class);
         Mockito.when(service.getRoleAuthority(ROLE_NAME, TENANT_NAME)).thenReturn(Optional.of(roleAuth));
 
-        final IpFilter filter = new IpFilter(service);
+        final IPFilter filter = new IPFilter(service, Collections.emptySet());
 
         Mockito.when(mockedRequest.getRemoteAddr()).thenReturn(AUTHORIZED_ADRESS);
 
@@ -156,7 +157,7 @@ public class IPFilterTest {
 
         final MethodAuthorizationService service = Mockito.mock(MethodAuthorizationService.class);
         Mockito.when(service.getRoleAuthority(ROLE_NAME, TENANT_NAME)).thenReturn(Optional.of(roleAuth));
-        final IpFilter filter = new IpFilter(service);
+        final IPFilter filter = new IPFilter(service, Collections.emptySet());
 
         Mockito.when(mockedRequest.getRemoteAddr()).thenReturn(AUTHORIZED_ADRESS);
 

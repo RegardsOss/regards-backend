@@ -20,9 +20,11 @@ package fr.cnes.regards.framework.microservice.configurer;
 
 import fr.cnes.regards.framework.microservice.maintenance.MaintenanceFilter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
+import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityFilterConfiguration;
 import fr.cnes.regards.framework.security.filter.CorsFilter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+
+import java.util.Set;
 
 /**
  * Custom configuration to handle request while in maintenance
@@ -30,7 +32,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
  */
-public class MaintenanceWebSecurityConfiguration implements ICustomWebSecurityConfiguration {
+public class MaintenanceWebSecurityConfiguration implements ICustomWebSecurityFilterConfiguration {
 
     /**
      * Thread tenant resolver
@@ -42,8 +44,8 @@ public class MaintenanceWebSecurityConfiguration implements ICustomWebSecurityCo
     }
 
     @Override
-    public void configure(final HttpSecurity pHttp) {
-        pHttp.addFilterAfter(new MaintenanceFilter(resolver), CorsFilter.class);
+    public void configure(final HttpSecurity http, Set<String> noSecurityRoutes) {
+        http.addFilterAfter(new MaintenanceFilter(resolver, noSecurityRoutes), CorsFilter.class);
     }
 
 }

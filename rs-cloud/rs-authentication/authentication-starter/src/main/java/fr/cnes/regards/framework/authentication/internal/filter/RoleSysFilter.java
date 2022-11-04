@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.framework.authentication.internal.filter;
 
-import fr.cnes.regards.framework.security.filter.IpFilter;
+import fr.cnes.regards.framework.security.filter.IPFilter;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import org.slf4j.Logger;
@@ -46,7 +46,7 @@ public class RoleSysFilter extends OncePerRequestFilter {
     /**
      * Class logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(IpFilter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IPFilter.class);
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)

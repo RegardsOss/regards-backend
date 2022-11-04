@@ -19,8 +19,10 @@
 package fr.cnes.regards.framework.security.autoconfigure;
 
 import ch.qos.logback.classic.helpers.MDCInsertingServletFilter;
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
+import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityAuthorizeRequestsConfiguration;
+import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityFilterConfiguration;
 import fr.cnes.regards.framework.security.controller.SecurityResourcesController;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.filter.*;
@@ -36,7 +38,6 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -80,13 +81,27 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
      * Custom web security configuration
      */
     @Autowired(required = false)
-    private Set<ICustomWebSecurityConfiguration> customConfigurers;
+    private Set<ICustomWebSecurityAuthorizeRequestsConfiguration> customAuthorizeRequestsConfigurers;
+
+    /**
+     * Custom web security configuration
+     */
+    @Autowired(required = false)
+    private Set<ICustomWebSecurityFilterConfiguration> customFilterConfigurers;
 
     /**
      * List of authorized ip for CORS request. If empty all origins are allowed. Split character ','
      */
     @Value("${regards.cors.requests.authorized.clients.addresses:#{null}}")
     private String corsRequestAuthorizedClientAddresses;
+
+    /**
+     * List of static routes that are free from Spring security
+     */
+    private final Set<String> noSecurityRoutes = Sets.newHashSet("/favicon",
+                                                                 "/v3/**/*",
+                                                                 "/v3/api-docs",
+                                                                 "/swagger-ui/**/*");
 
     @Override
     protected void configure(final HttpSecurity http) throws Exception {
@@ -109,24 +124,47 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
         http.headers().frameOptions().disable();
         http.headers().addHeaderWriter(new XFrameOptionsHeaderWriterDefault());
 
+        // Allow some static endpoints
+        http.authorizeRequests().antMatchers(noSecurityRoutes.toArray(new String[0])).permitAll();
+
+        // Add custom authorizeRequests configurations
+        if (customAuthorizeRequestsConfigurers != null) {
+            for (final ICustomWebSecurityAuthorizeRequestsConfiguration customConfigurer : customAuthorizeRequestsConfigurers) {
+                customConfigurer.configure(http);
+            }
+        }
         // Disable CSRF
+        http.csrf().disable();
+
         // Force authentication for all requests
-        http.csrf().disable().authorizeRequests().anyRequest().authenticated();
+        http.authorizeRequests().anyRequest().authenticated();
 
         // Add public filter
-        // TODO set in gateway
-        http.addFilterBefore(new PublicAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);
+        // TODO move it to gateway
+        http.addFilterBefore(new PublicAuthenticationFilter(jwtService, noSecurityRoutes),
+                             UsernamePasswordAuthenticationFilter.class);
 
         // Add JWT Authentication filter
-        http.addFilterAfter(new JWTAuthenticationFilter(authenticationManager(), runtimeTenantResolver),
-                            PublicAuthenticationFilter.class);
+        http.addFilterAfter(new JWTAuthenticationFilter(authenticationManager(),
+                                                        runtimeTenantResolver,
+                                                        noSecurityRoutes), PublicAuthenticationFilter.class);
         http.addFilterBefore(new MDCInsertingServletFilter(), JWTAuthenticationFilter.class);
         http.addFilterAfter(new RequestLogFilter(), JWTAuthenticationFilter.class);
 
         // Add Ip filter after Authentication filter
-        http.addFilterAfter(new IpFilter(authorizationService), JWTAuthenticationFilter.class);
+        http.addFilterAfter(new IPFilter(authorizationService, noSecurityRoutes), JWTAuthenticationFilter.class);
 
         // Add CORS filter
+        http.addFilterAfter(new CorsFilter(authorizedIps()), IPFilter.class);
+        // Add custom filters
+        if (customFilterConfigurers != null) {
+            for (final ICustomWebSecurityFilterConfiguration customFilterConfigurer : customFilterConfigurers) {
+                customFilterConfigurer.configure(http, noSecurityRoutes);
+            }
+        }
+    }
+
+    private List<String> authorizedIps() {
         final List<String> authorizedIp = new ArrayList<>();
         if (corsRequestAuthorizedClientAddresses != null) {
             for (final String ip : corsRequestAuthorizedClientAddresses.split(",")) {
@@ -135,20 +173,7 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
                 }
             }
         }
-        http.addFilterAfter(new CorsFilter(authorizedIp), IpFilter.class);
-
-        // Add custom configurations if any
-        if (customConfigurers != null) {
-            for (final ICustomWebSecurityConfiguration customConfigurer : customConfigurers) {
-                customConfigurer.configure(http);
-            }
-        }
-
-    }
-
-    @Override
-    public void configure(final WebSecurity pWeb) {
-        pWeb.ignoring().antMatchers("/favicon", "/v3/**/*");
+        return authorizedIp;
     }
 
     @Bean

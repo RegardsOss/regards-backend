@@ -21,21 +21,21 @@ package fr.cnes.regards.framework.security.configurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 
 /**
- * Interface ICustomWebSecurityConfiguration
+ * Interface to define specific WebSecurity authorize configuration
  * <p>
- * Interface to define specific WebSecurity configurer
+ * To define WebSecurity filters, see {@link ICustomWebSecurityFilterConfiguration}
  *
  * @author Sébastien Binda
  */
 @FunctionalInterface
-public interface ICustomWebSecurityConfiguration {
+public interface ICustomWebSecurityAuthorizeRequestsConfiguration {
 
     /**
-     * Configure HttpSecurity
+     * Configure HttpSecurity request authorization
      *
-     * @param pHttp HttpSecurity
+     * @param http HttpSecurity
      * @throws CustomWebSecurityConfigurationException configuration exception
      */
-    void configure(final HttpSecurity pHttp) throws CustomWebSecurityConfigurationException;
+    void configure(final HttpSecurity http) throws CustomWebSecurityConfigurationException;
 
 }

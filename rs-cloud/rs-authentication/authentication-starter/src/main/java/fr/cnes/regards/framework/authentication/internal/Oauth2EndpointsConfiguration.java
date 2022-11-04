@@ -19,7 +19,7 @@
 package fr.cnes.regards.framework.authentication.internal;
 
 import fr.cnes.regards.framework.security.configurer.CustomWebSecurityConfigurationException;
-import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
+import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityAuthorizeRequestsConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -32,7 +32,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
  *
  * @author Sébastien Binda
  */
-public class Oauth2EndpointsConfiguration implements ICustomWebSecurityConfiguration {
+public class Oauth2EndpointsConfiguration implements ICustomWebSecurityAuthorizeRequestsConfiguration {
 
     /**
      * Class logger
@@ -42,7 +42,6 @@ public class Oauth2EndpointsConfiguration implements ICustomWebSecurityConfigura
     /**
      * Oauth2 endpoints to allow
      */
-    // @Autowired(required = false)
     private final AuthorizationServerEndpointsConfiguration endpoints;
 
     public Oauth2EndpointsConfiguration(final AuthorizationServerEndpointsConfiguration pEndpoints) {
@@ -51,12 +50,14 @@ public class Oauth2EndpointsConfiguration implements ICustomWebSecurityConfigura
     }
 
     @Override
-    public void configure(final HttpSecurity pHttp) throws CustomWebSecurityConfigurationException {
+    public void configure(final HttpSecurity http) throws CustomWebSecurityConfigurationException {
         if (endpoints != null) {
-            LOG.info("[REGARDS AUTHENTICATION MODULE] Adding  specific web security to allow oauth2 endpoint access");
-            // Assume we are in an Authorization Server
+            LOG.info("[REGARDS AUTHENTICATION MODULE] Adding specific web security to allow oauth2 endpoint access");
             try {
-                pHttp.requestMatcher(new NotOAuthRequestMatcher(endpoints.oauth2EndpointHandlerMapping()));
+                // Assume we are in an Authorization Server
+                // We cannot use authorizeRequests().requestMatchers(...) here
+                // see https://github.com/spring-attic/spring-security-oauth/issues/634
+                http.requestMatcher(new NotOAuthRequestMatcher(endpoints.oauth2EndpointHandlerMapping()));
             } catch (final Exception e) {
                 LOG.warn("An error occurred during the configuration of custom web security", e);
                 throw new CustomWebSecurityConfigurationException(e.getCause());

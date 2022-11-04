@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.microservice.manager.IApplicationManager;
 import fr.cnes.regards.framework.microservice.web.ControllerHandlingConfiguration;
 import fr.cnes.regards.framework.microservice.web.MicroserviceWebConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
+import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityFilterConfiguration;
 import org.springframework.boot.ExitCodeExceptionMapper;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -83,7 +83,7 @@ public class MicroserviceAutoConfiguration {
     @Bean
     @ConditionalOnProperty(prefix = "regards.microservices", name = "maintenance.enabled", havingValue = "true",
         matchIfMissing = true)
-    public ICustomWebSecurityConfiguration maintenanceWebSecurity(IRuntimeTenantResolver runtimeTenantResolver) {
+    public ICustomWebSecurityFilterConfiguration maintenanceWebSecurity(IRuntimeTenantResolver runtimeTenantResolver) {
         return new MaintenanceWebSecurityConfiguration(runtimeTenantResolver);
     }
 

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.security.filter;
 
+import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
@@ -44,6 +45,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
 
@@ -82,7 +84,8 @@ public class JWTAuthenticationFilterTest {
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
 
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
-                                                                           Mockito.mock(IRuntimeTenantResolver.class));
+                                                                           Mockito.mock(IRuntimeTenantResolver.class),
+                                                                           Collections.emptySet());
 
         try {
             filter.doFilter(mockedRequest, mockedResponse, new MockFilterChain());
@@ -116,11 +119,12 @@ public class JWTAuthenticationFilterTest {
 
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();
 
-        PublicAuthenticationFilter publicFilter = new PublicAuthenticationFilter(jwtService);
+        PublicAuthenticationFilter publicFilter = new PublicAuthenticationFilter(jwtService, Collections.emptySet());
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
         Mockito.when(mockedManager.authenticate(any(JWTAuthentication.class))).thenReturn(token);
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
-                                                                           Mockito.mock(IRuntimeTenantResolver.class));
+                                                                           Mockito.mock(IRuntimeTenantResolver.class),
+                                                                           Collections.emptySet());
 
         DispatcherServlet servlet = Mockito.mock(DispatcherServlet.class);
         MockFilterChain mockedFilterChain = new MockFilterChain(servlet, publicFilter, filter);
@@ -158,12 +162,13 @@ public class JWTAuthenticationFilterTest {
 
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();
 
-        PublicAuthenticationFilter publicFilter = new PublicAuthenticationFilter(jwtService);
+        PublicAuthenticationFilter publicFilter = new PublicAuthenticationFilter(jwtService, Collections.emptySet());
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
         // As generateToken seems to have some random added into computation, we cannot specify what is expected
         Mockito.when(mockedManager.authenticate(any())).thenReturn(token);
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
-                                                                           Mockito.mock(IRuntimeTenantResolver.class));
+                                                                           Mockito.mock(IRuntimeTenantResolver.class),
+                                                                           Collections.emptySet());
 
         DispatcherServlet servlet = Mockito.mock(DispatcherServlet.class);
         MockFilterChain mockedFilterChain = new MockFilterChain(servlet, publicFilter, filter);
@@ -202,7 +207,8 @@ public class JWTAuthenticationFilterTest {
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
 
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
-                                                                           Mockito.mock(IRuntimeTenantResolver.class));
+                                                                           Mockito.mock(IRuntimeTenantResolver.class),
+                                                                           Collections.emptySet());
 
         // Header whithout Bearer: prefix.
         Mockito.when(mockedRequest.getHeader(HttpConstants.AUTHORIZATION)).thenReturn(token.getJwt());
@@ -241,7 +247,8 @@ public class JWTAuthenticationFilterTest {
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
         Mockito.when(mockedManager.authenticate(token)).thenReturn(token);
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
-                                                                           Mockito.mock(IRuntimeTenantResolver.class));
+                                                                           Mockito.mock(IRuntimeTenantResolver.class),
+                                                                           Collections.emptySet());
 
         Mockito.when(mockedRequest.getHeader(HttpConstants.AUTHORIZATION))
                .thenReturn(String.format("%s %s", HttpConstants.BEARER, token.getJwt()));
@@ -258,4 +265,21 @@ public class JWTAuthenticationFilterTest {
 
     }
 
+    @Test
+    public void jwtFilterShouldNotFilter() {
+        final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockedRequest.getRequestURI()).thenReturn("/some/route");
+
+        final JWTAuthenticationFilter filterWithEmptyNoSecurityRoutes = new JWTAuthenticationFilter(null,
+                                                                                                    null,
+                                                                                                    Collections.emptySet());
+        Assert.assertFalse(filterWithEmptyNoSecurityRoutes.shouldNotFilter(mockedRequest));
+
+        final JWTAuthenticationFilter filterWithANoSecurityRoutes = new JWTAuthenticationFilter(null,
+                                                                                                null,
+                                                                                                Sets.newHashSet(
+                                                                                                    "/some/route"));
+        Assert.assertTrue(filterWithANoSecurityRoutes.shouldNotFilter(mockedRequest));
+
+    }
 }

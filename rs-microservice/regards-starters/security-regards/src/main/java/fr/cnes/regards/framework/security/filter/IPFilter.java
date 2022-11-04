@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -33,10 +34,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -46,21 +44,26 @@ import java.util.regex.Pattern;
  *
  * @author sbinda
  */
-public class IpFilter extends OncePerRequestFilter {
+public class IPFilter extends OncePerRequestFilter {
 
-    private static final Logger LOG = LoggerFactory.getLogger(IpFilter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IPFilter.class);
 
     /**
      * Provider of authorities entities
      */
     private final MethodAuthorizationService methodAuthService;
 
+    private final Set<String> noSecurityRoutes;
+
+    private final AntPathMatcher staticPathMatcher = new AntPathMatcher();
+
     /**
      * Constructor
      */
-    public IpFilter(MethodAuthorizationService methodAuthService) {
+    public IPFilter(MethodAuthorizationService methodAuthService, Set<String> noSecurityRoutes) {
         super();
         this.methodAuthService = methodAuthService;
+        this.noSecurityRoutes = noSecurityRoutes;
     }
 
     @Override
@@ -81,14 +84,19 @@ public class IpFilter extends OncePerRequestFilter {
                 LOG.error(message);
                 response.sendError(HttpStatus.UNAUTHORIZED.value(), message);
             } else {
-                LOG.debug(String.format("[REGARDS IP FILTER] - %s - Authorization granted", request.getRemoteAddr()));
-
+                LOG.debug("[REGARDS IP FILTER] - {} - Authorization granted", request.getRemoteAddr());
                 // Continue the filtering chain
                 filterChain.doFilter(request, response);
             }
         } else {
             response.sendError(HttpStatus.UNAUTHORIZED.value(), "No Authority Role defined");
         }
+    }
+
+    @Override
+    public boolean shouldNotFilter(HttpServletRequest request) {
+        return noSecurityRoutes.stream()
+                               .anyMatch(staticRoute -> staticPathMatcher.match(staticRoute, request.getRequestURI()));
     }
 
     /**
