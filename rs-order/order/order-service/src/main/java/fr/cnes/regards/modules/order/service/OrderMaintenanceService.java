@@ -220,6 +220,7 @@ public class OrderMaintenanceService implements IOrderMaintenanceService {
              .stream()
              .flatMap(dsTask -> dsTask.getReliantTasks().stream())
              .map(FilesTask::getJobInfo)
+             .filter(Objects::nonNull)
              .forEach(jobInfo -> jobInfoService.stopJob(jobInfo.getId()));
 
         // Wait for its complete stop
