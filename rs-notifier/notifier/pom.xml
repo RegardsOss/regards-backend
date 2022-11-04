@@ -53,6 +53,7 @@
         <module>notifier-dto</module>
         <module>notifier-rest</module>
         <module>notifier-client</module>
+        <module>notifier-utils</module>
     </modules>
 
 </project>

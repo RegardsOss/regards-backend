@@ -1433,6 +1433,11 @@
                 <artifactId>notifier-dto</artifactId>
                 <version>${revision}</version>
             </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.notifier</groupId>
+                <artifactId>notifier-utils</artifactId>
+                <version>${revision}</version>
+            </dependency>
             <!-- Notification Instance -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.notification-instance</groupId>
