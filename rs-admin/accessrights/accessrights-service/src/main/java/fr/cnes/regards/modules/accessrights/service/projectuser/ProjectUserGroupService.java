@@ -26,9 +26,9 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
-import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecificationsBuilder;
+import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecificationsBuilderNew;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
+import fr.cnes.regards.modules.accessrights.domain.projects.SearchProjectUserParameters;
 import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import org.slf4j.Logger;
@@ -36,7 +36,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -44,6 +43,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -106,9 +106,10 @@ public class ProjectUserGroupService {
 
     public void removeGroup(String accessGroup) {
         removeGroup(accessGroup, (group, pageable) -> {
-            Specification<ProjectUser> specification = new ProjectUserSpecificationsBuilder().withParameters(new ProjectUserSearchParameters().setAccessGroup(
-                group)).build();
-            return projectUserRepository.findAll(specification, pageable);
+            SearchProjectUserParameters filters = new SearchProjectUserParameters().withAccessGroupsIncluded(Arrays.asList(
+                accessGroup));
+            return projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(filters)
+                                                                                          .build(), pageable);
         });
     }
 

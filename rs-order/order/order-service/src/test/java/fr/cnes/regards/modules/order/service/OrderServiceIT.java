@@ -239,7 +239,7 @@ public class OrderServiceIT {
         ordersInRepo = orderService.searchOrders(srp, pr);
         Assert.assertEquals("Error searching PENDING orders", 0, ordersInRepo.getTotalElements());
 
-        srp.withStatusesIncluded();
+        srp.setStatuses(null);
         OffsetDateTime createdBefore = OffsetDateTime.now().plusDays(2);
         srp.withCreationDateBefore(createdBefore);
         ordersInRepo = orderService.searchOrders(srp, pr);

@@ -158,7 +158,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the system allows to retrieve all user on a project.")
     public void getAllUsers() {
         performDefaultPost(ProjectUsersController.TYPE_MAPPING + ProjectUsersController.SEARCH_USERS,
-                           new ProjectUserSearchParameters(),
+                           new SearchProjectUserParameters(),
                            customizer().expectStatusOk(),
                            ERROR_MESSAGE);
     }
@@ -286,9 +286,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         projectUser.setStatus(UserStatus.WAITING_ACCESS);
         projectUserRepository.save(projectUser);
 
-        String apiUserId = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.USER_ID_RELATIVE_PATH;
-
-        performDefaultGet(apiUserId,
+        performDefaultGet(ProjectUsersController.TYPE_MAPPING + ProjectUsersController.USER_ID_RELATIVE_PATH,
                           customizer().expectStatusOk().expectValue("$.links.[4].rel", "accept"),
                           ERROR_MESSAGE,
                           projectUser.getId());
@@ -301,9 +299,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         projectUser.setStatus(UserStatus.WAITING_ACCESS);
         projectUserRepository.save(projectUser);
 
-        String apiUserId = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.USER_ID_RELATIVE_PATH;
-
-        performDefaultGet(apiUserId,
+        performDefaultGet(ProjectUsersController.TYPE_MAPPING + ProjectUsersController.USER_ID_RELATIVE_PATH,
                           customizer().expectStatusOk().expectValue("$.links.[5].rel", "deny"),
                           ERROR_MESSAGE,
                           projectUser.getId());
@@ -416,8 +412,8 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
         // When
         String path = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.SEARCH_USERS;
-        ProjectUserSearchParameters searchParameters = new ProjectUserSearchParameters();
-        searchParameters.setAccessGroup("groupFilter");
+        SearchProjectUserParameters searchParameters = new SearchProjectUserParameters().withAccessGroupsIncluded(Arrays.asList(
+            "groupFilter"));
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
 
         // Then

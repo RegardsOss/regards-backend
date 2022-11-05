@@ -62,8 +62,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Test class for {@link ProjectUserService}.
@@ -277,8 +276,8 @@ public class ProjectUserServiceTest {
         when(projectUserRepository.findAll(any(Specification.class), Mockito.eq(pageable))).thenReturn(expectedPage);
 
         // Retrieve actual value
-        Page<ProjectUser> actual = projectUserService.retrieveUserList(new ProjectUserSearchParameters().setStatus(
-            UserStatus.ACCESS_GRANTED.toString()), pageable);
+        Page<ProjectUser> actual = projectUserService.retrieveUsers(new SearchProjectUserParameters().withStatusIncluded(
+            Arrays.asList(UserStatus.ACCESS_GRANTED)), pageable);
 
         // Check that the expected and actual role have same values
         Assert.assertEquals(expectedPage, actual);
@@ -306,11 +305,14 @@ public class ProjectUserServiceTest {
         when(projectUserRepository.findAll((Specification<ProjectUser>) null, pageable)).thenReturn(expectedPage);
 
         // Retrieve actual value
-        Page<ProjectUser> actual = projectUserService.retrieveUserList(null, pageable);
+        Page<ProjectUser> actual = projectUserService.retrieveUsers(null, pageable);
+
+        Page<ProjectUser> actualProjectUsers = projectUserService.retrieveUsers(null, pageable);
 
         // Check that the expected and actual role have same values
-        verify(projectUserRepository).findAll((Specification<ProjectUser>) null, pageable);
+        verify(projectUserRepository, times(2)).findAll((Specification<ProjectUser>) null, pageable);
         Assert.assertEquals(expectedPage, actual);
+        Assert.assertEquals(expectedPage, actualProjectUsers);
     }
 
     /**

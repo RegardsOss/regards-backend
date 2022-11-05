@@ -22,9 +22,10 @@ import fr.cnes.regards.framework.jpa.restriction.DatesRangeRestriction;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestrictionMode;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.util.CollectionUtils;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Nullable;
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
@@ -51,11 +52,15 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         return this.toSpecification();
     }
 
-    protected Specification<T> equals(String pathToField, Long value) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.equal(getPath(root, pathToField), value);
+    protected Specification<T> equals(String pathToField, @Nullable Long value) {
+        if (value == null) {
+            return null;
+        } else {
+            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(getPath(root, pathToField), value);
+        }
     }
 
-    protected Specification<T> equals(String pathToField, String value) {
+    protected Specification<T> equals(String pathToField, @Nullable String value) {
         if (!StringUtils.hasLength(value)) {
             return null;
         } else {
@@ -65,7 +70,7 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
     }
 
     @SuppressWarnings("unchecked")
-    protected Specification<T> equalsIgnoreCase(String pathToField, String value) {
+    protected Specification<T> equalsIgnoreCase(String pathToField, @Nullable String value) {
         if (!StringUtils.hasLength(value)) {
             return null;
         } else {
@@ -75,7 +80,7 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         }
     }
 
-    protected Specification<T> equals(String pathToField, Enum<?> value) {
+    protected Specification<T> equals(String pathToField, @Nullable Enum<?> value) {
         if (value == null) {
             return null;
         } else {
@@ -83,7 +88,7 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         }
     }
 
-    protected Specification<T> equals(String pathToField, Boolean value) {
+    protected Specification<T> equals(String pathToField, @Nullable Boolean value) {
         if (value == null) {
             return null;
         } else {
@@ -91,7 +96,7 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         }
     }
 
-    protected Specification<T> notEquals(String pathToField, Enum<?> value) {
+    protected Specification<T> notEquals(String pathToField, @Nullable Enum<?> value) {
         if (value == null) {
             return null;
         } else {
@@ -100,7 +105,7 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
     }
 
     @SuppressWarnings("unchecked")
-    protected Specification<T> like(String pathToField, String value) {
+    protected Specification<T> like(String pathToField, @Nullable String value) {
         if (!StringUtils.hasLength(value)) {
             return null;
         } else {
@@ -111,7 +116,7 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
     }
 
     @SuppressWarnings("unchecked")
-    protected Specification<T> likeIgnoreCase(String pathToField, String value) {
+    protected Specification<T> likeIgnoreCase(String pathToField, @Nullable String value) {
         if (!StringUtils.hasLength(value)) {
             return null;
         } else {
@@ -122,7 +127,8 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
     }
 
     @SuppressWarnings("unchecked")
-    protected Specification<T> useDatesRestriction(String pathToField, DatesRangeRestriction datesRangeRestriction) {
+    protected Specification<T> useDatesRestriction(String pathToField,
+                                                   @Nullable DatesRangeRestriction datesRangeRestriction) {
         if (datesRangeRestriction == null) {
             return null;
         }
@@ -144,7 +150,7 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
     }
 
     @SuppressWarnings("unchecked")
-    protected Specification<T> before(String pathToField, OffsetDateTime date) {
+    protected Specification<T> before(String pathToField, @Nullable OffsetDateTime date) {
         if (date == null) {
             return null;
         } else {
@@ -155,7 +161,7 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
     }
 
     @SuppressWarnings("unchecked")
-    protected Specification<T> after(String pathToField, OffsetDateTime date) {
+    protected Specification<T> after(String pathToField, @Nullable OffsetDateTime date) {
         if (date == null) {
             return null;
         } else {
@@ -165,7 +171,7 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
         }
     }
 
-    protected Specification<T> joinedEquals(String join, String pathToField, String value) {
+    protected Specification<T> joinedEquals(String join, String pathToField, @Nullable String value) {
         if (!StringUtils.hasLength(value)) {
             return null;
         } else {
@@ -174,25 +180,33 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
     }
 
     @SuppressWarnings("unchecked")
-    protected Specification<T> isMember(String pathToField, String value) {
+    protected Specification<T> isMember(String pathToField, @Nullable String value) {
         if (!StringUtils.hasLength(value)) {
             return null;
         } else {
-            return ((root, query, criteriaBuilder) -> criteriaBuilder.isMember(value,
-                                                                               (Expression<Collection<Object>>) getPath(
-                                                                                   root,
-                                                                                   pathToField)));
+            return (root, query, criteriaBuilder) -> criteriaBuilder.isMember(value,
+                                                                              (Expression<Collection<Object>>) getPath(
+                                                                                  root,
+                                                                                  pathToField));
         }
     }
 
-    protected Specification<T> useValuesRestriction(String pathToField, ValuesRestriction<?> valuesRestriction) {
+    protected Specification<T> isMember(String pathToField, @Nullable Collection<String> values) {
+        if (values == null) {
+            return null;
+        } else {
+            Assert.notEmpty(values, "Values must not be empty");
+            return (root, query, criteriaBuilder) -> root.joinSet(pathToField).in(values);
+        }
+    }
+
+    protected Specification<T> useValuesRestriction(String pathToField,
+                                                    @Nullable ValuesRestriction<?> valuesRestriction) {
         if (valuesRestriction == null) {
             return null;
         }
         Collection<?> values = valuesRestriction.getValues();
-        if (CollectionUtils.isEmpty(values)) {
-            return null;
-        }
+        Assert.notEmpty(values, "Values must not be empty");
         if (valuesRestriction.getMode() == ValuesRestrictionMode.INCLUDE) {
             return isIncluded(pathToField, values);
         }
@@ -200,19 +214,74 @@ public abstract class AbstractSpecificationsBuilder<T, R extends AbstractSearchP
     }
 
     protected Specification<T> isIncluded(String pathToField, Collection<?> values) {
-        if (values == null || values.isEmpty()) {
-            return null;
-        } else {
-            return (root, query, criteriaBuilder) -> getPath(root, pathToField).in(values);
-        }
+        Assert.notNull(values, "Values must not be null");
+        Assert.notEmpty(values, "Values must not be empty");
+
+        return (root, query, criteriaBuilder) -> getPath(root, pathToField).in(values);
     }
 
     protected Specification<T> isExcluded(String pathToField, Collection<?> values) {
-        if (values == null || values.isEmpty()) {
+        Assert.notNull(values, "Values must not be null");
+        Assert.notEmpty(values, "Values must not be empty");
+
+        return (root, query, criteriaBuilder) -> getPath(root, pathToField).in(values).not();
+    }
+
+    protected Specification<T> useValuesRestrictionJoined(String join,
+                                                          String pathToField,
+                                                          @Nullable ValuesRestriction<?> valuesRestriction) {
+        if (valuesRestriction == null) {
             return null;
-        } else {
-            return (root, query, criteriaBuilder) -> getPath(root, pathToField).in(values).not();
         }
+        Collection<?> values = valuesRestriction.getValues();
+        Assert.notEmpty(values, "Values must not be empty");
+
+        if (valuesRestriction.getMode() == ValuesRestrictionMode.INCLUDE) {
+            return isIncludedJoined(join, pathToField, values);
+        }
+        return isExcludedJoined(join, pathToField, values);
+    }
+
+    protected Specification<T> isIncludedJoined(String join, String pathToField, Collection<?> values) {
+        Assert.notNull(values, "Values must not be null");
+        Assert.notEmpty(values, "Values must not be empty");
+
+        return (root, query, criteriaBuilder) -> root.join(join).get(pathToField).in(values);
+    }
+
+    protected Specification<T> isExcludedJoined(String join, String pathToField, Collection<?> values) {
+        Assert.notNull(values, "Values must not be null");
+        Assert.notEmpty(values, "Values must not be empty");
+
+        return (root, query, criteriaBuilder) -> root.join(join).get(pathToField).in(values).not();
+    }
+
+    protected Specification<T> useValuesRestrictionJoinSet(String pathToField,
+                                                           @Nullable ValuesRestriction<?> valuesRestriction) {
+        if (valuesRestriction == null) {
+            return null;
+        }
+        Collection<?> values = valuesRestriction.getValues();
+        Assert.notEmpty(values, "Values must not be empty");
+
+        if (valuesRestriction.getMode() == ValuesRestrictionMode.INCLUDE) {
+            return isIncludedJoinSet(pathToField, values);
+        }
+        return isExcludedJoinSet(pathToField, values);
+    }
+
+    protected Specification<T> isIncludedJoinSet(String pathToField, Collection<?> values) {
+        Assert.notNull(values, "Values must not be null");
+        Assert.notEmpty(values, "Values must not be empty");
+
+        return (root, query, criteriaBuilder) -> root.joinSet(pathToField).in(values);
+    }
+
+    protected Specification<T> isExcludedJoinSet(String pathToField, Collection<?> values) {
+        Assert.notNull(values, "Values must not be null");
+        Assert.notEmpty(values, "Values must not be empty");
+
+        return (root, query, criteriaBuilder) -> root.joinSet(pathToField).in(values).not();
     }
 
     private Path<T> getPath(Root<T> root, String attributeName) {

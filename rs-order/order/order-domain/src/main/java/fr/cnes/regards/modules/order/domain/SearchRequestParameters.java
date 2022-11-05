@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.order.domain;
 import fr.cnes.regards.framework.jpa.restriction.DatesRangeRestriction;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
 import fr.cnes.regards.framework.jpa.utils.AbstractSearchParameters;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import javax.validation.Valid;
 import java.time.OffsetDateTime;
@@ -34,23 +35,27 @@ import java.util.Collection;
  */
 public class SearchRequestParameters implements AbstractSearchParameters<Order> {
 
+    @Schema(description = "Filter on owner")
     private String owner;
 
+    @Schema(description = "Filter on status of request")
     @Valid
     private ValuesRestriction<OrderStatus> statuses;
 
+    @Schema(description = "Filter on creation date")
     @Valid
     private DatesRangeRestriction creationDate = new DatesRangeRestriction();
 
-    public static SearchRequestParameters build() {
-        return new SearchRequestParameters().withStatusesExcluded();
-    }
-
+    @Schema(description = "Filter on waiting for user")
     private Boolean waitingForUser;
 
     public SearchRequestParameters withWaitingForUser(Boolean waitingForUser) {
         this.waitingForUser = waitingForUser;
         return this;
+    }
+
+    public void setWaitingForUser(Boolean waitingForUser) {
+        this.waitingForUser = waitingForUser;
     }
 
     public Boolean getWaitingForUser() {
@@ -60,6 +65,18 @@ public class SearchRequestParameters implements AbstractSearchParameters<Order> 
     public SearchRequestParameters withOwner(String owner) {
         this.owner = owner;
         return this;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setCreationDate(DatesRangeRestriction creationDate) {
+        this.creationDate = creationDate;
     }
 
     public DatesRangeRestriction getCreationDate() {
@@ -79,6 +96,10 @@ public class SearchRequestParameters implements AbstractSearchParameters<Order> 
     public SearchRequestParameters withCreateDateBeforeAndAfter(OffsetDateTime before, OffsetDateTime after) {
         this.creationDate = DatesRangeRestriction.buildBeforeAndAfter(before, after);
         return this;
+    }
+
+    public void setStatuses(ValuesRestriction<OrderStatus> statuses) {
+        this.statuses = statuses;
     }
 
     public ValuesRestriction<OrderStatus> getStatuses() {
@@ -103,9 +124,5 @@ public class SearchRequestParameters implements AbstractSearchParameters<Order> 
     public SearchRequestParameters withStatusesExcluded(Collection<OrderStatus> status) {
         this.statuses = new ValuesRestriction<OrderStatus>().withExclude(status);
         return this;
-    }
-
-    public String getOwner() {
-        return owner;
     }
 }

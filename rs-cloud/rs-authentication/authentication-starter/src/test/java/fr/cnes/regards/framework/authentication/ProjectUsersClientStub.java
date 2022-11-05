@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
+import fr.cnes.regards.modules.accessrights.domain.projects.SearchProjectUserParameters;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Pageable;
@@ -53,6 +54,16 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
 
     @Override
     public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(ProjectUserSearchParameters parameters,
+                                                                                        Pageable pageable) {
+        final PageMetadata metadata = new PageMetadata(pageable.getPageSize(), pageable.getPageNumber(), users.size());
+        final PagedModel<EntityModel<ProjectUser>> resource = PagedModel.of(HateoasUtils.wrapList(users),
+                                                                            metadata,
+                                                                            new ArrayList<>());
+        return new ResponseEntity<>(resource, HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(SearchProjectUserParameters parameters,
                                                                                         Pageable pageable) {
         final PageMetadata metadata = new PageMetadata(pageable.getPageSize(), pageable.getPageNumber(), users.size());
         final PagedModel<EntityModel<ProjectUser>> resource = PagedModel.of(HateoasUtils.wrapList(users),

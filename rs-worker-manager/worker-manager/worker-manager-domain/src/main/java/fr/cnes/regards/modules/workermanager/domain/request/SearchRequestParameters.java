@@ -62,10 +62,19 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
     @Schema(description = "Request creation date restriction")
     private DatesRangeRestriction creationDate = new DatesRangeRestriction();
 
+    public void setSource(String source) {
+        this.source = source;
+    }
+
     public String getSource() {
         return source;
     }
 
+    /**
+     * Build parameters for the searching of {@link Request} with excluded content types, with excluded statuses and with excluded request ids.
+     *
+     * @return {@link SearchRequestParameters}
+     */
     public static SearchRequestParameters build() {
         return new SearchRequestParameters().withContentTypesExcluded().withStatusesExcluded().withIdsExcluded();
     }
@@ -73,6 +82,10 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
     public SearchRequestParameters withSource(String source) {
         this.source = source;
         return this;
+    }
+
+    public void setSession(String session) {
+        this.session = session;
     }
 
     public String getSession() {
@@ -84,6 +97,10 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
         return this;
     }
 
+    public void setDispatchedWorkerType(String dispatchedWorkerType) {
+        this.dispatchedWorkerType = dispatchedWorkerType;
+    }
+
     public String getDispatchedWorkerType() {
         return dispatchedWorkerType;
     }
@@ -93,8 +110,16 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
         return this;
     }
 
+    public void setContentTypes(ValuesRestriction<String> contentTypes) {
+        this.contentTypes = contentTypes;
+    }
+
     public ValuesRestriction<String> getContentTypes() {
         return contentTypes;
+    }
+
+    public void setCreationDate(DatesRangeRestriction creationDate) {
+        this.creationDate = creationDate;
     }
 
     public DatesRangeRestriction getCreationDate() {
@@ -114,6 +139,10 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
     public SearchRequestParameters withCreateDateBeforeAndAfter(OffsetDateTime before, OffsetDateTime after) {
         this.creationDate = DatesRangeRestriction.buildBeforeAndAfter(before, after);
         return this;
+    }
+
+    public void setIds(ValuesRestriction<Long> ids) {
+        this.ids = ids;
     }
 
     public ValuesRestriction<Long> getIds() {
@@ -138,6 +167,10 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
     public SearchRequestParameters withIdsExcluded(Collection<Long> ids) {
         this.ids = new ValuesRestriction<Long>().withExclude(ids);
         return this;
+    }
+
+    public void setStatuses(ValuesRestriction<RequestStatus> statuses) {
+        this.statuses = statuses;
     }
 
     public ValuesRestriction<RequestStatus> getStatuses() {
@@ -183,4 +216,5 @@ public class SearchRequestParameters implements AbstractSearchParameters<Request
         this.contentTypes = new ValuesRestriction<String>().withExclude(contentTypes);
         return this;
     }
+
 }

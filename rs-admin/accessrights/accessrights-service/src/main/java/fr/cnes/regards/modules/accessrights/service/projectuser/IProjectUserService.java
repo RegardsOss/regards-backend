@@ -45,11 +45,11 @@ public interface IProjectUserService {
     /**
      * Retrieve the paged {@link List} of all {@link ProjectUser}s filtered by given properties.
      *
-     * @param pageable   the paging information
-     * @param parameters search parameters as request params
+     * @param pageable the paging information
+     * @param filters  search parameters as request params
      * @return The list of project users
      */
-    Page<ProjectUser> retrieveUserList(ProjectUserSearchParameters parameters, Pageable pageable);
+    Page<ProjectUser> retrieveUsers(SearchProjectUserParameters filters, Pageable pageable);
 
     /**
      * Retrieve the {@link ProjectUser} of passed <code>id</code>.

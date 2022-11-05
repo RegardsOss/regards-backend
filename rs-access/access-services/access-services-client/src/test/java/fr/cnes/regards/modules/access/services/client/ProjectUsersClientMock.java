@@ -3,6 +3,7 @@ package fr.cnes.regards.modules.access.services.client;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
+import fr.cnes.regards.modules.accessrights.domain.projects.SearchProjectUserParameters;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +24,11 @@ public class ProjectUsersClientMock implements IProjectUsersClient {
 
     @Override
     public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(ProjectUserSearchParameters parameters,
+                                                                                        Pageable pageable) {
+        return null;
+    }
+
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(SearchProjectUserParameters parameters,
                                                                                         Pageable pageable) {
         return null;
     }

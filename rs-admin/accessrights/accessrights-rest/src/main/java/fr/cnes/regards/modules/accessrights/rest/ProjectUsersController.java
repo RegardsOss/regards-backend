@@ -26,14 +26,20 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.domain.projects.SearchProjectUserParameters;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserExportService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.ProjectUserGroupService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.ProjectUserWorkflowManager;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -125,18 +131,28 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     /**
      * Retrieve the {@link List} of all {@link ProjectUser}s.
      *
-     * @param parameters              search parameters as request params
+     * @param filters                 search parameters as request params
      * @param pageable                paging parameters
      * @param pagedResourcesAssembler assembler
      * @return a {@link List} of {@link ProjectUser}
      */
     @PostMapping(SEARCH_USERS)
-    @ResourceAccess(description = "retrieve the list of users of the project", role = DefaultRole.EXPLOIT)
+    @Operation(summary = "Get users of the project",
+        description = "Return a page of users of the project matching according criterias.")
+    @ApiResponses(
+        value = { @ApiResponse(responseCode = "200", description = "All users of the project were retrieved.") })
+    @ResourceAccess(description = "EndPoint to retrieve all users of the project according criterias",
+        role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(
-        @RequestBody ProjectUserSearchParameters parameters,
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
+            content = @Content(schema = @Schema(implementation = SearchProjectUserParameters.class)))
+        @Parameter(description = "Filter criterias for users of the project") @RequestBody
+        SearchProjectUserParameters filters,
+        @Parameter(description = "Sorting and page configuration")
         @PageableDefault(sort = "created", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<ProjectUser> pagedResourcesAssembler) {
-        return ResponseEntity.ok(toPagedResources(projectUserService.retrieveUserList(parameters, pageable),
+        @Parameter(hidden = true) PagedResourcesAssembler<ProjectUser> pagedResourcesAssembler) {
+
+        return ResponseEntity.ok(toPagedResources(projectUserService.retrieveUsers(filters, pageable),
                                                   pagedResourcesAssembler));
     }
 
@@ -369,10 +385,10 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
 
     @GetMapping(value = EXPORT, produces = "text/csv")
     @ResourceAccess(description = "Generate a CSV file with all project users", role = DefaultRole.EXPLOIT)
-    public void exportAsCSV(ProjectUserSearchParameters parameters, HttpServletResponse response) throws IOException {
+    public void exportAsCSV(SearchProjectUserParameters filters, HttpServletResponse response) throws IOException {
         response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=users.csv");
         response.setContentType("text/csv");
-        projectUserExportService.export(new BufferedWriter(response.getWriter()), parameters);
+        projectUserExportService.export(new BufferedWriter(response.getWriter()), filters);
     }
 
     @GetMapping(COUNT_BY_ACCESS_GROUP)
@@ -402,7 +418,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
                                     clazz,
                                     "retrieveProjectUserList",
                                     LinkRels.LIST,
-                                    MethodParamFactory.build(ProjectUserSearchParameters.class),
+                                    MethodParamFactory.build(SearchProjectUserParameters.class),
                                     MethodParamFactory.build(Pageable.class),
                                     MethodParamFactory.build(PagedResourcesAssembler.class));
             // Specific links to add in WAITING_ACCESS state

@@ -32,11 +32,17 @@ import fr.cnes.regards.modules.access.services.rest.user.utils.ComposableClientE
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
+import fr.cnes.regards.modules.accessrights.domain.projects.SearchProjectUserParameters;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import fr.cnes.regards.modules.storage.client.IStorageRestClient;
 import fr.cnes.regards.modules.storage.domain.database.UserCurrentQuotas;
 import fr.cnes.regards.modules.storage.domain.dto.quota.DownloadQuotaLimitsDto;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.control.Try;
@@ -78,7 +84,11 @@ import static java.util.stream.Collectors.toList;
 @RequestMapping(ProjectUsersController.TYPE_MAPPING)
 public class ProjectUsersController implements IResourceController<ProjectUserReadDto> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProjectUsersController.class);
+
     public static final String TYPE_MAPPING = "/users";
+
+    public static final String SEARCH_USERS_PATH = "/search";
 
     public static final String USER_ID_RELATIVE_PATH = "/{user_id}";
 
@@ -87,8 +97,6 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
     public static final String PENDINGACCESSES = "/pendingaccesses";
 
     public static final String ACCESSRIGHTS_CLIENT = "accessrights-client";
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProjectUsersController.class);
 
     private final IProjectUsersClient projectUsersClient;
 
@@ -127,20 +135,30 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
     /**
      * Retrieve the {@link List} of all {@link ProjectUserReadDto}s.
      *
-     * @param pageable   paging info
-     * @param assembler  assembler info
-     * @param parameters search parameters
+     * @param pageable  paging info
+     * @param assembler assembler info
+     * @param filters   search parameters
      * @return a {@link List} of {@link ProjectUserReadDto}
      */
-    @GetMapping
-    @ResourceAccess(description = "retrieve the list of users of the project", role = DefaultRole.EXPLOIT)
+    @PostMapping(SEARCH_USERS_PATH)
+    @Operation(summary = "Get users of the project",
+        description = "Return a page of users of the project matching according criterias.")
+    @ApiResponses(
+        value = { @ApiResponse(responseCode = "200", description = "All users of the project were retrieved.") })
+    @ResourceAccess(description = "EndPoint to retrieve all users of the project according criterias",
+        role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<ProjectUserReadDto>>> retrieveProjectUserList(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
+            content = @Content(schema = @Schema(implementation = SearchProjectUserParameters.class)))
+        @Parameter(description = "Filter criterias for users of the project") @RequestBody
+        SearchProjectUserParameters filters,
+        @Parameter(description = "Sorting and page configuration")
         @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-        PagedResourcesAssembler<ProjectUserReadDto> assembler,
-        ProjectUserSearchParameters parameters) throws ModuleException {
+        @Parameter(hidden = true) PagedResourcesAssembler<ProjectUserReadDto> assembler) throws ModuleException {
+
         return completeUserPagedResponseWithQuotas(() -> {
             FeignSecurityManager.asSystem();
-            return projectUsersClient.retrieveProjectUserList(parameters, pageable);
+            return projectUsersClient.retrieveProjectUserList(filters, pageable);
         }, pageable, assembler);
     }
 
@@ -271,7 +289,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
      * @return the passed Dto
      */
     @PostMapping
-    @ResourceAccess(description = "Create a projectUser by bypassing registration process (Administrator feature)",
+    @ResourceAccess(description = "Create a user of project by bypassing registration process (Administrator feature)",
         role = DefaultRole.EXPLOIT)
     public ResponseEntity<EntityModel<ProjectUserReadDto>> createUser(@Valid @RequestBody
                                                                       ProjectUserCreateDto projectUserCreateDto)
@@ -501,7 +519,7 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
                                     LinkRels.LIST,
                                     MethodParamFactory.build(Pageable.class),
                                     MethodParamFactory.build(PagedResourcesAssembler.class),
-                                    MethodParamFactory.build(ProjectUserSearchParameters.class));
+                                    MethodParamFactory.build(SearchProjectUserParameters.class));
 
             if (UserStatus.WAITING_ACCESS.equals(element.getStatus())) {
                 resourceService.addLink(resource,

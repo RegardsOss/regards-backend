@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.*;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
-import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecificationsBuilder;
+import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecificationsBuilderNew;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.UserVisibility;
 import fr.cnes.regards.modules.accessrights.domain.projects.*;
@@ -132,8 +132,8 @@ public class ProjectUserService implements IProjectUserService {
     }
 
     @Override
-    public Page<ProjectUser> retrieveUserList(ProjectUserSearchParameters parameters, Pageable pageable) {
-        return projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(parameters).build(),
+    public Page<ProjectUser> retrieveUsers(SearchProjectUserParameters filters, Pageable pageable) {
+        return projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(filters).build(),
                                              pageable);
     }
 

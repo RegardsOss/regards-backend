@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.accessrights.service.projectuser;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
+import fr.cnes.regards.modules.accessrights.domain.projects.SearchProjectUserParameters;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -62,10 +62,10 @@ public class ProjectUserExportService {
         this.projectUserService = projectUserService;
     }
 
-    public void export(BufferedWriter writer, ProjectUserSearchParameters parameters) throws IOException {
+    public void export(BufferedWriter writer, SearchProjectUserParameters filters) throws IOException {
         writer.append(HEADER);
         writer.newLine();
-        for (ProjectUser projectUser : projectUserService.retrieveUserList(parameters, Pageable.unpaged())) {
+        for (ProjectUser projectUser : projectUserService.retrieveUsers(filters, Pageable.unpaged())) {
             writeLine(writer, projectUser);
         }
         writer.close();

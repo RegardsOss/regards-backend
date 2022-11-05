@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
+import fr.cnes.regards.modules.accessrights.domain.projects.SearchProjectUserParameters;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.data.domain.Pageable;
@@ -49,6 +50,8 @@ public interface IProjectUsersClient {
 
     String ROOT_PATH = "/users";
 
+    String SEARCH_PATH = "/search";
+
     String TARGET_NAME = "rs-admin";
 
     /**
@@ -57,10 +60,15 @@ public interface IProjectUsersClient {
      * @param parameters search parameters as request params
      * @return a {@link List} of {@link ProjectUser}
      */
-    @PostMapping(value = ROOT_PATH + "/search", produces = MediaType.APPLICATION_JSON_VALUE,
+    @PostMapping(value = ROOT_PATH + SEARCH_PATH, produces = MediaType.APPLICATION_JSON_VALUE,
         consumes = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(
         @RequestBody ProjectUserSearchParameters parameters, @SpringQueryMap Pageable pageable);
+
+    @PostMapping(value = ROOT_PATH + SEARCH_PATH, produces = MediaType.APPLICATION_JSON_VALUE,
+        consumes = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(
+        @RequestBody SearchProjectUserParameters filters, @SpringQueryMap Pageable pageable);
 
     /**
      * Retrieve all users with a pending access request.

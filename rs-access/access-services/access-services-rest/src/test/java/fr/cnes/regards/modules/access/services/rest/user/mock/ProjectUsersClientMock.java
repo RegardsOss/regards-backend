@@ -6,6 +6,7 @@ import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.domain.projects.SearchProjectUserParameters;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
@@ -82,6 +83,13 @@ public class ProjectUsersClientMock implements IProjectUsersClient, IResourceCon
     public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(ProjectUserSearchParameters parameters,
                                                                                         Pageable pageable) {
         return singleProjectUserPagedResponse();
+    }
+
+    @Override
+    public ResponseEntity<PagedModel<EntityModel<ProjectUser>>> retrieveProjectUserList(SearchProjectUserParameters filters,
+                                                                                        Pageable pageable) {
+        return singleProjectUserPagedResponse();
+
     }
 
     @Override

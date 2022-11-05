@@ -142,6 +142,7 @@ public class ProjectUser implements IIdentifiable<Long> {
         this.role = role;
         this.permissions = permissions;
         this.metadata = metaData;
+
         status = UserStatus.WAITING_ACCOUNT_ACTIVE;
     }
 

@@ -19,43 +19,44 @@
 package fr.cnes.regards.modules.accessrights.dao.projects;
 
 import fr.cnes.regards.framework.jpa.utils.AbstractSpecificationsBuilder;
-import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserSearchParameters;
+import fr.cnes.regards.modules.accessrights.domain.projects.SearchProjectUserParameters;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.util.StringUtils;
 
 import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 
-public class ProjectUserSpecificationsBuilder
-    extends AbstractSpecificationsBuilder<ProjectUser, ProjectUserSearchParameters> {
+/**
+ * @author Stephane Cortine
+ */
+public class ProjectUserSpecificationsBuilderNew
+    extends AbstractSpecificationsBuilder<ProjectUser, SearchProjectUserParameters> {
 
     @Override
     protected void addSpecificationsFromParameters() {
         if (parameters != null) {
             specifications.add(likeIgnoreCase("email", parameters.getEmail()));
-            specifications.add(likeIgnoreCase("lastName", parameters.getLastName()));
-            specifications.add(likeIgnoreCase("firstName", parameters.getFirstName()));
-            specifications.add(hasStatus(parameters.getStatus()));
-            specifications.add(equalsIgnoreCase("origin", parameters.getOrigin()));
-            specifications.add(joinedEquals("role", "name", parameters.getRole()));
-            specifications.add(before("created", parameters.getCreatedBefore()));
-            specifications.add(after("created", parameters.getCreatedAfter()));
-            specifications.add(before("lastConnection", parameters.getLastConnectionBefore()));
-            specifications.add(after("lastConnection", parameters.getLastConnectionAfter()));
-            specifications.add(hasRemainingQuotaBelow(parameters.getQuotaWarningCount()));
-            specifications.add(isMember("accessGroups", parameters.getAccessGroup()));
-        }
-    }
 
-    private Specification<ProjectUser> hasStatus(String status) {
-        if (StringUtils.isEmpty(status)) {
-            return null;
-        } else {
-            return (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("status"),
-                                                                           UserStatus.valueOf(status.toUpperCase()));
+            specifications.add(likeIgnoreCase("lastName", parameters.getLastName()));
+
+            specifications.add(likeIgnoreCase("firstName", parameters.getFirstName()));
+
+            specifications.add(useValuesRestriction("status", parameters.getStatus()));
+
+            specifications.add(useValuesRestriction("origin", parameters.getOrigins()));
+
+            specifications.add(useValuesRestrictionJoined("role", "name", parameters.getRoles()));
+
+            specifications.add(before("created", parameters.getCreationDate().getBefore()));
+            specifications.add(after("created", parameters.getCreationDate().getAfter()));
+
+            specifications.add(before("lastConnection", parameters.getLastConnection().getBefore()));
+            specifications.add(after("lastConnection", parameters.getLastConnection().getAfter()));
+
+            specifications.add(useValuesRestrictionJoinSet("accessGroups", parameters.getAccessGroups()));
+
+            specifications.add(hasRemainingQuotaBelow(parameters.getQuotaWarningCount()));
         }
     }
 
@@ -64,13 +65,13 @@ public class ProjectUserSpecificationsBuilder
             return null;
         } else {
             return (root, query, criteriaBuilder) -> {
-
+                Long minQuota = -1L;
                 Path<Long> maxQuota = root.get("maxQuota");
                 Path<Long> currentQuota = root.get("currentQuota");
 
                 Predicate notNullPredicate = criteriaBuilder.and(criteriaBuilder.isNotNull(maxQuota),
                                                                  criteriaBuilder.isNotNull(currentQuota));
-                Predicate limitedQuotaPredicate = criteriaBuilder.greaterThan(maxQuota, -1L);
+                Predicate limitedQuotaPredicate = criteriaBuilder.greaterThan(maxQuota, minQuota);
 
                 Expression<Long> diff = criteriaBuilder.diff(maxQuota, currentQuota);
                 Predicate quotaDiffPredicate = criteriaBuilder.lessThanOrEqualTo(diff, value);

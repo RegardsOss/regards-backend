@@ -154,7 +154,7 @@ public class RequestServiceIT extends AbstractWorkerManagerServiceUtilsIT {
         requests = requestService.searchLightRequests(srp, pr);
         Assert.assertEquals("Error searching SUCCESS requests", 6, requests.getTotalElements());
 
-        srp.withStatusesIncluded(); // clear status
+        srp.setStatuses(null); // clear status
         OffsetDateTime createdBefore = OffsetDateTime.now().plusDays(2);
         srp.withCreationDateBefore(createdBefore);
         requests = requestService.searchLightRequests(srp, pr);
