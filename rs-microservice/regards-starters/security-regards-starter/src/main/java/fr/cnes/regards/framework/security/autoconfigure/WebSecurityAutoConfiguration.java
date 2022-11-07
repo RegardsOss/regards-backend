@@ -98,10 +98,7 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
     /**
      * List of static routes that are free from Spring security
      */
-    private final Set<String> noSecurityRoutes = Sets.newHashSet("/favicon",
-                                                                 "/v3/**/*",
-                                                                 "/v3/api-docs",
-                                                                 "/swagger-ui/**/*");
+    private Set<String> noSecurityRoutes = Sets.newHashSet("/favicon", "/v3/**/*", "/v3/api-docs", "/swagger-ui/**/*");
 
     @Override
     protected void configure(final HttpSecurity http) throws Exception {
