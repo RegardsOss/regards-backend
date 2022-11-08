@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.modules.tenant.settings.service.AbstractModuleManagerWithTenantSettings;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.dao.entities.IDatasetRepository;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IConnectionPlugin;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.IDataSourcePlugin;
@@ -184,12 +185,10 @@ public class DamConfigurationManager extends AbstractModuleManagerWithTenantSett
 
         // First : try to load dataset from its id or provider id
         Optional<Dataset> existingOne = Optional.empty();
-        if (conf.getFeature().getId() != null) {
+        UniformResourceName submittedIpId = conf.getFeature().getId();
+        if (submittedIpId != null) {
             Dataset dataset = datasetRepository.findByIpId(conf.getFeature().getId());
-            if (dataset == null) {
-                String message = String.format("Unknown dataset for id : %s.!", conf.getFeature().getId());
-                throw new ModuleException(message);
-            } else {
+            if (dataset != null) {
                 existingOne = Optional.of(dataset);
             }
         } else {
@@ -231,6 +230,10 @@ public class DamConfigurationManager extends AbstractModuleManagerWithTenantSett
             dataset.setDataSource(datasource);
             dataset.setOpenSearchSubsettingClause(conf.getSubsetting());
             dataset.setFeature(conf.getFeature());
+            // override ipId if it was provided
+            if (submittedIpId != null) {
+                dataset.setIpId(submittedIpId);
+            }
             // Call service to persist dataset
             datasetService.createDataset(dataset, validationErrors);
         }

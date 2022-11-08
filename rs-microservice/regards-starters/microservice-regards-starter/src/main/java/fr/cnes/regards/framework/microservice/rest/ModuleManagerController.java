@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import fr.cnes.regards.framework.gson.GsonBuilderFactory;
@@ -162,7 +163,7 @@ public class ModuleManagerController {
                 return ResponseEntity.unprocessableEntity().build();
             }
 
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException | JsonParseException e) {
             String message = String.format("Error importing configuration for microservice %s", microserviceName);
             LOGGER.error(message, e);
             throw new ModuleException(e);

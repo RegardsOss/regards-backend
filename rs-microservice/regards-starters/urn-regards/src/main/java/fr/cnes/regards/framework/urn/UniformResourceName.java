@@ -230,7 +230,10 @@ public class UniformResourceName {
     public static UniformResourceName fromString(String urn) {
         Pattern pattern = Pattern.compile(URN_PATTERN);
         if (!pattern.matcher(urn).matches()) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException(String.format(
+                "Error while converting string \"%s\" to urn, it does not match the required pattern \"%s\".",
+                urn,
+                URN_PATTERN));
         }
         String[] stringFragment = urn.split(DELIMITER);
         String identifier = stringFragment[1];
