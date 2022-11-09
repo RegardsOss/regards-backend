@@ -60,6 +60,11 @@ public class RabbitVirtualHostAdminTests {
     private static final String RABBITMQ_PASSWORD = "password";
 
     /**
+     * management protocol
+     */
+    private static final String AMQP_MANAGEMENT_PROTOCOL = "http";
+
+    /**
      * management host
      */
     private static final String AMQP_MANAGEMENT_HOST = "127.0.0.1";
@@ -85,6 +90,7 @@ public class RabbitVirtualHostAdminTests {
                                                             null,
                                                             RABBITMQ_USERNAME,
                                                             RABBITMQ_PASSWORD,
+                                                            AMQP_MANAGEMENT_PROTOCOL,
                                                             AMQP_MANAGEMENT_HOST,
                                                             AMQP_MANAGEMENT_PORT,
                                                             null,

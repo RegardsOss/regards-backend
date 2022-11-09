@@ -30,6 +30,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class AmqpManagementProperties {
 
     /**
+     * Protocol used to connect to the broker manager API
+     */
+    private String protocol = "http";
+
+    /**
      * value from the configuration file representing the host of the manager of the broker
      */
     private String host = "localhost";
@@ -88,5 +93,13 @@ public class AmqpManagementProperties {
 
     public void setNamespace(String namespace) {
         this.namespace = namespace;
+    }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
     }
 }

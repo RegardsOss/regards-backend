@@ -96,6 +96,7 @@ public class AmqpAutoConfiguration {
                                           pTenantResolver,
                                           rabbitProperties.getUsername(),
                                           rabbitProperties.getPassword(),
+                                          amqpManagmentProperties.getProtocol(),
                                           amqpManagmentProperties.getHost(),
                                           amqpManagmentProperties.getPort(),
                                           restOperations,

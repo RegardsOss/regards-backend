@@ -98,6 +98,11 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin, Initiali
     private final String rabbitmqPassword;
 
     /**
+     * Protocol used to connect to the broker manager API
+     */
+    private final String amqpManagementProtocol;
+
+    /**
      * value from the configuration file representing the host of the manager of the broker
      */
     private final String amqpManagementHost;
@@ -131,6 +136,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin, Initiali
      * @param tenantResolver                 retrieve all tenants
      * @param rabbitmqUserName               user name
      * @param rabbitmqPassword               password
+     * @param amqpManagementProtocol         management protocol
      * @param amqpManagementHost             management host
      * @param amqpManagementPort             management port
      * @param restOperations                 client REST
@@ -142,6 +148,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin, Initiali
                                   ITenantResolver tenantResolver,
                                   String rabbitmqUserName,
                                   String rabbitmqPassword,
+                                  String amqpManagementProtocol,
                                   String amqpManagementHost,
                                   Integer amqpManagementPort,
                                   RestOperations restOperations,
@@ -155,6 +162,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin, Initiali
         this.simpleRoutingConnectionFactory = simpleRoutingConnectionFactory;
         this.rabbitmqUserName = rabbitmqUserName;
         this.rabbitmqPassword = rabbitmqPassword;
+        this.amqpManagementProtocol = amqpManagementProtocol;
         this.amqpManagementHost = amqpManagementHost;
         this.amqpManagementPort = amqpManagementPort;
         this.rabbitAddresses = rabbitAddresses;
@@ -229,7 +237,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin, Initiali
 
     @Override
     public String getRabbitApiEndpoint() {
-        return "http" + COLON + "//" + amqpManagementHost + COLON + amqpManagementPort + "/api";
+        return amqpManagementProtocol + COLON + "//" + amqpManagementHost + COLON + amqpManagementPort + "/api";
     }
 
     /**
