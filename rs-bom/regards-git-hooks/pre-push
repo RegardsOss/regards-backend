@@ -1,0 +1,16 @@
+# Git default hooksPath is .git/hooks. To use this hook, you have to change hooksPath with this command : 
+# git config core.hooksPath $REGARDS_HOME/rs-bom/regards-git-hooks
+
+LC_ALL=C
+
+local_branch="$(git rev-parse --abbrev-ref HEAD)"
+
+valid_branch_regex="^(master|develop)$|^(release|feature|hotfix|hysope2)\/[A-z0-9._-]+$"
+
+if [[ ! $local_branch =~ $valid_branch_regex ]]
+then
+    echo "There is something wrong with your branch name. Branch names in this project must adhere to this pattern: $valid_branch_regex. Please rename your branch to use a valid branch name and try again."
+    exit 1
+fi
+
+exit 0
