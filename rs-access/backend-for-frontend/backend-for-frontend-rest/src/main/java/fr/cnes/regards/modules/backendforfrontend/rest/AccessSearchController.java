@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.access.services.client.cache.CacheableServiceAggregatorClient;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
@@ -57,6 +58,21 @@ import java.util.stream.StreamSupport;
 public class AccessSearchController {
 
     /**
+     * The main path
+     */
+    static final String ROOT_PATH = "";
+
+    public static final String DATAOBJECTS_DATASETS_SEARCH = "/dataobjects/datasets/search";
+
+    public static final String DATAOBJECTS_SEARCH = "/dataobjects/search";
+
+    public static final String DATASETS_SEARCH = "/datasets/search";
+
+    public static final String COLLECTIONS_SEARCH = "/collections/search";
+
+    public static final String SEARCH = "/search";
+
+    /**
      * Function converting a {@link JsonArray} into a {@link Stream}
      */
     private static final Function<JsonArray, Stream<JsonElement>> JSON_ARRAY_TO_STREAM = pJsonArray -> StreamSupport.stream(
@@ -76,21 +92,6 @@ public class AccessSearchController {
         this.searchClient = searchClient;
         this.gson = gson;
     }
-
-    /**
-     * The main path
-     */
-    static final String ROOT_PATH = "";
-
-    public static final String DATAOBJECTS_DATASETS_SEARCH = "/dataobjects/datasets/search";
-
-    public static final String DATAOBJECTS_SEARCH = "/dataobjects/search";
-
-    public static final String DATASETS_SEARCH = "/datasets/search";
-
-    public static final String COLLECTIONS_SEARCH = "/collections/search";
-
-    public static final String SEARCH = "/search";
 
     /**
      * Perform an OpenSearch request on all indexed data, regardless of the type. The return objects can be any mix of
@@ -218,11 +219,15 @@ public class AccessSearchController {
      * @param pEntities The list of entities, represented as a {@link JsonObject} wrapped in a {@link ResponseEntity}
      */
     private void injectApplicableServices(JsonObject pEntities) {
-        try (Stream<JsonElement> elements = JSON_ARRAY_TO_STREAM.apply(pEntities.get("content").getAsJsonArray())) {
-            elements.map(JsonElement::getAsJsonObject)
-                    .map(element -> element.get("content"))
-                    .map(JsonElement::getAsJsonObject)
-                    .forEach(element -> element.add("services", entityToApplicableServices(element)));
+        if (pEntities != null) {
+            try (Stream<JsonElement> elements = JSON_ARRAY_TO_STREAM.apply(pEntities.get("content").getAsJsonArray())) {
+                elements.map(JsonElement::getAsJsonObject)
+                        .map(element -> element.get("content"))
+                        .map(JsonElement::getAsJsonObject)
+                        .forEach(element -> element.add("services", entityToApplicableServices(element)));
+            }
+        } else {
+            throw new RsRuntimeException("An error occurred while injecting application services: pEntities is null");
         }
     }
 

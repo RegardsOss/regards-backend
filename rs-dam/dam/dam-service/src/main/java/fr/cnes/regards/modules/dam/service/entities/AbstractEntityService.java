@@ -38,6 +38,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
@@ -346,7 +347,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
      * @param tagList  UniformResourceName Set representing AbstractEntity to be associated to pCollection
      */
     @Override
-    public void associate(Long entityId, Set<String> tagList) throws EntityNotFoundException {
+    public void associate(Long entityId, Set<String> tagList) throws ModuleException {
         Optional<U> entityOpt = repository.findById(entityId);
         if (entityOpt.isEmpty()) {
             throw new EntityNotFoundException(entityId, this.getClass());
@@ -400,16 +401,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
                 LOGGER.warn(UNABLE_TO_ACCESS_STORAGE_PLUGIN, e);
             }
         } else {
-            String tenant = runtimeTenantResolver.getTenant();
-            final U finalEntity = entity;
-            entity.getFiles()
-                  .values()
-                  .stream()
-                  .filter(dataFile -> !dataFile.isReference())
-                  .forEach(dataFile -> dataFile.setUri(getDownloadUrl(finalEntity.getIpId(),
-                                                                      dataFile.getChecksum(),
-                                                                      tenant,
-                                                                      true)));
+            setDataFilesUri(entity);
         }
 
         entity = repository.save(entity);
@@ -421,7 +413,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     }
 
     @Override
-    public void dissociate(Long entityId, Set<String> ipIds) throws EntityNotFoundException {
+    public void dissociate(Long entityId, Set<String> ipIds) throws ModuleException {
         Optional<U> entityOpt = repository.findById(entityId);
         if (entityOpt.isEmpty()) {
             throw new EntityNotFoundException(entityId, this.getClass());
@@ -549,7 +541,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
      * @param entityInDb only there for comparison for group management
      * @return updated entity with group set correctly
      */
-    private U updateWithoutCheck(U entity, U entityInDb) {
+    private U updateWithoutCheck(U entity, U entityInDb) throws ModuleException {
         Set<UniformResourceName> oldLinks = extractUrns(entityInDb.getTags());
         Set<UniformResourceName> newLinks = extractUrns(entity.getTags());
         Set<String> oldGroups = entityInDb.getGroups();
@@ -601,18 +593,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
                 LOGGER.warn(UNABLE_TO_ACCESS_STORAGE_PLUGIN, e);
             }
         } else {
-            String tenant = runtimeTenantResolver.getTenant();
-            final U finalUpdated = updated;
-            // Update download url for locally stored files only for not referenced ones.
-            // Referenced ones must keep the original reference uri.
-            updated.getFiles()
-                   .values()
-                   .stream()
-                   .filter(dataFile -> !dataFile.isReference())
-                   .forEach(dataFile -> dataFile.setUri(getDownloadUrl(finalUpdated.getIpId(),
-                                                                       dataFile.getChecksum(),
-                                                                       tenant,
-                                                                       true)));
+            setDataFilesUri(updated);
             repository.save(updated);
         }
 
@@ -893,12 +874,16 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
                         for (DataFile file : entityByUrn.get(current.getUrn()).getFiles().values()) {
                             // if the file is found we update it uri
                             if (file.getChecksum().equals(request.getResultFile().getMetaInfo().getChecksum())) {
-                                updated = true;
-                                file.setUri(getDownloadUrl(current.getUrn(),
-                                                           file.getChecksum(),
-                                                           runtimeTenantResolver.getTenant(),
-                                                           false));
-                                treatedRequests.add(current);
+                                try {
+                                    file.setUri(getDownloadUrl(current.getUrn(),
+                                                               file.getChecksum(),
+                                                               runtimeTenantResolver.getTenant(),
+                                                               false));
+                                    treatedRequests.add(current);
+                                    updated = true;
+                                } catch (ModuleException e) {
+                                    LOGGER.error("Cannot get download url for data file : " + file.getFilename(), e);
+                                }
                             }
                         }
                     } else {
@@ -957,24 +942,37 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     private String getDownloadUrl(UniformResourceName uniformResourceName,
                                   String checksum,
                                   String tenant,
-                                  boolean locallyStored) {
+                                  boolean locallyStored) throws ModuleException {
         Project project = projects.get(tenant);
         if (project == null) {
             FeignSecurityManager.asSystem();
-            project = projectClient.retrieveProject(tenant).getBody().getContent();
+            project = ResponseEntityUtils.extractContentOrThrow(projectClient.retrieveProject(tenant),
+                                                                "Error while retrieving project : response body is empty");
             projects.put(tenant, project);
             FeignSecurityManager.reset();
         }
-        String proxyfiedUrl = project.getHost()
-                              + urlPrefix
-                              + "/"
-                              + encode4Uri("rs-catalog")
-                              + CATALOG_DOWNLOAD_PATH.replace("{aip_id}", uniformResourceName.toString())
-                                                     .replace("{checksum}", checksum);
+        String proxyfiedUrl = project.getHost() //NOSONAR -> impossible NPE, managed in a condition 5 lines upper
+                              + urlPrefix + "/" + encode4Uri("rs-catalog") + CATALOG_DOWNLOAD_PATH.replace("{aip_id}",
+                                                                                                           uniformResourceName.toString())
+                                                                                                  .replace("{checksum}",
+                                                                                                           checksum);
         if (locallyStored) {
             proxyfiedUrl += "/dam";
         }
         return proxyfiedUrl;
+    }
+
+    private void setDataFilesUri(U entity) throws ModuleException {
+        String tenant = runtimeTenantResolver.getTenant();
+        final U finalEntity = entity;
+        List<DataFile> dataFiles = entity.getFiles()
+                                         .values()
+                                         .stream()
+                                         .filter(dataFile -> !dataFile.isReference())
+                                         .toList();
+        for (DataFile dataFile : dataFiles) {
+            dataFile.setUri(getDownloadUrl(finalEntity.getIpId(), dataFile.getChecksum(), tenant, true));
+        }
     }
 
     private static String encode4Uri(String str) {

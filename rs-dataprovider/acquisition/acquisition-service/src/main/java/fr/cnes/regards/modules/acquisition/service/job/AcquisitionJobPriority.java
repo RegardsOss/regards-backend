@@ -28,24 +28,24 @@ public final class AcquisitionJobPriority {
     /**
      * Only one job per acquisition chain can be available at a time
      */
-    public static int PRODUCT_ACQUISITION_JOB_PRIORITY = 10;
+    public static final int PRODUCT_ACQUISITION_JOB_PRIORITY = 10;
 
     /**
      * One product, one job!
      */
-    public static int SIP_GENERATION_JOB_PRIORITY = 0;
+    public static final int SIP_GENERATION_JOB_PRIORITY = 0;
 
     /**
      * Only one job per acquisition chain can be available at a time
      */
-    public static int SIP_SUBMISSION_JOB_PRIORITY = 10;
+    public static final int SIP_SUBMISSION_JOB_PRIORITY = 10;
 
     /**
      * One product, one job!
      */
-    public static int POST_ACQUISITION_JOB_PRIORITY = 0;
+    public static final int POST_ACQUISITION_JOB_PRIORITY = 0;
 
-    public static int DELETION_JOB = 100;
+    public static final int DELETION_JOB = 100;
 
     private AcquisitionJobPriority() {
     }

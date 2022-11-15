@@ -60,10 +60,7 @@ import java.util.function.Predicate;
  *
  * @author oroussel
  */
-public class GeoHelper {
-
-    private GeoHelper() {
-    }
+public final class GeoHelper {
 
     /**
      * Radius used by ASTRO projection (perfect sphere used, no flattening)
@@ -119,6 +116,11 @@ public class GeoHelper {
     private static final double MAX_CHEATED_LONGITUDE = 359.999999999999;
 
     private static final GeometryNormalizerVisitor GEOMETRY_NORMALIZER_VISITOR = new GeometryNormalizerVisitor();
+
+    private static final String ERROR_TRANSFORM = "Error while trying to transform ";
+
+    private GeoHelper() {
+    }
 
     public static double getDistanceOnEarth(double[] lonLat1, double[] lonLat2) {
         return getDistance(lonLat1, lonLat2, Crs.WGS_84);
@@ -185,6 +187,9 @@ public class GeoHelper {
 
     public static double[] transform(double[] fromPoint, Crs fromCrs, Crs toCrs) {
         MathTransform transform = TRANSFORM_TABLE.get(fromCrs, toCrs);
+        if (transform == null) {
+            throw new RsRuntimeException(ERROR_TRANSFORM + fromPoint);
+        }
         DirectPosition srcPos = new DirectPosition2D(fromPoint[0], fromPoint[1]);
         DirectPosition destPos = null;
         try {
@@ -197,6 +202,9 @@ public class GeoHelper {
 
     public static double[][] transform(double[][] fromPoints, Crs fromCrs, Crs toCrs) {
         MathTransform transform = TRANSFORM_TABLE.get(fromCrs, toCrs);
+        if (transform == null) {
+            throw new RsRuntimeException(ERROR_TRANSFORM + fromPoints);
+        }
         double[][] toPoints = new double[fromPoints.length][];
         for (int i = 0; i < fromPoints.length; i++) {
             double[] fromPoint = fromPoints[i];
@@ -214,6 +222,9 @@ public class GeoHelper {
 
     public static double[][][] transform(double[][][] fromPointsLines, Crs fromCrs, Crs toCrs) {
         MathTransform transform = TRANSFORM_TABLE.get(fromCrs, toCrs);
+        if (transform == null) {
+            throw new RsRuntimeException(ERROR_TRANSFORM + fromPointsLines);
+        }
         double[][][] toPointsLines = new double[fromPointsLines.length][][];
         try {
             for (int i = 0; i < fromPointsLines.length; i++) {

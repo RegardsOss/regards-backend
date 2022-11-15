@@ -25,8 +25,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.modules.ingest.dao.SipDeletionSchedulerRepository;
 import fr.cnes.regards.modules.ingest.domain.scheduler.SipDeletionSchedulerEntity;
 import fr.cnes.regards.modules.ingest.service.sip.ISIPService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.OffsetDateTime;
@@ -42,8 +40,6 @@ import java.util.Optional;
  * @author Thomas GUILLOU
  **/
 public class SIPBodyDeletionJob extends AbstractJob<Void> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SIPBodyDeletionJob.class);
 
     /**
      * The lower bound date of the sip deletion query
@@ -75,11 +71,11 @@ public class SIPBodyDeletionJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        LOGGER.info("[SIP DELETION SCHEDULER] Scheduling job ...");
+        logger.info("[SIP DELETION SCHEDULER] Scheduling job ...");
         long start = System.currentTimeMillis();
         int numberOfSipDeleted = sipService.cleanOldRawSip(lowerDateParameter, upperDateParameter);
         updateSchedulerLastDate(upperDateParameter);
-        LOGGER.info("[SIP DELETION SCHEDULER] SIP deletion Job delete {} sip in {} ms",
+        logger.info("[SIP DELETION SCHEDULER] SIP deletion Job delete {} sip in {} ms",
                     numberOfSipDeleted,
                     System.currentTimeMillis() - start);
     }

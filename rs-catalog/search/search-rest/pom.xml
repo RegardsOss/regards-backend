@@ -107,6 +107,10 @@
             <groupId>fr.cnes.regards.modules.model</groupId>
             <artifactId>model-gson-helper</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.utils</groupId>
+            <artifactId>response-entity-utils</artifactId>
+        </dependency>
 
         <!-- Test -->
         <dependency>

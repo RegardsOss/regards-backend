@@ -149,24 +149,26 @@ public class FeatureRequestController implements IResourceController<FeatureRequ
     }
 
     private void addLinks(EntityModel<FeatureRequestDTO> resource) {
+        FeatureRequestDTO featureRequest = resource.getContent();
+        if (featureRequest == null) {
+            return;
+        }
         // Request are deletable only if not scheduled
-        if (!resource.getContent().isProcessing()) {
+        if (!featureRequest.isProcessing()) {
             resourceService.addLink(resource,
                                     this.getClass(),
                                     "deleteRequests",
                                     LinkRels.DELETE,
                                     MethodParamFactory.build(FeatureRequestTypeEnum.class,
-                                                             FeatureRequestTypeEnum.valueOf(resource.getContent()
-                                                                                                    .getType())),
+                                                             FeatureRequestTypeEnum.valueOf(featureRequest.getType())),
                                     MethodParamFactory.build(FeatureRequestsSelectionDTO.class));
-            if (resource.getContent().getStep() != FeatureRequestStep.LOCAL_DELAYED) {
+            if (featureRequest.getStep() != FeatureRequestStep.LOCAL_DELAYED) {
                 resourceService.addLink(resource,
                                         this.getClass(),
                                         "retryRequests",
                                         LinkRelation.of("retry"),
                                         MethodParamFactory.build(FeatureRequestTypeEnum.class,
-                                                                 FeatureRequestTypeEnum.valueOf(resource.getContent()
-                                                                                                        .getType())),
+                                                                 FeatureRequestTypeEnum.valueOf(featureRequest.getType())),
                                         MethodParamFactory.build(FeatureRequestsSelectionDTO.class));
             }
         }

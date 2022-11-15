@@ -65,5 +65,6 @@
         <module>query-parser</module>
         <module>s3-storage-utils</module>
         <module>xml-utils</module>
+        <module>response-entity-utils</module>
     </modules>
 </project>

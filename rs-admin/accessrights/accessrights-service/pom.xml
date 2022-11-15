@@ -105,6 +105,10 @@
             <groupId>fr.cnes.regards.modules.authentication</groupId>
             <artifactId>authentication-client</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.utils</groupId>
+            <artifactId>response-entity-utils</artifactId>
+        </dependency>
         <!-- Tests -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>

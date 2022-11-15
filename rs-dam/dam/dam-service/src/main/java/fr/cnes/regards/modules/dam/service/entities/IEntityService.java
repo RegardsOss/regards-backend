@@ -104,7 +104,7 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
      * @param toAssociates tags to be associated by source entity (may be entity URNs)
      * @throws EntityNotFoundException
      */
-    void associate(Long entityId, Set<String> toAssociates) throws EntityNotFoundException;
+    void associate(Long entityId, Set<String> toAssociates) throws ModuleException;
 
     /**
      * Dissociate a set of URNs from an entity. Depending on entity types, dissociation impacts tags, groups or nothing.
@@ -113,7 +113,7 @@ public interface IEntityService<U extends AbstractEntity<?>> extends IEntityVali
      * @param toBeDissociated tags to be dissociated from source entity (may be entity URNs)
      * @throws EntityNotFoundException
      */
-    void dissociate(Long entityId, Set<String> toBeDissociated) throws EntityNotFoundException;
+    void dissociate(Long entityId, Set<String> toBeDissociated) throws ModuleException;
 
     /**
      * Create entity

@@ -24,6 +24,7 @@ import com.google.common.cache.LoadingCache;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.modules.accessrights.client.ILicenseClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
 import fr.cnes.regards.modules.accessrights.domain.projects.events.LicenseAction;
@@ -73,7 +74,9 @@ public class LicenseAccessor {
             if (licenseResponse.getStatusCode() != HttpStatus.OK) {
                 throw new ModuleException("License verification failed with status " + licenseResponse.getStatusCode());
             }
-            return licenseResponse.getBody().getContent();
+            EntityModel<LicenseDTO> licenseEntityModel = ResponseEntityUtils.extractBodyOrThrow(licenseResponse,
+                                                                                                "Cannot retrieve license: response licenseEntityModel is empty");
+            return licenseEntityModel.getContent();
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             throw new ModuleException("License verification failed with error  " + e.getMessage(), e);
         }
@@ -88,7 +91,9 @@ public class LicenseAccessor {
         if (licenseResponse.getStatusCode() != HttpStatus.OK) {
             throw new ModuleException("License acceptation failed with status " + licenseResponse.getStatusCode());
         }
-        licenseCache.put(cacheKey(cacheKey(forUser, forTenant), ""), licenseResponse.getBody().getContent());
+        LicenseDTO licenseDTO = ResponseEntityUtils.extractContentOrThrow(licenseResponse,
+                                                                          "License acceptation failed : response body is empty");
+        licenseCache.put(cacheKey(cacheKey(forUser, forTenant), ""), licenseDTO);
     }
 
     private String cacheKey(String forUser, String forTenant) {

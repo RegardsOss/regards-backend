@@ -34,6 +34,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.event.BroadcastEntityEvent;
@@ -242,11 +243,13 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
                 try {
                     FeignSecurityManager.asSystem();
                     ResponseEntity<EntityModel<Dataset>> response = datasetClient.retrieveDataset(conf.getDatasetUrn());
-                    if ((response != null) && (response.getBody() != null) && (response.getBody().getContent()
-                                                                               != null)) {
-                        conf.setDataset(response.getBody().getContent());
-                        // Add new retrieved dataset into cached ones
-                        cachedDatasets.add(response.getBody().getContent());
+                    if (response != null) {
+                        Dataset dataset = ResponseEntityUtils.extractContentOrNull(response);
+                        if (dataset != null) {
+                            conf.setDataset(dataset);
+                            // Add new retrieved dataset into cached ones
+                            cachedDatasets.add(dataset);
+                        }
                     }
                 } catch (FeignException e) {
                     LOGGER.error(String.format("Error retrieving dataset with ipId %s", conf.getDatasetUrn()), e);

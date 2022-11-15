@@ -21,10 +21,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>access-services-rest</artifactId>
-    <packaging>jar</packaging>
+    <artifactId>response-entity-utils</artifactId>
 
-    <description>Controller layer of the Access Services module</description>
+    <parent>
+        <groupId>fr.cnes.regards.framework.utils</groupId>
+        <artifactId>regards-utils</artifactId>
+        <version>${revision}</version>
+    </parent>
+
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>
     <licenses>
@@ -46,61 +50,24 @@
         </developer>
     </developers>
 
-    <parent>
-        <groupId>fr.cnes.regards.modules</groupId>
-        <artifactId>access-services</artifactId>
-        <version>${revision}</version>
-    </parent>
-
     <dependencies>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>module-regards-starter</artifactId>
+            <artifactId>module-regards</artifactId>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>hateoas-regards-starter</artifactId>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>security-regards-starter</artifactId>
+            <groupId>org.springframework.hateoas</groupId>
+            <artifactId>spring-hateoas</artifactId>
         </dependency>
         <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>feign-regards-starter</artifactId>
-        </dependency>
-        <!-- Module dependencies -->
-        <dependency>
-            <groupId>fr.cnes.regards.modules</groupId>
-            <artifactId>access-services-service</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.modules</groupId>
-            <artifactId>catalog-services-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.modules.accessrights</groupId>
-            <artifactId>accessrights-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.modules.storage</groupId>
-            <artifactId>storage-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework.utils</groupId>
-            <artifactId>response-entity-utils</artifactId>
-        </dependency>
-        <!-- Libraries -->
-        <dependency>
-            <groupId>io.vavr</groupId>
-            <artifactId>vavr</artifactId>
-            <version>${vavr.version}</version>
-        </dependency>
-        <!-- Test -->
-        <dependency>
-            <groupId>fr.cnes.regards.framework.test</groupId>
-            <artifactId>regards-integration-test</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
+
 </project>

@@ -139,7 +139,7 @@ public class LegacySearchEngine implements
                                                                                    SearchContext context,
                                                                                    IEntityLinkBuilder linkBuilder)
         throws ModuleException {
-        // Extract facets: beware, theorically there should be only one facets parameter with values separated by ","
+        // Extract facets: beware, theoretically there should be only one facets parameter with values separated by ","
         // but take all cases into account
         List<String> facets = context.getQueryParams().get(FACETS);
         if (facets != null) {
@@ -159,7 +159,8 @@ public class LegacySearchEngine implements
      */
     private FacettedPagedModel<EntityModel<EntityFeature>> toResources(SearchContext context,
                                                                        FacetPage<EntityFeature> facetPage,
-                                                                       IEntityLinkBuilder linkBuilder) {
+                                                                       IEntityLinkBuilder linkBuilder)
+        throws ModuleException {
 
         FacettedPagedModel<EntityModel<EntityFeature>> pagedResource = FacettedPagedModel.wrap(facetPage.getContent(),
                                                                                                new PagedModel.PageMetadata(
@@ -171,10 +172,15 @@ public class LegacySearchEngine implements
 
         // Add entity links
         for (EntityModel<EntityFeature> resource : pagedResource.getContent()) {
-            resource.add(linkBuilder.buildEntityLinks(resourceService,
-                                                      context,
-                                                      resource.getContent().getEntityType(),
-                                                      resource.getContent().getId()));
+            EntityFeature entityFeature = resource.getContent();
+            if (entityFeature != null) {
+                resource.add(linkBuilder.buildEntityLinks(resourceService,
+                                                          context,
+                                                          entityFeature.getEntityType(),
+                                                          entityFeature.getId()));
+            } else {
+                throw new ModuleException("An error occurred while add entity links: an entityFeature is null");
+            }
         }
 
         // Add pagination links

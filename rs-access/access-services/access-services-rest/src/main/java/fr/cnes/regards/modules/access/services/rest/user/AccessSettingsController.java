@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.modules.tenant.settings.domain.DynamicTenantSet
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
+import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.modules.access.services.rest.user.utils.ComposableClientException;
 import fr.cnes.regards.modules.accessrights.client.IAccessRightSettingClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
@@ -133,19 +134,26 @@ public class AccessSettingsController implements IResourceController<DynamicTena
     @RequestMapping(method = RequestMethod.PUT, path = NAME_PATH)
     @ResourceAccess(description = "Updates the setting managing the access requests", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<EntityModel<DynamicTenantSettingDto>> updateAccessSettings(
-        @PathVariable(name = "name") String name, @Valid @RequestBody DynamicTenantSettingDto dynamicTenantSettingDto) {
+        @PathVariable(name = "name") String name, @Valid @RequestBody DynamicTenantSettingDto dynamicTenantSettingDto)
+        throws ModuleException {
         if (STORAGE_PARAMETER_NAMES.contains(name)) {
             ResponseEntity<EntityModel<DynamicTenantSettingDto>> storageResponse = storageSettingClient.update(name,
                                                                                                                dynamicTenantSettingDto);
-            return new ResponseEntity<>(toResource(storageResponse.getBody().getContent()),
-                                        storageResponse.getStatusCode());
+            return getEntityModelResponseEntity(storageResponse);
         } else {
             ResponseEntity<EntityModel<DynamicTenantSettingDto>> adminResponse = accessSettingsClient.update(
                 dynamicTenantSettingDto.getName(),
                 dynamicTenantSettingDto);
-            return new ResponseEntity<>(toResource(adminResponse.getBody().getContent()),
-                                        adminResponse.getStatusCode());
+            return getEntityModelResponseEntity(adminResponse);
         }
+    }
+
+    private ResponseEntity<EntityModel<DynamicTenantSettingDto>> getEntityModelResponseEntity(ResponseEntity<EntityModel<DynamicTenantSettingDto>> storageResponse)
+        throws ModuleException {
+        EntityModel<DynamicTenantSettingDto> tenantSettingEntityModel = ResponseEntityUtils.extractBodyOrThrow(
+            storageResponse,
+            "An error occurred while getting responseEntity : tenantSettingEntityModel is null");
+        return new ResponseEntity<>(toResource(tenantSettingEntityModel.getContent()), storageResponse.getStatusCode());
     }
 
     private <V> V toResponse(Validation<ModuleException, V> v) throws ModuleException {

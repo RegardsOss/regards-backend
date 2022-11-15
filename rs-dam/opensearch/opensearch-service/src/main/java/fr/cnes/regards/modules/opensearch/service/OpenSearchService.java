@@ -109,15 +109,14 @@ public class OpenSearchService implements IOpenSearchService {
                                                                                                httpClient))
                                                                                  .getDescriptor();
             if (descriptor.getStatusCode() == HttpStatus.OK) {
-                if (!descriptor.getBody().getUrl().isEmpty()) {
-                    return removeDuplicatedParameters(descriptor.getBody());
+                OpenSearchDescription openSearchDescription = descriptor.getBody();
+                if (openSearchDescription != null && !openSearchDescription.getUrl().isEmpty()) {
+                    return removeDuplicatedParameters(openSearchDescription);
                 } else {
-                    throw new ModuleException(String.format("No valid opensearch descriptor found at %s.",
-                                                            url.toString()));
+                    throw new ModuleException(String.format("No valid opensearch descriptor found at %s.", url));
                 }
             } else {
-                throw new ModuleException(String.format("Error retrieving opensearch descriptor at %s.",
-                                                        url.toString()));
+                throw new ModuleException(String.format("Error retrieving opensearch descriptor at %s.", url));
             }
         } catch (HttpClientErrorException | HttpServerErrorException | FeignException e) {
             throw new ModuleException(e.getMessage(), e);

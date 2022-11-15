@@ -23,8 +23,10 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.modules.accessrights.client.IUserResourceClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -75,18 +77,21 @@ public class UserResourceController implements IResourceController<ResourcesAcce
     @ResourceAccess(description = "Retrieve the list of specific user accesses", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<List<EntityModel<ResourcesAccess>>> retrieveProjectUserResources(
         @PathVariable("user_email") String userLogin,
-        @RequestParam(value = "borrowedRoleName", required = false) String borrowedRoleName) {
+        @RequestParam(value = "borrowedRoleName", required = false) String borrowedRoleName) throws ModuleException {
         ResponseEntity<List<EntityModel<ResourcesAccess>>> response = userResourceClient.retrieveProjectUserResources(
             userLogin,
             borrowedRoleName);
-        return response.getStatusCode().is2xxSuccessful() ?
-            new ResponseEntity<>(toResources(response.getBody()
-                                                     .stream()
-                                                     .map(EntityModel::getContent)
-                                                     .collect(Collectors.toList()), userLogin),
-                                 response.getHeaders(),
-                                 response.getStatusCode()) :
-            response;
+        List<EntityModel<ResourcesAccess>> body = ResponseEntityUtils.extractBodyOrThrow(response,
+                                                                                         "An error occurred while try to retrieve the list of specific user accesses");
+        if (response.getStatusCode().is2xxSuccessful()) {
+            return new ResponseEntity<>(toResources(body.stream()
+                                                        .map(EntityModel::getContent)
+                                                        .collect(Collectors.toList()), userLogin),
+                                        response.getHeaders(),
+                                        response.getStatusCode());
+        } else {
+            return response;
+        }
     }
 
     /**

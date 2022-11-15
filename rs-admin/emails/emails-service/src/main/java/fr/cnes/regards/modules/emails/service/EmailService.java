@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.emails.dao.IEmailRepository;
 import fr.cnes.regards.modules.emails.domain.Email;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,10 +40,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -185,15 +183,17 @@ public class EmailService extends AbstractEmailService {
         final Email email = new Email();
         email.setBcc(message.getBcc());
         email.setCc(message.getCc());
-        email.setFrom((message.getFrom() == null) || message.getFrom().isEmpty() ? defaultSender : message.getFrom());
+        email.setFrom(StringUtils.isEmpty(message.getFrom()) ? defaultSender : message.getFrom());
         email.setReplyTo(message.getReplyTo());
         if (message.getSentDate() != null) {
-            email.setSentDate(LocalDateTime.ofInstant(message.getSentDate().toInstant(), ZoneId.systemDefault()));
+            email.setSentDate(LocalDateTime.ofInstant(Objects.requireNonNull(message.getSentDate()).toInstant(),
+                                                      ZoneId.systemDefault()));
         }
-        if (message.getSubject().length() > Email.MAX_SUBJECT_SIZE) {
-            email.setSubject(message.getSubject().substring(0, Email.MAX_SUBJECT_SIZE - 1));
+        String subject = message.getSubject();
+        if (subject != null && subject.length() > Email.MAX_SUBJECT_SIZE) {
+            email.setSubject(subject.substring(0, Email.MAX_SUBJECT_SIZE - 1));
         } else {
-            email.setSubject(message.getSubject());
+            email.setSubject(subject);
         }
         email.setText(message.getText());
         email.setTo(message.getTo());

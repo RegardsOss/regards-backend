@@ -42,7 +42,7 @@ import java.util.UUID;
  */
 public interface IJob<R> extends Runnable {
 
-    static final Logger ILOGGER = LoggerFactory.getLogger(IJob.class);
+    static final Logger IJOBLOGGER = LoggerFactory.getLogger(IJob.class);
 
     /**
      * Manage job result.
@@ -115,7 +115,7 @@ public interface IJob<R> extends Runnable {
      */
     static void handleMissingParameter(String parameterName) throws JobParameterMissingException {
         String message = String.format("Missing parameter \"%s\"", parameterName);
-        ILOGGER.error(message);
+        IJOBLOGGER.error(message);
         throw new JobParameterMissingException(message);
     }
 
@@ -128,7 +128,7 @@ public interface IJob<R> extends Runnable {
      */
     static void handleInvalidParameter(String parameterName, String reason) throws JobParameterInvalidException {
         String errorMessage = String.format("Invalid job parameter \"%s\" : \"%s\"", parameterName, reason);
-        ILOGGER.error(errorMessage);
+        IJOBLOGGER.error(errorMessage);
         throw new JobParameterInvalidException(errorMessage);
     }
 
@@ -143,7 +143,7 @@ public interface IJob<R> extends Runnable {
         String errorMessage = String.format("Invalid job parameter \"%s\" : \"%s\"",
                                             parameterName,
                                             reason.getMessage());
-        ILOGGER.error(errorMessage, reason);
+        IJOBLOGGER.error(errorMessage, reason);
         throw new JobParameterInvalidException(errorMessage);
     }
 

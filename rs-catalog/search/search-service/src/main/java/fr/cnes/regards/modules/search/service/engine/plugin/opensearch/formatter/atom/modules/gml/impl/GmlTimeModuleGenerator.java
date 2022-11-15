@@ -40,11 +40,6 @@ import java.util.Set;
  */
 public class GmlTimeModuleGenerator extends GMLGenerator implements ModuleGenerator {
 
-    @Override
-    public String getNamespaceUri() {
-        return GmlTimeModule.URI;
-    }
-
     private static final Set<Namespace> NAMESPACES;
 
     private static final String VALID_TIME = "ValidTime";
@@ -59,6 +54,11 @@ public class GmlTimeModuleGenerator extends GMLGenerator implements ModuleGenera
         final Set<Namespace> nss = new HashSet<Namespace>();
         nss.add(Namespace.getNamespace("gml", GeoRSSModule.GEORSS_GML_URI));
         NAMESPACES = Collections.unmodifiableSet(nss);
+    }
+
+    @Override
+    public String getNamespaceUri() {
+        return GmlTimeModule.URI;
     }
 
     /**

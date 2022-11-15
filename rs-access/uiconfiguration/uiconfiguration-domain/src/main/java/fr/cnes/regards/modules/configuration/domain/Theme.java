@@ -134,8 +134,9 @@ public class Theme {
         final Theme other = (Theme) obj;
         if (id == null) {
             return other.id == null;
-        } else
+        } else {
             return id.equals(other.id);
+        }
     }
 
     @Override

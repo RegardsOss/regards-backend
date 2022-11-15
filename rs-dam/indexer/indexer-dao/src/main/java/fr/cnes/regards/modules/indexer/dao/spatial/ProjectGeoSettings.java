@@ -23,6 +23,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
@@ -70,8 +71,10 @@ public class ProjectGeoSettings {
                                                                                                        tenantResolver.getTenant());
                                                                                                    if (response.getStatusCode()
                                                                                                        == HttpStatus.OK) {
-                                                                                                       Project currentProject = response.getBody()
-                                                                                                                                        .getContent();
+                                                                                                       Project currentProject = ResponseEntityUtils.extractContentOrThrow(
+                                                                                                           response,
+                                                                                                           () -> new RsRuntimeException(
+                                                                                                               "Error while retrieving project"));
                                                                                                        // To avoid problems later...No CRS => WGS84
                                                                                                        if (currentProject.getCrs()
                                                                                                            == null) {

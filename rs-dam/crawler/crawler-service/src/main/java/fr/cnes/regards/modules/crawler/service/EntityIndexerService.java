@@ -1191,7 +1191,7 @@ public class EntityIndexerService implements IEntityIndexerService {
         }
         // delete object
         LOGGER.debug("[DELETE] Deleting data {}", ipId);
-        return esRepos.delete(tenant, EntityType.DATA.toString(), ipId) ? obj.getTags() : null;
+        return esRepos.delete(tenant, EntityType.DATA.toString(), ipId) && obj != null ? obj.getTags() : null;
     }
 
     private Set<UniformResourceName> extractDatasetsFromTags(Set<String> tags) {

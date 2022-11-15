@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.listen
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.config.AccessRightsTemplateConfiguration;
@@ -115,13 +117,15 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
             FeignSecurityManager.asSystem();
             ResponseEntity<DownloadQuotaLimitsDto> storageResponse = storageClient.getQuotaLimits(userEmail);
             if (storageResponse.getStatusCode().is2xxSuccessful()) {
-                DownloadQuotaLimitsDto quotaLimits = storageResponse.getBody();
+                DownloadQuotaLimitsDto quotaLimits = ResponseEntityUtils.extractBodyOrThrow(storageResponse,
+                                                                                            "Cannot get quota limit of "
+                                                                                            + userEmail);
                 data.put("quota", Optional.ofNullable(quotaLimits.getMaxQuota()).orElse(-1L));
                 data.put("rate", Optional.ofNullable(quotaLimits.getRateLimit()).orElse(-1L));
             } else {
                 LOGGER.error("Could not find the associated quota limits for templating the email content.");
             }
-        } catch (HttpServerErrorException | HttpClientErrorException e) {
+        } catch (HttpServerErrorException | HttpClientErrorException | ModuleException e) {
             LOGGER.debug("Could not add quota paragraph to the email content.", e);
         } finally {
             FeignSecurityManager.reset();

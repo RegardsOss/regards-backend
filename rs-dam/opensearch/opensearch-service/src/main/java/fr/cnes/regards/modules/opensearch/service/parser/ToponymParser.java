@@ -22,6 +22,7 @@ package fr.cnes.regards.modules.opensearch.service.parser;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.modules.dam.domain.datasources.plugins.DataSourceException;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.exception.InvalidGeometryException;
@@ -102,13 +103,18 @@ public class ToponymParser implements IParser {
             throw new DataSourceException("Error while calling Toponym client (HTTP STATUS : "
                                           + response.getStatusCode());
         }
+        return extractGeometryOrThrow(response, businessId);
+    }
 
-        // check if toponym was found in the toponym server, if not throw exception
-        EntityModel<ToponymDTO> toponym = response.getBody();
-        if ((toponym == null) || (toponym.getContent() == null) || (toponym.getContent().getGeometry() == null)) {
-            throw new EntityNotFoundException(businessId, IGeometry.class);
+    private IGeometry extractGeometryOrThrow(ResponseEntity<EntityModel<ToponymDTO>> response, String businessId)
+        throws EntityNotFoundException {
+        ToponymDTO toponym = ResponseEntityUtils.extractContentOrNull(response);
+        if (toponym != null) {
+            IGeometry geometry = toponym.getGeometry();
+            if (geometry != null) {
+                return geometry;
+            }
         }
-        // Return toponym geometry
-        return toponym.getContent().getGeometry();
+        throw new EntityNotFoundException(businessId, IGeometry.class);
     }
 }

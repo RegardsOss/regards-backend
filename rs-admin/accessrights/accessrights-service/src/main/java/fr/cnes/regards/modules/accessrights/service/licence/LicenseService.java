@@ -24,9 +24,11 @@ import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.events.LicenseAction;
@@ -81,8 +83,9 @@ public class LicenseService implements ILicenseService {
      * @throws EntityNotFoundException
      */
     @Override
-    public LicenseDTO retrieveLicenseState() throws EntityNotFoundException {
-        String licenceLink = retrieveProject(runtimeTenantResolver.getTenant()).getLicenceLink();
+    public LicenseDTO retrieveLicenseState() throws ModuleException {
+        Project project = retrieveProject(runtimeTenantResolver.getTenant());
+        String licenceLink = project != null ? project.getLicenceLink() : null;
         // TODO public user and instance admin special cases
         // should be handled in ProjectUserService.
         // ProjectUserService should create special instances of ProjectUser for theses cases.
@@ -92,7 +95,7 @@ public class LicenseService implements ILicenseService {
         return new LicenseDTO(isLicenseAccepted, licenceLink);
     }
 
-    private Project retrieveProject(String pProjectName) throws EntityNotFoundException {
+    private Project retrieveProject(String pProjectName) throws ModuleException {
         FeignSecurityManager.asSystem();
         ResponseEntity<EntityModel<Project>> response = projectsClient.retrieveProject(pProjectName);
         FeignSecurityManager.reset();
@@ -100,7 +103,11 @@ public class LicenseService implements ILicenseService {
             LOG.info("Response from the project Client is : " + response.getStatusCode().value());
             throw new EntityNotFoundException(pProjectName, Project.class);
         }
-        return response.getBody().getContent();
+        EntityModel<Project> projectEntity = ResponseEntityUtils.extractBodyOrThrow(response,
+                                                                                    "An error occurred while trying to retrieve project "
+                                                                                    + pProjectName
+                                                                                    + ": body is null");
+        return projectEntity.getContent();
     }
 
     private boolean isPublicUser() {
@@ -126,7 +133,7 @@ public class LicenseService implements ILicenseService {
      * @throws EntityException if
      */
     @Override
-    public LicenseDTO acceptLicense() throws EntityException {
+    public LicenseDTO acceptLicense() throws ModuleException {
         ProjectUser projectUser = projectUserService.retrieveCurrentUser();
         projectUser.setLicenseAccepted(true);
         projectUserService.updateUser(projectUser.getId(), projectUser);

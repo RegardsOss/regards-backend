@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.accessrights.service.licence;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
 
 /**
@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
  */
 public interface ILicenseService {
 
-    LicenseDTO retrieveLicenseState() throws EntityNotFoundException;
+    LicenseDTO retrieveLicenseState() throws ModuleException;
 
     /**
      * Accept the license of the current project for the current user
@@ -37,7 +37,7 @@ public interface ILicenseService {
      * @return {@link LicenseDTO}
      * @throws EntityException
      */
-    LicenseDTO acceptLicense() throws EntityException;
+    LicenseDTO acceptLicense() throws ModuleException;
 
     /**
      * Reset the license state for all users of the current project

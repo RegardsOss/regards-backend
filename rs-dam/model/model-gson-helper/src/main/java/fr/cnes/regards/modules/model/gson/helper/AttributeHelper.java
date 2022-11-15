@@ -50,6 +50,8 @@ import java.util.stream.Collectors;
 @Service
 public class AttributeHelper extends AbstractAttributeHelper {
 
+    public final static String MODEL_ATTRIBUTE = "model.name";
+
     /**
      * Runtime tenant resolver
      */
@@ -61,8 +63,6 @@ public class AttributeHelper extends AbstractAttributeHelper {
     private final IAttributeModelClient attributeModelClient;
 
     private final IModelAttrAssocClient modelAttrAssocClient;
-
-    public final static String MODEL_ATTRIBUTE = "model.name";
 
     public AttributeHelper(IRuntimeTenantResolver runtimeTenantResolver,
                            IAttributeModelClient attributeModelClient,
@@ -96,8 +96,8 @@ public class AttributeHelper extends AbstractAttributeHelper {
             try {
                 ResponseEntity<List<EntityModel<ModelAttrAssoc>>> resources = modelAttrAssocClient.getModelAttrAssocs(
                     modelName);
-                if ((resources != null) && resources.hasBody()) {
-                    Set<AttributeModel> modelAttributes = resources.getBody()
+                if (resources != null && resources.hasBody()) {
+                    Set<AttributeModel> modelAttributes = resources.getBody() //NOSONAR potential NPE fixed in condition
                                                                    .stream()
                                                                    .map(f -> f.getContent().getAttribute())
                                                                    .collect(Collectors.toSet());

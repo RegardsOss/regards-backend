@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
@@ -75,7 +76,7 @@ public class LicenseController implements IResourceController<LicenseDTO> {
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve if the current user has accepted the license of the project",
         role = DefaultRole.PUBLIC)
-    public ResponseEntity<EntityModel<LicenseDTO>> retrieveLicense() throws EntityNotFoundException {
+    public ResponseEntity<EntityModel<LicenseDTO>> retrieveLicense() throws ModuleException {
         LicenseDTO licenseDto = licenseService.retrieveLicenseState();
         return new ResponseEntity<>(toResource(licenseDto), HttpStatus.OK);
     }
@@ -88,7 +89,7 @@ public class LicenseController implements IResourceController<LicenseDTO> {
      */
     @RequestMapping(method = RequestMethod.PUT)
     @ResourceAccess(description = "Allow current user to accept the license of the project", role = DefaultRole.PUBLIC)
-    public ResponseEntity<EntityModel<LicenseDTO>> acceptLicense() throws EntityException {
+    public ResponseEntity<EntityModel<LicenseDTO>> acceptLicense() throws ModuleException {
         LicenseDTO licenseDto = licenseService.acceptLicense();
         return new ResponseEntity<>(toResource(licenseDto), HttpStatus.OK);
     }

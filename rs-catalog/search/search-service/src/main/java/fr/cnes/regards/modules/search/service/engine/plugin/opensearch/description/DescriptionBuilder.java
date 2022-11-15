@@ -27,6 +27,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.urn.EntityType;
+import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
@@ -415,14 +416,15 @@ public class DescriptionBuilder {
                 assocsResponse = modelAttrAssocClient.getModelAttrAssocsFor(getEntityType(context.getSearchType()));
             }
 
+            Collection<ModelAttrAssoc> body = ResponseEntityUtils.extractBodyOrThrow(assocsResponse,
+                                                                                     "An error occurred while trying to get model attributes: body is null");
             if (!HttpUtils.isSuccess(assocsResponse.getStatusCode())) {
                 LOGGER.error("Trying to contact microservice responsible for Model but couldn't contact it");
                 throw new ModuleException("Unable to contact model controller");
             } else {
-                List<AttributeModel> attributes = assocsResponse.getBody()
-                                                                .stream()
-                                                                .map(ModelAttrAssoc::getAttribute)
-                                                                .collect(Collectors.toList());
+                List<AttributeModel> attributes = body.stream()
+                                                      .map(ModelAttrAssoc::getAttribute)
+                                                      .collect(Collectors.toList());
                 attributes = AbstractAttributeHelper.computeAttributes(attributes);
                 // Return computed attributes without specific JSON ones that are not queriable.
                 return attributes.stream().filter(a -> a.getType() != PropertyType.JSON).collect(Collectors.toList());

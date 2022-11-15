@@ -85,6 +85,10 @@
             <artifactId>jsoniter-regards-starter</artifactId>
         </dependency>
         <dependency>
+            <groupId>fr.cnes.regards.framework.utils</groupId>
+            <artifactId>response-entity-utils</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
         </dependency>
@@ -104,7 +108,6 @@
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>elasticsearch-rest-high-level-client</artifactId>
         </dependency>
-
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
