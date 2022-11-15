@@ -7,6 +7,7 @@ import fr.cnes.regards.framework.s3.domain.StorageEntry;
 import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
 import io.vavr.Tuple;
 import io.vavr.control.Option;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,6 +24,7 @@ import reactor.core.scheduler.Schedulers;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -74,10 +76,12 @@ public class S3HighLevelReactiveClientIT {
                                                         1024).map(DataBuffer::asByteBuffer);
         StorageCommandID cmdId = new StorageCommandID("askId", UUID.randomUUID());
 
+        String checksum = "706126bf6d8553708227dba90694e81c";
+
         String entryKey = config.entryKey("small.txt");
         long size = 427L;
         StorageEntry entry = StorageEntry.builder()
-                                         .checksum(Option.of(Tuple.of("MD5", "706126bf6d8553708227dba90694e81c")))
+                                         .checksum(Option.of(Tuple.of("MD5", checksum)))
                                          .config(config)
                                          .size(Option.some(size))
                                          .fullPath(entryKey)
@@ -112,6 +116,10 @@ public class S3HighLevelReactiveClientIT {
                   fail("s3 unreachable");
                   return false;
               });
+
+        Optional<String> eTag = client.eTag(StorageCommand.check(config, cmdId, entryKey)).block();
+        Assert.assertTrue("Missing etag property", eTag.isPresent());
+        Assert.assertEquals("Invalid etag. Does not match expected checksum", checksum, eTag.get());
 
         client.read(StorageCommand.read(config, cmdId, entryKey)).block().matchReadResult(pipe -> {
             pipe.getEntry().doOnNext(e -> LOGGER.info("entry: {}", readString(e))).block();

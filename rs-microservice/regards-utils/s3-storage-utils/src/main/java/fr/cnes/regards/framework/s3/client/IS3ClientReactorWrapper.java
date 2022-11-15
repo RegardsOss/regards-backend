@@ -28,10 +28,13 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 import java.io.InputStream;
+import java.util.Optional;
 
 public interface IS3ClientReactorWrapper {
 
     Mono<Boolean> exists(String bucket, String key);
+
+    Mono<Optional<String>> eTag(String bucket, String key);
 
     Mono<ResponseAndStream> readContentFlux(String bucket, String key, boolean failIfMissing);
 
