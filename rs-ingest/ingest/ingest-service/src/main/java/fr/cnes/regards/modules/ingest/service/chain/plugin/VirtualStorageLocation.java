@@ -194,10 +194,10 @@ public class VirtualStorageLocation implements IAIPStorageMetadataUpdate {
      */
     private void validateVirtualStorageMetadata(StorageMetadata requestVirtualStorageMetadata) throws ModuleException {
         if (StringUtils.isNotEmpty(requestVirtualStorageMetadata.getStorePath())
-            || !requestVirtualStorageMetadata.getTargetTypes().isEmpty()) {
-            // TODO : improve test to check min size / max size is null (when params exists)
+            || !requestVirtualStorageMetadata.getTargetTypes().isEmpty()
+            || requestVirtualStorageMetadata.getSize() != null) {
             String message = String.format(
-                "Invalid virtual storage metadata %s inside your request : storagePath and/or targetTypes must be empty or null",
+                "Invalid virtual storage metadata %s inside your request : storagePath and/or targetTypes and/or file size must be empty or null",
                 requestVirtualStorageMetadata.getPluginBusinessId());
             LOGGER.warn(message);
             throw new ModuleException(message);

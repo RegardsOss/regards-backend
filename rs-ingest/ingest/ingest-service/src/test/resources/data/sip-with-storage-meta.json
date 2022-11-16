@@ -1,0 +1,247 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "versioningMode": "INC_VERSION",
+    "sessionOwner": "validation",
+    "session": "REGARDS-2252",
+    "ingestChain": "DefaultProcessingChain",
+    "categories": [],
+    "storages": [
+      {
+        "pluginBusinessId": "LOCAL-ALL",
+        "targetTypes": []
+      },
+      {
+        "pluginBusinessId": "LOCAL-RAW",
+        "targetTypes": [
+          "RAWDATA",
+          "DOCUMENT",
+          "OTHER"
+        ],
+        "size": {
+          "min": 10,
+          "max": 20
+        }
+      },
+      {
+        "pluginBusinessId": "LOCAL-IMG-MIN",
+        "targetTypes": [
+          "THUMBNAIL",
+          "QUICKLOOK_MD",
+          "QUICKLOOK_HD"
+        ],
+        "size": {
+          "min": 10
+        }
+      },
+      {
+        "pluginBusinessId": "LOCAL-IMG-MAX",
+        "targetTypes": [
+          "THUMBNAIL",
+          "QUICKLOOK_MD",
+          "QUICKLOOK_HD"
+        ],
+        "size": {
+          "max": 20
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "test-sip-with-storage-meta-1",
+      "ipType": "DATA",
+      "geometry": null,
+      "properties": {
+        "contentInformations": [
+          {
+            "dataObject": {
+              "regardsDataType": "RAWDATA",
+              "filename": "simple_sip_01.dat",
+              "locations": [
+                {
+                  "url": "file:///input/validation/data/simple_sip_01.dat"
+                }
+              ],
+              "checksum": "aef21e8c5d28de881f2d39f4b36f4199",
+              "algorithm": "MD5",
+              "fileSize": 10
+            },
+            "representationInformation": {
+              "syntax": {
+                "name": "application",
+                "mimeType": "application/octet-stream"
+              }
+            }
+          },
+          {
+            "dataObject": {
+              "regardsDataType": "DOCUMENT",
+              "filename": "simple_document.pdf",
+              "locations": [
+                {
+                  "url": "file:///input/validation/data/simple_document.dat"
+                }
+              ],
+              "checksum": "bef21e8c5d28de881f2d39f4b36f4199",
+              "algorithm": "MD5",
+              "fileSize": 21
+            },
+            "representationInformation": {
+              "syntax": {
+                "name": "application",
+                "mimeType": "application/octet-stream"
+              }
+            }
+          },
+          {
+            "dataObject": {
+              "regardsDataType": "OTHER",
+              "filename": "other.mp4",
+              "locations": [
+                {
+                  "url": "file:///input/validation/data/other.mp4"
+                }
+              ],
+              "checksum": "cef21e8c5d28de881f2d39f4b36f4199",
+              "algorithm": "MD5",
+              "fileSize": 9
+            },
+            "representationInformation": {
+              "syntax": {
+                "name": "video",
+                "mimeType": "video/mp4"
+              }
+            }
+          },
+          {
+            "dataObject": {
+              "regardsDataType": "THUMBNAIL",
+              "filename": "thumbnail-01.jpg",
+              "locations": [
+                {
+                  "url": "file:///input/validation/data/thumbnail-01.jpg"
+                }
+              ],
+              "checksum": "81aaa5abd89f25109f3ade0c5fb641f4",
+              "algorithm": "MD5",
+              "fileSize": 21
+            },
+            "representationInformation": {
+              "syntax": {
+                "name": "image",
+                "mimeType": "image/jpeg"
+              }
+            }
+          },
+          {
+            "dataObject": {
+              "regardsDataType": "QUICKLOOK_MD",
+              "filename": "quicklook_md.jpg",
+              "locations": [
+                {
+                  "url": "file:///input/validation/data/quicklook_md.jpg"
+                }
+              ],
+              "checksum": "e6a4a020014239947383085f9c2ae218",
+              "algorithm": "MD5",
+              "fileSize": 9
+            },
+            "representationInformation": {
+              "syntax": {
+                "name": "image",
+                "mimeType": "image/jpeg"
+              }
+            }
+          },
+          {
+            "dataObject": {
+              "regardsDataType": "QUICKLOOK_HD",
+              "filename": "quicklook_hd.jpg",
+              "locations": [
+                {
+                  "url": "file:///input/validation/data/quicklook_hd.jpg"
+                }
+              ],
+              "checksum": "f6a4a020014239947383085f9c2ae218",
+              "algorithm": "MD5"
+            },
+            "representationInformation": {
+              "syntax": {
+                "name": "image",
+                "mimeType": "image/jpeg"
+              }
+            }
+          }
+        ],
+        "pdi": {
+          "contextInformation": {
+            "tags": [
+              "DATASET-WITH-META"
+            ]
+          },
+          "provenanceInformation": {
+            "history": []
+          },
+          "accessRightInformation": {}
+        },
+        "descriptiveInformation": {
+          "longValue": 20100,
+          "creationdate": "2015-10-20T16:21:15Z",
+          "doubleValue": 3.141592655,
+          "dataSetType": "chris_harvest_simple_model",
+          "label": "Simple Model Sip 01"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "test-sip-with-storage-meta-2",
+      "ipType": "DATA",
+      "geometry": null,
+      "properties": {
+        "contentInformations": [
+          {
+            "dataObject": {
+              "regardsDataType": "RAWDATA",
+              "filename": "simple_sip_02.dat",
+              "locations": [
+                {
+                  "url": "file:///input/validation/data/simple_sip_02.dat"
+                }
+              ],
+              "checksum": "aef21e8c5d28de881f2d39f4b36f4110",
+              "algorithm": "MD5",
+              "fileSize": 10
+            },
+            "representationInformation": {
+              "syntax": {
+                "name": "application",
+                "mimeType": "application/octet-stream"
+              }
+            }
+          }
+        ],
+        "pdi": {
+          "contextInformation": {
+            "tags": [
+              "DATASET-WITH-META"
+            ]
+          },
+          "provenanceInformation": {
+            "history": []
+          },
+          "accessRightInformation": {}
+        },
+        "descriptiveInformation": {
+          "longValue": 20100,
+          "creationdate": "2015-10-20T16:21:15Z",
+          "doubleValue": 3.141592655,
+          "dataSetType": "chris_harvest_simple_model",
+          "label": "Simple Model Sip 02"
+        }
+      }
+    }
+  ]
+}

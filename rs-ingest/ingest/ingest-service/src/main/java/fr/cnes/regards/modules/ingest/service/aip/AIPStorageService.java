@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequest;
 import fr.cnes.regards.modules.ingest.domain.request.ingest.IngestRequestError;
 import fr.cnes.regards.modules.ingest.dto.aip.AIP;
 import fr.cnes.regards.modules.ingest.dto.aip.StorageMetadata;
+import fr.cnes.regards.modules.ingest.dto.aip.StorageSize;
 import fr.cnes.regards.modules.storage.client.IStorageClient;
 import fr.cnes.regards.modules.storage.client.RequestInfo;
 import fr.cnes.regards.modules.storage.domain.dto.FileLocationDTO;
@@ -288,12 +289,8 @@ public class AIPStorageService implements IAIPStorageService {
         for (OAISDataObjectLocation location : dataObject.getLocations()) {
             // Check : should be store on each storage location or should only be referenced
             if (location.getStorage() == null) {
-                // Storage is empty for this dataobject, create a storage request for each storage
                 for (StorageMetadata storage : requestedStorages) {
-                    // Check if this storage contains this target type or is empty, which means
-                    // this storage accepts everything
-                    if (storage.getTargetTypes().isEmpty() || storage.getTargetTypes()
-                                                                     .contains(dataObject.getRegardsDataType())) {
+                    if (matchStorage(storage, dataObject)) {
                         filesToStore.add(createFileStorageRequestDTO(dataObject,
                                                                      representationInformation,
                                                                      aipEntity,
@@ -308,6 +305,34 @@ public class AIPStorageService implements IAIPStorageService {
                                                                location));
             }
         }
+    }
+
+    /**
+     * Determine if the dataObject should be stored on the storage location. There are two conditions :
+     * <ul>
+     *     <li>the storage accepts all types or the target dataObject type.</li>
+     *     <li>if the storage size is provided, the file size should be included in the limits.</li>
+     * </ul>
+     *
+     * @param storage    metadata about the storage location
+     * @param dataObject file to store
+     */
+    private boolean matchStorage(StorageMetadata storage, OAISDataObject dataObject) {
+        // targetTypes empty = this storage accepts all types
+        boolean isMatch = storage.getTargetTypes().isEmpty() || storage.getTargetTypes()
+                                                                       .contains(dataObject.getRegardsDataType());
+        StorageSize storageAcceptedSize = storage.getSize();
+        if (storageAcceptedSize != null && dataObject.getFileSize() != null) {
+            if (storageAcceptedSize.getMin() != null) {
+                isMatch &= dataObject.getFileSize() >= storageAcceptedSize.getMin();
+            }
+            if (storageAcceptedSize.getMax() != null) {
+                isMatch &= dataObject.getFileSize() <= storageAcceptedSize.getMax();
+            }
+        } else if (storageAcceptedSize != null && dataObject.getFileSize() == null) {
+            isMatch = false;
+        }
+        return isMatch;
     }
 
     /**

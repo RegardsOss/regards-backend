@@ -54,29 +54,8 @@ public class StorageMetadata {
      */
     private Set<DataType> targetTypes = new HashSet<>();
 
-    public String getPluginBusinessId() {
-        return pluginBusinessId;
-    }
-
-    public void setPluginBusinessId(String pluginBusinessId) {
-        this.pluginBusinessId = pluginBusinessId;
-    }
-
-    public String getStorePath() {
-        return storePath;
-    }
-
-    public void setStorePath(String storePath) {
-        this.storePath = storePath;
-    }
-
-    public Set<DataType> getTargetTypes() {
-        return targetTypes;
-    }
-
-    public void setTargetTypes(Set<DataType> targetTypes) {
-        this.targetTypes = targetTypes;
-    }
+    @Nullable
+    private StorageSize size;
 
     /**
      * Build storage metadata
@@ -110,6 +89,39 @@ public class StorageMetadata {
         return m;
     }
 
+    public String getPluginBusinessId() {
+        return pluginBusinessId;
+    }
+
+    public void setPluginBusinessId(String pluginBusinessId) {
+        this.pluginBusinessId = pluginBusinessId;
+    }
+
+    public String getStorePath() {
+        return storePath;
+    }
+
+    public void setStorePath(String storePath) {
+        this.storePath = storePath;
+    }
+
+    public Set<DataType> getTargetTypes() {
+        return targetTypes;
+    }
+
+    public void setTargetTypes(Set<DataType> targetTypes) {
+        this.targetTypes = targetTypes;
+    }
+
+    @Nullable
+    public StorageSize getSize() {
+        return size;
+    }
+
+    public void setSize(@Nullable StorageSize size) {
+        this.size = size;
+    }
+
     @Override
     public String toString() {
         return "StorageMetadata{"
@@ -120,7 +132,9 @@ public class StorageMetadata {
                + storePath
                + '\''
                + ", targetTypes="
-               + targetTypes.toString()
+               + targetTypes
+               + ", size="
+               + size
                + '}';
     }
 

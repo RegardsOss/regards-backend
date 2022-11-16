@@ -113,7 +113,7 @@ public abstract class IngestMultitenantServiceIT extends AbstractMultitenantServ
     protected IAIPRepository aipRepository;
 
     @Autowired
-    private IJobInfoService jobInfoService;
+    protected IJobInfoService jobInfoService;
 
     @Autowired
     protected IngestServiceIT ingestServiceTest;
