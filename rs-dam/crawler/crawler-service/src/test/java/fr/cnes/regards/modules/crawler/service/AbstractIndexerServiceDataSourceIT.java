@@ -127,9 +127,6 @@ public abstract class AbstractIndexerServiceDataSourceIT {
     @Value("${regards.elasticsearch.host:}")
     protected String esHost;
 
-    @Value("${regards.elasticsearch.address:}")
-    protected String esAddress;
-
     @Value("${regards.elasticsearch.http.port}")
     protected int esPort;
 

@@ -378,11 +378,14 @@ public class EsRepositoryIT {
      */
     private static Gson gson;
 
-    @Value("${regards.elasticsearch.address}")
+    @Value("${regards.elasticsearch.host}")
     private String elasticHost;
 
     @Value("${regards.elasticsearch.http.port}")
     private int elasticPort;
+
+    @Value("${regards.elasticsearch.http.protocol:http}")
+    private String elasticProtocol;
 
     /**
      * Befor class setting up method
@@ -404,9 +407,11 @@ public class EsRepositoryIT {
                                     .create();
 
             repository = new EsRepository(gson,
-                                          null,
                                           elasticHost,
                                           elasticPort,
+                                          elasticProtocol,
+                                          null,
+                                          null,
                                           0,
                                           new GsonDeserializeIIndexableStrategy(gson),
                                           new AggregationBuilderFacetTypeVisitor(10, 1),

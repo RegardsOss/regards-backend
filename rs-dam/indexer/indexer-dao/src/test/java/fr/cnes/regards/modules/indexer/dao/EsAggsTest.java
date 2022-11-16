@@ -72,9 +72,11 @@ public class EsAggsTest {
         try {
             gson = new GsonBuilder().registerTypeAdapter(Multimap.class, new MultimapAdapter()).create();
             repository = new EsRepository(gson,
-                                          null,
-                                          propMap.get("regards.elasticsearch.address"),
+                                          propMap.get("regards.elasticsearch.host"),
                                           Integer.parseInt(propMap.get("regards.elasticsearch.http.port")),
+                                          propMap.get("regards.elasticsearch.http.protocol"),
+                                          null,
+                                          null,
                                           0,
                                           new JsoniterDeserializeIIndexableStrategy(new IIndexableJsoniterConfig()),
                                           new AggregationBuilderFacetTypeVisitor(10, 1),

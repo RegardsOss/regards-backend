@@ -84,9 +84,11 @@ public class GeoQueryOnPointsTest extends AbstractOnPointsTest {
                                     .registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter().nullSafe())
                                     .create();
             repository = new EsRepository(gson,
-                                          null,
                                           "localhost",
                                           9200,
+                                          "http",
+                                          null,
+                                          null,
                                           0,
                                           new JsoniterDeserializeIIndexableStrategy(new IIndexableJsoniterConfig()),
                                           new AggregationBuilderFacetTypeVisitor(100, 5),
@@ -94,7 +96,7 @@ public class GeoQueryOnPointsTest extends AbstractOnPointsTest {
 
             // This test is not intended to be executed on integration serveur but better locally to test
             // functionnalities during development phase
-            //            repository = new EsRepository(gson, null, propMap.get("regards.elasticsearch.address"),
+            //            repository = new EsRepository(gson, null, propMap.get("regards.elasticsearch.host"),
             //                    Integer.parseInt(propMap.get("regards.elasticsearch.http.port")), new AggregationBuilderFacetTypeVisitor(100, 5));
         } catch (NoNodeAvailableException e) {
             repositoryOK = false;

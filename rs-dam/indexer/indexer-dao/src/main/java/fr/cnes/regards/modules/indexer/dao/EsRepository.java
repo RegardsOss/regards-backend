@@ -67,8 +67,13 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.nio.entity.NStringEntity;
+import org.apache.logging.log4j.util.Strings;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.DocWriteResponse.Result;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
@@ -103,7 +108,6 @@ import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.client.indices.PutMappingRequest;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.cluster.metadata.AliasMetadata;
-import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentHelper;
 import org.elasticsearch.core.TimeValue;
@@ -328,27 +332,38 @@ public class EsRepository implements IEsRepository {
     private DefaultScrollClearResponseActionListener scrollClearListener = new DefaultScrollClearResponseActionListener();
 
     public EsRepository(@Autowired Gson gson,
-                        @Value("${regards.elasticsearch.host:}") String inEsHost,
-                        @Value("${regards.elasticsearch.address:}") String inEsAddress,
+                        @Value("${regards.elasticsearch.host:}") String esHost,
                         @Value("${regards.elasticsearch.http.port}") int esPort,
+                        @Value("${regards.elasticsearch.http.protocol:http}") String esProtocol,
+                        @Value("${regards.elasticsearch.http.username:}") String username,
+                        @Value("${regards.elasticsearch.http.password:}") String password,
                         @Value("${regards.elasticsearch.http.buffer.limit:104857600}") int elasticClientBufferLimit,
                         @Autowired JsonDeserializeStrategy<IIndexable> deserStrategy,
                         AggregationBuilderFacetTypeVisitor aggBuilderFacetTypeVisitor,
                         AttrDescToJsonMapping toMapping) {
         this.toMapping = toMapping;
         this.gson = gson;
-        String esHost = Strings.isEmpty(inEsHost) ? inEsAddress : inEsHost;
         this.aggBuilderFacetTypeVisitor = aggBuilderFacetTypeVisitor;
 
-        String connectionInfoMessage = String.format("Elastic search connection properties : host \"%s\", port \"%d\"",
-                                                     esHost,
-                                                     esPort);
+        String connectionInfoMessage = String.format(
+            "Elastic search connection properties : protocol \"%s\", host \"%s\", port \"%d\"",
+            esProtocol,
+            esHost,
+            esPort);
         LOGGER.info(connectionInfoMessage);
 
         // Timeouts are set to 20 minutes particularly for bulk save containing geo_shape
-        RestClientBuilder restClientBuilder = RestClient.builder(new HttpHost(esHost, esPort))
+        RestClientBuilder restClientBuilder = RestClient.builder(new HttpHost(esHost, esPort, esProtocol))
                                                         .setRequestConfigCallback(requestConfigBuilder -> requestConfigBuilder.setSocketTimeout(
                                                             1_200_000));
+
+        // Add auth when provided
+        if (Strings.isNotBlank(username) && Strings.isNotBlank(password)) {
+            final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+            credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
+            restClientBuilder.setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(
+                credentialsProvider));
+        }
 
         if (elasticClientBufferLimit > 0) {
             Builder builder = RequestOptions.DEFAULT.toBuilder();
@@ -775,7 +790,7 @@ public class EsRepository implements IEsRepository {
     }
 
     private void checkDocument(IIndexable doc) {
-        if (Strings.isNullOrEmpty(doc.getDocId()) || Strings.isNullOrEmpty(doc.getType())) {
+        if (Strings.isBlank(doc.getDocId()) || Strings.isBlank(doc.getType())) {
             throw new IllegalArgumentException("docId and type are mandatory on an IIndexable object");
         }
     }

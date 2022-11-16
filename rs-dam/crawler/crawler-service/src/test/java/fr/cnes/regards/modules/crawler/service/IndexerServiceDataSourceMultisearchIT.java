@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.crawler.service;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonObject;
@@ -264,9 +263,7 @@ public class IndexerServiceDataSourceMultisearchIT extends AbstractIndexerServic
         RestClientBuilder restClientBuilder;
         RestHighLevelClient client;
         try {
-            restClientBuilder = RestClient.builder(new HttpHost(InetAddress.getByName(!Strings.isNullOrEmpty(esHost) ?
-                                                                                          esHost :
-                                                                                          esAddress), esPort));
+            restClientBuilder = RestClient.builder(new HttpHost(InetAddress.getByName(esHost), esPort));
             client = new RestHighLevelClient(restClientBuilder);
 
         } catch (final UnknownHostException e) {
