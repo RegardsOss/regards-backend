@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
 
@@ -101,6 +102,21 @@ public class S3AsyncClientReactorWrapper extends S3ClientReloader<S3AsyncClient>
             }).onErrorResume(NoSuchKeyException.class, t -> {
                 LOGGER.debug("File ({}) in bucket ({}) does not exist", key, bucket, t);
                 return Mono.just(false);
+            }).onErrorMap(SdkClientException.class, S3ClientException::new);
+        });
+    }
+
+    @Override
+    public Mono<Optional<String>> eTag(String bucket, String key) {
+        return withClient(client -> {
+            HeadObjectRequest request = HeadObjectRequest.builder().bucket(bucket).key(key).build();
+            return fromFutureSupplier(() -> client.headObject(request)).map(response -> {
+                LOGGER.debug("File ({}) in bucket ({}) exists", key, bucket);
+                // Etag specification indicates that the string is quoted so remove quotes to get eTag content value
+                return Optional.of(response.eTag().replace("\"", ""));
+            }).onErrorResume(NoSuchKeyException.class, t -> {
+                LOGGER.debug("File ({}) in bucket ({}) does not exist", key, bucket, t);
+                return Mono.just(Optional.empty());
             }).onErrorMap(SdkClientException.class, S3ClientException::new);
         });
     }

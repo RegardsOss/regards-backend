@@ -50,6 +50,7 @@ import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.time.Duration;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Level;
 
@@ -131,6 +132,13 @@ public class S3HighLevelReactiveClient {
                                     new StorageCommandResult.CheckAbsent(checkCmd))
                                 .onErrorResume(t -> Mono.just(new StorageCommandResult.UnreachableStorage(checkCmd,
                                                                                                           t)));
+    }
+
+    public Mono<Optional<String>> eTag(Check checkCmd) {
+        StorageConfig config = checkCmd.getConfig();
+        String archivePath = checkCmd.getEntryKey();
+        String bucket = config.getBucket();
+        return getClient(config).eTag(bucket, archivePath);
     }
 
     private Mono<ReadResult> readingCallableMono(Read readCmd) {
