@@ -98,6 +98,7 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
             PExecution exec = context.getExec();
             Seq<PInputFile> inputFiles = exec.getInputFiles();
             return workdirService.makeWorkdir(exec)
+                                 .map(wd -> addWorkdirToContext(context, wd))
                                  .flatMap(wd -> workdirService.writeInputFilesToWorkdirInput(wd, inputFiles))
                                  .flatMap(wd -> {
                                      if (addMetadata) {
@@ -106,11 +107,16 @@ public abstract class AbstractBaseForecastedStorageAwareProcessPlugin extends Ab
                                          return Mono.just(wd);
                                      }
                                  })
-                                 .map(wd -> context.withParam(ExecutionLocalWorkdir.class, wd))
+                                 .map(wd -> context)
                                  .subscribeOn(Schedulers.boundedElastic())
                                  .contextWrite(addInContext(PExecution.class, exec))
                                  .switchIfEmpty(Mono.error(new WorkdirPreparationException(exec, "Unknown error")));
         };
+    }
+
+    private ExecutionLocalWorkdir addWorkdirToContext(ExecutionContext context, ExecutionLocalWorkdir wd) {
+        context.withParam(ExecutionLocalWorkdir.class, wd);
+        return wd;
     }
 
     /**

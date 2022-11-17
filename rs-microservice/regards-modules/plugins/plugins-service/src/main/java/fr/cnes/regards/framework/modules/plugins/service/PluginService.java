@@ -561,7 +561,7 @@ public class PluginService implements IPluginService, InitializingBean {
         instantiateInnerPlugins(plgConf, newCacheForThisTenant);
         newCacheForThisTenant.computeIfAbsent(plgConf.getBusinessId(), bid -> {
             try {
-                return instantiatePlugin(plgConf, newCacheForThisTenant);
+                return instantiatePlugin(loadPluginConfiguration(plgConf.getBusinessId()), newCacheForThisTenant);
             } catch (ModuleException | NotAvailablePluginConfigurationException e) {
                 throw new RsRuntimeException(e);
             }
