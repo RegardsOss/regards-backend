@@ -68,6 +68,8 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderDataFileService.class);
 
+    public static final String CONTENT_LENGTH_HEADER = "content-length";
+
     private final Set<String> noProxyHosts = Sets.newHashSet();
 
     private IOrderDataFileRepository orderDataFileRepository;
@@ -204,7 +206,7 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
             // Update then associated information to order
             Order order = orderRepository.findSimpleById(orderId);
             boolean wasWaitingForUser = order.isWaitingForUser();
-            order.setWaitingForUser(filesTasksRepository.findByOrderId(orderId).anyMatch(t -> t.isWaitingForUser()));
+            order.setWaitingForUser(filesTasksRepository.findByOrderId(orderId).anyMatch(FilesTask::isWaitingForUser));
             LOGGER.debug("Update order {} | WaitingForUser from {} to {} - status {} - available files count {}",
                          order.getId(),
                          wasWaitingForUser,
@@ -247,12 +249,12 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
     @Override
     public ResponseEntity<InputStreamResource> downloadFile(final OrderDataFile dataFile, Optional<String> asUser) {
         ResponseEntity<InputStreamResource> response;
-        if (dataFile.isReference()) {
+        if (Boolean.TRUE.equals(dataFile.isReference())) {
             response = downloadReferenceFile(dataFile);
         } else {
             try {
                 FeignSecurityManager.asUser(asUser.orElse(authResolver.getUser()), DefaultRole.PROJECT_ADMIN.name());
-                response = donwloadStoredFile(dataFile);
+                response = downloadStoredFile(dataFile);
             } finally {
                 FeignSecurityManager.reset();
             }
@@ -302,17 +304,19 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
      * @param dataFile
      * @return {@link InputStreamResource} of the file
      */
-    private ResponseEntity<InputStreamResource> donwloadStoredFile(OrderDataFile dataFile) {
+    private ResponseEntity<InputStreamResource> downloadStoredFile(OrderDataFile dataFile) {
         try {
             InputStreamResource isr = null;
             Response response = storageClient.downloadFile(dataFile.getChecksum(), false);
-            if (response.status() != HttpStatus.OK.value()) {
+            String reason = response.reason();
+            int status = response.status();
+            if (status != HttpStatus.OK.value()) {
                 LOGGER.error("Error downloading file {} from storage : {} : {}",
                              dataFile.getChecksum(),
-                             response.status(),
-                             response.reason());
+                             status,
+                             reason);
                 dataFile.setState(FileState.DOWNLOAD_ERROR);
-                dataFile.setDownloadError(response.reason());
+                dataFile.setDownloadError(reason);
                 if (response.body() != null) {
                     isr = new InputStreamResource(new ResponseStreamProxy(response));
                 }
@@ -321,7 +325,11 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
                     LOGGER.info("Download of file {} succeeded with {}bytes",
                                 dataFile.getFilename(),
                                 stream.getStreamReadCount());
-                    if (stream.getStreamReadCount() >= dataFile.getFilesize()) {
+                    int contentLength = Integer.parseInt(response.headers()
+                                                                 .get(CONTENT_LENGTH_HEADER)
+                                                                 .iterator()
+                                                                 .next());
+                    if (stream.getStreamReadCount() >= contentLength) {
                         dataFile.setState(FileState.DOWNLOADED);
                         processingEventSender.sendDownloadedFilesNotification(Collections.singleton(dataFile));
                     } else {
@@ -346,7 +354,7 @@ public class OrderDataFileService implements IOrderDataFileService, Initializing
             for (Entry<String, Collection<String>> h : response.headers().entrySet()) {
                 h.getValue().forEach(v -> headers.add(h.getKey(), v));
             }
-            return new ResponseEntity<>(isr, headers, HttpStatus.valueOf(response.status()));
+            return new ResponseEntity<>(isr, headers, HttpStatus.valueOf(status));
         } catch (HttpServerErrorException | HttpClientErrorException | IOException e) {
             LOGGER.error(e.getMessage(), e);
             dataFile.setState(FileState.DOWNLOAD_ERROR);
