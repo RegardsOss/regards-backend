@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.authentication.plugins.identityprovider.regards;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.authentication.domain.plugin.AuthenticationPluginResponse;
@@ -67,10 +68,8 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
         try {
             FeignSecurityManager.asSystem();
             ResponseEntity<EntityModel<Account>> response = accountsClient.retrieveAccounByEmail(pEmail);
-            if ((response != null)
-                && (response.getBody() != null)
-                && (response.getBody().getContent() != null)
-                && !response.getBody().getContent().isExternal()) {
+            Account account = ResponseEntityUtils.extractContentOrNull(response);
+            if (account != null && !account.isExternal()) {
                 validateResponse = accountsClient.validatePassword(pEmail, pPassword);
             } else {
                 String message = String.format(

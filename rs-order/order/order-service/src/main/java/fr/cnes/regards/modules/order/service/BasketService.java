@@ -23,6 +23,8 @@ import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.framework.urn.UniformResourceName;
+import fr.cnes.regards.framework.utils.ResponseEntityUtils;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
@@ -44,6 +46,8 @@ import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.SearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -68,6 +72,8 @@ import java.util.stream.Stream;
 @Service
 @MultitenantTransactional
 public class BasketService implements IBasketService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasketService.class);
 
     @Autowired
     private IBasketRepository repos;
@@ -123,9 +129,11 @@ public class BasketService implements IBasketService {
         try {
             FeignSecurityManager.asUser(authResolver.getUser(), authResolver.getRole());
             // Retrieve summary for all datasets matching the search request from the new selection to add.
-            DocFilesSummary summary = complexSearchClient.computeDatasetsSummary(buildSearchRequest(selectionRequest,
-                                                                                                    0,
-                                                                                                    1)).getBody();
+            ResponseEntity<DocFilesSummary> docFilesSummaryResponse = complexSearchClient.computeDatasetsSummary(
+                buildSearchRequest(selectionRequest, 0, 1));
+            DocFilesSummary summary = ResponseEntityUtils.extractBodyOrThrow(docFilesSummaryResponse,
+                                                                             () -> new RsRuntimeException(
+                                                                                 "An error occurred while computing datasets summary: summary is null"));
             // If global summary contains no files => EmptySelection
             if (summary.getFilesCount() == 0l) {
                 throw new EmptySelectionException();
@@ -152,13 +160,14 @@ public class BasketService implements IBasketService {
                 if (datasetSelection == null) {
                     // There is no existing BasketDatasetSelection for the current datasetIpId so create a new one
                     // Retrieve global information about the new dataset
-                    EntityFeature feature = searchClient.getDataset(UniformResourceName.fromString(datasetIpId),
-                                                                    SearchEngineMappings.getJsonHeaders())
-                                                        .getBody()
-                                                        .getContent();
+                    EntityFeature feature = ResponseEntityUtils.extractContentOrNull(searchClient.getDataset(
+                        UniformResourceName.fromString(datasetIpId),
+                        SearchEngineMappings.getJsonHeaders()));
                     datasetSelection = new BasketDatasetSelection();
                     datasetSelection.setDatasetIpid(datasetIpId);
-                    datasetSelection.setDatasetLabel(feature.getLabel());
+                    if (feature != null) {
+                        datasetSelection.setDatasetLabel(feature.getLabel());
+                    }
                     // Add the newly created dataset to the current basket.
                     basket.getDatasetSelections().add(datasetSelection);
                 }
@@ -248,9 +257,10 @@ public class BasketService implements IBasketService {
         throws TooManyItemsSelectedInBasketException {
         // retrieve the processing to get configuration parameters
         ResponseEntity<PProcessDTO> processResponse = processingClient.findByUuid(processBusinessId);
-        if (processResponse.getBody() != null && processResponse.getStatusCode() == HttpStatus.OK) {
+        PProcessDTO process = ResponseEntityUtils.extractBodyOrNull(processResponse);
+        if (process != null && processResponse.getStatusCode() == HttpStatus.OK) {
             OrderProcessInfoMapper orderProcessInfoMapper = new OrderProcessInfoMapper();
-            OrderProcessInfo processInfo = orderProcessInfoMapper.fromMap(processResponse.getBody().getProcessInfo())
+            OrderProcessInfo processInfo = orderProcessInfoMapper.fromMap(process.getProcessInfo())
                                                                  .getOrElseThrow(() -> new OrderProcessingService.UnparsableProcessInfoException(
                                                                      String.format(
                                                                          "Unparsable description info from process plugin with id %s",
@@ -368,11 +378,11 @@ public class BasketService implements IBasketService {
      * (Re-) run search on given dataset with all combined items requests.
      */
     private void computeSummaryAndUpdateDatasetSelection(BasketDatasetSelection datasetSelection) {
-
-        DocFilesSummary curDsSelectionSummary = complexSearchClient.computeDatasetsSummary(buildSearchRequest(
-            datasetSelection,
-            0,
-            1)).getBody();
+        ResponseEntity<DocFilesSummary> docFilesSummaryResponseEntity = complexSearchClient.computeDatasetsSummary(
+            buildSearchRequest(datasetSelection, 0, 1));
+        DocFilesSummary curDsSelectionSummary = ResponseEntityUtils.extractBodyOrThrow(docFilesSummaryResponseEntity,
+                                                                                       () -> new RsRuntimeException(
+                                                                                           "An error occurred while compute datasets summary"));
         // Take into account only asked datasetIpId (sub-)summary
         DocFilesSubSummary curDsSelectionSubSummary = curDsSelectionSummary.getSubSummariesMap()
                                                                            .get(datasetSelection.getDatasetIpid());

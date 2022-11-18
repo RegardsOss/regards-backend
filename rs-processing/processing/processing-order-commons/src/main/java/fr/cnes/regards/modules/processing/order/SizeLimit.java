@@ -19,14 +19,12 @@ package fr.cnes.regards.modules.processing.order;
 
 import lombok.AllArgsConstructor;
 import lombok.Value;
-import lombok.With;
 
 /**
  * This class defines the size limits for a process execution, appearing in {@link OrderProcessInfo}.
  *
  * @author gandrieu
  */
-@With
 @Value
 @AllArgsConstructor
 public class SizeLimit {
@@ -49,4 +47,13 @@ public class SizeLimit {
     public Type getType() {
         return limit == 0L ? Type.NO_LIMIT : type;
     }
+
+    public SizeLimit withType(Type type) {
+        return this.type.equals(type) ? this : new SizeLimit(type, this.limit);
+    }
+
+    public SizeLimit withLimit(Long limit) {
+        return this.limit.equals(limit) ? this : new SizeLimit(this.type, limit);
+    }
+
 }

@@ -29,6 +29,11 @@ import java.util.Objects;
  */
 public class Authentication {
 
+    @SerializedName("token_type")
+    private static final String TOKEN_TYPE = "bearer";
+
+    private static final String JTI = "bearer";
+
     private final String project;
 
     private final String scope;
@@ -43,13 +48,8 @@ public class Authentication {
     @SerializedName("access_token")
     private final String accessToken;
 
-    @SerializedName("token_type")
-    private final String tokenType = "bearer";
-
     @SerializedName("expires_in")
     private final Long expiresIn;
-
-    private final String jti = "bearer";
 
     public Authentication(String tenant,
                           String email,
@@ -91,7 +91,7 @@ public class Authentication {
     }
 
     public String getTokenType() {
-        return tokenType;
+        return TOKEN_TYPE;
     }
 
     public Long getExpiresIn() {
@@ -99,7 +99,7 @@ public class Authentication {
     }
 
     public String getJti() {
-        return jti;
+        return JTI;
     }
 
     @Override
@@ -123,6 +123,6 @@ public class Authentication {
 
     @Override
     public int hashCode() {
-        return Objects.hash(project, scope, role, sub, serviceProviderName, accessToken, tokenType, expiresIn, jti);
+        return Objects.hash(project, scope, role, sub, serviceProviderName, accessToken, TOKEN_TYPE, expiresIn, JTI);
     }
 }

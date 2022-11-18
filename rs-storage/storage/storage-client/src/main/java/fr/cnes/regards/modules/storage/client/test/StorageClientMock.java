@@ -257,6 +257,7 @@ public class StorageClientMock implements IStorageClient {
 
     @Override
     public void cancelRequests(Collection<String> requestGroups) {
+        // do nothing
     }
 
 }

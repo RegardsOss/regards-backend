@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -69,9 +70,10 @@ public class ClientErrorDecoder extends ErrorDecoder.Default implements ErrorDec
         }
 
         Charset responseCharset = null;
-        if (responseHeaders.getContentType() != null) {
+        MediaType mediaType = responseHeaders.getContentType();
+        if (mediaType != null) {
             // if we find any charset, lets use it
-            responseCharset = responseHeaders.getContentType().getCharset();
+            responseCharset = mediaType.getCharset();
         }
 
         HttpStatus statusCode = HttpStatus.valueOf(response.status());

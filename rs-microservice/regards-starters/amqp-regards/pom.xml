@@ -100,6 +100,10 @@
             <artifactId>notification-regards</artifactId>
         </dependency>
         <dependency>
+            <groupId>fr.cnes.regards.framework.utils</groupId>
+            <artifactId>response-entity-utils</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>security-config</artifactId>
         </dependency>

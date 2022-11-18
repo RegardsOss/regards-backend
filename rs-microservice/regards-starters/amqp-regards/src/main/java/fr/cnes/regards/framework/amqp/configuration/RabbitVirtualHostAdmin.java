@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.amqp.domain.RabbitVhost;
 import fr.cnes.regards.framework.amqp.exception.AddingRabbitMQVhostPermissionException;
 import fr.cnes.regards.framework.amqp.exception.RemovingRabbitMQVhostException;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
@@ -34,6 +35,7 @@ import org.springframework.http.*;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestOperations;
 
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Set;
@@ -210,11 +212,16 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin, Initiali
         final HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.AUTHORIZATION, setBasic());
         final HttpEntity<Void> request = new HttpEntity<>(headers);
+
+        vhostList = new ArrayList<>();
         final ResponseEntity<List<RabbitVhost>> response = restOperations.exchange(host,
                                                                                    HttpMethod.GET,
                                                                                    request,
                                                                                    typeRef);
-        vhostList = response.getBody().stream().map(RabbitVhost::getName).collect(Collectors.toList());
+        List<RabbitVhost> rabbitVhosts = ResponseEntityUtils.extractBodyOrNull(response);
+        if (rabbitVhosts != null) {
+            vhostList = rabbitVhosts.stream().map(RabbitVhost::getName).collect(Collectors.toList());
+        }
         return vhostList;
     }
 

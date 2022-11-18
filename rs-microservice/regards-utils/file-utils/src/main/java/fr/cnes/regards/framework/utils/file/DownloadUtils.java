@@ -123,19 +123,20 @@ public final class DownloadUtils {
     }
 
     /**
-     * Check if file exist on s3 sotrage
+     * Check if file exist on s3 storage
      *
      * @param key           the file to check
-     * @param storageConfig the StorageConfig of the sterver
+     * @param storageConfig the StorageConfig of the server
      * @return true if the file exists
      */
     private static boolean existsS3(String key, StorageConfig storageConfig) {
         S3HighLevelReactiveClient client = getS3HighLevelReactiveClient();
         StorageCommandID cmdId = new StorageCommandID(key, UUID.randomUUID());
         StorageCommand.Check check = StorageCommand.check(storageConfig, cmdId, key);
-        return client.check(check).block().matchCheckResult(present -> true, absent -> false, unreachableStorage -> {
-            throw new S3ClientException(unreachableStorage.getThrowable());
-        });
+        return client.check(check).block().matchCheckResult(present -> true, // NOSONAR impossible npe
+                                                            absent -> false, unreachableStorage -> {
+                throw new S3ClientException(unreachableStorage.getThrowable());
+            });
     }
 
     /**

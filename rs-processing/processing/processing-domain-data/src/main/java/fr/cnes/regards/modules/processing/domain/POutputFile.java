@@ -19,7 +19,6 @@ package fr.cnes.regards.modules.processing.domain;
 
 import io.vavr.collection.List;
 import lombok.Value;
-import lombok.With;
 
 import java.net.URL;
 import java.time.OffsetDateTime;
@@ -33,7 +32,6 @@ import java.util.UUID;
  * @author gandrieu
  */
 @Value
-@With
 public class POutputFile {
 
     @Value
@@ -103,5 +101,181 @@ public class POutputFile {
 
     public static POutputFile markDownloaded(POutputFile pOutputFile) {
         return pOutputFile.withDownloaded(true);
+    }
+
+    public POutputFile withId(UUID id) {
+        return this.id.equals(id) ?
+            this :
+            new POutputFile(id,
+                            this.execId,
+                            this.name,
+                            this.checksum,
+                            this.url,
+                            this.size,
+                            this.inputCorrelationIds,
+                            this.created,
+                            this.downloaded,
+                            this.deleted,
+                            this.persisted);
+    }
+
+    public POutputFile withExecId(UUID execId) {
+        return this.execId.equals(execId) ?
+            this :
+            new POutputFile(this.id,
+                            execId,
+                            this.name,
+                            this.checksum,
+                            this.url,
+                            this.size,
+                            this.inputCorrelationIds,
+                            this.created,
+                            this.downloaded,
+                            this.deleted,
+                            this.persisted);
+    }
+
+    public POutputFile withName(String name) {
+        return this.name.equals(name) ?
+            this :
+            new POutputFile(this.id,
+                            this.execId,
+                            name,
+                            this.checksum,
+                            this.url,
+                            this.size,
+                            this.inputCorrelationIds,
+                            this.created,
+                            this.downloaded,
+                            this.deleted,
+                            this.persisted);
+    }
+
+    public POutputFile withChecksum(Digest checksum) {
+        return this.checksum.equals(checksum) ?
+            this :
+            new POutputFile(this.id,
+                            this.execId,
+                            this.name,
+                            checksum,
+                            this.url,
+                            this.size,
+                            this.inputCorrelationIds,
+                            this.created,
+                            this.downloaded,
+                            this.deleted,
+                            this.persisted);
+    }
+
+    public POutputFile withUrl(URL url) {
+        return this.url.equals(url) ?
+            this :
+            new POutputFile(this.id,
+                            this.execId,
+                            this.name,
+                            this.checksum,
+                            url,
+                            this.size,
+                            this.inputCorrelationIds,
+                            this.created,
+                            this.downloaded,
+                            this.deleted,
+                            this.persisted);
+    }
+
+    public POutputFile withSize(Long size) {
+        return this.size.equals(size) ?
+            this :
+            new POutputFile(this.id,
+                            this.execId,
+                            this.name,
+                            this.checksum,
+                            this.url,
+                            size,
+                            this.inputCorrelationIds,
+                            this.created,
+                            this.downloaded,
+                            this.deleted,
+                            this.persisted);
+    }
+
+    public POutputFile withInputCorrelationIds(List<String> inputCorrelationIds) {
+        return this.inputCorrelationIds.equals(inputCorrelationIds) ?
+            this :
+            new POutputFile(this.id,
+                            this.execId,
+                            this.name,
+                            this.checksum,
+                            this.url,
+                            this.size,
+                            inputCorrelationIds,
+                            this.created,
+                            this.downloaded,
+                            this.deleted,
+                            this.persisted);
+    }
+
+    public POutputFile withCreated(OffsetDateTime created) {
+        return this.created.equals(created) ?
+            this :
+            new POutputFile(this.id,
+                            this.execId,
+                            this.name,
+                            this.checksum,
+                            this.url,
+                            this.size,
+                            this.inputCorrelationIds,
+                            created,
+                            this.downloaded,
+                            this.deleted,
+                            this.persisted);
+    }
+
+    public POutputFile withDownloaded(boolean downloaded) {
+        return this.downloaded == downloaded ?
+            this :
+            new POutputFile(this.id,
+                            this.execId,
+                            this.name,
+                            this.checksum,
+                            this.url,
+                            this.size,
+                            this.inputCorrelationIds,
+                            this.created,
+                            downloaded,
+                            this.deleted,
+                            this.persisted);
+    }
+
+    public POutputFile withDeleted(boolean deleted) {
+        return this.deleted == deleted ?
+            this :
+            new POutputFile(this.id,
+                            this.execId,
+                            this.name,
+                            this.checksum,
+                            this.url,
+                            this.size,
+                            this.inputCorrelationIds,
+                            this.created,
+                            this.downloaded,
+                            deleted,
+                            this.persisted);
+    }
+
+    public POutputFile withPersisted(boolean persisted) {
+        return this.persisted == persisted ?
+            this :
+            new POutputFile(this.id,
+                            this.execId,
+                            this.name,
+                            this.checksum,
+                            this.url,
+                            this.size,
+                            this.inputCorrelationIds,
+                            this.created,
+                            this.downloaded,
+                            this.deleted,
+                            persisted);
     }
 }

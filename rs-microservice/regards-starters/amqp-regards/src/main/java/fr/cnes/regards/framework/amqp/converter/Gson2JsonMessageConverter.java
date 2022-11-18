@@ -18,12 +18,10 @@
  */
 package fr.cnes.regards.framework.amqp.converter;
 
-import com.google.common.reflect.TypeParameter;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
-import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import org.slf4j.Logger;
@@ -116,15 +114,6 @@ public class Gson2JsonMessageConverter extends AbstractMessageConverter {
             LOGGER.error(errorMessage, e);
             throw new MessageConversionException("Cannot convert incoming message", e);
         }
-    }
-
-    @SuppressWarnings("serial")
-    private static <T> TypeToken<TenantWrapper<T>> createTypeToken(Class<T> clazz) {
-        return new TypeToken<TenantWrapper<T>>() {
-
-        }.where(new TypeParameter<T>() {
-
-        }, TypeToken.of(clazz));
     }
 
     public static void setDefaultHeaders(Message message, IBatchHandler<?> handler) {

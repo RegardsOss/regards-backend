@@ -171,24 +171,29 @@ public class OAISDeletionsCreatorJob extends AbstractJob<Void> {
                 isValid = true;
                 break;
             case INCLUDE:
-                isValid = oaisDeletionCreatorPayload.getState() != null
-                          || oaisDeletionCreatorPayload.getIpType() != null
-                          || oaisDeletionCreatorPayload.getLastUpdate().getFrom() != null
-                          || oaisDeletionCreatorPayload.getLastUpdate().getTo() != null
-                          || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getProviderIds())
-                          || oaisDeletionCreatorPayload.getSessionOwner() != null
-                          || oaisDeletionCreatorPayload.getSession() != null
-                          || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getStorages())
-                          || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getCategories())
-                          || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getTags())
-                          || oaisDeletionCreatorPayload.getLast() != null
-                          || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getAipIds());
+                isValid = hasValidIncludeParameters(oaisDeletionCreatorPayload);
                 break;
             default:
                 break;
         }
 
         return isValid;
+    }
+
+    @java.lang.SuppressWarnings("squid:S1067") // Skip max conditional operators : more readable like that
+    private boolean hasValidIncludeParameters(OAISDeletionCreatorPayload oaisDeletionCreatorPayload) {
+        return oaisDeletionCreatorPayload.getState() != null
+               || oaisDeletionCreatorPayload.getIpType() != null
+               || oaisDeletionCreatorPayload.getLastUpdate().getFrom() != null
+               || oaisDeletionCreatorPayload.getLastUpdate().getTo() != null
+               || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getProviderIds())
+               || oaisDeletionCreatorPayload.getSessionOwner() != null
+               || oaisDeletionCreatorPayload.getSession() != null
+               || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getStorages())
+               || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getCategories())
+               || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getTags())
+               || oaisDeletionCreatorPayload.getLast() != null
+               || !CollectionUtils.isEmpty(oaisDeletionCreatorPayload.getAipIds());
     }
 
 }

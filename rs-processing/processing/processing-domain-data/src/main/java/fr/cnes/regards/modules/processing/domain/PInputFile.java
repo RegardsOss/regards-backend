@@ -21,7 +21,6 @@ import io.vavr.collection.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.With;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
@@ -33,7 +32,6 @@ import java.net.URL;
  * @author gandrieu
  */
 @Data
-@With
 @AllArgsConstructor
 @NoArgsConstructor
 public class PInputFile {
@@ -92,5 +90,138 @@ public class PInputFile {
      */
     @Nullable
     String inputCorrelationId;
+
+    public PInputFile withParameterName(@Nullable String parameterName) {
+        return this.parameterName == parameterName ?
+            this :
+            new PInputFile(parameterName,
+                           this.localRelativePath,
+                           this.contentType,
+                           this.url,
+                           this.bytes,
+                           this.checksum,
+                           this.fileName,
+                           this.metadata,
+                           this.inputCorrelationId);
+    }
+
+    public PInputFile withLocalRelativePath(@NonNull String localRelativePath) {
+        return this.localRelativePath.equals(localRelativePath) ?
+            this :
+            new PInputFile(this.parameterName,
+                           localRelativePath,
+                           this.contentType,
+                           this.url,
+                           this.bytes,
+                           this.checksum,
+                           this.fileName,
+                           this.metadata,
+                           this.inputCorrelationId);
+
+    }
+
+    public PInputFile withContentType(@Nullable String contentType) {
+        return this.contentType.equals(contentType) ?
+            this :
+            new PInputFile(this.parameterName,
+                           this.localRelativePath,
+                           contentType,
+                           this.url,
+                           this.bytes,
+                           this.checksum,
+                           this.fileName,
+                           this.metadata,
+                           this.inputCorrelationId);
+    }
+
+    public PInputFile withUrl(@NonNull URL url) {
+        return this.url.equals(url) ?
+            this :
+            new PInputFile(this.parameterName,
+                           this.localRelativePath,
+                           this.contentType,
+                           url,
+                           this.bytes,
+                           this.checksum,
+                           this.fileName,
+                           this.metadata,
+                           this.inputCorrelationId);
+
+    }
+
+    public PInputFile withBytes(@NonNull Long bytes) {
+        return this.bytes.equals(bytes) ?
+            this :
+            new PInputFile(this.parameterName,
+                           this.localRelativePath,
+                           this.contentType,
+                           this.url,
+                           bytes,
+                           this.checksum,
+                           this.fileName,
+                           this.metadata,
+                           this.inputCorrelationId);
+
+    }
+
+    public PInputFile withChecksum(@NonNull String checksum) {
+
+        return this.checksum.equals(checksum) ?
+            this :
+            new PInputFile(this.parameterName,
+                           this.localRelativePath,
+                           this.contentType,
+                           this.url,
+                           this.bytes,
+                           checksum,
+                           this.fileName,
+                           this.metadata,
+                           this.inputCorrelationId);
+
+    }
+
+    public PInputFile withFileName(@NonNull String fileName) {
+        return this.fileName.equals(fileName) ?
+            this :
+            new PInputFile(this.parameterName,
+                           this.localRelativePath,
+                           this.contentType,
+                           this.url,
+                           this.bytes,
+                           this.checksum,
+                           fileName,
+                           this.metadata,
+                           this.inputCorrelationId);
+
+    }
+
+    public PInputFile withMetadata(@NonNull Map<String, String> metadata) {
+        return this.metadata.equals(metadata) ?
+            this :
+            new PInputFile(this.parameterName,
+                           this.localRelativePath,
+                           this.contentType,
+                           this.url,
+                           this.bytes,
+                           this.checksum,
+                           this.fileName,
+                           metadata,
+                           this.inputCorrelationId);
+
+    }
+
+    public PInputFile withInputCorrelationId(@Nullable String inputCorrelationId) {
+        return this.inputCorrelationId.equals(inputCorrelationId) ?
+            this :
+            new PInputFile(this.parameterName,
+                           this.localRelativePath,
+                           this.contentType,
+                           this.url,
+                           this.bytes,
+                           this.checksum,
+                           this.fileName,
+                           this.metadata,
+                           inputCorrelationId);
+    }
 
 }

@@ -27,6 +27,8 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
+import fr.cnes.regards.framework.utils.ResponseEntityUtils;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -72,6 +74,8 @@ import java.util.Objects;
  * @author Christophe Mertz
  */
 public class Oauth2AuthenticationManager implements AuthenticationManager, BeanFactoryAware {
+
+    private static final String CHECK_USER_INFO_ERROR_MSG = "An error occurred while trying to check user status";
 
     /**
      * Class logger
@@ -292,7 +296,9 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                 if (!accountClientResponse.getStatusCode().equals(HttpStatus.OK)) {
                     status = AuthenticationStatus.ACCOUNT_UNKNOWN;
                 } else {
-                    switch (accountClientResponse.getBody().getContent().getStatus()) {
+                    Account account = ResponseEntityUtils.extractContentOrThrow(accountClientResponse,
+                                                                                CHECK_USER_INFO_ERROR_MSG);
+                    switch (account.getStatus()) {
                         case ACTIVE:
                             status = AuthenticationStatus.ACCESS_GRANTED;
                             break;
@@ -331,7 +337,9 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                     if (!projectUserClientResponse.getStatusCode().equals(HttpStatus.OK)) {
                         status = AuthenticationStatus.USER_UNKNOWN;
                     } else {
-                        switch (projectUserClientResponse.getBody().getContent().getStatus()) {
+                        ProjectUser projectUser = ResponseEntityUtils.extractContentOrThrow(projectUserClientResponse,
+                                                                                            CHECK_USER_INFO_ERROR_MSG);
+                        switch (projectUser.getStatus()) {
                             case WAITING_ACCESS:
                                 status = AuthenticationStatus.USER_WAITING_ACCESS;
                                 break;
@@ -360,6 +368,8 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             String message = "Context not initialized, Accounts client is not available";
             LOG.error(message, e);
             throw new BadCredentialsException(message);
+        } catch (ModuleException e) {
+            throw new RsRuntimeException(e);
         }
 
     }
@@ -443,7 +453,8 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                 ResponseEntity<EntityModel<ProjectUser>> response = projectUsersClient.retrieveProjectUserByEmail(email);
                 if (response.getStatusCode() == HttpStatus.OK) {
                     // special case to handle root login because it is not a real ProjectUser
-                    ProjectUser projectUser = response.getBody().getContent();
+                    ProjectUser projectUser = ResponseEntityUtils.extractContentOrThrow(response,
+                                                                                        "An error occurred while trying to retrieve user details");
                     if (!Objects.equals(email, staticRootLogin)) {
                         projectUser.setLastConnection(OffsetDateTime.now());
                         // update last connection date
@@ -466,6 +477,8 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             String message = "Context not initialized, Administration users client is not available";
             LOG.error(message, e);
             throw new BadCredentialsException(message);
+        } catch (ModuleException e) {
+            throw new RsRuntimeException(e);
         }
 
         return user;

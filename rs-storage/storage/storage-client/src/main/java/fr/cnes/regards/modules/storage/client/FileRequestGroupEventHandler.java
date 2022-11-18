@@ -145,42 +145,21 @@ public class FileRequestGroupEventHandler
         Set<RequestInfo> copyErrors = Sets.newHashSet();
 
         for (FileRequestsGroupEvent event : events) {
-            RequestInfo ri = RequestInfo.build(event.getGroupId(), event.getSuccess(), event.getErrors());
             switch (event.getType()) {
                 case AVAILABILITY:
-                    if (event.getState() == FlowItemStatus.SUCCESS) {
-                        availables.add(ri);
-                    } else {
-                        availableErrors.add(ri);
-                    }
+                    fillSuccessOrErrorSet(event, availables, availableErrors);
                     break;
                 case DELETION:
-                    if (event.getState() == FlowItemStatus.SUCCESS) {
-                        deleted.add(ri);
-                    } else {
-                        deletionErrors.add(ri);
-                    }
+                    fillSuccessOrErrorSet(event, deleted, deletionErrors);
                     break;
                 case REFERENCE:
-                    if (event.getState() == FlowItemStatus.SUCCESS) {
-                        referenced.add(ri);
-                    } else {
-                        referenceErrors.add(ri);
-                    }
+                    fillSuccessOrErrorSet(event, referenced, referenceErrors);
                     break;
                 case STORAGE:
-                    if (event.getState() == FlowItemStatus.SUCCESS) {
-                        stored.add(ri);
-                    } else {
-                        storeErrors.add(ri);
-                    }
+                    fillSuccessOrErrorSet(event, stored, storeErrors);
                     break;
                 case COPY:
-                    if (event.getState() == FlowItemStatus.SUCCESS) {
-                        copied.add(ri);
-                    } else {
-                        copyErrors.add(ri);
-                    }
+                    fillSuccessOrErrorSet(event, copied, copyErrors);
                     break;
                 default:
                     break;
@@ -216,6 +195,17 @@ public class FileRequestGroupEventHandler
         }
         if (!copyErrors.isEmpty()) {
             listener.onCopyError(copyErrors);
+        }
+    }
+    
+    private void fillSuccessOrErrorSet(FileRequestsGroupEvent event,
+                                       Set<RequestInfo> successSet,
+                                       Set<RequestInfo> errorSet) {
+        RequestInfo ri = RequestInfo.build(event.getGroupId(), event.getSuccess(), event.getErrors());
+        if (event.getState() == FlowItemStatus.SUCCESS) {
+            successSet.add(ri);
+        } else {
+            errorSet.add(ri);
         }
     }
 

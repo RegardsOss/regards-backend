@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
@@ -344,7 +345,8 @@ public class OrderCreationService implements IOrderCreationService {
 
         FeignSecurityManager.asSystem();
         try {
-            Project project = projectClient.retrieveProject(runtimeTenantResolver.getTenant()).getBody().getContent();
+            Project project = ResponseEntityUtils.extractContentOrThrow(projectClient.retrieveProject(
+                runtimeTenantResolver.getTenant()), "An error occurred while retrieving project");
             String host = project.getHost();
             FeignSecurityManager.reset();
 

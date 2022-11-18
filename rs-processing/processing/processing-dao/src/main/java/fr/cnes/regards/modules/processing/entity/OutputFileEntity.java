@@ -17,7 +17,10 @@
  */
 package fr.cnes.regards.modules.processing.entity;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.domain.Persistable;
@@ -35,10 +38,8 @@ import java.util.UUID;
  * @author gandrieu
  */
 @Data
-@With
 @AllArgsConstructor
 @RequiredArgsConstructor
-
 @Table("t_outputfile")
 public class OutputFileEntity implements Persistable<UUID> {
 

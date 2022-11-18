@@ -45,6 +45,7 @@ import static io.swagger.v3.core.util.RefUtils.constructRef;
  *
  * TODO : Replace use of Gson by Jackson to be compliant with default swagger lib
  */
+//@SuppressWarnings("all") not a Regards code
 public class ModelResolverCustom extends AbstractModelConverter implements ModelConverter {
 
     Logger LOGGER = LoggerFactory.getLogger(ModelResolverCustom.class);
@@ -77,7 +78,6 @@ public class ModelResolverCustom extends AbstractModelConverter implements Model
 
     @Override
     public Schema resolve(AnnotatedType annotatedType, ModelConverterContext context, Iterator<ModelConverter> next) {
-
         boolean isPrimitive = false;
         Schema model = null;
         List<String> requiredProps = new ArrayList<>();
@@ -120,8 +120,9 @@ public class ModelResolverCustom extends AbstractModelConverter implements Model
             JsonSerialize jsonSerialize = recurBeanDesc.getClassAnnotations().get(JsonSerialize.class);
             while (jsonSerialize != null && !Void.class.equals(jsonSerialize.as())) {
                 String asName = jsonSerialize.as().getName();
-                if (visited.contains(asName))
+                if (visited.contains(asName)) {
                     break;
+                }
                 visited.add(asName);
 
                 recurBeanDesc = _mapper.getSerializationConfig().introspect(_mapper.constructType(jsonSerialize.as()));
@@ -297,7 +298,7 @@ public class ModelResolverCustom extends AbstractModelConverter implements Model
 
         if (isPrimitive) {
             XML xml = resolveXml(beanDesc.getClassInfo(), annotatedType.getCtxAnnotations(), resolvedSchemaAnnotation);
-            if (xml != null) {
+            if (xml != null && model != null) {
                 model.xml(xml);
             }
             applyBeanValidatorAnnotations(model, annotatedType.getCtxAnnotations(), null);
@@ -915,8 +916,9 @@ public class ModelResolverCustom extends AbstractModelConverter implements Model
     }
 
     private Schema clone(Schema property) {
-        if (property == null)
+        if (property == null) {
             return property;
+        }
         try {
             String cloneName = property.getName();
             property = Json.mapper().readValue(Json.pretty(property), Schema.class);
@@ -1822,7 +1824,7 @@ public class ModelResolverCustom extends AbstractModelConverter implements Model
                                            Annotation[] annotations,
                                            io.swagger.v3.oas.annotations.media.Schema schema) {
         if (schema != null && schema.multipleOf() != 0) {
-            return new BigDecimal(schema.multipleOf());
+            return BigDecimal.valueOf(schema.multipleOf());
         }
         return null;
     }
@@ -2367,8 +2369,9 @@ public class ModelResolverCustom extends AbstractModelConverter implements Model
 
     protected boolean hiddenByJsonView(Annotation[] annotations, AnnotatedType type) {
         JsonView jsonView = type.getJsonViewAnnotation();
-        if (jsonView == null)
+        if (jsonView == null) {
             return false;
+        }
 
         Class<?>[] filters = jsonView.value();
         boolean containsJsonViewAnnotation = false;

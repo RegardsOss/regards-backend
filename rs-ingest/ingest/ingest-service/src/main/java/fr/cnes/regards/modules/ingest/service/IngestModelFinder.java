@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.ingest.service;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.utils.ResponseEntityUtils;
 import fr.cnes.regards.modules.model.client.IModelAttrAssocClient;
 import fr.cnes.regards.modules.model.client.IModelClient;
 import fr.cnes.regards.modules.model.domain.Model;
@@ -60,12 +62,12 @@ public class IngestModelFinder extends AbstractCacheableModelFinder implements I
             ResponseEntity<List<EntityModel<Model>>> modelResponse = modelClient.getModels(null);
 
             // if the model doesn't exists we return null
-            if ((modelResponse == null) || !modelResponse.getBody()
-                                                         .stream()
-                                                         .anyMatch(model -> model.getContent()
-                                                                                 .getName()
-                                                                                 .equals(modelName))) {
-                return null; // NOSONAR
+            if (modelResponse == null) {
+                List<EntityModel<Model>> entityModels = ResponseEntityUtils.extractBodyOrThrow(modelResponse,
+                                                                                               "An error occurred while getting models");
+                if (!entityModels.stream().anyMatch(model -> model.getContent().getName().equals(modelName))) {
+                    return null; // NOSONAR
+                }
             }
             ResponseEntity<List<EntityModel<ModelAttrAssoc>>> response = modelAttrAssocClient.getModelAttrAssocs(
                 modelName);
@@ -74,7 +76,7 @@ public class IngestModelFinder extends AbstractCacheableModelFinder implements I
                 attModelAssocs = HateoasUtils.unwrapCollection(response.getBody());
             }
             return attModelAssocs;
-        } catch (HttpServerErrorException | HttpClientErrorException e) {
+        } catch (HttpServerErrorException | HttpClientErrorException | ModuleException e) {
             LOGGER.error("Error while loading the Attributes for the model {}", modelName, e);
             return Collections.emptyList();
         } finally {

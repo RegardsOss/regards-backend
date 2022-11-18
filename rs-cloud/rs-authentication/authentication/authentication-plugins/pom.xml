@@ -54,6 +54,10 @@
             <artifactId>plugins-service</artifactId>
         </dependency>
         <dependency>
+            <groupId>fr.cnes.regards.framework.utils</groupId>
+            <artifactId>response-entity-utils</artifactId>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.modules.accessrights-instance</groupId>
             <artifactId>accessrights-instance-client</artifactId>
         </dependency>
