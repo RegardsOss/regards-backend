@@ -63,6 +63,7 @@ public class StorageClientMock implements IStorageRestClient {
                 InputStream stream = new FileInputStream(testFile);
                 Map<String, Collection<String>> headers = Maps.newHashMap();
                 headers.put(HttpHeader.CONTENT_TYPE.toString(), Lists.newArrayList(TEST_MEDIA_TYPE.toString()));
+                headers.put(HttpHeader.CONTENT_LENGTH.toString(), Lists.newArrayList(testFile.length() + ""));
                 return Response.builder()
                                .status(HttpStatus.OK.value())
                                .body(stream, (int) testFile.length())
