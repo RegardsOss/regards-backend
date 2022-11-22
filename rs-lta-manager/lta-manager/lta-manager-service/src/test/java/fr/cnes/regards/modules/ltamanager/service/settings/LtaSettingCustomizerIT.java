@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ltamanager.service.settings;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceIT;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
@@ -67,6 +68,9 @@ public class LtaSettingCustomizerIT extends AbstractMultitenantServiceIT {
 
     @MockBean
     private IModelClient modelClient;
+
+    @MockBean
+    private IPublisher publisher;
 
     @Autowired
     private LtaModelCacheService modelCacheService;

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ltamanager.rest.submission.session;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
@@ -51,6 +52,9 @@ public class SubmissionSessionServiceIT extends AbstractRegardsIT {
 
     @MockBean
     private IModelClient iModelClient;
+
+    @MockBean
+    private IPublisher publisher;
 
     @Autowired
     private SubmissionRequestHelper submissionRequestHelper;

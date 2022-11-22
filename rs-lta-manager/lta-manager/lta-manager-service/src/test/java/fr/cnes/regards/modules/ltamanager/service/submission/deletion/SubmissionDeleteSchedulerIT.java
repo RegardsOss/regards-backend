@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ltamanager.service.submission.deletion;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.integration.test.job.AbstractMultitenantServiceWithJobIT;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -84,6 +85,9 @@ public class SubmissionDeleteSchedulerIT extends AbstractMultitenantServiceWithJ
 
     @MockBean
     private IModelClient modelClient;
+
+    @MockBean
+    private IPublisher publisher;
 
     @Before
     public void init() {

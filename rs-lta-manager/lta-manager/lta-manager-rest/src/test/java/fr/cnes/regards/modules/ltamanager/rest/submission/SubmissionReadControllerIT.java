@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ltamanager.rest.submission;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.jpa.restriction.DatesRangeRestriction;
 import fr.cnes.regards.framework.jpa.restriction.ValuesRestriction;
@@ -53,7 +54,7 @@ import static org.hamcrest.Matchers.equalTo;
  * @author Iliana Ghazali
  **/
 @TestPropertySource(locations = { "classpath:application-test.properties" },
-                    properties = { "spring.jpa.properties.hibernate.default_schema=submission_read_controller_it" })
+    properties = { "spring.jpa.properties.hibernate.default_schema=submission_read_controller_it" })
 public class SubmissionReadControllerIT extends AbstractRegardsIT {
 
     private static final String OWNER_1 = "Owner 1";
@@ -75,6 +76,9 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
 
     @MockBean
     private IModelClient modelClient;
+
+    @MockBean
+    private IPublisher publisher;
 
     @Before
     public void init() {

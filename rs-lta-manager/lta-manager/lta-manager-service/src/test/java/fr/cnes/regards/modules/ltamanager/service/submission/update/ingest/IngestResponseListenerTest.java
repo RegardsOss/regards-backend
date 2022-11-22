@@ -19,12 +19,15 @@
 package fr.cnes.regards.modules.ltamanager.service.submission.update.ingest;
 
 import com.google.gson.Gson;
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.client.RequestInfo;
+import fr.cnes.regards.modules.ltamanager.amqp.output.LtaRequestCompleteEvent;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
+import fr.cnes.regards.modules.ltamanager.dto.submission.output.LtaRequestCompleteState;
 import fr.cnes.regards.modules.ltamanager.service.submission.update.ingest.notification.SuccessLtaRequestNotification;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
@@ -36,13 +39,11 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -68,13 +69,16 @@ public class IngestResponseListenerTest {
     @Mock
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    @Spy
+    private IPublisher publisher;
+
     @Before
     public void init() {
         IngestResponseService responseService = new IngestResponseService(requestRepository,
                                                                           notifierClient,
                                                                           runtimeTenantResolver,
                                                                           new Gson());
-        responseListener = new IngestResponseListener(responseService);
+        responseListener = new IngestResponseListener(responseService, publisher);
     }
 
     @Test
@@ -134,6 +138,41 @@ public class IngestResponseListenerTest {
                                    eq(SubmissionRequestState.INGESTION_ERROR),
                                    eq(StringUtils.join(events.get(3).getErrors(), " | ")),
                                    any(OffsetDateTime.class));
+
+        //Check messages were sent onSuccess and onError
+        ArgumentCaptor<List<LtaRequestCompleteEvent>> captorPublished = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(publisher, times(2)).publish(captorPublished.capture());
+        List<LtaRequestCompleteEvent> capturedPublishedEvents = captorPublished.getAllValues()
+                                                                               .stream()
+                                                                               .flatMap(List::stream)
+                                                                               .toList();
+        Assert.assertEquals("Expected 2 events", 2, capturedPublishedEvents.size());
+        Optional<LtaRequestCompleteEvent> successEvent = capturedPublishedEvents.stream()
+                                                                                .filter(event -> event.getStatus()
+                                                                                                      .equals(
+                                                                                                          LtaRequestCompleteState.SUCCESS))
+                                                                                .findFirst();
+        //onSuccess
+        if (successEvent.isEmpty()) {
+            Assert.fail("Expected a SUCCESS event");
+        }
+        Assert.assertEquals("The event correlation id should match the request id",
+                            events.get(0).getRequestId(),
+                            successEvent.get().getCorrelationId());
+
+        //onError
+        Optional<LtaRequestCompleteEvent> errorEvent = capturedPublishedEvents.stream()
+                                                                              .filter(event -> event.getStatus()
+                                                                                                    .equals(
+                                                                                                        LtaRequestCompleteState.ERROR))
+                                                                              .findFirst();
+        if (errorEvent.isEmpty()) {
+            Assert.fail("Expected an ERROR event");
+        }
+        Assert.assertEquals("The event correlation id should match the request id",
+                            events.get(3).getRequestId(),
+                            errorEvent.get().getCorrelationId());
+
     }
 
     @Test

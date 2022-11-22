@@ -18,12 +18,16 @@
  */
 package fr.cnes.regards.modules.ltamanager.service.submission.update.ingest;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.ingest.client.IIngestClientListener;
 import fr.cnes.regards.modules.ingest.client.RequestInfo;
+import fr.cnes.regards.modules.ltamanager.amqp.output.LtaRequestCompleteEvent;
 import fr.cnes.regards.modules.ltamanager.domain.submission.mapping.IngestStatusResponseMapping;
+import fr.cnes.regards.modules.ltamanager.dto.submission.output.LtaRequestCompleteState;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -37,8 +41,11 @@ public class IngestResponseListener implements IIngestClientListener {
 
     private final IngestResponseService responseService;
 
-    public IngestResponseListener(IngestResponseService responseService) {
+    private final IPublisher publisher;
+
+    public IngestResponseListener(IngestResponseService responseService, IPublisher publisher) {
         this.responseService = responseService;
+        this.publisher = publisher;
     }
 
     @Override
@@ -54,11 +61,37 @@ public class IngestResponseListener implements IIngestClientListener {
     @Override
     public void onError(Collection<RequestInfo> infos) {
         responseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.ERROR_MAP);
+        List<LtaRequestCompleteEvent> requestsCompleteError = infos.stream()
+                                                                   .map(info -> new LtaRequestCompleteEvent(info.getRequestId(),
+                                                                                                            LtaRequestCompleteState.ERROR,
+                                                                                                            buildErrorMessage(
+                                                                                                                info.getErrors())))
+                                                                   .toList();
+        publisher.publish(requestsCompleteError);
+
+    }
+
+    private String buildErrorMessage(Set<String> errors) {
+        if (errors == null) {
+            return null;
+        }
+        StringBuilder errorMessage = new StringBuilder();
+        for (String error : errors) {
+            errorMessage.append(error);
+            errorMessage.append("  \\n");
+        }
+        return errorMessage.toString();
     }
 
     @Override
     public void onSuccess(Collection<RequestInfo> infos) {
         responseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.SUCCESS_MAP);
+        List<LtaRequestCompleteEvent> requestsCompleteSuccess = infos.stream()
+                                                                     .map(info -> new LtaRequestCompleteEvent(info.getRequestId(),
+                                                                                                              LtaRequestCompleteState.SUCCESS,
+                                                                                                              null))
+                                                                     .toList();
+        publisher.publish(requestsCompleteSuccess);
     }
 
     @Override
