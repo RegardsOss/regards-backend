@@ -109,7 +109,7 @@ public class AgentCleanSnapshotProcessProcessIT extends AbstractAgentServiceUtil
         agent.deleteOnePage(OffsetDateTime.now(), PageRequest.of(0, 10));
         Assert.assertEquals(0, repo.findAll().size());
         long duration = System.currentTimeMillis() - start;
-        Assert.assertTrue(String.format("Deletion process duration is too long (%d ms)", duration), duration < 100);
+        Assert.assertTrue(String.format("Deletion process duration is too long (%d ms)", duration), duration < 150);
     }
 
     @Test
