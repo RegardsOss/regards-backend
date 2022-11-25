@@ -94,8 +94,6 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
             }
         } catch (Exception e) {
             errorCause = String.format("Deletion job failed cause : %s", e.getMessage());
-            // throwing new runtime allows us to make the job fail.
-            throw new JobRuntimeException(e);
         } finally {
             // Publish event for all not handled files
             for (FileDeletionRequest req : workingSubset.getFileDeletionRequests()) {
