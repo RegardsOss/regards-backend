@@ -60,6 +60,7 @@
         <module>file-utils</module>
         <module>exception-utils</module>
         <module>encryption-standalone</module>
+        <module>eureka-utils</module>
         <module>spring-utils</module>
         <module>metalink-utils</module>
         <module>query-parser</module>

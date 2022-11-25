@@ -44,6 +44,7 @@ import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -54,6 +55,7 @@ import java.util.Optional;
  *
  * @author Marc Sordi
  */
+@ActiveProfiles("test")
 public abstract class AbstractSubscriberIT {
 
     @SuppressWarnings("unused")

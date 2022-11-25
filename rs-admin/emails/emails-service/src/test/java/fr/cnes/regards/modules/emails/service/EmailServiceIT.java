@@ -46,6 +46,7 @@ import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.mail.Address;
@@ -78,6 +79,7 @@ import static org.mockito.ArgumentMatchers.any;
  */
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration
+@ActiveProfiles("test")
 public class EmailServiceIT {
 
     /**

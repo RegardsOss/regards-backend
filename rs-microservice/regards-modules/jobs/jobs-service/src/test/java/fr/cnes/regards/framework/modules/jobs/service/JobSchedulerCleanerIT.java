@@ -26,7 +26,7 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { JobTestConfiguration.class })
-@ActiveProfiles("noscheduler")
+@ActiveProfiles({ "test", "noscheduler" })
 public class JobSchedulerCleanerIT {
 
     @Autowired

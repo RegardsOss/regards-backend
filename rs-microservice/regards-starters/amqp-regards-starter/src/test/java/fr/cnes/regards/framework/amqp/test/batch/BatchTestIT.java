@@ -40,6 +40,7 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -56,6 +57,7 @@ import java.util.Optional;
 @TestPropertySource(properties = { "regards.amqp.management.mode=SINGLE",
     "regards.tenants=" + BatchTestIT.PROJECT + ", " + BatchTestIT.PROJECT1, "regards.tenant=" + BatchTestIT.PROJECT,
     "regards.amqp.internal.transaction=true", "spring.jmx.enabled=false" }, locations = "classpath:amqp.properties")
+@ActiveProfiles("test")
 public class BatchTestIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BatchTestIT.class);

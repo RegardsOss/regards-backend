@@ -35,6 +35,7 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -52,6 +53,7 @@ import java.util.Set;
 @ContextConfiguration(classes = GsonAutoConfiguration.class)
 @TestPropertySource(
     properties = { "regards.cipher.iv=1234567812345678", "regards.cipher.keyLocation=src/test/resources/testKey" })
+@ActiveProfiles("test")
 public class SIPBuilderIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPBuilderIT.class);

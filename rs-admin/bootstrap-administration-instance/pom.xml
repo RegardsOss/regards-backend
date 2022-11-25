@@ -34,7 +34,6 @@
     <properties>
         <microservice.heap.size>512m</microservice.heap.size>
         <fr.cnes.regards.docker.image.name>rs-admin-instance</fr.cnes.regards.docker.image.name>
-        <docker.entryPoint>["./wait-for-it.sh", "rs-config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs-registry:9032", "-t", "0", "--","./wait-for-it.sh", "rs-rabbitmq:15672", "-t", "0", "--", "./start.sh","${project.build.finalName}.${project.packaging}","-Xmx${microservice.heap.size}"]</docker.entryPoint>
         <docker.guest.port>9037</docker.guest.port>
     </properties>
 

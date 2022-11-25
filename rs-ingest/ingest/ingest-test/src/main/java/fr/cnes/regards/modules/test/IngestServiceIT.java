@@ -44,12 +44,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 @Component
+@ActiveProfiles("test")
 public class IngestServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IngestServiceIT.class);

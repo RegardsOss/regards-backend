@@ -26,6 +26,7 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -38,6 +39,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @TestPropertySource(
     properties = { "regards.amqp.management.mode=MULTI", "regards.tenants=PROJECT, PROJECT1", "regards.tenant=PROJECT",
         "regards.amqp.internal.transaction=true" }, locations = "classpath:amqp.properties")
+@ActiveProfiles("test")
 public class TransactionalTestIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionalTestIT.class);

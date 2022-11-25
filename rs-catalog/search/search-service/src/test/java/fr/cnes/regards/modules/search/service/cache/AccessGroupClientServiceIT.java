@@ -35,6 +35,7 @@ import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.cache.interceptor.SimpleKey;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -50,6 +51,7 @@ import java.util.List;
 @RunWith(SpringRunner.class)
 @ContextConfiguration
 @Ignore
+@ActiveProfiles("test")
 public class AccessGroupClientServiceIT {
 
     @Configuration

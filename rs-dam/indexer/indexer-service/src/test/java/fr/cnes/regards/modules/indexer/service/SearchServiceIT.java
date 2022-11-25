@@ -44,6 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -61,6 +62,7 @@ import static fr.cnes.regards.modules.indexer.service.GeoUtil.toWgs84;
 @Ignore
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { SearchConfiguration.class })
+@ActiveProfiles("test")
 public class SearchServiceIT {
 
     @Autowired

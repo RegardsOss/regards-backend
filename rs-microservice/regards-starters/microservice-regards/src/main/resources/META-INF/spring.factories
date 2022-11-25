@@ -1,0 +1,2 @@
+org.springframework.boot.SpringApplicationRunListener=\
+  fr.cnes.regards.framework.microservice.runner.RegardsRunListener

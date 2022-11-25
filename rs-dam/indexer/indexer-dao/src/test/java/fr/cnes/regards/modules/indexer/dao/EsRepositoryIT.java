@@ -40,6 +40,7 @@ import org.elasticsearch.search.aggregations.metrics.ParsedStats;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -61,6 +62,7 @@ import java.util.stream.Stream;
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource("classpath:test.properties")
+@ActiveProfiles("test")
 public class EsRepositoryIT {
 
     private static class ItemAdapterFactory extends PolymorphicTypeAdapterFactory<IIndexable> {

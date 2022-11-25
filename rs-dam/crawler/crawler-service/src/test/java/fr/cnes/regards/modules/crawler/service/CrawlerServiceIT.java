@@ -67,7 +67,8 @@ import java.util.Optional;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { CrawlerConfiguration.class })
-@ActiveProfiles("noscheduler") // Disable scheduling, this will activate IngesterService during all tests
+@ActiveProfiles({ "test", "noscheduler" })
+// Disable scheduling, this will activate IngesterService during all tests
 @Ignore
 public class CrawlerServiceIT {
 

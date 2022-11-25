@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.s3.domain.S3Server;
 import fr.cnes.regards.framework.s3.exception.S3ClientException;
 import fr.cnes.regards.framework.s3.test.FileIdentificationEnum;
 import fr.cnes.regards.framework.s3.test.S3FileTestUtils;
+import fr.cnes.regards.framework.test.integration.RegardsActiveProfileResolver;
 import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
 import fr.cnes.regards.modules.storage.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storage.domain.database.request.FileStorageRequest;
@@ -37,6 +38,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.util.MimeType;
 
 import java.io.FileNotFoundException;
@@ -60,6 +62,7 @@ import java.util.List;
 @RunWith(RegardsSpringRunner.class)
 @SpringBootTest
 @SpringBootConfiguration
+@ActiveProfiles(resolver = RegardsActiveProfileResolver.class)
 public class DownloadUtilsIT {
 
     @Value("${regards.IT.s3.protocol}")

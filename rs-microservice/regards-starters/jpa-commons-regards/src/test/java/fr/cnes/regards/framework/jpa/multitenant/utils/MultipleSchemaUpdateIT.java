@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -48,6 +49,7 @@ import java.util.*;
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource("/multipleSchema.properties")
+@ActiveProfiles("test")
 public class MultipleSchemaUpdateIT {
 
     /**

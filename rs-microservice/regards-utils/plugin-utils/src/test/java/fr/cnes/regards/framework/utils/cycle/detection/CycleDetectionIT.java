@@ -33,6 +33,7 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -50,6 +51,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(locations = "classpath:application-test.properties")
+@ActiveProfiles("test")
 public class CycleDetectionIT {
 
     @Test

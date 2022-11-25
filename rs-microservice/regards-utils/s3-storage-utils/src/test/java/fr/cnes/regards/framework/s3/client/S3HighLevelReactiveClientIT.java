@@ -4,6 +4,7 @@ import fr.cnes.regards.framework.s3.domain.StorageCommand;
 import fr.cnes.regards.framework.s3.domain.StorageCommandID;
 import fr.cnes.regards.framework.s3.domain.StorageConfig;
 import fr.cnes.regards.framework.s3.domain.StorageEntry;
+import fr.cnes.regards.framework.test.integration.RegardsActiveProfileResolver;
 import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
 import io.vavr.Tuple;
 import io.vavr.control.Option;
@@ -19,6 +20,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
+import org.springframework.test.context.ActiveProfiles;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
@@ -34,6 +36,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 @RunWith(RegardsSpringRunner.class)
 @SpringBootTest
 @SpringBootConfiguration
+@ActiveProfiles(resolver = RegardsActiveProfileResolver.class)
 public class S3HighLevelReactiveClientIT {
 
     private static final Logger LOGGER = getLogger(S3HighLevelReactiveClientIT.class);

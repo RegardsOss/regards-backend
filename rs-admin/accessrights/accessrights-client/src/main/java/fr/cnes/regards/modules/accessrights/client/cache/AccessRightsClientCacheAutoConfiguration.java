@@ -36,7 +36,7 @@ import org.springframework.context.annotation.Profile;
  *
  * @author Sébastien Binda
  */
-@Profile("!test")
+@Profile({ "!test", "accessrightclientcache" })
 @Configuration
 @EnableCaching
 public class AccessRightsClientCacheAutoConfiguration {

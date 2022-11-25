@@ -40,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -57,6 +58,7 @@ import java.util.*;
     "regards.amqp.enabled=false", "regards.cipher.key-location=src/test/resources/testKey",
     "regards.cipher.iv=1234567812345678" })
 @ContextConfiguration
+@ActiveProfiles("test")
 public class TemplateServiceIT {
 
     @Configuration

@@ -38,7 +38,6 @@
         <sonar.language>java</sonar.language>
         <sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
         <fr.cnes.regards.docker.image.name>rs-registry</fr.cnes.regards.docker.image.name>
-        <docker.entryPoint>["./wait-for-it.sh", "rs-config:9031", "-t", "0", "--", "java","-Xmx128m","-Djava.security.egd=file:/dev/./urandom","-agentlib:jdwp=transport=dt_socket,address=10500,server=y,suspend=n","-jar","/${project.build.finalName}.${project.packaging}"]</docker.entryPoint>
         <docker.guest.port>9032</docker.guest.port>
     </properties>
 

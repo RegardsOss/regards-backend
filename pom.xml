@@ -451,6 +451,11 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.utils</groupId>
+                <artifactId>eureka-utils</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework.utils</groupId>
                 <artifactId>attribute-factory</artifactId>
                 <version>${revision}</version>
             </dependency>
@@ -2711,6 +2716,9 @@
                     <!-- Let's put failsafe reports with surefire to have access to tests
                                                         failures/success reports in sonar -->
                     <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+                    <systemPropertyVariables>
+                        <spring_profiles_active>${spring.profiles.active}</spring_profiles_active>
+                    </systemPropertyVariables>
                 </configuration>
                 <executions>
                     <execution>

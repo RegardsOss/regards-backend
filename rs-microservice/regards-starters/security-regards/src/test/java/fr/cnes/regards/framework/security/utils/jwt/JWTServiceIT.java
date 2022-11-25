@@ -33,6 +33,7 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -52,6 +53,7 @@ import java.util.Set;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { JwtTestConfiguration.class })
 @TestPropertySource("classpath:test-keys.properties")
+@ActiveProfiles("test")
 public class JWTServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JWTServiceIT.class);
@@ -157,7 +159,8 @@ public class JWTServiceIT {
 
         try {
             // Alter key
-            jwtService.setSigningKeyFor(JWTService.SHORT_ALGO, "teuop!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!");
+            jwtService.setSigningKeyFor(JWTService.SHORT_ALGO,
+                                        "teuop!!!!!==========abcdefghijklmnopqrstuvwxyz0123456789==========!!!!!");
             jwtService.parseClaims(token);
             Assert.fail("An exception should have been thrown here caused to an invalid secret key");
         } catch (SignatureException e) {
