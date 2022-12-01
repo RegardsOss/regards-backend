@@ -29,16 +29,31 @@ import java.util.Objects;
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
  */
-public class RoleComparator implements Comparator<Role> {
+public class RoleHierarchyComparator implements Comparator<Role> {
 
-    private final IRoleService roleService;
+    private IRoleService roleService;
 
-    public RoleComparator(IRoleService roleService) {
+    /**
+     * Create a comparator of role for the sorting by name
+     */
+    public RoleHierarchyComparator() {
+    }
+
+    /**
+     * Create a comparator of role for the sorting by hierarchy, if same hierarchy sorting by name
+     *
+     * @param roleService
+     */
+    public RoleHierarchyComparator(IRoleService roleService) {
+        Objects.requireNonNull(roleService, "Role service must not be Null");
+        
         this.roleService = roleService;
     }
 
     @Override
     public int compare(Role role, Role other) {
+        Objects.requireNonNull(role, "Role must not be Null");
+        Objects.requireNonNull(other, "Role must not be Null");
 
         if (Objects.equals(role, other)) {
             return 0;
@@ -56,7 +71,6 @@ public class RoleComparator implements Comparator<Role> {
         } else {
             return 1;
         }
-
     }
 
 }

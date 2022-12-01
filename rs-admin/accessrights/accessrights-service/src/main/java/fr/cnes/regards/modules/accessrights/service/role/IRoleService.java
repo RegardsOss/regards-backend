@@ -45,7 +45,7 @@ public interface IRoleService {
      *
      * @return all {@link Role}s.
      */
-    Set<Role> retrieveRoles();
+    List<Role> retrieveRoles();
 
     /**
      * Retrieve the {@link Role} of passed <code>name</code>.

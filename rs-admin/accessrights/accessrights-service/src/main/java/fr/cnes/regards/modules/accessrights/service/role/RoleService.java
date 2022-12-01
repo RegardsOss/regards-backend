@@ -177,33 +177,32 @@ public class RoleService implements IRoleService, InitializingBean {
     }
 
     /**
-     * @return all roles manageable by current authenticated user
+     * Retrieve all roles manageable by current authenticated user.
+     *
+     * @return all roles sorted by name
      */
     @Override
-    public Set<Role> retrieveRoles() {
+    public List<Role> retrieveRoles() {
         List<Role> manageableRoles = new ArrayList<>();
+
         for (Role role : roleRepository.findAllDistinctLazy()) {
             // Instance Admin role is only usable by one user:
             // the project admin configured at install, so we have not to send it back to the front
             if (DefaultRole.INSTANCE_ADMIN.name().equals(role.getName())) {
                 continue;
             }
-
             try {
                 // Check if current user can manage this role
                 canManageRole(role);
                 // Add manageable role
                 manageableRoles.add(role);
-
             } catch (EntityOperationForbiddenException e) {
                 LOGGER.debug("Do not send role {} cause authenticated user cannot manage it!", role.getName());
                 LOGGER.trace(e.getMessage(), e);
             }
         }
-
-        Set<Role> sortedRole = new TreeSet<>(new RoleComparator(this));
-        sortedRole.addAll(manageableRoles);
-        return sortedRole;
+        manageableRoles.sort(new RoleNameComparator());
+        return manageableRoles;
 
     }
 
@@ -766,7 +765,7 @@ public class RoleService implements IRoleService, InitializingBean {
      */
     private void manageParentRoles() throws EntityOperationForbiddenException {
 
-        Set<Role> roles = retrieveRoles();
+        List<Role> roles = retrieveRoles();
         for (Role role : roles) {
             if (!role.isNative()) {
                 manageParentFromAdmin(role);
@@ -854,7 +853,7 @@ public class RoleService implements IRoleService, InitializingBean {
     @Override
     public Set<Role> retrieveBorrowableRoles() {
 
-        Set<Role> borrowablesRoles = new TreeSet<>(new RoleComparator(this));
+        Set<Role> borrowablesRoles = new TreeSet<>(new RoleHierarchyComparator(this));
 
         String email = authResolver.getUser();
         Optional<ProjectUser> optionnalUser = projectUserRepository.findOneByEmail(email);

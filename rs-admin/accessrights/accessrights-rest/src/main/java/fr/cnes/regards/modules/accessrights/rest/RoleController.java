@@ -34,6 +34,9 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.accessrights.service.role.RoleService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.LinkRelation;
@@ -104,11 +107,13 @@ public class RoleController implements IResourceController<Role> {
      *
      * @return A {@link List} of roles as {@link Role} wrapped in an {@link ResponseEntity}
      */
-    @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve the list of roles", role = DefaultRole.EXPLOIT)
+    @GetMapping
+    @Operation(summary = "Get roles", description = "Return a list of roles")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All roles were retrieved.") })
+    @ResourceAccess(description = "Endpoint to retrieve the list of roles sorted by name", role = DefaultRole.EXPLOIT)
     public ResponseEntity<List<EntityModel<Role>>> getAllRoles() {
-        final Set<Role> roles = roleService.retrieveRoles();
-        return new ResponseEntity<>(toResources(roles), HttpStatus.OK);
+
+        return new ResponseEntity<>(toResources(roleService.retrieveRoles()), HttpStatus.OK);
     }
 
     /**

@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
-import fr.cnes.regards.modules.accessrights.service.role.RoleComparator;
+import fr.cnes.regards.modules.accessrights.service.role.RoleHierarchyComparator;
 import fr.cnes.regards.modules.accessrights.service.role.RoleService;
 import org.assertj.core.util.Lists;
 import org.hamcrest.CoreMatchers;
@@ -196,12 +196,22 @@ public class RoleServiceTest {
 
         Set<Role> expected = new HashSet<>();
         expected.add(rolePublic);
+        expected.add(roleAdmin);
+        expected.add(roleRegisteredUser);
+        Role roleAdminInstance = new Role(DefaultRole.INSTANCE_ADMIN.name(), null);
+        rolePublic.setNative(true);
+        rolePublic.setId(100L);
+        expected.add(roleAdminInstance);
 
         Mockito.when(roleRepository.findAllDistinctLazy()).thenReturn(expected);
-        Set<Role> actual = roleService.retrieveRoles();
+        List<Role> actual = roleService.retrieveRoles();
 
+        Assert.assertEquals(4, expected.size());
+        Assert.assertEquals(3, actual.size());
         // Check that the expected and actual role have same values
-        checkRolesEqual((Role) expected.toArray()[0], (Role) actual.toArray()[0]);
+        checkRolesEqual((Role) expected.toArray()[1], (Role) actual.toArray()[0]);
+        checkRolesEqual((Role) expected.toArray()[0], (Role) actual.toArray()[1]);
+        checkRolesEqual((Role) expected.toArray()[2], (Role) actual.toArray()[2]);
         // Check that the repository's method was called with right arguments
         Mockito.verify(roleRepository).findAllDistinctLazy();
     }
@@ -736,54 +746,54 @@ public class RoleServiceTest {
         Role projectAdmin = factory.createProjectAdmin();
         Role publicR = factory.createPublic();
         Role registeredUser = factory.createRegisteredUser();
-        RoleComparator roleComparator = new RoleComparator(roleService);
+        RoleHierarchyComparator roleHierarchyComparator = new RoleHierarchyComparator(roleService);
 
-        Assert.assertEquals(0, roleComparator.compare(publicR, publicR));
-        Assert.assertEquals(-1, roleComparator.compare(publicR, registeredUser));
-        Assert.assertEquals(-1, roleComparator.compare(publicR, admin));
-        Assert.assertEquals(-1, roleComparator.compare(publicR, projectAdmin));
+        Assert.assertEquals(0, roleHierarchyComparator.compare(publicR, publicR));
+        Assert.assertEquals(-1, roleHierarchyComparator.compare(publicR, registeredUser));
+        Assert.assertEquals(-1, roleHierarchyComparator.compare(publicR, admin));
+        Assert.assertEquals(-1, roleHierarchyComparator.compare(publicR, projectAdmin));
 
-        Assert.assertEquals(1, roleComparator.compare(registeredUser, publicR));
-        Assert.assertEquals(0, roleComparator.compare(registeredUser, registeredUser));
-        Assert.assertEquals(-1, roleComparator.compare(registeredUser, admin));
-        Assert.assertEquals(-1, roleComparator.compare(registeredUser, projectAdmin));
+        Assert.assertEquals(1, roleHierarchyComparator.compare(registeredUser, publicR));
+        Assert.assertEquals(0, roleHierarchyComparator.compare(registeredUser, registeredUser));
+        Assert.assertEquals(-1, roleHierarchyComparator.compare(registeredUser, admin));
+        Assert.assertEquals(-1, roleHierarchyComparator.compare(registeredUser, projectAdmin));
 
-        Assert.assertEquals(1, roleComparator.compare(admin, publicR));
-        Assert.assertEquals(1, roleComparator.compare(admin, registeredUser));
-        Assert.assertEquals(0, roleComparator.compare(admin, admin));
-        Assert.assertEquals(-1, roleComparator.compare(admin, projectAdmin));
+        Assert.assertEquals(1, roleHierarchyComparator.compare(admin, publicR));
+        Assert.assertEquals(1, roleHierarchyComparator.compare(admin, registeredUser));
+        Assert.assertEquals(0, roleHierarchyComparator.compare(admin, admin));
+        Assert.assertEquals(-1, roleHierarchyComparator.compare(admin, projectAdmin));
 
-        Assert.assertEquals(1, roleComparator.compare(projectAdmin, publicR));
-        Assert.assertEquals(1, roleComparator.compare(projectAdmin, registeredUser));
-        Assert.assertEquals(1, roleComparator.compare(projectAdmin, admin));
-        Assert.assertEquals(0, roleComparator.compare(projectAdmin, projectAdmin));
+        Assert.assertEquals(1, roleHierarchyComparator.compare(projectAdmin, publicR));
+        Assert.assertEquals(1, roleHierarchyComparator.compare(projectAdmin, registeredUser));
+        Assert.assertEquals(1, roleHierarchyComparator.compare(projectAdmin, admin));
+        Assert.assertEquals(0, roleHierarchyComparator.compare(projectAdmin, projectAdmin));
 
         // lets check with a custom role
         Role adminSon = new Role("Admin Son", admin);
 
-        Assert.assertEquals(1, roleComparator.compare(adminSon, publicR));
-        Assert.assertEquals(1, roleComparator.compare(adminSon, registeredUser));
-        Assert.assertEquals(1, roleComparator.compare(adminSon, admin));
-        Assert.assertEquals(-1, roleComparator.compare(adminSon, projectAdmin));
+        Assert.assertEquals(1, roleHierarchyComparator.compare(adminSon, publicR));
+        Assert.assertEquals(1, roleHierarchyComparator.compare(adminSon, registeredUser));
+        Assert.assertEquals(1, roleHierarchyComparator.compare(adminSon, admin));
+        Assert.assertEquals(-1, roleHierarchyComparator.compare(adminSon, projectAdmin));
         // a native role is inferior to one of its children
-        Assert.assertEquals(-1, roleComparator.compare(admin, adminSon));
+        Assert.assertEquals(-1, roleHierarchyComparator.compare(admin, adminSon));
 
         // lets check two custom role on different hierarchical level
         Role registeredUserSon = new Role("Registered User Son", registeredUser);
 
-        Assert.assertEquals(1, roleComparator.compare(adminSon, registeredUserSon));
-        Assert.assertEquals(-1, roleComparator.compare(registeredUserSon, adminSon));
+        Assert.assertEquals(1, roleHierarchyComparator.compare(adminSon, registeredUserSon));
+        Assert.assertEquals(-1, roleHierarchyComparator.compare(registeredUserSon, adminSon));
 
         // what happens if a custom role and a native one has the same parent:
-        Assert.assertEquals(1, roleComparator.compare(admin, registeredUserSon));
-        Assert.assertEquals(-1, roleComparator.compare(registeredUserSon, admin));
+        Assert.assertEquals(1, roleHierarchyComparator.compare(admin, registeredUserSon));
+        Assert.assertEquals(-1, roleHierarchyComparator.compare(registeredUserSon, admin));
 
         // lets check two custom role on same hierarchical level
         Role adminSon2 = new Role("Admin Son 2", admin);
 
         // admin son is considered
-        Assert.assertEquals(-1, roleComparator.compare(adminSon, adminSon2));
-        Assert.assertEquals(1, roleComparator.compare(adminSon2, adminSon));
+        Assert.assertEquals(-1, roleHierarchyComparator.compare(adminSon, adminSon2));
+        Assert.assertEquals(1, roleHierarchyComparator.compare(adminSon2, adminSon));
     }
 
     /**
