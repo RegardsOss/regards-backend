@@ -78,19 +78,19 @@ public class FragmentServiceTest {
      * Fragment repository
      */
     @Mock
-    private IFragmentRepository mockFragmentR;
+    private IFragmentRepository mockFragmentRepository;
 
     /**
      * Attribute model repository
      */
     @Mock
-    private IAttributeModelRepository mockAttModelR;
+    private IAttributeModelRepository mockAttModelRepository;
 
     /**
      * Attribute model service
      */
     @Mock
-    private IAttributeModelService mockAttModelS;
+    private IAttributeModelService mockAttModelSrv;
 
     /**
      * List argument captor
@@ -101,14 +101,14 @@ public class FragmentServiceTest {
     /**
      * Mocked fragment service
      */
-    private IFragmentService fragmentService;
+    private IFragmentService fragmentSrv;
 
     @Before
     public void beforeTest() {
-        fragmentService = new FragmentService(mockFragmentR,
-                                              mockAttModelR,
-                                              mockAttModelS,
-                                              Mockito.mock(IPublisher.class));
+        fragmentSrv = new FragmentService(mockFragmentRepository,
+                                          mockAttModelRepository,
+                                          mockAttModelSrv,
+                                          Mockito.mock(IPublisher.class));
     }
 
     @Test
@@ -117,12 +117,12 @@ public class FragmentServiceTest {
     public void addFragmentTest() throws ModuleException {
         Fragment expected = Fragment.buildFragment(TEST_FRAG_NAME, TEST_FRAG_DESC);
 
-        Mockito.when(mockFragmentR.findByName(TEST_FRAG_NAME)).thenReturn(null);
+        Mockito.when(mockFragmentRepository.findByName(TEST_FRAG_NAME)).thenReturn(null);
         // lets consider there is no attribute created yet
-        Mockito.when(mockAttModelS.isFragmentCreatable(TEST_FRAG_NAME)).thenReturn(true);
-        Mockito.when(mockFragmentR.save(expected)).thenReturn(expected);
+        Mockito.when(mockAttModelSrv.isFragmentCreatable(TEST_FRAG_NAME)).thenReturn(true);
+        Mockito.when(mockFragmentRepository.save(expected)).thenReturn(expected);
 
-        Fragment retrieved = fragmentService.addFragment(expected);
+        Fragment retrieved = fragmentSrv.addFragment(expected);
         Assert.assertNotNull(retrieved);
     }
 
@@ -132,9 +132,9 @@ public class FragmentServiceTest {
     public void addExistingFragmentTest() throws ModuleException {
         Fragment expected = Fragment.buildFragment(TEST_FRAG_NAME, TEST_FRAG_DESC);
 
-        Mockito.when(mockFragmentR.findByName(TEST_FRAG_NAME)).thenReturn(expected);
+        Mockito.when(mockFragmentRepository.findByName(TEST_FRAG_NAME)).thenReturn(expected);
 
-        fragmentService.addFragment(expected);
+        fragmentSrv.addFragment(expected);
     }
 
     @Test(expected = EntityNotFoundException.class)
@@ -142,7 +142,7 @@ public class FragmentServiceTest {
         Long fragmentId = 1L;
         Fragment expected = Fragment.buildFragment(TEST_FRAG_NAME, TEST_FRAG_DESC);
 
-        fragmentService.updateFragment(fragmentId, expected);
+        fragmentSrv.updateFragment(fragmentId, expected);
     }
 
     @Test(expected = EntityInconsistentIdentifierException.class)
@@ -151,7 +151,7 @@ public class FragmentServiceTest {
         Fragment expected = Fragment.buildFragment(TEST_FRAG_NAME, TEST_FRAG_DESC);
         expected.setId(2L);
 
-        fragmentService.updateFragment(fragmentId, expected);
+        fragmentSrv.updateFragment(fragmentId, expected);
     }
 
     @Test(expected = EntityNotFoundException.class)
@@ -160,9 +160,9 @@ public class FragmentServiceTest {
         Fragment expected = Fragment.buildFragment(TEST_FRAG_NAME, TEST_FRAG_DESC);
         expected.setId(fragmentId);
 
-        Mockito.when(mockFragmentR.existsById(fragmentId)).thenReturn(false);
+        Mockito.when(mockFragmentRepository.existsById(fragmentId)).thenReturn(false);
 
-        fragmentService.updateFragment(fragmentId, expected);
+        fragmentSrv.updateFragment(fragmentId, expected);
     }
 
     @Test
@@ -173,10 +173,10 @@ public class FragmentServiceTest {
         Fragment expected = Fragment.buildFragment(TEST_FRAG_NAME, TEST_FRAG_DESC);
         expected.setId(fragmentId);
 
-        Mockito.when(mockFragmentR.existsById(fragmentId)).thenReturn(true);
-        Mockito.when(mockFragmentR.save(expected)).thenReturn(expected);
+        Mockito.when(mockFragmentRepository.existsById(fragmentId)).thenReturn(true);
+        Mockito.when(mockFragmentRepository.save(expected)).thenReturn(expected);
 
-        Assert.assertNotNull(fragmentService.updateFragment(fragmentId, expected));
+        Assert.assertNotNull(fragmentSrv.updateFragment(fragmentId, expected));
     }
 
     @Requirement("REGARDS_DSL_DAM_MOD_020")
@@ -187,9 +187,9 @@ public class FragmentServiceTest {
         List<AttributeModel> attModels = new ArrayList<>();
         attModels.add(new AttributeModelBuilder("MOCK", PropertyType.STRING, "ForTests").setNoRestriction().build());
 
-        Mockito.when(mockAttModelR.findByFragmentId(fragmentId)).thenReturn(attModels);
+        Mockito.when(mockAttModelRepository.findByFragmentId(fragmentId)).thenReturn(attModels);
 
-        fragmentService.deleteFragment(fragmentId);
+        fragmentSrv.deleteFragment(fragmentId);
     }
 
     /**
@@ -212,12 +212,12 @@ public class FragmentServiceTest {
         attModels.add(new AttributeModelBuilder("DATA", PropertyType.DOUBLE_ARRAY, "ForTests").setDescription(
             "physical data").setNoRestriction().build());
 
-        Mockito.when(mockFragmentR.findById(fragmentId)).thenReturn(Optional.of(expected));
-        Mockito.when(mockAttModelR.findByFragmentId(fragmentId)).thenReturn(attModels);
+        Mockito.when(mockFragmentRepository.findById(fragmentId)).thenReturn(Optional.of(expected));
+        Mockito.when(mockAttModelRepository.findByFragmentId(fragmentId)).thenReturn(attModels);
 
         try {
             OutputStream output = Files.newOutputStream(Paths.get("target", expected.getName() + ".xml"));
-            fragmentService.exportFragment(fragmentId, output);
+            fragmentSrv.exportFragment(fragmentId, output);
         } catch (IOException e) {
             LOGGER.debug("Cannot export fragment");
             Assert.fail();
@@ -234,10 +234,10 @@ public class FragmentServiceTest {
         try {
             InputStream input = Files.newInputStream(Paths.get("src", "test", "resources", "sample-fragment.xml"));
 
-            fragmentService.importFragment(input);
+            fragmentSrv.importFragment(input);
 
             // Capture read data
-            Mockito.verify(mockAttModelS).addAllAttributes(attModelCaptor.capture());
+            Mockito.verify(mockAttModelSrv).addAllAttributes(attModelCaptor.capture());
             Iterable<AttributeModel> attModels = attModelCaptor.getValue();
 
             int expectedSize = 3;
@@ -280,5 +280,25 @@ public class FragmentServiceTest {
             LOGGER.debug("Cannot import fragment");
             Assert.fail();
         }
+    }
+
+    @Test
+    public void test_getFragments() {
+        // Given
+        List<Fragment> fragments = new ArrayList<>();
+        fragments.add(Fragment.buildFragment("bFragment", "description"));
+        fragments.add(Fragment.buildFragment("aFragment", "description"));
+        fragments.add(Fragment.buildFragment("cFragment", "description"));
+
+        Mockito.when(mockFragmentRepository.findAll()).thenReturn(fragments);
+
+        // When
+        List<Fragment> results = fragmentSrv.getFragments();
+
+        // Then
+        Assert.assertEquals(3, results.size());
+        Assert.assertEquals("aFragment", results.get(0).getName());
+        Assert.assertEquals("bFragment", results.get(1).getName());
+        Assert.assertEquals("cFragment", results.get(2).getName());
     }
 }

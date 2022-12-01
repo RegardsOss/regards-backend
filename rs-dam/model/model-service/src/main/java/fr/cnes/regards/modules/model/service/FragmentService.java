@@ -36,7 +36,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -87,10 +88,12 @@ public class FragmentService implements IFragmentService {
 
     @Override
     public List<Fragment> getFragments() {
-        Iterable<Fragment> fragments = fragmentRepository.findAll();
-        return ((fragments != null) && fragments.iterator().hasNext()) ?
-            ImmutableList.copyOf(fragments) :
-            Collections.emptyList();
+        List<Fragment> fragments = new ArrayList<>();
+
+        fragmentRepository.findAll().forEach(fragments::add);
+        fragments.sort(Comparator.comparing(Fragment::getName));
+
+        return ImmutableList.copyOf(fragments);
     }
 
     @Override

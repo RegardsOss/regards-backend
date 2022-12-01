@@ -30,6 +30,9 @@ import fr.cnes.regards.modules.model.domain.attributes.Fragment;
 import fr.cnes.regards.modules.model.service.FragmentService;
 import fr.cnes.regards.modules.model.service.IAttributeModelService;
 import fr.cnes.regards.modules.model.service.IFragmentService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
@@ -111,8 +114,10 @@ public class FragmentController implements IResourceController<Fragment> {
      *
      * @return list of fragments
      */
-    @ResourceAccess(description = "List all fragments", role = DefaultRole.ADMIN)
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
+    @Operation(summary = "Get fragments", description = "Return a list of fragments")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All fragments were retrieved.") })
+    @ResourceAccess(description = "Endpoint to retrieve all fragments", role = DefaultRole.ADMIN)
     public ResponseEntity<List<EntityModel<Fragment>>> getFragments() {
         return ResponseEntity.ok(toResources(fragmentService.getFragments()));
     }
