@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.multitenant.test;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 /**
  * Single tenant resolver. Useful for testing purpose. Add multi-thread management.
@@ -32,6 +33,8 @@ public class SingleRuntimeTenantResolver implements IRuntimeTenantResolver {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(SingleRuntimeTenantResolver.class);
+
+    protected static final String TENANT = "tenant";
 
     // Thread safe tenant holder for forced tenant
     private static final ThreadLocal<String> forcedTenantHolder = new ThreadLocal<>();
@@ -55,6 +58,7 @@ public class SingleRuntimeTenantResolver implements IRuntimeTenantResolver {
 
     @Override
     public void forceTenant(String tenant) {
+        MDC.put(TENANT, tenant);
         forcedTenantHolder.set(tenant);
     }
 
