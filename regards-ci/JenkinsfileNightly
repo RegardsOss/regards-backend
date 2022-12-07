@@ -216,7 +216,7 @@ pipeline {
 // @params isRequiringCots true when the container will use CoTs
 // @params isRabbitMqIdFirst should use the first rabbitMQ
 @NonCPS
-def runMavenDockerImg(label, mode, regardsMs, isRequiringCots, isRabbitMqIdFirst) {
+def runMavenDockerImg(label, mode, regardsMs, isRequiringCots, isRabbitMqIdFirst, continueOnError) {
     // Transform PROJECT_NAME to what Docker will use for CoTS names
     // regards-oss-backend/feature%2Fimprove_jenkins_stages-31
     // become
@@ -245,22 +245,28 @@ def runMavenDockerImg(label, mode, regardsMs, isRequiringCots, isRabbitMqIdFirst
     }
     dockerCommand +=    ' --network="regards_IT_network"                                                       \
                         ' + MVN_IMAGE
-    sh script: dockerCommand, label: label
+    if (continueOnError) {
+        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+            sh script: dockerCommand, label: label
+        }
+    } else {
+        sh script: dockerCommand, label: label
+    }
 }
 // Use it when you don't need any COTS
 def runMavenDockerImgWithoutCoTS(taskMainLabel, mode) {
     def label = taskMainLabel + " using maven container with mode=[" + mode + "]"
-    runMavenDockerImg(label, mode, "", false, false)
+    runMavenDockerImg(label, mode, "", false, false, false)
 }
 
 // Use it when you want CoTS and you are the parallel "One"
 def runMavenDockerImgParallelOne(mode, regardsMs) {
     def label = "Run " + mode + " on [" + regardsMs + "] using maven container. This tasks use CoTs and first RabbitMQ"
-    runMavenDockerImg(label, mode, regardsMs, true, true)
+    runMavenDockerImg(label, mode, regardsMs, true, true, true)
 }
 
 // Use it when you want CoTS and you are the parallel "Two"
 def runMavenDockerImgParallelTwo(mode, regardsMs) {
     def label = "Run " + mode + " on [" + regardsMs + "] using maven container. This tasks use CoTs and second RabbitMQ"
-    runMavenDockerImg(label, mode, regardsMs, true, false)
+    runMavenDockerImg(label, mode, regardsMs, true, false, true)
 }
