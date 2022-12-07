@@ -30,6 +30,9 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.configuration.domain.Theme;
 import fr.cnes.regards.modules.configuration.domain.UILayout;
 import fr.cnes.regards.modules.configuration.service.IThemeService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -86,14 +89,14 @@ public class ThemeController implements IResourceController<Theme> {
      * @param assembler
      * @return {@link Theme}
      */
-    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get HMI themes", description = "Return a page of HMI themes")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All HMI themes were retrieved.") })
     @ResourceAccess(description = "Endpoint to retrieve HMI themes", role = DefaultRole.PUBLIC)
     public HttpEntity<PagedModel<EntityModel<Theme>>> retrieveThemes(
-        @SortDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        @SortDefault(sort = "name", direction = Sort.Direction.ASC) Pageable pageable,
         PagedResourcesAssembler<Theme> assembler) {
-        PagedModel<EntityModel<Theme>> resources = toPagedResources(service.retrieveThemes(pageable), assembler);
-        return new ResponseEntity<>(resources, HttpStatus.OK);
+        return new ResponseEntity<>(toPagedResources(service.retrieveThemes(pageable), assembler), HttpStatus.OK);
     }
 
     /**
