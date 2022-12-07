@@ -28,6 +28,9 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.dam.service.dataaccess.IAccessGroupService;
 import fr.cnes.regards.modules.dam.service.dataaccess.IAccessRightService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -63,11 +66,15 @@ public class AccessGroupController implements IResourceController<AccessGroup> {
     }
 
     @GetMapping
-    @ResourceAccess(description = "send the whole list of accessGroups", role = DefaultRole.EXPLOIT)
+    @Operation(summary = "Get groups of user", description = "Return a page of groups of user")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All groups of user were retrieved.") })
+    @ResourceAccess(description = "Endpoint to retrieve all groups of user",
+        role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<AccessGroup>>> retrieveAccessGroupsList(
         @RequestParam(name = "public", required = false) Boolean isPublic,
-        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        @PageableDefault(sort = "name", direction = Sort.Direction.ASC) Pageable pageable,
         PagedResourcesAssembler<AccessGroup> assembler) {
+        
         return ResponseEntity.ok(toPagedResources(accessGroupService.retrieveAccessGroups(isPublic, pageable),
                                                   assembler));
     }
