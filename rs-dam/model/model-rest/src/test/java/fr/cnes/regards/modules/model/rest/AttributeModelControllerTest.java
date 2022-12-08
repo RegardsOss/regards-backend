@@ -29,26 +29,20 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
+
 /**
  * Attribute controller test
  *
  * @author msordi
  */
-public class AttributeControllerTest {
-
-    /**
-     * Class logger
-     */
-    @SuppressWarnings("unused")
-    private static final Logger LOG = LoggerFactory.getLogger(AttributeControllerTest.class);
+public class AttributeModelControllerTest {
 
     /**
      * Attribute service
@@ -68,7 +62,7 @@ public class AttributeControllerTest {
     /**
      * {@link AttributeModelController}
      */
-    private AttributeModelController attributeController;
+    private AttributeModelController attributeModelController;
 
     @Before
     public void init() {
@@ -79,14 +73,15 @@ public class AttributeControllerTest {
         modelAttrAssocService = Mockito.mock(IModelAttrAssocService.class);
         final RestrictionService restrictionService = Mockito.mock(RestrictionService.class);
         // Init controller
-        attributeController = new AttributeModelController(attributeServiceMocked,
-                                                           resourceServiceMocked,
-                                                           modelAttrAssocService,
-                                                           restrictionService);
+        attributeModelController = new AttributeModelController(attributeServiceMocked,
+                                                                resourceServiceMocked,
+                                                                modelAttrAssocService,
+                                                                restrictionService);
     }
 
     @Test
     public void getAttributeTest() {
+        // Given
         final List<AttributeModel> attributes = new ArrayList<>();
         attributes.add(new AttributeModelBuilder("NAME", PropertyType.STRING, "ForTests").setId(1L)
                                                                                          .setFragmentUsingDefault()
@@ -94,16 +89,18 @@ public class AttributeControllerTest {
         attributes.add(new AttributeModelBuilder("START_DATE", PropertyType.DATE_ISO8601, "ForTests").setId(2L)
                                                                                                      .setFragmentUsingDefault()
                                                                                                      .build());
-        // CHECKSTYLE:OFF
         attributes.add(new AttributeModelBuilder("STOP_DATE", PropertyType.DATE_ISO8601, "ForTests").setId(3L)
                                                                                                     .setFragmentUsingDefault()
                                                                                                     .build());
-        // CHECKSTYLE:ON
-        Mockito.when(attributeServiceMocked.getAttributes(null, null, null)).thenReturn(attributes);
-        final ResponseEntity<List<EntityModel<AttributeModel>>> response = attributeController.getAttributes(null,
-                                                                                                             null,
-                                                                                                             null,
-                                                                                                             null);
+
+        Mockito.when(attributeServiceMocked.getAttributes(any(), any(), any(), any())).thenReturn(attributes);
+
+        // When
+        final ResponseEntity<List<EntityModel<AttributeModel>>> response = attributeModelController.getAttributes(null,
+                                                                                                                  null,
+                                                                                                                  null,
+                                                                                                                  null);
+        // Then
         Assert.assertEquals(attributes.size(), response.getBody().size());
     }
 

@@ -33,7 +33,11 @@ import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.service.IAttributeModelService;
 import fr.cnes.regards.modules.model.service.IModelAttrAssocService;
 import fr.cnes.regards.modules.model.service.RestrictionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -123,23 +127,29 @@ public class AttributeModelController implements IResourceController<AttributeMo
      * @param noLink
      * @return list of {@link AttributeModel}
      */
-    @ResourceAccess(description = "List all attributes", role = DefaultRole.PUBLIC)
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
+    @Operation(summary = "Get attribute models", description = "Return a list of attribute models")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All attribute models were retrieved.") })
+    @ResourceAccess(description = "Endpoint to retrieve the list of attribute models",
+        role = DefaultRole.PUBLIC)
     public ResponseEntity<List<EntityModel<AttributeModel>>> getAttributes(
         @RequestParam(value = PARAM_TYPE, required = false) PropertyType type,
         @RequestParam(value = PARAM_FRAGMENT_NAME, required = false) String fragmentName,
         @RequestParam(name = "modelNames", required = false) Set<String> modelNames,
         @RequestParam(name = "noLink", required = false) Boolean noLink) {
-        List<AttributeModel> attributes = null;
-        if ((modelNames != null) && !modelNames.isEmpty()) {
-            attributes = modelAttrAssocService.getAttributeModels(modelNames, PageRequest.of(0, 1000)).getContent();
-        } else {
-            attributes = attributeService.getAttributes(type, fragmentName, modelNames);
-        }
 
+        List<AttributeModel> attributes = null;
+        Sort sort = Sort.by(Sort.Direction.ASC, "name");
+
+        if (modelNames != null && !modelNames.isEmpty()) {
+            attributes = modelAttrAssocService.getAttributeModels(modelNames, PageRequest.of(0, 1000, sort))
+                                              .getContent();
+        } else {
+            attributes = attributeService.getAttributes(type, fragmentName, modelNames, sort);
+        }
         noLink = noLink == null ? Boolean.FALSE : noLink;
-        List<EntityModel<AttributeModel>> resources = toResources(attributes, noLink);
-        return ResponseEntity.ok(resources);
+
+        return ResponseEntity.ok(toResources(attributes, noLink));
     }
 
     /**

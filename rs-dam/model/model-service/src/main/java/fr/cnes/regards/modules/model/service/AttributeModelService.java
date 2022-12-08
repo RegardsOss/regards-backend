@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
@@ -123,6 +124,14 @@ public class AttributeModelService implements IAttributeModelService {
     @Override
     public List<AttributeModel> getAttributes(PropertyType type, String fragmentName, Set<String> modelNames) {
         return attModelRepository.findAll(AttributeModelSpecifications.search(type, fragmentName, modelNames));
+    }
+
+    @Override
+    public List<AttributeModel> getAttributes(PropertyType type,
+                                              String fragmentName,
+                                              Set<String> modelNames,
+                                              Sort sort) {
+        return attModelRepository.findAll(AttributeModelSpecifications.search(type, fragmentName, modelNames), sort);
     }
 
     @Override

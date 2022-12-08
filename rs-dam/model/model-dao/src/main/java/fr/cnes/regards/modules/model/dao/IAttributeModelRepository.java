@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.model.dao;
 
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.support.JpaRepositoryImplementation;
@@ -65,4 +66,8 @@ public interface IAttributeModelRepository extends JpaRepositoryImplementation<A
     @Override
     @EntityGraph(attributePaths = { "properties" }, type = EntityGraph.EntityGraphType.LOAD)
     List<AttributeModel> findAll(Specification<AttributeModel> spec);
+
+    @Override
+    @EntityGraph(attributePaths = { "properties" }, type = EntityGraph.EntityGraphType.LOAD)
+    List<AttributeModel> findAll(Specification<AttributeModel> spec, Sort sort);
 }

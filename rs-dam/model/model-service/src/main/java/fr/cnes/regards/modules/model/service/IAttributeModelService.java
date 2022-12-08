@@ -22,6 +22,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.model.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.model.dto.properties.PropertyType;
 import fr.cnes.regards.modules.model.service.exception.UnsupportedRestrictionException;
+import org.springframework.data.domain.Sort;
 
 import javax.transaction.Transactional;
 import java.util.List;
@@ -37,6 +38,8 @@ public interface IAttributeModelService {
     List<AttributeModel> getAllAttributes();
 
     List<AttributeModel> getAttributes(PropertyType pType, String pFragmentName, Set<String> modelNames);
+
+    List<AttributeModel> getAttributes(PropertyType type, String fragmentName, Set<String> modelNames, Sort sort);
 
     /**
      * Add an attribute in a {@link Transactional} context
