@@ -29,6 +29,9 @@ import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.model.domain.Model;
 import fr.cnes.regards.modules.model.domain.ModelAttrAssoc;
 import fr.cnes.regards.modules.model.service.IModelService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.EntityModel;
@@ -108,8 +111,10 @@ public class ModelController implements IResourceController<Model> {
      * @param type filter
      * @return a list of {@link Model}
      */
-    @ResourceAccess(description = "List all models", role = DefaultRole.ADMIN)
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
+    @Operation(summary = "Get models", description = "Return a model list")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All models were retrieved.") })
+    @ResourceAccess(description = "Endpoint to retrieve model list", role = DefaultRole.ADMIN)
     public ResponseEntity<List<EntityModel<Model>>> getModels(
         @RequestParam(value = "type", required = false) EntityType type) {
         return ResponseEntity.ok(toResources(modelService.getModels(type)));

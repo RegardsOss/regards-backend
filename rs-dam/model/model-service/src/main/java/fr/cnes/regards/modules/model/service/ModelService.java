@@ -50,6 +50,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.*;
@@ -118,14 +119,16 @@ public class ModelService implements IModelService, IModelAttrAssocService {
     }
 
     @Override
-    public List<Model> getModels(EntityType type) {
-        Iterable<Model> models;
+    public List<Model> getModels(@Nullable EntityType type) {
+        List<Model> models;
         if (type == null) {
-            models = modelRepository.findAll();
+            models = new ArrayList<>();
+            modelRepository.findAll().forEach(models::add);
         } else {
             models = modelRepository.findByType(type);
         }
-        return models != null ? ImmutableList.copyOf(models) : Collections.emptyList();
+        models.sort(Comparator.comparing(Model::getName));
+        return ImmutableList.copyOf(models);
     }
 
     @Override
