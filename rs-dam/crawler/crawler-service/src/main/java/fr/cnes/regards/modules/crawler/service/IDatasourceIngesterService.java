@@ -30,7 +30,7 @@ public interface IDatasourceIngesterService {
         throws ModuleException, NotFinishedException, FirstFindException, InactiveDatasourceException;
 
     /**
-     * Retrieve all {@link DatasourceIngestion}
+     * Retrieve all {@link DatasourceIngestion} sorted by label
      */
     List<DatasourceIngestion> getDatasourceIngestions();
 

@@ -25,15 +25,15 @@ import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.crawler.domain.DatasourceIngestion;
 import fr.cnes.regards.modules.crawler.service.ICrawlerAndIngesterService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.LinkRelation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -67,8 +67,11 @@ public class CrawlerController implements IResourceController<DatasourceIngestio
      *
      * @return a list of DatasourceIngestion
      */
+    @GetMapping
+    @Operation(summary = "Get crawler datasources", description = "Return a list of crawler datasources")
+    @ApiResponses(
+        value = { @ApiResponse(responseCode = "200", description = "All crawler datasources were retrieved.") })
     @ResourceAccess(description = "List all crawler datasources.")
-    @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<EntityModel<DatasourceIngestion>>> getAllDatasourceIngestion() {
         return ResponseEntity.ok(toResources(crawlerService.getDatasourceIngestions()));
     }
