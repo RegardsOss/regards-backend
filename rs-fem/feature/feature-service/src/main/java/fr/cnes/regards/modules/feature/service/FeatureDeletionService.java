@@ -370,32 +370,35 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
                                        boolean isToNotify,
                                        FeatureDeletionJob featureDeletionJob) {
 
+        // Remove possible null values for requests associated to feature aleady deleted.
+        List<FeatureEntity> associatedEntities = successfulRequests.values().stream().filter(Objects::nonNull).toList();
         // PROPAGATE to CATALOG
-        successfulRequests.values()
-                          .forEach(f -> publisher.publish(FeatureEvent.buildFeatureDeleted(f.getUrn().toString())));
+        associatedEntities.forEach(f -> publisher.publish(FeatureEvent.buildFeatureDeleted(f.getUrn().toString())));
 
         // Feedbacks for deleted features
         for (Map.Entry<FeatureDeletionRequest, FeatureEntity> entry : successfulRequests.entrySet()) {
             FeatureEntity entity = entry.getValue();
-            FeatureDeletionRequest fdr = entry.getKey();
-            fdr.setToNotify(entity.getFeature(), entity.getSessionOwner(), entity.getSession());
-            // Monitoring log
-            FeatureLogger.deletionSuccess(fdr.getRequestOwner(), fdr.getRequestId(), fdr.getUrn());
-            if (featureDeletionJob != null) {
-                // featureDeletionJob can be null in case this method is called outside the context of a job
-                featureDeletionJob.advanceCompletion();
-            }
-            // Publish successful request
-            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.DELETION,
-                                                        fdr.getRequestId(),
-                                                        fdr.getRequestOwner(),
-                                                        entity.getProviderId(),
-                                                        fdr.getUrn(),
-                                                        RequestState.SUCCESS));
-            // Update requests in case of notification
-            if (isToNotify) {
-                fdr.setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
-                fdr.setAlreadyDeleted(false);
+            if (entity != null) {
+                FeatureDeletionRequest fdr = entry.getKey();
+                fdr.setToNotify(entity.getFeature(), entity.getSessionOwner(), entity.getSession());
+                // Monitoring log
+                FeatureLogger.deletionSuccess(fdr.getRequestOwner(), fdr.getRequestId(), fdr.getUrn());
+                if (featureDeletionJob != null) {
+                    // featureDeletionJob can be null in case this method is called outside the context of a job
+                    featureDeletionJob.advanceCompletion();
+                }
+                // Publish successful request
+                publisher.publish(FeatureRequestEvent.build(FeatureRequestType.DELETION,
+                                                            fdr.getRequestId(),
+                                                            fdr.getRequestOwner(),
+                                                            entity.getProviderId(),
+                                                            fdr.getUrn(),
+                                                            RequestState.SUCCESS));
+                // Update requests in case of notification
+                if (isToNotify) {
+                    fdr.setStep(FeatureRequestStep.LOCAL_TO_BE_NOTIFIED);
+                    fdr.setAlreadyDeleted(false);
+                }
             }
         }
         doOnSuccess(successfulRequests.keySet());
@@ -411,8 +414,8 @@ public class FeatureDeletionService extends AbstractFeatureService<FeatureDeleti
         }
 
         // Delete features, related requests will be deleted once we know notifier has successfully sent the notification about it
-        this.creationRepo.deleteByFeatureEntityIn(successfulRequests.values());
-        this.featureRepo.deleteAll(successfulRequests.values());
+        this.creationRepo.deleteByFeatureEntityIn(associatedEntities);
+        this.featureRepo.deleteAll(associatedEntities);
     }
 
     private boolean haveFiles(FeatureDeletionRequest fdr, FeatureEntity feature) {
