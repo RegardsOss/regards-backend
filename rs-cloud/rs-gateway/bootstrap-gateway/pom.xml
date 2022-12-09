@@ -45,6 +45,16 @@
         <!-- Regards -->
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>microservice-regards</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>spring-webmvc</artifactId>
+                    <groupId>org.springframework</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>microservice-logger</artifactId>
         </dependency>
         <dependency>

@@ -20,6 +20,7 @@ package fr.cnes.regards.cloud.gateway;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 /**
  * Class ApplicationTest
@@ -29,6 +30,7 @@ import org.springframework.boot.test.context.SpringBootTest;
  * @author Sébastien Binda
  */
 @SpringBootTest(classes = Application.class)
+@ActiveProfiles("test")
 class ApplicationTest {
 
     @Test

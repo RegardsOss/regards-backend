@@ -62,6 +62,10 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>microservice-logger</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>microservice-regards</artifactId>
+        </dependency>
         <!-- Spring bootstrap -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>

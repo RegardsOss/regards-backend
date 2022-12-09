@@ -56,17 +56,19 @@ public class RegardsRunListener implements SpringApplicationRunListener {
 
     @Override
     public void contextPrepared(ConfigurableApplicationContext context) {
+
         if (Arrays.stream(context.getEnvironment().getActiveProfiles())
                   .noneMatch(p -> p.equals(REGARDS_TEST_PROFILE))) {
-            //Not in text context
+            //Not in test context
             String microservicesToWaitList = context.getEnvironment().getProperty("runner.microservices.to.wait");
+            String endpointsToWait = context.getEnvironment().getProperty("runner.endpoints.to.wait");
             String delayAsProperty = context.getEnvironment().getProperty("runner.delay");
             int delay = Strings.isNullOrEmpty(delayAsProperty) ? DEFAULT_DELAY : Integer.parseInt(delayAsProperty);
             String registryUrlProperty = context.getEnvironment().getProperty("registry.url");
             String registryUrl = Strings.isNullOrEmpty(registryUrlProperty) ?
                 DEFAULT_REGISTRY_URL :
                 registryUrlProperty;
-            EurekaWaitingUtils.waitForMicroservicesBeforeStart(registryUrl, microservicesToWaitList, delay);
+            EurekaWaitingUtils.waitBeforeStart(endpointsToWait, registryUrl, microservicesToWaitList, delay);
         }
     }
 

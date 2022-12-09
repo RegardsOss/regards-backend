@@ -29,12 +29,8 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.net.*;
+import java.util.*;
 
 /**
  * Utility class used to block execution while waiting for Eureka Instances to be registered and running
@@ -50,6 +46,89 @@ public class EurekaWaitingUtils {
     public static final String EUREKA_APPS_RESOURCES = "/eureka/apps";
 
     /**
+     * Block the thread until all defined endpoints have been reached and returned success http status and
+     * all defined microservices are registered in Eureka and running
+     *
+     * @param endpointsToWait      the endpoints to wait, the endpoint names
+     *                             are separated by commas without spaces
+     * @param eurekaApiUrl         the url of the eureka api
+     * @param servicesToWaitString the names of the microservices to wait as a string, the services names
+     *                             are separated by commas without spaces
+     * @param delayBeforeTries     the time in seconds before two status check
+     */
+    public static void waitBeforeStart(String endpointsToWait,
+                                       String eurekaApiUrl,
+                                       String servicesToWaitString,
+                                       int delayBeforeTries) {
+        LOGGER.info("Checking if the microservice can be started");
+        waitForEndpointsBeforeStart(endpointsToWait, delayBeforeTries);
+        waitForMicroservicesBeforeStart(eurekaApiUrl, servicesToWaitString, delayBeforeTries);
+        LOGGER.info("All needed services are running, the microservice is ready to start");
+    }
+
+    /**
+     * Block the thread until all defined endpoints have been reached and returned success http status
+     *
+     * @param endpointsToWaitString the endpoints to wait as a string, the endpoint names
+     *                              are separated by commas without spaces
+     * @param delayBeforeTries      the time in seconds before two status check
+     */
+    private static void waitForEndpointsBeforeStart(String endpointsToWaitString, int delayBeforeTries) {
+        if (endpointsToWaitString == null || endpointsToWaitString.isBlank()) {
+            //Nothing to wait
+            return;
+        }
+        List<String> endpointsToWait = Arrays.asList(endpointsToWaitString.split(","));
+        while (!canBeStarted(endpointsToWait)) {
+            try {
+                Thread.sleep(delayBeforeTries * 1000L);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private static boolean canBeStarted(List<String> endpointsToWait) {
+        List<String> missingEndpoints = endpointsToWait.stream()
+                                                       .filter(endpointToWait -> !checkEndpointStatus(endpointToWait))
+                                                       .toList();
+        if (missingEndpoints.isEmpty()) {
+            return true;
+        }
+        LOGGER.info("The microservice cannot be started because it is waiting for {} to return success status",
+                    missingEndpoints);
+        return false;
+    }
+
+    private static boolean checkEndpointStatus(String endpointToWait) {
+        try {
+            URI uri = new URL(endpointToWait).toURI();
+            String userInfo = uri.getRawUserInfo();
+            if (userInfo != null && userInfo.length() > 0) {
+                userInfo = Base64.getEncoder().encodeToString(userInfo.getBytes());
+            }
+            HttpURLConnection con = (HttpURLConnection) uri.toURL().openConnection();
+            if (userInfo != null && userInfo.length() > 0) {
+                con.setRequestProperty("Authorization", "Basic " + userInfo);
+            }
+            try {
+                con.setRequestMethod("GET");
+                con.setInstanceFollowRedirects(false);
+                if (con.getResponseCode() == 200) {
+                    return true;
+                }
+            } finally {
+                con.disconnect();
+            }
+        } catch (MalformedURLException | URISyntaxException e) {
+            LOGGER.error("The URL {} is malformed", endpointToWait, e);
+        } catch (IOException e) {
+            //Unreachable server, nothing to do
+        }
+        return false;
+    }
+
+    /**
      * Block the thread until all defined microservices are registered in Eureka and running
      *
      * @param eurekaApiUrl         the url of the eureka api
@@ -57,13 +136,19 @@ public class EurekaWaitingUtils {
      *                             are separated by commas without spaces
      * @param delayBeforeTries     the time in seconds before two status check
      */
-    public static void waitForMicroservicesBeforeStart(String eurekaApiUrl,
-                                                       String servicesToWaitString,
-                                                       int delayBeforeTries) {
-        List<String> servicesToWait = new ArrayList<>(Arrays.asList(servicesToWaitString.split(",")));
-        //Remove the empty string that would appear when splitting an empty string list
-        servicesToWait.remove("");
-        LOGGER.info("Checking if the microservice can be started");
+    private static void waitForMicroservicesBeforeStart(String eurekaApiUrl,
+                                                        String servicesToWaitString,
+                                                        int delayBeforeTries) {
+        List<String> servicesToWait;
+        if (servicesToWaitString == null || servicesToWaitString.isBlank()) {
+            //Nothing to wait
+            return;
+        }
+        servicesToWait = new ArrayList<>(Arrays.asList(servicesToWaitString.split(",")));
+        if (servicesToWait.contains("rs-registry")) {
+            // rs-registry presence will be tested when attempting to reach eureka
+            servicesToWait.remove("rs-registry");
+        }
         while (!canBeStarted(eurekaApiUrl, servicesToWait)) {
             try {
                 Thread.sleep(delayBeforeTries * 1000L);
