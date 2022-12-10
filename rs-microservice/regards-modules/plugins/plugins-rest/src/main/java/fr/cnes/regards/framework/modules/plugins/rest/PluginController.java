@@ -34,6 +34,9 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -224,27 +227,31 @@ public class PluginController implements IResourceController<PluginConfiguration
      * @return a {@link List} of {@link PluginConfiguration}
      * @throws EntityNotFoundException the specific plugin type name is unknown
      */
-    @RequestMapping(value = PLUGINS_CONFIGS, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResourceAccess(description = "Get all the plugin configuration for a specific type", role = DefaultRole.PUBLIC)
+    @GetMapping(value = PLUGINS_CONFIGS, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get plugin configurations",
+        description = "Return a list of plugin configurations for a specific type")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200",
+        description = "All plugin configurations for a specific type were retrieved.") })
+    @ResourceAccess(description = "Endpoint to retrieve all plugin configurations for a specific type",
+        role = DefaultRole.PUBLIC)
     public ResponseEntity<List<EntityModel<PluginConfiguration>>> getPluginConfigurationsByType(
         @RequestParam(value = "pluginType", required = false) String pluginType) throws EntityNotFoundException {
 
-        List<PluginConfiguration> pluginConfs;
+        List<PluginConfiguration> pluginConfigurations;
 
         if (pluginType != null) {
             // Get all the PluginConfiguration for a specific plugin type
             try {
-                pluginConfs = pluginService.getPluginConfigurationsByType(Class.forName(pluginType));
+                pluginConfigurations = pluginService.getPluginConfigurationsByType(Class.forName(pluginType));
             } catch (ClassNotFoundException e) {
                 LOGGER.error("No class found for the plugin type :" + pluginType, e);
                 throw new EntityNotFoundException(e.getMessage());
             }
         } else {
             // Get all the PluginConfiguration
-            pluginConfs = pluginService.getAllPluginConfigurations();
+            pluginConfigurations = pluginService.getAllPluginConfigurations();
         }
-
-        return ResponseEntity.ok(toResources(pluginConfs));
+        return ResponseEntity.ok(toResources(pluginConfigurations));
     }
 
     /**

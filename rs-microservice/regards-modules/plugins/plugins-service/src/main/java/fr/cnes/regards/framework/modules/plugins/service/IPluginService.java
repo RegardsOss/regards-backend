@@ -193,7 +193,7 @@ public interface IPluginService {
     boolean exists(String businessId);
 
     /**
-     * Get all plugin's configuration for a specific plugin type.
+     * Get all plugin's configuration sorted by label for a specific plugin type.
      *
      * @param interfacePluginType a specific interface plugin type
      * @return all the {@link PluginConfiguration} for a specific plugin type.
@@ -201,7 +201,7 @@ public interface IPluginService {
     List<PluginConfiguration> getPluginConfigurationsByType(Class<?> interfacePluginType);
 
     /**
-     * Get all plugin's configuration.
+     * Get all plugin's configuration sorted by label.
      *
      * @return all the {@link PluginConfiguration}.
      */

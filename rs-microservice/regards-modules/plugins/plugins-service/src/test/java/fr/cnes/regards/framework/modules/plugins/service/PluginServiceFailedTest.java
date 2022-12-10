@@ -201,19 +201,23 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     @Test(expected = CannotInstanciatePluginException.class)
     public void getAPluginWithBadVersionConfiguration()
         throws ModuleException, NotAvailablePluginConfigurationException {
-        final List<PluginConfiguration> pluginConfs = new ArrayList<>();
-        final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
-        aPluginConfiguration.setVersion(BLUE);
-        aPluginConfiguration.setId(AN_ID);
+        // Given
+        List<PluginConfiguration> pluginConfigurations = new ArrayList<>();
 
-        pluginConfs.add(aPluginConfiguration);
-        pluginConfs.add(getPluginConfigurationWithParameters());
+        PluginConfiguration pluginConfiguration0 = getPluginConfigurationWithDynamicParameter();
+        pluginConfiguration0.setVersion(BLUE);
+        pluginConfiguration0.setId(AN_ID);
+        pluginConfigurations.add(pluginConfiguration0);
 
-        Mockito.when(pluginConfRepositoryMocked.findAll()).thenReturn(pluginConfs);
-        Mockito.when(pluginConfRepositoryMocked.existsById(aPluginConfiguration.getId())).thenReturn(true);
-        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(aPluginConfiguration.getBusinessId()))
-               .thenReturn(aPluginConfiguration);
+        PluginConfiguration pluginConfiguration1 = getPluginConfigurationWithParameters();
+        pluginConfiguration1.setPriorityOrder(10);
+        pluginConfigurations.add(pluginConfiguration1);
 
+        Mockito.when(pluginConfRepositoryMocked.findAll()).thenReturn(pluginConfigurations);
+        Mockito.when(pluginConfRepositoryMocked.existsById(pluginConfiguration0.getId())).thenReturn(true);
+        Mockito.when(pluginConfRepositoryMocked.findCompleteByBusinessId(pluginConfiguration0.getBusinessId()))
+               .thenReturn(pluginConfiguration0);
+        // When
         pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class);
     }
 

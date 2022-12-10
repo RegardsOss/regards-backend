@@ -49,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -474,17 +475,19 @@ public class PluginService implements IPluginService, InitializingBean {
 
     @Override
     public List<PluginConfiguration> getPluginConfigurationsByType(Class<?> interfacePluginType) {
-        List<PluginConfiguration> result = new ArrayList<>();
-        for (PluginConfiguration conf : repos.findAll()) {
-            PluginMetaData pluginMeta = PluginUtils.getPluginMetadata(conf.getPluginId());
+        List<PluginConfiguration> pluginConfigurations = new ArrayList<>();
+
+        for (PluginConfiguration pluginConfiguration : repos.findAll()) {
+            PluginMetaData pluginMeta = PluginUtils.getPluginMetadata(pluginConfiguration.getPluginId());
             if (pluginMeta == null) {
-                LOGGER.error("The plugin {} is not provided", conf.getPluginId());
+                LOGGER.error("The plugin {} is not provided", pluginConfiguration.getPluginId());
             } else if (pluginMeta.getInterfaceNames().contains(interfacePluginType.getName())) {
-                conf.setMetaDataAndPluginId(pluginMeta);
-                result.add(conf);
+                pluginConfiguration.setMetaDataAndPluginId(pluginMeta);
+                pluginConfigurations.add(pluginConfiguration);
             }
         }
-        return result;
+        pluginConfigurations.sort(Comparator.comparing(PluginConfiguration::getLabel));
+        return pluginConfigurations;
     }
 
     @Override
@@ -762,7 +765,7 @@ public class PluginService implements IPluginService, InitializingBean {
 
     @Override
     public List<PluginConfiguration> getAllPluginConfigurations() {
-        return repos.findAll();
+        return repos.findAll(Sort.by(Sort.Direction.ASC, "label"));
     }
 
     @Override
