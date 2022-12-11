@@ -86,17 +86,17 @@ public class CollectionIT extends AbstractDaoTransactionalIT {
 
         // Search
         EntitySpecifications<Collection> specs = new EntitySpecifications<>();
-        List<Collection> collections = collectionRepository.findAll(specs.search("toto"));
+        List<Collection> collections = collectionRepository.findAll(specs.searchByAndOrderByLabel("toto"));
         Assert.assertTrue(collections.isEmpty());
 
-        collections = collectionRepository.findAll(specs.search("col"));
+        collections = collectionRepository.findAll(specs.searchByAndOrderByLabel("col"));
         Assert.assertFalse(collections.isEmpty());
         Assert.assertTrue(collections.size() == 3);
         Assert.assertTrue(collections.get(0).getLabel().endsWith("1"));
         Assert.assertTrue(collections.get(1).getLabel().endsWith("2"));
         Assert.assertTrue(collections.get(2).getLabel().endsWith("3"));
 
-        collections = collectionRepository.findAll(specs.search("nomatch"));
+        collections = collectionRepository.findAll(specs.searchByAndOrderByLabel("nomatch"));
         Assert.assertTrue(collections.size() == 1);
     }
 

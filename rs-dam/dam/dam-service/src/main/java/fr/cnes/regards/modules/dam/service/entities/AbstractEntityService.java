@@ -136,7 +136,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     /**
      * Parameterized entity repository
      */
-    protected final IAbstractEntityRepository<U> repository;
+    protected final IAbstractEntityRepository<U> abstractEntityRepository;
 
     /**
      * Unparameterized entity repository
@@ -188,7 +188,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
                                     IDeletedEntityRepository deletedEntityRepository,
                                     ICollectionRepository collectionRepository,
                                     IDatasetRepository datasetRepository,
-                                    IAbstractEntityRepository<U> repository,
+                                    IAbstractEntityRepository<U> abstractEntityRepository,
                                     EntityManager em,
                                     IPublisher publisher,
                                     IRuntimeTenantResolver runtimeTenantResolver,
@@ -200,7 +200,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         this.deletedEntityRepository = deletedEntityRepository;
         this.collectionRepository = collectionRepository;
         this.datasetRepository = datasetRepository;
-        this.repository = repository;
+        this.abstractEntityRepository = abstractEntityRepository;
         this.pluginService = pluginService;
         this.em = em;
         this.publisher = publisher;
@@ -210,7 +210,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     @Override
     public U load(UniformResourceName ipId) throws ModuleException {
-        U entity = repository.findOneByIpId(ipId);
+        U entity = abstractEntityRepository.findOneByIpId(ipId);
         if (entity == null) {
             throw new EntityNotFoundException(ipId.toString(), this.getClass());
         }
@@ -220,7 +220,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
     @Override
     public U load(Long id) throws ModuleException {
         Assert.notNull(id, "Entity identifier is required");
-        Optional<U> entityOpt = repository.findById(id);
+        Optional<U> entityOpt = abstractEntityRepository.findById(id);
         if (entityOpt.isEmpty()) {
             throw new EntityNotFoundException(id, this.getClass());
         }
@@ -229,7 +229,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     @Override
     public U loadWithRelations(UniformResourceName ipId) throws ModuleException {
-        U entity = repository.findByIpId(ipId);
+        U entity = abstractEntityRepository.findByIpId(ipId);
         if (entity == null) {
             throw new EntityNotFoundException(ipId.toString(), this.getClass());
         }
@@ -238,28 +238,28 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     @Override
     public List<U> loadAllWithRelations(UniformResourceName... ipIds) {
-        return repository.findByIpIdIn(ImmutableSet.copyOf(ipIds));
+        return abstractEntityRepository.findByIpIdIn(ImmutableSet.copyOf(ipIds));
     }
 
     @Override
     public Page<U> findAll(Pageable pageRequest) {
-        return repository.findAll(pageRequest);
+        return abstractEntityRepository.findAll(pageRequest);
     }
 
     @Override
     public Set<U> findAllByProviderId(String providerId) {
-        return repository.findAllByProviderId(providerId);
+        return abstractEntityRepository.findAllByProviderId(providerId);
     }
 
     @Override
     public Page<U> search(String label, Pageable pageRequest) {
-        EntitySpecifications<U> spec = new EntitySpecifications<>();
-        return repository.findAll(spec.search(label), pageRequest);
+        EntitySpecifications<U> entitySpecifications = new EntitySpecifications<>();
+        return abstractEntityRepository.findAll(entitySpecifications.searchByAndOrderByLabel(label), pageRequest);
     }
 
     @Override
     public List<U> findAll() {
-        return repository.findAll();
+        return abstractEntityRepository.findAll();
     }
 
     /**
@@ -350,7 +350,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
      */
     @Override
     public void associate(Long entityId, Set<String> tagList) throws ModuleException {
-        Optional<U> entityOpt = repository.findById(entityId);
+        Optional<U> entityOpt = abstractEntityRepository.findById(entityId);
         if (entityOpt.isEmpty()) {
             throw new EntityNotFoundException(entityId, this.getClass());
         }
@@ -358,7 +358,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         U entity = entityOpt.get();
         em.detach(entity);
         tagList.forEach(entity::addTags);
-        U entityInDb = repository.findById(entityId).get();
+        U entityInDb = abstractEntityRepository.findById(entityId).get();
         // And detach it because it is the other one that will be persisted
         em.detach(entityInDb);
         this.updateWithoutCheck(entity, entityInDb);
@@ -406,7 +406,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
             setDataFilesUri(entity);
         }
 
-        entity = repository.save(entity);
+        entity = abstractEntityRepository.save(entity);
         updatedIpIds.add(entity.getIpId());
 
         // AMQP event publishing
@@ -416,7 +416,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     @Override
     public void dissociate(Long entityId, Set<String> ipIds) throws ModuleException {
-        Optional<U> entityOpt = repository.findById(entityId);
+        Optional<U> entityOpt = abstractEntityRepository.findById(entityId);
         if (entityOpt.isEmpty()) {
             throw new EntityNotFoundException(entityId, this.getClass());
         }
@@ -424,7 +424,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         // Removing tags to detached entity
         em.detach(entity);
         entity.removeTags(ipIds);
-        U entityInDb = repository.findById(entityId).get();
+        U entityInDb = abstractEntityRepository.findById(entityId).get();
         // And detach it too because it is the other one that will be persisted
         em.detach(entityInDb);
         this.updateWithoutCheck(entity, entityInDb);
@@ -504,7 +504,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         if (em.contains(entity)) {
             em.detach(entity);
         }
-        Optional<U> entityInDbOpt = repository.findById(entityId);
+        Optional<U> entityInDbOpt = abstractEntityRepository.findById(entityId);
         if (entityInDbOpt.isEmpty()) {
             throw new EntityNotFoundException(entityId, this.getClass());
         }
@@ -526,7 +526,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     @Override
     public U update(UniformResourceName entityUrn, U entity) throws ModuleException {
-        U entityInDb = repository.findOneByIpId(entityUrn);
+        U entityInDb = abstractEntityRepository.findOneByIpId(entityUrn);
         if (entityInDb == null) {
             throw new EntityNotFoundException(entity.getIpId().toString());
         }
@@ -554,7 +554,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
         // pEntity into the DB.
         entity.setLastUpdate(OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC));
 
-        U updated = repository.save(entity);
+        U updated = abstractEntityRepository.save(entity);
 
         updatedIpIds.add(updated.getIpId());
         // Compute tags to remove and tags to add
@@ -596,7 +596,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
             }
         } else {
             setDataFilesUri(updated);
-            repository.save(updated);
+            abstractEntityRepository.save(updated);
         }
 
         // AMQP event publishing
@@ -606,7 +606,7 @@ public abstract class AbstractEntityService<F extends EntityFeature, U extends A
 
     @Override
     public U save(U entity) {
-        return repository.save(entity);
+        return abstractEntityRepository.save(entity);
     }
 
     @Override

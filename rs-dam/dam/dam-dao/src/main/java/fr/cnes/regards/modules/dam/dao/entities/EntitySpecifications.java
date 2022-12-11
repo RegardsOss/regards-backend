@@ -36,13 +36,13 @@ public class EntitySpecifications<E> {
     private static final String LIKE_CHAR = "%";
 
     /**
-     * Filter on the given attributes (sessionId, owner, ingestDate and state) and return result ordered by descending
+     * Filter on the given attribute label and return result ordered by ascending label
      * ingestDate
      *
      * @param label Search label
      * @return {@link Specification}
      */
-    public Specification<E> search(String label) {
+    public Specification<E> searchByAndOrderByLabel(String label) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if (label != null) {
@@ -56,6 +56,7 @@ public class EntitySpecifications<E> {
                                              String.class,
                                              root.get(StaticProperties.FEATURE),
                                              cb.literal(StaticProperties.FEATURE_LABEL))));
+            
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
