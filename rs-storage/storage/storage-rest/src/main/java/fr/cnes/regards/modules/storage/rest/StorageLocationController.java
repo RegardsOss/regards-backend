@@ -37,6 +37,9 @@ import fr.cnes.regards.modules.storage.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storage.service.cache.CacheService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationConfigurationService;
 import fr.cnes.regards.modules.storage.service.location.StorageLocationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.LinkRelation;
@@ -47,7 +50,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.time.OffsetDateTime;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -128,8 +132,9 @@ public class StorageLocationController implements IResourceController<StorageLoc
      */
     @PostMapping
     @ResourceAccess(description = "Configure a storage location by his name", role = DefaultRole.ADMIN)
-    public ResponseEntity<EntityModel<StorageLocationDTO>> configureLocation(
-        @Valid @RequestBody StorageLocationDTO storageLocation) throws ModuleException {
+    public ResponseEntity<EntityModel<StorageLocationDTO>> configureLocation(@Valid @RequestBody
+                                                                             StorageLocationDTO storageLocation)
+        throws ModuleException {
         if (storageLocation.getName().equals(CacheService.CACHE_NAME)) {
             throw new EntityInvalidException(String.format("Storage location %s is a reserved name.",
                                                            CacheService.CACHE_NAME));
@@ -170,11 +175,18 @@ public class StorageLocationController implements IResourceController<StorageLoc
      * @throws ModuleException
      */
     @GetMapping
-    @ResourceAccess(description = "Retrieve list of all known storage locations", role = DefaultRole.EXPLOIT)
+    @Operation(summary = "Get known storage locations", description = "Return a list of known storage locations")
+    @ApiResponses(
+        value = { @ApiResponse(responseCode = "200", description = "All known storage locations were retrieved.") })
+    @ResourceAccess(description = "Endpoint to retrieve list of all known storage locations.",
+        role = DefaultRole.EXPLOIT)
     public ResponseEntity<List<EntityModel<StorageLocationDTO>>> retrieve() throws ModuleException {
-        Collection<StorageLocationDTO> allLocations = storageLocationService.getAllLocations();
-        allLocations.add(cacheService.toStorageLocation());
-        return new ResponseEntity<>(toResources(allLocations), HttpStatus.OK);
+        List<StorageLocationDTO> storageLocations = new ArrayList<>(storageLocationService.getAllLocations());
+        storageLocations.add(cacheService.toStorageLocation());
+
+        storageLocations.sort(Comparator.comparing(StorageLocationDTO::getName));
+
+        return new ResponseEntity<>(toResources(storageLocations), HttpStatus.OK);
     }
 
     /**
