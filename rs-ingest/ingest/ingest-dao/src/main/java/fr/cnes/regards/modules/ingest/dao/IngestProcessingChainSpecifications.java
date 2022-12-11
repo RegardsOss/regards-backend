@@ -40,7 +40,7 @@ public final class IngestProcessingChainSpecifications {
     /**
      * Filter on the given attributes
      */
-    public static Specification<IngestProcessingChain> search(String name) {
+    public static Specification<IngestProcessingChain> searchlikeName(String name) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if (name != null) {

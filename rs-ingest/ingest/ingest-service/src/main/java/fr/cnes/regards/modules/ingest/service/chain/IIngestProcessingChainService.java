@@ -76,7 +76,7 @@ public interface IIngestProcessingChainService {
     void deleteChain(String name) throws ModuleException;
 
     /**
-     * Search for existing {@link IngestProcessingChain} with optional search criterion.
+     * Search for existing {@link IngestProcessingChain} with name optional search criterion.
      */
     Page<IngestProcessingChain> searchChains(String name, Pageable pageable);
 

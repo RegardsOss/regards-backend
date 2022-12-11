@@ -28,11 +28,13 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.domain.chain.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingChainService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -80,16 +82,19 @@ public class IngestProcessingChainController implements IResourceController<Inge
     @Autowired
     private IResourceService resourceService;
 
-    @ResourceAccess(description = "Search for IngestProcessingChain with optional criterion.",
+    @GetMapping
+    @Operation(summary = "Get ingest processing chains", description = "Return a page of ingest processing chains")
+    @ApiResponses(
+        value = { @ApiResponse(responseCode = "200", description = "All ingest processing chains were retrieved.") })
+    @ResourceAccess(description = "Endpoint to retrieve all ingest processing chains, matching provided name when provided.",
         role = DefaultRole.EXPLOIT)
-    @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PagedModel<EntityModel<IngestProcessingChain>>> search(
         @RequestParam(name = "name", required = false) String name,
-        @PageableDefault(sort = "name", direction = Sort.Direction.DESC) Pageable pageable,
+        @PageableDefault(sort = "name", direction = Sort.Direction.ASC) Pageable pageable,
         PagedResourcesAssembler<IngestProcessingChain> pAssembler) {
-        Page<IngestProcessingChain> chains = ingestProcessingService.searchChains(name, pageable);
-        PagedModel<EntityModel<IngestProcessingChain>> resources = toPagedResources(chains, pAssembler);
-        return new ResponseEntity<>(resources, HttpStatus.OK);
+
+        return new ResponseEntity<>(toPagedResources(ingestProcessingService.searchChains(name, pageable), pAssembler),
+                                    HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Retrieve an IngestProcessingChain by name.", role = DefaultRole.EXPLOIT)
