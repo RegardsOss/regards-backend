@@ -31,6 +31,9 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 import fr.cnes.regards.modules.access.services.service.ui.IUIPluginDefinitionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -87,7 +90,7 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
     }
 
     /**
-     * Entry point to retrieve all plugins
+     * Entry point to retrieve all UI plugins definitions
      *
      * @param pageable
      * @param type
@@ -95,22 +98,23 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
      * @return {@link UIPluginDefinition}
      * @throws EntityInvalidException
      */
-    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    @ResourceAccess(description = "Endpoint to retrieve all IHM plugins", role = DefaultRole.PUBLIC)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get UI Plugin definitions", description = "Return a page of UI Plugin definitions")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All IHM plugins were retrieved.") })
+    @ResourceAccess(description = "Endpoint to retrieve UI Plugin definition", role = DefaultRole.PUBLIC)
     public HttpEntity<PagedModel<EntityModel<UIPluginDefinition>>> retrievePlugins(
-        @PageableDefault(sort = "id", direction = Sort.Direction.ASC, size = 500) Pageable pageable,
         @RequestParam(value = "type", required = false) final UIPluginTypesEnum type,
+        @PageableDefault(sort = "name", direction = Sort.Direction.ASC, size = 500) Pageable pageable,
         final PagedResourcesAssembler<UIPluginDefinition> assembler) {
 
-        final Page<UIPluginDefinition> plugins;
+        Page<UIPluginDefinition> plugins;
         if (type != null) {
             plugins = service.retrievePlugins(type, pageable);
         } else {
             plugins = service.retrievePlugins(pageable);
         }
-        final PagedModel<EntityModel<UIPluginDefinition>> resources = toPagedResources(plugins, assembler);
-        return new ResponseEntity<>(resources, HttpStatus.OK);
+
+        return new ResponseEntity<>(toPagedResources(plugins, assembler), HttpStatus.OK);
     }
 
     /**
