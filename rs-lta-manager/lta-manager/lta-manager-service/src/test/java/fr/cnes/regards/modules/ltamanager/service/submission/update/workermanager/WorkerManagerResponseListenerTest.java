@@ -18,17 +18,22 @@
  */
 package fr.cnes.regards.modules.ltamanager.service.submission.update.workermanager;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
+import fr.cnes.regards.modules.ltamanager.amqp.output.SubmissionResponseDtoEvent;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
+import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
 import fr.cnes.regards.modules.workermanager.dto.events.EventHeadersHelper;
 import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseEvent;
 import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseStatus;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
@@ -61,6 +66,9 @@ public class WorkerManagerResponseListenerTest {
     private ISubscriber subscriber;
 
     @Spy
+    private IPublisher publisher;
+
+    @Spy
     private Validator validator;
 
     // class under test
@@ -68,10 +76,12 @@ public class WorkerManagerResponseListenerTest {
 
     private final List<ResponseEvent> responseEvents = new ArrayList<>();
 
+    private final List<String> responsesInErrorIds = new ArrayList<>();
+
     @Before
     public void init() {
         WorkerManagerResponseService responseService = new WorkerManagerResponseService(requestRepository);
-        responseListener = new WorkerManagerResponseListener(responseService, subscriber, validator);
+        responseListener = new WorkerManagerResponseListener(responseService, subscriber, publisher, validator);
         initResponseEvents();
     }
 
@@ -119,6 +129,23 @@ public class WorkerManagerResponseListenerTest {
                 }
             }
         }
+        //Check message were sent on ERROR, INVALID_CONTENT and SKIPPED
+        ArgumentCaptor<List<SubmissionResponseDtoEvent>> captorPublished = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(publisher, times(1)).publish(captorPublished.capture());
+        List<SubmissionResponseDtoEvent> capturedPublishedEvents = captorPublished.getAllValues()
+                                                                                  .stream()
+                                                                                  .flatMap(List::stream)
+                                                                                  .toList();
+
+        Assertions.assertEquals(3, capturedPublishedEvents.size(), "There should be 3 responses sent");
+        Assertions.assertTrue(capturedPublishedEvents.stream()
+                                                     .allMatch(event -> event.getResponseStatus()
+                                                                        == SubmissionResponseStatus.DENIED),
+                              "All responses should have denied status");
+        Assertions.assertTrue(capturedPublishedEvents.stream()
+                                                     .anyMatch(event -> responsesInErrorIds.contains(event.getProductId())),
+                              "All responses should have the id of a responseEvent in error");
+
     }
 
     @Test
@@ -144,10 +171,13 @@ public class WorkerManagerResponseListenerTest {
             ResponseEvent event = ResponseEvent.build(status, reqId, "type", OWNER);
             if (status.equals(ResponseStatus.ERROR)) {
                 event.withMessages(Set.of("error1", "error2"));
+                responsesInErrorIds.add(reqId);
             } else if (status.equals(ResponseStatus.SKIPPED)) {
                 event.withMessages(Set.of("skipped"));
+                responsesInErrorIds.add(reqId);
             } else if (status.equals(ResponseStatus.INVALID_CONTENT)) {
                 event.withMessages(Set.of("invalid"));
+                responsesInErrorIds.add(reqId);
             }
             event.setHeader(EventHeadersHelper.REQUEST_ID_HEADER, reqId);
             responseEvents.add(event);

@@ -18,9 +18,13 @@
  */
 package fr.cnes.regards.modules.ltamanager.service.submission.update.workermanager;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.batch.IBatchHandler;
+import fr.cnes.regards.modules.ltamanager.amqp.output.SubmissionResponseDtoEvent;
+import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
 import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseEvent;
+import fr.cnes.regards.modules.workermanager.dto.events.out.ResponseStatus;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
@@ -28,8 +32,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * Update {@link fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest} states following the
@@ -45,12 +48,17 @@ public class WorkerManagerResponseListener
 
     private final ISubscriber subscriber;
 
+    private final IPublisher publisher;
+
     private final Validator validator;
 
-    public WorkerManagerResponseListener(WorkerManagerResponseService responseService, ISubscriber subscriber,
+    public WorkerManagerResponseListener(WorkerManagerResponseService responseService,
+                                         ISubscriber subscriber,
+                                         IPublisher publisher,
                                          Validator validator) {
         this.responseService = responseService;
         this.subscriber = subscriber;
+        this.publisher = publisher;
         this.validator = validator;
     }
 
@@ -71,9 +79,36 @@ public class WorkerManagerResponseListener
         LOGGER.trace("[LTA WORKER RESPONSE EVENT HANDLER] Handling {} RequestEvents...", responseEvents.size());
         long start = System.currentTimeMillis();
         responseService.updateSubmissionRequestState(responseEvents);
+
+        Set<ResponseStatus> finalStatus = EnumSet.of(ResponseStatus.ERROR,
+                                                     ResponseStatus.SKIPPED,
+                                                     ResponseStatus.INVALID_CONTENT);
+        List<SubmissionResponseDtoEvent> requestsCompleteError = responseEvents.stream()
+                                                                               .filter(response -> finalStatus.contains(
+                                                                                   response.getState()))
+                                                                               .map(response -> new SubmissionResponseDtoEvent(
+                                                                                   response.getRequestId(),
+                                                                                   SubmissionResponseStatus.DENIED,
+                                                                                   buildErrorMessage(response.getMessage())))
+                                                                               .toList();
+        if (!requestsCompleteError.isEmpty()) {
+            publisher.publish(requestsCompleteError);
+        }
         LOGGER.trace("[LTA WORKER RESPONSE EVENT HANDLER] {} RequestEvents handled in {} ms...",
                      responseEvents.size(),
                      System.currentTimeMillis() - start);
+    }
+
+    private String buildErrorMessage(Collection<String> errors) {
+        if (errors == null) {
+            return null;
+        }
+        StringBuilder errorMessage = new StringBuilder();
+        for (String error : errors) {
+            errorMessage.append(error);
+            errorMessage.append("  \\n");
+        }
+        return errorMessage.toString();
     }
 
 }

@@ -94,4 +94,8 @@ public class ResponseEvent implements ISubscribable, IMessagePropertiesAware {
     public Collection<String> getMessage() {
         return messages;
     }
+
+    public String getRequestId() {
+        return requestId;
+    }
 }

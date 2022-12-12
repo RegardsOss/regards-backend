@@ -23,11 +23,11 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.ingest.client.RequestInfo;
-import fr.cnes.regards.modules.ltamanager.amqp.output.LtaRequestCompleteEvent;
+import fr.cnes.regards.modules.ltamanager.amqp.output.SubmissionResponseDtoEvent;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
-import fr.cnes.regards.modules.ltamanager.dto.submission.output.LtaRequestCompleteState;
+import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
 import fr.cnes.regards.modules.ltamanager.service.submission.update.ingest.notification.SuccessLtaRequestNotification;
 import fr.cnes.regards.modules.notifier.client.INotifierClient;
 import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
@@ -140,38 +140,38 @@ public class IngestResponseListenerTest {
                                    any(OffsetDateTime.class));
 
         //Check messages were sent onSuccess and onError
-        ArgumentCaptor<List<LtaRequestCompleteEvent>> captorPublished = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<List<SubmissionResponseDtoEvent>> captorPublished = ArgumentCaptor.forClass(List.class);
         Mockito.verify(publisher, times(2)).publish(captorPublished.capture());
-        List<LtaRequestCompleteEvent> capturedPublishedEvents = captorPublished.getAllValues()
-                                                                               .stream()
-                                                                               .flatMap(List::stream)
-                                                                               .toList();
+        List<SubmissionResponseDtoEvent> capturedPublishedEvents = captorPublished.getAllValues()
+                                                                                  .stream()
+                                                                                  .flatMap(List::stream)
+                                                                                  .toList();
         Assert.assertEquals("Expected 2 events", 2, capturedPublishedEvents.size());
-        Optional<LtaRequestCompleteEvent> successEvent = capturedPublishedEvents.stream()
-                                                                                .filter(event -> event.getStatus()
-                                                                                                      .equals(
-                                                                                                          LtaRequestCompleteState.SUCCESS))
-                                                                                .findFirst();
+        Optional<SubmissionResponseDtoEvent> successEvent = capturedPublishedEvents.stream()
+                                                                                   .filter(event -> event.getResponseStatus()
+                                                                                                         .equals(
+                                                                                                             SubmissionResponseStatus.GRANTED))
+                                                                                   .findFirst();
         //onSuccess
         if (successEvent.isEmpty()) {
             Assert.fail("Expected a SUCCESS event");
         }
         Assert.assertEquals("The event correlation id should match the request id",
                             events.get(0).getRequestId(),
-                            successEvent.get().getCorrelationId());
+                            successEvent.get().getProductId());
 
         //onError
-        Optional<LtaRequestCompleteEvent> errorEvent = capturedPublishedEvents.stream()
-                                                                              .filter(event -> event.getStatus()
-                                                                                                    .equals(
-                                                                                                        LtaRequestCompleteState.ERROR))
-                                                                              .findFirst();
+        Optional<SubmissionResponseDtoEvent> errorEvent = capturedPublishedEvents.stream()
+                                                                                 .filter(event -> event.getResponseStatus()
+                                                                                                       .equals(
+                                                                                                           SubmissionResponseStatus.DENIED))
+                                                                                 .findFirst();
         if (errorEvent.isEmpty()) {
             Assert.fail("Expected an ERROR event");
         }
         Assert.assertEquals("The event correlation id should match the request id",
                             events.get(3).getRequestId(),
-                            errorEvent.get().getCorrelationId());
+                            errorEvent.get().getProductId());
 
     }
 

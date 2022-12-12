@@ -21,9 +21,9 @@ package fr.cnes.regards.modules.ltamanager.service.submission.update.ingest;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.modules.ingest.client.IIngestClientListener;
 import fr.cnes.regards.modules.ingest.client.RequestInfo;
-import fr.cnes.regards.modules.ltamanager.amqp.output.LtaRequestCompleteEvent;
+import fr.cnes.regards.modules.ltamanager.amqp.output.SubmissionResponseDtoEvent;
 import fr.cnes.regards.modules.ltamanager.domain.submission.mapping.IngestStatusResponseMapping;
-import fr.cnes.regards.modules.ltamanager.dto.submission.output.LtaRequestCompleteState;
+import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionResponseStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -61,12 +61,12 @@ public class IngestResponseListener implements IIngestClientListener {
     @Override
     public void onError(Collection<RequestInfo> infos) {
         responseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.ERROR_MAP);
-        List<LtaRequestCompleteEvent> requestsCompleteError = infos.stream()
-                                                                   .map(info -> new LtaRequestCompleteEvent(info.getRequestId(),
-                                                                                                            LtaRequestCompleteState.ERROR,
-                                                                                                            buildErrorMessage(
-                                                                                                                info.getErrors())))
-                                                                   .toList();
+        List<SubmissionResponseDtoEvent> requestsCompleteError = infos.stream()
+                                                                      .map(info -> new SubmissionResponseDtoEvent(info.getRequestId(),
+                                                                                                                  SubmissionResponseStatus.DENIED,
+                                                                                                                  buildErrorMessage(
+                                                                                                                      info.getErrors())))
+                                                                      .toList();
         publisher.publish(requestsCompleteError);
 
     }
@@ -86,11 +86,11 @@ public class IngestResponseListener implements IIngestClientListener {
     @Override
     public void onSuccess(Collection<RequestInfo> infos) {
         responseService.updateSubmissionRequestState(infos, IngestStatusResponseMapping.SUCCESS_MAP);
-        List<LtaRequestCompleteEvent> requestsCompleteSuccess = infos.stream()
-                                                                     .map(info -> new LtaRequestCompleteEvent(info.getRequestId(),
-                                                                                                              LtaRequestCompleteState.SUCCESS,
-                                                                                                              null))
-                                                                     .toList();
+        List<SubmissionResponseDtoEvent> requestsCompleteSuccess = infos.stream()
+                                                                        .map(info -> new SubmissionResponseDtoEvent(info.getRequestId(),
+                                                                                                                    SubmissionResponseStatus.GRANTED,
+                                                                                                                    null))
+                                                                        .toList();
         publisher.publish(requestsCompleteSuccess);
     }
 
