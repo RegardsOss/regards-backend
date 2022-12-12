@@ -27,11 +27,11 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.dam.domain.entities.Collection;
 import fr.cnes.regards.modules.dam.service.entities.ICollectionService;
 import fr.cnes.regards.modules.model.service.validation.ValidationMode;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.LinkRelation;
@@ -83,15 +83,17 @@ public class CollectionController implements IResourceController<Collection> {
      * @param assembler
      * @return all {@link Collection}s
      */
-    @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "endpoint to retrieve the list fo all collections")
+    @GetMapping
+    @Operation(summary = "Get collections", description = "Return a page of collections")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All collections were retrieved.") })
+    @ResourceAccess(description = "Endpoint to retrieve the list of collections, matching provided label when provided. This endpoint is always sorted by label.")
     public ResponseEntity<PagedModel<EntityModel<Collection>>> retrieveCollections(
         @RequestParam(name = "label", required = false) String label,
-        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        Pageable pageable,
         PagedResourcesAssembler<Collection> assembler) {
-        final Page<Collection> collections = collectionService.search(label, pageable);
-        final PagedModel<EntityModel<Collection>> resources = toPagedResources(collections, assembler);
-        return new ResponseEntity<>(resources, HttpStatus.OK);
+
+        return new ResponseEntity<>(toPagedResources(collectionService.search(label, pageable), assembler),
+                                    HttpStatus.OK);
     }
 
     /**
