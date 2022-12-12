@@ -32,10 +32,12 @@ import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -86,15 +88,19 @@ public class SearchEngineConfigurationController implements IResourceController<
     @Autowired
     private IPluginService pluginService;
 
-    @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve all search engine confiurations", role = DefaultRole.PROJECT_ADMIN)
+    @GetMapping
+    @Operation(summary = "Get engine configurations", description = "Return a page of engine configurations")
+    @ApiResponses(
+        value = { @ApiResponse(responseCode = "200", description = "All engine configurations were retrieved.") })
+    @ResourceAccess(description = "Endpoint to retrieve all search engine configurations, matching provided engine type if provided",
+        role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<PagedModel<EntityModel<SearchEngineConfiguration>>> retrieveConfs(
         @RequestParam(value = ENGINE_TYPE, required = false) final String engineType,
-        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+        @PageableDefault(sort = "label", direction = Sort.Direction.ASC) Pageable pageable,
         final PagedResourcesAssembler<SearchEngineConfiguration> assembler) throws ModuleException {
-        final Page<SearchEngineConfiguration> confs = service.retrieveConfs(Optional.ofNullable(engineType), pageable);
-        final PagedModel<EntityModel<SearchEngineConfiguration>> resources = toPagedResources(confs, assembler);
-        return new ResponseEntity<>(resources, HttpStatus.OK);
+
+        return new ResponseEntity<>(toPagedResources(service.retrieveConfs(Optional.ofNullable(engineType), pageable),
+                                                     assembler), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = CONF_ID_PATH)

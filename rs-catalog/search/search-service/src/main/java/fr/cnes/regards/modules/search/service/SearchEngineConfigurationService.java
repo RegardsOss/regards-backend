@@ -219,15 +219,17 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
 
     @Override
     public Page<SearchEngineConfiguration> retrieveConfs(Optional<String> engineType, Pageable page) {
-        Page<SearchEngineConfiguration> confs;
+        Page<SearchEngineConfiguration> searchEngineConfigurations;
+        
         if (engineType.isPresent()) {
-            confs = repository.findByConfigurationPluginId(engineType.get(), page);
+            searchEngineConfigurations = repository.findByConfigurationPluginId(engineType.get(), page);
         } else {
-            confs = repository.findAll(page);
+            searchEngineConfigurations = repository.findAll(page);
         }
         List<Dataset> cachedDatasets = Lists.newArrayList();
-        confs.getContent().forEach(c -> addDatasetLabel(c, cachedDatasets));
-        return confs;
+        searchEngineConfigurations.getContent().forEach(c -> addDatasetLabel(c, cachedDatasets));
+
+        return searchEngineConfigurations;
     }
 
     public SearchEngineConfiguration addDatasetLabel(SearchEngineConfiguration conf, List<Dataset> cachedDatasets) {
