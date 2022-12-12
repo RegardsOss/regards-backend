@@ -178,6 +178,8 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
 
         // Validate event
         Errors errors = new MapBindingResult(new HashMap<>(), Feature.class.getName());
+        String featureId = item.getFeature() != null ? item.getFeature().getId() : null;
+        FeatureUniformResourceName urn = item.getFeature() != null ? item.getFeature().getUrn() : null;
         validator.validate(item, errors);
         validateRequest(item, errors);
 
@@ -190,34 +192,8 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
         // Validate feature according to the data model
         errors.addAllErrors(validationService.validate(item.getFeature(), ValidationMode.PATCH));
 
-        String featureId = item.getFeature() != null ? item.getFeature().getId() : null;
-        FeatureUniformResourceName urn = item.getFeature() != null ? item.getFeature().getUrn() : null;
-
         if (errors.hasErrors()) {
-            // Monitoring log
-            FeatureLogger.updateDenied(item.getRequestOwner(),
-                                       item.getRequestId(),
-                                       featureId,
-                                       urn,
-                                       ErrorTranslator.getErrors(errors));
-            // Publish DENIED request
-            publisher.publish(FeatureRequestEvent.build(FeatureRequestType.PATCH,
-                                                        item.getRequestId(),
-                                                        item.getRequestOwner(),
-                                                        featureId,
-                                                        urn,
-                                                        RequestState.DENIED,
-                                                        ErrorTranslator.getErrors(errors)));
-            if (item.getFeature() == null) {
-                requestInfo.getMessages()
-                           .add(String.format("Request %s without feature has been rejected", item.getRequestId()));
-            } else {
-                requestInfo.addDeniedRequest(item.getFeature().getUrn(), ErrorTranslator.getErrors(errors));
-            }
-            metrics.count(featureId, null, FeatureUpdateState.UPDATE_REQUEST_DENIED);
-            // Update session properties
-            featureSessionNotifier.incrementCount(sessionInfo, FeatureSessionProperty.DENIED_UPDATE_REQUESTS);
-
+            denyRequest(item, requestInfo, sessionInfo, featureId, urn, errors);
         } else {
             // Manage granted request
             FeatureUpdateRequest request = FeatureUpdateRequest.build(item.getRequestId(),
@@ -250,6 +226,38 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
             // Update session properties
             featureSessionNotifier.incrementCount(sessionInfo, FeatureSessionProperty.UPDATE_REQUESTS);
         }
+
+    }
+
+    private void denyRequest(FeatureUpdateRequestEvent request,
+                             RequestInfo<FeatureUniformResourceName> requestInfo,
+                             ILightFeatureEntity sessionInfo,
+                             String featureId,
+                             FeatureUniformResourceName urn,
+                             Errors errors) {
+        // Monitoring log
+        FeatureLogger.updateDenied(request.getRequestOwner(),
+                                   request.getRequestId(),
+                                   featureId,
+                                   urn,
+                                   ErrorTranslator.getErrors(errors));
+        // Publish DENIED request
+        publisher.publish(FeatureRequestEvent.build(FeatureRequestType.PATCH,
+                                                    request.getRequestId(),
+                                                    request.getRequestOwner(),
+                                                    featureId,
+                                                    urn,
+                                                    RequestState.DENIED,
+                                                    ErrorTranslator.getErrors(errors)));
+        if (request.getFeature() == null) {
+            requestInfo.getMessages()
+                       .add(String.format("Request %s without feature has been rejected", request.getRequestId()));
+        } else {
+            requestInfo.addDeniedRequest(request.getFeature().getUrn(), ErrorTranslator.getErrors(errors));
+        }
+        metrics.count(featureId, null, FeatureUpdateState.UPDATE_REQUEST_DENIED);
+        // Update session properties
+        featureSessionNotifier.incrementCount(sessionInfo, FeatureSessionProperty.DENIED_UPDATE_REQUESTS);
     }
 
     @Override
@@ -477,14 +485,6 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
     }
 
     @Override
-    public List<FeatureEntity> updateFilesLocations(Map<FeatureEntity, List<RequestResultInfoDTO>> updateInfo) {
-        return updateInfo.entrySet()
-                         .stream()
-                         .map(entry -> featureFilesService.updateFeatureLocations(entry.getKey(), entry.getValue()))
-                         .collect(Collectors.toList());
-    }
-
-    @Override
     public RequestsInfo getInfo(FeatureRequestsSelectionDTO selection) {
         if ((selection.getFilters() != null) && ((selection.getFilters().getState() != null) && (selection.getFilters()
                                                                                                           .getState()
@@ -583,13 +583,25 @@ public class FeatureUpdateService extends AbstractFeatureService<FeatureUpdateRe
 
     @Override
     public void doOnTerminated(Collection<FeatureUpdateRequest> requests) {
-        Map<FeatureUniformResourceName, ILightFeatureEntity> sessionInfoByUrn = getSessionInfoByUrn(requests.stream()
-                                                                                                            .map(request -> request.getFeature()
-                                                                                                                                   .getUrn())
-                                                                                                            .collect(
-                                                                                                                Collectors.toSet()));
-        sessionInfoByUrn.forEach((urn, entity) -> {
-            featureSessionNotifier.decrementCount(entity, FeatureSessionProperty.RUNNING_UPDATE_REQUESTS);
+        requests.forEach(request -> {
+            // For each terminated update request, notify session for request ends.
+            // To do so, retrieve session and source from request if present.
+            // If not retrieve it from the associated feature.
+            // If feature does not exist anymore, log error. (should never happen).
+            if (request.getSourceToNotify() != null && request.getSessionToNotify() != null) {
+                featureSessionNotifier.decrementCount(request.getSourceToNotify(),
+                                                      request.getSessionToNotify(),
+                                                      FeatureSessionProperty.RUNNING_UPDATE_REQUESTS);
+            } else {
+                List<ILightFeatureEntity> features = featureRepo.findLightByUrnIn(List.of(request.getUrn()));
+                if (!features.isEmpty()) {
+                    featureSessionNotifier.decrementCount(features.get(0),
+                                                          FeatureSessionProperty.RUNNING_UPDATE_REQUESTS);
+                } else {
+                    LOGGER.error(
+                        "Unable to decrement update request count for update request not associated to an existing feature");
+                }
+            }
         });
     }
 

@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.feature.service;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.urn.DataType;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.request.AbstractFeatureRequest;
@@ -40,6 +41,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.MimeType;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -139,7 +141,6 @@ public class FeatureFilesService {
                                        .filter(l -> l.getStorage() != null
                                                     || !CollectionUtils.isEmpty(storageLocations))
                                        .collect(Collectors.toSet());
-            feature.getFeature().getFiles().add(fileToUpdate);
         }
 
         FeatureFileAttributes attributes = fileToUpdate.getAttributes();
@@ -179,28 +180,36 @@ public class FeatureFilesService {
     /**
      * Calculate new {@link FeatureFileLocation}s by comparing two given {@link FeatureFile}s.
      *
-     * @param newFile             new {@link FeatureFile} to extract new locations from the other one.
-     * @param file                existing {@link FeatureFile} to compare newFile with.
-     * @param newStorageLocations list of storage location for new files to store
+     * @param newFile     new {@link FeatureFile} to extract new locations from the other one.
+     * @param file        existing {@link FeatureFile} to compare newFile with.
+     * @param newStorages list of storage location for new files to store
      * @return Set<FeatureFileLocation>
      */
     private Set<FeatureFileLocation> getNewLocations(FeatureFile newFile,
                                                      FeatureFile file,
-                                                     List<StorageMetadata> newStorageLocations) {
+                                                     List<StorageMetadata> newStorages) {
         Set<FeatureFileLocation> newLocations = Sets.newHashSet();
         for (FeatureFileLocation newFileLocation : newFile.getLocations()) {
-            // Check if file to update contains a new storage location.
-            // A new storage location is a location from the fileUpdate that does not exist in the existingFile.
-            boolean newLocationAlreadyExist = file.getLocations().stream().anyMatch(location -> {
+            // For each file location to update, compare with the original feature files if location is a new location.
+            boolean isNewLocation = file.getLocations().stream().anyMatch(location -> {
                 if (newFileLocation.getStorage() == null) {
-                    return newStorageLocations.stream()
-                                              .map(StorageMetadata::getPluginBusinessId)
-                                              .anyMatch(storage -> storage.equals(location.getStorage()));
+                    if (newStorages.isEmpty()) {
+                        // No new location as is no new destination storages
+                        return false;
+                    } else {
+                        // A new location storage null, means new storage requests for all given new storages
+                        // Location. So check if one of the new storages is not already associated to the current file.
+                        return newStorages.stream()
+                                          .map(StorageMetadata::getPluginBusinessId)
+                                          .noneMatch(storage -> storage.equals(location.getStorage()));
+                    }
                 } else {
+                    // A new location not null means a reference request, so only check if the given storage is not
+                    // already associated to the current file
                     return location.getStorage().equals(newFileLocation.getStorage());
                 }
             });
-            if (!newLocationAlreadyExist && !newStorageLocations.isEmpty()) {
+            if (isNewLocation) {
                 newLocations.add(newFileLocation);
             }
         }
@@ -227,30 +236,61 @@ public class FeatureFilesService {
     /**
      * Update given {@link FeatureEntity} files if needed by reading storage responses.
      *
-     * @param feature {@link Feature} to update
-     * @param infos   {@link RequestResultInfoDTO}s storage requests responses
+     * @param originalFeature  {@link Feature} to update
+     * @param storageResponses {@link RequestResultInfoDTO}s storage requests responses
+     * @param requestedFiles   original request files
      * @return FeatureEntity updated (or not) feature
      */
-    public FeatureEntity updateFeatureLocations(FeatureEntity feature, List<RequestResultInfoDTO> infos) {
-        boolean featureUpdated = false;
+    public FeatureEntity updateFeatureLocations(FeatureEntity originalFeature,
+                                                List<RequestResultInfoDTO> storageResponses,
+                                                List<FeatureFile> requestedFiles) {
         // For each feature, handle each request info from storage
-        for (RequestResultInfoDTO info : infos) {
+        for (RequestResultInfoDTO info : storageResponses) {
+            String checksum = info.getResultFile().getMetaInfo().getChecksum();
+            Optional<FeatureFile> oFileToUpdate = requestedFiles.stream()
+                                                                .filter(f -> f.getAttributes()
+                                                                              .getChecksum()
+                                                                              .equals(checksum))
+                                                                .findFirst();
             String newUrl = info.getResultFile().getLocation().getUrl();
             String newStorage = info.getResultFile().getLocation().getStorage();
-            String checksum = info.getResultFile().getMetaInfo().getChecksum();
-            for (FeatureFile file : feature.getFeature().getFiles()) {
+            String filename = info.getResultFile().getMetaInfo().getFileName();
+            Long newFileSize = info.getResultFile().getMetaInfo().getFileSize();
+            String newAlgorithm = info.getResultFile().getMetaInfo().getAlgorithm();
+            MimeType mimeType = info.getResultFile().getMetaInfo().getMimeType();
+            DataType newDataType = DataType.parse(info.getResultFile().getMetaInfo().getType(), DataType.RAWDATA);
+            // If file is present on request original files use specific metadata.
+            // Else use the response metadata
+            if (oFileToUpdate.isPresent()) {
+                mimeType = oFileToUpdate.get().getAttributes().getMimeType();
+                filename = oFileToUpdate.get().getAttributes().getFilename();
+                newDataType = oFileToUpdate.get().getAttributes().getDataType();
+            }
+            boolean fileFound = false;
+            for (FeatureFile file : originalFeature.getFeature().getFiles()) {
                 // For each request info from storage, find associated file in the feature
                 if (file.getAttributes().getChecksum().equals(checksum)) {
-                    // Then update file location if needed with new storage/location
-                    featureUpdated |= updateFileLocation(file, newUrl, newStorage);
+                    // If file is found in original feature, so it is a new location for and existing fil.
+                    // Then update file location with new storage/location
+                    updateFileLocation(file, newUrl, newStorage);
+                    fileFound = true;
                 }
             }
+            // If file is not found in original feature, it is a new file so add it.
+            if (!fileFound) {
+                FeatureFileAttributes newFileAttributes = FeatureFileAttributes.build(newDataType,
+                                                                                      mimeType,
+                                                                                      filename,
+                                                                                      newFileSize,
+                                                                                      newAlgorithm,
+                                                                                      checksum);
+                originalFeature.getFeature()
+                               .getFiles()
+                               .add(FeatureFile.build(newFileAttributes,
+                                                      FeatureFileLocation.build(newUrl, newStorage)));
+            }
         }
-        if (featureUpdated) {
-            return featureRepository.save(feature);
-        } else {
-            return feature;
-        }
+        return originalFeature;
     }
 
     /**

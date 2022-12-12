@@ -168,7 +168,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
                                                                        "fileName",
                                                                        10L,
                                                                        "MD5",
-                                                                       "checksum");
+                                                                       "new_file_checksum");
         FeatureFileLocation location = FeatureFileLocation.build("file:///test/file.txt", "somewhere");
         events.get(0).getFeature().getFiles().add(FeatureFile.build(attributes, location));
 
@@ -178,7 +178,7 @@ public class FeatureCreationIT extends AbstractFeatureMultitenantServiceIT {
                                                                         "fileName2",
                                                                         10L,
                                                                         "MD5",
-                                                                        "checksum2");
+                                                                        "new_file_checksum_2");
         FeatureFileLocation location2 = FeatureFileLocation.build("file:///dir/file.txt");
         events.get(0).getFeature().getFiles().add(FeatureFile.build(attributes2, location2));
         events.get(0).getMetadata().setStorages(Lists.newArrayList(StorageMetadata.build("elsewhere")));

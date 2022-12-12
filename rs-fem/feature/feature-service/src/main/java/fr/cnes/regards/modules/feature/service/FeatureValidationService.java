@@ -38,7 +38,9 @@ import org.springframework.validation.Validator;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Validate incoming features
@@ -88,6 +90,20 @@ public class FeatureValidationService extends AbstractValidationService<Feature>
 
         // Validate feature
         validator.validate(feature, errors);
+
+        // Validate feature files to ensure unique checksums
+        List<String> checksums = new ArrayList<>();
+        if (feature.getFiles() != null) {
+            feature.getFiles().forEach(file -> {
+                if (checksums.contains(file.getAttributes().getChecksum())) {
+                    errors.rejectValue("files",
+                                       "request.feature.files.invalid.message",
+                                       "Feature can not contains many files with the same checksum");
+                } else {
+                    checksums.add(file.getAttributes().getChecksum());
+                }
+            });
+        }
 
         String featureId = feature.getId();
         FeatureUniformResourceName urn = feature.getUrn();

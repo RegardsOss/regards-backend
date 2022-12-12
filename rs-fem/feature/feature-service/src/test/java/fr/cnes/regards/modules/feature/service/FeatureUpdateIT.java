@@ -157,26 +157,29 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
 
     @Test
     @Purpose("Check update request on a feature with new files locations when storage error occurs")
-    public void testUpdateFeatureFilesWithErrors() throws InterruptedException {
-        updateFeaturesFiles(5, 2);
+    public void test_update_with_new_files() throws InterruptedException {
+        updateFeaturesFiles(5, 2, true);
     }
 
     @Test
-    @Purpose("Check update request on a feature with new files locations when storage succeed")
-    public void testUpdateFeatureFiles() throws InterruptedException {
-        updateFeaturesFiles(5, 0);
+    @Purpose("Check update request on a feature with new files locations when storage error occurs")
+    public void test_update_with_files_with_new_location() throws InterruptedException {
+        updateFeaturesFiles(5, 2, false);
     }
 
-    private void updateFeaturesFiles(int nbSuccess, int nbErrors) throws InterruptedException {
+    private void updateFeaturesFiles(int nbSuccess, int nbErrors, boolean updateNewFile) throws InterruptedException {
         int nbFeatures = nbSuccess + nbErrors;
         int timeout = 10_000 + (nbFeatures * 100);
         // Init a feature
         List<FeatureCreationRequestEvent> events = initFeatureCreationRequestEvent(nbFeatures, true, false);
         // Remove files to create events. Files will be added with the update requests
-        events.forEach(e -> e.getFeature().getFiles().clear());
+        if (updateNewFile) {
+            events.forEach(e -> e.getFeature().getFiles().clear());
+        }
         this.featureCreationService.registerRequests(events);
         this.featureCreationService.scheduleRequests();
         waitFeature(nbFeatures, null, timeout);
+        mockStorageHelper.mockStorageResponses(featureCreationRequestRepo, nbFeatures, 0);
         mockNotificationSuccess();
         List<FeatureEntity> features = featureRepo.findAll();
         Assert.assertNotNull(features);
@@ -184,20 +187,25 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         Assert.assertEquals(0L, featureCreationRequestRepo.count());
 
         // Now create an update request on this feature to add referenced files
-        List<FeatureUpdateRequestEvent> updates = prepareUpdateRequests(features.stream()
-                                                                                .map(f -> f.getUrn())
+        List<FeatureUpdateRequestEvent> updates = prepareUpdateRequests(features.stream().map(f -> f.getUrn())
+
                                                                                 .collect(Collectors.toList()));
-        // Add one file with a store file (only url is provided in location)
-        FeatureFileAttributes attributes = FeatureFileAttributes.build(DataType.RAWDATA,
-                                                                       MediaType.APPLICATION_OCTET_STREAM,
-                                                                       "fileName",
-                                                                       10L,
-                                                                       "MD5",
-                                                                       "checksum");
         String newStorage = "somewhere";
         String newUrl = "file:///dir/file.txt";
-        FeatureFileLocation location = FeatureFileLocation.build(newUrl, newStorage);
-        updates.forEach(u -> u.getFeature().getFiles().add(FeatureFile.build(attributes, location)));
+        FeatureFileLocation newLocations = FeatureFileLocation.build(newUrl, newStorage);
+        if (updateNewFile) {
+            // Add one file with a store file (only url is provided in location)
+            FeatureFileAttributes attributes = FeatureFileAttributes.build(DataType.RAWDATA,
+                                                                           MediaType.APPLICATION_OCTET_STREAM,
+                                                                           "fileName",
+                                                                           10L,
+                                                                           "MD5",
+                                                                           "checksum");
+            updates.forEach(u -> u.getFeature().getFiles().add(FeatureFile.build(attributes, newLocations)));
+        } else {
+
+            updates.forEach(u -> u.getFeature().getFiles().forEach(l -> l.getLocations().add(newLocations)));
+        }
 
         // Process update request
         RequestInfo<FeatureUniformResourceName> info = featureUpdateService.registerRequests(updates);
@@ -211,25 +219,45 @@ public class FeatureUpdateIT extends AbstractFeatureMultitenantServiceIT {
         waitForStep(featureUpdateRequestRepo, FeatureRequestStep.REMOTE_STORAGE_REQUESTED, nbFeatures, timeout);
 
         // Simulate response from storage
-        mockStorageHelper.mockFeatureUpdateStorageWithErrors(nbSuccess, nbErrors);
+        mockStorageHelper.mockStorageResponses(featureUpdateRequestRepo, nbSuccess, nbErrors);
 
-        // Check feature is successfully updated with new file reference
-        features = featureRepo.findAll();
-        FeatureEntity feature = features.get(0);
-        Assert.assertNotNull(features);
-        Assert.assertEquals(1L, feature.getFeature().getFiles().size());
-        Assert.assertEquals(1L, feature.getFeature().getFiles().get(0).getLocations().size());
-        Assert.assertEquals(newStorage,
-                            feature.getFeature()
-                                   .getFiles()
-                                   .get(0)
-                                   .getLocations()
-                                   .stream()
-                                   .findFirst()
-                                   .get()
-                                   .getStorage());
-        Assert.assertEquals(newUrl,
-                            feature.getFeature().getFiles().get(0).getLocations().stream().findFirst().get().getUrl());
+        featureUpdateRequestRepo.findAll().stream().filter(r -> r.getState() == RequestState.ERROR).forEach(r -> {
+            FeatureEntity feature = featureRepo.findByUrn(r.getUrn());
+            Assert.assertNotNull(feature);
+            Assert.assertEquals(updateNewFile ? 0 : 1, feature.getFeature().getFiles().size());
+            if (!updateNewFile) {
+                Assert.assertEquals(1, feature.getFeature().getFiles().get(0).getLocations().size());
+            }
+        });
+        featureUpdateRequestRepo.findAll().stream().filter(r -> r.getState() == RequestState.SUCCESS).forEach(r -> {
+            FeatureEntity feature = featureRepo.findByUrn(r.getUrn());
+            Assert.assertNotNull(feature);
+            Assert.assertEquals(1L, feature.getFeature().getFiles().size());
+            if (updateNewFile) {
+                Assert.assertEquals(1L, feature.getFeature().getFiles().get(0).getLocations().size());
+            } else {
+                Assert.assertEquals(2L, feature.getFeature().getFiles().get(0).getLocations().size());
+            }
+            Assert.assertEquals(newStorage,
+                                feature.getFeature()
+                                       .getFiles()
+                                       .get(0)
+                                       .getLocations()
+                                       .stream()
+                                       .findFirst()
+                                       .get()
+                                       .getStorage());
+            Assert.assertEquals(newUrl,
+                                feature.getFeature()
+                                       .getFiles()
+                                       .get(0)
+                                       .getLocations()
+                                       .stream()
+                                       .findFirst()
+                                       .get()
+                                       .getUrl());
+        });
+
         waitForStep(featureUpdateRequestRepo, FeatureRequestStep.LOCAL_TO_BE_NOTIFIED, nbSuccess, timeout);
         waitForStep(featureUpdateRequestRepo, FeatureRequestStep.REMOTE_STORAGE_ERROR, nbErrors, timeout);
     }

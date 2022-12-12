@@ -111,9 +111,9 @@ public class FeatureStorageListener implements IStorageRequestListener {
 
     @Override
     public void onDeletionError(Set<RequestInfo> requests) {
-        this.featureRequestService.handleStorageError(requests.stream()
-                                                              .flatMap(r -> r.getErrorRequests().stream())
-                                                              .collect(Collectors.toSet()));
+        this.featureRequestService.handleDeletionError(requests.stream()
+                                                               .flatMap(r -> r.getErrorRequests().stream())
+                                                               .collect(Collectors.toSet()));
     }
 
     @Override

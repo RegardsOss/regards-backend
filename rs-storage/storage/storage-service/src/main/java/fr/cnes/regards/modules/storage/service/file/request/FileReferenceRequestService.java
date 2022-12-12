@@ -212,7 +212,9 @@ public class FileReferenceRequestService {
                                            e.getMessage());
                 // notify error request to the session agent
                 this.sessionNotifier.decrementRunningRequests(sessionOwner, session);
-                this.sessionNotifier.incrementErrorRequests(sessionOwner, session);
+                // NOTE : As reference requests are not retryable, session errors for those requests are set in info
+                // status and not error status. Else, the errors could not be recovered.
+                this.sessionNotifier.incrementDeniedRequests(sessionOwner, session);
             } finally {
                 LOGGER.trace("[REFERENCE REQUEST] New reference request ({}) handled in {}ms",
                              file.getFileName(),

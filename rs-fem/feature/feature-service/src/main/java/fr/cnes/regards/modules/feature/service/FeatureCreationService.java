@@ -662,6 +662,9 @@ public class FeatureCreationService extends AbstractFeatureService<FeatureCreati
             for (FeatureCreationRequest request : requests) {
                 String errorCause = Optional.ofNullable(errorByGroupId.get(request.getGroupId()))
                                             .orElse("unknown error.");
+                LOGGER.error("Error received from storage for request {}. Cause : {}",
+                             request.getProviderId(),
+                             errorCause);
                 addRemoteStorageError(request, errorCause);
             }
             doOnError(requests);
