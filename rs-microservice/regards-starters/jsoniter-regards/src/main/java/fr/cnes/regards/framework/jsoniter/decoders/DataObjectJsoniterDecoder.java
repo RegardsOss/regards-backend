@@ -8,8 +8,8 @@ import com.jsoniter.spi.TypeLiteral;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.dam.domain.entities.metadata.DataObjectMetadata;
+import fr.cnes.regards.modules.indexer.domain.builders.GeoPointBuilder;
 import fr.cnes.regards.modules.model.domain.Model;
-import org.elasticsearch.common.geo.GeoPoint;
 
 import java.io.IOException;
 import java.util.Set;
@@ -40,12 +40,12 @@ public class DataObjectJsoniterDecoder implements AbstractEntityDecoder<DataObje
         whenPresent(dataObj.get("nwPoint"), Any.class, gp -> {
             double lat = gp.toDouble("lat");
             double lon = gp.toDouble("lon");
-            result.setNwPoint(new GeoPoint(lat, lon));
+            result.setNwPoint(new GeoPointBuilder(lat, lon).build());
         });
         whenPresent(dataObj.get("sePoint"), Any.class, gp -> {
             double lat = gp.toDouble("lat");
             double lon = gp.toDouble("lon");
-            result.setSePoint(new GeoPoint(lat, lon));
+            result.setSePoint(new GeoPointBuilder(lat, lon).build());
         });
 
         return result;
