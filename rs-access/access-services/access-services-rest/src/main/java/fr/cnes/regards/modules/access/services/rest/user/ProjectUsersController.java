@@ -142,10 +142,10 @@ public class ProjectUsersController implements IResourceController<ProjectUserRe
      */
     @PostMapping(SEARCH_USERS_PATH)
     @Operation(summary = "Get users of the project",
-        description = "Return a page of users of the project matching according criterias.")
+        description = "Return a page of users of the project matching criterias.")
     @ApiResponses(
         value = { @ApiResponse(responseCode = "200", description = "All users of the project were retrieved.") })
-    @ResourceAccess(description = "EndPoint to retrieve all users of the project according criterias",
+    @ResourceAccess(description = "EndPoint to retrieve all users of the project matching criterias",
         role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<ProjectUserReadDto>>> retrieveProjectUserList(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",

@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
-import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecificationsBuilderNew;
+import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecificationsBuilder;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -120,27 +120,27 @@ public class ProjectUserDaoIT {
 
         SearchProjectUserParameters filters = new SearchProjectUserParameters().withEmail("user");
 
-        Page<ProjectUser> result = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(
+        Page<ProjectUser> result = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(
             filters).build(), PageRequest.of(0, 4));
         Assert.assertEquals("search of users which email contains \"user\" should return 4 users",
                             4,
                             result.getContent().size());
 
         filters = new SearchProjectUserParameters().withEmail("user4");
-        result = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(filters)
-                                                                                        .build(), PageRequest.of(0, 4));
+        result = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(filters).build(),
+                                               PageRequest.of(0, 4));
         Assert.assertEquals("search of users which email contains \"user4\" should return 1 user",
                             1,
                             result.getContent().size());
 
-        result = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().build(), PageRequest.of(0, 4));
+        result = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().build(), PageRequest.of(0, 4));
         Assert.assertEquals("search of users without filters should return ALL users",
                             projectUserRepository.findAll().size(),
                             result.getContent().size());
 
         filters = new SearchProjectUserParameters().withStatusIncluded(Arrays.asList(UserStatus.WAITING_ACCOUNT_ACTIVE));
-        result = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(filters)
-                                                                                        .build(), PageRequest.of(0, 4));
+        result = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(filters).build(),
+                                               PageRequest.of(0, 4));
         Assert.assertEquals("search of users with status active should return ALL users",
                             projectUserRepository.findAll().size(),
                             result.getContent().size());

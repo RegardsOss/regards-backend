@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
-import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecificationsBuilderNew;
+import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecificationsBuilder;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.SearchProjectUserParameters;
 import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
@@ -108,8 +108,8 @@ public class ProjectUserGroupService {
         removeGroup(accessGroup, (group, pageable) -> {
             SearchProjectUserParameters filters = new SearchProjectUserParameters().withAccessGroupsIncluded(Arrays.asList(
                 accessGroup));
-            return projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(filters)
-                                                                                          .build(), pageable);
+            return projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(filters).build(),
+                                                 pageable);
         });
     }
 

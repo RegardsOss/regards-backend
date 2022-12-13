@@ -26,10 +26,12 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.feature.dao.FeatureEntitySpecification;
+import fr.cnes.regards.modules.feature.dao.FeatureSimpleEntitySpecificationBuilder;
 import fr.cnes.regards.modules.feature.dao.IFeatureEntityWithDisseminationRepository;
 import fr.cnes.regards.modules.feature.dao.IFeatureSimpleEntityRepository;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
 import fr.cnes.regards.modules.feature.domain.FeatureSimpleEntity;
+import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureDisseminationInfoDto;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
@@ -91,6 +93,26 @@ public class FeatureService implements IFeatureService {
                                                                                        selection.getFilters().isFull()))
                                                   .toList();
         return new PageImpl<>(elements, page, simpleEntities.getTotalElements());
+    }
+
+    @Override
+    public Page<FeatureEntityDto> findAll(SearchFeatureSimpleEntityParameters filters, Pageable pageable) {
+        // Workaround to avoid in-memory pagination with specification
+        // 1. use simple entities with specification + pagination to get 1 page
+        // 2. fetch full entities for objects in this page
+        Page<FeatureSimpleEntity> featureSimpleEntities = featureSimpleEntityRepository.findAll(new FeatureSimpleEntitySpecificationBuilder().withParameters(
+            filters).build(), pageable);
+        List<FeatureEntity> featureEntities = featureWithDisseminationRepo.findByUrnIn(featureSimpleEntities.stream()
+                                                                                                            .map(
+                                                                                                                FeatureSimpleEntity::getUrn)
+                                                                                                            .collect(
+                                                                                                                Collectors.toSet()),
+                                                                                       featureSimpleEntities.getSort());
+
+        List<FeatureEntityDto> featureEntityDtos = featureEntities.stream()
+                                                                  .map(entity -> initDataObjectFeature(entity, true))
+                                                                  .toList();
+        return new PageImpl<>(featureEntityDtos, pageable, featureSimpleEntities.getTotalElements());
     }
 
     @Override

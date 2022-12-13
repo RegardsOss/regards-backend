@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.feature.service;
 
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import fr.cnes.regards.modules.feature.dto.FeaturesSearchParameters;
 import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
@@ -43,6 +44,16 @@ public interface IFeatureService {
      * @return {@link Page} of {@link FeatureEntityDto}
      */
     Page<FeatureEntityDto> findAll(FeaturesSelectionDTO selection, Pageable pageable);
+
+    /**
+     * Get a {@link Page} of {@link FeatureEntityDto} dto
+     * The {@link Page} will be initialized from a list of {@link FeatureEntityDto}
+     *
+     * @param filters  {@link SearchFeatureSimpleEntityParameters} search filters
+     * @param pageable
+     * @return {@link Page} of {@link FeatureEntityDto}
+     */
+    Page<FeatureEntityDto> findAll(SearchFeatureSimpleEntityParameters filters, Pageable pageable);
 
     /**
      * Get a {@link FeatureEntityDto} by its urn

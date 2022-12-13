@@ -19,6 +19,7 @@ package fr.cnes.regards.modules.feature.client;
  */
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
+import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.FeatureEntityDto;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.data.domain.PageRequest;
@@ -28,9 +29,8 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.OffsetDateTime;
 
@@ -42,22 +42,18 @@ public interface IFeatureEntityClient {
 
     String PATH_DATA_FEATURE_OBJECT = "/admin/features";
 
-    /**
-     * You better use {@link #findAll(String, OffsetDateTime, int, int, Sort)} which explicitly asks for sort
-     */
-    @GetMapping(path = PATH_DATA_FEATURE_OBJECT, consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> findAll(@SpringQueryMap Pageable pageable,
-                                                                      @RequestParam("model") String model,
-                                                                      @RequestParam("from")
-                                                                      OffsetDateTime lastUpdateDate);
+    @PostMapping(path = PATH_DATA_FEATURE_OBJECT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> findAll(
+        @RequestBody SearchFeatureSimpleEntityParameters filters, @SpringQueryMap Pageable pageable);
 
     default ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> findAll(String model,
                                                                               OffsetDateTime lastUpdateDate,
                                                                               int page,
                                                                               int size,
                                                                               Sort sort) {
-        return findAll(PageRequest.of(page, size, sort), model, lastUpdateDate);
+        SearchFeatureSimpleEntityParameters filters = new SearchFeatureSimpleEntityParameters().withModel(model)
+                                                                                               .withLastUpdateAfter(
+                                                                                                   lastUpdateDate);
+        return findAll(filters, PageRequest.of(page, size, sort));
     }
 }

@@ -153,9 +153,9 @@ public class AIPController implements IResourceController<AIPEntityLight> {
      * @return page of aip metadata respecting the constraints
      */
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Get AIPs", description = "Return a page of AIPs according criterias.")
+    @Operation(summary = "Get AIPs", description = "Return a page of AIPs matching criterias.")
     @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All AIPs were retrieved.") })
-    @ResourceAccess(description = "Endpoint to retrieve all AIPs according criterias", role = DefaultRole.EXPLOIT)
+    @ResourceAccess(description = "Endpoint to retrieve all AIPs matching criterias", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<AIPEntityLight>>> searchAIPs(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
             content = @Content(schema = @Schema(implementation = SearchAIPLightParameters.class)))

@@ -26,16 +26,21 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.*;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.IFeatureService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.LinkRelation;
@@ -53,8 +58,8 @@ import javax.validation.Valid;
  * @author Kevin Marchois
  */
 @RestController
-@RequestMapping(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT)
-public class FeatureEntityControler implements IResourceController<FeatureEntityDto> {
+@RequestMapping(FeatureEntityController.PATH_DATA_FEATURE_OBJECT)
+public class FeatureEntityController implements IResourceController<FeatureEntityDto> {
 
     public static final String PATH_DATA_FEATURE_OBJECT = "/admin/features";
 
@@ -73,26 +78,21 @@ public class FeatureEntityControler implements IResourceController<FeatureEntity
     @Autowired
     private IResourceService resourceService;
 
-    /**
-     * Get a {@link Page} of {@link FeatureEntityDto} it will contain data of the last created {@link FeatureEntity}
-     *
-     * @param model          model of wanted {@link Feature}
-     * @param lastUpdateDate las modification date that we want {@link Feature}
-     * @return {@link RequestInfo} a {@link Page} of {@link FeatureEntityDto}
-     */
-    @Operation(summary = "Get features according to search parameters",
-        description = "Get features according to search parameters")
-    @ApiResponses(
-        value = { @ApiResponse(responseCode = "200", description = "Get features according to search parameters") })
-    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResourceAccess(description = "Get features according to search parameters", role = DefaultRole.EXPLOIT)
-    public ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> getFeatures(
-        @Parameter(description = "Features selection filters") FeaturesSearchParameters selection,
-        Pageable page,
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get features", description = "Return a page of features matching criterias.")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "All features were retrieved.") })
+    @ResourceAccess(description = "Endpoint to retrieve features matching criterias", role = DefaultRole.EXPLOIT)
+    public ResponseEntity<PagedModel<EntityModel<FeatureEntityDto>>> searchFeatures(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterias.",
+            content = @Content(schema = @Schema(implementation = SearchFeatureSimpleEntityParameters.class)))
+        @Parameter(description = "Filter criterias for features") @RequestBody
+        SearchFeatureSimpleEntityParameters filters,
+        @Parameter(description = "Sorting and page configuration")
+        @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
         PagedResourcesAssembler<FeatureEntityDto> assembler) {
-        return new ResponseEntity<>(toPagedResources(featureService.findAll(FeaturesSelectionDTO.build()
-                                                                                                .withFilters(selection),
-                                                                            page), assembler), HttpStatus.OK);
+
+        return new ResponseEntity<>(toPagedResources(featureService.findAll(filters, pageable), assembler),
+                                    HttpStatus.OK);
     }
 
     /**

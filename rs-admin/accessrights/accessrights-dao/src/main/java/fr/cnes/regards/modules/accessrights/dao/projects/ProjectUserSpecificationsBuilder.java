@@ -30,7 +30,7 @@ import javax.persistence.criteria.Predicate;
 /**
  * @author Stephane Cortine
  */
-public class ProjectUserSpecificationsBuilderNew
+public class ProjectUserSpecificationsBuilder
     extends AbstractSpecificationsBuilder<ProjectUser, SearchProjectUserParameters> {
 
     @Override

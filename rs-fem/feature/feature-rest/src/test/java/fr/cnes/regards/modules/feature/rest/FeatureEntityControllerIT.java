@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.feature.documentation.FeatureEntityControllerDocu
 import fr.cnes.regards.modules.feature.documentation.RequestsControllerDocumentationHelper;
 import fr.cnes.regards.modules.feature.domain.FeatureDisseminationInfo;
 import fr.cnes.regards.modules.feature.domain.FeatureEntity;
+import fr.cnes.regards.modules.feature.domain.SearchFeatureSimpleEntityParameters;
 import fr.cnes.regards.modules.feature.dto.FeaturesSelectionDTO;
 import fr.cnes.regards.modules.feature.dto.urn.FeatureUniformResourceName;
 import fr.cnes.regards.modules.feature.service.job.PublishFeatureNotificationJob;
@@ -43,6 +44,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,7 +73,7 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         requestBuilderCustomizer.documentResponseBody(FeatureEntityControllerDocumentationHelper.featureEntityDTOResponseDoc(
             Optional.empty()));
-        performDefaultGet(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT + FeatureEntityControler.URN_PATH,
+        performDefaultGet(FeatureEntityController.PATH_DATA_FEATURE_OBJECT + FeatureEntityController.URN_PATH,
                           requestBuilderCustomizer,
                           "Error retrieving features",
                           urn.toString());
@@ -98,7 +100,7 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         requestBuilderCustomizer.documentResponseBody(FeatureEntityControllerDocumentationHelper.featureEntityDTOResponseDoc(
             Optional.empty()));
-        performDefaultGet(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT + FeatureEntityControler.URN_PATH,
+        performDefaultGet(FeatureEntityController.PATH_DATA_FEATURE_OBJECT + FeatureEntityController.URN_PATH,
                           requestBuilderCustomizer,
                           "Error retrieving features",
                           urn.toString());
@@ -114,14 +116,19 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
         OffsetDateTime between = OffsetDateTime.now();
         createFeatures("feature_2_", 10, "source1", "session2");
         OffsetDateTime end = OffsetDateTime.now();
+
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk()
                                                                         .expectIsArray("$.content")
                                                                         .expectToHaveSize("$.content", 20);
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
-        requestBuilderCustomizer.addParameter("model", "FEATURE01").skipDocumentation();
-        performDefaultGet(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT,
-                          requestBuilderCustomizer,
-                          "Error retrieving features");
+        requestBuilderCustomizer.addParameter("page", "0");
+        requestBuilderCustomizer.addParameter("size", "20");
+
+        SearchFeatureSimpleEntityParameters filters = new SearchFeatureSimpleEntityParameters().withModel("FEATURE01");
+        performDefaultPost(FeatureEntityController.PATH_DATA_FEATURE_OBJECT,
+                           filters,
+                           requestBuilderCustomizer,
+                           "Error retrieving features");
 
         requestBuilderCustomizer = customizer().expectStatusOk()
                                                .expectIsArray("$.content")
@@ -129,35 +136,44 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
                                                .skipDocumentation();
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         requestBuilderCustomizer.addParameter("session", "session2");
-        performDefaultGet(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT,
-                          requestBuilderCustomizer,
-                          "Error retrieving features");
+
+        filters = new SearchFeatureSimpleEntityParameters().withSession("session2");
+        performDefaultPost(FeatureEntityController.PATH_DATA_FEATURE_OBJECT,
+                           filters,
+                           requestBuilderCustomizer,
+                           "Error retrieving features");
 
         requestBuilderCustomizer = customizer().expectStatusOk()
                                                .expectIsArray("$.content")
                                                .expectToHaveSize("$.content", 1);
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
-        requestBuilderCustomizer.addParameter("source", "source1");
-        requestBuilderCustomizer.addParameter("model", "FEATURE01");
-        requestBuilderCustomizer.addParameter("providerId", "feature_1_5");
+
         List<ParameterDescriptor> params = FeatureEntityControllerDocumentationHelper.featuresSearchParametersDoc();
         params.addAll(RequestsControllerDocumentationHelper.paginationDoc());
         requestBuilderCustomizer.documentRequestParameters(params);
         requestBuilderCustomizer.documentResponseBody(FeatureEntityControllerDocumentationHelper.featureEntityDTOPageResponseDoc());
-        performDefaultGet(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT,
-                          requestBuilderCustomizer,
-                          "Error retrieving features");
+
+        filters = new SearchFeatureSimpleEntityParameters().withSource("source1")
+                                                           .withModel("FEATURE01")
+                                                           .withProviderIdsIncluded(Arrays.asList("feature_1_5"));
+        performDefaultPost(FeatureEntityController.PATH_DATA_FEATURE_OBJECT,
+                           filters,
+                           requestBuilderCustomizer,
+                           "Error retrieving features");
 
         requestBuilderCustomizer = customizer().expectStatusOk()
                                                .expectIsArray("$.content")
                                                .expectToHaveSize("$.content", 20)
                                                .skipDocumentation();
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
-        requestBuilderCustomizer.addParameter("from", start.toString());
-        requestBuilderCustomizer.addParameter("to", end.toString());
-        performDefaultGet(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT,
-                          requestBuilderCustomizer,
-                          "Error retrieving features");
+        requestBuilderCustomizer.addParameter("page", "0");
+        requestBuilderCustomizer.addParameter("size", "20");
+
+        filters = new SearchFeatureSimpleEntityParameters().withLastUpdateBefore(end).withLastUpdateAfter(start);
+        performDefaultPost(FeatureEntityController.PATH_DATA_FEATURE_OBJECT,
+                           filters,
+                           requestBuilderCustomizer,
+                           "Error retrieving features");
 
         requestBuilderCustomizer = customizer().expectStatusOk()
                                                .expectIsArray("$.content")
@@ -166,32 +182,39 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         requestBuilderCustomizer.addParameter("from", start.toString());
         requestBuilderCustomizer.addParameter("to", between.toString());
-        performDefaultGet(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT,
-                          requestBuilderCustomizer,
-                          "Error retrieving features");
+
+        filters = new SearchFeatureSimpleEntityParameters().withLastUpdateBefore(between).withLastUpdateAfter(start);
+        performDefaultPost(FeatureEntityController.PATH_DATA_FEATURE_OBJECT,
+                           filters,
+                           requestBuilderCustomizer,
+                           "Error retrieving features");
 
         requestBuilderCustomizer = customizer().expectStatusOk()
                                                .expectIsArray("$.content")
                                                .expectToHaveSize("$.content", 10)
                                                .skipDocumentation();
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
-        requestBuilderCustomizer.addParameter("from", between.toString());
-        performDefaultGet(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT,
-                          requestBuilderCustomizer,
-                          "Error retrieving features");
+
+        filters = new SearchFeatureSimpleEntityParameters().withLastUpdateAfter(between);
+        performDefaultPost(FeatureEntityController.PATH_DATA_FEATURE_OBJECT,
+                           filters,
+                           requestBuilderCustomizer,
+                           "Error retrieving features");
 
         requestBuilderCustomizer = customizer().expectStatusOk()
                                                .expectIsArray("$.content")
                                                .expectToHaveSize("$.content", 0)
                                                .skipDocumentation();
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
-        requestBuilderCustomizer.addParameter("source", "source1");
-        requestBuilderCustomizer.addParameter("session", "session2");
-        requestBuilderCustomizer.addParameter("model", "FEATURE01");
-        requestBuilderCustomizer.addParameter("providerId", "feature_1_5");
-        performDefaultGet(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT,
-                          requestBuilderCustomizer,
-                          "Error retrieving features");
+
+        filters = new SearchFeatureSimpleEntityParameters().withSource("source1")
+                                                           .withSession("session2")
+                                                           .withModel("FEATURE01")
+                                                           .withProviderIdsIncluded(Arrays.asList("feature_1_5"));
+        performDefaultPost(FeatureEntityController.PATH_DATA_FEATURE_OBJECT,
+                           filters,
+                           requestBuilderCustomizer,
+                           "Error retrieving features");
     }
 
     @Test
@@ -200,7 +223,7 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         requestBuilderCustomizer.documentRequestBody(FeatureEntityControllerDocumentationHelper.featureSelectionDTODoc());
-        performDefaultPost(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT + FeatureEntityControler.NOTIFY_PATH,
+        performDefaultPost(FeatureEntityController.PATH_DATA_FEATURE_OBJECT + FeatureEntityController.NOTIFY_PATH,
                            FeaturesSelectionDTO.build(),
                            requestBuilderCustomizer,
                            "Error during feature notification request");
@@ -218,7 +241,7 @@ public class FeatureEntityControllerIT extends AbstractFeatureIT {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE);
         requestBuilderCustomizer.documentRequestBody(FeatureEntityControllerDocumentationHelper.featureSelectionDTODoc());
-        performDefaultDelete(FeatureEntityControler.PATH_DATA_FEATURE_OBJECT + FeatureEntityControler.DELETE_PATH,
+        performDefaultDelete(FeatureEntityController.PATH_DATA_FEATURE_OBJECT + FeatureEntityController.DELETE_PATH,
                              FeaturesSelectionDTO.build(),
                              requestBuilderCustomizer,
                              "Error during feature deltion request");

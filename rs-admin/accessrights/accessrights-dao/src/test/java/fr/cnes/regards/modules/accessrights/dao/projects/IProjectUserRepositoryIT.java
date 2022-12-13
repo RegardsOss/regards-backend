@@ -134,7 +134,7 @@ public class IProjectUserRepositoryIT {
         // Given
         SearchProjectUserParameters filters = new SearchProjectUserParameters().withFirstName("FirstName1");
         // When
-        Page<ProjectUser> projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(
+        Page<ProjectUser> projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(
             filters).build(), PageRequest.of(0, 5));
         //Then
         Assert.assertEquals("search of users which firstname contains \"FirstName1\" should return 1 users",
@@ -144,8 +144,9 @@ public class IProjectUserRepositoryIT {
         // Given
         filters = new SearchProjectUserParameters().withFirstName("FirstName");
         // When
-        projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(
-            filters).build(), PageRequest.of(0, 5));
+        projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(filters)
+                                                                                                .build(),
+                                                          PageRequest.of(0, 5));
         // Then
         Assert.assertEquals("search of users which firstname contains \"FirstName\" should return 4 users",
                             4,
@@ -157,7 +158,7 @@ public class IProjectUserRepositoryIT {
         // Given
         SearchProjectUserParameters filters = new SearchProjectUserParameters().withLastName("LastName1");
         // When
-        Page<ProjectUser> projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(
+        Page<ProjectUser> projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(
             filters).build(), PageRequest.of(0, 5));
         //Then
         Assert.assertEquals("search of users which lastname contains \"LastName1\" should return 1 users",
@@ -167,8 +168,9 @@ public class IProjectUserRepositoryIT {
         // Given
         filters = new SearchProjectUserParameters().withLastName("LastName");
         // When
-        projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(
-            filters).build(), PageRequest.of(0, 5));
+        projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(filters)
+                                                                                                .build(),
+                                                          PageRequest.of(0, 5));
         // Then
         Assert.assertEquals("search of users which lastname contains \"LastName\" should return 4 users",
                             4,
@@ -180,7 +182,7 @@ public class IProjectUserRepositoryIT {
         // Given
         SearchProjectUserParameters filters = new SearchProjectUserParameters().withEmail("user4");
         // When
-        Page<ProjectUser> projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(
+        Page<ProjectUser> projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(
             filters).build(), PageRequest.of(0, 5));
         //Then
         Assert.assertEquals("search of users which email contains \"user4\" should return 1 users",
@@ -190,8 +192,9 @@ public class IProjectUserRepositoryIT {
         // Given
         filters = new SearchProjectUserParameters().withEmail("user");
         // When
-        projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(
-            filters).build(), PageRequest.of(0, 5));
+        projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(filters)
+                                                                                                .build(),
+                                                          PageRequest.of(0, 5));
         // Then
         Assert.assertEquals("search of users which email contains \"user\" should return 4 users",
                             4,
@@ -203,7 +206,7 @@ public class IProjectUserRepositoryIT {
         // Given
 
         // When
-        Page<ProjectUser> projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().build(),
+        Page<ProjectUser> projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().build(),
                                                                             PageRequest.of(0, 5));
         //Then
         Assert.assertEquals("search of users without filters should return ALL users",
@@ -217,7 +220,7 @@ public class IProjectUserRepositoryIT {
         SearchProjectUserParameters filters = new SearchProjectUserParameters().withStatusIncluded(Arrays.asList(
             UserStatus.WAITING_ACCOUNT_ACTIVE));
         // When
-        Page<ProjectUser> projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(
+        Page<ProjectUser> projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(
             filters).build(), PageRequest.of(0, 5));
         //Then
         Assert.assertEquals("search of users with status active should return ALL users",
@@ -231,7 +234,7 @@ public class IProjectUserRepositoryIT {
         SearchProjectUserParameters filters = new SearchProjectUserParameters().withOriginsIncluded(Arrays.asList(
             REGARDS_ORIGIN));
         // When
-        Page<ProjectUser> projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(
+        Page<ProjectUser> projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(
             filters).build(), PageRequest.of(0, 5));
         //Then
         Assert.assertEquals("search of users which origin contains \"Regards\" should return 1 users",
@@ -241,8 +244,9 @@ public class IProjectUserRepositoryIT {
         // Given
         filters = new SearchProjectUserParameters().withOriginsIncluded(Arrays.asList(REGARDS_ORIGIN, "Origin4"));
         // When
-        projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(
-            filters).build(), PageRequest.of(0, 5));
+        projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(filters)
+                                                                                                .build(),
+                                                          PageRequest.of(0, 5));
         // Then
         Assert.assertEquals("search of users which origin contains \"Regards\" and \"origin4\" should return 2 users",
                             2,
@@ -255,7 +259,7 @@ public class IProjectUserRepositoryIT {
         SearchProjectUserParameters filters = new SearchProjectUserParameters().withRolesIncluded(Arrays.asList(
             DefaultRole.PUBLIC.toString()));
         // When
-        Page<ProjectUser> projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(
+        Page<ProjectUser> projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(
             filters).build(), PageRequest.of(0, 5));
         //Then
         Assert.assertEquals("search of users which role contains \"PUBLIC\" should return 4 users",
@@ -265,8 +269,9 @@ public class IProjectUserRepositoryIT {
         // Given
         filters = new SearchProjectUserParameters().withRolesIncluded(Arrays.asList(DefaultRole.ADMIN.toString()));
         // When
-        projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(
-            filters).build(), PageRequest.of(0, 5));
+        projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(filters)
+                                                                                                .build(),
+                                                          PageRequest.of(0, 5));
         //Then
         Assert.assertEquals("search of users which role contains \"INSTANCE_ADMIN\" should return 0 users",
                             0,
@@ -276,8 +281,9 @@ public class IProjectUserRepositoryIT {
         filters = new SearchProjectUserParameters().withRolesIncluded(Arrays.asList(DefaultRole.PUBLIC.toString(),
                                                                                     DefaultRole.INSTANCE_ADMIN.toString()));
         // When
-        projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(
-            filters).build(), PageRequest.of(0, 5));
+        projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(filters)
+                                                                                                .build(),
+                                                          PageRequest.of(0, 5));
         //Then
         Assert.assertEquals("search of users which role contains \"PUBLIC\" or \"INSTANCE_ADMIN\" should return 4 users",
                             5,
@@ -292,7 +298,7 @@ public class IProjectUserRepositoryIT {
         SearchProjectUserParameters filters = new SearchProjectUserParameters().withCreationDateBefore(end)
                                                                                .withCreationDateAfter(begin);
         // When
-        Page<ProjectUser> projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(
+        Page<ProjectUser> projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(
             filters).build(), PageRequest.of(0, 5));
         //Then
         Assert.assertEquals(5, projectUserResult.getContent().size());
@@ -300,8 +306,9 @@ public class IProjectUserRepositoryIT {
         // Given
         filters = new SearchProjectUserParameters().withCreationDateBefore(begin).withCreationDateAfter(end);
         // When
-        projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(
-            filters).build(), PageRequest.of(0, 5));
+        projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(filters)
+                                                                                                .build(),
+                                                          PageRequest.of(0, 5));
         //Then
         Assert.assertEquals(0, projectUserResult.getContent().size());
     }
@@ -314,7 +321,7 @@ public class IProjectUserRepositoryIT {
         SearchProjectUserParameters filters = new SearchProjectUserParameters().withLastConnectionBefore(end)
                                                                                .withLastConnectionAfter(begin);
         // When
-        Page<ProjectUser> projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(
+        Page<ProjectUser> projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(
             filters).build(), PageRequest.of(0, 5));
         //Then
         Assert.assertEquals(1, projectUserResult.getContent().size());
@@ -322,8 +329,9 @@ public class IProjectUserRepositoryIT {
         // Given
         filters = new SearchProjectUserParameters().withLastConnectionBefore(begin).withLastConnectionAfter(end);
         // When
-        projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(
-            filters).build(), PageRequest.of(0, 5));
+        projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(filters)
+                                                                                                .build(),
+                                                          PageRequest.of(0, 5));
         //Then
         Assert.assertEquals(0, projectUserResult.getContent().size());
     }
@@ -334,7 +342,7 @@ public class IProjectUserRepositoryIT {
         SearchProjectUserParameters filters = new SearchProjectUserParameters().withAccessGroupsIncluded(Arrays.asList(
             "Public"));
         // When
-        Page<ProjectUser> projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(
+        Page<ProjectUser> projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(
             filters).build(), PageRequest.of(0, 5));
         //Then
         Assert.assertEquals(1, projectUserResult.getContent().size());
@@ -342,8 +350,9 @@ public class IProjectUserRepositoryIT {
         // Given
         filters = new SearchProjectUserParameters().withAccessGroupsIncluded(Arrays.asList("Private", "Regards"));
         // When
-        projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(
-            filters).build(), PageRequest.of(0, 5));
+        projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(filters)
+                                                                                                .build(),
+                                                          PageRequest.of(0, 5));
         //Then
         Assert.assertEquals(2, projectUserResult.getContent().size());
     }
@@ -367,7 +376,7 @@ public class IProjectUserRepositoryIT {
                                                                                .withCreationDateBefore(end)
                                                                                .withCreationDateAfter(begin);
         // When
-        Page<ProjectUser> projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilderNew().withParameters(
+        Page<ProjectUser> projectUserResult = projectUserRepository.findAll(new ProjectUserSpecificationsBuilder().withParameters(
             filters).build(), PageRequest.of(0, 5));
         //Then
         Assert.assertEquals(1, projectUserResult.getContent().size());
