@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.ltamanager.domain.submission.search.SubmissionRequestSearchParameters;
+import fr.cnes.regards.modules.ltamanager.domain.submission.search.SearchSubmissionRequestParameters;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionRequestInfoDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmittedSearchResponseDto;
 import fr.cnes.regards.modules.ltamanager.service.session.SubmissionSessionService;
@@ -104,8 +104,8 @@ public class SubmissionReadController extends AbstractSubmissionController
     @ResourceAccess(description = "Endpoint to search for submission requests.", role = DefaultRole.EXPLOIT)
     public ResponseEntity<PagedModel<EntityModel<SubmittedSearchResponseDto>>> findSubmittedRequests(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Set of search criterion.",
-            content = @Content(schema = @Schema(implementation = SubmissionRequestSearchParameters.class))) @RequestBody
-        @Valid SubmissionRequestSearchParameters searchCriterion,
+            content = @Content(schema = @Schema(implementation = SearchSubmissionRequestParameters.class))) @RequestBody
+        @Valid SearchSubmissionRequestParameters searchCriterion,
         @PageableDefault(sort = { "submissionStatus_statusDate", "requestId" }, direction = Sort.Direction.DESC)
         Pageable pageable,
         @Parameter(hidden = true) PagedResourcesAssembler<SubmittedSearchResponseDto> assembler) {

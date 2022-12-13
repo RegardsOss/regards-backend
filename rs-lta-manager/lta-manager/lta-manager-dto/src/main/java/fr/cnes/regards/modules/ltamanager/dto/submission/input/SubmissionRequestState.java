@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.ltamanager.dto.submission.input;
 
+import java.util.Arrays;
+
 /**
  * Available states to indicate the progress of a long-term storage request
  *
@@ -46,30 +48,55 @@ public enum SubmissionRequestState {
     /**
      * Request is ready to be processed
      */
-    VALIDATED,
+    VALIDATED(false),
     /**
      * SIP generation on going
      */
-    GENERATION_PENDING,
+    GENERATION_PENDING(false),
     /**
      * SIP successfully generated in OAIS format
      */
-    GENERATED,
+    GENERATED(false),
     /**
      * Error during the SIP generation
      */
-    GENERATION_ERROR,
+    GENERATION_ERROR(true),
     /**
      * Product long-term storage on going
      */
-    INGESTION_PENDING,
+    INGESTION_PENDING(false),
     /**
      * Product successfully long-term stored
      */
-    DONE,
+    DONE(true),
     /**
      * Error during the long-term storage of the OAIS product
      */
-    INGESTION_ERROR
+    INGESTION_ERROR(true);
 
+    private static final SubmissionRequestState[] ALL_FINISHED_STATE = Arrays.stream(SubmissionRequestState.values())
+                                                                             .filter(SubmissionRequestState::isFinalState)
+                                                                             .toArray(SubmissionRequestState[]::new);
+
+    private static final SubmissionRequestState[] ALL_NOT_FINISHED_STATE = Arrays.stream(SubmissionRequestState.values())
+                                                                                 .filter(state -> !state.isFinalState)
+                                                                                 .toArray(SubmissionRequestState[]::new);
+
+    private final boolean isFinalState;
+
+    private SubmissionRequestState(boolean isFinalState) {
+        this.isFinalState = isFinalState;
+    }
+
+    public boolean isFinalState() {
+        return isFinalState;
+    }
+
+    public static SubmissionRequestState[] getAllFinishedState() {
+        return ALL_FINISHED_STATE;
+    }
+
+    public static SubmissionRequestState[] getAllNotFinishedState() {
+        return ALL_NOT_FINISHED_STATE;
+    }
 }

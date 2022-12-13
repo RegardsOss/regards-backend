@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ltamanager.rest.submission.utils;
+package fr.cnes.regards.modules.ltamanager.service.utils;
 
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
 
@@ -26,11 +26,7 @@ import java.time.OffsetDateTime;
  * @author Iliana Ghazali
  * @author tguillou
  */
-public record SubmissionInfo(String owner,
-                             String session,
-                             String datatype,
-                             OffsetDateTime creationDate,
-                             OffsetDateTime statusDate,
-                             SubmissionRequestState state) {
+public record SubmissionInfo(String owner, String session, String datatype, OffsetDateTime creationDate,
+                             OffsetDateTime statusDate, SubmissionRequestState state) {
 
 }

@@ -32,7 +32,7 @@ import java.util.Objects;
 /**
  * @author Iliana Ghazali
  **/
-public class SubmissionRequestSearchParameters implements AbstractSearchParameters<SubmissionRequest> {
+public class SearchSubmissionRequestParameters implements AbstractSearchParameters<SubmissionRequest> {
 
     @Schema(description = "Request sender.", nullable = true)
     @Nullable
@@ -49,7 +49,7 @@ public class SubmissionRequestSearchParameters implements AbstractSearchParamete
     @Schema(description = "Submission request creation date.", nullable = true)
     @Nullable
     @Valid
-    private final DatesRangeRestriction creationDate;
+    private DatesRangeRestriction creationDate;
 
     @Schema(description = "Submission request last update date.", nullable = true)
     @Nullable
@@ -59,14 +59,14 @@ public class SubmissionRequestSearchParameters implements AbstractSearchParamete
     @Schema(description = "Included submission request states (only INCLUDED MODE is accepted).", nullable = true)
     @Nullable
     @Valid
-    private final ValuesRestriction<SubmissionRequestState> statusesRestriction;
+    private ValuesRestriction<SubmissionRequestState> statusesRestriction;
 
     @Schema(description = "Restricted ids (INCLUDED or EXCLUDED).", nullable = true)
     @Nullable
     @Valid
     private final ValuesRestriction<String> idsRestriction;
 
-    public SubmissionRequestSearchParameters(@Nullable String owner,
+    public SearchSubmissionRequestParameters(@Nullable String owner,
                                              @Nullable String session,
                                              @Nullable String datatype,
                                              @Nullable DatesRangeRestriction creationDate,
@@ -117,6 +117,14 @@ public class SubmissionRequestSearchParameters implements AbstractSearchParamete
         return idsRestriction;
     }
 
+    public void setCreationDate(@Nullable DatesRangeRestriction creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public void setStatusesRestriction(@Nullable ValuesRestriction<SubmissionRequestState> statusesRestriction) {
+        this.statusesRestriction = statusesRestriction;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -125,7 +133,7 @@ public class SubmissionRequestSearchParameters implements AbstractSearchParamete
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        SubmissionRequestSearchParameters that = (SubmissionRequestSearchParameters) o;
+        SearchSubmissionRequestParameters that = (SearchSubmissionRequestParameters) o;
         return Objects.equals(owner, that.owner)
                && Objects.equals(session, that.session)
                && Objects.equals(datatype,

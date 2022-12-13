@@ -73,10 +73,7 @@ public class SIPBodyDeletionRequestScheduler {
 
         // if there is the same job waiting in thread-pool, do nothing
         Long numberOfJobsNotFinished = jobInfoService.retrieveJobsCount(SIPBodyDeletionJob.class.getName(),
-                                                                        JobStatus.PENDING,
-                                                                        JobStatus.QUEUED,
-                                                                        JobStatus.RUNNING,
-                                                                        JobStatus.TO_BE_RUN);
+                                                                        JobStatus.getAllNotFinishedStatus());
         if (numberOfJobsNotFinished > 0) {
             LOGGER.info("[SIP DELETION SCHEDULER] Cannot start the job : A deletion job is already running");
             return null;

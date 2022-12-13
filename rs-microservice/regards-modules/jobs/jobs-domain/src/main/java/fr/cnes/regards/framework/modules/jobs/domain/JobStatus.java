@@ -18,12 +18,15 @@
  */
 package fr.cnes.regards.framework.modules.jobs.domain;
 
+import java.util.Arrays;
+
 /**
  * JobInfo status
  *
  * @author Léo Mieulet
  */
 public enum JobStatus {
+
     /**
      * Job created but not yet to be taken into account
      */
@@ -87,6 +90,14 @@ public enum JobStatus {
             return true;
         }
     };
+
+    private static final JobStatus[] ALL_NOT_FINISHED_STATUS = Arrays.stream(JobStatus.values())
+                                                                     .filter(jobStatus -> !jobStatus.isFinished())
+                                                                     .toArray(JobStatus[]::new);
+
+    public static JobStatus[] getAllNotFinishedStatus() {
+        return ALL_NOT_FINISHED_STATUS;
+    }
 
     @Override
     public String toString() {

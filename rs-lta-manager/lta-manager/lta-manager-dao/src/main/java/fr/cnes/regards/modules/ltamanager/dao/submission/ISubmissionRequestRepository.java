@@ -41,7 +41,7 @@ import java.util.Optional;
  * @author Iliana Ghazali
  **/
 @Repository
-public interface ISubmissionRequestRepository extends JpaRepository<SubmissionRequest, Long> {
+public interface ISubmissionRequestRepository extends JpaRepository<SubmissionRequest, String> {
 
     // ------------
     // -- SEARCH --

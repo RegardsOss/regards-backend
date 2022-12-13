@@ -20,13 +20,13 @@ package fr.cnes.regards.modules.ltamanager.dao.submission;
 
 import fr.cnes.regards.framework.jpa.utils.AbstractSpecificationsBuilder;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
-import fr.cnes.regards.modules.ltamanager.domain.submission.search.SubmissionRequestSearchParameters;
+import fr.cnes.regards.modules.ltamanager.domain.submission.search.SearchSubmissionRequestParameters;
 
 /**
  * @author Iliana Ghazali
  **/
 public class SubmissionRequestSpecificationBuilder
-    extends AbstractSpecificationsBuilder<SubmissionRequest, SubmissionRequestSearchParameters> {
+    extends AbstractSpecificationsBuilder<SubmissionRequest, SearchSubmissionRequestParameters> {
 
     @Override
     protected void addSpecificationsFromParameters() {

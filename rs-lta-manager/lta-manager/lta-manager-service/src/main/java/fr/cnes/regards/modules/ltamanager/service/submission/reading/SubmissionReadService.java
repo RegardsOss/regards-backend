@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepos
 import fr.cnes.regards.modules.ltamanager.dao.submission.SubmissionRequestSpecificationBuilder;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
 import fr.cnes.regards.modules.ltamanager.domain.submission.mapping.SubmissionRequestMapper;
-import fr.cnes.regards.modules.ltamanager.domain.submission.search.SubmissionRequestSearchParameters;
+import fr.cnes.regards.modules.ltamanager.domain.submission.search.SearchSubmissionRequestParameters;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmissionRequestInfoDto;
 import fr.cnes.regards.modules.ltamanager.dto.submission.output.SubmittedSearchResponseDto;
 import org.springframework.data.domain.Page;
@@ -54,7 +54,7 @@ public class SubmissionReadService {
                                 .orElse(null);
     }
 
-    public Page<SubmittedSearchResponseDto> retrieveSubmittedRequestsByCriteria(SubmissionRequestSearchParameters searchCriterion,
+    public Page<SubmittedSearchResponseDto> retrieveSubmittedRequestsByCriteria(SearchSubmissionRequestParameters searchCriterion,
                                                                                 Pageable page) {
         Page<SubmissionRequest> submissionPage = requestRepository.findAll(new SubmissionRequestSpecificationBuilder().withParameters(
             searchCriterion).build(), page);

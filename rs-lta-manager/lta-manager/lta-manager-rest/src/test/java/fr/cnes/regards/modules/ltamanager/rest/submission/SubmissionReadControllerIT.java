@@ -29,10 +29,10 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.urn.EntityType;
 import fr.cnes.regards.modules.ltamanager.dao.submission.ISubmissionRequestRepository;
 import fr.cnes.regards.modules.ltamanager.domain.submission.SubmissionRequest;
-import fr.cnes.regards.modules.ltamanager.domain.submission.search.SubmissionRequestSearchParameters;
+import fr.cnes.regards.modules.ltamanager.domain.submission.search.SearchSubmissionRequestParameters;
 import fr.cnes.regards.modules.ltamanager.dto.submission.input.SubmissionRequestState;
-import fr.cnes.regards.modules.ltamanager.rest.submission.utils.SubmissionInfo;
-import fr.cnes.regards.modules.ltamanager.rest.submission.utils.SubmissionRequestHelper;
+import fr.cnes.regards.modules.ltamanager.service.utils.SubmissionInfo;
+import fr.cnes.regards.modules.ltamanager.service.utils.SubmissionRequestHelper;
 import fr.cnes.regards.modules.model.client.IModelClient;
 import org.junit.Before;
 import org.junit.Test;
@@ -145,7 +145,7 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
         OffsetDateTime now = OffsetDateTime.now();
         List<SubmissionRequest> requests = initSearchCriterionData(now);
         // WHEN
-        SubmissionRequestSearchParameters searchCriterionWithMetadata = new SubmissionRequestSearchParameters(OWNER_2,
+        SearchSubmissionRequestParameters searchCriterionWithMetadata = new SearchSubmissionRequestParameters(OWNER_2,
                                                                                                               SESSION_1,
                                                                                                               DATATYPE_ERROR,
                                                                                                               null,
@@ -172,7 +172,7 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
         OffsetDateTime now = OffsetDateTime.now();
         List<SubmissionRequest> requests = initSearchCriterionData(now);
         // WHEN
-        SubmissionRequestSearchParameters searchCriterionWithDates = new SubmissionRequestSearchParameters(null,
+        SearchSubmissionRequestParameters searchCriterionWithDates = new SearchSubmissionRequestParameters(null,
                                                                                                            null,
                                                                                                            null,
                                                                                                            new DatesRangeRestriction(
@@ -207,7 +207,7 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
         OffsetDateTime now = OffsetDateTime.now();
         List<SubmissionRequest> requests = initSearchCriterionData(now);
         // WHEN
-        SubmissionRequestSearchParameters searchCriterionWithStatus = new SubmissionRequestSearchParameters(null,
+        SearchSubmissionRequestParameters searchCriterionWithStatus = new SearchSubmissionRequestParameters(null,
                                                                                                             null,
                                                                                                             null,
                                                                                                             null,
@@ -237,7 +237,7 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
         OffsetDateTime now = OffsetDateTime.now();
         List<SubmissionRequest> requests = initSearchCriterionData(now);
         // WHEN
-        SubmissionRequestSearchParameters searchCriterionWithIds = new SubmissionRequestSearchParameters(null,
+        SearchSubmissionRequestParameters searchCriterionWithIds = new SearchSubmissionRequestParameters(null,
                                                                                                          null,
                                                                                                          null,
                                                                                                          null,
@@ -273,7 +273,7 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
         OffsetDateTime now = OffsetDateTime.now();
         List<SubmissionRequest> requests = initSearchCriterionData(now);
         // WHEN
-        SubmissionRequestSearchParameters searchCriterionWithAllCriterion = new SubmissionRequestSearchParameters(
+        SearchSubmissionRequestParameters searchCriterionWithAllCriterion = new SearchSubmissionRequestParameters(
             OWNER_1,
             SESSION_1,
             EntityType.DATA.toString(),
@@ -301,7 +301,7 @@ public class SubmissionReadControllerIT extends AbstractRegardsIT {
         OffsetDateTime now = OffsetDateTime.now();
         List<SubmissionRequest> requests = initSearchCriterionData(now);
         // WHEN
-        SubmissionRequestSearchParameters searchCriterionWithNoCriterion = new SubmissionRequestSearchParameters(null,
+        SearchSubmissionRequestParameters searchCriterionWithNoCriterion = new SearchSubmissionRequestParameters(null,
                                                                                                                  null,
                                                                                                                  null,
                                                                                                                  null,

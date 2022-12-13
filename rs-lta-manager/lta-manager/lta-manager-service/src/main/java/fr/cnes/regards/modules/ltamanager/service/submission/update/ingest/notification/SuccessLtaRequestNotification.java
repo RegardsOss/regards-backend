@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.notifier.dto.in.NotificationRequestEvent;
  **/
 public class SuccessLtaRequestNotification extends NotificationRequestEvent {
 
-    public static String NOTIF_ACTION = "LONG_TERM_ARCHIVED";
+    public final static String NOTIF_ACTION = "LONG_TERM_ARCHIVED";
 
     public SuccessLtaRequestNotification(JsonObject payload, JsonObject metadata) {
         super(payload, metadata, null, null);
