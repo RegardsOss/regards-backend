@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.storage.service.file.job;
 
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storage.domain.database.request.FileDeletionRequest;
@@ -81,7 +80,7 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
         String plgBusinessId = parameters.get(DATA_STORAGE_CONF_BUSINESS_ID).getValue();
         FileDeletionWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();
         nbRequestToHandle = workingSubset.getFileDeletionRequests().size();
-        logger.debug("[DELETION JOB] Runing deletion job for {} deletion requests", nbRequestToHandle);
+        logger.debug("[DELETION JOB] Running deletion job for {} deletion requests", nbRequestToHandle);
         String errorCause = null;
         try {
             IStorageLocation storagePlugin = pluginService.getPlugin(plgBusinessId);
@@ -93,9 +92,8 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
                 workingSubset.getFileDeletionRequests().forEach(progressManager::deletionSucceed);
             }
         } catch (Exception e) {
+            logger.error(e.getMessage(), e);
             errorCause = String.format("Deletion job failed cause : %s", e.getMessage());
-            // throwing new runtime allows us to make the job fail.
-            throw new JobRuntimeException(e);
         } finally {
             // Publish event for all not handled files
             for (FileDeletionRequest req : workingSubset.getFileDeletionRequests()) {

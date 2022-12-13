@@ -259,8 +259,6 @@ public abstract class AbstractSubscriberIT {
 
         Thread.sleep(5_000);
 
-        LOGGER.info("SEB !!!!! {}/{}", receiver.getCount(), receiver2.getCount());
-
         Assert.assertEquals("Check 1 invalid", 1, receiver.getCount().intValue());
         Assert.assertEquals("Check 2 invalid", 1, receiver2.getCount().intValue());
     }

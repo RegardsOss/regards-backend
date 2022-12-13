@@ -59,6 +59,7 @@ import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.dao.spatial.GeoHelper;
 import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
+import fr.cnes.regards.modules.indexer.domain.builders.GeoPointBuilder;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchType;
 import fr.cnes.regards.modules.indexer.domain.spatial.Crs;
@@ -991,9 +992,11 @@ public class EntityIndexerService implements IEntityIndexerService {
                 GeoJSONReader reader = makeGeoJsonReader(makeFactory(projectGeoSettings.getShouldManagePolesOnGeometries()));
                 Shape read = reader.read(putTypeInFirstPosition(json));
 
-                GeoPoint nwPoint = new GeoPoint(read.getBoundingBox().getMaxY(), read.getBoundingBox().getMinX());
+                GeoPoint nwPoint = new GeoPointBuilder(read.getBoundingBox().getMaxY(),
+                                                       read.getBoundingBox().getMinX()).build();
                 dataObject.setNwPoint(nwPoint);
-                GeoPoint sePoint = new GeoPoint(read.getBoundingBox().getMinY(), read.getBoundingBox().getMaxX());
+                GeoPoint sePoint = new GeoPointBuilder(read.getBoundingBox().getMinY(),
+                                                       read.getBoundingBox().getMaxX()).build();
                 dataObject.setSePoint(sePoint);
 
             } catch (InvalidShapeException e) {

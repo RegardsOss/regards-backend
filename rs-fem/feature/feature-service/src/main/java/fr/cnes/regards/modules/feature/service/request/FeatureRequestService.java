@@ -83,6 +83,9 @@ public class FeatureRequestService implements IFeatureRequestService {
     public IFeatureUpdateService featureUpdateService;
 
     @Autowired
+    public FeatureFilesService featureFilesService;
+
+    @Autowired
     public IFeatureNotificationService featureNotificationService;
 
     @Autowired
@@ -193,15 +196,20 @@ public class FeatureRequestService implements IFeatureRequestService {
     public void handleStorageSuccess(Set<RequestResultInfoDTO> requestsInfo) {
         long scheduleStart = System.currentTimeMillis();
         LOGGER.trace("Handling {} storage success responses from storage", requestsInfo.size());
+        List<FeatureEntity> updatedFeatures = new ArrayList<>();
         Map<String, List<RequestResultInfoDTO>> requestInfoPerGroupId = requestsInfo.stream()
                                                                                     .collect(Collectors.groupingBy(
                                                                                         RequestResultInfoDTO::getGroupId));
-        Map<FeatureEntity, List<RequestResultInfoDTO>> updateInfos = new HashMap<>();
 
         // Find FeatureCreationRequest associated to success storage responses if any
         Set<FeatureCreationRequest> creationRequests = this.fcrRepo.findByGroupIdIn(requestInfoPerGroupId.keySet());
+        // For each creation requests update files locations
         for (FeatureCreationRequest r : creationRequests) {
-            updateInfos.put(r.getFeatureEntity(), requestInfoPerGroupId.get(r.getGroupId()));
+            updatedFeatures.add(featureFilesService.updateFeatureLocations(r.getFeatureEntity(),
+                                                                           requestInfoPerGroupId.get(r.getGroupId()),
+                                                                           r.getFeatureEntity()
+                                                                            .getFeature()
+                                                                            .getFiles()));
         }
 
         // Find FeatureUpdateRequest associated to success storage responses if any
@@ -217,13 +225,17 @@ public class FeatureRequestService implements IFeatureRequestService {
                                                                        .filter(r -> r.getUrn().equals(f.getUrn()))
                                                                        .findFirst();
                 if (request.isPresent()) {
-                    updateInfos.put(f, requestInfoPerGroupId.get(request.get().getGroupId()));
+                    // For each update requests update files locations
+                    updatedFeatures.add(featureFilesService.updateFeatureLocations(f,
+                                                                                   requestInfoPerGroupId.get(request.get()
+                                                                                                                    .getGroupId()),
+                                                                                   request.get()
+                                                                                          .getFeature()
+                                                                                          .getFiles()));
                 }
             }
         }
 
-        // Updates all features files locations from both create and update requests
-        List<FeatureEntity> updatedFeatures = featureUpdateService.updateFilesLocations(updateInfos);
         for (FeatureEntity updatedFeature : updatedFeatures) {
             // After update done, if updated feature is associated to an update request we need to set feature toNotify
             // in the request for further notification step.

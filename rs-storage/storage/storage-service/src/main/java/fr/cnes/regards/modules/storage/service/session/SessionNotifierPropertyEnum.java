@@ -55,7 +55,7 @@ public enum SessionNotifierPropertyEnum {
     /**
      * Number of requests refused
      */
-    REQUESTS_REFUSED("requestsRefused", StepPropertyStateEnum.ERROR, false, false),
+    REQUESTS_REFUSED("requestsRefused", StepPropertyStateEnum.INFO, false, false),
 
     /**
      * Number of requests in error

@@ -32,7 +32,6 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -67,14 +66,6 @@ public interface IFeatureUpdateService extends IAbstractFeatureService<FeatureUp
      * @return {@link FeatureUpdateRequest}s
      */
     Page<FeatureUpdateRequest> findRequests(FeatureRequestsSelectionDTO selection, Pageable page);
-
-    /**
-     * Update files and locations of given {@link FeatureEntity}s after storage microservice responses received.
-     *
-     * @param updateInfo storage requests results
-     * @return FeatureEntity updated features
-     */
-    List<FeatureEntity> updateFilesLocations(Map<FeatureEntity, List<RequestResultInfoDTO>> updateInfo);
 
     /**
      * Handle storage response errors from storage microservice by looking for {@link FeatureUpdateRequest} associated

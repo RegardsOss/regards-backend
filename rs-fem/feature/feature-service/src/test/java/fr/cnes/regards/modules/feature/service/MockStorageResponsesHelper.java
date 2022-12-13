@@ -90,12 +90,12 @@ public class MockStorageResponsesHelper {
      * Mock storage responses success with some errors for all feature creation request in database.
      * Including reference and storage requests.
      */
-    public void mockFeatureUpdateStorageWithErrors(int nbSuccess, int nbErrors) {
+    public void mockStorageResponses(IAbstractFeatureRequestRepository repo, int nbSuccess, int nbErrors) {
         if (nbSuccess > 0) {
-            mockStorageResponses(featureUpdateRequestRepo, Optional.of(nbSuccess), null, true);
+            mockStorageResponses(repo, Optional.of(nbSuccess), null, true);
         }
         if (nbErrors > 0) {
-            mockStorageResponses(featureUpdateRequestRepo, Optional.of(nbErrors), null, false);
+            mockStorageResponses(repo, Optional.of(nbErrors), null, false);
         }
     }
 

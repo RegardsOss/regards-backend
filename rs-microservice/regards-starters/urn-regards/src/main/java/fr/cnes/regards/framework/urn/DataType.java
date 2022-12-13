@@ -44,4 +44,12 @@ public enum DataType {
         return this.name();
     }
 
+    public static DataType parse(String value, DataType defaultValue) {
+        DataType dt = defaultValue;
+        if (value != null && valueOf(value) != null) {
+            dt = valueOf(value);
+        }
+        return dt;
+    }
+
 }

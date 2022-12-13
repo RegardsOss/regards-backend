@@ -122,6 +122,18 @@ public class S3HighLevelReactiveClient {
                                          SignalType.ON_ERROR);
     }
 
+    public Mono<DeleteResult> deleteWithPrefix(Delete deleteCmd) {
+        return deleteMonoWithPrefix(deleteCmd).subscribeOn(scheduler)
+                                              .onErrorResume(t -> Mono.just(new StorageCommandResult.UnreachableStorage(
+                                                  deleteCmd,
+                                                  t)))
+                                              .log("storage.s3.delete",
+                                                   Level.FINE,
+                                                   SignalType.ON_SUBSCRIBE,
+                                                   SignalType.ON_NEXT,
+                                                   SignalType.ON_ERROR);
+    }
+
     public Mono<CheckResult> check(Check checkCmd) {
         StorageConfig config = checkCmd.getConfig();
         String archivePath = checkCmd.getEntryKey();
@@ -280,7 +292,7 @@ public class S3HighLevelReactiveClient {
         return out;
     }
 
-    protected Mono<DeleteResult> deleteMono(Delete deleteCmd) {
+    protected Mono<DeleteResult> deleteMonoWithPrefix(Delete deleteCmd) {
         return Mono.defer(() -> {
             StorageConfig config = deleteCmd.getConfig();
             String archivePath = deleteCmd.getEntryKey();
@@ -290,6 +302,18 @@ public class S3HighLevelReactiveClient {
 
             return deleteArchiveContent(deleteCmd, bucket, archivePath, client).transform(deleteErrorManagement(
                 deleteCmd));
+        });
+    }
+
+    protected Mono<DeleteResult> deleteMono(Delete deleteCmd) {
+        return Mono.defer(() -> {
+            StorageConfig config = deleteCmd.getConfig();
+            String key = deleteCmd.getEntryKey();
+            String bucket = config.getBucket();
+
+            IS3ClientReactorWrapper client = getClient(config);
+
+            return deleteContent(deleteCmd, bucket, key, client).transform(deleteErrorManagement(deleteCmd));
         });
     }
 
@@ -306,7 +330,20 @@ public class S3HighLevelReactiveClient {
                                                     IS3ClientReactorWrapper client) {
         return client.deleteContentWithPrefix(bucket, key)
                      .log("storage.s3.delete", Level.FINER, SignalType.ON_NEXT, SignalType.ON_ERROR)
-                     .then(Mono.just(new DeleteSuccess(deleteCmd)));
+                     .then(Mono.<DeleteResult>just(new DeleteSuccess(deleteCmd)))
+                     .switchIfEmpty(Mono.<DeleteResult>just(new DeleteSuccess(deleteCmd)));
+    }
+
+    private Mono<DeleteResult> deleteContent(Delete deleteCmd,
+                                             String bucket,
+                                             String key,
+                                             IS3ClientReactorWrapper client) {
+        DeleteResult successResult = new DeleteSuccess(deleteCmd);
+        return client.deleteContent(bucket, key)
+                     .log("storage.s3.delete", Level.FINER, SignalType.ON_NEXT, SignalType.ON_ERROR)
+                     .map(response -> successResult)
+                     .doOnError(t -> LOGGER.error(t.getMessage(), t))
+                     .switchIfEmpty(Mono.just(successResult));
     }
 
     protected byte[] bufToArr(ByteBuffer bb) {
