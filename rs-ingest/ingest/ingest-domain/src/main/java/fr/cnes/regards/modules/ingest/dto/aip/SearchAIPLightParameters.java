@@ -72,11 +72,11 @@ public class SearchAIPLightParameters implements AbstractSearchParameters<AIPEnt
     @Schema(description = "Filter on identifier of aip")
     private ValuesRestriction<String> aipIds;
 
-    public ValuesRestriction<AIPState> getAipState() {
+    public ValuesRestriction<AIPState> getAipStates() {
         return aipStates;
     }
 
-    public void setAipState(ValuesRestriction<AIPState> aipStates) {
+    public void setAipStates(ValuesRestriction<AIPState> aipStates) {
         this.aipStates = aipStates;
     }
 
@@ -215,7 +215,7 @@ public class SearchAIPLightParameters implements AbstractSearchParameters<AIPEnt
     }
 
     public SearchAIPLightParameters withTagsIncluded(Collection<String> tags) {
-        this.tags = new ValuesRestriction<String>().withExclude(tags);
+        this.tags = new ValuesRestriction<String>().withInclude(tags);
         return this;
     }
 

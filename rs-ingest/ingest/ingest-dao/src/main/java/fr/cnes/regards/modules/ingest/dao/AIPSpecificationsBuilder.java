@@ -38,7 +38,7 @@ public class AIPSpecificationsBuilder extends AbstractSpecificationsBuilder<AIPE
     protected void addSpecificationsFromParameters() {
         if (parameters != null) {
 
-            specifications.add(useValuesRestriction("state", parameters.getAipState()));
+            specifications.add(useValuesRestriction("state", parameters.getAipStates()));
 
             specifications.add(useValuesRestriction("ipType", parameters.getAipIpTypes()));
 
