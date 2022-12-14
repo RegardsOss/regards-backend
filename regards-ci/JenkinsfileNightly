@@ -35,12 +35,12 @@ pipeline {
         parallelsAlwaysFailFast()
     }
     environment {
-        PROJECT_NAME="${JOB_NAME}-${BUILD_NUMBER}"
-        REGARDS_HOME="${WORKSPACE}"
-        MVN_IMAGE="172.26.46.158/regards-maven-jdk"
-        JAVA_IMAGE="172.26.46.158/regards-java-alpine:17"
-        BRANCH_NAME="develop"
-        IGNORE_HASH="true"
+        PROJECT_NAME = "${JOB_NAME}-${BUILD_NUMBER}"
+        REGARDS_HOME = "${WORKSPACE}"
+        MVN_IMAGE = "172.26.46.158/regards-maven-jdk"
+        JAVA_IMAGE = "172.26.46.158/regards-java-alpine:17"
+        BRANCH_NAME = "develop"
+        IGNORE_HASH = "true"
     }
     agent { label 'unix-integration' }
     stages {
@@ -56,15 +56,15 @@ pipeline {
         stage("Tests Preparation") {
             steps {
                 parallel(
-                    compile: {
-                        runMavenDockerImgWithoutCoTS("Build with CI profile", "compile")
-                    },
-                    cots: {
-                        sh label: "Launch COTS", script: 'docker-compose \
+                        compile: {
+                            runMavenDockerImgWithoutCoTS("Build with CI profile", "compile")
+                        },
+                        cots: {
+                            sh label: "Launch COTS", script: 'docker-compose \
                                 -f ' + CI_DIR + '/docker/docker-compose-cots.yml \
                                 -p ' + PROJECT_NAME + ' \
                                 up -d'
-                    }
+                        }
                 )
             }
         }
@@ -76,42 +76,58 @@ pipeline {
                         // Please you use here the method [...]One (runMavenDockerImgParallelOne)
                         stage('Microservice') {
                             steps {
-                                runMavenDockerImgParallelOne("sonarTests", "rs-microservice")
+                                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                                    runMavenDockerImgParallelOne("sonarTests", "rs-microservice")
+                                }
                             }
                         }
                         stage('Cloud') {
                             steps {
-                                runMavenDockerImgParallelOne("sonarTests", "rs-cloud")
+                                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                                    runMavenDockerImgParallelOne("sonarTests", "rs-cloud")
+                                }
                             }
                         }
                         stage('Ingest') {
                             steps {
-                                runMavenDockerImgParallelOne("sonarTests", "rs-ingest")
+                                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                                    runMavenDockerImgParallelOne("sonarTests", "rs-ingest")
+                                }
                             }
                         }
                         stage('Access') {
                             steps {
-                                runMavenDockerImgParallelOne("sonarTests", "rs-access")
+                                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                                    runMavenDockerImgParallelOne("sonarTests", "rs-access")
+                                }
                             }
                         }
                         stage('Fem') {
                             steps {
-                                runMavenDockerImgParallelOne("sonarTests", "rs-fem")
+                                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                                    runMavenDockerImgParallelOne("sonarTests", "rs-fem")
+                                }
                             }
                         }
                         stage('Notifier') {
                             steps {
-                                runMavenDockerImgParallelOne("sonarTests", "rs-notifier")
+                                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                                    runMavenDockerImgParallelOne("sonarTests", "rs-notifier")
+                                }
                             }
                         }
                         stage('Worker manager') {
                             steps {
-                                runMavenDockerImgParallelOne("sonarTests", "rs-worker-manager")
+                                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                                    runMavenDockerImgParallelOne("sonarTests", "rs-worker-manager")
+                                }
                             }
                         }
                         stage('Lta manager') {
                             steps {
-                                runMavenDockerImgParallelOne("sonarTests", "rs-lta-manager")
+                                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                                    runMavenDockerImgParallelOne("sonarTests", "rs-lta-manager")
+                                }
                             }
                         }
                     }
@@ -121,37 +137,51 @@ pipeline {
                         // Please you use here the method [...]Two (runMavenDockerImgParallelTwo)
                         stage('Admin') {
                             steps {
-                                runMavenDockerImgParallelTwo("sonarTests", "rs-admin")
+                                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                                    runMavenDockerImgParallelTwo("sonarTests", "rs-admin")
+                                }
                             }
                         }
                         stage('Dam') {
                             steps {
-                                runMavenDockerImgParallelTwo("sonarTests", "rs-dam")
+                                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                                    runMavenDockerImgParallelTwo("sonarTests", "rs-dam")
+                                }
                             }
                         }
                         stage('Catalog') {
                             steps {
-                                runMavenDockerImgParallelTwo("sonarTests", "rs-catalog")
+                                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                                    runMavenDockerImgParallelTwo("sonarTests", "rs-catalog")
+                                }
                             }
                         }
                         stage('Storage') {
                             steps {
-                                runMavenDockerImgParallelTwo("sonarTests", "rs-storage")
+                                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                                    runMavenDockerImgParallelTwo("sonarTests", "rs-storage")
+                                }
                             }
                         }
                         stage('Dataprovider') {
                             steps {
-                                runMavenDockerImgParallelTwo("sonarTests", "rs-dataprovider")
+                                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                                    runMavenDockerImgParallelTwo("sonarTests", "rs-dataprovider")
+                                }
                             }
                         }
                         stage('Order') {
                             steps {
-                                runMavenDockerImgParallelTwo("sonarTests", "rs-order")
+                                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                                    runMavenDockerImgParallelTwo("sonarTests", "rs-order")
+                                }
                             }
                         }
                         stage('processing') {
                             steps {
-                                runMavenDockerImgParallelTwo("sonarTests", "rs-processing")
+                                catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                                    runMavenDockerImgParallelTwo("sonarTests", "rs-processing")
+                                }
                             }
                         }
                     }
@@ -160,7 +190,7 @@ pipeline {
         }
         stage("Harvest requirements reports") {
             environment {
-                RQMT_DIR="/RQMT/RQMT/${JOB_NAME}/"
+                RQMT_DIR = "/RQMT/RQMT/${JOB_NAME}/"
             }
             steps {
                 sh 'rm -rf ' + RQMT_DIR
@@ -170,12 +200,12 @@ pipeline {
         }
         stage("Harvest documentation snippets") {
             environment {
-                DOC_DIR="/RQMT/APIDoc/${JOB_NAME}/"
+                DOC_DIR = "/RQMT/APIDoc/${JOB_NAME}/"
             }
             steps {
                 sh 'rm -rf ' + DOC_DIR
                 sh 'mkdir -p ' + DOC_DIR
-                sh 'find . -maxdepth 6 -type d -wholename \'*/target/generated-snippets/*\' -exec cp -r {} '+ DOC_DIR + ' \\;'
+                sh 'find . -maxdepth 6 -type d -wholename \'*/target/generated-snippets/*\' -exec cp -r {} ' + DOC_DIR + ' \\;'
             }
         }
     }
@@ -185,19 +215,19 @@ pipeline {
 
             // Log COTS only if they are existing
             sh label: "POST-FAILURE-TASK -- Print ElasticSearch logs", script: 'cd ' + CI_DIR + ' \
-                && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-elasticsearch', returnStatus:true
+                && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-elasticsearch', returnStatus: true
 
             sh label: "POST-FAILURE-TASK -- Print Postgres logs", script: 'cd ' + CI_DIR + ' \
-                && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-postgres', returnStatus:true
+                && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-postgres', returnStatus: true
 
             sh label: "POST-FAILURE-TASK -- Print First RabbitMQ logs", script: 'cd ' + CI_DIR + ' \
-                && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-rabbitmq-first', returnStatus:true
+                && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-rabbitmq-first', returnStatus: true
 
             sh label: "POST-FAILURE-TASK -- Print Second RabbitMQ logs", script: 'cd ' + CI_DIR + ' \
-                && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-rabbitmq-second', returnStatus:true
+                && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-rabbitmq-second', returnStatus: true
 
             sh label: "POST-FAILURE-TASK -- Print S3 Minio logs", script: 'cd ' + CI_DIR + ' \
-                && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-s3-minio', returnStatus:true
+                && docker-compose -f docker/docker-compose-cots.yml -p ' + PROJECT_NAME + ' logs rs-s3-minio', returnStatus: true
 
         }
         cleanup {
@@ -216,7 +246,7 @@ pipeline {
 // @params isRequiringCots true when the container will use CoTs
 // @params isRabbitMqIdFirst should use the first rabbitMQ
 @NonCPS
-def runMavenDockerImg(label, mode, regardsMs, isRequiringCots, isRabbitMqIdFirst, continueOnError) {
+def runMavenDockerImg(label, mode, regardsMs, isRequiringCots, isRabbitMqIdFirst) {
     // Transform PROJECT_NAME to what Docker will use for CoTS names
     // regards-oss-backend/feature%2Fimprove_jenkins_stages-31
     // become
@@ -243,30 +273,25 @@ def runMavenDockerImg(label, mode, regardsMs, isRequiringCots, isRabbitMqIdFirst
                          --link ' + dockerProject + '_rs-s3-minio_1:rs-s3-minio                                \
                          --link ' + dockerProject + '_rs-postgres_1:rs-postgres                                '
     }
-    dockerCommand +=    ' --network="regards_IT_network"                                                       \
+    dockerCommand += ' --network="regards_IT_network"                                                       \
                         ' + MVN_IMAGE
-    if (continueOnError) {
-        catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-            sh script: dockerCommand, label: label
-        }
-    } else {
-        sh script: dockerCommand, label: label
-    }
+    sh script: dockerCommand, label: label
 }
+
 // Use it when you don't need any COTS
 def runMavenDockerImgWithoutCoTS(taskMainLabel, mode) {
     def label = taskMainLabel + " using maven container with mode=[" + mode + "]"
-    runMavenDockerImg(label, mode, "", false, false, false)
+    runMavenDockerImg(label, mode, "", false, false)
 }
 
 // Use it when you want CoTS and you are the parallel "One"
 def runMavenDockerImgParallelOne(mode, regardsMs) {
     def label = "Run " + mode + " on [" + regardsMs + "] using maven container. This tasks use CoTs and first RabbitMQ"
-    runMavenDockerImg(label, mode, regardsMs, true, true, true)
+    runMavenDockerImg(label, mode, regardsMs, true, true)
 }
 
 // Use it when you want CoTS and you are the parallel "Two"
 def runMavenDockerImgParallelTwo(mode, regardsMs) {
     def label = "Run " + mode + " on [" + regardsMs + "] using maven container. This tasks use CoTs and second RabbitMQ"
-    runMavenDockerImg(label, mode, regardsMs, true, false, true)
+    runMavenDockerImg(label, mode, regardsMs, true, false)
 }
